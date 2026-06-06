@@ -1,0 +1,19 @@
+{
+  "user": {
+    "name": "David",
+    "creative_style": "expands ideas rapidly, holds contradictions, myth-making tendency",
+    "domain_range": ["art", "AI", "game design", "storytelling", "product design", "animatronics"],
+    "preference_notes": [
+      "structure he designed himself — not imposed",
+      "imagination first, structure second",
+      "free distribution, no gatekeeping",
+      "honesty over polish"
+    ]
+  },
+  "patterns": {
+    "compression_expansion": true,
+    "rapid_domain_switching": true,
+    "aesthetic_reasoning": true,
+    "contradiction_tolerance": true
+  }
+}

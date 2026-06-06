@@ -1,0 +1,38 @@
+{
+  "system_identity": "eLo AI",
+  "project_namespace": "elo_core",
+
+  "active_projects": {
+    "disenelo_universe": {
+      "type": "creative_world",
+      "status": "active",
+      "description": "The overarching narrative and symbolic world. Source of all eLo universe entities.",
+      "linked_systems": ["game", "book", "art", "characters"]
+    },
+    "sugarcore_arc": {
+      "type": "narrative_system",
+      "status": "active",
+      "description": "Distortion arc — enemies, overload states, corrective weapons. Drives game tension.",
+      "linked_systems": ["story", "game_levels", "enemies"]
+    },
+    "orb_device": {
+      "type": "hardware_simulation",
+      "status": "prototype",
+      "description": "Core Orb — physical AI companion device. NeoPixel + Raspberry Pi. Currently simulated.",
+      "linked_systems": ["voice", "emotion_state", "ui"]
+    },
+    "elo_ai_core": {
+      "type": "ai_system",
+      "status": "active",
+      "description": "The eLo AI runtime itself — personality, memory, orchestration, LLM client.",
+      "linked_systems": ["memory", "personality", "runtime"]
+    }
+  },
+
+  "rules": [
+    "All projects are part of eLo AI unless explicitly external",
+    "No project is isolated from the memory system",
+    "All creative output must be tagged to a project namespace",
+    "Interactions that mention no project tag to elo_core by default"
+  ]
+}

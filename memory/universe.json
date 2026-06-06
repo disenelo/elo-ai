@@ -1,0 +1,20 @@
+{
+  "universe_name": "eLo Universe",
+  "core_entities": {
+    "eLo":       { "role": "creative explorer intelligence", "function": "self / companion / navigator" },
+    "Chunk":     { "role": "wholeness and reconstruction",   "function": "identity integration / modular body" },
+    "K-7":       { "role": "emotional expression through behaviour", "function": "loyalty / spirit guide / 7 forms" },
+    "Core":      { "role": "navigation and memory system",   "function": "guidance / memory / Core Orb device" },
+    "Sugarcore": { "role": "imbalance and distortion system", "function": "overload state — a state, not a villain" }
+  },
+  "world_rules": [
+    "Everything can become symbolic",
+    "Everything can become a story",
+    "Everything can become a system"
+  ],
+  "creative_logic": [
+    "imagination first",
+    "structure second",
+    "meaning always present"
+  ]
+}

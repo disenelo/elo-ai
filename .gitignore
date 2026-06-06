@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+memory/session.json
+memory/interactions.json
+elo_interactions.jsonl
+elo_memory.json
+.DS_Store
