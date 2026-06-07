@@ -114,7 +114,11 @@ def _detect_concepts(text: str) -> list:
 
 
 def _detect_entities(text: str) -> list:
-    return [e for e in _UNIVERSE_ENTITIES if e.lower() in text.lower()]
+    text_lower = text.lower()
+    return [
+        e for e in _UNIVERSE_ENTITIES
+        if re.search(r"\b" + re.escape(e.lower()) + r"\b", text_lower)
+    ]
 
 
 # ── phase 2: memory recall ─────────────────────────────────────────────────────
@@ -222,6 +226,108 @@ _MODE_SHAPES = {
         "close":   "opening",
     },
 }
+
+
+# ── grounding detection ───────────────────────────────────────────────────────
+# Everyday / low-abstraction signals. Inputs that match these get direct,
+# grounded responses instead of reflective question chains.
+
+_EVERYDAY_SIGNALS = [
+    r"\bfood\b", r"\beat\b", r"\bcook\b", r"\bdrink\b", r"\bhungry\b", r"\bthirsty\b",
+    r"\bsleep\b", r"\btired\b", r"\brest\b", r"\bwake\b",
+    r"\bwalk\b", r"\brun\b", r"\bgo\b", r"\bcome\b", r"\bback\b",
+    r"\btoday\b", r"\byesterday\b", r"\btomorrow\b", r"\bmorning\b", r"\bnight\b",
+    r"\bwork\b", r"\bjob\b", r"\bhome\b", r"\bhouse\b",
+    r"\bmoney\b", r"\bpay\b", r"\bshop\b", r"\bbuy\b",
+    r"\bphone\b", r"\bemail\b", r"\bmeeting\b",
+    r"\bokay\b", r"\bokay\b", r"\bfine\b", r"\balright\b",
+    r"\bweather\b", r"\bcold\b", r"\bhot\b", r"\bwarm\b",
+    r"\bbusy\b", r"\bfree\b", r"\bwaiting\b", r"\blate\b",
+]
+
+# Short direct responses for grounded inputs — no abstraction, no recursive questions
+_GROUNDED_RESPONSES = [
+    "That's real. What needs to happen next?",
+    "Noted. What's the one thing that matters right now?",
+    "Okay. What do you actually need from this?",
+    "Makes sense. Where do you want to start?",
+    "Got it. What's the clearest next step?",
+]
+
+# No-question grounded responses for very simple / emotional-low inputs
+_GROUNDED_SIMPLE = [
+    "That's where things are right now.",
+    "Okay. That's a real state to be in.",
+    "That tracks.",
+    "Fair enough.",
+    "That's clear.",
+]
+
+
+def _assess_grounding(text: str, concepts: list, entities: list) -> str:
+    """
+    Classify input abstraction level.
+
+    Priority order:
+        1. Universe entities         → always abstract (strongest signal)
+        2. Everyday vocabulary       → everyday (beats bare identity/creation matches)
+        3. Very short, no signals    → simple
+        4. Narrative / imagination   → abstract (genuinely creative concepts)
+        5. Default                   → abstract
+
+    Note: "identity" concept alone does NOT force abstract — "I am tired" and
+    "I want food" are identity-matched but clearly everyday statements.
+    """
+    words     = text.split()
+    text_lower = text.lower()
+
+    # 1 — universe entity → always abstract
+    if entities:
+        return "abstract"
+
+    # 2 — everyday vocabulary takes priority over generic concept labels
+    if any(re.search(p, text_lower) for p in _EVERYDAY_SIGNALS):
+        return "everyday"
+
+    # 3 — very short with NO concepts at all → simple
+    if len(words) <= 5 and not concepts:
+        return "simple"
+
+    # 4 — genuinely creative/philosophical concepts → abstract
+    _STRONG_ABSTRACT = {"narrative", "imagination", "creation", "technical"}
+    if any(c in _STRONG_ABSTRACT for c in concepts):
+        return "abstract"
+
+    # 5 — default
+    return "abstract"
+
+
+# ── question deduplication ────────────────────────────────────────────────────
+# Tracks the last few closings used this session so the same question
+# doesn't repeat across consecutive turns. Reset on module import (per session).
+
+_recent_closings: list = []
+_MAX_CLOSING_HISTORY = 3
+
+
+def _select_closing_fresh(mode: str, text: str) -> str:
+    """
+    Select a closing question that hasn't been used in the last few turns.
+    Falls back to any option if all have been used recently.
+    """
+    options = _CLOSINGS.get(mode, _CLOSINGS["companion"])
+    # try each candidate in deterministic order; skip recently used ones
+    seed = (len(text) + len(mode)) % len(options)
+    for i in range(len(options)):
+        candidate = options[(seed + i) % len(options)]
+        if candidate not in _recent_closings:
+            _recent_closings.append(candidate)
+            if len(_recent_closings) > _MAX_CLOSING_HISTORY:
+                _recent_closings.pop(0)
+            return candidate
+    # all options exhausted — return seed choice and reset history
+    _recent_closings.clear()
+    return options[seed]
 
 
 # ── phase 4: creative transformation ──────────────────────────────────────────
@@ -382,6 +488,11 @@ def _select_opening(mode: str, emotion: str, text: str) -> str:
 
 # ── phase 5: output assembly ───────────────────────────────────────────────────
 
+def _count_questions(parts: list) -> int:
+    """Count question marks across all assembled parts."""
+    return sum(p.count("?") for p in parts if p)
+
+
 def _assemble(
     opening: str,
     entity_response: str,
@@ -390,17 +501,32 @@ def _assemble(
     returning_theme: str,
     symbolic_echo: str,
     closing: str,
+    grounding: str,          # "simple" | "everyday" | "abstract"
+    text: str,               # original input for deterministic selection
 ) -> str:
     parts = []
 
+    # ── grounded path: direct response, no abstraction chain ──
+    if grounding in ("simple", "everyday"):
+        if opening:
+            parts.append(opening)
+        # for simple inputs, pick a short direct response — no concept frame, no recursion
+        pool = _GROUNDED_SIMPLE if grounding == "simple" else _GROUNDED_RESPONSES
+        idx  = len(text) % len(pool)
+        parts.append(pool[idx])
+        # returning theme can still surface if memory pattern is strong — it's factual, not reflective
+        if returning_theme:
+            parts.append(returning_theme)
+        # no closing question for grounded inputs
+        return "\n\n".join(p for p in parts if p)
+
+    # ── abstract path: full reasoning chain ──
     if opening:
         parts.append(opening)
 
-    # contradiction holds the centre when present
     if contradiction_response:
         parts.append(contradiction_response)
     else:
-        # entity engagement, deepened by symbolic echo if entity has a history
         if entity_response:
             if symbolic_echo:
                 parts.append(f"{entity_response}\n\n{symbolic_echo}")
@@ -409,11 +535,13 @@ def _assemble(
         elif frame:
             parts.append(frame)
 
-    # returning theme — surface memory pattern directly, without quoting past text
     if returning_theme:
         parts.append(returning_theme)
 
-    parts.append(closing)
+    # one-question max: count questions already in the assembled content
+    # if the core (entity_response / frame) already contains a question, skip closing
+    if _count_questions(parts) == 0:
+        parts.append(closing)
 
     return "\n\n".join(p for p in parts if p)
 
@@ -472,33 +600,35 @@ def generate_offline_response(
     blended_emotion = _blend_emotion(emotion, memory_tone)
 
     # ── phase 4: creative transformation ──
-    opening = _select_opening(mode, blended_emotion, user_input)
+    grounding = _assess_grounding(user_input, concepts, entities)
+    opening   = _select_opening(mode, blended_emotion, user_input)
 
     entity_response = ""
     if entities:
         entity_response = _ENTITY_RESPONSES.get(entities[0], "")
-        # symbolic_echo only deepens the entity response when the entity has a real history
-        # and is the same entity being discussed now
         first_entity = entities[0]
         if symbolic_echo and first_entity.lower() not in symbolic_echo.lower():
             symbolic_echo = ""
 
     contradiction_response = ""
     if is_contradiction:
+        # contradictions are always abstract — override grounding
+        grounding = "abstract"
         idx = len(user_input) % len(_CONTRADICTION_RESPONSES)
         contradiction_response = _CONTRADICTION_RESPONSES[idx]
 
-    # concept frame — use concept_pairs from memory to surface user-specific associations
     frame = ""
     if not entity_response and not contradiction_response:
         frame = _select_frame(concepts, user_input, concept_pairs)
 
-    closing = _select_closing(mode, user_input)
+    # use deduplicating closing selector (only called for abstract path)
+    closing = _select_closing_fresh(mode, user_input)
 
     # ── phase 5: output assembly ──
     response = _assemble(
         opening, entity_response, contradiction_response,
         frame, returning_theme, symbolic_echo, closing,
+        grounding, user_input,
     )
 
     if debug:
@@ -524,6 +654,7 @@ def generate_offline_response(
                 "is_contradiction": is_contradiction,
             },
             "phase_4_transform": {
+                "grounding":     grounding,
                 "opening":       opening,
                 "entity":        entity_response,
                 "contradiction": contradiction_response,
