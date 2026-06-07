@@ -1,13 +1,15 @@
 # eLo AI — Memory Export
-> Generated: 2026-06-06 23:56 UTC
+> Generated: 2026-06-07 00:00 UTC
 > Human and AI readable. Injected as long-term context at session start.
-> Total interactions: 29
+> Total interactions: 33
 
 ---
 
 ## 1. Identity Evolution
 
 **2026-06-06** — I want structure but no rules
+
+**2026-06-07** — I want to build something
 
 _Identity conversations tend toward **companion** mode._
 
@@ -27,10 +29,10 @@ Interactions: 0
 
 ### orb_device
 Type: hardware_simulation · Status: prototype
-Interactions: 3
+Interactions: 4
 - First: *let's build this step by step*
-- Recent: *build a plan for the orb device*
-- Dominant concepts: creation (3), imagination (2), technical (1)
+- Recent: *I want to build something*
+- Dominant concepts: creation (4), imagination (2), technical (1)
 
 ### elo_ai_core
 Type: ai_system · Status: active
@@ -42,15 +44,16 @@ Interactions: 0
 ## 3. Emotional Patterns
 
 **Mode distribution:**
-- companion: 23 (79%)
-- studio: 6 (20%)
+- companion: 26 (78%)
+- studio: 6 (18%)
+- adventure: 1 (3%)
 
 **Concept distribution:**
-- creation: 20
-- identity: 10
-- imagination: 5
+- creation: 22
+- identity: 11
+- imagination: 6
 - emotion: 5
-- narrative: 3
+- narrative: 4
 - technical: 1
 
 _Mode has been consistently **companion** across the session._
@@ -61,23 +64,23 @@ _Mode has been consistently **companion** across the session._
 
 **eLo Universe entity mentions:**
 - eLo: 7
-- Chunk: 3
+- Chunk: 4
 - Core: 1
 - Sugarcore: 1
 
 **Most repeated themes:**
-- `does` (23×)
-- `want` (15×)
-- `follow` (13×)
-- `feeling` (13×)
-- `where` (13×)
-- `point` (13×)
+- `does` (27×)
+- `want` (17×)
+- `follow` (17×)
+- `feeling` (15×)
+- `where` (15×)
+- `point` (15×)
+- `shape` (12×)
 - `structure` (11×)
 - `rules` (11×)
+- `something` (10×)
 - `contradiction` (9×)
 - `doing` (9×)
-- `something` (9×)
-- `resolve` (9×)
 
 ---
 
