@@ -452,6 +452,104 @@ def _route(classification: dict, assembled: dict) -> str:
 
 
 # ── layer 4: generation layer ─────────────────────────────────────────────────
+#
+# Public API:
+#   generate_response(mode, user_input, context)  →  str
+#   set_backend(name)                             →  None
+#
+# The generation layer is backend-agnostic.
+# It defines the interface; backends are registered separately.
+# Swapping from offline to Claude to a local LLM does not touch this signature.
+
+_ACTIVE_BACKEND: str  = "offline"
+_BACKEND_REGISTRY: dict = {}    # name → callable(mode, user_input, context) → str
+
+
+def set_backend(name: str, handler=None):
+    """
+    Register and activate a generation backend.
+
+    Args:
+        name:    Backend identifier — "offline" | "claude" | "local_llm" | any custom name.
+        handler: Optional callable(mode, user_input, context) → str.
+                 If omitted, the named backend must already be in the registry.
+
+    Usage:
+        # activate the built-in offline backend (default)
+        set_backend("offline")
+
+        # register and activate a custom backend
+        set_backend("claude", handler=my_claude_fn)
+
+        # activate a previously registered backend
+        set_backend("local_llm")
+    """
+    global _ACTIVE_BACKEND
+    if handler is not None:
+        _BACKEND_REGISTRY[name] = handler
+    _ACTIVE_BACKEND = name
+
+
+def generate_response(mode: str, user_input: str, context: dict = None) -> str:
+    """
+    Generation layer — backend-agnostic entry point.
+
+    Dispatches to the active backend. The caller never needs to know
+    which backend is running — the interface is identical for all of them.
+
+    Args:
+        mode:       One of DIRECT | STRUCTURED | GENTLE_GROUNDED | CREATIVE
+                         | SIMPLIFY | CONVERSATIONAL
+        user_input: Raw text from the user.
+        context:    Assembled context dict from assemble_context().
+
+    Returns:
+        Response string from the active backend.
+
+    Backends:
+        "offline"   — deterministic placeholder strings (default, no API needed)
+        "claude"    — Anthropic Claude API (register via set_backend)
+        "local_llm" — local model server (register via set_backend)
+        custom      — any callable registered via set_backend
+    """
+    ctx = context or {}
+
+    # custom registered backend
+    if _ACTIVE_BACKEND in _BACKEND_REGISTRY:
+        return _BACKEND_REGISTRY[_ACTIVE_BACKEND](mode, user_input, ctx)
+
+    # built-in offline backend
+    if _ACTIVE_BACKEND == "offline":
+        return _generate_placeholder(mode, user_input, ctx)
+
+    # unknown backend — fall through to placeholder
+    return _generate_placeholder(mode, user_input, ctx)
+
+
+def _generate_placeholder(mode: str, user_input: str, context: dict) -> str:
+    """
+    Offline placeholder generator.
+    Returns mode-labelled strings — useful for testing the pipeline
+    without any API dependency.
+
+    Each placeholder includes the mode and a short echo of the input
+    so the pipeline can be verified end-to-end.
+    """
+    input_echo = user_input[:40].strip() if user_input else ""
+    project    = context.get("project", context.get("memory", {}).get("project", ""))
+    project_tag = f" [{project}]" if project and project != "elo_core" else ""
+
+    _PLACEHOLDERS = {
+        "DIRECT":          f"[DIRECT]{project_tag} {input_echo}",
+        "STRUCTURED":      f"[STRUCTURED]{project_tag} — working through: {input_echo}",
+        "GENTLE_GROUNDED": f"[GENTLE_GROUNDED] That's real. Nothing needs to happen right now.",
+        "CREATIVE":        f"[CREATIVE]{project_tag} Follow that: {input_echo}",
+        "SIMPLIFY":        f"[SIMPLIFY] Okay.",
+        "CONVERSATIONAL":  f"[CONVERSATIONAL]{project_tag} {input_echo}",
+    }
+
+    return _PLACEHOLDERS.get(mode, f"[{mode}] {input_echo}")
+
 
 # ── response banks — the content eLo draws from per mode ──
 
