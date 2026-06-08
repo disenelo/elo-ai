@@ -233,14 +233,23 @@ _MODE_SHAPES = {
 # grounded responses instead of reflective question chains.
 
 _EVERYDAY_SIGNALS = [
+    # food / basic needs
     r"\bfood\b", r"\beat\b", r"\bcook\b", r"\bdrink\b", r"\bhungry\b", r"\bthirsty\b",
+    # low energy / rest states
     r"\bsleep\b", r"\btired\b", r"\brest\b", r"\bwake\b",
+    r"\bexhausted\b", r"\bdrained\b", r"\bburnt?\s*out\b", r"\bworn\s*out\b",
+    # uncertainty / low-signal states
+    r"\bnot sure\b", r"\bi don'?t know\b", r"\bjust\s+(tired|lost|done|here)\b",
+    # movement / logistics
     r"\bwalk\b", r"\brun\b", r"\bgo\b", r"\bcome\b", r"\bback\b",
+    # time
     r"\btoday\b", r"\byesterday\b", r"\btomorrow\b", r"\bmorning\b", r"\bnight\b",
+    # work / life context
     r"\bwork\b", r"\bjob\b", r"\bhome\b", r"\bhouse\b",
     r"\bmoney\b", r"\bpay\b", r"\bshop\b", r"\bbuy\b",
     r"\bphone\b", r"\bemail\b", r"\bmeeting\b",
-    r"\bokay\b", r"\bokay\b", r"\bfine\b", r"\balright\b",
+    # simple state words
+    r"\bokay\b", r"\bfine\b", r"\balright\b",
     r"\bweather\b", r"\bcold\b", r"\bhot\b", r"\bwarm\b",
     r"\bbusy\b", r"\bfree\b", r"\bwaiting\b", r"\blate\b",
 ]
@@ -262,6 +271,27 @@ _GROUNDED_SIMPLE = [
     "Fair enough.",
     "That's clear.",
 ]
+
+# Low-energy / uncertain states — acknowledgment only, no push to action
+_GROUNDED_LOW_ENERGY = [
+    "That sounds like a low-power moment. You don't need to solve it right now.",
+    "Rest is a real state. Nothing has to move yet.",
+    "That makes sense. Nothing needs to happen right now.",
+    "Low-power mode. That's okay.",
+    "That's real. You don't have to push through it.",
+]
+
+_LOW_ENERGY_SIGNALS = [
+    r"\bjust tired\b", r"\bi'?m tired\b", r"\bso tired\b",
+    r"\bi don'?t know\b", r"\bnot sure\b", r"\bjust\s+(tired|lost|stuck|done)\b",
+    r"\bexhausted\b", r"\bdrained\b", r"\bburnt?\s*out\b",
+    r"\bno energy\b", r"\bcan'?t\s+(think|focus|move)\b",
+]
+
+
+def _is_low_energy(text: str) -> bool:
+    text_lower = text.lower()
+    return any(re.search(p, text_lower) for p in _LOW_ENERGY_SIGNALS)
 
 
 def _assess_grounding(text: str, concepts: list, entities: list) -> str:
@@ -510,8 +540,13 @@ def _assemble(
     if grounding in ("simple", "everyday"):
         if opening:
             parts.append(opening)
-        # for simple inputs, pick a short direct response — no concept frame, no recursion
-        pool = _GROUNDED_SIMPLE if grounding == "simple" else _GROUNDED_RESPONSES
+        # low-energy / uncertain signals → acknowledgment only, no push to action
+        if grounding == "everyday" and _is_low_energy(text):
+            pool = _GROUNDED_LOW_ENERGY
+        elif grounding == "simple":
+            pool = _GROUNDED_SIMPLE
+        else:
+            pool = _GROUNDED_RESPONSES
         idx  = len(text) % len(pool)
         parts.append(pool[idx])
         # returning theme can still surface if memory pattern is strong — it's factual, not reflective
