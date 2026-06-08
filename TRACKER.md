@@ -5,6 +5,64 @@
 
 ---
 
+## Roadmap
+
+### Phase 1 — Foundation ✅ (current)
+
+**Goal:** eLo AI OS core — behavior, memory, identity, state.
+
+- [x] Behavior engine (5-phase offline reasoning)
+- [x] Memory engine (5 typed categories, active influence signals)
+- [x] Identity system (`identity/` — elo_identity, behavior_rules, universe_reference)
+- [x] State engine (6 states, inertia + hysteresis transitions)
+- [x] Plugin architecture (base contract, registry, fallback chain)
+
+**Success criteria:** eLo feels consistent in conversation.
+
+---
+
+### Phase 2 — Model independence
+
+**Goal:** same behavior regardless of which model powers responses.
+
+- [ ] Connect `ANTHROPIC_API_KEY` → AnthropicPlugin active
+- [ ] Test LocalLLM plugin with Ollama
+- [ ] Verify behavior layer unchanged across all backends
+- [ ] `ELO_PLUGIN` env var selects backend at startup
+
+**Success criteria:** swap model, behavior unchanged.
+
+---
+
+### Phase 3 — Voice
+
+**Goal:** eLo speaks and listens. Character present in voice.
+
+- [ ] Whisper STT integration (`plugins/voice/plugin.py`)
+- [ ] pyttsx3 or ElevenLabs TTS integration
+- [ ] Calibrate against `identity/voice_profile.md`
+- [ ] Emotional cadence mapped to state engine
+
+**Success criteria:** eLo sounds like eLo. Voice matches identity spec.
+
+---
+
+### Phase 4 — Embodiment
+
+**Goal:** eLo has physical presence.
+
+- [ ] NeoPixel orb driven by `plugins/hardware/plugin.py`
+- [ ] State-to-light mapping (`hardware/plugin.py` HARDWARE HOOK)
+- [ ] Raspberry Pi integration
+- [ ] Sensor input (presence, touch, ambient)
+- [ ] Physical interaction loop: sense → state → respond → display
+
+**Success criteria:** eLo the object glows, listens, and responds.
+
+---
+
+---
+
 ## Quick start
 
 ```bash
