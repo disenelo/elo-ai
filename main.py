@@ -37,8 +37,9 @@ def _handle_command(raw: str, engine, debug_ref: list) -> bool:
     rest  = raw[len(cmd):].strip()
 
     if cmd == "/exit":
-        print("\neLo: Saving memory. Goodbye.")
+        print("\neLo: Saving memory and session. Goodbye.")
         export_memory()
+        engine.save_session()
         return False
 
     if cmd == "/mode":
@@ -76,13 +77,19 @@ def _handle_command(raw: str, engine, debug_ref: list) -> bool:
 
 
 def _run_chat():
-    orb    = OrbEngine(silent=True)   # orb transitions are internal
+    orb    = OrbEngine(silent=True)
     engine = CoreEngine(orb=orb)
     debug  = [False]
 
-    # eLo opens the conversation — not a banner listing commands
+    # restore previous session if available
+    info = CoreEngine.session_info()
+    restored = engine.restore_session()
+
     print()
-    print("eLo: Ready.")
+    if restored and info:
+        print(f"eLo: Session restored  [state: {info.get('state','')}  mode: {info.get('active_mode','')}  turns: {info.get('turn_count',0)}]")
+    else:
+        print("eLo: Ready.")
     print(f"  (commands: {_COMMANDS_HINT})")
     print()
 

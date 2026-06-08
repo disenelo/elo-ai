@@ -18,7 +18,8 @@ import json
 import os
 import re
 
-from core.kernel      import decide_response, reset_session, set_debug
+from core.kernel             import decide_response, reset_session, set_debug
+from core.session_persistence import save_session, restore_session, session_info
 from core.state_bus   import (StateBus, IdentitySnapshot, StateSnapshot,
                                EmotionSnapshot, MemorySnapshot)
 from core.memory_engine import (
@@ -123,6 +124,29 @@ class CoreEngine:
         """Re-read config and registry from disk."""
         self._registry    = load_registry()
         self._personality = _load_personality()
+
+    # ── session persistence ────────────────────────────────────────────────────
+
+    def save_session(self, path: str = None) -> str:
+        """
+        Save current session state to disk (state engine + active mode).
+        Memory interactions are persisted automatically by memory_engine.
+        Returns the path written to.
+        """
+        return save_session(self, path)
+
+    def restore_session(self, path: str = None) -> bool:
+        """
+        Restore session state from disk into this engine instance.
+        Call after __init__ to continue a previous session.
+        Returns True if a save file was found and applied.
+        """
+        return restore_session(self, path)
+
+    @staticmethod
+    def session_info(path: str = None) -> dict:
+        """Return metadata about the saved session without loading it."""
+        return session_info(path)
 
     def set_mode(self, mode: str):
         if mode in _VALID_MODES:
