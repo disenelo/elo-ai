@@ -54,17 +54,40 @@ def reset_session():
 
 
 # ── layer 1: input classifier ─────────────────────────────────────────────────
+#
+# Signal tables used by both _classify() (internal) and classify_input() (public).
+# No imports, no state, no LLM — pure regex over the input string.
 
 _FACTUAL_SIGNALS = [
     r"\bwhat\s+is\b", r"\bwhat\s+are\b", r"\bwhat\s+does\b", r"\bwho\s+is\b",
     r"\bhow\s+does\b", r"\bhow\s+do\b", r"\bexplain\b", r"\bdescribe\b",
     r"\btell\s+me\s+about\b", r"\bdefine\b", r"\bwhat\s+does\s+\w+\s+mean\b",
+    r"\bwhat\s+was\b", r"\bwhat\s+happened\b",
+]
+
+_PROJECT_SIGNALS = [
+    # eLo universe project names
+    r"\bsugarcore\s+arc\b", r"\borb\s+(system|device)\b",
+    r"\beLo\s+[Pp]lanet\b", r"\beLo\s+[Uu]niverse\b",
+    r"\bidentity\s+engine\b", r"\bmemory\s+engine\b", r"\bstate\s+engine\b",
+    r"\bbehavior\s+engine\b", r"\bkernel\b",
+    # generic project language
+    r"\bmy\s+project\b", r"\bworking\s+on\b", r"\bbuilding\s+a\b",
+    r"\bthe\s+system\b", r"\bthe\s+app\b", r"\bthe\s+game\b",
+    r"\barchitecture\b", r"\bpipeline\b", r"\bmodule\b", r"\bfeature\b",
+    r"\bimplementation\b", r"\brefactor\b",
 ]
 
 _EMOTIONAL_SIGNALS = [
-    r"\bi\s+feel\b", r"\bi'?m\s+(tired|exhausted|scared|lost|stuck|sad|happy)\b",
-    r"\bsomething\s+feels\b", r"\bi\s+don'?t\s+know\b",
-    r"\bnot\s+sure\b", r"\bexhausted\b", r"\bdrained\b",
+    # personal emotional state — "I feel X" or "I'm [emotion]"
+    r"\bi\s+feel\b",
+    r"\bi'?m\s+(tired|exhausted|scared|lost|stuck|sad|happy|confused)\b",
+    r"\bsomething\s+feels\b",
+    r"\bexhausted\b", r"\bdrained\b",
+    r"\bi\s+am\s+(tired|lost|stuck|scared)\b",
+    # "I don't know" is emotional when there's no uncertainty qualifier
+    r"\bi\s+just\s+don'?t\s+know\b",
+    # NOTE: "not sure" and "I don't know" alone → UNCERTAINTY (removed from here)
 ]
 
 _DISTORTED_SIGNALS = [
@@ -75,40 +98,72 @@ _DISTORTED_SIGNALS = [
 _CREATIVE_SIGNALS = [
     r"\bwhat\s+if\b", r"\bimagine\b", r"\bwhat\s+could\b", r"\bwhat\s+would\b",
     r"\bwhat\s+might\b", r"\bstory\b", r"\bworld\b", r"\bmyth\b",
+    r"\bnarrative\b", r"\blore\b", r"\buniverse\b", r"\bcharacter\b",
+    r"\bdesign\s+a\b", r"\bcreate\s+a\b",
 ]
 
-_ENTITY_NAMES = ["eLo", "Chunk", "K-7", "Core", "Sugarcore"]
+_UNCERTAINTY_SIGNALS = [
+    r"\bnot\s+sure\b", r"\bmaybe\b", r"\bi\s+don'?t\s+know\b",
+    r"\buncertain\b", r"\bconfused\b", r"\bdon'?t\s+understand\b",
+    r"\bnot\s+clear\b", r"\bnot\s+sure\s+(how|what|where|why)\b",
+    r"\bnot\s+certain\b", r"\bperhaps\b",
+]
 
 _CONTRADICTION_PATTERNS = [
     r"\bbut\b.*\b(don'?t|not|hate|resist|can'?t)\b",
     r"\bwant\b.*\bbut\b", r"\band\s+yet\b", r"\bat\s+the\s+same\s+time\b",
+    r"\bcontradicts\b", r"\bcontradiction\b",
+    r"\bboth\b.*\btrue\b", r"\bopposite\b.*\btrue\b",
 ]
+
+# Technical vocabulary — raises complexity score
+_TECHNICAL_SIGNALS = [
+    r"\bengine\b", r"\barchitecture\b", r"\bpipeline\b", r"\bkernel\b",
+    r"\bmodule\b", r"\binterface\b", r"\bimplementation\b", r"\brefactor\b",
+    r"\bclass\b", r"\bfunction\b", r"\bapi\b", r"\bdataclass\b",
+    r"\bstate\s+machine\b", r"\bdependency\b",
+]
+
+_ENTITY_NAMES = ["eLo", "Chunk", "K-7", "Core", "Sugarcore"]
+
+_STOPWORDS = {
+    "the", "a", "an", "is", "it", "in", "on", "at", "to", "of",
+    "and", "or", "but", "i", "my", "me", "this", "that", "for",
+    "with", "be", "so", "do", "not", "was", "are", "have",
+}
+
+
+def _count_signals(*signal_lists) -> int:
+    """Count how many distinct signal lists match (not how many patterns match)."""
+    return sum(1 for signals in signal_lists if signals)
 
 
 def _classify(user_input: str) -> dict:
     """
-    Layer 1 — classify what this input IS.
-
-    Returns a flat dict every subsequent layer can read.
-    No decisions here — only observation.
+    Layer 1 — internal classification dict used by the routing pipeline.
+    Returns boolean flags; consumed by _route() and _generate().
     """
     text  = user_input.lower()
     words = user_input.split()
 
     is_factual       = any(re.search(p, text) for p in _FACTUAL_SIGNALS)
+    is_project       = any(re.search(p, text) for p in _PROJECT_SIGNALS)
     is_emotional     = any(re.search(p, text) for p in _EMOTIONAL_SIGNALS)
     is_distorted     = any(re.search(p, text) for p in _DISTORTED_SIGNALS)
     is_creative      = any(re.search(p, text) for p in _CREATIVE_SIGNALS)
+    is_uncertainty   = any(re.search(p, text) for p in _UNCERTAINTY_SIGNALS)
     is_contradiction = any(re.search(p, text) for p in _CONTRADICTION_PATTERNS)
-    is_simple        = len(words) <= 5 and not is_factual and not is_creative
+    is_simple        = len(words) <= 5 and not is_factual and not is_creative and not is_project
     entities         = [e for e in _ENTITY_NAMES
                         if re.search(r"\b" + re.escape(e.lower()) + r"\b", text)]
 
     return {
         "is_factual":       is_factual,
+        "is_project":       is_project,
         "is_emotional":     is_emotional,
         "is_distorted":     is_distorted,
         "is_creative":      is_creative,
+        "is_uncertainty":   is_uncertainty,
         "is_contradiction": is_contradiction,
         "is_simple":        is_simple,
         "entities":         entities,
@@ -116,23 +171,184 @@ def _classify(user_input: str) -> dict:
     }
 
 
+# ── Types and complexity values ────────────────────────────────────────────────
+
+INPUT_TYPES = (
+    "INFORMATION_REQUEST",
+    "PROJECT_QUERY",
+    "EMOTIONAL",
+    "CREATIVE",
+    "UNCERTAINTY",
+    "CONVERSATION",
+)
+
+COMPLEXITY_LEVELS = ("LOW", "MEDIUM", "HIGH")
+
+
+def _resolve_type(flags: dict) -> str:
+    """
+    Map boolean flags to one of the six canonical input types.
+
+    Priority (first match wins):
+        1. INFORMATION_REQUEST — factual "what is / who is / how does" questions
+        2. PROJECT_QUERY       — project-specific, system, architecture references
+        3. EMOTIONAL           — personal state expression (tired, lost, feeling)
+        4. CREATIVE            — imagination, world-building, "what if"
+        5. UNCERTAINTY         — not sure, confused, unclear direction
+        6. CONVERSATION        — default for everything else
+    """
+    if flags["is_factual"]:
+        return "INFORMATION_REQUEST"
+    if flags["is_project"]:
+        return "PROJECT_QUERY"
+    if flags["is_emotional"] or flags["is_distorted"]:
+        return "EMOTIONAL"
+    if flags["is_creative"] or (flags["entities"] and not flags["is_factual"]):
+        return "CREATIVE"
+    if flags["is_uncertainty"]:
+        return "UNCERTAINTY"
+    return "CONVERSATION"
+
+
+def _resolve_complexity(flags: dict, input_type: str) -> str:
+    """
+    Determine complexity from structural signals in the input.
+
+    LOW:
+        - ≤ 5 words with no strong signals (simple / grounded)
+        - Factual question ≤ 8 words with a single signal (short lookup)
+        - UNCERTAINTY type ≤ 10 words (expressions of not-knowing are inherently simple)
+
+    HIGH:
+        - ≥ 15 words
+        - OR contradiction detected
+        - OR 3+ distinct signal types match
+        - OR technical vocabulary present
+        - OR entities + creative framing AND word count ≥ 10
+
+    MEDIUM:
+        - everything else
+    """
+    word_count       = flags["word_count"]
+    text             = flags.get("_text", "")
+    signal_count     = _count_signals(
+        flags["is_factual"],   flags["is_project"],
+        flags["is_emotional"], flags["is_creative"],
+        flags["is_uncertainty"],
+    )
+    has_technical       = any(re.search(p, text) for p in _TECHNICAL_SIGNALS)
+    has_entity_creative = bool(flags["entities"]) and flags["is_creative"] and word_count >= 10
+    has_contradiction   = flags["is_contradiction"]
+
+    # LOW — short, single-concept inputs
+    if flags["is_simple"] and word_count <= 5:
+        return "LOW"
+    if input_type == "INFORMATION_REQUEST" and word_count <= 7:
+        return "LOW"
+    if input_type == "UNCERTAINTY" and word_count <= 10 and not has_technical:
+        return "LOW"
+
+    # HIGH — complex, multi-signal, long, or technical
+    if (
+        word_count >= 15
+        or has_contradiction
+        or signal_count >= 3
+        or has_technical
+        or has_entity_creative
+    ):
+        return "HIGH"
+
+    return "MEDIUM"
+
+
+def classify_input(user_input: str) -> dict:
+    """
+    Public classifier — deterministic, rule-based, no external dependencies.
+
+    Returns:
+        {
+            "type":       INFORMATION_REQUEST | PROJECT_QUERY | EMOTIONAL
+                          | CREATIVE | UNCERTAINTY | CONVERSATION,
+            "complexity": LOW | MEDIUM | HIGH
+        }
+
+    Rules:
+        - No LLM calls
+        - No memory access
+        - No state access
+        - Same input always returns same output
+        - O(n) in pattern count × input length
+
+    Examples:
+        "what does Chunk mean?"          → {type: INFORMATION_REQUEST, complexity: LOW}
+        "let's refactor the kernel"      → {type: PROJECT_QUERY,       complexity: MEDIUM}
+        "I am exhausted"                 → {type: EMOTIONAL,           complexity: LOW}
+        "what if Sugarcore became a place" → {type: CREATIVE,          complexity: MEDIUM}
+        "I'm not sure where to start"    → {type: UNCERTAINTY,         complexity: LOW}
+        "hello"                          → {type: CONVERSATION,        complexity: LOW}
+        "I want structure but no rules"  → {type: CONVERSATION,        complexity: HIGH}
+    """
+    flags         = _classify(user_input)
+    flags["_text"] = user_input.lower()   # pass raw text for technical signal check
+    input_type    = _resolve_type(flags)
+    complexity    = _resolve_complexity(flags, input_type)
+
+    return {
+        "type":       input_type,
+        "complexity": complexity,
+    }
+
+
 # ── layer 2: context assembler ────────────────────────────────────────────────
 
-def _assemble(context: dict) -> dict:
+def assemble_context(raw_context: dict) -> dict:
     """
-    Layer 2 — flatten all incoming signals into a clean decision context.
+    Layer 2 — build a clean, informational context dict for the router.
 
-    Reads the context dict produced by core_engine (memory + state + identity).
-    Emotion and state are INPUTS here, not decisions.
+    Gathers memory summary, current state, identity profile, and active projects.
+
+    Rules:
+        - Memory signals are INFORMATIONAL only — they do NOT influence routing
+        - State is INFORMATIONAL only — it does NOT override routing decisions
+        - This dict is read-only from the router's perspective
+        - No decisions are made here — only observations are collected
+
+    Args:
+        raw_context: The flat dict assembled by core_engine (memory + state + identity).
+
+    Returns:
+        Clean context dict with explicit, named fields.
     """
-    memory_tone   = context.get("tone_signal",          "neutral")
-    state         = context.get("state",                "exploring")
-    identity_bias = context.get("identity_bias",        "")
-    identity_intent = context.get("identity_intent",    "")
-    returning     = context.get("returning_theme",      "")
-    mode          = context.get("mode",                 "companion")
+    # ── memory summary (lightweight — no raw records, no blocks) ──
+    memory_summary = {
+        "tone":            raw_context.get("tone_signal",        "neutral"),
+        "returning_theme": raw_context.get("returning_theme",    ""),
+        "symbolic_echo":   raw_context.get("symbolic_echo",      ""),
+        "project":         raw_context.get("project_momentum",   "elo_core"),
+    }
 
-    # loop detection: is the system stuck in a repetitive pattern?
+    # ── current state (from state_engine — informational only) ──
+    state_summary = {
+        "name":             raw_context.get("state",              "exploring"),
+        "imagination_level":raw_context.get("imagination_level",  "medium"),
+        "response_length":  raw_context.get("response_length",    "medium"),
+    }
+
+    # ── identity profile (from identity_engine — informational only) ──
+    identity_summary = {
+        "intent":      raw_context.get("identity_intent",     ""),
+        "perspective": raw_context.get("identity_perspective",""),
+        "bias":        raw_context.get("identity_bias",       ""),
+        "values":      raw_context.get("identity_values",     []),
+    }
+
+    # ── active projects (from project registry) ──
+    active_projects = {
+        "current": raw_context.get("project_momentum", "elo_core"),
+        "pairs":   raw_context.get("concept_pairs",    {}),
+    }
+
+    # ── loop detection (session-scoped, instance-level) ──
     recent_modes = list(_loop_state["recent_modes"])
     loop_detected = (
         len(recent_modes) >= _LOOP_TRIGGER
@@ -141,76 +357,98 @@ def _assemble(context: dict) -> dict:
     )
 
     return {
-        "memory_tone":      memory_tone,
-        "state":            state,
-        "identity_bias":    identity_bias,
-        "identity_intent":  identity_intent,
-        "returning_theme":  returning,
-        "mode":             mode,
-        "loop_detected":    loop_detected,
-        "project":          context.get("project_momentum", "elo_core"),
-        "concept_pairs":    context.get("concept_pairs",    {}),
-        "symbolic_echo":    context.get("symbolic_echo",    ""),
+        "memory":          memory_summary,
+        "state":           state_summary,
+        "identity":        identity_summary,
+        "projects":        active_projects,
+        "loop_detected":   loop_detected,
+        # flat aliases for backward compat with _route / _generate
+        "memory_tone":     memory_summary["tone"],
+        "returning_theme": memory_summary["returning_theme"],
+        "symbolic_echo":   memory_summary["symbolic_echo"],
+        "project":         memory_summary["project"],
+        "concept_pairs":   active_projects["pairs"],
+        "mode":            raw_context.get("mode", "companion"),
     }
+
+
+# keep internal alias for pipeline compatibility
+def _assemble(context: dict) -> dict:
+    return assemble_context(context)
 
 
 # ── layer 3: response router ──────────────────────────────────────────────────
 
+# Mode vocabulary
+MODES = (
+    "DIRECT",           # factual question, loop detected
+    "STRUCTURED",       # project query — organised, step-oriented
+    "GENTLE_GROUNDED",  # emotional / distorted / resting
+    "CREATIVE",         # imagination, world-building, entity
+    "SIMPLIFY",         # short / simple / no signals
+    "CONVERSATIONAL",   # default eLo voice
+)
+
+
+def route(classification: dict, context: dict) -> str:
+    """
+    Layer 3 — THE only decision-maker for response mode.
+
+    Maps input type + context observations to one of 6 strict modes.
+
+    Rules:
+        - ONLY this function decides mode
+        - Emotion does NOT override routing
+        - State does NOT override routing
+        - Memory does NOT override routing
+        - Loop detection IS allowed to override (structural safety, not personality)
+        - No exceptions
+
+    Input type → default mode mapping:
+        INFORMATION_REQUEST → DIRECT
+        PROJECT_QUERY       → STRUCTURED
+        EMOTIONAL           → GENTLE_GROUNDED
+        CREATIVE            → CREATIVE
+        UNCERTAINTY         → SIMPLIFY
+        CONVERSATION        → CONVERSATIONAL
+
+    Override conditions (checked first):
+        1. Loop detected    → DIRECT (break repetition)
+        2. Distortion       → GENTLE_GROUNDED (regardless of type)
+    """
+    input_type  = classification.get("type",         "CONVERSATION")
+    is_distorted = classification.get("is_distorted", False)
+    loop_detected = context.get("loop_detected",      False)
+
+    # override 1: loop — break repetition with direct answer
+    if loop_detected:
+        return "DIRECT"
+
+    # override 2: genuine distortion from current input — always ground first
+    if is_distorted:
+        return "GENTLE_GROUNDED"
+
+    # direct type → mode map — no exceptions
+    _TYPE_TO_MODE = {
+        "INFORMATION_REQUEST": "DIRECT",
+        "PROJECT_QUERY":       "STRUCTURED",
+        "EMOTIONAL":           "GENTLE_GROUNDED",
+        "CREATIVE":            "CREATIVE",
+        "UNCERTAINTY":         "SIMPLIFY",
+        "CONVERSATION":        "CONVERSATIONAL",
+    }
+
+    return _TYPE_TO_MODE.get(input_type, "CONVERSATIONAL")
+
+
+# keep internal alias for pipeline compatibility
 def _route(classification: dict, assembled: dict) -> str:
-    """
-    Layer 3 — THE critical decision. Maps observation to one of 5 modes.
-
-    Emotion and state are CONTEXT here, not controllers.
-    The router owns the final routing decision.
-
-    Priority (top = highest):
-        1. Loop detected                 → DIRECT (break the pattern)
-        2. Factual question              → DIRECT (answer first)
-        3. Contradiction                 → CONVERSATIONAL (hold tension — not CREATIVE)
-        4. Genuine distortion signals    → GENTLE_GROUNDED (Sugarcore is earned)
-        5. Emotional expression (gentle) → GENTLE_GROUNDED
-        6. Creative / imagination        → CREATIVE
-        7. Universe entity (symbolic)    → CREATIVE
-        8. Simple / short / grounded     → SIMPLIFY
-        9. Default                       → CONVERSATIONAL
-    """
-    c = classification
-    a = assembled
-
-    # 1 — loop detected: break the pattern
-    if a["loop_detected"]:
-        return "DIRECT"
-
-    # 2 — factual information request: answer directly
-    if c["is_factual"]:
-        return "DIRECT"
-
-    # 3 — contradiction: conversational hold (not CREATIVE — stay grounded in the tension)
-    if c["is_contradiction"]:
-        return "CONVERSATIONAL"
-
-    # 4 — genuine distortion (earned from current input, not from memory)
-    if c["is_distorted"]:
-        return "GENTLE_GROUNDED"
-
-    # 5 — emotional expression (gentle) or resting state
-    if c["is_emotional"] or a["state"] == "resting":
-        return "GENTLE_GROUNDED"
-
-    # 6 — creative / imagination
-    if c["is_creative"]:
-        return "CREATIVE"
-
-    # 7 — universe entity mentioned symbolically (not factual — already handled at 2)
-    if c["entities"] and not c["is_factual"]:
-        return "CREATIVE"
-
-    # 8 — simple / short / no signals
-    if c["is_simple"]:
-        return "SIMPLIFY"
-
-    # 9 — default
-    return "CONVERSATIONAL"
+    # internal flags → public classification dict bridge
+    pub_classification = {
+        "type":         _resolve_type(classification),
+        "is_distorted": classification.get("is_distorted", False),
+    }
+    return route(pub_classification, assembled)
 
 
 # ── layer 4: generation layer ─────────────────────────────────────────────────
