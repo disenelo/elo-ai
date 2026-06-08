@@ -1,21 +1,17 @@
 """
-core/core_engine.py — eLo AI session orchestrator.
+core/core_engine.py — eLo AI context builder + session orchestrator.
 
-Manages session state and I/O. Passes all inputs to the kernel.
+3-layer architecture:
 
-Responsibilities:
-    - StateEngine (session-scoped machine — tracks conversation state)
-    - memory_engine calls (file I/O — retrieves and stores interactions)
-    - OrbEngine (hardware/simulation output)
-    - Active mode for the session (/mode commands)
+    Layer 1 — Context Builder  (this file: prepare_context)
+    Layer 2 — Kernel           (kernel.py: decide_response)
+    Layer 3 — Engines          (passive providers: emotion, identity, state, memory)
 
-What it does NOT do:
-    - Call emotion_engine  (kernel owns this)
-    - Call identity_engine (kernel owns this)
-    - Make routing decisions (kernel owns this)
-
-Flow per turn:
-    update state → build memory → pass to kernel → store result
+Rules:
+    - prepare_context() is the ONLY place engine calls happen
+    - turn() calls prepare_context(), then passes the bus to the kernel
+    - kernel.decide_response() receives raw_context only — calls nothing
+    - no engine output is mutable after prepare_context() returns
 """
 
 import json
@@ -23,15 +19,16 @@ import os
 import re
 
 from core.kernel      import decide_response, reset_session, set_debug
-from core.state_bus   import StateBus, IdentitySnapshot, StateSnapshot, EmotionSnapshot, MemorySnapshot
+from core.state_bus   import (StateBus, IdentitySnapshot, StateSnapshot,
+                               EmotionSnapshot, MemorySnapshot)
 from core.memory_engine import (
     load_registry,
     resolve_project,
     build_memory_influence,
     store_interaction,
 )
-from core.state_engine   import StateEngine
-from core.emotion_engine import get_tone_modifier
+from core.state_engine    import StateEngine
+from core.emotion_engine  import get_tone_modifier
 from core.identity_engine import decide as identity_decide
 from plugins.hardware.orb_engine import OrbEngine
 
@@ -100,8 +97,18 @@ def detect_mode(text: str) -> str:
 
 class CoreEngine:
     """
-    Session runtime. Manages state, memory I/O, and orb.
-    Delegates all response decisions to the kernel.
+    Layer 1 — Context Builder + session manager.
+
+    Responsibilities:
+        - StateEngine (session-scoped — persists across turns)
+        - OrbEngine (hardware output)
+        - prepare_context() — calls all engines, builds StateBus
+        - turn() — orchestrates context → kernel → store
+
+    Does NOT:
+        - Make routing decisions (kernel does)
+        - Call emotion or identity engines outside prepare_context()
+        - Mutate engine outputs after they are produced
     """
 
     def __init__(self, orb: OrbEngine = None):
@@ -123,35 +130,33 @@ class CoreEngine:
             self.state_engine.force_state(mode)
             print(f"  [mode: {mode}]")
 
-    def turn(self, user_input: str, debug: bool = False) -> str:
+    def prepare_context(self, user_input: str) -> StateBus:
         """
-        Process one user turn.
+        Layer 1 — Context Builder.
 
-        core_engine's job here:
-            1. Update state machine (session-scoped)
-            2. Build memory influence (file I/O)
-            3. Assemble a clean context dict
-            4. Call kernel.decide_response() — all decisions happen there
-            5. Store the interaction
+        Calls all four engines and assembles one immutable StateBus.
+        This is the ONLY place engine calls happen in the system.
+        After this method returns, no engine output may be modified.
+
+        Engine call order (session-scoped before stateless):
+            1. state_engine.update()      — must run first; depends on history
+            2. memory_engine.build()      — file I/O; tags project from state
+            3. emotion_engine.get()       — stateless; pure function of input
+            4. identity_engine.decide()   — stateless; reads state + memory
 
         Returns:
-            eLo's response string.
+            StateBus — immutable raw_context. user_input is included.
         """
-        self.orb.listen()
-
-        # resolve project from input
         project = resolve_project(user_input, self._registry)
 
-        # 1 — state (session machine — tracked across turns)
-        current_state, transitioned = self.state_engine.update(user_input)
-        state_snap = StateSnapshot.from_dict(self.state_engine.get_style_influence())
+        # session-scoped engines first (order matters)
+        current_state, _ = self.state_engine.update(user_input)
+        state_snap        = StateSnapshot.from_dict(self.state_engine.get_style_influence())
 
-        # 2 — memory (file I/O — builds influence signals from stored interactions)
-        self.orb.think()
-        memory_dict  = build_memory_influence(user_input, project_hint=project)
-        memory_snap  = MemorySnapshot(memory_dict)
+        memory_dict = build_memory_influence(user_input, project_hint=project)
+        memory_snap = MemorySnapshot(memory_dict)
 
-        # 3 — stateless engines (each returns one snapshot, no shared state)
+        # stateless engines — pure functions with no shared mutable state
         emotion_snap  = EmotionSnapshot.from_dict(get_tone_modifier(user_input))
         identity_snap = IdentitySnapshot.from_dict(
             identity_decide(
@@ -162,43 +167,56 @@ class CoreEngine:
             )
         )
 
-        # 4 — assemble immutable StateBus
-        # All mutation stops here. Snapshots are frozen. Bus is read-only.
-        bus = StateBus(
-            identity = identity_snap,
-            state    = state_snap,
-            emotion  = emotion_snap,
-            memory   = memory_snap,
-            mode     = self._active_mode,
-            project  = project,
+        # assemble — all mutation ends here
+        return StateBus(
+            user_input = user_input,
+            identity   = identity_snap,
+            state      = state_snap,
+            emotion    = emotion_snap,
+            memory     = memory_snap,
+            mode       = self._active_mode,
+            project    = project,
         )
 
-        # 5 — kernel: single decision pipeline (reads from bus.to_context() only)
+    def turn(self, user_input: str, debug: bool = False) -> str:
+        """
+        Full turn: Layer 1 → Layer 2 → store.
+
+            prepare_context()  — builds immutable raw_context (all engine calls here)
+            decide_response()  — kernel receives raw_context, makes all decisions
+            store_interaction  — persists the exchange
+        """
+        self.orb.listen()
+
+        # Layer 1: build raw_context — no decisions, only observations
+        raw_context = self.prepare_context(user_input)
+
+        # Layer 2: kernel — receives raw_context only, calls no engines
+        self.orb.think()
         if debug:
             set_debug(True)
-        response, meta = decide_response(user_input, bus.to_context())
+        response, meta = decide_response(raw_context)
         if debug:
             set_debug(False)
-            _print_kernel_meta(meta, current_state, transitioned)
+            _print_kernel_meta(meta, raw_context.state.name)
 
-        # 5 — store
+        # store
         self.orb.insight()
-        store_interaction(user_input, response, meta["mode"], project_tag=project)
+        store_interaction(user_input, response, meta["mode"],
+                          project_tag=raw_context.project)
         self.orb.idle()
 
         return response
 
 
-def _print_kernel_meta(meta: dict, state: str, transitioned: bool):
+def _print_kernel_meta(meta: dict, state: str):
     """Print kernel decision summary (used when debug=True)."""
     ic     = meta.get("input_class", {})
     mode   = meta.get("mode", "?")
     loop   = meta.get("loop_detected", False)
     reason = meta.get("loop_reason", "")
-    marker = " ← TRANSITION" if transitioned else ""
 
     print(f"\n  [kernel]   mode={mode}{' ← LOOP BREAK: ' + reason if loop else ''}")
-    print(f"  [classify] type={ic.get('_resolved_type', '?')} "
-          f"factual={ic.get('is_factual')} creative={ic.get('is_creative')} "
+    print(f"  [classify] factual={ic.get('is_factual')} creative={ic.get('is_creative')} "
           f"distorted={ic.get('is_distorted')} entities={ic.get('entities')}")
-    print(f"  [state]    {state}{marker}")
+    print(f"  [state]    {state}")

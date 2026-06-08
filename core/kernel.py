@@ -1027,47 +1027,46 @@ def _build_debug_block(
 
 # ── public entry point ────────────────────────────────────────────────────────
 
-def decide_response(user_input: str, context: dict = None) -> tuple:
+def decide_response(raw_context, _legacy_context: dict = None) -> tuple:
     """
-    Single entry point for all eLo response generation.
+    Layer 2 — Kernel. Single entry point for all response decisions.
 
-    Runs the 5-layer pipeline:
+    Accepts:
+        raw_context: StateBus  — primary path (immutable, produced by core_engine.prepare_context)
+        raw_context: str       — legacy path (user_input string, context in _legacy_context)
+
+    Rules:
+        - Kernel calls NO engines
+        - Kernel mutates NO state
+        - Kernel reads raw_context and returns (response, meta)
+        - All engine outputs arrive via raw_context, not via separate calls
+
+    5-layer pipeline:
         classify → assemble → route → generate → filter
-
-    Args:
-        user_input: Raw text from the user.
-        context:    Flat dict assembled by core_engine. Can be empty dict.
 
     Returns:
         (response: str, meta: dict)
 
-        When debug mode is on (set_debug(True)):
-            response has a debug block appended after the content.
-            The block starts with '──── DEBUG' and is clearly separated.
-            It does not modify the conversational response.
-
         meta keys:
-            mode              — one of 6 kernel modes
-            input_class       — full classification dict
-            loop_detected     — bool
-            loop_reason       — str
+            mode                — one of 6 kernel modes
+            input_class         — classification result dict
+            loop_detected       — bool
+            loop_reason         — str
             reflection_disabled — bool
     """
-    ctx = dict(context) if context else {}   # copy — never mutate caller's dict
+    # ── unpack raw_context ────────────────────────────────────────────────────
+    # Primary path: StateBus (from core_engine.prepare_context)
+    # Legacy path:  str + dict (from feel_test.py, tests, direct callers)
 
-    # ── passive engine calls — kernel owns all stateless engine invocations ──
-    #
-    # emotion_engine: tone/pacing/warmth modifier — no routing influence
-    # identity_engine: values/intent/perspective — no routing influence
-    # Both are pure functions; neither depends on session state.
+    from core.state_bus import StateBus as _StateBus
 
-    ctx["emotion"]  = get_tone_modifier(user_input)
-    ctx["identity"] = _identity_decide(
-        user_input = user_input,
-        state      = ctx.get("state", "exploring"),
-        memory     = ctx,
-        project    = ctx.get("project", ctx.get("project_momentum", "elo_core")),
-    )
+    if isinstance(raw_context, _StateBus):
+        user_input = raw_context.user_input
+        ctx        = raw_context.to_context()
+    else:
+        # legacy path — raw_context is actually the user_input string
+        user_input = raw_context
+        ctx        = dict(_legacy_context) if _legacy_context else {}
 
     # ── layer 1: input classifier ──
     classification = _classify(user_input)

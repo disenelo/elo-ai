@@ -160,32 +160,44 @@ class MemorySnapshot:
 
 class StateBus:
     """
-    Immutable aggregation of all engine snapshots for one conversation turn.
+    Immutable raw_context for one conversation turn.
 
-    Created once per turn by core_engine.turn().
-    Read by kernel.decide_response() via to_context() only.
-    No engine may modify the bus after creation.
+    Created by core_engine.prepare_context() — the ONLY place engine calls happen.
+    Passed directly to kernel.decide_response(raw_context).
+    Kernel reads it. Kernel does not modify it.
+
+    Fields:
+        user_input  — the raw text from the user (included so kernel needs nothing else)
+        identity    — IdentitySnapshot (frozen dataclass)
+        state       — StateSnapshot (frozen dataclass)
+        emotion     — EmotionSnapshot (frozen dataclass)
+        memory      — MemorySnapshot (MappingProxyType — read-only)
+        mode        — active conversation mode string
+        project     — active project namespace string
 
     Mutation attempt → AttributeError immediately.
     """
 
-    __slots__ = ("_identity", "_state", "_emotion", "_memory", "_mode", "_project")
+    __slots__ = ("_user_input", "_identity", "_state", "_emotion",
+                 "_memory", "_mode", "_project")
 
     def __init__(
         self,
-        identity: IdentitySnapshot,
-        state:    StateSnapshot,
-        emotion:  EmotionSnapshot,
-        memory:   MemorySnapshot,
-        mode:     str = "companion",
-        project:  str = "elo_core",
+        user_input: str,
+        identity:   IdentitySnapshot,
+        state:      StateSnapshot,
+        emotion:    EmotionSnapshot,
+        memory:     MemorySnapshot,
+        mode:       str = "companion",
+        project:    str = "elo_core",
     ):
-        object.__setattr__(self, "_identity", identity)
-        object.__setattr__(self, "_state",    state)
-        object.__setattr__(self, "_emotion",  emotion)
-        object.__setattr__(self, "_memory",   memory)
-        object.__setattr__(self, "_mode",     mode)
-        object.__setattr__(self, "_project",  project)
+        object.__setattr__(self, "_user_input", user_input)
+        object.__setattr__(self, "_identity",   identity)
+        object.__setattr__(self, "_state",      state)
+        object.__setattr__(self, "_emotion",    emotion)
+        object.__setattr__(self, "_memory",     memory)
+        object.__setattr__(self, "_mode",       mode)
+        object.__setattr__(self, "_project",    project)
 
     def __setattr__(self, name, value):
         raise AttributeError(
@@ -195,17 +207,19 @@ class StateBus:
     # ── read-only properties ──────────────────────────────────────────────────
 
     @property
-    def identity(self) -> IdentitySnapshot: return self._identity
+    def user_input(self) -> str:             return self._user_input
     @property
-    def state(self)    -> StateSnapshot:    return self._state
+    def identity(self)   -> IdentitySnapshot: return self._identity
     @property
-    def emotion(self)  -> EmotionSnapshot:  return self._emotion
+    def state(self)      -> StateSnapshot:   return self._state
     @property
-    def memory(self)   -> MemorySnapshot:   return self._memory
+    def emotion(self)    -> EmotionSnapshot: return self._emotion
     @property
-    def mode(self)     -> str:              return self._mode
+    def memory(self)     -> MemorySnapshot:  return self._memory
     @property
-    def project(self)  -> str:              return self._project
+    def mode(self)       -> str:             return self._mode
+    @property
+    def project(self)    -> str:             return self._project
 
     # ── context export ────────────────────────────────────────────────────────
 
@@ -213,8 +227,8 @@ class StateBus:
         """
         Flatten all snapshots into a context dict for kernel consumption.
 
-        This is the ONLY authorised way for kernel to receive engine data.
-        The resulting dict is a new object — mutations do not affect the bus.
+        Called once by the kernel at the start of decide_response().
+        Returns a new independent dict — mutations do not affect the bus.
         """
         ctx: dict = {}
 
@@ -227,7 +241,7 @@ class StateBus:
         # emotion delivery hints (under "emotion" key — kernel reads sub-dict)
         ctx.update(self._emotion.to_dict())
 
-        # identity signals (flat keys for backward compat with kernel._assemble)
+        # identity signals (flat keys for kernel._assemble)
         ctx.update(self._identity.to_dict())
 
         # session metadata
@@ -238,7 +252,8 @@ class StateBus:
 
     def __repr__(self) -> str:
         return (
-            f"StateBus(state={self._state.name!r}, "
+            f"StateBus(input={self._user_input[:30]!r}, "
+            f"state={self._state.name!r}, "
             f"emotion={self._emotion.emotion!r}, "
             f"mode={self._mode!r}, "
             f"project={self._project!r})"
