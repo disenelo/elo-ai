@@ -617,6 +617,121 @@ def _detect_tone_signal(recent: list) -> str:
     return _TONE_CONCEPT_MAP.get(dominant_concept, "neutral")
 
 
+# ── memory drift control ──────────────────────────────────────────────────────
+#
+# Problem: a single recent distorted interaction can dominate tone_signal
+# even if 20 prior interactions show a stable neutral pattern.
+#
+# Fix: weight older consistent patterns higher than recent spikes.
+# Recent interactions get lower weight. Long-term patterns get higher weight.
+#
+# This layer is purely informational — it does NOT affect routing or mode.
+# It stabilises the tone/familiarity signals that the generation layer reads.
+
+
+def _stability_weight(age_idx: int, total: int) -> float:
+    """
+    Compute stability weight for one memory record.
+
+    age_idx = 0  → oldest record in the window → weight 1.0
+    age_idx = N-1 → newest record            → weight 0.3
+
+    Effect: a stable long-term pattern outweighs a recent spike.
+    Recent interactions still contribute — they just carry less weight.
+
+    Returns a float in [0.3, 1.0].
+    """
+    if total <= 1:
+        return 1.0
+    return round(1.0 - 0.7 * (age_idx / max(total - 1, 1)), 3)
+
+
+def _detect_tone_stable(interactions: list, window: int = 15) -> str:
+    """
+    Stability-weighted tone detection.
+
+    Unlike _detect_tone_signal() which weights all recents equally,
+    this applies the stability weight so that:
+        - a single recent distorted turn does not override a stable long-term neutral
+        - a consistent long-term pattern resists short-term emotional spikes
+        - the returned tone reflects the weighted history, not just the last 8 turns
+
+    Does NOT change retrieval logic or concept detection.
+    Only changes HOW the concepts are weighted before picking the dominant tone.
+    """
+    recent = interactions[-window:] if len(interactions) >= window else interactions
+    n = len(recent)
+
+    if not recent:
+        return "neutral"
+
+    weighted: dict = {}
+    for age_idx, record in enumerate(recent):
+        # age_idx 0 = oldest = high weight, age_idx n-1 = newest = low weight
+        w = _stability_weight(age_idx, n)
+        for concept in record.get("concepts", []):
+            weighted[concept] = weighted.get(concept, 0.0) + w
+
+    if not weighted:
+        return "neutral"
+
+    dominant = max(weighted, key=lambda c: weighted[c])
+    return _TONE_CONCEPT_MAP.get(dominant, "neutral")
+
+
+def _compute_pattern_confidence(interactions: list, window: int = 12) -> float:
+    """
+    Estimate how stable the memory pattern is (0.0 = unstable, 1.0 = very stable).
+
+    Confidence is the consistency of the dominant concept across the window:
+        high confidence → long-term consistent pattern (memory signals are reliable)
+        low confidence  → recent divergence or insufficient history
+
+    Used to expose pattern reliability — does not affect any decision.
+    """
+    if len(interactions) < 3:
+        return 0.3   # insufficient data → low confidence
+
+    recent = interactions[-window:] if len(interactions) >= window else interactions
+    turn_dominants = []
+    for record in recent:
+        concepts = record.get("concepts", [])
+        if concepts:
+            turn_dominants.append(concepts[0])
+
+    if not turn_dominants:
+        return 0.3
+
+    overall_dominant = Counter(turn_dominants).most_common(1)[0][0]
+    consistency = turn_dominants.count(overall_dominant) / len(turn_dominants)
+    return round(min(1.0, consistency), 2)
+
+
+def _detect_tone_drift(interactions: list) -> bool:
+    """
+    Detect whether recent tone signal has drifted from long-term baseline.
+
+    Returns True if the last 3 turns show a different dominant concept from
+    the older half of history — indicating a temporary spike, not a real shift.
+
+    Useful for suppressing spurious "distorted" tone signals from a single bad turn.
+    """
+    if len(interactions) < 6:
+        return False
+
+    midpoint   = len(interactions) // 2
+    long_term  = interactions[:midpoint]
+    recent_3   = interactions[-3:]
+
+    lt_concepts = Counter(c for r in long_term for c in r.get("concepts", []))
+    rc_concepts = Counter(c for r in recent_3  for c in r.get("concepts", []))
+
+    lt_dom = lt_concepts.most_common(1)[0][0] if lt_concepts else None
+    rc_dom = rc_concepts.most_common(1)[0][0] if rc_concepts else None
+
+    return (lt_dom is not None and rc_dom is not None and lt_dom != rc_dom)
+
+
 def _detect_returning_theme(recent: list, query_concepts: list) -> str:
     """
     Return a human-readable phrase if the user keeps returning to the same concept ground.
@@ -937,8 +1052,11 @@ def build_memory_influence(query: str, project_hint: str = "elo_core") -> dict:
 
     q_concepts = _detect_concepts(query)
 
-    # tone
-    tone_signal = _detect_tone_signal(recent8)
+    # tone — use stability-weighted version so long-term patterns resist short-term spikes
+    # _detect_tone_signal (raw recent) kept for comparison; stable version is authoritative
+    tone_signal     = _detect_tone_stable(interactions)
+    tone_confidence = _compute_pattern_confidence(interactions)
+    tone_drift      = _detect_tone_drift(interactions)
 
     # dominant mode
     mode_counts  = Counter(r.get("mode", "companion") for r in recent10)
@@ -984,7 +1102,8 @@ def build_memory_influence(query: str, project_hint: str = "elo_core") -> dict:
     raw_blocks = retrieve_structured(query, project_hint)
 
     return {
-        # existing signals (backward compat — behavior_engine reads these)
+        # existing signals (backward compat — behavior_engine / kernel reads these)
+        # tone_signal is now stability-weighted: long-term patterns resist short-term spikes
         "tone_signal":        tone_signal,
         "dominant_mode":      dominant_mode,
         "recurring_concepts": recurring_concepts,
@@ -994,6 +1113,11 @@ def build_memory_influence(query: str, project_hint: str = "elo_core") -> dict:
         "project_momentum":   project_momentum,
         "symbolic_echo":      symbolic_echo,
         "raw_blocks":         raw_blocks,
+
+        # memory drift control signals (informational — do NOT affect routing/mode)
+        # these may influence: tone, familiarity, contextual relevance ONLY
+        "tone_confidence":    tone_confidence,  # 0.0-1.0: how stable the tone pattern is
+        "tone_drift":         tone_drift,       # True if recent tone diverges from long-term baseline
 
         # five typed memory categories
         "memory_categories": {
