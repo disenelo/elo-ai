@@ -31,25 +31,89 @@ Rules this kernel enforces:
 import re
 from collections import deque
 
-# stateless engines — imported here so kernel owns all passive engine calls
-from core.emotion_engine  import get_tone_modifier
-from core.identity_engine import decide as _identity_decide
+# kernel reads assembled context only — engines are called by core_engine
+# (emotion_engine and identity_engine were moved back to core_engine in Step 11)
 
 
-# ── session loop state ────────────────────────────────────────────────────────
-# Module-level — one session's worth of history.
-# Call reset_session() at the start of each conversation.
+# ── loop detection state ──────────────────────────────────────────────────────
+# All mutable per-session state is encapsulated in LoopDetector.
+# The module-level _detector is the default instance used by the public API.
+# Tests that need isolation can call reset_session() to reinitialise it.
 
-_LOOP_WINDOW  = 4    # turns to track
-_LOOP_TRIGGER = 3    # consecutive same-mode turns before forcing DIRECT
+_LOOP_WINDOW  = 4
+_LOOP_TRIGGER = 3
 
-_loop_state = {
-    "recent_modes":              deque(maxlen=_LOOP_WINDOW),
-    "recent_questions":          deque(maxlen=4),
-    "last_opening":              "",
-    "recent_fragments":          deque(maxlen=4),  # first-sentence of each response
-    "reflection_disabled_turns": 0,                # countdown: >0 = reflection disabled
-}
+
+class LoopDetector:
+    """
+    Encapsulates all per-session loop detection state.
+
+    Replaces the bare module-level _loop_state dict so that:
+    - all mutations are through explicit methods
+    - state cannot be accidentally written from outside
+    - tests can create isolated instances
+    """
+
+    def __init__(self):
+        self._modes       = deque(maxlen=_LOOP_WINDOW)
+        self._questions   = deque(maxlen=4)
+        self._fragments   = deque(maxlen=4)
+        self._last_opening         = ""
+        self._reflection_disabled  = 0
+
+    # ── write methods (explicit mutation, no implicit side effects) ───────────
+
+    def record_mode(self, mode: str):
+        self._modes.append(mode)
+
+    def record_question(self, question: str):
+        self._questions.append(question)
+
+    def record_fragment(self, fragment: str):
+        self._fragments.append(fragment)
+
+    def set_last_opening(self, opening: str):
+        self._last_opening = opening
+
+    def arm_reflection_cooldown(self, turns: int = 1):
+        self._reflection_disabled = turns
+
+    def decrement_cooldown(self):
+        if self._reflection_disabled > 0:
+            self._reflection_disabled -= 1
+
+    # ── read methods ──────────────────────────────────────────────────────────
+
+    @property
+    def recent_modes(self) -> list:        return list(self._modes)
+    @property
+    def recent_questions(self) -> list:    return list(self._questions)
+    @property
+    def recent_fragments(self) -> list:    return list(self._fragments)
+    @property
+    def last_opening(self) -> str:         return self._last_opening
+    @property
+    def reflection_disabled(self) -> bool: return self._reflection_disabled > 0
+    @property
+    def reflection_turns_left(self) -> int: return self._reflection_disabled
+
+    def question_was_recent(self, question: str) -> bool:
+        return question in self._questions
+
+    def clear(self):
+        self._modes.clear()
+        self._questions.clear()
+        self._fragments.clear()
+        self._last_opening        = ""
+        self._reflection_disabled = 0
+
+
+# module-level default instance — used by all public API functions
+_detector = LoopDetector()
+
+# backward compat alias — code that reads _loop_state["..."] will need updating
+# but nothing outside this file should be doing that
+_loop_state = None   # intentionally None to surface any remaining direct reads
 
 # ── reflective question fingerprints ──────────────────────────────────────────
 # These fragments identify responses that are pure reflective questions.
@@ -71,11 +135,9 @@ _REFLECTIVE_FINGERPRINTS = [
 
 def reset_session():
     """Clear all loop detection state. Call at the start of each session."""
-    _loop_state["recent_modes"].clear()
-    _loop_state["recent_questions"].clear()
-    _loop_state["recent_fragments"].clear()
-    _loop_state["last_opening"] = ""
-    _loop_state["reflection_disabled_turns"] = 0
+    _detector.clear()
+
+
 
 
 def _extract_fragment(response: str) -> str:
@@ -105,19 +167,18 @@ def record_response(response: str):
     Also decrements the reflection_disabled_turns countdown.
     """
     fragment = _extract_fragment(response)
-    _loop_state["recent_fragments"].append(fragment)
+    _detector.record_fragment(fragment)
 
     # extract and record any closing question
     sentences = re.split(r"[.!?]", response)
     for s in reversed(sentences):
         s = s.strip()
         if s.endswith("?") or re.search(r"\bwhat\b|\bwhere\b|\bhow\b|\bwhy\b", s.lower()):
-            _loop_state["recent_questions"].append(_normalized_question(s))
+            _detector.record_question(_normalized_question(s))
             break
 
     # decrement reflection cooldown
-    if _loop_state["reflection_disabled_turns"] > 0:
-        _loop_state["reflection_disabled_turns"] -= 1
+    _detector.decrement_cooldown()
 
 
 def detect_loop() -> dict:
@@ -150,10 +211,10 @@ def detect_loop() -> dict:
             "reflection_disabled": bool,  # True if disabled countdown > 0
         }
     """
-    fragments  = list(_loop_state["recent_fragments"])
-    questions  = list(_loop_state["recent_questions"])
-    modes      = list(_loop_state["recent_modes"])
-    refl_off   = _loop_state["reflection_disabled_turns"] > 0
+    fragments  = _detector.recent_fragments
+    questions  = _detector.recent_questions
+    modes      = _detector.recent_modes
+    refl_off   = _detector.reflection_disabled
 
     reason = ""
 
@@ -185,7 +246,7 @@ def detect_loop() -> dict:
 
     # when loop is detected, arm the reflection cooldown for next turn
     if detected and not refl_off:
-        _loop_state["reflection_disabled_turns"] = 1
+        _detector.arm_reflection_cooldown(1)
 
     return {
         "detected":            detected,
@@ -790,17 +851,16 @@ def _pick_question(mode: str, user_input: str) -> str:
     if not pool:
         return ""
 
-    recent = list(_loop_state["recent_questions"])
-    seed   = len(user_input)
+    seed = len(user_input)
 
     for i in range(len(pool)):
         candidate = pool[(seed + i) % len(pool)]
-        if candidate not in recent:
-            _loop_state["recent_questions"].append(candidate)
+        if not _detector.question_was_recent(candidate):
+            _detector.record_question(candidate)
             return candidate
 
-    # all options exhausted — return seed choice anyway, reset history
-    _loop_state["recent_questions"].clear()
+    # all options exhausted — reset and return seed choice
+    _detector._questions.clear()
     return pool[seed % len(pool)]
 
 
@@ -895,29 +955,27 @@ def _filter(response: str, mode: str) -> str:
     - Strips reflective question if reflection is disabled this turn
     """
     # record mode for mode-stagnation detection
-    _loop_state["recent_modes"].append(mode)
+    _detector.record_mode(mode)
 
     # record response fragment + question for content-level loop detection
     record_response(response)
 
-    # strip reflective question if reflection is currently disabled
-    if _loop_state["reflection_disabled_turns"] > 1:   # >1 because record_response decremented
+    # strip reflective question if reflection cooldown is still active
+    # (record_response decremented it, so check > 0 for "still has turns left")
+    if _detector.reflection_turns_left > 0:
         sentences = response.split("\n\n")
-        cleaned = []
-        for s in sentences:
-            if s.strip().endswith("?") and _is_reflective(s.lower()):
-                continue    # drop this reflective question
-            cleaned.append(s)
+        cleaned = [s for s in sentences
+                   if not (s.strip().endswith("?") and _is_reflective(s.lower()))]
         if cleaned:
             response = "\n\n".join(cleaned)
 
     # prevent identical opening twice in a row
     first_line = response.split("\n")[0].strip()
-    if first_line and first_line == _loop_state["last_opening"]:
+    if first_line and first_line == _detector.last_opening:
         lines = response.split("\n\n")
         if len(lines) > 1:
             response = "\n\n".join(lines[1:])
-    _loop_state["last_opening"] = first_line
+    _detector.set_last_opening(first_line)
 
     return response.strip()
 

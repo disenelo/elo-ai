@@ -23,13 +23,16 @@ import os
 import re
 
 from core.kernel      import decide_response, reset_session, set_debug
+from core.state_bus   import StateBus, IdentitySnapshot, StateSnapshot, EmotionSnapshot, MemorySnapshot
 from core.memory_engine import (
     load_registry,
     resolve_project,
     build_memory_influence,
     store_interaction,
 )
-from core.state_engine import StateEngine
+from core.state_engine   import StateEngine
+from core.emotion_engine import get_tone_modifier
+from core.identity_engine import decide as identity_decide
 from plugins.hardware.orb_engine import OrbEngine
 
 
@@ -139,31 +142,41 @@ class CoreEngine:
         # resolve project from input
         project = resolve_project(user_input, self._registry)
 
-        # 1 — state update (session machine — must run before memory)
+        # 1 — state (session machine — tracked across turns)
         current_state, transitioned = self.state_engine.update(user_input)
-        state_influence = self.state_engine.get_style_influence()
+        state_snap = StateSnapshot.from_dict(self.state_engine.get_style_influence())
 
         # 2 — memory (file I/O — builds influence signals from stored interactions)
         self.orb.think()
-        memory = build_memory_influence(user_input, project_hint=project)
+        memory_dict  = build_memory_influence(user_input, project_hint=project)
+        memory_snap  = MemorySnapshot(memory_dict)
 
-        # 3 — clean context for kernel
-        # kernel receives: memory signals + state style weights + project + mode
-        # kernel handles: emotion engine + identity engine internally
-        context = {
-            **memory,
-            "state":           current_state,
-            "state_tone_bias": state_influence["tone_bias"],
-            "state_weight":    state_influence["style_weight"],
-            "state_pacing":    state_influence["pacing_bias"],
-            "project":         project,
-            "mode":            self._active_mode,
-        }
+        # 3 — stateless engines (each returns one snapshot, no shared state)
+        emotion_snap  = EmotionSnapshot.from_dict(get_tone_modifier(user_input))
+        identity_snap = IdentitySnapshot.from_dict(
+            identity_decide(
+                user_input = user_input,
+                state      = current_state,
+                memory     = memory_dict,
+                project    = project,
+            )
+        )
 
-        # 4 — kernel: single decision pipeline
+        # 4 — assemble immutable StateBus
+        # All mutation stops here. Snapshots are frozen. Bus is read-only.
+        bus = StateBus(
+            identity = identity_snap,
+            state    = state_snap,
+            emotion  = emotion_snap,
+            memory   = memory_snap,
+            mode     = self._active_mode,
+            project  = project,
+        )
+
+        # 5 — kernel: single decision pipeline (reads from bus.to_context() only)
         if debug:
             set_debug(True)
-        response, meta = decide_response(user_input, context)
+        response, meta = decide_response(user_input, bus.to_context())
         if debug:
             set_debug(False)
             _print_kernel_meta(meta, current_state, transitioned)
