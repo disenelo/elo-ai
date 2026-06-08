@@ -45,6 +45,17 @@ class PluginRegistry:
         Later registrations with the same NAME replace earlier ones.
         """
         name = plugin.NAME
+
+        # safety validation — reject plugins that violate constraints
+        if hasattr(plugin, "validate"):
+            violations = plugin.validate()
+            if violations:
+                logger.error(
+                    "Plugin %r failed safety validation — NOT registered:\n  %s",
+                    name, "\n  ".join(violations)
+                )
+                return   # refuse to register unsafe plugin
+
         self._plugins[name] = plugin
         logger.debug("Plugin registered: %s", name)
 
