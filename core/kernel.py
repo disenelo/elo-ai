@@ -284,10 +284,12 @@ _PROJECT_SIGNALS = [
 _EMOTIONAL_SIGNALS = [
     # personal emotional state — "I feel X" or "I'm [emotion]"
     r"\bi\s+feel\b",
-    r"\bi'?m\s+(tired|exhausted|scared|lost|stuck|sad|happy|confused)\b",
+    r"\bi'?m\s+(tired|exhausted|scared|lost|stuck|sad|happy|confused|overwhelmed|drained)\b",
     r"\bsomething\s+feels\b",
-    r"\bexhausted\b", r"\bdrained\b",
-    r"\bi\s+am\s+(tired|lost|stuck|scared)\b",
+    r"\bexhausted\b", r"\bdrained\b", r"\boverwhelmed\b",
+    r"\bi\s+am\s+(tired|lost|stuck|scared|exhausted|drained|burnt\s*out)\b",
+    r"\bburnt?\s*out\b",
+    r"\bno\s+energy\b", r"\bcan'?t\s+find.*energy\b",
     # "I don't know" is emotional when there's no uncertainty qualifier
     r"\bi\s+just\s+don'?t\s+know\b",
     # NOTE: "not sure" and "I don't know" alone → UNCERTAINTY (removed from here)
