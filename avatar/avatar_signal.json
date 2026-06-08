@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "source": "eLo Core",
+  "state": "exploring",
+  "emotion": "curious",
+  "intent": "show_curiosity",
+  "energy": 0.6,
+  "mode": "companion",
+  "identity": {
+    "perspective": "symbolic",
+    "intent": "expand_idea",
+    "values": [
+      "curiosity_over_certainty"
+    ],
+    "bias": "lean_imaginative"
+  },
+  "animation_hints": {
+    "head_tilt_deg": 7.2,
+    "lean_amount": 0.24,
+    "bounce_intensity": 0.12,
+    "rotation_speed": 0.06,
+    "scale_pulse": 0.06,
+    "movement_speed": 0.6
+  },
+  "orb": {
+    "intensity": 0.7,
+    "mode": "slow_pulse"
+  },
+  "project": "elo_core",
+  "posture": "lean_forward",
+  "pace": "unhurried"
+}

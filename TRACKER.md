@@ -140,6 +140,65 @@ States → behavioral profiles:
 
 ---
 
+### Phase 4A — Unity Embodiment
+
+**Goal:** Connect eLo Core to the Unity character. Same brain, first visual body.
+
+```
+Python eLo Core → avatar_signal.json → EloSignalReceiver.cs → EloAnimationMapper.cs → eLo Character
+```
+
+Communication: local JSON file — no networking, easy to debug.
+
+Signal format:
+```json
+{ "state": "reflecting", "emotion": "gentle", "energy": 0.3, "intent": "hold_space",
+  "animation_hints": {"head_tilt_deg": -2.4, "lean_amount": 0.0, "bounce_intensity": 0.0},
+  "orb": {"intensity": 0.16, "mode": "dim_breathe"} }
+```
+
+- [x] `avatar/unity_bridge.py` — Python signal exporter
+- [x] `avatar/signal_schema.json` — canonical JSON schema
+- [x] `docs/unity_connection.md` — Unity C# setup guide + EloSignalReceiver.cs + EloAnimationMapper.cs
+- [ ] Add `EloSignalReceiver.cs` to eLo-Planet Unity project
+- [ ] Add `EloAnimationMapper.cs` to eLo-Planet Unity project
+- [ ] Wire Animator parameters (Energy, HeadTilt, Lean, Bounce, state triggers)
+- [ ] Enable bridge in core_engine (`UNITY_BRIDGE_ENABLED=1`)
+- [ ] Test: Python state change → Unity character responds
+
+**Success criteria:** eLo's internal state visibly changes the Unity character's behavior.
+
+---
+
+### Phase 4B — eLo's Planet (Memory World)
+
+**Goal:** Create a persistent world for eLo. Memory becomes geography.
+
+The memory world is already built in Python (`core/visual_memory.py`). Phase 4B brings it into Unity.
+
+Architecture:
+```
+core/visual_memory.py → cluster world graph → Unity scene generator
+                                             → Islands = concept clusters
+                                             → Bridges = concept connections
+                                             → eLo walks through his own memory
+```
+
+Projects become islands. Ideas become structures. Connections become bridges.
+
+- [x] `core/visual_memory.py` — memory → spatial cluster world (terminal version)
+- [ ] Export world data to JSON (`avatar/world_signal.json`)
+- [ ] Unity WorldBuilder.cs — reads JSON, spawns island prefabs
+- [ ] Connect project namespaces to island types
+- [ ] eLo can walk between project islands
+- [ ] Memory items visible as world objects (scrolls, nodes, etc.)
+
+**Long-term vision:** eLo literally walks through your ideas inside eLo's Planet.
+
+**Success criteria:** eLo can navigate project spaces visually inside Unity.
+
+---
+
 ### Phase 4 — Desktop Avatar
 
 **Goal:** Create eLo Desktop — animated character with state-driven presence.

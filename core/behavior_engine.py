@@ -638,6 +638,11 @@ def generate_offline_response(
     response_length   = influence.get("response_length",   "medium")
     elo_voice_hint    = influence.get("elo_voice_hint",    "")
 
+    # identity engine decision (highest layer — arrived before emotion)
+    identity_bias      = influence.get("identity_bias",      "")
+    identity_intent    = influence.get("identity_intent",    "")
+    identity_perspective = influence.get("identity_perspective", "")
+
     # only surface returning_theme when the current turn touches the same concept territory
     if returning_theme:
         if not any(c in concepts for c in recurring_concepts):
@@ -651,12 +656,22 @@ def generate_offline_response(
     blended_emotion = _blend_emotion(emotion, memory_tone)
 
     # response_style from memory categories can override blended_emotion
-    # when memory has a clear behavioral directive (e.g. "go slow", "match momentum")
     if response_style:
         if "slow" in response_style or "don't rush" in response_style:
             blended_emotion = _blend_emotion(blended_emotion, "reflective")
         elif "momentum" in response_style or "energy" in response_style:
             blended_emotion = _blend_emotion(blended_emotion, "excited")
+
+    # identity bias strengthens grounding decisions when the highest layer says so
+    # "name_first" → treat input as needing Sugarcore/state naming (distorted path)
+    # "slow_down"  → pull toward reflective even if local emotion looks neutral
+    # "stay_in_tension" → force contradiction handling even without lexical markers
+    if identity_bias == "name_first" and not is_contradiction:
+        blended_emotion = _blend_emotion(blended_emotion, "distorted")
+    elif identity_bias == "slow_down":
+        blended_emotion = _blend_emotion(blended_emotion, "reflective")
+    elif identity_bias == "stay_in_tension" and not is_contradiction:
+        is_contradiction = True   # identity says hold tension even if not lexically detected
 
     # ── phase 4: creative transformation ──
     grounding = _assess_grounding(user_input, concepts, entities)
@@ -728,10 +743,13 @@ def generate_offline_response(
                 "symbolic_echo":      symbolic_echo,
                 "recurring_concepts": recurring_concepts,
                 "concept_pairs":      list(concept_pairs.keys()),
-                "response_style":     response_style,
-                "key_association":    key_association,
-                "future_idea":        future_idea,
-                "memory_hint":        memory_hint,
+                "response_style":       response_style,
+                "key_association":      key_association,
+                "future_idea":          future_idea,
+                "memory_hint":          memory_hint,
+                "identity_bias":        identity_bias,
+                "identity_intent":      identity_intent,
+                "identity_perspective": identity_perspective,
             },
             "phase_3_identity": {
                 "mode":            mode,

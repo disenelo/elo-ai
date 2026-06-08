@@ -26,7 +26,8 @@ from core.memory_engine import (
     store_interaction,
     load_long_term_memory,
 )
-from core.state_engine import StateEngine
+from core.state_engine    import StateEngine
+from core.identity_engine import decide as identity_decide, explain as identity_explain
 from plugins.hardware.orb_engine import OrbEngine
 
 
@@ -156,20 +157,33 @@ class CoreEngine:
         self.orb.think()
         memory = build_memory_influence(user_input, project_hint=project)
 
-        # inject state engine hints into memory so behavior_engine can read them
+        # ── identity decision (highest level — runs before emotion) ──
+        identity = identity_decide(
+            user_input=user_input,
+            state=current_state,
+            memory=memory,
+            project=project,
+        )
+
+        # inject all signals into memory dict for behavior_engine to read
         memory["state"]            = current_state
         memory["state_tone"]       = state_hint["tone"]
         memory["response_length"]  = state_hint["response_length"]
         memory["imagination_level"]= state_hint["imagination_level"]
         memory["project_focus"]    = state_hint["project_focus"]
         memory["elo_voice_hint"]   = state_hint["elo_voice_hint"]
+        # identity signals — response_bias is the most actionable
+        memory["identity_values"]    = identity["values"]
+        memory["identity_perspective"]= identity["perspective"]
+        memory["identity_intent"]    = identity["intent"]
+        memory["identity_bias"]      = identity["response_bias"]
 
         # generate offline response
         if debug:
             response, reasoning = generate_offline_response(
                 user_input, memory, mode, debug=True
             )
-            _print_reasoning(reasoning, current_state, transitioned, state_hint)
+            _print_reasoning(reasoning, current_state, transitioned, state_hint, identity)
         else:
             response = generate_offline_response(user_input, memory, mode)
 
@@ -181,7 +195,7 @@ class CoreEngine:
         return response
 
 
-def _print_reasoning(reasoning: dict, state: str, transitioned: bool, state_hint: dict):
+def _print_reasoning(reasoning: dict, state: str, transitioned: bool, state_hint: dict, identity: dict = None):
     """Print internal phase summary for debug mode."""
     p1 = reasoning.get("phase_1_interpretation", {})
     p2 = reasoning.get("phase_2_memory", {})
@@ -197,3 +211,8 @@ def _print_reasoning(reasoning: dict, state: str, transitioned: bool, state_hint
           f"length={state_hint['response_length']} "
           f"imagination={state_hint['imagination_level']} "
           f"focus={state_hint['project_focus']}")
+    if identity:
+        print(f"  [identity] perspective={identity['perspective']} "
+              f"intent={identity['intent']} "
+              f"bias={identity['response_bias']}")
+        print(f"             values: {', '.join(identity['values'])}")

@@ -1,0 +1,79 @@
+{
+  "_comment": "eLo Avatar Signal Schema v1.0 — Python → Unity JSON bridge format",
+  "_description": "Written by Python, read by Unity EloSignalReceiver.cs on a configurable interval.",
+
+  "version":  "1.0",
+  "source":   "eLo Core",
+
+  "state": {
+    "_type":    "string",
+    "_values":  ["exploring", "building", "focused", "reflecting", "playful", "resting"],
+    "_effect":  "primary animation state — drives state machine in Unity Animator"
+  },
+  "emotion": {
+    "_type":    "string",
+    "_values":  ["curious", "excited", "calm", "gentle", "playful", "focused", "reflective", "distorted"],
+    "_effect":  "emotional colour — modifies animation within state"
+  },
+  "intent": {
+    "_type":    "string",
+    "_values":  ["show_curiosity", "show_excitement", "hold_space", "show_focus",
+                 "show_playfulness", "show_calm", "show_concern", "show_reflection"],
+    "_effect":  "what eLo is trying to communicate through its body"
+  },
+  "energy": {
+    "_type":    "float",
+    "_range":   "0.0 to 1.0",
+    "_effect":  "scales all animation parameters — 0.0 = still, 1.0 = full expression"
+  },
+  "mode": {
+    "_type":    "string",
+    "_values":  ["studio", "companion", "adventure"],
+    "_effect":  "optional — can tint animation colour or NPC dialogue hints"
+  },
+
+  "identity": {
+    "perspective": {
+      "_type":   "string",
+      "_values": ["expansion", "symbolic", "practical", "relational", "temporal", "contradictory"]
+    },
+    "intent": {
+      "_type":   "string",
+      "_values": ["expand_idea", "name_state", "hold_space", "advance_project",
+                  "reflect_back", "surface_connection", "offer_question", "hold_contradiction"]
+    },
+    "values": {
+      "_type":   "array[string]",
+      "_note":   "top 3 active values this turn"
+    },
+    "bias": {
+      "_type":   "string",
+      "_values": ["lean_imaginative", "stay_grounded", "slow_down", "go_deeper",
+                  "stay_in_tension", "advance", "name_first"]
+    }
+  },
+
+  "animation_hints": {
+    "head_tilt_deg":    { "_type": "float", "_range": "-20 to 20",  "_note": "degrees" },
+    "lean_amount":      { "_type": "float", "_range": "-0.3 to 0.5", "_note": "forward positive" },
+    "bounce_intensity": { "_type": "float", "_range": "0.0 to 1.0" },
+    "rotation_speed":   { "_type": "float", "_range": "0.0 to 1.0" },
+    "scale_pulse":      { "_type": "float", "_range": "0.0 to 1.0" },
+    "movement_speed":   { "_type": "float", "_range": "0.0 to 1.0" }
+  },
+
+  "orb": {
+    "intensity": { "_type": "float", "_range": "0.0 to 1.0", "_note": "glow brightness" },
+    "mode": {
+      "_type":   "string",
+      "_values": ["slow_pulse", "steady", "bright_point", "dim_breathe", "colour_shift", "minimal"],
+      "_note":   "drives NeoPixel animation pattern or Unity particle system"
+    }
+  },
+
+  "project": { "_type": "string", "_note": "active project namespace" },
+  "posture":  { "_type": "string", "_values": ["lean_forward", "expand", "contract_gentle",
+                "upright_still", "light_bounce", "settle", "contract_soft", "tilt_upward"] },
+  "pace":     { "_type": "string", "_values": ["unhurried", "quick", "still", "measured",
+                "light", "slow", "very_slow"] }
+}
