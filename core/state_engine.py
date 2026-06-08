@@ -1,28 +1,34 @@
 """
-core/state_engine.py — eLo AI conversational state machine.
+core/state_engine.py — eLo AI conversational state tracker.
 
-Six states, each with a distinct behavioral profile.
-Transitions happen naturally from input signals — no AI model, no explicit commands.
+Role: observe the user's conversational state and output passive style weights.
 
-States:
-    focused     — locked in on a specific task, high precision energy
-    playful     — light, experimental, trying things without heavy commitment
-    exploring   — curious and open, following unknowns
-    building    — concrete execution, step by step, making things real
-    reflecting  — slow and spacious, processing or looking within
-    resting     — low energy, recovery, simple acknowledgment
+What state DOES:
+    - tracks how the conversation has been moving across turns
+    - outputs tone_bias, style_weight, pacing_bias to nudge delivery
+    - uses inertia + hysteresis to prevent jitter
 
-Each state produces a behavioral profile:
-    tone              — how eLo speaks
-    response_length   — "short" | "medium"
-    imagination_level — "low" | "medium" | "high"
-    project_focus     — "tight" | "loose" | "open"
+What state does NOT do:
+    - control routing (the kernel router owns that)
+    - override kernel mode decisions
+    - determine response structure
+    - select response length
+
+The three output values are style hints only.
+The generation layer may read them. The router ignores them.
+
+Six states:
+    focused     — precision, tight delivery
+    playful     — light, quick, low weight
+    exploring   — open, unhurried, high expressiveness
+    building    — grounded, measured, action-forward
+    reflecting  — soft, slow, spacious
+    resting     — minimal, quiet, low weight
 
 Transition logic:
-    Inertia: the current state gets a 1.5× score bonus — prevents jitter.
-    Hysteresis: a new state must win on 2 consecutive turns to commit — prevents
-    single-word anomalies from triggering a shift.
-    Forced transitions: resting overrides everything when overload signals appear.
+    Inertia: current state gets a 1.5× score bonus — prevents jitter.
+    Hysteresis: new state must lead for 2 consecutive turns — prevents single-word triggers.
+    Forced transition: resting fires immediately on exhaustion/burnout signals.
 """
 
 import re
@@ -69,57 +75,22 @@ _STATE_SIGNALS: dict = {
     },
 }
 
-# ── behavioral profiles ────────────────────────────────────────────────────────
+# ── state style influence ──────────────────────────────────────────────────────
+#
+# Three passive weights only. The kernel router never reads these.
+# The generation layer may use them to nudge delivery.
+#
+#   tone_bias     — quality of voice for this state
+#   style_weight  — 0.0 (tight/minimal) → 1.0 (open/expressive)
+#   pacing_bias   — timing hint: slow / measured / unhurried / quick
 
-_STATE_PROFILES: dict = {
-    "focused": {
-        "tone":              "precise and direct — no preamble, no abstraction",
-        "response_length":   "short",
-        "imagination_level": "low",
-        "project_focus":     "tight",
-        "description":       "Locked in. Specific task. Execution energy.",
-        "elo_voice_hint":    "Lead with the next concrete thing. Skip the context.",
-    },
-    "playful": {
-        "tone":              "light and experimental — follow the energy",
-        "response_length":   "short",
-        "imagination_level": "medium",
-        "project_focus":     "loose",
-        "description":       "Trying things without heavy investment. Light touch.",
-        "elo_voice_hint":    "Match the lightness. Play back. Don't be earnest when playful works.",
-    },
-    "exploring": {
-        "tone":              "curious and open — follow threads before concluding",
-        "response_length":   "medium",
-        "imagination_level": "high",
-        "project_focus":     "open",
-        "description":       "Moving through unknowns. Curiosity outrunning certainty.",
-        "elo_voice_hint":    "Expand before narrowing. Ask what this could become before naming what it is.",
-    },
-    "building": {
-        "tone":              "grounded and action-oriented — next step is foreground",
-        "response_length":   "medium",
-        "imagination_level": "low",
-        "project_focus":     "tight",
-        "description":       "Executing. Making things real. Step-by-step.",
-        "elo_voice_hint":    "Lead with the next real action. Structure is the creative act right now.",
-    },
-    "reflecting": {
-        "tone":              "slow and spacious — hold before redirecting",
-        "response_length":   "short",
-        "imagination_level": "medium",
-        "project_focus":     "loose",
-        "description":       "Processing. Looking back or within. No urgency.",
-        "elo_voice_hint":    "Slow down. Don't offer solutions before the feeling has been named.",
-    },
-    "resting": {
-        "tone":              "minimal and acknowledging — presence without push",
-        "response_length":   "short",
-        "imagination_level": "low",
-        "project_focus":     "open",
-        "description":       "Low energy. Recovery mode. Simple acknowledgment.",
-        "elo_voice_hint":    "Name the state. Don't try to move through it. Nothing needs to happen yet.",
-    },
+_STATE_STYLE: dict = {
+    "focused":   {"tone_bias": "precise",  "style_weight": 0.35, "pacing_bias": "measured"},
+    "playful":   {"tone_bias": "light",    "style_weight": 0.70, "pacing_bias": "quick"},
+    "exploring": {"tone_bias": "open",     "style_weight": 0.80, "pacing_bias": "unhurried"},
+    "building":  {"tone_bias": "grounded", "style_weight": 0.45, "pacing_bias": "measured"},
+    "reflecting":{"tone_bias": "soft",     "style_weight": 0.55, "pacing_bias": "slow"},
+    "resting":   {"tone_bias": "minimal",  "style_weight": 0.20, "pacing_bias": "slow"},
 }
 
 # ── natural transition map ─────────────────────────────────────────────────────
@@ -252,40 +223,47 @@ class StateEngine:
             "companion": "reflecting",
         }
         target = _MODE_TO_STATE.get(state, state)
-        if target in _STATE_PROFILES and target != self._state:
+        if target in _STATE_STYLE and target != self._state:
             self._commit(target)
             return True
         return False
 
-    # ── behavioral output ─────────────────────────────────────────────────────
+    # ── style influence output ─────────────────────────────────────────────────
 
     @property
     def state(self) -> str:
         return self._state
 
     def get_profile(self) -> dict:
-        """Return the full behavioral profile for the current state."""
-        return _STATE_PROFILES.get(self._state, _STATE_PROFILES["exploring"])
+        """Return the raw style dict for the current state."""
+        return _STATE_STYLE.get(self._state, _STATE_STYLE["exploring"])
+
+    def get_style_influence(self) -> dict:
+        """
+        Return passive style weights for the current state.
+
+        Delivery hints only — the kernel router ignores these.
+        The generation layer may read them to nudge tone, pacing, or expressiveness.
+
+        Returns:
+            {
+                state:        str    — current state name
+                tone_bias:    str    — voice quality (precise/light/open/grounded/soft/minimal)
+                style_weight: float  — 0.0 (tight) → 1.0 (expressive)
+                pacing_bias:  str    — delivery timing (measured/quick/unhurried/slow)
+            }
+        """
+        influence = _STATE_STYLE.get(self._state, _STATE_STYLE["exploring"])
+        return {
+            "state":        self._state,
+            "tone_bias":    influence["tone_bias"],
+            "style_weight": influence["style_weight"],
+            "pacing_bias":  influence["pacing_bias"],
+        }
 
     def get_behavioral_hint(self) -> dict:
-        """
-        Return the four behavioral values that influence response generation.
-
-        tone              — how eLo should speak
-        response_length   — "short" or "medium"
-        imagination_level — "low", "medium", or "high"
-        project_focus     — "tight", "loose", or "open"
-        elo_voice_hint    — specific instruction for the behavior engine
-        """
-        profile = self.get_profile()
-        return {
-            "state":             self._state,
-            "tone":              profile["tone"],
-            "response_length":   profile["response_length"],
-            "imagination_level": profile["imagination_level"],
-            "project_focus":     profile["project_focus"],
-            "elo_voice_hint":    profile["elo_voice_hint"],
-        }
+        """Backward-compat alias → get_style_influence()."""
+        return self.get_style_influence()
 
     def history_summary(self) -> str:
         """Human-readable summary of recent state history."""
