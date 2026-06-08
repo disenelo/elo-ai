@@ -1,20 +1,33 @@
 """
-memory_engine.py — eLo AI memory system.
+core/memory_engine.py — eLo AI memory system.
 
-Stores interactions as tagged JSON records.
-Retrieves relevant memory using weighted scoring:
-    keyword overlap + concept group match + project alignment + recency decay.
-Exports a structured snapshot to memory/export_memory.md with four analytical sections.
+Five memory categories — each shapes behaviour, not just stores data:
 
-Every interaction is tagged to a project from project_registry.json.
-Default project: elo_core.
+    Identity Memory   — who the user says they are, their stated goals
+    Project Memory    — what's being built, project trajectory and context
+    Creative Memory   — aesthetic preferences, imaginative patterns, style
+    World Memory      — eLo universe entity references, symbolic language
+    User Memory       — behavioral patterns, emotional arc, recurring states
 
-Public API (unchanged — all callers remain compatible):
+Every category produces three outputs:
+    style_hint    — how eLo should adapt its tone for this response
+    reference     — specific content to echo or acknowledge if relevant
+    association   — a conceptual connection this memory makes available
+
+A synthesis layer collapses all five into:
+    response_style   — overall tone instruction
+    key_reference    — the most important thing to surface
+    key_association  — the most important connection to make
+    future_idea      — a direction this work is pointing toward
+
+Public API:
     load_registry()
     resolve_project(text, registry)
     store_interaction(user_input, response, mode, project_tag)
     retrieve(query, top_k)
     retrieve_by_project(project_tag, top_k)
+    retrieve_structured(query, project_hint)     — legacy 4-block format
+    build_memory_influence(query, project_hint)  — full influence dict
     export_memory()
     load_long_term_memory()
     load_session()
@@ -64,6 +77,51 @@ _STOPWORDS = {
     "or", "but", "i", "my", "me", "this", "that", "for", "with", "be",
     "so", "do", "not", "what", "how", "why", "was", "are", "have",
 }
+
+
+# ── memory category signals ────────────────────────────────────────────────────
+# Used at write time to tag each interaction with its memory categories.
+# An interaction can belong to multiple categories.
+
+_CATEGORY_SIGNALS: dict = {
+    "identity": [
+        r"\bi am\b", r"\bi want\b", r"\bi need\b", r"\bi believe\b",
+        r"\bmy goal\b", r"\bmy project\b", r"\bmy work\b",
+        r"\bwho am\b", r"\bpurpose\b", r"\bmeaning\b", r"\bi'?m building\b",
+    ],
+    "project": [
+        r"\bbuilding\b", r"\bworking on\b", r"\bproject\b", r"\bsystem\b",
+        r"\bversion\b", r"\bfeature\b", r"\bmodule\b", r"\bimplementation\b",
+        r"\bshipping\b", r"\bdeploying\b", r"\bintegrat\b", r"\barchitecture\b",
+    ],
+    "creative": [
+        r"\bdesign\b", r"\baesthetic\b", r"\bstyle\b", r"\bvisual\b",
+        r"\bfeel\s+like\b", r"\blook\s+like\b", r"\bcolou?r\b", r"\btexture\b",
+        r"\bsound\b", r"\bmusic\b", r"\bartistic\b", r"\bcreative\b",
+        r"\bimagine\b", r"\bwhat\s+if\b", r"\bnarrative\b", r"\bstory\b",
+    ],
+    "world": [
+        r"\beLo\b", r"\bChunk\b", r"\bK-7\b", r"\bCore\b", r"\bSugarcore\b",
+        r"\buniverse\b", r"\bworld\b", r"\bmyth\b", r"\bsymbolic\b",
+        r"\bcharacter\b", r"\blore\b", r"\bcanon\b",
+    ],
+    "user": [
+        r"\bfeel\b", r"\bstuck\b", r"\bwrong\b", r"\bchaos\b",
+        r"\boverwhelm\b", r"\bexhausted\b", r"\bconfused\b",
+        r"\bbut\b.*\b(don'?t|not|hate|resist)\b",  # contradictions
+        r"\bi\s+don'?t\s+know\b", r"\bnot\s+sure\b", r"\bscattered\b",
+    ],
+}
+
+
+def _classify_memory_categories(text: str) -> list:
+    """Return all memory categories that match the given text."""
+    text_lower = text.lower()
+    matched = []
+    for category, patterns in _CATEGORY_SIGNALS.items():
+        if any(re.search(p, text_lower) for p in patterns):
+            matched.append(category)
+    return matched
 
 
 # ── concept detection ──────────────────────────────────────────────────────────
@@ -130,12 +188,13 @@ def store_interaction(
     """Append one interaction record to the persistent store."""
     combined = user_input + " " + response
     record = {
-        "timestamp":   datetime.utcnow().isoformat() + "Z",
-        "project_tag": project_tag,
-        "mode":        mode,
-        "user":        user_input,
-        "response":    response,
-        "concepts":    _detect_concepts(combined),
+        "timestamp":         datetime.utcnow().isoformat() + "Z",
+        "project_tag":       project_tag,
+        "mode":              mode,
+        "user":              user_input,
+        "response":          response,
+        "concepts":          _detect_concepts(combined),
+        "memory_categories": _classify_memory_categories(user_input),
     }
     interactions = _load_store()
     interactions.append(record)
@@ -621,6 +680,238 @@ def _detect_project_momentum(interactions: list) -> str:
     return counts.most_common(1)[0][0]
 
 
+# ── five memory category extractors ───────────────────────────────────────────
+# Each returns a dict with: style_hint, reference, association.
+# Empty strings mean "nothing strong enough to surface."
+
+def _extract_identity_memory(interactions: list) -> dict:
+    """
+    Identity Memory — who the user says they are, their goals and direction.
+
+    Shapes: response directness, how much eLo leads vs follows, vocabulary register.
+    """
+    records = [r for r in interactions if "identity" in r.get("memory_categories", [])]
+    if not records:
+        return {"style_hint": "", "reference": "", "association": ""}
+
+    recent = records[-3:]
+    # detect dominant self-description vocabulary
+    all_text = " ".join(r.get("user", "") for r in recent).lower()
+
+    style_hint  = ""
+    reference   = ""
+    association = ""
+
+    if any(w in all_text for w in ["build", "create", "make", "ship"]):
+        style_hint  = "User identifies as a maker/builder. Lead with concrete, not abstract."
+        association = "building and making"
+    elif any(w in all_text for w in ["explore", "discover", "understand", "learn"]):
+        style_hint  = "User identifies as an explorer. Match the open-ended energy."
+        association = "exploration and discovery"
+    elif any(w in all_text for w in ["feel", "sense", "mean", "purpose"]):
+        style_hint  = "User is in meaning-seeking mode. Don't rush to practical."
+        association = "meaning and purpose"
+
+    if recent:
+        reference = recent[-1].get("user", "")[:80]
+
+    return {"style_hint": style_hint, "reference": reference, "association": association}
+
+
+def _extract_project_memory(interactions: list, project_hint: str) -> dict:
+    """
+    Project Memory — what's being built, project momentum, recent direction.
+
+    Shapes: what eLo references, how it grounds abstract ideas in specific work.
+    """
+    records = [
+        r for r in interactions
+        if r.get("project_tag") == project_hint
+        or "project" in r.get("memory_categories", [])
+    ]
+    if not records:
+        return {"style_hint": "", "reference": "", "association": ""}
+
+    recent = records[-5:]
+    concepts = Counter(c for r in recent for c in r.get("concepts", []))
+    dominant = concepts.most_common(1)[0][0] if concepts else ""
+
+    style_hint  = f"Active project context: {project_hint}. Ground ideas here first." if recent else ""
+    reference   = recent[-1].get("user", "")[:80] if recent else ""
+    association = dominant if dominant else ""
+
+    return {"style_hint": style_hint, "reference": reference, "association": association}
+
+
+def _extract_creative_memory(interactions: list) -> dict:
+    """
+    Creative Memory — aesthetic preferences, imaginative patterns, stylistic tendencies.
+
+    Shapes: metaphor choices, which creative frames eLo reaches for, vocabulary texture.
+    """
+    records = [r for r in interactions if "creative" in r.get("memory_categories", [])]
+    if not records:
+        return {"style_hint": "", "reference": "", "association": ""}
+
+    recent = records[-5:]
+    all_text = " ".join(r.get("user", "") for r in recent).lower()
+
+    style_hint  = ""
+    association = ""
+
+    # detect creative orientation
+    if any(w in all_text for w in ["world", "universe", "myth", "lore", "story"]):
+        style_hint  = "User thinks in worlds and narratives. Expand symbolically."
+        association = "world-building and narrative logic"
+    elif any(w in all_text for w in ["visual", "design", "aesthetic", "colour", "look"]):
+        style_hint  = "User has visual/aesthetic orientation. Use image-based language."
+        association = "visual language and aesthetic coherence"
+    elif any(w in all_text for w in ["system", "structure", "pattern", "logic"]):
+        style_hint  = "User thinks in systems and patterns. Use structural metaphors."
+        association = "systems and structural thinking"
+    else:
+        style_hint  = "User is in creative mode. Follow their lead before offering direction."
+
+    reference = recent[-1].get("user", "")[:80] if recent else ""
+
+    return {"style_hint": style_hint, "reference": reference, "association": association}
+
+
+def _extract_world_memory(interactions: list) -> dict:
+    """
+    World Memory — eLo universe entity references, symbolic language patterns.
+
+    Shapes: which entities to invoke, symbolic register, mythic/world-logic framing.
+    """
+    records = [r for r in interactions if "world" in r.get("memory_categories", [])]
+    if not records:
+        return {"style_hint": "", "reference": "", "association": ""}
+
+    recent = records[-8:]
+    entity_counts: Counter = Counter()
+    for record in recent:
+        combined = (record.get("user", "") + " " + record.get("response", "")).lower()
+        for entity in _UNIVERSE_ENTITIES:
+            if entity.lower() in combined:
+                entity_counts[entity] += 1
+
+    dominant_entity = entity_counts.most_common(1)[0][0] if entity_counts else ""
+
+    _ENTITY_FRAMES = {
+        "eLo":       "Explorer lens active. Move through unknowns with curiosity, not certainty.",
+        "Chunk":     "Reconstruction lens active. Think in fragments becoming new shapes.",
+        "K-7":       "Emotional signal lens active. Respond to what behaviour reveals, not words.",
+        "Core":      "Navigation lens active. Help find the thread that orients everything.",
+        "Sugarcore": "Distortion lens active. Name the overload state before offering movement.",
+    }
+
+    style_hint  = _ENTITY_FRAMES.get(dominant_entity, "Universe symbolic vocabulary is in use.")
+    reference   = dominant_entity
+    association = f"{dominant_entity} logic" if dominant_entity else "eLo universe symbolic frame"
+
+    return {"style_hint": style_hint, "reference": reference, "association": association}
+
+
+def _extract_user_memory(interactions: list) -> dict:
+    """
+    User Memory — behavioral patterns, emotional arc, recurring states and contradictions.
+
+    Shapes: emotional calibration, contradiction tolerance, how much to slow down or push.
+    """
+    records = [r for r in interactions if "user" in r.get("memory_categories", [])]
+    if not records:
+        return {"style_hint": "", "reference": "", "association": ""}
+
+    recent = records[-5:]
+    all_text = " ".join(r.get("user", "") for r in recent).lower()
+
+    style_hint  = ""
+    association = ""
+
+    # detect recurring behavioral pattern
+    if any(w in all_text for w in ["stuck", "overwhelm", "chaos", "scattered"]):
+        style_hint  = "User has been in overload/Sugarcore territory. Name state, go slow."
+        association = "naming the state before moving"
+    elif any(re.search(p, all_text) for p in [r"\bbut\b.*\bnot\b", r"\bwant\b.*\bbut\b"]):
+        style_hint  = "User holds contradictions. Don't resolve — stay in tension."
+        association = "holding contradictions as information"
+    elif any(w in all_text for w in ["don't know", "not sure", "confused"]):
+        style_hint  = "User is in uncertain territory. Reflect before redirecting."
+        association = "navigating uncertainty"
+    elif any(w in all_text for w in ["excited", "amazing", "finally", "yes"]):
+        style_hint  = "User has momentum. Match the energy, then give it shape."
+        association = "channeling momentum into structure"
+
+    reference = recent[-1].get("user", "")[:60] if recent else ""
+
+    return {"style_hint": style_hint, "reference": reference, "association": association}
+
+
+def _synthesize_behavioral_guidance(
+    identity: dict,
+    project: dict,
+    creative: dict,
+    world: dict,
+    user: dict,
+    query: str,
+) -> dict:
+    """
+    Collapse five memory categories into four response-ready behavioral directives.
+
+    Priority:
+        1. User memory (emotional/behavioral state) — most immediate
+        2. World memory (symbolic frame) — if entities are in play
+        3. Identity memory (who they are) — shapes register
+        4. Creative memory (aesthetic) — shapes vocabulary
+        5. Project memory (grounding) — shapes references
+    """
+    # response_style: the highest-priority style hint
+    style = (
+        user.get("style_hint")
+        or world.get("style_hint")
+        or identity.get("style_hint")
+        or creative.get("style_hint")
+        or project.get("style_hint")
+        or ""
+    )
+
+    # key_reference: the most specific thing to echo back
+    reference = (
+        world.get("reference")
+        or identity.get("reference")
+        or project.get("reference")
+        or creative.get("reference")
+        or user.get("reference")
+        or ""
+    )
+
+    # key_association: the most useful conceptual bridge
+    association = (
+        world.get("association")
+        or creative.get("association")
+        or identity.get("association")
+        or user.get("association")
+        or project.get("association")
+        or ""
+    )
+
+    # future_idea: what direction this memory suggests the work is heading
+    future_idea = ""
+    if project.get("association") and creative.get("association"):
+        future_idea = f"{project['association']} expressed through {creative['association']}"
+    elif world.get("association") and identity.get("association"):
+        future_idea = f"{world['association']} applied to {identity['association']}"
+    elif creative.get("association"):
+        future_idea = creative["association"]
+
+    return {
+        "response_style":  style,
+        "key_reference":   reference,
+        "key_association": association,
+        "future_idea":     future_idea,
+    }
+
+
 def build_memory_influence(query: str, project_hint: str = "elo_core") -> dict:
     """
     Build actionable memory signals that directly shape response tone,
@@ -677,10 +968,23 @@ def build_memory_influence(query: str, project_hint: str = "elo_core") -> dict:
     # symbolic echo
     symbolic_echo = _detect_symbolic_echo(interactions)
 
-    # raw blocks (existing retrieve_structured output)
+    # ── five memory categories ──
+    identity_mem = _extract_identity_memory(interactions)
+    project_mem  = _extract_project_memory(interactions, project_hint)
+    creative_mem = _extract_creative_memory(interactions)
+    world_mem    = _extract_world_memory(interactions)
+    user_mem     = _extract_user_memory(interactions)
+
+    # ── behavioral synthesis ──
+    guidance = _synthesize_behavioral_guidance(
+        identity_mem, project_mem, creative_mem, world_mem, user_mem, query
+    )
+
+    # raw blocks (backward compat)
     raw_blocks = retrieve_structured(query, project_hint)
 
     return {
+        # existing signals (backward compat — behavior_engine reads these)
         "tone_signal":        tone_signal,
         "dominant_mode":      dominant_mode,
         "recurring_concepts": recurring_concepts,
@@ -690,6 +994,21 @@ def build_memory_influence(query: str, project_hint: str = "elo_core") -> dict:
         "project_momentum":   project_momentum,
         "symbolic_echo":      symbolic_echo,
         "raw_blocks":         raw_blocks,
+
+        # five typed memory categories
+        "memory_categories": {
+            "identity": identity_mem,
+            "project":  project_mem,
+            "creative": creative_mem,
+            "world":    world_mem,
+            "user":     user_mem,
+        },
+
+        # behavioral synthesis — ready to use directly in response generation
+        "response_style":  guidance["response_style"],
+        "key_reference":   guidance["key_reference"],
+        "key_association": guidance["key_association"],
+        "future_idea":     guidance["future_idea"],
     }
 
 

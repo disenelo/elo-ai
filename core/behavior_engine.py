@@ -533,6 +533,7 @@ def _assemble(
     closing: str,
     grounding: str,          # "simple" | "everyday" | "abstract"
     text: str,               # original input for deterministic selection
+    memory_hint: str = "",   # cross-category association from memory synthesis
 ) -> str:
     parts = []
 
@@ -572,6 +573,10 @@ def _assemble(
 
     if returning_theme:
         parts.append(returning_theme)
+
+    # memory_hint: cross-category association (only on abstract path)
+    if memory_hint:
+        parts.append(memory_hint)
 
     # one-question max: count questions already in the assembled content
     # if the core (entity_response / frame) already contains a question, skip closing
@@ -616,11 +621,16 @@ def generate_offline_response(
     recalled = _recall_from_memory(raw_blocks, concepts, entities)
 
     # pull derived signals from influence (empty defaults when memory is cold)
-    memory_tone       = influence.get("tone_signal",        "neutral")
-    returning_theme   = influence.get("returning_theme",    "")
-    symbolic_echo     = influence.get("symbolic_echo",      "")
-    concept_pairs     = influence.get("concept_pairs",      {})
+    memory_tone        = influence.get("tone_signal",        "neutral")
+    returning_theme    = influence.get("returning_theme",    "")
+    symbolic_echo      = influence.get("symbolic_echo",      "")
+    concept_pairs      = influence.get("concept_pairs",      {})
     recurring_concepts = influence.get("recurring_concepts", [])
+
+    # five-category behavioral synthesis signals (new)
+    response_style  = influence.get("response_style",  "")
+    key_association = influence.get("key_association", "")
+    future_idea     = influence.get("future_idea",     "")
 
     # only surface returning_theme when the current turn touches the same concept territory
     if returning_theme:
@@ -633,6 +643,14 @@ def generate_offline_response(
 
     # blend locally detected emotion with the persistent tone from memory history
     blended_emotion = _blend_emotion(emotion, memory_tone)
+
+    # response_style from memory categories can override blended_emotion
+    # when memory has a clear behavioral directive (e.g. "go slow", "match momentum")
+    if response_style:
+        if "slow" in response_style or "don't rush" in response_style:
+            blended_emotion = _blend_emotion(blended_emotion, "reflective")
+        elif "momentum" in response_style or "energy" in response_style:
+            blended_emotion = _blend_emotion(blended_emotion, "excited")
 
     # ── phase 4: creative transformation ──
     grounding = _assess_grounding(user_input, concepts, entities)
@@ -660,10 +678,23 @@ def generate_offline_response(
     closing = _select_closing_fresh(mode, user_input)
 
     # ── phase 5: output assembly ──
+    # key_association from memory: only surface when no stronger signal already covers it
+    # and when the input is abstract (no forced associations on grounded/simple inputs)
+    memory_hint = ""
+    if key_association and grounding == "abstract" and not entity_response and not contradiction_response:
+        # only if it adds something the frame doesn't already say
+        if key_association.lower() not in (frame or "").lower():
+            memory_hint = f"This connects to {key_association}."
+
+    # future_idea: use as closing hint in adventure mode when memory has a clear direction
+    if future_idea and mode == "adventure" and not closing.endswith("?"):
+        closing = f"This is pointing toward: {future_idea}."
+
     response = _assemble(
         opening, entity_response, contradiction_response,
         frame, returning_theme, symbolic_echo, closing,
         grounding, user_input,
+        memory_hint=memory_hint,
     )
 
     if debug:
@@ -682,6 +713,10 @@ def generate_offline_response(
                 "symbolic_echo":      symbolic_echo,
                 "recurring_concepts": recurring_concepts,
                 "concept_pairs":      list(concept_pairs.keys()),
+                "response_style":     response_style,
+                "key_association":    key_association,
+                "future_idea":        future_idea,
+                "memory_hint":        memory_hint,
             },
             "phase_3_identity": {
                 "mode":            mode,
