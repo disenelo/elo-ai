@@ -632,6 +632,12 @@ def generate_offline_response(
     key_association = influence.get("key_association", "")
     future_idea     = influence.get("future_idea",     "")
 
+    # state engine behavioral hints
+    state_name        = influence.get("state",             "exploring")
+    imagination_level = influence.get("imagination_level", "medium")
+    response_length   = influence.get("response_length",   "medium")
+    elo_voice_hint    = influence.get("elo_voice_hint",    "")
+
     # only surface returning_theme when the current turn touches the same concept territory
     if returning_theme:
         if not any(c in concepts for c in recurring_concepts):
@@ -654,6 +660,15 @@ def generate_offline_response(
 
     # ── phase 4: creative transformation ──
     grounding = _assess_grounding(user_input, concepts, entities)
+
+    # state engine can push imagination level:
+    #   "resting" or "focused" states suppress imagination on borderline inputs
+    #   "exploring" state allows imagination on inputs that would otherwise be abstract→simple
+    if imagination_level == "low" and grounding == "abstract" and not entities:
+        grounding = "everyday"  # pull back abstraction when state says stay grounded
+    elif imagination_level == "high" and grounding == "simple" and concepts:
+        grounding = "abstract"  # expand when state says follow the thread
+
     opening   = _select_opening(mode, blended_emotion, user_input)
 
     entity_response = ""

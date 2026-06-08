@@ -26,6 +26,7 @@ from core.memory_engine import (
     store_interaction,
     load_long_term_memory,
 )
+from core.state_engine import StateEngine
 from plugins.hardware.orb_engine import OrbEngine
 
 
@@ -116,6 +117,7 @@ class CoreEngine:
         self._registry    = load_registry()
         self._personality = _load_personality()
         self._active_mode = "companion"
+        self.state_engine = StateEngine()
 
     def reload(self):
         """Re-read config from disk — call after editing files or exporting memory."""
@@ -125,6 +127,7 @@ class CoreEngine:
     def set_mode(self, mode: str):
         if mode in _OVERLAYS:
             self._active_mode = mode
+            self.state_engine.force_state(mode)
             print(f"  [mode: {mode}]")
 
     def turn(self, user_input: str, debug: bool = False) -> str:
@@ -145,16 +148,28 @@ class CoreEngine:
         mode    = self._active_mode
         project = resolve_project(user_input, self._registry)
 
+        # update conversational state (natural transition from input signals)
+        current_state, transitioned = self.state_engine.update(user_input)
+        state_hint = self.state_engine.get_behavioral_hint()
+
         # build active memory influence — derived signals, not just raw records
         self.orb.think()
         memory = build_memory_influence(user_input, project_hint=project)
+
+        # inject state engine hints into memory so behavior_engine can read them
+        memory["state"]            = current_state
+        memory["state_tone"]       = state_hint["tone"]
+        memory["response_length"]  = state_hint["response_length"]
+        memory["imagination_level"]= state_hint["imagination_level"]
+        memory["project_focus"]    = state_hint["project_focus"]
+        memory["elo_voice_hint"]   = state_hint["elo_voice_hint"]
 
         # generate offline response
         if debug:
             response, reasoning = generate_offline_response(
                 user_input, memory, mode, debug=True
             )
-            _print_reasoning(reasoning)
+            _print_reasoning(reasoning, current_state, transitioned, state_hint)
         else:
             response = generate_offline_response(user_input, memory, mode)
 
@@ -166,14 +181,19 @@ class CoreEngine:
         return response
 
 
-def _print_reasoning(reasoning: dict):
+def _print_reasoning(reasoning: dict, state: str, transitioned: bool, state_hint: dict):
     """Print internal phase summary for debug mode."""
     p1 = reasoning.get("phase_1_interpretation", {})
     p2 = reasoning.get("phase_2_memory", {})
     p3 = reasoning.get("phase_3_identity", {})
+    transition_marker = " ← TRANSITION" if transitioned else ""
     print(f"\n  [debug p1] type={p1.get('input_type')} emotion={p1.get('emotion')} "
           f"concepts={p1.get('concepts')} entities={p1.get('entities')}")
     print(f"  [debug p2] tone={p2.get('memory_tone')} blended={p2.get('blended_emotion')} "
           f"recurring={p2.get('recurring_concepts')} "
           f"theme={p2.get('returning_theme')!r}")
     print(f"  [debug p3] mode={p3.get('mode')} contradiction={p3.get('is_contradiction')}")
+    print(f"  [state]    {state}{transition_marker} | "
+          f"length={state_hint['response_length']} "
+          f"imagination={state_hint['imagination_level']} "
+          f"focus={state_hint['project_focus']}")
