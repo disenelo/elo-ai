@@ -906,6 +906,51 @@ def _filter(response: str, mode: str) -> str:
     return response.strip()
 
 
+# ── debug mode ───────────────────────────────────────────────────────────────
+
+_DEBUG_ENABLED: bool = False
+
+
+def set_debug(enabled: bool):
+    """Toggle kernel debug mode. Does not affect response content."""
+    global _DEBUG_ENABLED
+    _DEBUG_ENABLED = enabled
+
+
+def _build_debug_block(
+    user_input:     str,
+    classification: dict,
+    assembled:      dict,
+    mode:           str,
+    loop_result:    dict,
+    context:        dict,
+) -> str:
+    """
+    Build a debug metadata block.
+    Appended after the response when debug is enabled.
+    Never modifies the response itself.
+    """
+    ic = classification
+
+    lines = [
+        "",
+        "──── DEBUG ────────────────────────────────",
+        f"  input type   : {_resolve_type(ic)}",
+        f"  complexity   : {_resolve_complexity(ic, _resolve_type(ic))}",
+        f"  mode         : {mode}",
+        f"  loop         : {loop_result['detected']} ({loop_result['reason'] or 'none'})",
+        f"  state        : {assembled['state']['name']}",
+        f"  memory tone  : {assembled['memory']['tone']}",
+        f"  returning    : {assembled['memory']['returning_theme'] or 'none'}",
+        f"  project      : {assembled['memory']['project']}",
+        f"  emotion hint : {context.get('emotion', 'none')}",
+        f"  reflection   : {'disabled' if assembled.get('reflection_disabled') else 'on'}",
+        f"  entities     : {ic.get('entities') or 'none'}",
+        "────────────────────────────────────────────",
+    ]
+    return "\n".join(lines)
+
+
 # ── public entry point ────────────────────────────────────────────────────────
 
 def decide_response(user_input: str, context: dict = None) -> tuple:
@@ -917,21 +962,28 @@ def decide_response(user_input: str, context: dict = None) -> tuple:
 
     Args:
         user_input: Raw text from the user.
-        context:    Flat dict assembled by core_engine — contains memory signals,
-                    state, identity bias, mode, project. Can be empty dict.
+        context:    Flat dict assembled by core_engine. Can be empty dict.
 
     Returns:
         (response: str, meta: dict)
 
-        meta contains:
-            mode       — which of 5 modes was used
-            input_class — classification result dict
-            loop_detected — whether loop was detected this turn
+        When debug mode is on (set_debug(True)):
+            response has a debug block appended after the content.
+            The block starts with '──── DEBUG' and is clearly separated.
+            It does not modify the conversational response.
+
+        meta keys:
+            mode              — one of 6 kernel modes
+            input_class       — full classification dict
+            loop_detected     — bool
+            loop_reason       — str
+            reflection_disabled — bool
     """
     ctx = context or {}
 
     # layer 1
     classification = _classify(user_input)
+    classification["_text"] = user_input.lower()
 
     # layer 2
     assembled = _assemble(ctx)
@@ -939,16 +991,31 @@ def decide_response(user_input: str, context: dict = None) -> tuple:
     # layer 3
     mode = _route(classification, assembled)
 
+    # loop check (for debug block — detect_loop already ran inside assemble)
+    loop_result = {
+        "detected": assembled["loop_detected"],
+        "reason":   assembled.get("loop_reason", ""),
+    }
+
     # layer 4
     response = _generate(user_input, mode, classification, assembled)
 
     # layer 5
     response = _filter(response, mode)
 
+    # debug block (does not touch response content — appended separately)
+    if _DEBUG_ENABLED:
+        debug_block = _build_debug_block(
+            user_input, classification, assembled, mode, loop_result, ctx
+        )
+        response = response + debug_block
+
     meta = {
-        "mode":          mode,
-        "input_class":   classification,
-        "loop_detected": assembled["loop_detected"],
+        "mode":                mode,
+        "input_class":         classification,
+        "loop_detected":       assembled["loop_detected"],
+        "loop_reason":         assembled.get("loop_reason", ""),
+        "reflection_disabled": assembled.get("reflection_disabled", False),
     }
 
     return response, meta
