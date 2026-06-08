@@ -1,103 +1,44 @@
 # eLo AI — Development Tracker
 
-> Offline-first deterministic conversational intelligence.
-> No API required to run. Set `ANTHROPIC_API_KEY` to upgrade to live Claude.
+---
+
+## Mission
+
+The goal is **not** to build a chatbot.
+
+The goal is to build eLo AI as a **persistent creative operating system** that can eventually exist as:
+
+- a conversational AI
+- a desktop companion
+- a visual project organiser
+- a game character
+- a voice assistant
+- a robot
+
+All future development must support this vision.
 
 ---
 
-## Roadmap
+## Golden Rule
 
-### Phase 1 — Foundation ✅ (current)
+> The AI model is replaceable.
+> The eLo Core is the product.
 
-**Goal:** eLo AI OS core — behavior, memory, identity, state.
-
-- [x] Behavior engine (5-phase offline reasoning)
-- [x] Memory engine (5 typed categories, active influence signals)
-- [x] Identity system (`identity/` — elo_identity, behavior_rules, universe_reference)
-- [x] State engine (6 states, inertia + hysteresis transitions)
-- [x] Plugin architecture (base contract, registry, fallback chain)
-
-**Success criteria:** eLo feels consistent in conversation.
-
----
-
-### Phase 2 — Model independence
-
-**Goal:** same behavior regardless of which model powers responses.
-
-- [ ] Connect `ANTHROPIC_API_KEY` → AnthropicPlugin active
-- [ ] Test LocalLLM plugin with Ollama
-- [ ] Verify behavior layer unchanged across all backends
-- [ ] `ELO_PLUGIN` env var selects backend at startup
-
-**Success criteria:** swap model, behavior unchanged.
-
----
-
-### Phase 3 — Voice
-
-**Goal:** eLo speaks and listens. Character present in voice.
-
-- [ ] Whisper STT integration (`plugins/voice/plugin.py`)
-- [ ] pyttsx3 or ElevenLabs TTS integration
-- [ ] Calibrate against `identity/voice_profile.md`
-- [ ] Emotional cadence mapped to state engine
-
-**Success criteria:** eLo sounds like eLo. Voice matches identity spec.
-
----
-
-### Phase 5 — Embodied eLo (avatar architecture)
-
-**Goal:** Connect eLo AI OS to a visual character. Same brain, any body.
-
-Architecture: eLo Core outputs `{state, emotion, intent, energy}` → animation layer converts to movement.
-
-- [x] `core/emotion_engine.py` — state + input → emotion signal packet
-- [x] `core/avatar_bridge.py` — packages signals for any embodiment consumer
-- [x] `core/visual_memory.py` — groups memory into spatial cluster world
-- [x] `docs/avatar_architecture.md` — full dual-body architecture spec
-- [ ] `avatar/terminal.py` — ASCII renderer (test pipeline without GUI)
-- [ ] `avatar/canvas_2d.py` — tkinter 2D desktop avatar
-- [ ] `avatar/unity_bridge.py` — JSON bridge to Unity Animator (eLo-Planet)
-
-**eLo has no eyes — expression comes from:**
-head tilt · lean · bounce · stillness · rotation · orb glow · movement speed
-
-**Visual memory world:**
-eLo reads memory → groups into concept clusters → produces spatial graph → any renderer draws it.
-Terminal version works now. 2D canvas is Phase 5.
-
-**Success criteria:** eLo's body responds to what its brain is doing.
-
----
-
-### Phase 4 — Embodiment
-
-**Goal:** eLo has physical presence.
-
-- [ ] NeoPixel orb driven by `plugins/hardware/plugin.py`
-- [ ] State-to-light mapping (`hardware/plugin.py` HARDWARE HOOK)
-- [ ] Raspberry Pi integration
-- [ ] Sensor input (presence, touch, ambient)
-- [ ] Physical interaction loop: sense → state → respond → display
-
-**Success criteria:** eLo the object glows, listens, and responds.
-
----
+Identity + Memory + Behavior + State must remain consistent whether eLo exists as text, desktop avatar, voice, game character, or robot.
 
 ---
 
 ## Quick start
 
 ```bash
-python main.py                  # start conversation
-python main.py --export-memory  # write memory snapshot
-python main.py --orb-cli        # Core Orb simulator
-python tests/test_basic_loop.py # run tests (no pytest needed)
+python main.py                   # start conversation
+python main.py --export-memory   # write memory snapshot
+python main.py --orb-cli         # Core Orb simulator
+python tests/test_basic_loop.py  # run tests (no API key needed)
+python feel_test.py              # standalone behaviour test loop
 ```
 
-Commands during chat:
+Commands during conversation:
 ```
 You: /mode studio        → building / planning mode
 You: /mode companion     → reflection / conversation mode
@@ -110,132 +51,234 @@ You: /exit               → save memory and quit
 
 ---
 
-## System architecture
+## Phase Roadmap
+
+---
+
+### Phase 1 — Foundation ✅ (complete)
+
+**Goal:** Create a stable eLo Core.
+
+Core components built:
+- [x] Identity system (`identity/` — elo_identity.md, behavior_rules.md, communication_style.md, universe_reference.md, voice_profile.md)
+- [x] Behavior engine — 5-phase offline reasoning (grounding, imagination, contradiction tolerance)
+- [x] Memory engine — 5 typed categories (identity, project, creative, world, user), active influence signals
+- [x] State engine — 6 states (focused, building, exploring, reflecting, playful, resting), natural transitions
+- [x] Project registry — 4 active namespaces (disenelo_universe, sugarcore_arc, orb_device, elo_ai_core)
+- [x] Offline conversation system — deterministic, no API required
+- [x] Plugin architecture — base contract, registry, fallback chain
+- [x] Avatar foundation — emotion_engine, avatar_bridge, visual_memory, dual-body architecture spec
+
+**Before moving to Phase 2:**
+
+- [ ] Complete `tests/personality_tests.md` — log responses, patterns, identity drift
+- [ ] Run 20+ real conversation turns and evaluate against success criteria
+- [ ] Confirm no excessive question loops
+- [ ] Confirm grounding works on everyday inputs
+- [ ] Confirm contradiction handling holds without forcing resolution
+
+**Success criteria:**
+- eLo feels conversational, not like a command tool
+- eLo does not loop excessively
+- eLo remembers relevant context across turns
+- eLo feels consistent session to session
+- eLo feels like eLo, not a generic assistant
+
+---
+
+### Phase 2 — Identity Stabilisation
+
+**Goal:** Refine eLo's personality until it feels right.
+
+Review questions:
+- Is eLo too philosophical for everyday inputs?
+- Is eLo playful enough, or too serious?
+- Is eLo practical when the situation calls for it?
+- Does imagination activate naturally, or feel forced?
+- Does eLo feel like a companion, or an interface?
+
+Work:
+- [ ] Read through `tests/personality_tests.md` — identify patterns
+- [ ] Review `identity/elo_identity.md` — does this match how eLo actually behaves?
+- [ ] Review `identity/behavior_rules.md` — are any rules causing problems?
+- [ ] Review `config/system_prompt.txt` — adjust tone if needed
+- [ ] Review `config/behavior_rules.txt` — tighten or loosen as needed
+- [ ] Run another 20+ turns, update personality tests
+
+**Success criteria:**
+
+Conversation feels balanced between:
+- grounded (responds simply to simple inputs)
+- imaginative (expands when the idea calls for it)
+- reflective (holds space without rushing)
+- practical (gives concrete next steps in studio mode)
+
+---
+
+### Phase 3 — State Engine Refinement
+
+**Goal:** Replace any remaining manual mode switching with fully natural state transitions.
+
+State engine is built. This phase is refinement:
+- [ ] Test all 6 state transition paths in real conversation
+- [ ] Verify hysteresis is correctly resisting jitter
+- [ ] Verify forced transitions (resting on exhaustion signals)
+- [ ] Map state → voice_profile pacing (for future voice layer)
+- [ ] Confirm state behavioral hints affect response style noticeably
+
+States → behavioral profiles:
+| State | Tone | Length | Imagination | Project focus |
+|---|---|---|---|---|
+| exploring | curious, open | medium | high | open |
+| building | grounded, action | medium | low | tight |
+| focused | precise, direct | short | low | tight |
+| reflecting | slow, spacious | short | medium | loose |
+| playful | light, experimental | short | medium | loose |
+| resting | minimal | short | low | open |
+
+**Success criteria:** eLo naturally changes behavior based on context without being told to.
+
+---
+
+### Phase 4 — Desktop Avatar
+
+**Goal:** Create eLo Desktop — animated character with state-driven presence.
+
+Architecture:
+```
+eLo Core → {state, emotion, intent, energy} → Avatar Bridge → Desktop Renderer
+```
+
+eLo has no eyes. Expression comes from:
+- head tilt — curiosity, listening
+- lean — interest (forward), withdrawal (back)
+- bounce / pulse — excitement, aliveness
+- stillness — focus, resting
+- orb glow — emotion type + energy level
+- movement speed — energy
+
+Work:
+- [ ] `avatar/terminal.py` — ASCII renderer (test full pipeline, no GUI needed)
+- [ ] `avatar/canvas_2d.py` — tkinter 2D desktop renderer
+- [ ] Idle animation loop (eLo present even when not responding)
+- [ ] State-driven animation selection
+- [ ] Integration with `core_engine.py` — signal on every turn
+
+Foundation already built:
+- [x] `core/emotion_engine.py` — state + input → {emotion, intent, energy, posture, pace}
+- [x] `core/avatar_bridge.py` — packages signals for any embodiment layer
+- [x] `docs/avatar_architecture.md` — full dual-body architecture spec
+
+**Success criteria:** eLo feels present on the desktop. Body responds to what the brain is doing.
+
+---
+
+### Phase 5 — Visual Project World
+
+**Goal:** Transform project memory into a navigable visual world.
+
+Projects become islands. Ideas become structures. Connections become bridges.
 
 ```
-main.py               ← CLI loop + command routing
-core_engine.py        ← orchestration: mode detect → memory → response → store
-offline_engine.py     ← 5-phase deterministic reasoning (no API)
-memory_engine.py      ← JSON store, influence signals, export
-llm_client.py         ← Claude API wrapper (falls back to offline if no key)
-orb_engine.py         ← Core Orb state machine + hardware hooks
-voice_engine.py       ← STT/TTS placeholder hooks
-
-config/
-  system_prompt.txt   ← eLo identity layer (editable)
-  personality.json    ← modes, traits, universe entities
-
-memory/
-  interactions.json   ← every stored interaction (auto-generated)
-  project_registry.json ← active project namespaces
-  universe.json       ← eLo universe entity definitions
-  user_profile.json   ← user creative patterns
-  export_memory.md    ← human+AI readable snapshot (generated by /export)
+eLo: "You have 17 Sugarcore notes.
+      Grouped: Story (7)  ·  Enemy Design (4)  ·  Levels (3)  ·  Dialogue (2)  ·  Future (1)"
 ```
 
----
+Then visually: floating islands, connected by bridges, representing idea relationships — not folders.
 
-## Offline reasoning — 5 phases
+Work:
+- [x] `core/visual_memory.py` — memory → cluster world graph (terminal version works)
+- [ ] `avatar/canvas_2d.py` — render world as 2D canvas (islands, bridges, labels)
+- [ ] `/map` command in CLI — render current project memory as visual world
+- [ ] Cluster navigation (click island → see items)
+- [ ] Connection weight visualisation (thicker bridge = stronger concept link)
 
-| Phase | What it does |
-|---|---|
-| 1 Interpretation | input type, emotion, concepts, universe entities |
-| 2 Memory recall | tone pattern, returning themes, symbolic echoes, concept pairs |
-| 3 Identity filter | mode shape, contradiction tolerance, emotion blending |
-| 4 Creative transform | entity engagement, concept frames, memory-driven associations |
-| 5 Output assembly | opening + core insight + returning theme + closing question |
-
----
-
-## Memory influence signals (active, not passive)
-
-| Signal | Source | Effect |
-|---|---|---|
-| `tone_signal` | last 8 interactions | overrides local emotion for sticky states |
-| `returning_theme` | concept appearing 3+ times | explicit acknowledgment in response |
-| `symbolic_echo` | entity appearing 3+ times | deepens entity engagement |
-| `concept_pairs` | co-occurrence across history | surfaces cross-concept associations |
-| `project_momentum` | recent project tags | biases retrieval toward active project |
+**Success criteria:** Projects are navigated visually. eLo can organise and present ideas spatially.
 
 ---
 
-## eLo Universe entities
+## Future Phases
 
-| Entity | Role | When to use |
-|---|---|---|
-| eLo | creative explorer | curiosity outrunning the map |
-| Chunk | reconstruction | fragments → new shape |
-| K-7 | emotional signal | behaviour over words |
-| Core | navigation | finding the thread |
-| Sugarcore | overload state | name it, don't skip it |
+### Voice Layer
+
+- Driven by `core/emotion_engine.py` + `identity/voice_profile.md`
+- Voice calibration: pacing, emotional cadence, pause placement
+- STT: Whisper local or Deepgram API
+- TTS: pyttsx3 local or ElevenLabs API
+- Voice must be driven by eLo Core — not the other way around
+
+### Local Intelligence Layer
+
+- Offline simulation: working now
+- Local LLM: Ollama / LM Studio via `plugins/local_llm/plugin.py`
+- Anthropic API: `plugins/anthropic/plugin.py` (set `ANTHROPIC_API_KEY`)
+- Behavior and identity unchanged regardless of model
+
+### Robot Embodiment
+
+eLo Core → Robot Body (same architecture as desktop avatar, different renderer)
+- Raspberry Pi 5 brain
+- NeoPixel orb — driven by `plugins/hardware/plugin.py`
+- Servo cable-tension skeleton
+- Omni-wheel base
+- Voice I/O
+
+The robot is an embodiment of eLo, not a separate system.
 
 ---
 
-## Offline testing checklist
+## Architecture reference
 
-Run `python tests/test_basic_loop.py` — all 15 should pass with no API key.
-
-Manual conversation tests:
-
-- [ ] Normal text routes to `eLo:` response
-- [ ] `/mode studio` → next response has building frame
-- [ ] `/mode companion` → next response slows down, asks one question
-- [ ] `/mode adventure` → next response expands / follows symbol
-- [ ] Contradiction input ("X but not X") → held, not resolved
-- [ ] Universe entity ("what does Chunk mean") → entity logic engaged
-- [ ] `/debug` shows phase 1–3 reasoning summary
-- [ ] `/export` writes `memory/export_memory.md`
-- [ ] After 3 same-concept turns → `returning_theme` appears in response
-- [ ] `/exit` saves memory and exits cleanly
-
----
-
-## Phase log
-
-### Phase 1 — Core architecture
-- [x] Modular Python project scaffolded
-- [x] `memory_engine.py` — JSON store, weighted retrieval, export
-- [x] `offline_engine.py` — 5-phase deterministic reasoning
-- [x] `core_engine.py` — orchestration, mode detection
-- [x] `main.py` — CLI loop, command routing, `You:` / `eLo:` format
-- [x] `orb_engine.py` — state machine, hardware hooks
-- [x] `config/system_prompt.txt` — eLo identity, contradiction tolerance, symbolic layer
-- [x] `config/personality.json` — modes, traits, universe entities
-- [x] `memory/project_registry.json` — 4 active projects
-
-### Phase 2 — Intelligence layer
-- [x] Weighted memory retrieval (keyword + concept + project + recency)
-- [x] Structured memory blocks (identity / project / emotional / symbolic)
-- [x] `build_memory_influence()` — derived signals replace raw record passing
-- [x] Tone blending (memory history overrides for sticky states)
-- [x] `returning_theme` — pattern acknowledgment after 3+ repeated concepts
-- [x] `symbolic_echo` — entity pattern detection and deepening
-- [x] `concept_pairs` — user-specific cross-concept association
-- [x] System prompt refined for long-conversation stability
-
-### Phase 3 — Offline testing
-- [ ] Test returning_theme across 5+ conversation turns
-- [ ] Test concept_pairs after mixed-concept sessions
-- [ ] Test symbolic_echo after repeated entity use
-- [ ] Test mode × emotion matrix (all combinations)
-- [ ] Test export_memory.md quality after real session
-
-### Phase 4 — Future (optional)
-- [ ] Connect ANTHROPIC_API_KEY for live Claude responses
-- [ ] Whisper STT integration (`voice_engine.py`)
-- [ ] pyttsx3 TTS integration (`voice_engine.py`)
-- [ ] NeoPixel / Raspberry Pi orb hardware (`orb_engine.py` HARDWARE HOOKs)
-- [ ] Web interface for conversation (Flask/FastAPI wrapper)
+```
+elo-ai/
+│
+├── main.py                      ← CLI entry point
+│
+├── core/
+│   ├── behavior_engine.py       ← 5-phase offline response simulation
+│   ├── memory_engine.py         ← 5-category store + active influence signals
+│   ├── core_engine.py           ← runtime orchestration
+│   ├── state_engine.py          ← 6 states, natural transitions
+│   ├── emotion_engine.py        ← state → emotion + intent + energy
+│   ├── avatar_bridge.py         ← packages signals for any embodiment layer
+│   ├── visual_memory.py         ← memory → spatial cluster world
+│   └── project_engine.py        ← project registry management
+│
+├── identity/                    ← permanent identity documents
+│   ├── elo_identity.md
+│   ├── behavior_rules.md
+│   ├── communication_style.md
+│   ├── universe_reference.md
+│   └── voice_profile.md
+│
+├── plugins/
+│   ├── base.py                  ← PluginBase contract
+│   ├── registry.py              ← plugin manager + fallback chain
+│   ├── anthropic/plugin.py      ← Claude API
+│   ├── local_llm/plugin.py      ← Ollama / local model
+│   ├── voice/plugin.py          ← STT + TTS hooks
+│   ├── hardware/plugin.py       ← Orb + sensors
+│   └── vision/plugin.py         ← image understanding (future)
+│
+├── projects/                    ← project context docs
+├── docs/                        ← architecture docs
+├── config/                      ← system_prompt.txt, personality.json, behavior_rules.txt
+├── memory/                      ← JSON data files
+└── tests/
+    ├── test_basic_loop.py       ← 15 automated tests
+    └── personality_tests.md     ← manual conversation log
+```
 
 ---
 
 ## Known constraints
 
-- Deterministic selection uses `len(text) % len(options)` — same input always produces same response
-- Memory influence activates after 3+ interactions; cold sessions use defaults
+- Deterministic selection: same input always produces same offline response
+- Memory influence activates after 3+ interactions — cold sessions use defaults
 - `concept_pairs` requires 2+ co-occurrences to register an association
-- Offline responses are structured, not generative — connect Claude API for open-ended output
+- Offline responses are structured — connect Claude API for open-ended output
+- State transitions require 2 consecutive signals (hysteresis) — single words don't trigger
 
 ---
 
-*Last updated: 2026-06-07*
+*Last updated: 2026-06-08*
