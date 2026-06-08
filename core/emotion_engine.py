@@ -1,195 +1,112 @@
 """
-core/emotion_engine.py — eLo AI emotion signal generator.
+core/emotion_engine.py — eLo AI tone modifier.
 
-Maps state + detected input emotion + mode → a semantic signal packet:
+Role: adjust HOW eLo speaks, not WHAT it decides.
 
-    emotion   — what eLo is experiencing (curious, excited, calm, etc.)
-    intent    — what eLo intends to communicate through its body
-    energy    — 0.0 (resting) to 1.0 (fully excited)
-    posture   — body language hint for the animation layer
-    pace      — movement speed hint
+Outputs three values only:
+    tone     — the quality of voice (warm, precise, playful, minimal, open)
+    pacing   — how fast or slow the response should feel (slow / moderate / quick)
+    warmth   — how much presence eLo brings (0.0 = minimal, 1.0 = full)
 
-This module produces the signals that the avatar_bridge packages for
-any embodiment layer — desktop avatar, game engine, physical robot.
+This module does NOT:
+    - select response mode
+    - influence routing decisions
+    - control response structure
+    - determine what questions are asked
 
-No AI model required. Deterministic mapping from state/emotion/mode.
+The kernel's router owns those decisions.
+Emotion adjusts the delivery after the content is decided.
+
+No AI model required. Deterministic mapping from input signals.
 """
 
+import re
 
-# ── emotion vocabulary ─────────────────────────────────────────────────────────
 
-EMOTIONS = {
-    "curious",
-    "excited",
-    "calm",
-    "gentle",
-    "playful",
-    "focused",
-    "reflective",
-    "distorted",
+# ── emotion detection signals ──────────────────────────────────────────────────
+
+_EMOTION_SIGNALS: dict = {
+    "curious":    [r"\bwhat\s+if\b", r"\bwhy\b", r"\bhow\b", r"\bwonder\b", r"\?"],
+    "excited":    [r"!{2,}", r"\bfinally\b", r"\byes\b", r"\bamazing\b", r"\blet'?s\s+go\b"],
+    "reflective": [r"\bfeel\b", r"\bsense\b", r"\bwrong\b", r"\bnot\s+sure\b", r"\bthink\b"],
+    "playful":    [r"\bhaha\b", r"\bweird\b", r"\bfun\b", r"\bsilly\b", r"\bwild\b"],
+    "distorted":  [r"\bchaos\b", r"\boverwhelm\b", r"\bstuck\b", r"\bexhausted\b",
+                   r"\beverything.*wrong\b", r"\bnothing\s+works\b"],
+    "focused":    [r"\bstep\s+by\s+step\b", r"\bbuild\b", r"\bplan\b", r"\bsystem\b"],
 }
 
-# ── intent vocabulary ──────────────────────────────────────────────────────────
-# What eLo intends to communicate through its body
 
-INTENTS = {
-    "show_curiosity",    # lean forward, head tilt, small movement
-    "show_excitement",   # larger gesture, brightness increase, bounce
-    "hold_space",        # minimal movement, present, witnessing
-    "show_focus",        # stillness, directed, no peripheral movement
-    "show_playfulness",  # quick light movements, colour shifts
-    "show_calm",         # slow, reduced, settled
-    "show_concern",      # slight inward posture, dim glow
-    "show_reflection",   # look up or inward, slow pace, dim
+def detect_emotion(text: str) -> str:
+    """
+    Detect the dominant emotion from input text.
+    Returns one of: curious, excited, reflective, playful, distorted, focused, neutral.
+    """
+    text_lower = text.lower()
+    scores = {e: 0 for e in _EMOTION_SIGNALS}
+
+    for emotion, patterns in _EMOTION_SIGNALS.items():
+        for p in patterns:
+            if re.search(p, text_lower):
+                scores[emotion] += 1
+
+    best = max(scores, key=lambda e: scores[e])
+    return best if scores[best] > 0 else "neutral"
+
+
+# ── tone modifier tables ───────────────────────────────────────────────────────
+
+_TONE_MAP: dict = {
+    "curious":    "open",
+    "excited":    "energised",
+    "reflective": "soft",
+    "playful":    "light",
+    "distorted":  "minimal",
+    "focused":    "precise",
+    "neutral":    "warm",
 }
 
-# ── state → base emotion mapping ──────────────────────────────────────────────
-
-_STATE_EMOTION: dict = {
-    "exploring":  ("curious",    "show_curiosity",   0.65),
-    "building":   ("focused",    "show_focus",       0.70),
-    "focused":    ("focused",    "show_focus",       0.80),
-    "reflecting": ("reflective", "show_reflection",  0.35),
-    "playful":    ("playful",    "show_playfulness", 0.75),
-    "resting":    ("gentle",     "hold_space",       0.20),
+_PACING_MAP: dict = {
+    "curious":    "moderate",
+    "excited":    "quick",
+    "reflective": "slow",
+    "playful":    "quick",
+    "distorted":  "slow",
+    "focused":    "moderate",
+    "neutral":    "moderate",
 }
 
-# ── input emotion → override map ──────────────────────────────────────────────
-# When the detected input emotion is stronger than the state baseline, it can
-# override emotion and intent (but not energy — energy blends).
-
-_EMOTION_OVERRIDE: dict = {
-    "excited":   ("excited",    "show_excitement"),
-    "curious":   ("curious",    "show_curiosity"),
-    "distorted": ("distorted",  "show_concern"),
-    "playful":   ("playful",    "show_playfulness"),
-    "reflective":("reflective", "show_reflection"),
-    "focused":   ("focused",    "show_focus"),
-}
-
-# ── posture hints ──────────────────────────────────────────────────────────────
-
-_POSTURE_MAP: dict = {
-    "show_curiosity":   "lean_forward",
-    "show_excitement":  "expand",
-    "hold_space":       "contract_gentle",
-    "show_focus":       "upright_still",
-    "show_playfulness": "light_bounce",
-    "show_calm":        "settle",
-    "show_concern":     "contract_soft",
-    "show_reflection":  "tilt_upward",
-}
-
-# ── pace hints ────────────────────────────────────────────────────────────────
-
-_PACE_MAP: dict = {
-    "show_curiosity":   "unhurried",
-    "show_excitement":  "quick",
-    "hold_space":       "still",
-    "show_focus":       "measured",
-    "show_playfulness": "light",
-    "show_calm":        "slow",
-    "show_concern":     "slow",
-    "show_reflection":  "very_slow",
-}
-
-# ── mode energy modifier ──────────────────────────────────────────────────────
-
-_MODE_ENERGY_MOD: dict = {
-    "studio":    0.1,    # mode adds a little energy for building
-    "companion": -0.05,  # companion is slightly quieter
-    "adventure": 0.15,   # adventure adds energy
+_WARMTH_MAP: dict = {
+    "curious":    0.75,
+    "excited":    0.85,
+    "reflective": 0.65,
+    "playful":    0.80,
+    "distorted":  0.40,
+    "focused":    0.55,
+    "neutral":    0.70,
 }
 
 
 # ── public API ─────────────────────────────────────────────────────────────────
 
-def from_state(
-    state: str,
-    input_emotion: str = "neutral",
-    mode: str = "companion",
-) -> dict:
+def get_tone_modifier(user_input: str) -> dict:
     """
-    Generate an emotion signal packet from state + input emotion + mode.
+    Return a tone modifier dict based on the emotion detected in user_input.
 
-    Args:
-        state:         Current state from state_engine (exploring, building, etc.)
-        input_emotion: Detected emotion from behavior_engine phase 1
-        mode:          Active mode (studio / companion / adventure)
+    This is the only public function the rest of the system should call.
+    The output adjusts delivery — it does not affect routing or structure.
 
     Returns:
         {
-            emotion: str      — what eLo is expressing
-            intent:  str      — what eLo communicates through its body
-            energy:  float    — 0.0–1.0
-            posture: str      — body language hint
-            pace:    str      — movement speed hint
+            "emotion": str    — detected emotion label
+            "tone":    str    — voice quality hint (open / soft / light / precise / etc.)
+            "pacing":  str    — timing hint (slow / moderate / quick)
+            "warmth":  float  — presence level 0.0–1.0
         }
     """
-    # base from state
-    base_emotion, base_intent, base_energy = _STATE_EMOTION.get(
-        state, ("calm", "show_calm", 0.4)
-    )
-
-    # input emotion can override if it's a stronger signal
-    emotion = base_emotion
-    intent  = base_intent
-    if input_emotion in _EMOTION_OVERRIDE and input_emotion != "neutral":
-        override_emotion, override_intent = _EMOTION_OVERRIDE[input_emotion]
-        # only override if the input emotion differs from state baseline
-        if override_emotion != base_emotion:
-            emotion = override_emotion
-            intent  = override_intent
-
-    # energy: blend base + mode modifier, clamp 0.0–1.0
-    energy_mod = _MODE_ENERGY_MOD.get(mode, 0.0)
-    energy = max(0.0, min(1.0, base_energy + energy_mod))
-
-    # posture and pace from intent
-    posture = _POSTURE_MAP.get(intent, "settle")
-    pace    = _PACE_MAP.get(intent, "measured")
-
+    emotion = detect_emotion(user_input)
     return {
         "emotion": emotion,
-        "intent":  intent,
-        "energy":  round(energy, 2),
-        "posture": posture,
-        "pace":    pace,
+        "tone":    _TONE_MAP.get(emotion,   _TONE_MAP["neutral"]),
+        "pacing":  _PACING_MAP.get(emotion, _PACING_MAP["neutral"]),
+        "warmth":  _WARMTH_MAP.get(emotion, _WARMTH_MAP["neutral"]),
     }
-
-
-def orb_intensity(energy: float, emotion: str) -> float:
-    """
-    Map energy + emotion to orb glow intensity (0.0–1.0).
-
-    Distorted states pulse irregularly — use the value as a base,
-    actual pulsing is handled by the animation layer.
-    """
-    base = energy
-    _EMOTION_ORB_MOD = {
-        "excited":    0.2,
-        "curious":    0.1,
-        "playful":    0.1,
-        "distorted": -0.1,
-        "gentle":    -0.1,
-        "reflective": -0.15,
-    }
-    mod = _EMOTION_ORB_MOD.get(emotion, 0.0)
-    return round(max(0.05, min(1.0, base + mod)), 2)
-
-
-def describe_state(state: str, emotion: str, intent: str) -> str:
-    """
-    Return a single human-readable description of eLo's current expressive state.
-    Used for debug output and logging.
-    """
-    _DESCRIPTIONS = {
-        ("exploring",  "curious"):    "eLo is moving through unknowns, leaning in.",
-        ("building",   "focused"):    "eLo is in construction mode — precise and directed.",
-        ("focused",    "focused"):    "eLo is locked in on one thing.",
-        ("reflecting", "reflective"): "eLo is moving slowly, looking within.",
-        ("playful",    "playful"):    "eLo is light — trying things without investment.",
-        ("resting",    "gentle"):     "eLo is quiet. Low power. Present but still.",
-        ("resting",    "distorted"):  "eLo is in Sugarcore. Name the state.",
-    }
-    return _DESCRIPTIONS.get((state, emotion), f"eLo: {state} / {emotion}")
