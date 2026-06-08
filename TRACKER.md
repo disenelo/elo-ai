@@ -47,6 +47,31 @@
 
 ---
 
+### Phase 5 — Embodied eLo (avatar architecture)
+
+**Goal:** Connect eLo AI OS to a visual character. Same brain, any body.
+
+Architecture: eLo Core outputs `{state, emotion, intent, energy}` → animation layer converts to movement.
+
+- [x] `core/emotion_engine.py` — state + input → emotion signal packet
+- [x] `core/avatar_bridge.py` — packages signals for any embodiment consumer
+- [x] `core/visual_memory.py` — groups memory into spatial cluster world
+- [x] `docs/avatar_architecture.md` — full dual-body architecture spec
+- [ ] `avatar/terminal.py` — ASCII renderer (test pipeline without GUI)
+- [ ] `avatar/canvas_2d.py` — tkinter 2D desktop avatar
+- [ ] `avatar/unity_bridge.py` — JSON bridge to Unity Animator (eLo-Planet)
+
+**eLo has no eyes — expression comes from:**
+head tilt · lean · bounce · stillness · rotation · orb glow · movement speed
+
+**Visual memory world:**
+eLo reads memory → groups into concept clusters → produces spatial graph → any renderer draws it.
+Terminal version works now. 2D canvas is Phase 5.
+
+**Success criteria:** eLo's body responds to what its brain is doing.
+
+---
+
 ### Phase 4 — Embodiment
 
 **Goal:** eLo has physical presence.
