@@ -31,6 +31,10 @@ Rules this kernel enforces:
 import re
 from collections import deque
 
+# stateless engines — imported here so kernel owns all passive engine calls
+from core.emotion_engine  import get_tone_modifier
+from core.identity_engine import decide as _identity_decide
+
 
 # ── session loop state ────────────────────────────────────────────────────────
 # Module-level — one session's worth of history.
@@ -462,27 +466,38 @@ def assemble_context(raw_context: dict) -> dict:
         "tone":            raw_context.get("tone_signal",        "neutral"),
         "returning_theme": raw_context.get("returning_theme",    ""),
         "symbolic_echo":   raw_context.get("symbolic_echo",      ""),
-        "project":         raw_context.get("project_momentum",   "elo_core"),
+        "project":         raw_context.get("project_momentum",   raw_context.get("project", "elo_core")),
     }
 
-    # ── current state (from state_engine — informational only) ──
+    # ── current state (from state_engine — passive style weights only) ──
     state_summary = {
-        "name":             raw_context.get("state",              "exploring"),
-        "imagination_level":raw_context.get("imagination_level",  "medium"),
-        "response_length":  raw_context.get("response_length",    "medium"),
+        "name":        raw_context.get("state",           "exploring"),
+        "tone_bias":   raw_context.get("state_tone_bias", "open"),
+        "weight":      raw_context.get("state_weight",    0.5),
+        "pacing_bias": raw_context.get("state_pacing",    "moderate"),
     }
 
-    # ── identity profile (from identity_engine — informational only) ──
+    # ── emotion modifier (from emotion_engine — delivery hints only) ──
+    _em = raw_context.get("emotion", {}) or {}
+    emotion_summary = {
+        "label":   _em.get("emotion", "neutral"),
+        "tone":    _em.get("tone",    "warm"),
+        "pacing":  _em.get("pacing",  "moderate"),
+        "warmth":  _em.get("warmth",  0.7),
+    }
+
+    # ── identity profile (from identity_engine — passive informational) ──
+    _id = raw_context.get("identity", {}) or {}
     identity_summary = {
-        "intent":      raw_context.get("identity_intent",     ""),
-        "perspective": raw_context.get("identity_perspective",""),
-        "bias":        raw_context.get("identity_bias",       ""),
-        "values":      raw_context.get("identity_values",     []),
+        "intent":      _id.get("intent",        raw_context.get("identity_intent",      "")),
+        "perspective": _id.get("perspective",   raw_context.get("identity_perspective", "")),
+        "bias":        _id.get("response_bias", raw_context.get("identity_bias",        "")),
+        "values":      _id.get("values",        raw_context.get("identity_values",      [])),
     }
 
-    # ── active projects (from project registry) ──
+    # ── active projects ──
     active_projects = {
-        "current": raw_context.get("project_momentum", "elo_core"),
+        "current": raw_context.get("project_momentum", raw_context.get("project", "elo_core")),
         "pairs":   raw_context.get("concept_pairs",    {}),
     }
 
@@ -492,12 +507,13 @@ def assemble_context(raw_context: dict) -> dict:
     return {
         "memory":              memory_summary,
         "state":               state_summary,
+        "emotion":             emotion_summary,
         "identity":            identity_summary,
         "projects":            active_projects,
         "loop_detected":       loop["detected"],
         "loop_reason":         loop["reason"],
         "reflection_disabled": loop["reflection_disabled"],
-        # flat aliases for backward compat with _route / _generate
+        # flat aliases consumed by _route / _generate
         "memory_tone":     memory_summary["tone"],
         "returning_theme": memory_summary["returning_theme"],
         "symbolic_echo":   memory_summary["symbolic_echo"],
@@ -979,28 +995,42 @@ def decide_response(user_input: str, context: dict = None) -> tuple:
             loop_reason       — str
             reflection_disabled — bool
     """
-    ctx = context or {}
+    ctx = dict(context) if context else {}   # copy — never mutate caller's dict
 
-    # layer 1
+    # ── passive engine calls — kernel owns all stateless engine invocations ──
+    #
+    # emotion_engine: tone/pacing/warmth modifier — no routing influence
+    # identity_engine: values/intent/perspective — no routing influence
+    # Both are pure functions; neither depends on session state.
+
+    ctx["emotion"]  = get_tone_modifier(user_input)
+    ctx["identity"] = _identity_decide(
+        user_input = user_input,
+        state      = ctx.get("state", "exploring"),
+        memory     = ctx,
+        project    = ctx.get("project", ctx.get("project_momentum", "elo_core")),
+    )
+
+    # ── layer 1: input classifier ──
     classification = _classify(user_input)
     classification["_text"] = user_input.lower()
 
-    # layer 2
+    # ── layer 2: context assembler ──
     assembled = _assemble(ctx)
 
-    # layer 3
+    # ── layer 3: response router ──
     mode = _route(classification, assembled)
 
-    # loop check (for debug block — detect_loop already ran inside assemble)
+    # loop state for debug / meta
     loop_result = {
         "detected": assembled["loop_detected"],
         "reason":   assembled.get("loop_reason", ""),
     }
 
-    # layer 4
+    # ── layer 4: generation ──
     response = _generate(user_input, mode, classification, assembled)
 
-    # layer 5
+    # ── layer 5: loop filter ──
     response = _filter(response, mode)
 
     # debug block (does not touch response content — appended separately)

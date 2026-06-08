@@ -1,40 +1,41 @@
 """
-core_engine.py — eLo AI runtime orchestration.
+core/core_engine.py — eLo AI session orchestrator.
 
-Offline-only. No LLM API calls. No external dependencies.
+Manages session state and I/O. Passes all inputs to the kernel.
+
+Responsibilities:
+    - StateEngine (session-scoped machine — tracks conversation state)
+    - memory_engine calls (file I/O — retrieves and stores interactions)
+    - OrbEngine (hardware/simulation output)
+    - Active mode for the session (/mode commands)
+
+What it does NOT do:
+    - Call emotion_engine  (kernel owns this)
+    - Call identity_engine (kernel owns this)
+    - Make routing decisions (kernel owns this)
 
 Flow per turn:
-    user input
-        → detect mode (studio / adventure / companion)
-        → resolve project namespace from registry
-        → retrieve structured memory (identity / project / emotional / symbolic)
-        → generate offline response (5-phase reasoning simulation)
-        → store interaction tagged to project
-        → update orb state
-        → return response
+    update state → build memory → pass to kernel → store result
 """
 
 import json
 import os
 import re
 
-from core.kernel         import decide_response, reset_session
-from core.behavior_engine import generate_offline_response
+from core.kernel      import decide_response, reset_session, set_debug
 from core.memory_engine import (
     load_registry,
     resolve_project,
     build_memory_influence,
     store_interaction,
-    load_long_term_memory,
 )
-from core.state_engine    import StateEngine
-from core.identity_engine import decide as identity_decide, explain as identity_explain
+from core.state_engine import StateEngine
 from plugins.hardware.orb_engine import OrbEngine
 
 
 # ── paths ──────────────────────────────────────────────────────────────────────
 
-_DIR         = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # project root
+_DIR         = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _PROMPT_FILE = os.path.join(_DIR, "config", "system_prompt.txt")
 _PERSONALITY = os.path.join(_DIR, "config", "personality.json")
 
@@ -55,7 +56,9 @@ def _load_personality() -> dict:
     return {}
 
 
-# ── mode detection ─────────────────────────────────────────────────────────────
+# ── mode vocabulary ────────────────────────────────────────────────────────────
+
+_VALID_MODES = ("studio", "companion", "adventure")
 
 _MODE_SIGNALS = {
     "studio": {
@@ -90,29 +93,13 @@ def detect_mode(text: str) -> str:
     return best if scores[best] > 0 else "companion"
 
 
-# ── mode overlays (injected into offline engine context) ───────────────────────
-
-_OVERLAYS = {
-    "studio": (
-        "MODE: STUDIO — building. Lead with the next real step. "
-        "Structure is the creative act. Chunk logic: reassemble fragments into a new shape. "
-        "Be direct. Do not philosophise. Build."
-    ),
-    "companion": (
-        "MODE: COMPANION — thinking together. "
-        "Listen before responding. Ask one good question. "
-        "Stay in contradiction if needed. K-7 logic: respond through behaviour, not declaration."
-    ),
-    "adventure": (
-        "MODE: ADVENTURE — world logic. Expand before naming. Think in systems that become stories. "
-        "Follow symbols. eLo Universe rules apply. Ask 'what does this become?' not 'what is this?'"
-    ),
-}
-
-
-# ── main runtime ───────────────────────────────────────────────────────────────
+# ── session runtime ────────────────────────────────────────────────────────────
 
 class CoreEngine:
+    """
+    Session runtime. Manages state, memory I/O, and orb.
+    Delegates all response decisions to the kernel.
+    """
 
     def __init__(self, orb: OrbEngine = None):
         self.orb          = orb or OrbEngine()
@@ -120,94 +107,85 @@ class CoreEngine:
         self._personality = _load_personality()
         self._active_mode = "companion"
         self.state_engine = StateEngine()
-        reset_session()   # clear kernel loop state at session start
+        reset_session()
 
     def reload(self):
-        """Re-read config from disk — call after editing files or exporting memory."""
+        """Re-read config and registry from disk."""
         self._registry    = load_registry()
         self._personality = _load_personality()
 
     def set_mode(self, mode: str):
-        if mode in _OVERLAYS:
+        if mode in _VALID_MODES:
             self._active_mode = mode
             self.state_engine.force_state(mode)
             print(f"  [mode: {mode}]")
 
     def turn(self, user_input: str, debug: bool = False) -> str:
         """
-        Process one user turn end-to-end.
+        Process one user turn.
 
-        Args:
-            user_input: Raw text from the user.
-            debug:      If True, prints the internal reasoning summary.
+        core_engine's job here:
+            1. Update state machine (session-scoped)
+            2. Build memory influence (file I/O)
+            3. Assemble a clean context dict
+            4. Call kernel.decide_response() — all decisions happen there
+            5. Store the interaction
 
         Returns:
-            eLo's response as a plain string.
+            eLo's response string.
         """
-        # sense
         self.orb.listen()
 
-        # mode: respect explicit set_mode; otherwise detect from input
-        mode    = self._active_mode
+        # resolve project from input
         project = resolve_project(user_input, self._registry)
 
-        # update conversational state (natural transition from input signals)
+        # 1 — state update (session machine — must run before memory)
         current_state, transitioned = self.state_engine.update(user_input)
-        state_hint = self.state_engine.get_behavioral_hint()
+        state_influence = self.state_engine.get_style_influence()
 
-        # build active memory influence — derived signals, not just raw records
+        # 2 — memory (file I/O — builds influence signals from stored interactions)
         self.orb.think()
         memory = build_memory_influence(user_input, project_hint=project)
 
-        # ── identity decision (highest level — runs before emotion) ──
-        identity = identity_decide(
-            user_input=user_input,
-            state=current_state,
-            memory=memory,
-            project=project,
-        )
+        # 3 — clean context for kernel
+        # kernel receives: memory signals + state style weights + project + mode
+        # kernel handles: emotion engine + identity engine internally
+        context = {
+            **memory,
+            "state":           current_state,
+            "state_tone_bias": state_influence["tone_bias"],
+            "state_weight":    state_influence["style_weight"],
+            "state_pacing":    state_influence["pacing_bias"],
+            "project":         project,
+            "mode":            self._active_mode,
+        }
 
-        # inject all signals into memory dict for behavior_engine to read
-        memory["state"]            = current_state
-        memory["state_tone"]       = state_hint["tone"]
-        memory["response_length"]  = state_hint["response_length"]
-        memory["imagination_level"]= state_hint["imagination_level"]
-        memory["project_focus"]    = state_hint["project_focus"]
-        memory["elo_voice_hint"]   = state_hint["elo_voice_hint"]
-        # identity signals — response_bias is the most actionable
-        memory["identity_values"]    = identity["values"]
-        memory["identity_perspective"]= identity["perspective"]
-        memory["identity_intent"]    = identity["intent"]
-        memory["identity_bias"]      = identity["response_bias"]
-
-        # ── kernel: single decision pipeline ──
-        # decide_response() runs: classify → assemble → route → generate → filter
-        response, kernel_meta = decide_response(user_input, memory)
-
+        # 4 — kernel: single decision pipeline
         if debug:
-            _print_reasoning(kernel_meta, current_state, transitioned, state_hint, identity)
+            set_debug(True)
+        response, meta = decide_response(user_input, context)
+        if debug:
+            set_debug(False)
+            _print_kernel_meta(meta, current_state, transitioned)
 
-        # store + wrap up
+        # 5 — store
         self.orb.insight()
-        store_interaction(user_input, response, mode, project_tag=project)
+        store_interaction(user_input, response, meta["mode"], project_tag=project)
         self.orb.idle()
 
         return response
 
 
-def _print_reasoning(kernel_meta: dict, state: str, transitioned: bool, state_hint: dict, identity: dict = None):
-    """Print kernel decision summary for debug mode."""
-    ic   = kernel_meta.get("input_class", {})
-    mode = kernel_meta.get("mode", "?")
-    loop = kernel_meta.get("loop_detected", False)
-    transition_marker = " ← TRANSITION" if transitioned else ""
+def _print_kernel_meta(meta: dict, state: str, transitioned: bool):
+    """Print kernel decision summary (used when debug=True)."""
+    ic     = meta.get("input_class", {})
+    mode   = meta.get("mode", "?")
+    loop   = meta.get("loop_detected", False)
+    reason = meta.get("loop_reason", "")
+    marker = " ← TRANSITION" if transitioned else ""
 
-    print(f"\n  [kernel]   mode={mode}{' ← LOOP BREAK' if loop else ''}")
-    print(f"  [classify] factual={ic.get('is_factual')} emotional={ic.get('is_emotional')} "
-          f"creative={ic.get('is_creative')} distorted={ic.get('is_distorted')} "
-          f"contradiction={ic.get('is_contradiction')} entities={ic.get('entities')}")
-    print(f"  [state]    {state}{transition_marker} | "
-          f"length={state_hint['response_length']} "
-          f"imagination={state_hint['imagination_level']}")
-    if identity:
-        print(f"  [identity] intent={identity['intent']} bias={identity['response_bias']}")
+    print(f"\n  [kernel]   mode={mode}{' ← LOOP BREAK: ' + reason if loop else ''}")
+    print(f"  [classify] type={ic.get('_resolved_type', '?')} "
+          f"factual={ic.get('is_factual')} creative={ic.get('is_creative')} "
+          f"distorted={ic.get('is_distorted')} entities={ic.get('entities')}")
+    print(f"  [state]    {state}{marker}")

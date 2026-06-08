@@ -90,9 +90,10 @@ def test_imagination_signals_route_to_adventure():
         assert core_engine.detect_mode(text) == "adventure", f"Failed for: {text!r}"
 
 def test_adventure_overlay_contains_expansion_instruction():
-    overlay = core_engine._OVERLAYS["adventure"]
-    assert "Expand" in overlay or "expand" in overlay
-    assert "what does this become" in overlay.lower() or "become" in overlay.lower()
+    # kernel CREATIVE mode frames contain expansion language
+    from core.kernel import _CREATIVE_FRAMES
+    combined = " ".join(_CREATIVE_FRAMES).lower()
+    assert "become" in combined or "follow" in combined
 
 
 # ─── memory retrieval ──────────────────────────────────────────────────────────
@@ -134,9 +135,14 @@ def test_system_prompt_loads():
     assert len(prompt) > 50
 
 def test_overlays_contain_universe_references():
-    assert "Chunk" in core_engine._OVERLAYS["studio"]
-    assert "K-7" in core_engine._OVERLAYS["companion"]
-    assert "eLo Universe" in core_engine._OVERLAYS["adventure"]
+    # kernel entity definitions reference all universe entities
+    from core.kernel import _DIRECT_DEFINITIONS
+    assert "Chunk" in _DIRECT_DEFINITIONS
+    assert "K-7" in _DIRECT_DEFINITIONS
+    assert "Sugarcore" in _DIRECT_DEFINITIONS
+    # and the definitions contain universe logic
+    assert "fragment" in _DIRECT_DEFINITIONS["Chunk"].lower()
+    assert "overload" in _DIRECT_DEFINITIONS["Sugarcore"].lower()
 
 def test_llm_placeholder_mode():
     # Without an API key, call_llm now routes to the offline engine.
