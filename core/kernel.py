@@ -624,21 +624,25 @@ def route(classification: dict, context: dict) -> str:
         UNCERTAINTY         → SIMPLIFY
         CONVERSATION        → CONVERSATIONAL
 
-    Override conditions (checked first):
-        1. Loop detected    → DIRECT (break repetition)
-        2. Distortion       → GENTLE_GROUNDED (regardless of type)
+    Override conditions (priority order):
+        1. Distortion or emotional input → GENTLE_GROUNDED (never overridden by loop)
+           Genuine distress always gets a grounded response, even if the system
+           has been in that mode repeatedly. Loop detection exists to break
+           philosophical spirals, not to cut off emotional support.
+        2. Loop detected (non-emotional) → DIRECT (break repetition)
     """
-    input_type  = classification.get("type",         "CONVERSATION")
-    is_distorted = classification.get("is_distorted", False)
-    loop_detected = context.get("loop_detected",      False)
+    input_type    = classification.get("type",         "CONVERSATION")
+    is_distorted  = classification.get("is_distorted", False)
+    loop_detected = context.get("loop_detected",       False)
 
-    # override 1: loop — break repetition with direct answer
+    # override 1: emotional/distorted inputs always get grounded response
+    # loop detection does not apply — genuine distress warrants consistent presence
+    if is_distorted or input_type == "EMOTIONAL":
+        return "GENTLE_GROUNDED"
+
+    # override 2: loop — force direct to break non-emotional repetition
     if loop_detected:
         return "DIRECT"
-
-    # override 2: genuine distortion from current input — always ground first
-    if is_distorted:
-        return "GENTLE_GROUNDED"
 
     # direct type → mode map — no exceptions
     _TYPE_TO_MODE = {
