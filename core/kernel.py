@@ -604,6 +604,17 @@ MODES = (
 )
 
 
+# module-level so _route_with_reason() can reference it
+_TYPE_TO_MODE: dict = {
+    "INFORMATION_REQUEST": "DIRECT",
+    "PROJECT_QUERY":       "STRUCTURED",
+    "EMOTIONAL":           "GENTLE_GROUNDED",
+    "CREATIVE":            "CREATIVE",
+    "UNCERTAINTY":         "SIMPLIFY",
+    "CONVERSATION":        "CONVERSATIONAL",
+}
+
+
 def route(classification: dict, context: dict) -> str:
     """
     Layer 3 — THE only decision-maker for response mode.
@@ -639,34 +650,14 @@ def route(classification: dict, context: dict) -> str:
 
     # override 1: emotional/distorted inputs always get grounded response
     # loop detection does not apply — genuine distress warrants consistent presence
-    if is_distorted or input_type == "EMOTIONAL":
-        return "GENTLE_GROUNDED"
-
-    # override 2: loop — force direct to break non-emotional repetition
-    if loop_detected:
-        return "DIRECT"
-
-    # direct type → mode map — no exceptions
-    _TYPE_TO_MODE = {
-        "INFORMATION_REQUEST": "DIRECT",
-        "PROJECT_QUERY":       "STRUCTURED",
-        "EMOTIONAL":           "GENTLE_GROUNDED",
-        "CREATIVE":            "CREATIVE",
-        "UNCERTAINTY":         "SIMPLIFY",
-        "CONVERSATION":        "CONVERSATIONAL",
-    }
-
-    return _TYPE_TO_MODE.get(input_type, "CONVERSATIONAL")
+    mode, _ = _route_with_reason(classification, assembled)
+    return mode
 
 
 # keep internal alias for pipeline compatibility
 def _route(classification: dict, assembled: dict) -> str:
-    # internal flags → public classification dict bridge
-    pub_classification = {
-        "type":         _resolve_type(classification),
-        "is_distorted": classification.get("is_distorted", False),
-    }
-    return route(pub_classification, assembled)
+    mode, _ = _route_with_reason(classification, assembled)
+    return mode
 
 
 # ── layer 4: generation layer ─────────────────────────────────────────────────
@@ -986,13 +977,193 @@ def _filter(response: str, mode: str) -> str:
     return response.strip()
 
 
-# ── debug mode ───────────────────────────────────────────────────────────────
+# ── routing reason ────────────────────────────────────────────────────────────
+
+_ROUTING_REASONS: dict = {
+    "INFORMATION_REQUEST": "INFORMATION_REQUEST → DIRECT (type mapping)",
+    "PROJECT_QUERY":       "PROJECT_QUERY → STRUCTURED (type mapping)",
+    "EMOTIONAL":           "EMOTIONAL → GENTLE_GROUNDED (type mapping)",
+    "CREATIVE":            "CREATIVE → CREATIVE (type mapping)",
+    "UNCERTAINTY":         "UNCERTAINTY → SIMPLIFY (type mapping)",
+    "CONVERSATION":        "CONVERSATION → CONVERSATIONAL (default)",
+}
+
+
+def _route_with_reason(classification: dict, assembled: dict) -> tuple:
+    """
+    Canonical routing implementation — returns (mode, reason_string).
+
+    Both route() and _route() delegate here so there is exactly one routing
+    decision path. reason_string is consumed by CognitiveDebugger only and
+    never affects response content.
+
+    classification may be either:
+        - internal flags dict from _classify()  (has is_factual, is_creative, etc.)
+        - public type dict from classify_input() (has "type" key)
+    """
+    # derive input_type from whichever format we received
+    if "type" in classification:
+        input_type = classification["type"]
+    else:
+        input_type = _resolve_type(classification)
+
+    is_distorted  = classification.get("is_distorted", False)
+    loop_detected = assembled.get("loop_detected",     False)
+    loop_reason   = assembled.get("loop_reason",       "")
+
+    if is_distorted or input_type == "EMOTIONAL":
+        qualifier = "distorted signal" if is_distorted else "EMOTIONAL type"
+        return "GENTLE_GROUNDED", f"{qualifier} → GENTLE_GROUNDED (loop-immune)"
+
+    if loop_detected:
+        return "DIRECT", f"loop detected ({loop_reason}) → DIRECT override"
+
+    mode   = _TYPE_TO_MODE.get(input_type, "CONVERSATIONAL")
+    reason = _ROUTING_REASONS.get(input_type, f"{input_type} → {mode}")
+    return mode, reason
+
+
+# ── cognitive debug mode ──────────────────────────────────────────────────────
+
+class CognitiveDebugger:
+    """
+    Parallel observability layer for the eLo kernel.
+
+    Emits a structured cognitive debug snapshot after each decision cycle.
+
+    Rules:
+        - Never modifies the response string
+        - Writes to a configurable output stream (default: stdout via print)
+        - Operates as a pure side channel — no effect on routing or generation
+        - Can be disabled with set_cognitive_debug(False)
+    """
+
+    _WIDTH = 54
+
+    def __init__(self):
+        self.enabled: bool      = False
+        self._writer            = print   # callable(str) — can be replaced
+
+    def configure(self, enabled: bool, writer=None):
+        self.enabled = enabled
+        if writer is not None:
+            self._writer = writer
+
+    def emit(
+        self,
+        user_input:     str,
+        classification: dict,
+        assembled:      dict,
+        mode:           str,
+        routing_reason: str,
+    ):
+        """
+        Format and emit the cognitive debug snapshot.
+        Called from decide_response() after generation + filtering.
+        Never touches the response string.
+        """
+        if not self.enabled:
+            return
+
+        W = self._WIDTH
+        top    = "╔" + "═" * W + "╗"
+        sep    = "╠" + "─" * W + "╣"
+        bot    = "╚" + "═" * W + "╝"
+
+        def row(label: str, value: str) -> str:
+            line = f"  {label:<14}: {value}"
+            return "║ " + line[: W - 2].ljust(W - 2) + " ║"
+
+        def head(title: str) -> str:
+            return "║ " + f" {title} ".center(W - 2, "─") + " ║"
+
+        ic = classification
+        mem = assembled.get("memory", {})
+        st  = assembled.get("state",  {})
+        em  = assembled.get("emotion",{})
+
+        # resolve type from flags if not already resolved
+        ic_type = ic.get("type") or _resolve_type(ic)
+        ic_cplx = _resolve_complexity(ic, ic_type)
+
+        lines = [
+            top,
+            head("eLo COGNITIVE DEBUG"),
+            head("INPUT"),
+            row("input", f'"{user_input[:38]}"'),
+            row("type", f'{ic_type}  /  complexity={ic_cplx.upper()}'),
+            row("entities", str(ic.get("entities") or "none")),
+            row("factual", str(ic.get("is_factual", False))),
+            row("creative", str(ic.get("is_creative", False))),
+            row("distorted", str(ic.get("is_distorted", False))),
+            sep,
+            head("ROUTING"),
+            row("mode", mode),
+            row("reason", routing_reason[:W - 20]),
+            row("loop", f'{assembled.get("loop_detected", False)}  ({assembled.get("loop_reason") or "none"})'),
+            row("reflection", "off" if assembled.get("reflection_disabled") else "on"),
+            sep,
+            head("SNAPSHOTS"),
+            row("memory",
+                f'tone={mem.get("tone","?")}  project={mem.get("project","?")}  '
+                f'theme={"yes" if mem.get("returning_theme") else "none"}'),
+            row("state",
+                f'name={st.get("name","?")}  weight={st.get("weight","?")}  '
+                f'pacing={st.get("pacing_bias","?")}'),
+            row("emotion",
+                f'{em.get("label","?")}  tone={em.get("tone","?")}  '
+                f'warmth={em.get("warmth","?")}'),
+            bot,
+        ]
+
+        self._writer("\n".join(lines))
+
+
+# module-level singleton
+_cognitive_debugger = CognitiveDebugger()
+
+
+def set_cognitive_debug(enabled: bool, writer=None):
+    """
+    Enable or disable the cognitive debug observability layer.
+
+    Args:
+        enabled: True to activate, False to silence.
+        writer:  Optional callable(str) for the debug output.
+                 Defaults to print (stdout).
+                 Pass sys.stderr.write to redirect, or any file.write.
+
+    This is completely separate from set_debug() — it does NOT append
+    anything to the response string.
+    """
+    _cognitive_debugger.configure(enabled, writer)
+
+
+def cognitive_debug_snapshot(
+    user_input:     str,
+    classification: dict,
+    assembled:      dict,
+    mode:           str,
+    routing_reason: str,
+):
+    """
+    Emit a cognitive debug snapshot if the debugger is enabled.
+    Called automatically by decide_response(). Also callable manually.
+    """
+    _cognitive_debugger.emit(user_input, classification, assembled, mode, routing_reason)
+
+
+# ── legacy debug mode (appends to response) ───────────────────────────────────
 
 _DEBUG_ENABLED: bool = False
 
 
 def set_debug(enabled: bool):
-    """Toggle kernel debug mode. Does not affect response content."""
+    """
+    Toggle the legacy response-append debug mode.
+    Note: use set_cognitive_debug() for a cleaner observability layer
+    that does not affect response content.
+    """
     global _DEBUG_ENABLED
     _DEBUG_ENABLED = enabled
 
@@ -1082,9 +1253,10 @@ def decide_response(raw_context, _legacy_context: dict = None) -> tuple:
     assembled = _assemble(ctx)
 
     # ── layer 3: response router ──
-    mode = _route(classification, assembled)
+    # use _route_with_reason so cognitive debugger gets the explanation
+    mode, routing_reason = _route_with_reason(classification, assembled)
 
-    # loop state for debug / meta
+    # loop state for meta
     loop_result = {
         "detected": assembled["loop_detected"],
         "reason":   assembled.get("loop_reason", ""),
@@ -1096,7 +1268,10 @@ def decide_response(raw_context, _legacy_context: dict = None) -> tuple:
     # ── layer 5: loop filter ──
     response = _filter(response, mode)
 
-    # debug block (does not touch response content — appended separately)
+    # ── cognitive debug (side channel — never modifies response) ──
+    cognitive_debug_snapshot(user_input, classification, assembled, mode, routing_reason)
+
+    # ── legacy debug (appends to response — kept for backward compat) ──
     if _DEBUG_ENABLED:
         debug_block = _build_debug_block(
             user_input, classification, assembled, mode, loop_result, ctx
