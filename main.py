@@ -19,9 +19,9 @@ CLI commands during chat:
 import argparse
 import sys
 
-from core_engine import CoreEngine
-from memory_engine import export_memory, load_registry
-from orb_engine import OrbEngine, run_orb_cli
+from core.core_engine import CoreEngine
+from core.memory_engine import export_memory, load_registry
+from plugins.hardware.orb_engine import OrbEngine, run_orb_cli
 
 
 _VALID_COMMANDS = {"/mode", "/exit", "/export", "/project", "/reload", "/debug"}
