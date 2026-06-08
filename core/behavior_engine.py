@@ -51,6 +51,58 @@ _INPUT_TYPES = {
                       r"\bwant\b.*\bbut\b", r"\band yet\b", r"\bat the same time\b"],
 }
 
+# ── input classification (5 semantic classes) ──────────────────────────────────
+# Determines the primary intent behind the user's message.
+# Used to gate entity responses and ensure information requests get direct answers.
+
+_INFORMATION_REQUEST_SIGNALS = [
+    r"\bwhat\s+is\b", r"\bwhat\s+are\b", r"\bwhat\s+does\b", r"\bwho\s+is\b",
+    r"\bhow\s+does\b", r"\bhow\s+do\b", r"\bexplain\b", r"\bdescribe\b",
+    r"\btell\s+me\s+about\b", r"\bwhat\s+does\s+\w+\s+mean\b",
+    r"\bwhat\s+is\s+the\b", r"\bwhat\s+was\b",
+]
+
+_EMOTIONAL_EXPRESSION_SIGNALS = [
+    r"\bi\s+feel\b", r"\bi'?m\s+(tired|exhausted|scared|lost|stuck|sad|happy|excited)\b",
+    r"\bsomething\s+feels\b", r"\bi\s+don'?t\s+know\b",
+]
+
+_CREATIVE_IMAGINATION_SIGNALS = [
+    r"\bwhat\s+if\b", r"\bimagine\b", r"\bwhat\s+could\b", r"\bwhat\s+would\b",
+    r"\bwhat\s+might\b",
+]
+
+_PROJECT_SIGNALS = [
+    r"\bsugarcore\s+arc\b", r"\borb\s+(system|device)\b", r"\beLo\s+[Pp]lanet\b",
+    r"\bproject\b", r"\bthe\s+\w+\s+arc\b", r"\bworking\s+on\b",
+]
+
+_UNCERTAINTY_SIGNALS = [
+    r"\bnot\s+sure\b", r"\bi\s+don'?t\s+know\b", r"\buncertain\b",
+    r"\bmaybe\b.*\bmaybe\b", r"\bnot\s+sure\s+where\b",
+]
+
+
+def _classify_input_type(text: str) -> str:
+    """
+    Classify input into one of five semantic classes.
+
+    Priority: INFORMATION_REQUEST > EMOTIONAL_EXPRESSION > CREATIVE_IMAGINATION
+              > PROJECT_QUESTION > UNCERTAINTY > GENERAL
+    """
+    text_lower = text.lower()
+    if any(re.search(p, text_lower) for p in _INFORMATION_REQUEST_SIGNALS):
+        return "INFORMATION_REQUEST"
+    if any(re.search(p, text_lower) for p in _EMOTIONAL_EXPRESSION_SIGNALS):
+        return "EMOTIONAL_EXPRESSION"
+    if any(re.search(p, text_lower) for p in _CREATIVE_IMAGINATION_SIGNALS):
+        return "CREATIVE_IMAGINATION"
+    if any(re.search(p, text_lower) for p in _PROJECT_SIGNALS):
+        return "PROJECT_QUESTION"
+    if any(re.search(p, text_lower) for p in _UNCERTAINTY_SIGNALS):
+        return "UNCERTAINTY"
+    return "GENERAL"
+
 _EMOTION_SIGNALS = {
     "curious":    {r"\bwhat if\b": 2, r"\bwhy does\b": 2, r"\bi wonder\b": 2,
                    r"\?": 1, r"\bwhy\b": 1, r"\bhow\b": 1, r"\bcurious\b": 1},
@@ -184,14 +236,25 @@ def _blend_emotion(detected: str, memory_tone: str) -> str:
     """
     Blend locally detected emotion with the tone pattern from memory history.
 
-    Memory tone takes precedence only when it signals distortion or strong identity
-    pressure — states that persist across turns and shouldn't be overridden by
-    a single message that looks different on the surface.
+    Memory tone nudges interpretation — it does not override it.
+
+    Rules:
+    - "reflective" memory tone nudges neutral inputs toward reflective (gentle tilt)
+    - "distorted" memory tone only applies when the current input ALSO signals
+      stress or confusion — it never forces "Something is overloaded" on neutral inputs
+    - Excited/curious/focused/playful detected emotions are never overridden by memory
     """
-    # these states are sticky — they persist even when the current message looks calm
-    _STICKY_STATES = {"distorted", "reflective"}
-    if memory_tone in _STICKY_STATES and detected not in _STICKY_STATES:
-        return memory_tone
+    # memory tone only applies when detected emotion is neutral or directionless
+    if detected not in ("neutral",):
+        return detected   # strong local signal wins always
+
+    # for neutral inputs: reflective memory gently tilts toward reflective
+    if memory_tone == "reflective":
+        return "reflective"
+
+    # distorted memory does NOT apply to neutral inputs
+    # "Something is overloaded" must be earned by the current message, not by history
+    # (history is visible in returning_theme and symbolic_echo instead)
     return detected
 
 
@@ -416,6 +479,21 @@ _ENTITY_RESPONSES: dict = {
                  "What's overloaded right now?",
 }
 
+# Entity definitions — used when someone asks ABOUT an entity (information request)
+# Different from _ENTITY_RESPONSES which diagnose a STATE the user is IN
+_ENTITY_DEFINITIONS: dict = {
+    "eLo":       "eLo is the explorer — the part of the system that moves through unknowns "
+                 "by curiosity rather than certainty. In the AI, eLo is the identity itself.",
+    "Chunk":     "Chunk is the reconstruction principle — when something fragments, "
+                 "Chunk reassembles it into a new shape rather than restoring the original.",
+    "K-7":       "K-7 is the emotional signal layer — it reads what behaviour reveals "
+                 "rather than what words say. The pattern is more honest than the explanation.",
+    "Core":      "Core is the navigation layer — the thread that orients everything "
+                 "when direction is lost. Memory as compass.",
+    "Sugarcore": "Sugarcore is the distortion state — when a system overloads, "
+                 "signal fragments faster than it can be processed. A state, not a villain.",
+}
+
 # Contradiction responses — held, not resolved
 _CONTRADICTION_RESPONSES = [
     "Both of those are true. They don't cancel each other out — they're in tension, and that's the real thing.",
@@ -531,11 +609,26 @@ def _assemble(
     returning_theme: str,
     symbolic_echo: str,
     closing: str,
-    grounding: str,          # "simple" | "everyday" | "abstract"
-    text: str,               # original input for deterministic selection
-    memory_hint: str = "",   # cross-category association from memory synthesis
+    grounding: str,           # "simple" | "everyday" | "abstract"
+    text: str,                # original input for deterministic selection
+    memory_hint: str = "",    # cross-category association from memory synthesis
+    input_class: str = "GENERAL",  # from _classify_input_type()
 ) -> str:
     parts = []
+
+    # ── information request path: direct answer first ──
+    # "What is X?" / "What does X mean?" → answer directly, no state-naming, no philosophy
+    if input_class == "INFORMATION_REQUEST" and entity_response:
+        parts = []
+        if opening:
+            parts.append(opening)
+        parts.append(entity_response)
+        if returning_theme:
+            parts.append(returning_theme)
+        # one short question allowed — but not a reflective loop starter
+        if _count_questions(parts) == 0:
+            parts.append(closing)
+        return "\n\n".join(p for p in parts if p)
 
     # ── grounded path: direct response, no abstraction chain ──
     if grounding in ("simple", "everyday"):
@@ -655,26 +748,21 @@ def generate_offline_response(
     # blend locally detected emotion with the persistent tone from memory history
     blended_emotion = _blend_emotion(emotion, memory_tone)
 
-    # response_style from memory categories can override blended_emotion
+    # response_style from memory categories can nudge emotion (hint only — not override)
     if response_style:
         if "slow" in response_style or "don't rush" in response_style:
-            blended_emotion = _blend_emotion(blended_emotion, "reflective")
-        elif "momentum" in response_style or "energy" in response_style:
-            blended_emotion = _blend_emotion(blended_emotion, "excited")
+            # only slow down if emotion isn't already active/excited
+            if blended_emotion in ("neutral", "focused"):
+                blended_emotion = _blend_emotion(blended_emotion, "reflective")
 
-    # identity bias strengthens grounding decisions when the highest layer says so
-    # "name_first" → treat input as needing Sugarcore/state naming (distorted path)
-    # "slow_down"  → pull toward reflective even if local emotion looks neutral
-    # "stay_in_tension" → force contradiction handling even without lexical markers
-    if identity_bias == "name_first" and not is_contradiction:
-        blended_emotion = _blend_emotion(blended_emotion, "distorted")
-    elif identity_bias == "slow_down":
-        blended_emotion = _blend_emotion(blended_emotion, "reflective")
-    elif identity_bias == "stay_in_tension" and not is_contradiction:
-        is_contradiction = True   # identity says hold tension even if not lexically detected
+    # identity bias: light hints only — never override locally detected emotion
+    # REMOVED: name_first → force distorted (was causing "Something is overloaded" for all inputs)
+    # REMOVED: stay_in_tension → force is_contradiction (was causing false contradiction responses)
+    # identity signals are available in debug output; they inform structure, not override emotion
 
     # ── phase 4: creative transformation ──
-    grounding = _assess_grounding(user_input, concepts, entities)
+    input_class = _classify_input_type(user_input)
+    grounding   = _assess_grounding(user_input, concepts, entities)
 
     # state engine can push imagination level:
     #   "resting" or "focused" states suppress imagination on borderline inputs
@@ -688,8 +776,17 @@ def generate_offline_response(
 
     entity_response = ""
     if entities:
-        entity_response = _ENTITY_RESPONSES.get(entities[0], "")
         first_entity = entities[0]
+
+        # INFORMATION_REQUEST about an entity: user is asking what it IS,
+        # not describing themselves as being in that state.
+        # Give the entity's definition, not a state-diagnosis response.
+        if input_class == "INFORMATION_REQUEST":
+            entity_response = _ENTITY_DEFINITIONS.get(first_entity, "")
+        else:
+            # symbolic use: user is referencing the entity in context → state response
+            entity_response = _ENTITY_RESPONSES.get(first_entity, "")
+
         if symbolic_echo and first_entity.lower() not in symbolic_echo.lower():
             symbolic_echo = ""
 
@@ -725,6 +822,7 @@ def generate_offline_response(
         frame, returning_theme, symbolic_echo, closing,
         grounding, user_input,
         memory_hint=memory_hint,
+        input_class=input_class,
     )
 
     if debug:
@@ -758,6 +856,7 @@ def generate_offline_response(
             },
             "phase_4_transform": {
                 "grounding":     grounding,
+                "input_class":   input_class,
                 "opening":       opening,
                 "entity":        entity_response,
                 "contradiction": contradiction_response,
