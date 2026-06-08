@@ -1,4 +1,9 @@
-# eLo AI — Development Tracker
+# eLo AI OS — Development Tracker
+
+**v1.0.0-stable** — Released 2026-06-09 — Architecture FROZEN
+
+See `RELEASE.md` for the full architecture lock declaration.
+See `docs/final_system_report.md` for the complete system report.
 
 ---
 
