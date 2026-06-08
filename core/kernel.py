@@ -36,21 +36,159 @@ from collections import deque
 # Module-level — one session's worth of history.
 # Call reset_session() at the start of each conversation.
 
-_LOOP_WINDOW  = 4    # turns to track for loop detection
+_LOOP_WINDOW  = 4    # turns to track
 _LOOP_TRIGGER = 3    # consecutive same-mode turns before forcing DIRECT
 
 _loop_state = {
-    "recent_modes":     deque(maxlen=_LOOP_WINDOW),
-    "recent_questions": deque(maxlen=3),
-    "last_opening":     "",
+    "recent_modes":              deque(maxlen=_LOOP_WINDOW),
+    "recent_questions":          deque(maxlen=4),
+    "last_opening":              "",
+    "recent_fragments":          deque(maxlen=4),  # first-sentence of each response
+    "reflection_disabled_turns": 0,                # countdown: >0 = reflection disabled
 }
+
+# ── reflective question fingerprints ──────────────────────────────────────────
+# These fragments identify responses that are pure reflective questions.
+# Three or more consecutive responses matching these = recursive reflection loop.
+
+_REFLECTIVE_FINGERPRINTS = [
+    r"what does that feel like",
+    r"what'?s the thing underneath",
+    r"if you follow that",
+    r"where does it point",
+    r"what would it look like",
+    r"what needs to be true",
+    r"what'?s underneath",
+    r"what does this need to",
+    r"what'?s blocking",
+    r"where has this been",
+]
 
 
 def reset_session():
-    """Clear loop detection state. Call at the start of each session."""
+    """Clear all loop detection state. Call at the start of each session."""
     _loop_state["recent_modes"].clear()
     _loop_state["recent_questions"].clear()
+    _loop_state["recent_fragments"].clear()
     _loop_state["last_opening"] = ""
+    _loop_state["reflection_disabled_turns"] = 0
+
+
+def _extract_fragment(response: str) -> str:
+    """Extract the first sentence (up to 60 chars) as the response fingerprint."""
+    for sep in (".\n", ".\r", ".\t", "?", "!"):
+        idx = response.find(sep)
+        if 0 < idx <= 80:
+            return response[: idx + 1].strip().lower()
+    return response[:60].strip().lower()
+
+
+def _is_reflective(fragment: str) -> bool:
+    """Return True if the fragment matches a known reflective question pattern."""
+    return any(re.search(p, fragment) for p in _REFLECTIVE_FINGERPRINTS)
+
+
+def _normalized_question(text: str) -> str:
+    """Normalize a question for comparison: lowercase, no punctuation."""
+    return re.sub(r"[^a-z0-9\s]", "", text.lower()).strip()
+
+
+def record_response(response: str):
+    """
+    Register a generated response into the loop detection state.
+    Call immediately after generate_response() returns.
+
+    Also decrements the reflection_disabled_turns countdown.
+    """
+    fragment = _extract_fragment(response)
+    _loop_state["recent_fragments"].append(fragment)
+
+    # extract and record any closing question
+    sentences = re.split(r"[.!?]", response)
+    for s in reversed(sentences):
+        s = s.strip()
+        if s.endswith("?") or re.search(r"\bwhat\b|\bwhere\b|\bhow\b|\bwhy\b", s.lower()):
+            _loop_state["recent_questions"].append(_normalized_question(s))
+            break
+
+    # decrement reflection cooldown
+    if _loop_state["reflection_disabled_turns"] > 0:
+        _loop_state["reflection_disabled_turns"] -= 1
+
+
+def detect_loop() -> dict:
+    """
+    Detect conversational loops from session history.
+
+    Checks three independent patterns:
+
+    1. REPEATED_PHRASE
+       The same response fragment (first sentence) appears in 2+ of the
+       last 3 responses. eLo is saying the same thing twice.
+
+    2. REPEATED_QUESTION
+       The same question structure (normalized) appears in 2+ of the
+       last 3 recorded questions. eLo is asking the same thing twice.
+
+    3. RECURSIVE_REFLECTION
+       The last 3 responses all match known reflective question patterns.
+       eLo has entered a pure questioning spiral.
+
+    4. MODE_STAGNATION (existing)
+       The last _LOOP_TRIGGER turns all have the same mode (CONVERSATIONAL
+       or GENTLE_GROUNDED). Structural repetition at the routing level.
+
+    Returns:
+        {
+            "detected":            bool,
+            "reason":              str,   # which pattern triggered, or ""
+            "force_direct":        bool,  # same as detected
+            "reflection_disabled": bool,  # True if disabled countdown > 0
+        }
+    """
+    fragments  = list(_loop_state["recent_fragments"])
+    questions  = list(_loop_state["recent_questions"])
+    modes      = list(_loop_state["recent_modes"])
+    refl_off   = _loop_state["reflection_disabled_turns"] > 0
+
+    reason = ""
+
+    # 1 — repeated phrase
+    if len(fragments) >= 3:
+        last3 = fragments[-3:]
+        if len(set(last3)) < len(last3):   # any duplicates
+            reason = "repeated_phrase"
+
+    # 2 — repeated question
+    if not reason and len(questions) >= 3:
+        last3q = questions[-3:]
+        if len(set(last3q)) < len(last3q):
+            reason = "repeated_question"
+
+    # 3 — recursive reflection
+    if not reason and len(fragments) >= 3:
+        last3 = fragments[-3:]
+        if all(_is_reflective(f) for f in last3):
+            reason = "recursive_reflection"
+
+    # 4 — mode stagnation
+    if not reason and len(modes) >= _LOOP_TRIGGER:
+        last_n = modes[-_LOOP_TRIGGER:]
+        if (len(set(last_n)) == 1 and last_n[-1] in ("CONVERSATIONAL", "GENTLE_GROUNDED")):
+            reason = "mode_stagnation"
+
+    detected = bool(reason)
+
+    # when loop is detected, arm the reflection cooldown for next turn
+    if detected and not refl_off:
+        _loop_state["reflection_disabled_turns"] = 1
+
+    return {
+        "detected":            detected,
+        "reason":              reason,
+        "force_direct":        detected,
+        "reflection_disabled": refl_off or detected,
+    }
 
 
 # ── layer 1: input classifier ─────────────────────────────────────────────────
@@ -348,20 +486,17 @@ def assemble_context(raw_context: dict) -> dict:
         "pairs":   raw_context.get("concept_pairs",    {}),
     }
 
-    # ── loop detection (session-scoped, instance-level) ──
-    recent_modes = list(_loop_state["recent_modes"])
-    loop_detected = (
-        len(recent_modes) >= _LOOP_TRIGGER
-        and len(set(recent_modes[-_LOOP_TRIGGER:])) == 1
-        and recent_modes[-1] in ("CONVERSATIONAL", "GENTLE_GROUNDED")
-    )
+    # ── loop detection — full multi-pattern check ──
+    loop = detect_loop()
 
     return {
-        "memory":          memory_summary,
-        "state":           state_summary,
-        "identity":        identity_summary,
-        "projects":        active_projects,
-        "loop_detected":   loop_detected,
+        "memory":              memory_summary,
+        "state":               state_summary,
+        "identity":            identity_summary,
+        "projects":            active_projects,
+        "loop_detected":       loop["detected"],
+        "loop_reason":         loop["reason"],
+        "reflection_disabled": loop["reflection_disabled"],
         # flat aliases for backward compat with _route / _generate
         "memory_tone":     memory_summary["tone"],
         "returning_theme": memory_summary["returning_theme"],
@@ -739,12 +874,26 @@ def _filter(response: str, mode: str) -> str:
     """
     Layer 5 — post-generation quality filter.
 
-    - Prevents the same opening from appearing twice in a row
-    - Strips double question marks if assembly created them
-    - Records mode for loop detection
+    - Records mode + response into loop detection state
+    - Prevents identical opening from appearing twice in a row
+    - Strips reflective question if reflection is disabled this turn
     """
-    # record mode for next-turn loop detection
+    # record mode for mode-stagnation detection
     _loop_state["recent_modes"].append(mode)
+
+    # record response fragment + question for content-level loop detection
+    record_response(response)
+
+    # strip reflective question if reflection is currently disabled
+    if _loop_state["reflection_disabled_turns"] > 1:   # >1 because record_response decremented
+        sentences = response.split("\n\n")
+        cleaned = []
+        for s in sentences:
+            if s.strip().endswith("?") and _is_reflective(s.lower()):
+                continue    # drop this reflective question
+            cleaned.append(s)
+        if cleaned:
+            response = "\n\n".join(cleaned)
 
     # prevent identical opening twice in a row
     first_line = response.split("\n")[0].strip()
@@ -754,9 +903,7 @@ def _filter(response: str, mode: str) -> str:
             response = "\n\n".join(lines[1:])
     _loop_state["last_opening"] = first_line
 
-    # clean up
-    response = response.strip()
-    return response
+    return response.strip()
 
 
 # ── public entry point ────────────────────────────────────────────────────────
