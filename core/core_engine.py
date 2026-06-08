@@ -18,6 +18,7 @@ import json
 import os
 import re
 
+from core.kernel         import decide_response, reset_session
 from core.behavior_engine import generate_offline_response
 from core.memory_engine import (
     load_registry,
@@ -119,6 +120,7 @@ class CoreEngine:
         self._personality = _load_personality()
         self._active_mode = "companion"
         self.state_engine = StateEngine()
+        reset_session()   # clear kernel loop state at session start
 
     def reload(self):
         """Re-read config from disk — call after editing files or exporting memory."""
@@ -178,14 +180,12 @@ class CoreEngine:
         memory["identity_intent"]    = identity["intent"]
         memory["identity_bias"]      = identity["response_bias"]
 
-        # generate offline response
+        # ── kernel: single decision pipeline ──
+        # decide_response() runs: classify → assemble → route → generate → filter
+        response, kernel_meta = decide_response(user_input, memory)
+
         if debug:
-            response, reasoning = generate_offline_response(
-                user_input, memory, mode, debug=True
-            )
-            _print_reasoning(reasoning, current_state, transitioned, state_hint, identity)
-        else:
-            response = generate_offline_response(user_input, memory, mode)
+            _print_reasoning(kernel_meta, current_state, transitioned, state_hint, identity)
 
         # store + wrap up
         self.orb.insight()
@@ -195,24 +195,19 @@ class CoreEngine:
         return response
 
 
-def _print_reasoning(reasoning: dict, state: str, transitioned: bool, state_hint: dict, identity: dict = None):
-    """Print internal phase summary for debug mode."""
-    p1 = reasoning.get("phase_1_interpretation", {})
-    p2 = reasoning.get("phase_2_memory", {})
-    p3 = reasoning.get("phase_3_identity", {})
+def _print_reasoning(kernel_meta: dict, state: str, transitioned: bool, state_hint: dict, identity: dict = None):
+    """Print kernel decision summary for debug mode."""
+    ic   = kernel_meta.get("input_class", {})
+    mode = kernel_meta.get("mode", "?")
+    loop = kernel_meta.get("loop_detected", False)
     transition_marker = " ← TRANSITION" if transitioned else ""
-    print(f"\n  [debug p1] type={p1.get('input_type')} emotion={p1.get('emotion')} "
-          f"concepts={p1.get('concepts')} entities={p1.get('entities')}")
-    print(f"  [debug p2] tone={p2.get('memory_tone')} blended={p2.get('blended_emotion')} "
-          f"recurring={p2.get('recurring_concepts')} "
-          f"theme={p2.get('returning_theme')!r}")
-    print(f"  [debug p3] mode={p3.get('mode')} contradiction={p3.get('is_contradiction')}")
+
+    print(f"\n  [kernel]   mode={mode}{' ← LOOP BREAK' if loop else ''}")
+    print(f"  [classify] factual={ic.get('is_factual')} emotional={ic.get('is_emotional')} "
+          f"creative={ic.get('is_creative')} distorted={ic.get('is_distorted')} "
+          f"contradiction={ic.get('is_contradiction')} entities={ic.get('entities')}")
     print(f"  [state]    {state}{transition_marker} | "
           f"length={state_hint['response_length']} "
-          f"imagination={state_hint['imagination_level']} "
-          f"focus={state_hint['project_focus']}")
+          f"imagination={state_hint['imagination_level']}")
     if identity:
-        print(f"  [identity] perspective={identity['perspective']} "
-              f"intent={identity['intent']} "
-              f"bias={identity['response_bias']}")
-        print(f"             values: {', '.join(identity['values'])}")
+        print(f"  [identity] intent={identity['intent']} bias={identity['response_bias']}")
