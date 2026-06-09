@@ -1,15 +1,16 @@
 """
-main.py — eLo OS v2 terminal interface.
+main.py — eLo OS v2.1 terminal interface.
 
-Cognitive cycle per turn (8 steps):
-    1. Receive input
-    2. Retrieve relevant memory (attention-filtered only)
-    3. Compute attention model
-    4. Compute executive function decision (tone + stability)
-    5. Select voice tone (inside exec decision)
-    6. Generate response
-    7. Apply loop + safety filters
-    8. Output response + optional Unity metadata
+Deterministic cognitive cycle per turn:
+
+    1. STATE LOAD
+    2. MEMORY RETRIEVAL (attention-filtered only)
+    3. ATTENTION COMPUTATION
+    4. EXECUTIVE DECISION
+    5. VOICE SELECTION       (inside exec decision)
+    6. RESPONSE GENERATION
+    7. STABILITY FILTER      (state_machine.is_stabilisation_forced)
+    8. OUTPUT + OPTIONAL METADATA
 
 Run:
     python main.py
@@ -17,8 +18,8 @@ Run:
 Commands:
     /exit    close and save
     /reset   reset session context (not memory)
-    /debug   toggle debug output (includes Unity signals)
-    /memory  show current state snapshot
+    /debug   toggle full pipeline debug output
+    /memory  show current memory state snapshot
 """
 
 import os
@@ -29,6 +30,7 @@ from memory.obsidian_loader import get_context_block
 from memory.memory_pack_builder import load as load_memory_pack, build as build_memory_pack
 from core import attention as attn
 from runtime.executive import decide as exec_decide
+from runtime import state_machine as sm
 from runtime.prompt_builder import build as build_prompt
 from backends.mock_backend import MockBackend as _MockBackend
 from unity.unity_signal import convert as unity_convert
@@ -72,9 +74,10 @@ def _pick_backend():
 # ── main ───────────────────────────────────────────────────────────────────────
 
 def run():
-    # ── startup ────────────────────────────────────────────────────────────────
-    state = state_manager.load()
-    state = state_manager.increment_session(state)
+    # ── Step 1: STATE LOAD ─────────────────────────────────────────────────────
+    state        = state_manager.load()
+    state        = state_manager.increment_session(state)
+    runtime_state = sm.fresh()
     state_manager.save(state)
 
     try:
@@ -99,7 +102,6 @@ def run():
 
     # ── conversation loop ──────────────────────────────────────────────────────
     while True:
-        # Step 1: receive input
         try:
             raw = input("You: ").strip()
         except (EOFError, KeyboardInterrupt):
@@ -117,7 +119,8 @@ def run():
                 break
             elif cmd == "/reset":
                 last_inputs.clear()
-                memory_pack = build_memory_pack(state)
+                runtime_state = sm.fresh()
+                memory_pack   = build_memory_pack(state)
                 print("eLo: Session reset. Memory still intact.")
                 continue
             elif cmd == "/debug":
@@ -125,44 +128,67 @@ def run():
                 print(f"  [debug: {'on' if debug else 'off'}]")
                 continue
             elif cmd == "/memory":
-                print(f"  Sessions:  {state.get('session_count', 0)}")
-                print(f"  Topics:    {state.get('last_topics', [])}")
+                print(f"  Sessions:    {state.get('session_count', 0)}")
+                print(f"  Topics:      {state.get('last_topics', [])}")
                 tone = state["emotional_history"][-1]["tone"] if state.get("emotional_history") else "none"
-                print(f"  Tone:      {tone}")
+                print(f"  Tone:        {tone}")
                 anchor = state.get("session_anchor", {})
                 if anchor.get("current_session_summary"):
-                    print(f"  Thread:    {anchor['current_session_summary']}")
-                print(f"  Last seen: {state.get('last_active', 'never')[:16]}")
+                    print(f"  Thread:      {anchor['current_session_summary']}")
+                print(f"  Mode:        {sm.mode_from(runtime_state)}")
+                print(f"  Stability:   {sm.stability(runtime_state):.2f}")
+                print(f"  Loop count:  {runtime_state.get('loop_counter', 0)}")
+                print(f"  Last seen:   {state.get('last_active', 'never')[:16]}")
                 continue
             else:
                 print("  Commands: /exit  /reset  /debug  /memory")
                 continue
 
-        # Step 7 (pre-check): hard loop detection
+        # Step 7 (pre-check): hard loop detection — 3 identical inputs
         last_inputs.append(raw)
         if len(last_inputs) > 3:
             last_inputs.pop(0)
-        loop_detected = (len(last_inputs) == 3 and len(set(last_inputs)) == 1)
-        if loop_detected:
+        hard_loop = (len(last_inputs) == 3 and len(set(last_inputs)) == 1)
+        if hard_loop:
             print("\neLo: Take a breath. Try a different message.\n")
             last_inputs.clear()
             continue
 
-        # Step 2 + 3: memory retrieval + attention model
+        # Step 2 + 3: MEMORY RETRIEVAL + ATTENTION
         attention_model = attn.compute(raw, memory_pack, state, loop_detected=False)
 
-        # Step 4 + 5: executive function + voice tone
+        # Step 4 + 5: EXECUTIVE DECISION + VOICE SELECTION
         exec_decision = exec_decide(attention_model, loop_detected=False)
 
+        # Update state machine — may override exec_decision if loop_counter > 3
+        runtime_state = sm.update(runtime_state, attention_model, exec_decision, loop_signal=False)
+
+        if sm.is_stabilisation_forced(runtime_state):
+            # Step 7: STABILITY FILTER forced by state machine
+            exec_decision = {
+                "tone":           "DIRECT",
+                "max_sentences":  1,
+                "stability":      True,
+                "intent":         exec_decision.get("intent", "conversation"),
+                "response_goal":  "stabilise",
+                "cognitive_load": "low",
+                "priority_order": ["stabilise", "simplify", "ignore"],
+            }
+            # decay loop counter to give it room to recover
+            runtime_state = dict(runtime_state)
+            runtime_state["loop_counter"] = max(0, runtime_state["loop_counter"] - 2)
+
         if debug:
+            print(f"  [mode: {sm.mode_from(runtime_state)} | stability: {sm.stability(runtime_state):.2f} "
+                  f"| loop_counter: {runtime_state.get('loop_counter', 0)}]")
             print(f"  [intent: {exec_decision['intent']} | tone: {exec_decision['tone']} "
-                  f"| stability: {exec_decision['stability']}]")
+                  f"| goal: {exec_decision['response_goal']} | load: {exec_decision['cognitive_load']}]")
             emo_state = attention_model.get("emotional_context", {}).get("inferred_state", "?")
             n_high    = len(attention_model.get("high_priority_memory", []))
             n_med     = len(attention_model.get("medium_priority_memory", []))
             print(f"  [emotion: {emo_state} | mem: {n_high}H {n_med}M]")
 
-        # Step 6: build prompt + generate response
+        # Step 6: BUILD PROMPT + GENERATE RESPONSE
         system = build_prompt(raw, attention=attention_model, exec_decision=exec_decision)
 
         if debug:
@@ -175,7 +201,7 @@ def run():
             response = _fallback.generate_response(raw, "CONVERSATIONAL", {}, {}, {}, {})["response_text"]
         ms = int((time.perf_counter() - t0) * 1000)
 
-        # Step 8: output response + optional Unity metadata
+        # Step 8: OUTPUT + OPTIONAL METADATA
         print(f"\neLo: {response}\n")
 
         if debug:
@@ -185,7 +211,7 @@ def run():
                 "emotion":       emo_ctx.get("inferred_state", "neutral"),
                 "state":         exec_decision.get("intent", ""),
                 "energy":        emo_ctx.get("energy", 0.5),
-                "loop_detected": False,
+                "loop_detected": sm.is_stabilisation_forced(runtime_state),
             })
             print(f"  [Unity: {unity_signal['animation_state']} | "
                   f"float={unity_signal['float_intensity']} | "
@@ -196,7 +222,7 @@ def run():
         state = state_manager.update(state, raw, response)
         state_manager.save(state)
 
-    # session close — compress experience into anchor
+    # session close — compress meaning into anchor
     state = state_manager.close_session(state)
     state_manager.save(state)
 

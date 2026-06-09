@@ -59,6 +59,30 @@ _MAX_SENTENCES: dict[str, int] = {
 }
 
 
+_RESPONSE_GOAL: dict[str, str] = {
+    "inquiry":      "answer",
+    "creation":     "create",
+    "emotional":    "stabilise",
+    "recall":       "reflect",
+    "conversation": "answer",
+    "stabilise":    "stabilise",
+    "simplify":     "clarify",
+}
+
+_GOAL_EMO_OVERRIDE: dict[str, str] = {
+    "overwhelmed": "stabilise",
+    "stressed":    "stabilise",
+}
+
+_COGNITIVE_LOAD: dict[str, str] = {
+    _TONE_SILENCE_AWARE:  "low",
+    _TONE_DIRECT:         "low",
+    _TONE_CHILDLIKE_WISE: "medium",
+    _TONE_WITTY:          "medium",
+    _TONE_JOYFUL:         "high",
+}
+
+
 def decide(attention_model: dict, loop_detected: bool = False) -> dict:
     """
     Compute the executive decision from the attention model.
@@ -69,12 +93,13 @@ def decide(attention_model: dict, loop_detected: bool = False) -> dict:
 
     Returns:
         ExecDecision dict:
-            {
-                "tone":          str,   one of 5 voice tones
-                "max_sentences": int,   1–4
-                "stability":     bool,  True = apply stability override
-                "intent":        str,   passed through for transparency
-            }
+            tone          — one of 5 voice tones
+            max_sentences — 1–4
+            stability     — True = apply stability override
+            intent        — passed through for transparency
+            response_goal — clarify | stabilise | explore | create | answer | reflect
+            cognitive_load — low | medium | high
+            priority_order — ["primary", "secondary", "ignore"] labels
     """
     intent = attention_model.get("intent", "conversation")
     emo    = attention_model.get("emotional_context", {})
@@ -83,26 +108,45 @@ def decide(attention_model: dict, loop_detected: bool = False) -> dict:
     # loop protection always wins
     if loop_detected or intent == "stabilise":
         return {
-            "tone":          _TONE_DIRECT,
-            "max_sentences": 1,
-            "stability":     True,
-            "intent":        intent,
+            "tone":           _TONE_DIRECT,
+            "max_sentences":  1,
+            "stability":      True,
+            "intent":         intent,
+            "response_goal":  "stabilise",
+            "cognitive_load": "low",
+            "priority_order": ["stabilise", "simplify", "ignore"],
         }
 
-    # emotional state overrides intent-based tone when strong
-    tone = _EMO_TONE_OVERRIDE.get(state) or _INTENT_TONE.get(intent, _TONE_CHILDLIKE_WISE)
+    # emotional override on response goal
+    goal = _GOAL_EMO_OVERRIDE.get(state) or _RESPONSE_GOAL.get(intent, "answer")
+    if goal == "stabilise" and state not in ("overwhelmed", "stressed"):
+        # emotional intent without strong distress → reflect instead
+        goal = "reflect"
 
-    # witty: light confusion or curiosity with low tension
+    # tone selection: emotional state overrides intent; witty on calm curiosity
+    tone    = _EMO_TONE_OVERRIDE.get(state) or _INTENT_TONE.get(intent, _TONE_CHILDLIKE_WISE)
     tension = emo.get("tension", 0.4)
     energy  = emo.get("energy", 0.5)
     if intent == "conversation" and tension < 0.3 and energy > 0.4:
         tone = _TONE_WITTY
 
-    stability = state in ("overwhelmed", "stressed") or intent in ("stabilise", "simplify")
+    is_stable = state in ("overwhelmed", "stressed") or intent in ("stabilise", "simplify")
+    cog_load  = _COGNITIVE_LOAD.get(tone, "medium")
+
+    # priority_order: what matters for this response
+    if is_stable:
+        priority_order = ["stabilise", "simplify", "ignore"]
+    elif intent in ("creation", "recall"):
+        priority_order = ["primary", "secondary", "ignore"]
+    else:
+        priority_order = ["primary", "secondary", "ignore"]
 
     return {
-        "tone":          tone,
-        "max_sentences": _MAX_SENTENCES.get(tone, 3),
-        "stability":     stability,
-        "intent":        intent,
+        "tone":           tone,
+        "max_sentences":  _MAX_SENTENCES.get(tone, 3),
+        "stability":      is_stable,
+        "intent":         intent,
+        "response_goal":  goal,
+        "cognitive_load": cog_load,
+        "priority_order": priority_order,
     }
