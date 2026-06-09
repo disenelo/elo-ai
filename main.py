@@ -1,13 +1,23 @@
 """
 main.py — eLo OS v2 terminal interface.
 
+Cognitive cycle per turn (8 steps):
+    1. Receive input
+    2. Retrieve relevant memory (attention-filtered only)
+    3. Compute attention model
+    4. Compute executive function decision (tone + stability)
+    5. Select voice tone (inside exec decision)
+    6. Generate response
+    7. Apply loop + safety filters
+    8. Output response + optional Unity metadata
+
 Run:
     python main.py
 
 Commands:
     /exit    close and save
     /reset   reset session context (not memory)
-    /debug   toggle debug output
+    /debug   toggle debug output (includes Unity signals)
     /memory  show current state snapshot
 """
 
@@ -18,8 +28,10 @@ from memory import state_manager
 from memory.obsidian_loader import get_context_block
 from memory.memory_pack_builder import load as load_memory_pack, build as build_memory_pack
 from core import attention as attn
+from runtime.executive import decide as exec_decide
 from runtime.prompt_builder import build as build_prompt
 from backends.mock_backend import MockBackend as _MockBackend
+from unity.unity_signal import convert as unity_convert
 
 # Always-available fallback — used when Claude fails mid-session
 _fallback = _MockBackend()
@@ -60,11 +72,11 @@ def _pick_backend():
 # ── main ───────────────────────────────────────────────────────────────────────
 
 def run():
+    # ── startup ────────────────────────────────────────────────────────────────
     state = state_manager.load()
     state = state_manager.increment_session(state)
     state_manager.save(state)
 
-    # load memory pack — built from vault + state; rebuild if empty
     try:
         memory_pack = load_memory_pack()
         if not memory_pack:
@@ -72,10 +84,9 @@ def run():
     except Exception:
         memory_pack = {}
 
-    vault_ctx             = get_context_block(max_chars=1200)
-    backend_name, send    = _pick_backend()
-    debug                 = False
-    last_inputs: list     = []   # loop detection
+    backend_name, send = _pick_backend()
+    debug          = False
+    last_inputs: list = []
 
     print()
     if state.get("session_summaries"):
@@ -86,7 +97,9 @@ def run():
     print(f"  (backend: {backend_name})")
     print()
 
+    # ── conversation loop ──────────────────────────────────────────────────────
     while True:
+        # Step 1: receive input
         try:
             raw = input("You: ").strip()
         except (EOFError, KeyboardInterrupt):
@@ -96,6 +109,7 @@ def run():
         if not raw:
             continue
 
+        # slash commands
         if raw.startswith("/"):
             cmd = raw.lower().strip()
             if cmd == "/exit":
@@ -124,7 +138,7 @@ def run():
                 print("  Commands: /exit  /reset  /debug  /memory")
                 continue
 
-        # hard loop detection — 3 identical inputs
+        # Step 7 (pre-check): hard loop detection
         last_inputs.append(raw)
         if len(last_inputs) > 3:
             last_inputs.pop(0)
@@ -134,18 +148,22 @@ def run():
             last_inputs.clear()
             continue
 
-        # attention layer — compute what matters right now
+        # Step 2 + 3: memory retrieval + attention model
         attention_model = attn.compute(raw, memory_pack, state, loop_detected=False)
 
+        # Step 4 + 5: executive function + voice tone
+        exec_decision = exec_decide(attention_model, loop_detected=False)
+
         if debug:
-            intent    = attention_model.get("intent", "?")
+            print(f"  [intent: {exec_decision['intent']} | tone: {exec_decision['tone']} "
+                  f"| stability: {exec_decision['stability']}]")
             emo_state = attention_model.get("emotional_context", {}).get("inferred_state", "?")
             n_high    = len(attention_model.get("high_priority_memory", []))
             n_med     = len(attention_model.get("medium_priority_memory", []))
-            print(f"  [intent: {intent} | emotion: {emo_state} | mem: {n_high}H {n_med}M]")
+            print(f"  [emotion: {emo_state} | mem: {n_high}H {n_med}M]")
 
-        # build prompt with attention-filtered memory
-        system = build_prompt(raw, attention=attention_model)
+        # Step 6: build prompt + generate response
+        system = build_prompt(raw, attention=attention_model, exec_decision=exec_decision)
 
         if debug:
             print(f"  [prompt: {len(system)} chars]")
@@ -157,15 +175,28 @@ def run():
             response = _fallback.generate_response(raw, "CONVERSATIONAL", {}, {}, {}, {})["response_text"]
         ms = int((time.perf_counter() - t0) * 1000)
 
-        if debug:
-            print(f"  [{backend_name} | {ms}ms]")
-
+        # Step 8: output response + optional Unity metadata
         print(f"\neLo: {response}\n")
+
+        if debug:
+            emo_ctx = attention_model.get("emotional_context", {})
+            unity_signal = unity_convert({
+                "mode":          exec_decision.get("tone", "CONVERSATIONAL"),
+                "emotion":       emo_ctx.get("inferred_state", "neutral"),
+                "state":         exec_decision.get("intent", ""),
+                "energy":        emo_ctx.get("energy", 0.5),
+                "loop_detected": False,
+            })
+            print(f"  [Unity: {unity_signal['animation_state']} | "
+                  f"float={unity_signal['float_intensity']} | "
+                  f"speed={unity_signal['speed']}]")
+            print(f"  [{backend_name} | {ms}ms]")
+            print()
 
         state = state_manager.update(state, raw, response)
         state_manager.save(state)
 
-    # session close — compress meaning into anchor
+    # session close — compress experience into anchor
     state = state_manager.close_session(state)
     state_manager.save(state)
 

@@ -179,11 +179,12 @@ Tone changes are adjustments in expression, not personality shifts."""
 
 
 def build(
-    user_input:    str,
-    state_context: str = "",
-    vault_context: str = "",
-    mode:          str = "CONVERSATIONAL",
-    attention:     dict = None,
+    user_input:     str,
+    state_context:  str = "",
+    vault_context:  str = "",
+    mode:           str = "CONVERSATIONAL",
+    attention:      dict = None,
+    exec_decision:  dict = None,
 ) -> str:
     """
     Assemble the system prompt.
@@ -195,6 +196,9 @@ def build(
 
     When attention is None (backward-compatible path):
         Falls back to raw state_context + vault_context injection.
+
+    exec_decision (optional): output of runtime.executive.decide().
+        Injects a tone directive telling Claude exactly which voice mode to use.
     """
     sections = [_PERSONA]
 
@@ -230,5 +234,19 @@ def build(
             sections.append(f"[PERSISTENT MEMORY]\n{state_context}")
         if vault_context.strip():
             sections.append(f"[WORLD MEMORY]\n{vault_context[:1200]}")
+
+    # executive directive — explicit tone instruction for this response
+    if exec_decision:
+        tone   = exec_decision.get("tone", "CHILDLIKE-WISE")
+        max_s  = exec_decision.get("max_sentences", 3)
+        stable = exec_decision.get("stability", False)
+        directive_lines = [
+            f"[DIRECTIVE — THIS RESPONSE ONLY]",
+            f"Voice tone: {tone}",
+            f"Max sentences: {max_s}",
+        ]
+        if stable:
+            directive_lines.append("Stability mode: active — stabilise first, simplify, no extra questions.")
+        sections.append("\n".join(directive_lines))
 
     return "\n\n".join(sections)
