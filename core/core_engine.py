@@ -20,21 +20,16 @@ import re
 
 from core.kernel             import decide_response, reset_session, set_debug
 from core.session_persistence import save_session, restore_session, session_info
-from backends.offline_backend import OfflineBackend as _OfflineBackend
-
-# module-level backend — swap at startup with set_response_backend()
-_response_backend = _OfflineBackend()
+from backends.backend_router import get_response as _router_get_response
 
 
 def set_response_backend(backend) -> None:
     """
-    Set the backend used for response generation.
-    Routing, classification, and loop detection remain in the kernel.
-    Only the generation step is delegated to this backend.
-    Call before starting the conversation loop.
+    Legacy shim — kept for backward compat.
+    Backend selection is now handled by backends/backend_router.py.
+    Use set_backend_mode("claude" | "mock" | "auto") instead.
     """
-    global _response_backend
-    _response_backend = backend
+    pass   # router handles backend selection
 from core.state_bus   import (StateBus, IdentitySnapshot, StateSnapshot,
                                EmotionSnapshot, MemorySnapshot)
 from core.memory_engine import (
@@ -239,9 +234,9 @@ class CoreEngine:
             set_debug(False)
             _print_kernel_meta(meta, raw_context.state.name)
 
-        # Layer 3: backend — generation only (routing mode comes from kernel)
+        # Layer 3: backend router — generation only, with auto-failover
         ctx = raw_context.to_context()
-        result = _response_backend.generate_response(
+        response = _router_get_response(
             user_input = user_input,
             mode       = meta["mode"],
             context    = ctx,
@@ -253,7 +248,6 @@ class CoreEngine:
             identity   = {k: getattr(raw_context.identity, k, "")
                           for k in ("intent","perspective","response_bias")},
         )
-        response = result["response_text"]
 
         # store
         self.orb.insight()

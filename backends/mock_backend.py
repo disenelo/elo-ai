@@ -1,0 +1,188 @@
+"""
+backends/mock_backend.py — eLo AI OS mock backend (feel-testing engine).
+
+Produces deterministic, natural conversational responses for UX testing.
+No API calls. No networking. No external dependencies.
+
+Purpose:
+    Test the "feel" of eLo without needing a live Claude API key.
+    Responses are grounded, human-like, and avoid philosophical recursion.
+
+Rules:
+    - Respond to literal user intent first
+    - No philosophical abstraction by default
+    - No recursive questioning patterns
+    - Natural, grounded tone
+    - Deterministic: same input + mode = same output
+"""
+
+from __future__ import annotations
+
+import re
+from backends.base_backend import BaseBackend, BackendResponse, MemoryContext, StateContext, IdentityContext
+
+
+# ── response pools per input category ─────────────────────────────────────────
+# Keyed by detected pattern. Deterministic selection via len(text) % len(pool).
+
+_GREETING_POOL = [
+    "I'm doing alright. What's on your mind?",
+    "Doing well, thanks. What are you working on?",
+    "I'm here. What's going on?",
+    "Good. What do you need?",
+    "Here and ready. What's up?",
+]
+
+_TIRED_POOL = [
+    "That sounds like a long day. Want to slow things down?",
+    "Rest is real. Nothing has to move right now.",
+    "That makes sense. Take your time.",
+    "Low energy is information. What does your body need?",
+    "Got it. We can keep this light.",
+]
+
+_IDENTITY_POOL = [
+    "I'm eLo — I'm here with you in this space.",
+    "I'm eLo. A thinking partner — not an assistant.",
+    "eLo. I'm here to think alongside you.",
+    "I'm eLo — I help ideas become real.",
+]
+
+_CHUNK_POOL = [
+    "Chunk is the reconstruction principle — when something breaks, it doesn't have to go back to the original shape. It becomes something new.",
+    "Chunk is about reassembly. Fragments don't restore — they transform.",
+    "Chunk: the idea that broken things reform into something different, not just repaired.",
+]
+
+_DONT_KNOW_POOL = [
+    "That's okay. What part feels clearest?",
+    "Not knowing is a valid starting point. What do you know for sure?",
+    "Start with what you have. What's the one thing you're certain about?",
+]
+
+_FEELING_OFF_POOL = [
+    "That makes sense. What's shifted?",
+    "Something's off. Want to talk through it?",
+    "That feeling is real. What's the closest thing you can name it as?",
+]
+
+_GENERIC_CONVERSATIONAL = [
+    "Tell me more.",
+    "What's the context there?",
+    "Say more — I'm with you.",
+    "What matters most about that right now?",
+    "Got it. What do you want to do with that?",
+]
+
+_GENERIC_DIRECT = [
+    "Here's what I know: ",
+    "The short answer: ",
+    "Directly: ",
+    "Simply put: ",
+]
+
+_GENTLE_POOL = [
+    "That's real. Nothing needs to happen right now.",
+    "Okay. That's where things are.",
+    "Makes sense. You don't have to push through it.",
+    "Rest is valid. Nothing needs to move yet.",
+]
+
+_CREATIVE_POOL = [
+    "Follow that thread — it's going somewhere.",
+    "What if you took that idea and turned it ninety degrees?",
+    "That's the seed. What does it grow into?",
+    "There's something in that. What wants to expand?",
+]
+
+# ── pattern detection ──────────────────────────────────────────────────────────
+
+_GREETING_SIGNALS    = [r"\bhow\s+are\s+you\b", r"\bhow'?re\s+you\b", r"\bhello\b", r"\bhi\b", r"\bhey\b", r"\bwhat'?s\s+up\b"]
+_TIRED_SIGNALS       = [r"\btired\b", r"\bexhausted\b", r"\bdrained\b", r"\bburnt?\s*out\b", r"\bno\s+energy\b"]
+_IDENTITY_SIGNALS    = [r"\bwhat\s+are\s+you\b", r"\bwho\s+are\s+you\b", r"\bwhat\s+is\s+eLo\b"]
+_CHUNK_SIGNALS       = [r"\bwhat\s+(is|does)\s+chunk\b", r"\bchunk\s+mean\b"]
+_DONT_KNOW_SIGNALS   = [r"\bi\s+don'?t\s+know\b", r"\bnot\s+sure\b", r"\bi\s+have\s+no\s+idea\b"]
+_FEELING_OFF_SIGNALS = [r"\bsomething\s+feels\b", r"\bfeel\s+off\b", r"\bfeel\s+wrong\b", r"\bfeel\s+(lost|stuck|weird|strange)\b"]
+_GENTLE_SIGNALS      = [r"\bfeel\b.*\b(tired|sad|overwhelm|scared|lonely)\b", r"\bexhausted\b", r"\bcan'?t\s+do\b"]
+
+
+def _pick(pool: list, text: str) -> str:
+    return pool[len(text) % len(pool)]
+
+
+def _matches(text: str, patterns: list) -> bool:
+    t = text.lower()
+    return any(re.search(p, t) for p in patterns)
+
+
+# ── mock backend ───────────────────────────────────────────────────────────────
+
+class MockBackend(BaseBackend):
+    """
+    Deterministic mock backend for feel-testing.
+
+    Produces natural, grounded responses without a live API.
+    Used when Claude is unavailable or when testing conversational feel.
+
+    Same input + mode always produces the same output (deterministic).
+    No abstraction, no recursive questioning, no philosophical loops.
+    """
+
+    NAME         = "mock"
+    VERSION      = "1.0.0"
+    DESCRIPTION  = "Deterministic feel-testing backend — no API required"
+    REQUIRES_KEY = False
+
+    def is_available(self) -> bool:
+        return True
+
+    def generate_response(
+        self,
+        user_input: str,
+        mode:       str,
+        context:    dict,
+        memory:     MemoryContext,
+        state:      StateContext,
+        identity:   IdentityContext,
+    ) -> BackendResponse:
+        """
+        Generate a natural, grounded mock response.
+
+        Detection order:
+            1. Specific pattern matches (greeting, tired, identity, etc.)
+            2. Mode-specific pool (gentle, creative, direct, conversational)
+            3. Generic fallback
+        """
+        text = user_input.strip()
+        response = self._detect_and_respond(text, mode)
+        return {"response_text": response}
+
+    def _detect_and_respond(self, text: str, mode: str) -> str:
+        # gentle/emotional mode override
+        if mode == "GENTLE_GROUNDED" or _matches(text, _GENTLE_SIGNALS):
+            return _pick(_GENTLE_POOL, text)
+
+        # specific pattern detection
+        if _matches(text, _GREETING_SIGNALS):
+            return _pick(_GREETING_POOL, text)
+        if _matches(text, _TIRED_SIGNALS):
+            return _pick(_TIRED_POOL, text)
+        if _matches(text, _IDENTITY_SIGNALS):
+            return _pick(_IDENTITY_POOL, text)
+        if _matches(text, _CHUNK_SIGNALS):
+            return _pick(_CHUNK_POOL, text)
+        if _matches(text, _DONT_KNOW_SIGNALS):
+            return _pick(_DONT_KNOW_POOL, text)
+        if _matches(text, _FEELING_OFF_SIGNALS):
+            return _pick(_FEELING_OFF_POOL, text)
+
+        # mode-based fallback
+        if mode == "CREATIVE":
+            return _pick(_CREATIVE_POOL, text)
+        if mode in ("DIRECT", "STRUCTURED"):
+            return _pick(_GENERIC_DIRECT, text) + text[:40]
+        if mode == "SIMPLIFY":
+            return "Got it."
+
+        # default: natural conversational
+        return _pick(_GENERIC_CONVERSATIONAL, text)

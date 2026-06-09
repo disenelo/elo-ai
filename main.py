@@ -24,19 +24,30 @@ import os
 from core.core_engine import CoreEngine, set_response_backend
 from core.memory_engine import export_memory, load_registry
 from plugins.hardware.orb_engine import OrbEngine, run_orb_cli
+from backends.backend_router import (
+    set_backend_mode, get_backend_mode,
+    set_feel_test_mode,
+    BACKEND_AUTO, BACKEND_CLAUDE, BACKEND_MOCK,
+)
+
+FEEL_TEST_MODE = False
 
 
-def _auto_select_backend():
-    """Activate Claude if ANTHROPIC_API_KEY is set, otherwise stay offline."""
+def _auto_select_backend() -> str:
+    """
+    Set initial backend mode.
+    Claude key present → auto (will try Claude, fall back to mock on failure).
+    No key → mock (feel-testing mode).
+    """
     if os.environ.get("ANTHROPIC_API_KEY"):
-        from backends.claude_backend import ClaudeBackend
-        set_response_backend(ClaudeBackend())
-        return "claude"
-    return "offline"
+        set_backend_mode(BACKEND_AUTO)
+        return "auto (Claude → mock fallback)"
+    set_backend_mode(BACKEND_MOCK)
+    return "mock (no API key)"
 
 
-_VALID_COMMANDS = {"/mode", "/exit", "/export", "/project", "/reload", "/debug"}
-_COMMANDS_HINT  = "type /mode studio|companion|adventure  /project  /export  /exit"
+_VALID_COMMANDS = {"/mode", "/exit", "/export", "/project", "/reload", "/debug", "/backend", "/feel"}
+_COMMANDS_HINT  = "type /mode studio|companion|adventure  /backend auto|claude|mock  /exit"
 
 
 def _handle_command(raw: str, engine, debug_ref: list) -> bool:
@@ -75,6 +86,21 @@ def _handle_command(raw: str, engine, debug_ref: list) -> bool:
         print("  Active projects:")
         for pid, info in registry.get("active_projects", {}).items():
             print(f"    {pid}  ({info.get('status', '?')}) — {info.get('type', '')}")
+        return True
+
+    if cmd == "/backend":
+        if rest in ("auto", "claude", "mock"):
+            set_backend_mode(rest)
+            print(f"  [backend: {rest}]")
+        else:
+            print(f"  [backend: {get_backend_mode()}]  (options: auto | claude | mock)")
+        return True
+
+    if cmd == "/feel":
+        global FEEL_TEST_MODE
+        FEEL_TEST_MODE = not FEEL_TEST_MODE
+        set_feel_test_mode(FEEL_TEST_MODE)
+        print(f"  [feel-test mode: {'on' if FEEL_TEST_MODE else 'off'}]")
         return True
 
     if cmd == "/debug":
