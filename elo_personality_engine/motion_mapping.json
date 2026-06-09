@@ -1,0 +1,66 @@
+{
+  "version": "1.0.0",
+  "description": "Maps kernel routing modes to Unity avatar and robot motion states",
+
+  "modes": {
+    "DIRECT": {
+      "motion_state":   "stable_pose",
+      "posture":        "upright",
+      "head_motion":    "minimal",
+      "energy":         0.5,
+      "orb_mode":       "steady",
+      "robot_intent":   "focused",
+      "unity_trigger":  "TriggerFocusedIdle"
+    },
+
+    "CONVERSATIONAL": {
+      "motion_state":   "subtle_head_turn",
+      "posture":        "open",
+      "head_motion":    "gentle_tilt",
+      "energy":         0.55,
+      "orb_mode":       "slow_pulse",
+      "robot_intent":   "present",
+      "unity_trigger":  "TriggerHeadTilt"
+    },
+
+    "CREATIVE": {
+      "motion_state":   "gentle_bounce",
+      "posture":        "lean_forward",
+      "head_motion":    "look_around",
+      "energy":         0.75,
+      "orb_mode":       "colour_shift",
+      "robot_intent":   "curious",
+      "unity_trigger":  "TriggerBounce"
+    },
+
+    "GENTLE_GROUNDED": {
+      "motion_state":   "settle_idle",
+      "posture":        "settled",
+      "head_motion":    "none",
+      "energy":         0.2,
+      "orb_mode":       "dim_breathe",
+      "robot_intent":   "calm",
+      "unity_trigger":  "TriggerSettle"
+    },
+
+    "STRUCTURED": {
+      "motion_state":   "build_pose",
+      "posture":        "lean_forward",
+      "head_motion":    "minimal",
+      "energy":         0.65,
+      "orb_mode":       "steady",
+      "robot_intent":   "focused",
+      "unity_trigger":  "TriggerLeanForward"
+    },
+
+    "SIMPLIFY": {
+      "motion_state":   "minimal_idle",
+      "posture":        "upright",
+      "head_motion":    "none",
+      "energy":         0.2,
+      "orb_mode":       "minimal",
+      "robot_intent":   "calm",
+      "unity_trigger":  "TriggerIdle"
+    }
+  }
+}

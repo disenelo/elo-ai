@@ -1,0 +1,6 @@
+{
+  "engine": "eLo Personality Engine",
+  "version": "1.0.0",
+  "stability": "kernel-compatible",
+  "description": "Cross-platform personality and expression system for eLo AI OS"
+}

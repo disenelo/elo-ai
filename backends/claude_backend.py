@@ -123,22 +123,23 @@ class ClaudeBackend(BaseBackend):
         identity: IdentityContext,
     ) -> str:
         """
-        Build the system prompt via the prompt builder.
+        Build the system prompt via the eLo Personality Engine.
 
-        Delegates to backends/prompt_builder.py which loads:
-            config/system_prompt.txt  — base identity
-            config/mode_overlays.json — tone and style rules per mode
+        Delegates to elo_personality_engine/prompt_pipeline.py which loads:
+            config/system_prompt.txt            — base identity
+            elo_personality_engine/personality_core.md  — expression rules
+            elo_personality_engine/mode_profiles.json   — tone per mode
+            elo_personality_engine/expression_rules.json — global rules
 
         The kernel decided the mode before this is called.
         This function only controls what text reaches the language model.
         No kernel calls. No routing changes.
         """
-        from backends.prompt_builder import build_system_prompt
-        return build_system_prompt(
-            mode     = mode,
-            memory   = dict(memory)   if memory   else {},
-            state    = dict(state)    if state    else {},
-            identity = dict(identity) if identity else {},
+        from elo_personality_engine.prompt_pipeline import build_elo_prompt
+        return build_elo_prompt(
+            mode    = mode,
+            memory  = dict(memory)   if memory   else {},
+            state   = dict(state)    if state    else {},
         )
 
     # ── API call with retry ────────────────────────────────────────────────────
