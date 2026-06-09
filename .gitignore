@@ -7,3 +7,5 @@ memory/interactions.json
 elo_interactions.jsonl
 elo_memory.json
 .DS_Store
+# obsidian_cache.json — regenerated at runtime, not committed
+memory/obsidian_cache.json
