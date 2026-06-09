@@ -29,7 +29,11 @@ _DEFAULT_STATE = {
         "emotional_tone_signature": "neutral",
         "open_loops":               [],
         "resolved_loops":           []
-    }
+    },
+    # continuity fields — updated every turn, persisted across sessions
+    "emotion":       "neutral",     # current emotional state string
+    "last_intent":   "conversation", # last classified intent
+    "loop_counter":  0,             # increments on repetition/confusion signals
 }
 
 
@@ -58,10 +62,23 @@ def save(state: dict):
         pass
 
 
-def update(state: dict, user_input: str, response: str) -> dict:
+def update(
+    state:       dict,
+    user_input:  str,
+    response:    str,
+    intent:      str = "",
+    loop_signal: bool = False,
+) -> dict:
     """
     Update state after one exchange.
     Appends topics, emotional tone, session summary, and timestamp.
+
+    Args:
+        state:       Current state dict.
+        user_input:  Raw user message.
+        response:    eLo response text.
+        intent:      Classified intent from attention layer (optional).
+        loop_signal: True if a repetition/confusion signal was detected.
     """
     state = dict(state)
     state["last_active"] = datetime.now().isoformat()
@@ -73,10 +90,10 @@ def update(state: dict, user_input: str, response: str) -> dict:
              if w.lower() not in _STOPWORDS]
     if words:
         topics = list(state.get("last_topics", []))
-        topics = (topics + words[:3])[-10:]   # keep last 10
+        topics = (topics + words[:3])[-10:]
         state["last_topics"] = topics
 
-    # simple emotional tone tag
+    # emotional tone detection
     text = user_input.lower()
     if any(w in text for w in ["tired","exhaust","drain","stuck","overwhelm"]):
         tone = "low-energy"
@@ -89,9 +106,17 @@ def update(state: dict, user_input: str, response: str) -> dict:
 
     history = list(state.get("emotional_history", []))
     history.append({"timestamp": state["last_active"], "tone": tone})
-    state["emotional_history"] = history[-20:]   # keep last 20
+    state["emotional_history"] = history[-20:]
 
-    # compact session summary (last 5 exchanges)
+    # persist current emotion snapshot and last intent
+    state["emotion"]     = tone
+    state["last_intent"] = intent or _classify_intent(text)
+
+    # loop counter — increments on signals, decays on clean turns
+    lc = state.get("loop_counter", 0)
+    state["loop_counter"] = (lc + 1) if loop_signal else max(0, lc - 1)
+
+    # compact session summary
     summaries = list(state.get("session_summaries", []))
     summaries.append({
         "timestamp": state["last_active"],
@@ -101,6 +126,17 @@ def update(state: dict, user_input: str, response: str) -> dict:
     state["session_summaries"] = summaries[-20:]
 
     return state
+
+
+def _classify_intent(text: str) -> str:
+    """Lightweight intent classifier for state persistence."""
+    if any(w in text for w in ["build", "create", "design", "make"]):
+        return "creation"
+    if any(w in text for w in ["why", "what", "how", "explain"]):
+        return "inquiry"
+    if any(w in text for w in ["sad", "tired", "confused", "overwhelmed", "feel"]):
+        return "emotional"
+    return "conversation"
 
 
 def as_context_string(state: dict) -> str:
@@ -134,9 +170,14 @@ def increment_session(state: dict) -> dict:
     state = dict(state)
     state["session_count"] = state.get("session_count", 0) + 1
     state["last_active"]   = datetime.now().isoformat()
+    state["loop_counter"]  = 0   # reset loop counter on new session
     if "session_anchor" not in state:
         state["session_anchor"] = dict(_DEFAULT_STATE["session_anchor"])
     return state
+
+
+# Public alias — matches the function name used in the prompt_builder sketch
+load_state = load
 
 
 def close_session(state: dict) -> dict:

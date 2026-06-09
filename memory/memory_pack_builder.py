@@ -70,6 +70,19 @@ def build(state: dict = None, max_chars: int = 2000) -> dict:
             "elo":  s.get("elo",  "")[:60],
         })
 
+    # high_priority — pre-selected items always relevant to any turn.
+    # Used directly by filter_memory() without needing the full attention layer.
+    high_priority: list = []
+    if identity:
+        high_priority.append(identity)
+    if anchor.get("emotional_tone_signature") and anchor["emotional_tone_signature"] != "neutral":
+        high_priority.append(f"Emotional carry: {anchor['emotional_tone_signature']}")
+    if recent:
+        last_exchange = recent[-1]
+        ex_text = f"{last_exchange.get('user', '')} → {last_exchange.get('elo', '')}".strip()
+        if ex_text and ex_text != "→":
+            high_priority.append(ex_text)
+
     pack = {
         "generated":        datetime.now().isoformat(),
         "identity":         identity,
@@ -78,6 +91,7 @@ def build(state: dict = None, max_chars: int = 2000) -> dict:
         "user_patterns":    user_patterns,
         "recent_context":   recent,
         "emotional_summary": emo_sum,
+        "high_priority":    high_priority[:5],   # pre-ranked — used by filter_memory()
     }
 
     try:

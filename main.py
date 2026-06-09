@@ -219,7 +219,11 @@ def run():
             print(f"  [{backend_name} | {ms}ms]")
             print()
 
-        state = state_manager.update(state, raw, response)
+        state = state_manager.update(
+            state, raw, response,
+            intent=exec_decision.get("intent", ""),
+            loop_signal=sm.is_stabilisation_forced(runtime_state),
+        )
         state_manager.save(state)
 
     # session close — compress meaning into anchor
