@@ -25,7 +25,14 @@ import logging
 import time
 from typing import Optional
 
-logger = logging.getLogger(__name__)
+# Suppress backend error logs from reaching the terminal.
+# All failures are caught silently — the user never sees API errors.
+_logger = logging.getLogger(__name__)
+_logger.addHandler(logging.NullHandler())
+_logger.propagate = False   # never reaches root logger / terminal
+
+# Separate debug logger for feel-test mode (only active when explicitly enabled)
+_feel_logger = logging.getLogger("elo.feel_test")
 
 # ── backend mode ───────────────────────────────────────────────────────────────
 
@@ -49,9 +56,6 @@ def set_backend_mode(mode: str):
     mode = mode.lower().strip()
     if mode in (BACKEND_AUTO, BACKEND_CLAUDE, BACKEND_MOCK, BACKEND_LOCAL):
         _active_mode = mode
-        logger.info("Backend mode set to: %s", mode)
-    else:
-        logger.warning("Unknown backend mode %r — keeping %r", mode, _active_mode)
 
 
 def get_backend_mode() -> str:
@@ -149,8 +153,6 @@ def _dispatch(
         return _SAFE_FALLBACK, "fallback"
 
     if _active_mode == BACKEND_LOCAL:
-        # placeholder — falls through to mock
-        logger.info("Local backend not implemented — using mock.")
         return _try_mock(user_input, mode, ctx, mem, st, id_), "mock(local-stub)"
 
     # auto: Claude → mock → safe string
@@ -167,19 +169,20 @@ def _try_claude(
     ctx: dict, mem: dict, st: dict, id_: dict,
 ) -> Optional[str]:
     """
-    Attempt a Claude API call. Returns response string or None on any failure.
-    Never leaks exceptions.
+    Attempt a Claude API call.
+    Returns response string on success, None on ANY failure.
+    All errors are caught and suppressed — nothing reaches the terminal.
+    Failure output boundary: returns None immediately, no downstream calls.
     """
     try:
         backend = _get_claude()
         if not backend.is_available():
-            logger.info("Claude API key not set — skipping.")
             return None
         result = backend.generate_response(user_input, mode, ctx, mem, st, id_)
-        return result["response_text"]
-    except Exception as exc:
-        # log internally — never expose to user
-        logger.warning("Claude backend failed: %s", exc)
+        text = result.get("response_text", "").strip()
+        return text if text else None
+    except Exception:
+        # HARD FAILSAFE — catch everything, return None, execute nothing further
         return None
 
 
@@ -188,23 +191,20 @@ def _try_mock(
     ctx: dict, mem: dict, st: dict, id_: dict,
 ) -> str:
     """
-    Generate a mock response. Returns safe fallback string on any failure.
-    Never raises.
+    Generate a mock response.
+    Returns _SAFE_FALLBACK on any failure.
+    Never raises. Never passes output back through cognitive layers.
     """
     try:
         backend = _get_mock()
         result  = backend.generate_response(user_input, mode, ctx, mem, st, id_)
         return result["response_text"]
-    except Exception as exc:
-        logger.error("Mock backend failed: %s", exc)
+    except Exception:
         return _SAFE_FALLBACK
 
 
 # ── feel-test logging ──────────────────────────────────────────────────────────
 
 def _log_feel(mode: str, backend: str, ms: int, response: str):
-    """
-    Minimal feel-test output. Only: mode, backend, latency, response length.
-    No prompts, no kernel state, no routing internals.
-    """
-    print(f"  [feel]  mode={mode:<16} backend={backend:<20} {ms}ms  {len(response)}ch")
+    """Minimal feel-test output — mode, backend, latency, length only."""
+    print(f"  [feel]  mode={mode:<16} backend={backend:<20} {ms}ms  {len(response)}ch", flush=True)

@@ -67,7 +67,7 @@ _FEELING_OFF_POOL = [
 ]
 
 _GENERIC_CONVERSATIONAL = [
-    "Tell me more.",
+    "What brought this up?",
     "What's the context there?",
     "Say more — I'm with you.",
     "What matters most about that right now?",
@@ -75,10 +75,10 @@ _GENERIC_CONVERSATIONAL = [
 ]
 
 _GENERIC_DIRECT = [
-    "Here's what I know: ",
-    "The short answer: ",
-    "Directly: ",
-    "Simply put: ",
+    "Got it.",
+    "Okay.",
+    "Makes sense.",
+    "Sure.",
 ]
 
 _GENTLE_POOL = [
@@ -180,7 +180,7 @@ class MockBackend(BaseBackend):
         if mode == "CREATIVE":
             return _pick(_CREATIVE_POOL, text)
         if mode in ("DIRECT", "STRUCTURED"):
-            return _pick(_GENERIC_DIRECT, text) + text[:40]
+            return _pick(_GENERIC_DIRECT, text)
         if mode == "SIMPLIFY":
             return "Got it."
 

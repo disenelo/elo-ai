@@ -25,7 +25,10 @@ from backends.base_backend import (
     BackendUnavailableError, BackendResponseError,
 )
 
-logger = logging.getLogger(__name__)
+# Backend logs never reach the terminal — all errors handled by backend_router
+_logger = logging.getLogger(__name__)
+_logger.addHandler(logging.NullHandler())
+_logger.propagate = False
 
 _DEFAULT_MODEL   = "claude-sonnet-4-6"
 _DEFAULT_TIMEOUT = 30    # seconds
