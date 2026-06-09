@@ -23,7 +23,13 @@ _DEFAULT_STATE = {
     "identity_anchor":  "eLo is a stable, grounded conversational presence in the DISENELO world.",
     "emotional_history": [],
     "last_topics":      [],
-    "session_summaries": []
+    "session_summaries": [],
+    "session_anchor": {
+        "current_session_summary":  "",
+        "emotional_tone_signature": "neutral",
+        "open_loops":               [],
+        "resolved_loops":           []
+    }
 }
 
 
@@ -101,16 +107,22 @@ def as_context_string(state: dict) -> str:
     """Format state as a compact string for prompt injection."""
     lines = []
 
+    anchor = state.get("session_anchor", {})
+    if anchor.get("current_session_summary"):
+        lines.append(f"Ongoing thread: {anchor['current_session_summary']}")
+    if anchor.get("emotional_tone_signature") and anchor["emotional_tone_signature"] != "neutral":
+        lines.append(f"Emotional carry: {anchor['emotional_tone_signature']}")
+
     if state.get("last_topics"):
         lines.append(f"Recent topics: {', '.join(state['last_topics'][-5:])}")
 
     if state.get("emotional_history"):
         recent_tone = state["emotional_history"][-1].get("tone", "neutral")
-        lines.append(f"Recent emotional tone: {recent_tone}")
+        lines.append(f"Recent tone: {recent_tone}")
 
     if state.get("session_summaries"):
         last = state["session_summaries"][-1]
-        lines.append(f"Last exchange: User said '{last['user'][:60]}' — eLo responded '{last['elo'][:60]}'")
+        lines.append(f"Last exchange: '{last['user'][:60]}'")
 
     if state.get("last_active"):
         lines.append(f"Last active: {state['last_active'][:16]}")
@@ -122,4 +134,55 @@ def increment_session(state: dict) -> dict:
     state = dict(state)
     state["session_count"] = state.get("session_count", 0) + 1
     state["last_active"]   = datetime.now().isoformat()
+    if "session_anchor" not in state:
+        state["session_anchor"] = dict(_DEFAULT_STATE["session_anchor"])
+    return state
+
+
+def close_session(state: dict) -> dict:
+    """
+    Compress the current session into a meaning-based anchor.
+    Called on /exit — updates session_anchor with what this session meant,
+    not what was literally said.
+    """
+    state = dict(state)
+    summaries = state.get("session_summaries", [])
+    emotional_history = state.get("emotional_history", [])
+
+    # derive emotional tone signature
+    if emotional_history:
+        recent = [h.get("tone", "neutral") for h in emotional_history[-10:]]
+        counts: dict = {}
+        for t in recent:
+            counts[t] = counts.get(t, 0) + 1
+        dominant = max(counts, key=counts.get)
+        last_tone = recent[-1] if recent else "neutral"
+        sig = dominant if dominant == last_tone else f"{dominant}, shifting to {last_tone}"
+    else:
+        sig = "neutral"
+
+    # derive session meaning
+    if summaries:
+        user_texts = " ".join(s.get("user", "") for s in summaries[-10:]).lower()
+        themes = []
+        _THEME_MAP = {
+            "building":    ["build", "create", "design", "implement", "add"],
+            "exploration": ["what if", "could we", "try", "explore"],
+            "uncertainty": ["don't know", "not sure", "confused", "stuck"],
+            "emotion":     ["feel", "tired", "overwhelm", "worried"],
+            "identity":    ["who", "what are you", "what is elo"],
+            "system":      ["memory", "kernel", "backend", "system"],
+        }
+        for theme, words in _THEME_MAP.items():
+            if any(w in user_texts for w in words):
+                themes.append(theme)
+        theme_str = ", ".join(themes[:3]) if themes else "general conversation"
+        session_summary = f"User explored {theme_str} with a {sig} tone."
+    else:
+        session_summary = ""
+
+    anchor = dict(state.get("session_anchor", _DEFAULT_STATE["session_anchor"]))
+    anchor["current_session_summary"]  = session_summary
+    anchor["emotional_tone_signature"] = sig
+    state["session_anchor"] = anchor
     return state
