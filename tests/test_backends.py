@@ -129,7 +129,8 @@ class TestClaudeBackend(unittest.TestCase):
     def test_build_system_prompt_contains_mode(self):
         """System prompt must include the mode overlay."""
         prompt = self.b._build_system_prompt("CREATIVE", {}, {}, {})
-        self.assertIn("CREATIVE", prompt)
+        self.assertIn("MODE STYLE RULES", prompt)
+        self.assertIn("imaginative", prompt.lower())
 
     def test_build_system_prompt_contains_memory(self):
         """System prompt must include returning_theme when set."""

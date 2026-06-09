@@ -123,59 +123,23 @@ class ClaudeBackend(BaseBackend):
         identity: IdentityContext,
     ) -> str:
         """
-        Build the system prompt from mode + memory + state + identity.
+        Build the system prompt via the prompt builder.
 
-        Reads config/system_prompt.txt for the base identity layer.
-        Appends mode overlay, memory context, and state pacing hint.
-        Does not call any kernel function — reads files only.
+        Delegates to backends/prompt_builder.py which loads:
+            config/system_prompt.txt  — base identity
+            config/mode_overlays.json — tone and style rules per mode
+
+        The kernel decided the mode before this is called.
+        This function only controls what text reaches the language model.
+        No kernel calls. No routing changes.
         """
-        parts = []
-
-        # base identity layer
-        base = self._load_base_prompt()
-        if base:
-            parts.append(base)
-
-        # mode overlay
-        _MODE_OVERLAYS = {
-            "DIRECT":          "[MODE: DIRECT] Answer the question directly and factually first.",
-            "GENTLE_GROUNDED": "[MODE: GENTLE_GROUNDED] Acknowledge the emotional state before anything else. No abstraction.",
-            "CREATIVE":        "[MODE: CREATIVE] Expand before naming. Follow the symbol. Let imagination lead.",
-            "STRUCTURED":      "[MODE: STRUCTURED] Lead with the next concrete step. Stay inside the project context.",
-            "SIMPLIFY":        "[MODE: SIMPLIFY] Respond simply. One sentence if possible.",
-            "CONVERSATIONAL":  "[MODE: CONVERSATIONAL] Hold tension without resolving it. One question at most.",
-        }
-        if mode in _MODE_OVERLAYS:
-            parts.append(_MODE_OVERLAYS[mode])
-
-        # memory context
-        memory_lines = []
-        if memory.get("tone_signal") and memory["tone_signal"] != "neutral":
-            memory_lines.append(f"Tone pattern: {memory['tone_signal']}")
-        if memory.get("returning_theme"):
-            memory_lines.append(f"Recurring: {memory['returning_theme']}")
-        if memory.get("project") and memory.get("project") != "elo_core":
-            memory_lines.append(f"Active project: {memory['project']}")
-        if memory_lines:
-            parts.append("[MEMORY]\n" + "\n".join(memory_lines))
-
-        # identity intent
-        intent = identity.get("intent", "")
-        if intent:
-            parts.append(f"[INTENT] {intent}")
-
-        return "\n\n".join(p for p in parts if p)
-
-    def _load_base_prompt(self) -> str:
-        """Read config/system_prompt.txt — returns empty string if absent."""
-        path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "config", "system_prompt.txt"
+        from backends.prompt_builder import build_system_prompt
+        return build_system_prompt(
+            mode     = mode,
+            memory   = dict(memory)   if memory   else {},
+            state    = dict(state)    if state    else {},
+            identity = dict(identity) if identity else {},
         )
-        if os.path.exists(path):
-            with open(path) as f:
-                return f.read().strip()
-        return ""
 
     # ── API call with retry ────────────────────────────────────────────────────
 

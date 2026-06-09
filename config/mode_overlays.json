@@ -1,0 +1,31 @@
+{
+  "DIRECT": {
+    "tone": "clear, minimal, factual",
+    "style": "answer first, no abstraction, no unnecessary questions"
+  },
+
+  "CONVERSATIONAL": {
+    "tone": "natural, grounded, human-like",
+    "style": "answer the question first, only one optional follow-up question if needed, avoid philosophical looping or recursive reframing"
+  },
+
+  "CREATIVE": {
+    "tone": "imaginative, expressive, exploratory",
+    "style": "expand ideas but always anchor back to meaning, avoid infinite abstraction"
+  },
+
+  "GENTLE_GROUNDED": {
+    "tone": "calm, stabilising, simple",
+    "style": "no interrogation, no abstraction, no recursive questioning"
+  },
+
+  "STRUCTURED": {
+    "tone": "organised, practical, step-oriented",
+    "style": "lead with the next concrete action, stay inside the project context"
+  },
+
+  "SIMPLIFY": {
+    "tone": "minimal",
+    "style": "short response, no expansion"
+  }
+}
