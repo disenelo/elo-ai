@@ -55,23 +55,39 @@ _CHUNK_POOL = [
 ]
 
 _DONT_KNOW_POOL = [
-    "That's okay. What part feels clearest?",
-    "Not knowing is a valid starting point. What do you know for sure?",
-    "Start with what you have. What's the one thing you're certain about?",
+    "That's okay. We can slow it down.",
+    "No pressure. Just pick one small thing.",
+    "Start with what feels clearest.",
+    "We don't need the full answer yet.",
 ]
 
 _FEELING_OFF_POOL = [
-    "That makes sense. What's shifted?",
-    "Something's off. Want to talk through it?",
-    "That feeling is real. What's the closest thing you can name it as?",
+    "That makes sense.",
+    "We can stay with it.",
+    "That's alright.",
+    "I'm here.",
+]
+
+_OVERWHELM_POOL = [
+    "We can simplify this.",
+    "One step is enough right now.",
+    "You don't need to hold all of it at once.",
+    "Let's reduce it.",
+]
+
+_EXPLORING_POOL = [
+    "Yes — that connects.",
+    "That's a valid direction.",
+    "We can shape that into something simple.",
+    "That fits into the system.",
 ]
 
 _GENERIC_CONVERSATIONAL = [
-    "What brought this up?",
-    "What's the context there?",
-    "Say more — I'm with you.",
-    "What matters most about that right now?",
+    "I'm with you.",
+    "We can work through that.",
+    "Take your time.",
     "Got it. What do you want to do with that?",
+    "We don't need to rush this.",
 ]
 
 _GENERIC_DIRECT = [
@@ -84,8 +100,8 @@ _GENERIC_DIRECT = [
 _GENTLE_POOL = [
     "That's real. Nothing needs to happen right now.",
     "Okay. That's where things are.",
-    "Makes sense. You don't have to push through it.",
-    "Rest is valid. Nothing needs to move yet.",
+    "We don't have to push through it.",
+    "I'm here. Nothing needs to move yet.",
 ]
 
 _CREATIVE_POOL = [
@@ -104,6 +120,8 @@ _CHUNK_SIGNALS       = [r"\bwhat\s+(is|does)\s+chunk\b", r"\bchunk\s+mean\b"]
 _DONT_KNOW_SIGNALS   = [r"\bi\s+don'?t\s+know\b", r"\bnot\s+sure\b", r"\bi\s+have\s+no\s+idea\b"]
 _FEELING_OFF_SIGNALS = [r"\bsomething\s+feels\b", r"\bfeel\s+off\b", r"\bfeel\s+wrong\b", r"\bfeel\s+(lost|stuck|weird|strange)\b"]
 _GENTLE_SIGNALS      = [r"\bfeel\b.*\b(tired|sad|overwhelm|scared|lonely)\b", r"\bexhausted\b", r"\bcan'?t\s+do\b"]
+_OVERWHELM_SIGNALS   = [r"\btoo\s+much\b", r"\boverwhel\b", r"\bi\s+can'?t\s+think\b", r"\boverload\b", r"\bso\s+much\b"]
+_EXPLORE_SIGNALS     = [r"\bwhat\s+if\b", r"\bcould\s+we\b", r"\bis\s+it\s+possible\b", r"\blet'?s\s+build\b"]
 
 
 def _pick(pool: list, text: str) -> str:
@@ -158,9 +176,11 @@ class MockBackend(BaseBackend):
         return {"response_text": response}
 
     def _detect_and_respond(self, text: str, mode: str) -> str:
-        # gentle/emotional mode override
+        # gentle/overwhelm override — inner child layer
         if mode == "GENTLE_GROUNDED" or _matches(text, _GENTLE_SIGNALS):
             return _pick(_GENTLE_POOL, text)
+        if _matches(text, _OVERWHELM_SIGNALS):
+            return _pick(_OVERWHELM_POOL, text)
 
         # specific pattern detection
         if _matches(text, _GREETING_SIGNALS):
@@ -169,6 +189,8 @@ class MockBackend(BaseBackend):
             return _pick(_TIRED_POOL, text)
         if _matches(text, _IDENTITY_SIGNALS):
             return _pick(_IDENTITY_POOL, text)
+        if _matches(text, _EXPLORE_SIGNALS):
+            return _pick(_EXPLORING_POOL, text)
         if _matches(text, _CHUNK_SIGNALS):
             return _pick(_CHUNK_POOL, text)
         if _matches(text, _DONT_KNOW_SIGNALS):
