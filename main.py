@@ -19,9 +19,20 @@ CLI commands during chat:
 import argparse
 import sys
 
-from core.core_engine import CoreEngine
+import os
+
+from core.core_engine import CoreEngine, set_response_backend
 from core.memory_engine import export_memory, load_registry
 from plugins.hardware.orb_engine import OrbEngine, run_orb_cli
+
+
+def _auto_select_backend():
+    """Activate Claude if ANTHROPIC_API_KEY is set, otherwise stay offline."""
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        from backends.claude_backend import ClaudeBackend
+        set_response_backend(ClaudeBackend())
+        return "claude"
+    return "offline"
 
 
 _VALID_COMMANDS = {"/mode", "/exit", "/export", "/project", "/reload", "/debug"}
@@ -77,9 +88,10 @@ def _handle_command(raw: str, engine, debug_ref: list) -> bool:
 
 
 def _run_chat():
-    orb    = OrbEngine(silent=True)
-    engine = CoreEngine(orb=orb)
-    debug  = [False]
+    backend = _auto_select_backend()
+    orb     = OrbEngine(silent=True)
+    engine  = CoreEngine(orb=orb)
+    debug   = [False]
 
     # restore previous session if available
     info = CoreEngine.session_info()
@@ -91,6 +103,7 @@ def _run_chat():
     else:
         print("eLo: Ready.")
     print(f"  (commands: {_COMMANDS_HINT})")
+    print(f"  (backend: {backend})")
     print()
 
     while True:

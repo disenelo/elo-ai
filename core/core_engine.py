@@ -20,6 +20,21 @@ import re
 
 from core.kernel             import decide_response, reset_session, set_debug
 from core.session_persistence import save_session, restore_session, session_info
+from backends.offline_backend import OfflineBackend as _OfflineBackend
+
+# module-level backend — swap at startup with set_response_backend()
+_response_backend = _OfflineBackend()
+
+
+def set_response_backend(backend) -> None:
+    """
+    Set the backend used for response generation.
+    Routing, classification, and loop detection remain in the kernel.
+    Only the generation step is delegated to this backend.
+    Call before starting the conversation loop.
+    """
+    global _response_backend
+    _response_backend = backend
 from core.state_bus   import (StateBus, IdentitySnapshot, StateSnapshot,
                                EmotionSnapshot, MemorySnapshot)
 from core.memory_engine import (
@@ -215,14 +230,30 @@ class CoreEngine:
         # Layer 1: build raw_context — no decisions, only observations
         raw_context = self.prepare_context(user_input)
 
-        # Layer 2: kernel — receives raw_context only, calls no engines
+        # Layer 2: kernel — routing, classification, loop detection (unchanged)
         self.orb.think()
         if debug:
             set_debug(True)
-        response, meta = decide_response(raw_context)
+        _, meta = decide_response(raw_context)
         if debug:
             set_debug(False)
             _print_kernel_meta(meta, raw_context.state.name)
+
+        # Layer 3: backend — generation only (routing mode comes from kernel)
+        ctx = raw_context.to_context()
+        result = _response_backend.generate_response(
+            user_input = user_input,
+            mode       = meta["mode"],
+            context    = ctx,
+            memory     = {k: ctx.get(k, "") for k in
+                          ("tone_signal","returning_theme","symbolic_echo","project",
+                           "response_style","key_association","future_idea")},
+            state      = raw_context.state.__dict__
+                         if hasattr(raw_context.state, "__dict__") else {},
+            identity   = {k: getattr(raw_context.identity, k, "")
+                          for k in ("intent","perspective","response_bias")},
+        )
+        response = result["response_text"]
 
         # store
         self.orb.insight()
