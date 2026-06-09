@@ -183,13 +183,52 @@ def build(
     state_context: str = "",
     vault_context: str = "",
     mode:          str = "CONVERSATIONAL",
+    attention:     dict = None,
 ) -> str:
+    """
+    Assemble the system prompt.
+
+    When attention is provided (v2 path):
+        Uses filtered, scored memory from the Attention Layer only.
+        Injects intent and emotional context.
+        Ignores raw state_context and vault_context.
+
+    When attention is None (backward-compatible path):
+        Falls back to raw state_context + vault_context injection.
+    """
     sections = [_PERSONA]
 
-    if state_context.strip():
-        sections.append(f"[PERSISTENT MEMORY]\n{state_context}")
+    if attention:
+        # v2 path — attention-filtered memory only
+        lines = []
 
-    if vault_context.strip():
-        sections.append(f"[WORLD MEMORY]\n{vault_context[:1200]}")
+        high   = attention.get("high_priority_memory", [])
+        medium = attention.get("medium_priority_memory", [])
+        emo    = attention.get("emotional_context", {})
+        intent = attention.get("intent", "conversation")
+
+        if high:
+            lines.append("HIGH RELEVANCE:")
+            lines.extend(f"  {m}" for m in high)
+        if medium:
+            lines.append("CONTEXT:")
+            lines.extend(f"  {m}" for m in medium)
+
+        if emo:
+            state_desc = emo.get("inferred_state", "present")
+            energy     = emo.get("energy", 0.5)
+            tension    = emo.get("tension", 0.4)
+            lines.append(f"User state: {state_desc} (energy {energy}, tension {tension})")
+
+        lines.append(f"Intent: {intent}")
+
+        if lines:
+            sections.append("[ACTIVE MEMORY — ATTENTION FILTERED]\n" + "\n".join(lines))
+    else:
+        # backward-compatible path
+        if state_context.strip():
+            sections.append(f"[PERSISTENT MEMORY]\n{state_context}")
+        if vault_context.strip():
+            sections.append(f"[WORLD MEMORY]\n{vault_context[:1200]}")
 
     return "\n\n".join(sections)

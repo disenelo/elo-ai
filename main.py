@@ -1,22 +1,23 @@
 """
-main.py — eLo OS v1.0 terminal interface.
+main.py — eLo OS v2 terminal interface.
 
 Run:
     python main.py
 
-Commands during session:
+Commands:
     /exit    close and save
     /reset   reset session context (not memory)
-    /debug   toggle debug logging
-    /memory  show current memory state
+    /debug   toggle debug output
+    /memory  show current state snapshot
 """
 
 import os
-import sys
 import time
 
 from memory import state_manager
 from memory.obsidian_loader import get_context_block
+from memory.memory_pack_builder import load as load_memory_pack, build as build_memory_pack
+from core import attention as attn
 from runtime.prompt_builder import build as build_prompt
 from backends.mock_backend import MockBackend as _MockBackend
 
@@ -27,16 +28,14 @@ _fallback = _MockBackend()
 # ── backend setup ──────────────────────────────────────────────────────────────
 
 def _pick_backend():
-    """Return (backend_name, send_fn). send_fn(system, user_input) -> str."""
+    """Return (backend_name, send_fn). Falls back to mock if Claude unavailable."""
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
 
     if api_key:
         try:
             import anthropic
             client = anthropic.Anthropic(api_key=api_key)
-
-            # smoke-test: verify the key works before committing to Claude
-            client.models.list()
+            client.models.list()   # smoke-test key validity
 
             def send_claude(system_prompt: str, user_input: str) -> str:
                 msg = client.messages.create(
@@ -51,7 +50,6 @@ def _pick_backend():
         except Exception:
             pass
 
-    # fallback mock
     def send_mock(system_prompt: str, user_input: str) -> str:
         result = _fallback.generate_response(user_input, "CONVERSATIONAL", {}, {}, {}, {})
         return result["response_text"]
@@ -66,10 +64,18 @@ def run():
     state = state_manager.increment_session(state)
     state_manager.save(state)
 
-    vault_ctx    = get_context_block(max_chars=1200)
-    backend_name, send = _pick_backend()
-    debug        = False
-    last_inputs: list = []   # loop detection — last 3 inputs
+    # load memory pack — built from vault + state; rebuild if empty
+    try:
+        memory_pack = load_memory_pack()
+        if not memory_pack:
+            memory_pack = build_memory_pack(state)
+    except Exception:
+        memory_pack = {}
+
+    vault_ctx             = get_context_block(max_chars=1200)
+    backend_name, send    = _pick_backend()
+    debug                 = False
+    last_inputs: list     = []   # loop detection
 
     print()
     if state.get("session_summaries"):
@@ -96,8 +102,8 @@ def run():
                 print("eLo: Saving. See you next time.")
                 break
             elif cmd == "/reset":
-                vault_ctx = get_context_block(max_chars=1200)
                 last_inputs.clear()
+                memory_pack = build_memory_pack(state)
                 print("eLo: Session reset. Memory still intact.")
                 continue
             elif cmd == "/debug":
@@ -118,26 +124,36 @@ def run():
                 print("  Commands: /exit  /reset  /debug  /memory")
                 continue
 
-        # lightweight loop detection — 3 identical inputs in a row
+        # hard loop detection — 3 identical inputs
         last_inputs.append(raw)
         if len(last_inputs) > 3:
             last_inputs.pop(0)
-        if len(last_inputs) == 3 and len(set(last_inputs)) == 1:
+        loop_detected = (len(last_inputs) == 3 and len(set(last_inputs)) == 1)
+        if loop_detected:
             print("\neLo: Take a breath. Try a different message.\n")
             last_inputs.clear()
             continue
 
-        state_ctx = state_manager.as_context_string(state)
-        system    = build_prompt(raw, state_ctx, vault_ctx)
+        # attention layer — compute what matters right now
+        attention_model = attn.compute(raw, memory_pack, state, loop_detected=False)
 
         if debug:
-            print(f"  [prompt: {len(system)} chars | vault: {len(vault_ctx)} chars]")
+            intent    = attention_model.get("intent", "?")
+            emo_state = attention_model.get("emotional_context", {}).get("inferred_state", "?")
+            n_high    = len(attention_model.get("high_priority_memory", []))
+            n_med     = len(attention_model.get("medium_priority_memory", []))
+            print(f"  [intent: {intent} | emotion: {emo_state} | mem: {n_high}H {n_med}M]")
+
+        # build prompt with attention-filtered memory
+        system = build_prompt(raw, attention=attention_model)
+
+        if debug:
+            print(f"  [prompt: {len(system)} chars]")
 
         t0 = time.perf_counter()
         try:
             response = send(system, raw)
         except Exception:
-            # Claude failed mid-session — use mock for this turn, stay in loop
             response = _fallback.generate_response(raw, "CONVERSATIONAL", {}, {}, {}, {})["response_text"]
         ms = int((time.perf_counter() - t0) * 1000)
 
@@ -149,7 +165,7 @@ def run():
         state = state_manager.update(state, raw, response)
         state_manager.save(state)
 
-    # close session — compress experience into session anchor
+    # session close — compress meaning into anchor
     state = state_manager.close_session(state)
     state_manager.save(state)
 
