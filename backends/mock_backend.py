@@ -126,6 +126,24 @@ _INQUIRY_POOL = [
     "I can walk through that with you. What do you know already?",
 ]
 
+_ELO_WORLD_POOL = [
+    "eLo is the creative universe you've been building — centred around exploration, emotional growth, games, stories, and imaginative worlds.",
+    "eLo is a character and world built around curiosity, healing, and adventure. The project spans a game, a book, an AI system, and a physical robot.",
+    "eLo is a creative IP: a gentle character who travels through worlds, helps others heal, and explores through play and wonder. No eyes — expression through body and presence.",
+]
+
+_ELO_BOOK_POOL = [
+    "The eLo book follows eLo through imaginative adventures exploring self-discovery, inner child healing, friendship, and wholeness.",
+    "The eLo story is a 4-act narrative featuring eLo, K-7 (a spirit animal with seven forms), and Chunk (a modular companion). Enemies are overcharged — not evil. Weapons are correctives. Calm is the action.",
+    "The eLo book is about a character navigating emotional worlds — the journey is about healing through curiosity and connection, not combat.",
+]
+
+_RECALL_POOL = [
+    "Last time we were working on the eLo OS — cognitive layers, memory persistence, attention filtering, and voice model.",
+    "We've been building the eLo AI system: prompt builder, state manager, attention layer, executive function, and continuity engine.",
+    "We were developing the eLo OS spec — identity continuity, memory compression, and how the system maintains presence across sessions.",
+]
+
 _DAILY_POOL = [
     "That sounds like a good move.",
     "Makes sense. No rush.",
@@ -139,7 +157,10 @@ _DAILY_POOL = [
 
 _GREETING_SIGNALS    = [r"\bhow\s+are\s+you\b", r"\bhow'?re\s+you\b", r"\bhello\b", r"\bhi\b", r"\bhey\b", r"\bwhat'?s\s+up\b"]
 _TIRED_SIGNALS       = [r"\btired\b", r"\bexhausted\b", r"\bdrained\b", r"\bburnt?\s*out\b", r"\bno\s+energy\b"]
-_IDENTITY_SIGNALS    = [r"\bwhat\s+are\s+you\b", r"\bwho\s+are\s+you\b", r"\bwhat\s+is\s+elo\b", r"\bare\s+you\s+elo\b", r"\byou\s+are\s+elo\b"]
+_IDENTITY_SIGNALS    = [r"\bwhat\s+are\s+you\b", r"\bwho\s+are\s+you\b", r"\bare\s+you\s+elo\b", r"\byou\s+are\s+elo\b"]
+_ELO_WORLD_SIGNALS   = [r"\bwhat\s+is\s+elo\b", r"\btell\s+me\s+about\s+elo\b", r"\bexplain\s+elo\b", r"\bwho\s+is\s+elo\b"]
+_ELO_BOOK_SIGNALS    = [r"\belo\s+book\b", r"\bthe\s+book\b", r"\belo\s+stor[yi]\b", r"\belo\s+narrat\b", r"\bwhat\s+(is\s+the|does\s+the)\s+(book|story)\b"]
+_RECALL_SIGNALS      = [r"\bwhat\s+were\s+we\b", r"\bwhat\s+did\s+we\b", r"\bwhat\s+have\s+we\b", r"\bwhat\s+was\s+we\b", r"\blast\s+session\b", r"\bwhat\s+were\s+you\b"]
 _CHUNK_SIGNALS       = [r"\bwhat\s+(is|does)\s+chunk\b", r"\bchunk\s+mean\b"]
 _DONT_KNOW_SIGNALS   = [r"\bi\s+don'?t\s+know\b", r"\bnot\s+sure\b", r"\bi\s+have\s+no\s+idea\b"]
 _FEELING_OFF_SIGNALS = [r"\bsomething\s+feels\b", r"\bfeel\s+off\b", r"\bfeel\s+wrong\b", r"\bfeel\s+(lost|stuck|weird|strange)\b"]
@@ -202,7 +223,17 @@ class MockBackend(BaseBackend):
         return {"response_text": response}
 
     def _detect_and_respond(self, text: str, mode: str) -> str:
-        # gentle/overwhelm override — inner child layer (highest priority)
+        # factual/informational queries — checked first, never fall to emotional pools
+        if _matches(text, _ELO_WORLD_SIGNALS):
+            return _pick(_ELO_WORLD_POOL, text)
+        if _matches(text, _ELO_BOOK_SIGNALS):
+            return _pick(_ELO_BOOK_POOL, text)
+        if _matches(text, _RECALL_SIGNALS):
+            return _pick(_RECALL_POOL, text)
+        if _matches(text, _CHUNK_SIGNALS):
+            return _pick(_CHUNK_POOL, text)
+
+        # gentle/overwhelm override — inner child layer
         if mode in ("GENTLE_GROUNDED", "SILENCE-AWARE") or _matches(text, _GENTLE_SIGNALS):
             return _pick(_GENTLE_POOL, text)
         if _matches(text, _OVERWHELM_SIGNALS):
@@ -221,8 +252,6 @@ class MockBackend(BaseBackend):
             return _pick(_INQUIRY_POOL, text)
         if _matches(text, _EXPLORE_SIGNALS):
             return _pick(_EXPLORING_POOL, text)
-        if _matches(text, _CHUNK_SIGNALS):
-            return _pick(_CHUNK_POOL, text)
         if _matches(text, _DONT_KNOW_SIGNALS):
             return _pick(_DONT_KNOW_POOL, text)
         if _matches(text, _FEELING_OFF_SIGNALS):
