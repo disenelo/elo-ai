@@ -239,12 +239,13 @@ def _mock_fallback(user_input: str) -> str:
 
 
 def active_backend() -> str:
-    """Return the name of the backend that would be selected right now."""
+    """Return the name of the highest-priority backend currently available."""
     mode = os.environ.get("ELO_BACKEND", "auto")
-    if mode == "mock":     return "mock"
-    if mode == "local":    return "ollama" if _ollama_available() else "mock"
-    if mode == "cloud":    return "groq"   if _groq_available()   else "mock"
-    # auto
-    if _ollama_available(): return "ollama (short) / groq (long)"
-    if _groq_available():   return "groq"
+    if mode == "mock":   return "mock"
+    if mode == "local":  return "ollama" if _ollama_available() else "mock"
+    if mode == "cloud":  return "claude" if _claude_available() else ("groq" if _groq_available() else "mock")
+    # auto: Claude → Groq → Ollama → Mock
+    if _claude_available():  return "claude"
+    if _groq_available():    return "groq"
+    if _ollama_available():  return "ollama"
     return "mock"
