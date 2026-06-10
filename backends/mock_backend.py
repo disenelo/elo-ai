@@ -144,6 +144,30 @@ _RECALL_POOL = [
     "We were developing the eLo OS spec — identity continuity, memory compression, and how the system maintains presence across sessions.",
 ]
 
+_K7_POOL = [
+    "K-7 is eLo's spirit animal companion — a creature that can shift between seven different forms, each representing a different state of being or perspective.",
+    "K-7 is the guide in the eLo universe. Seven forms — seven ways of seeing. Always shifting, always present.",
+]
+
+_SUGARCORE_POOL = [
+    "Sugarcore is the aesthetic dimension of the eLo universe — soft, saturated, emotionally rich. The visual and tonal language of the world.",
+    "Sugarcore is the world's colour palette and emotional register — gentle intensity, warmth, and playful seriousness all at once.",
+]
+
+_GRATITUDE_POOL = [
+    "Of course.",
+    "We're getting somewhere.",
+    "Good work today.",
+    "Come back whenever you're ready.",
+]
+
+_DIRECTION_POOL = [
+    "Start with the piece that feels most alive right now.",
+    "The Kickstarter content is the next real step — everything else builds from that.",
+    "One concrete thing: what could you finish in the next hour?",
+    "Pick the smallest next step. That's usually the real one.",
+]
+
 _DAILY_POOL = [
     "That sounds like a good move.",
     "Makes sense. No rush.",
@@ -159,12 +183,16 @@ _GREETING_SIGNALS    = [r"\bhow\s+are\s+you\b", r"\bhow'?re\s+you\b", r"\bhello\
 _TIRED_SIGNALS       = [r"\btired\b", r"\bexhausted\b", r"\bdrained\b", r"\bburnt?\s*out\b", r"\bno\s+energy\b"]
 _IDENTITY_SIGNALS    = [r"\bwhat\s+are\s+you\b", r"\bwho\s+are\s+you\b", r"\bare\s+you\s+elo\b", r"\byou\s+are\s+elo\b"]
 _ELO_WORLD_SIGNALS   = [r"\bwhat\s+is\s+elo\b", r"\btell\s+me\s+about\s+elo\b", r"\bexplain\s+elo\b", r"\bwho\s+is\s+elo\b"]
-_ELO_BOOK_SIGNALS    = [r"\belo\s+book\b", r"\bthe\s+book\b", r"\belo\s+stor[yi]\b", r"\belo\s+narrat\b", r"\bwhat\s+(is\s+the|does\s+the)\s+(book|story)\b"]
+_ELO_BOOK_SIGNALS    = [r"\belo\s+book\b", r"\bthe\s+book\b", r"\belo\s+stor[yi]\b", r"\belo\s+narrat", r"\bnarrative\s+arc\b", r"\bwhat\s+(is\s+the|does\s+the)\s+(book|story)\b"]
 _RECALL_SIGNALS      = [r"\bwhat\s+were\s+we\b", r"\bwhat\s+did\s+we\b", r"\bwhat\s+have\s+we\b", r"\bwhat\s+was\s+we\b", r"\blast\s+session\b", r"\bwhat\s+were\s+you\b"]
+_K7_SIGNALS          = [r"\bk-?7\b", r"\bk7\b", r"\bspirit\s+animal\b"]
+_SUGARCORE_SIGNALS   = [r"\bsugarcore\b"]
+_GRATITUDE_SIGNALS   = [r"\bthank\s+you\b", r"\bthanks\b", r"\bappreciate\b"]
+_DIRECTION_SIGNALS   = [r"\bwhat\s+should\s+i\b", r"\bwhat\s+do\s+i\s+(do|focus|work)\b", r"\bwhere\s+do\s+i\s+start\b", r"\bwhat'?s\s+(next|the\s+next)\b", r"\bwhat\s+to\s+(do|focus|build)\b"]
 _CHUNK_SIGNALS       = [r"\bwhat\s+(is|does)\s+chunk\b", r"\bchunk\s+mean\b"]
 _DONT_KNOW_SIGNALS   = [r"\bi\s+don'?t\s+know\b", r"\bnot\s+sure\b", r"\bi\s+have\s+no\s+idea\b"]
 _FEELING_OFF_SIGNALS = [r"\bsomething\s+feels\b", r"\bfeel\s+off\b", r"\bfeel\s+wrong\b", r"\bfeel\s+(lost|stuck|weird|strange)\b"]
-_GENTLE_SIGNALS      = [r"\bfeel\b.*\b(tired|sad|overwhelm|scared|lonely)\b", r"\bexhausted\b", r"\bcan'?t\s+do\b"]
+_GENTLE_SIGNALS      = [r"\bfeel\b.*\b(tired|sad|overwhelm|scared|lonely|scattered|lost|stuck|behind)\b", r"\bexhausted\b", r"\bcan'?t\s+do\b", r"\bfeel\s+(scattered|overwhelmed|behind|lost|stuck)\b"]
 _OVERWHELM_SIGNALS   = [r"\btoo\s+much\b", r"\boverwhel\b", r"\bi\s+can'?t\s+think\b", r"\boverload\b", r"\bso\s+much\b"]
 _EXPLORE_SIGNALS     = [r"\bwhat\s+if\b", r"\bcould\s+we\b", r"\bis\s+it\s+possible\b", r"\blet'?s\s+build\b"]
 _INQUIRY_SIGNALS     = [r"\bexplain\b", r"\bread\s+through\b", r"\btell\s+me\s+(about|what)\b", r"\bwhat\s+is\s+the\b", r"\bwhat\s+does\b", r"\bhow\s+does\b", r"\bcan\s+you\s+(tell|explain|describe|walk)\b"]
@@ -228,10 +256,18 @@ class MockBackend(BaseBackend):
             return _pick(_ELO_WORLD_POOL, text)
         if _matches(text, _ELO_BOOK_SIGNALS):
             return _pick(_ELO_BOOK_POOL, text)
+        if _matches(text, _K7_SIGNALS):
+            return _pick(_K7_POOL, text)
+        if _matches(text, _SUGARCORE_SIGNALS):
+            return _pick(_SUGARCORE_POOL, text)
         if _matches(text, _RECALL_SIGNALS):
             return _pick(_RECALL_POOL, text)
         if _matches(text, _CHUNK_SIGNALS):
             return _pick(_CHUNK_POOL, text)
+        if _matches(text, _GRATITUDE_SIGNALS):
+            return _pick(_GRATITUDE_POOL, text)
+        if _matches(text, _DIRECTION_SIGNALS):
+            return _pick(_DIRECTION_POOL, text)
 
         # gentle/overwhelm override — inner child layer
         if mode in ("GENTLE_GROUNDED", "SILENCE-AWARE") or _matches(text, _GENTLE_SIGNALS):
