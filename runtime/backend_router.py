@@ -132,6 +132,25 @@ def _groq_available() -> bool:
     return bool(os.environ.get("GROQ_API_KEY", ""))
 
 
+def _claude_available() -> bool:
+    return bool(os.environ.get("ANTHROPIC_API_KEY", ""))
+
+
+def _claude_call(system_prompt: str, user_input: str) -> str:
+    """Call Anthropic Claude."""
+    import anthropic
+    api_key = os.environ["ANTHROPIC_API_KEY"]
+    client  = anthropic.Anthropic(api_key=api_key)
+    # smoke-test: if key is invalid this raises immediately
+    msg = client.messages.create(
+        model      = os.environ.get("ELO_MODEL", "claude-sonnet-4-5"),
+        max_tokens = 512,
+        system     = system_prompt,
+        messages   = [{"role": "user", "content": user_input}],
+    )
+    return msg.content[0].text.strip()
+
+
 # ── public router ──────────────────────────────────────────────────────────────
 
 def route(
@@ -168,6 +187,13 @@ def route(
         return _mock_fallback(user_input), "mock"
 
     if mode == "cloud":
+        # cloud mode: Claude first, Groq fallback
+        if _claude_available():
+            try:
+                raw = _claude_call(system_prompt, user_input)
+                return normalise(raw, max_sentences), "claude"
+            except Exception as e:
+                _logger.warning("Claude failed: %s", e)
         if _groq_available():
             try:
                 raw = _groq_call(system_prompt, user_input)
@@ -176,22 +202,28 @@ def route(
                 _logger.warning("Groq failed: %s", e)
         return _mock_fallback(user_input), "mock"
 
-    # auto mode: short input → Ollama (fast), long input → Groq (deeper)
-    use_local = len(user_input) < _AUTO_LOCAL_MAX_CHARS
-
-    if use_local and _ollama_available():
+    # auto mode: Claude → Groq → Ollama → Mock
+    # Every input goes through the best available backend — no length split.
+    if _claude_available():
         try:
-            raw = _ollama_call(system_prompt, user_input)
-            return normalise(raw, max_sentences), "ollama"
+            raw = _claude_call(system_prompt, user_input)
+            return normalise(raw, max_sentences), "claude"
         except Exception as e:
-            _logger.warning("Ollama failed, falling to Groq: %s", e)
+            _logger.warning("Claude failed, trying Groq: %s", e)
 
     if _groq_available():
         try:
             raw = _groq_call(system_prompt, user_input)
             return normalise(raw, max_sentences), "groq"
         except Exception as e:
-            _logger.warning("Groq failed, falling to mock: %s", e)
+            _logger.warning("Groq failed, trying Ollama: %s", e)
+
+    if _ollama_available():
+        try:
+            raw = _ollama_call(system_prompt, user_input)
+            return normalise(raw, max_sentences), "ollama"
+        except Exception as e:
+            _logger.warning("Ollama failed, falling to mock: %s", e)
 
     return _mock_fallback(user_input), "mock"
 
