@@ -32,44 +32,13 @@ from core import attention as attn
 from runtime.executive import decide as exec_decide
 from runtime import state_machine as sm
 from runtime.prompt_builder import build as build_prompt
+from runtime.backend_router import route as router_route, active_backend, normalise
 from backends.mock_backend import MockBackend as _MockBackend, EXIT_POOL as _EXIT_POOL
 from unity.unity_signal import convert as unity_convert
 import random as _random
 
-# Always-available fallback — used when Claude fails mid-session
+# Always-available fallback for hard failures
 _fallback = _MockBackend()
-
-
-# ── backend setup ──────────────────────────────────────────────────────────────
-
-def _pick_backend():
-    """Return (backend_name, send_fn). Falls back to mock if Claude unavailable."""
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-
-    if api_key:
-        try:
-            import anthropic
-            client = anthropic.Anthropic(api_key=api_key)
-            client.models.list()   # smoke-test key validity
-
-            def send_claude(system_prompt: str, user_input: str) -> str:
-                msg = client.messages.create(
-                    model      = os.environ.get("ELO_MODEL", "claude-sonnet-4-5"),
-                    max_tokens = 512,
-                    system     = system_prompt,
-                    messages   = [{"role": "user", "content": user_input}],
-                )
-                return msg.content[0].text.strip()
-
-            return "claude", send_claude
-        except Exception:
-            pass
-
-    def send_mock(system_prompt: str, user_input: str) -> str:
-        result = _fallback.generate_response(user_input, "CONVERSATIONAL", {}, {}, {}, {})
-        return result["response_text"]
-
-    return "mock", send_mock
 
 
 # ── main ───────────────────────────────────────────────────────────────────────
@@ -88,7 +57,9 @@ def run():
     except Exception:
         memory_pack = {}
 
-    backend_name, send = _pick_backend()
+    vault_ctx = get_context_block(max_chars=1200)
+
+    backend_name = active_backend()
     debug          = False
     last_inputs: list = []
 
@@ -133,6 +104,8 @@ def run():
                 last_inputs.clear()
                 runtime_state = sm.fresh()
                 memory_pack   = build_memory_pack(state)
+                vault_ctx     = get_context_block(max_chars=1200)
+                backend_name  = active_backend()
                 print("eLo: Session reset. Memory still intact.")
                 continue
             elif cmd == "/debug":
@@ -201,21 +174,20 @@ def run():
             print(f"  [emotion: {emo_state} | mem: {n_high}H {n_med}M]")
 
         # Step 6: BUILD PROMPT + GENERATE RESPONSE
-        system = build_prompt(raw, attention=attention_model, exec_decision=exec_decision)
+        system = build_prompt(raw, vault_context=vault_ctx, attention=attention_model, exec_decision=exec_decision)
 
         if debug:
             print(f"  [prompt: {len(system)} chars]")
 
-        _tone = exec_decision.get("tone", "CONVERSATIONAL")
+        _tone      = exec_decision.get("tone", "CONVERSATIONAL")
+        _max_s     = exec_decision.get("max_sentences", 4)
         t0 = time.perf_counter()
         try:
-            if backend_name == "mock":
-                # pass the exec_decision tone so mock uses the right response pool
-                response = _fallback.generate_response(raw, _tone, {}, {}, {}, {})["response_text"]
-            else:
-                response = send(system, raw)
+            response, backend_name = router_route(system, raw, max_sentences=_max_s)
         except Exception:
-            response = _fallback.generate_response(raw, _tone, {}, {}, {}, {})["response_text"]
+            # hard fallback — mock always works
+            response   = _fallback.generate_response(raw, _tone, {}, {}, {}, {})["response_text"]
+            backend_name = "mock"
         ms = int((time.perf_counter() - t0) * 1000)
 
         # Step 8: OUTPUT + OPTIONAL METADATA

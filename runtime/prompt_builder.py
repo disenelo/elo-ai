@@ -268,6 +268,10 @@ def build(
 
         if lines:
             sections.append("[ACTIVE MEMORY — ATTENTION FILTERED]\n" + "\n".join(lines))
+
+        # always inject vault world knowledge so LLM backends know the eLo universe
+        if vault_context.strip():
+            sections.append(f"[WORLD KNOWLEDGE]\n{vault_context[:1000]}")
     else:
         # backward-compatible path
         if state_context.strip():
