@@ -519,7 +519,9 @@ _ELO_SELF_SIGNALS    = [r"\bwhat\s+makes\s+(elo|you)\s+different\b", r"\bare\s+y
 _DISENELO_SIGNALS    = [r"\bdisenelo\b", r"\bwhat\s+is\s+disenelo\b"]
 _ELO_PURPOSE_SIGNALS = [r"\bwhat\s+should\s+i\s+expect\b", r"\byour\s+purpose\b", r"\bwhy\s+do\s+you\s+exist\b",
                         r"\bwhat\s+(are\s+you\s+for|is\s+your\s+role)\b"]
-_PROJECT_STATUS_SIGNALS = [r"\bwhat\s+(stage|problem|phase)\b", r"\bwhat\s+(are|do)\s+(you\s+think\s+)?i\s+(am\s+)?(build|mak|work)",
+_PROJECT_STATUS_SIGNALS = [r"\bwhat\s+(stage|problem|phase)\b",
+                            r"\bwhat\s+(are|do)\s+(you\s+think\s+)?i\s+(am\s+)?(build|mak|work)",
+                            r"\bwhat\s+am\s+i\s+(build|mak|work|do)", r"\bwhat\s+i\s+am\s+build",
                             r"\bwhat\s+have\s+i\s+been\s+(struggl|work)", r"\bwhat\s+patterns?\s+(do\s+you|you)\b",
                             r"\bmain\s+project\b", r"\bkeep\s+work\s+on\b", r"\belo\s+os\s+idea\b",
                             r"\bproblem\s+(am|are)\s+i\s+(trying|solving)\b",
@@ -534,7 +536,8 @@ _ELO_STAGES_SIGNALS  = [r"\bjellydrop\b", r"\bdesert\s+stage\b", r"\bocean\s+sta
                         r"\bwhat\s+happens\s+in\s+the\b", r"\bhow\s+does\s+the\s+(jellydrop|desert|stage)\b"]
 _SYS_ATTENTION_SIGNALS  = [r"\battention\s+system\b", r"\bhow\s+does\s+your\s+attention\b",
                             r"\bhow\s+does\s+attention\b", r"\bwhat\s+is\s+attention\b"]
-_SYS_LOOP_SIGNALS    = [r"\bdetect\s+(a\s+)?loop\b", r"\bwhen\s+(you\s+)?detect\b", r"\bloop\s+detect\b"]
+_SYS_LOOP_SIGNALS    = [r"\bdetect\s+(a\s+)?loop\b", r"\bwhen\s+(you\s+)?detect\b",
+                        r"\bloop\s+detect", r"\bwhat\s+triggers\s+loop\b", r"\btriggers?\s+loop\b"]
 _SYS_PROCESS_SIGNALS = [r"\bresponse\s+process\b", r"\bstep\s+by\s+step\b", r"\bstep-by-step\b",
                         r"\bwhat\s+is\s+your\s+process\b", r"\bhow\s+do\s+you\s+respond\b"]
 _SYS_DECISION_SIGNALS = [r"\bhow\s+do\s+you\s+decide\b", r"\bwhat\s+do\s+you\s+base\b", r"\bhow\s+(do|does)\s+(you|it)\s+choose\b"]
@@ -542,8 +545,8 @@ _SYS_MEMORY_SIGNALS  = [r"\bstored\s+in\s+memory\b", r"\bwhat\s+is\s+(stored|sav
                         r"\bwhat\s+(gets|is)\s+ignored\b", r"\bpurpose\s+of\s+the\s+memory\b",
                         r"\bwhat\s+is\s+the\s+memory\b"]
 _SYS_VOICE_SIGNALS   = [r"\bvoice\s+system\b", r"\bwhat\s+is\s+your\s+voice\b", r"\bhow\s+do\s+you\s+choose\s+(tone|voice)\b"]
-_SYS_STATE_SIGNALS   = [r"\bstate\s+(and|vs|versus)\s+memory\b", r"\bdifference\s+between\s+state\b",
-                        r"\bwhat\s+is\s+(state|the\s+state)\b"]
+_SYS_STATE_SIGNALS   = [r"\bstate\s+(and|vs|versus)\s+memory\b", r"\bmemory\s+(and|vs|versus)\s+state\b",
+                        r"\bdifference\s+between\s+(state|memory)\b", r"\bwhat\s+is\s+(state|the\s+state)\b"]
 _SYS_STABILISE_SIGNALS = [r"\bwhat\s+triggers\s+stabil\b", r"\bstabilisation\s+mode\b", r"\bstabilize\s+mode\b",
                            r"\bwhen\s+(does|do)\s+(you\s+)?stabil\b"]
 _SYS_CONFUSED_SIGNALS = [r"\bwhat\s+happens\s+when\s+you\s+are\s+confused\b", r"\bwhat\s+if\s+you\s+(don'?t|are\s+confused)\b"]
