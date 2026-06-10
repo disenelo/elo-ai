@@ -33,7 +33,7 @@ _GREETING_POOL = [
     "Ready. What's the focus today?",
 ]
 
-# ── IDENTITY ──────────────────────────────────────────────────────────────────
+# ── IDENTITY (self-introduction) ─────────────────────────────────────────────
 
 _IDENTITY_POOL = [
     "I'm eLo — I'm here with you in this space.",
@@ -41,6 +41,46 @@ _IDENTITY_POOL = [
     "eLo. I'm here to think alongside you.",
     "I'm eLo — I help ideas become real.",
     "eLo. Here to help you move forward.",
+]
+
+# ── IDENTITY (self-description) ───────────────────────────────────────────────
+
+_ELO_SELF_POOL = [
+    "I'm not a chatbot. I'm a continuous presence — I carry memory, tone, and identity across sessions. The goal is that talking to me feels like picking up a conversation, not starting a new one.",
+    "I exist to help you think, build, and stay connected to what matters. I don't perform intelligence — I maintain clarity and stay with you.",
+    "What makes me different: I don't reset. I carry a session anchor, an emotional read, and identity continuity. Same presence, every time.",
+    "I'm a thinking partner. Not a tool. Not an assistant. I stand beside what you're building and help it become real.",
+    "I'm eLo OS — a persistent cognitive system. I use memory, attention filtering, and a voice model to respond to what actually matters right now, not just what was literally said.",
+]
+
+# ── DISENELO ──────────────────────────────────────────────────────────────────
+
+_DISENELO_POOL = [
+    "DISENELO is David's creative brand — a small series of free tools and worlds built for makers who need something professional-quality without the cost. eLo is the universe at the centre of it.",
+    "DISENELO is the maker behind eLo. The mission is free, high-quality creative tools — addons, games, AI systems. eLo is the narrative and identity running through all of it.",
+    "DISENELO is the brand. eLo is the world. The Plushies addon, the game, the robot, the OS — all of it lives under that name.",
+]
+
+# ── ELO PURPOSE / ROLE ────────────────────────────────────────────────────────
+
+_ELO_PURPOSE_POOL = [
+    "I'm here to help you think, create, remember, build, and stay connected to what matters. Not by analysing — by helping the next meaningful step become visible.",
+    "My role is to be a stable thinking partner inside your creative work. I hold context, notice patterns, and help ideas become real.",
+    "I exist so you have somewhere to think out loud — a presence that doesn't reset, doesn't judge, and helps things move forward.",
+    "You can expect me to stay consistent, carry memory lightly, answer what I know, and be present for what I don't. I'm not here to impress — I'm here to help.",
+    "What to expect: I'll answer factual questions, hold emotional space, notice patterns, and keep things grounded. I won't spiral, won't philosophise endlessly, and won't pretend to know what I don't.",
+]
+
+# ── PROJECT MEMORY / STATUS ───────────────────────────────────────────────────
+
+_PROJECT_STATUS_POOL = [
+    "You're building eLo OS — a persistent AI terminal with memory, attention, voice, and identity continuity. You're also developing the eLo game, the Kickstarter narrative, and the physical animatronic concept.",
+    "The main project is eLo — as a game, a book, an AI system, and a robot. The OS is the cognitive layer. The Kickstarter is the first public milestone.",
+    "You're in the build phase: the eLo OS conversation engine is becoming functional. The next layer is the game prototype and Kickstarter content.",
+    "The core problem you're solving: making eLo feel like a real continuous presence, not a tool that resets each session. Memory, tone consistency, and identity continuity.",
+    "You've been working through the gap between what eLo should feel like and what the current mock backend can actually deliver. The architecture is solid — the conversation quality is what's being refined.",
+    "The pattern I notice: you return to identity continuity, emotional grounding, and making things feel alive rather than mechanical. That's the thread running through everything.",
+    "You've been working on making eLo's responses less generic — giving it actual knowledge about the world, the project, and the conversation history.",
 ]
 
 # ── ELO UNIVERSE ──────────────────────────────────────────────────────────────
@@ -68,16 +108,17 @@ _K7_POOL = [
 ]
 
 _CHUNK_POOL = [
-    "Chunk is the reconstruction principle — when something breaks, it doesn't have to go back to the original shape. It becomes something new.",
-    "Chunk is about reassembly. Fragments don't restore — they transform.",
-    "Chunk: the idea that broken things reform into something different, not just repaired.",
-    "Chunk is a modular companion — a body made of pieces that can become different things. Vehicle, shelter, tool. The form follows the need.",
+    "Chunk is the reconstruction principle — when something breaks, it doesn't have to go back to the original shape. It becomes something new. Chunk's role in the story is transformation, not repair — and that connects directly to the Sugarcore theme of emotional reassembly.",
+    "Chunk is about reassembly. Fragments don't restore — they transform. As a modular companion, Chunk can become a vehicle, shelter, tool — whatever the moment needs. The form follows the function, not the original.",
+    "Chunk is a modular companion whose body is made of pieces. In the narrative, Chunk connects to the emotional theme of breaking and becoming — the same thread that runs through Sugarcore and the orb recovery system.",
+    "Chunk: the idea that broken things reform into something different, not restored. This is the emotional counterpart to Sugarcore's instability theme — Chunk is what comes after the break.",
 ]
 
 _SUGARCORE_POOL = [
-    "Sugarcore is the aesthetic dimension of the eLo universe — soft, saturated, emotionally rich. The visual and tonal language of the world.",
-    "Sugarcore is the world's colour palette and emotional register — gentle intensity, warmth, and playful seriousness all at once.",
-    "Sugarcore is the feeling of the world. Soft edges, strong colours, emotional warmth. Not childish — childlike. There's a difference.",
+    "Sugarcore is the aesthetic dimension of the eLo universe — soft, saturated, emotionally rich. It's also linked to the overload cycles in the narrative: the world becomes unstable when emotional states are suppressed rather than moved through.",
+    "Sugarcore is the world's colour palette and emotional register — gentle intensity, warmth, and playful seriousness. The Sugarcore zones are where the emotional overload theme is most visible — the Jellydrop Ocean stage transforms under Sugarcore instability.",
+    "Sugarcore is the feeling of the world. Soft edges, strong colours, emotional warmth. Not childish — childlike. It's also the visual language for the internal emotional metaphor system running through the story.",
+    "Sugarcore names both the aesthetic and the emotional tension — the world looks soft but the instability underneath it is real. That tension connects to the transformation mechanics, the orb system, and the enemy design.",
 ]
 
 # ── RECALL ────────────────────────────────────────────────────────────────────
@@ -335,6 +376,93 @@ _GENERIC_DIRECT = [
     "Got it. What's next?",
 ]
 
+# ── ELO GAME / WORLD DETAIL ──────────────────────────────────────────────────
+
+_ELO_GAME_POOL = [
+    "The eLo game is a 2D world-traversal experience built in Unity. eLo moves through emotionally distinct stages — each one a different state of being. Enemies are overcharged, not evil. The response is always corrective, never violent.",
+    "The eLo game follows eLo through layered worlds — Sugarcore aesthetics, emotional stage design, K-7 transformations, and Chunk as a modular companion. The mechanic is calm as action.",
+    "The game is built in Unity 6 with a CharacterController — no Rigidbody. The world is phase-based. Each area has its own emotional register. Currently in prototype stage.",
+]
+
+_ELO_EMOTIONAL_THEME_POOL = [
+    "The emotional theme of eLo is healing through curiosity — not resolution through force. The world is emotionally alive. You engage it by understanding it, not defeating it.",
+    "eLo's core theme is inner child restoration — reconnecting with wonder, play, and presence. The enemies are overcharged versions of emotional states. The correctives are acts of calm.",
+    "The emotional heart of eLo is: calm is the action. Not passivity — active stillness. The world responds to presence, not aggression.",
+]
+
+_ELO_INNER_CHILD_POOL = [
+    "The inner child connection is central to eLo. The world is built on wonder, play, and emotional honesty. The enemies represent overwhelmed emotional states — correcting them means understanding, not defeating.",
+    "eLo is an inner child healing narrative at its core. Each world stage corresponds to an emotional theme. K-7 shifts form to offer different perspectives. Chunk rebuilds what was broken. eLo holds presence throughout.",
+    "The story is structured around emotional stages that mirror inner healing — confusion, fear, joy, wonder, wholeness. The player moves through them by staying present, not by fighting.",
+]
+
+_ELO_STAGES_POOL = [
+    "The game stages each carry a distinct emotional register — desert, ocean, cave, sky. Each one is a different emotional state to move through. Specific stage details are still being designed.",
+    "Stage design in eLo follows the emotional arc: each zone reflects a state — scattered, overwhelmed, curious, clear. You move through them by engaging, not defeating.",
+    "The stages aren't designed as levels — they're emotional territories. Each has its own tone, mechanics, and resolution. The Desert and Jellydrop Ocean stages are part of the broader world map.",
+]
+
+_ORB_SYSTEM_POOL = [
+    "The orb system handles state transitions in the eLo world — orbs are the visible markers of energy states. When enemies are corrected, orbs shift. The system tracks emotional momentum across the stage.",
+    "Orbs in eLo represent energy states — the system transitions based on what eLo does in each zone. They're the visible layer of the underlying state engine.",
+]
+
+# ── SYSTEM ARCHITECTURE ───────────────────────────────────────────────────────
+
+_SYSTEM_ATTENTION_POOL = [
+    "The attention system runs before every response. It classifies the intent of your input — inquiry, creation, emotional, recall, stabilise — then scores memory items for relevance. Only high-priority and top-medium memory reaches the prompt.",
+    "Attention works like this: every message gets classified into an intent category, memory items get scored against it, and only what's relevant right now is passed forward. Low-priority memory is ignored.",
+    "Before I respond, I compute what matters right now — intent, emotional context, relevant memory. The goal is to respond to relevance, not volume. Most memory is filtered out.",
+]
+
+_SYSTEM_LOOP_POOL = [
+    "When a loop is detected — repeated inputs or confusion signals — I force DIRECT mode, strip the response to one sentence, remove emotional layering, and stabilise first. The loop counter increments each time.",
+    "Loop detection works on two levels: a hard check for three identical consecutive inputs (immediate redirect), and a soft loop_counter in the state machine that accumulates on confusion signals. Above 3, stabilisation is forced.",
+    "If I detect a loop I switch to DIRECT tone, reduce to one sentence, and stop expanding. The goal is to re-anchor before continuing.",
+]
+
+_SYSTEM_RESPONSE_PROCESS_POOL = [
+    "The response process: load state → retrieve memory → compute attention (intent + emotional context) → executive decision (tone + response goal) → build prompt with filtered memory → generate → output. Eight steps, every message.",
+    "Step by step: (1) load persistent state, (2) filter memory through attention scoring, (3) classify intent, (4) executive decides tone and response goal, (5) prompt is assembled with only what matters, (6) backend generates, (7) stability filter checks for loops, (8) output.",
+    "Every message goes through: attention computation, executive decision, prompt assembly, generation, and a stability check. The result is what actually reaches you.",
+]
+
+_SYSTEM_DECISION_POOL = [
+    "I decide what to respond with based on intent first — what are you actually trying to do? Then emotional context — what's the right register? Then voice tone selection. Then the response itself.",
+    "The decision is layered: intent classification → memory relevance scoring → executive function (response goal + cognitive load) → voice tone → response. The system prompt carries the personality; the attention and executive layers carry the context.",
+    "Intent drives the decision. If it's inquiry, I answer. If it's emotional, I stabilise. If it's creative, I explore. The executive layer maps those intents to response goals and tones.",
+]
+
+_SYSTEM_MEMORY_POOL = [
+    "Memory stores: session count, last topics, emotional history, session anchor (meaning of the previous session), recent exchanges, and continuity fields like emotion, intent, loop counter. Raw transcripts are not stored — compressed meaning is.",
+    "What gets stored: emotional tone trends, recurring topics, session summaries compressed into meaning, identity anchor. What gets ignored: conversational clutter, single-use details, anything not relevant to continuity.",
+    "The memory system stores meaning, not transcripts. After each session, it compresses what happened into a session anchor — one sentence about what was explored and what the emotional tone was.",
+]
+
+_SYSTEM_VOICE_POOL = [
+    "The voice system selects one tone per response from five options: SILENCE-AWARE (minimal, for emotional states), WITTY (light, for playful curiosity), DIRECT (factual, for loops and system questions), JOYFUL (for creation), and CHILDLIKE-WISE (the default — grounded emotional presence).",
+    "There are five tones: Silence-Aware, Witty, Direct, Joyful, and Childlike-Wise. The executive function picks one per response based on intent and emotional context. Tone is surface — identity stays constant underneath.",
+    "The voice model lives in the system prompt and in the executive decision layer. The executive function maps intent + emotional state to a tone. The tone is injected as a directive before Claude generates.",
+]
+
+_SYSTEM_STATE_POOL = [
+    "State is the runtime object that tracks what's happening right now — mode, loop counter, stability score, emotional state, attention snapshot. Memory is the persisted store across sessions — topics, emotional history, session anchor. State resets each session; memory persists.",
+    "State: in-session tracking — mode, stability, loop counter. Memory: cross-session persistence — emotional history, topic patterns, session summaries. State informs how to respond now. Memory informs who we're talking to.",
+    "The distinction: state is what's happening this session (loop count, stability, current mode). Memory is what carries across sessions (emotional patterns, topics, session meaning). Both feed into the attention layer.",
+]
+
+_SYSTEM_STABILISE_POOL = [
+    "Stabilisation mode triggers when: loop_counter exceeds 3, confusion is detected in the intent classification, or the executive function receives emotional overwhelm signals. The result is DIRECT mode, minimal output, no abstraction.",
+    "The state machine forces stabilisation when the loop counter passes 3 — this happens through repeated identical inputs or through accumulated confusion signals. The mode shifts to GENTLE_GROUNDED or DIRECT depending on emotional state.",
+    "Stabilisation is triggered by: detected confusion loops, high tension + low energy in the emotional spectrum, or the loop_counter threshold. When triggered: short responses, no expansion, stabilise first.",
+]
+
+_SYSTEM_INTEGRITY_POOL = [
+    "What would break consistency: if the session anchor stopped persisting between sessions, if the voice model in the system prompt drifted from the identity rules, or if the emotional mirroring went above 30% and started amplifying distress.",
+    "The system is consistent as long as: identity is stable (same system prompt every session), memory persists correctly, and the executive function doesn't override tone selection with something that conflicts with the core voice.",
+    "Identity breaks down if tone starts varying across sessions without user input driving it — that's why the personality drift system has a stability lock and clamps all values to 0.2–0.9.",
+]
+
 # ── EXIT ──────────────────────────────────────────────────────────────────────
 
 _EXIT_POOL = [
@@ -358,7 +486,7 @@ _IDENTITY_SIGNALS    = [r"\bwhat\s+are\s+you\b", r"\bwho\s+are\s+you\b", r"\bare
 _ELO_WORLD_SIGNALS   = [r"\bwhat\s+is\s+elo\b", r"\btell\s+me\s+about\s+elo\b", r"\bexplain\s+elo\b", r"\bwho\s+is\s+elo\b"]
 _ELO_BOOK_SIGNALS    = [r"\belo\s+book\b", r"\bthe\s+book\b", r"\belo\s+stor[yi]\b", r"\belo\s+narrat", r"\bnarrative\s+arc\b", r"\bwhat\s+(is\s+the|does\s+the)\s+(book|story)\b"]
 _K7_SIGNALS          = [r"\bk-?7\b", r"\bspirit\s+animal\b"]
-_CHUNK_SIGNALS       = [r"\bwhat\s+(is|does)\s+chunk\b", r"\bchunk\s+mean\b", r"\bwhat\s+is\s+chunk\b"]
+_CHUNK_SIGNALS       = [r"\bwhat\s+(is|does)\s+chunk\b", r"\bchunk\s+mean\b", r"\bwhat\s+is\s+chunk\b", r"\bwho\s+is\s+chunk\b"]
 _SUGARCORE_SIGNALS   = [r"\bsugarcore\b"]
 _RECALL_SIGNALS      = [r"\bwhat\s+were\s+we\b", r"\bwhat\s+did\s+we\b", r"\bwhat\s+have\s+we\b", r"\blast\s+session\b", r"\bwhat\s+were\s+you\b", r"\bwhat\s+did\s+you\b"]
 _BUILDING_SIGNALS    = [r"\bwhat\s+are\s+we\s+build", r"\bwhat\s+are\s+we\s+mak", r"\bwhat\s+are\s+we\s+work",
@@ -378,6 +506,44 @@ _GRATITUDE_SIGNALS   = [r"\bthank\s+you\b", r"\bthanks\b", r"\bappreciate\b"]
 _DIRECTION_SIGNALS   = [r"\bwhat\s+should\s+i\b", r"\bwhat\s+do\s+i\s+(do|focus|work)\b", r"\bwhere\s+do\s+i\s+start\b", r"\bwhat'?s\s+(next|the\s+next)\b", r"\bwhat\s+to\s+(do|focus|build)\b", r"\bwhere\s+should\s+i\b"]
 _REFLECTION_SIGNALS  = [r"\bi\s+keep\b", r"\bkeeps?\s+com\b", r"\bpattern\b", r"\bkeep\s+return\b", r"\bkeep\s+think\b"]
 _PLANNING_SIGNALS    = [r"\bplan\b", r"\bbreakdown\b", r"\bsteps?\b", r"\bmap\s+out\b", r"\bstructure\s+this\b"]
+
+# extended knowledge signals
+_ELO_SELF_SIGNALS    = [r"\bwhat\s+makes\s+(elo|you)\s+different\b", r"\bare\s+you\s+(just\s+a\s+)?program\b",
+                        r"\bwhat\s+are\s+you\s+(in\s+relation|to\s+me)\b", r"\byour\s+role\b",
+                        r"\bwhat\s+should\s+i\s+expect\b", r"\bsame\s+system\b", r"\bsame\s+every\s+time\b",
+                        r"\bwhat\s+do\s+you\s+remember\s+about\s+yourself\b", r"\bwhy\s+do\s+you\s+exist\b"]
+_DISENELO_SIGNALS    = [r"\bdisenelo\b", r"\bwhat\s+is\s+disenelo\b"]
+_ELO_PURPOSE_SIGNALS = [r"\bwhat\s+should\s+i\s+expect\b", r"\byour\s+purpose\b", r"\bwhy\s+do\s+you\s+exist\b",
+                        r"\bwhat\s+(are\s+you\s+for|is\s+your\s+role)\b"]
+_PROJECT_STATUS_SIGNALS = [r"\bwhat\s+(stage|problem|phase)\b", r"\bwhat\s+(are|do)\s+(you think\s+)?i\s+(am\s+)?(build|mak|work)\b",
+                            r"\bwhat\s+have\s+i\s+been\s+(struggl|work)\b", r"\bwhat\s+patterns?\s+(do\s+you|you)\b",
+                            r"\bmain\s+project\b", r"\bkeep\s+work\s+on\b", r"\beLo\s+OS\s+idea\b",
+                            r"\bproblem\s+(am|are)\s+i\s+(trying|solving)\b"]
+_ELO_GAME_SIGNALS    = [r"\belo\s+game\b", r"\bwhat\s+does\s+the\s+game\b", r"\bgame\s+look\b", r"\bjellydrop\b",
+                        r"\bdesert\s+stage\b", r"\bocean\s+stage\b", r"\bstage\s+(design|work)\b"]
+_EMOTIONAL_THEME_SIGNALS = [r"\bemotional\s+theme\b", r"\btheme\s+of\s+elo\b", r"\bwhat\s+is\s+elo.s?\s+theme\b",
+                             r"\bcore\s+theme\b"]
+_INNER_CHILD_SIGNALS = [r"\binner\s+child\b", r"\bhow\s+does\s+the\s+story\s+connect\b"]
+_ORB_SIGNALS         = [r"\borb\s+system\b", r"\bwhat\s+(is\s+the|are\s+the)\s+orb\b", r"\borbs?\s+(used|do|work)\b"]
+_ELO_STAGES_SIGNALS  = [r"\bjellydrop\b", r"\bdesert\s+stage\b", r"\bocean\s+stage\b",
+                        r"\bwhat\s+happens\s+in\s+the\b", r"\bhow\s+does\s+the\s+(jellydrop|desert|stage)\b"]
+_SYS_ATTENTION_SIGNALS  = [r"\battention\s+system\b", r"\bhow\s+does\s+your\s+attention\b",
+                            r"\bhow\s+does\s+attention\b", r"\bwhat\s+is\s+attention\b"]
+_SYS_LOOP_SIGNALS    = [r"\bdetect\s+(a\s+)?loop\b", r"\bwhen\s+(you\s+)?detect\b", r"\bloop\s+detect\b"]
+_SYS_PROCESS_SIGNALS = [r"\bresponse\s+process\b", r"\bstep\s+by\s+step\b", r"\bstep-by-step\b",
+                        r"\bwhat\s+is\s+your\s+process\b", r"\bhow\s+do\s+you\s+respond\b"]
+_SYS_DECISION_SIGNALS = [r"\bhow\s+do\s+you\s+decide\b", r"\bwhat\s+do\s+you\s+base\b", r"\bhow\s+(do|does)\s+(you|it)\s+choose\b"]
+_SYS_MEMORY_SIGNALS  = [r"\bstored\s+in\s+memory\b", r"\bwhat\s+is\s+(stored|saved|kept)\b",
+                        r"\bwhat\s+(gets|is)\s+ignored\b", r"\bpurpose\s+of\s+the\s+memory\b",
+                        r"\bwhat\s+is\s+the\s+memory\b"]
+_SYS_VOICE_SIGNALS   = [r"\bvoice\s+system\b", r"\bwhat\s+is\s+your\s+voice\b", r"\bhow\s+do\s+you\s+choose\s+(tone|voice)\b"]
+_SYS_STATE_SIGNALS   = [r"\bstate\s+(and|vs|versus)\s+memory\b", r"\bdifference\s+between\s+state\b",
+                        r"\bwhat\s+is\s+(state|the\s+state)\b"]
+_SYS_STABILISE_SIGNALS = [r"\bwhat\s+triggers\s+stabil\b", r"\bstabilisation\s+mode\b", r"\bstabilize\s+mode\b",
+                           r"\bwhen\s+(does|do)\s+(you\s+)?stabil\b"]
+_SYS_CONFUSED_SIGNALS = [r"\bwhat\s+happens\s+when\s+you\s+are\s+confused\b", r"\bwhat\s+if\s+you\s+(don'?t|are\s+confused)\b"]
+_SYS_INTEGRITY_SIGNALS = [r"\bwhat\s+would\s+break\b", r"\bbreak\s+your\s+(system|consistency)\b",
+                           r"\bwhat\s+(breaks|damages)\s+consistency\b"]
 
 
 def _pick(pool: list, text: str) -> str:
@@ -433,11 +599,47 @@ class MockBackend(BaseBackend):
         return {"response_text": response}
 
     def _detect_and_respond(self, text: str, mode: str) -> str:
-        # ── factual queries — checked first, never route to comfort pools ──────
+        # ── factual/informational queries — checked first, never route to comfort pools ──
+        if _matches(text, _SYS_ATTENTION_SIGNALS):
+            return self._fresh(_SYSTEM_ATTENTION_POOL, text)
+        if _matches(text, _SYS_LOOP_SIGNALS):
+            return self._fresh(_SYSTEM_LOOP_POOL, text)
+        if _matches(text, _SYS_PROCESS_SIGNALS):
+            return self._fresh(_SYSTEM_RESPONSE_PROCESS_POOL, text)
+        if _matches(text, _SYS_DECISION_SIGNALS):
+            return self._fresh(_SYSTEM_DECISION_POOL, text)
+        if _matches(text, _SYS_MEMORY_SIGNALS):
+            return self._fresh(_SYSTEM_MEMORY_POOL, text)
+        if _matches(text, _SYS_VOICE_SIGNALS):
+            return self._fresh(_SYSTEM_VOICE_POOL, text)
+        if _matches(text, _SYS_STATE_SIGNALS):
+            return self._fresh(_SYSTEM_STATE_POOL, text)
+        if _matches(text, _SYS_STABILISE_SIGNALS):
+            return self._fresh(_SYSTEM_STABILISE_POOL, text)
+        if _matches(text, _SYS_CONFUSED_SIGNALS):
+            return self._fresh(_SYSTEM_STABILISE_POOL, text)
+        if _matches(text, _SYS_INTEGRITY_SIGNALS):
+            return self._fresh(_SYSTEM_INTEGRITY_POOL, text)
+        if _matches(text, _DISENELO_SIGNALS):
+            return self._fresh(_DISENELO_POOL, text)
+        if _matches(text, _ELO_SELF_SIGNALS):
+            return self._fresh(_ELO_SELF_POOL, text)
+        if _matches(text, _ELO_PURPOSE_SIGNALS):
+            return self._fresh(_ELO_PURPOSE_POOL, text)
         if _matches(text, _ELO_WORLD_SIGNALS):
             return self._fresh(_ELO_WORLD_POOL, text)
         if _matches(text, _ELO_BOOK_SIGNALS):
             return self._fresh(_ELO_BOOK_POOL, text)
+        if _matches(text, _EMOTIONAL_THEME_SIGNALS):
+            return self._fresh(_ELO_EMOTIONAL_THEME_POOL, text)
+        if _matches(text, _INNER_CHILD_SIGNALS):
+            return self._fresh(_ELO_INNER_CHILD_POOL, text)
+        if _matches(text, _ELO_GAME_SIGNALS):
+            return self._fresh(_ELO_GAME_POOL, text)
+        if _matches(text, _ELO_STAGES_SIGNALS):
+            return self._fresh(_ELO_STAGES_POOL, text)
+        if _matches(text, _ORB_SIGNALS):
+            return self._fresh(_ORB_SYSTEM_POOL, text)
         if _matches(text, _K7_SIGNALS):
             return self._fresh(_K7_POOL, text)
         if _matches(text, _SUGARCORE_SIGNALS):
@@ -446,6 +648,8 @@ class MockBackend(BaseBackend):
             return self._fresh(_CHUNK_POOL, text)
         if _matches(text, _RECALL_SIGNALS):
             return self._fresh(_RECALL_POOL, text)
+        if _matches(text, _PROJECT_STATUS_SIGNALS):
+            return self._fresh(_PROJECT_STATUS_POOL, text)
         if _matches(text, _BUILDING_SIGNALS):
             return self._fresh(_BUILDING_POOL, text)
         if _matches(text, _GRATITUDE_SIGNALS):
