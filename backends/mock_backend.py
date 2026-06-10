@@ -483,12 +483,16 @@ _EXIT_POOL = [
 _GREETING_SIGNALS    = [r"\bhow\s+are\s+you\b", r"\bhow'?re\s+you\b", r"\bhello\b", r"\bhi\b", r"\bhey\b", r"\bwhat'?s\s+up\b"]
 _TIRED_SIGNALS       = [r"\btired\b", r"\bexhausted\b", r"\bdrained\b", r"\bburnt?\s*out\b", r"\bno\s+energy\b"]
 _IDENTITY_SIGNALS    = [r"\bwhat\s+are\s+you\b", r"\bwho\s+are\s+you\b", r"\bare\s+you\s+elo\b", r"\byou\s+are\s+elo\b"]
-_ELO_WORLD_SIGNALS   = [r"\bwhat\s+is\s+elo\b", r"\btell\s+me\s+about\s+elo\b", r"\bexplain\s+elo\b", r"\bwho\s+is\s+elo\b"]
+_ELO_WORLD_SIGNALS   = [r"\bwhat\s+is\s+elo\b", r"\btell\s+me\s+about\s+elo\b", r"\bexplain\s+elo\b",
+                        r"\bwho\s+is\s+elo\b", r"\bdescribe\b.*\belo\b", r"\belo\s+world\b",
+                        r"\bwhat\s+is\s+the\s+elo\s+world\b"]
 _ELO_BOOK_SIGNALS    = [r"\belo\s+book\b", r"\bthe\s+book\b", r"\belo\s+stor[yi]\b", r"\belo\s+narrat", r"\bnarrative\s+arc\b", r"\bwhat\s+(is\s+the|does\s+the)\s+(book|story)\b"]
 _K7_SIGNALS          = [r"\bk-?7\b", r"\bspirit\s+animal\b"]
 _CHUNK_SIGNALS       = [r"\bwhat\s+(is|does)\s+chunk\b", r"\bchunk\s+mean\b", r"\bwhat\s+is\s+chunk\b", r"\bwho\s+is\s+chunk\b"]
 _SUGARCORE_SIGNALS   = [r"\bsugarcore\b"]
-_RECALL_SIGNALS      = [r"\bwhat\s+were\s+we\b", r"\bwhat\s+did\s+we\b", r"\bwhat\s+have\s+we\b", r"\blast\s+session\b", r"\bwhat\s+were\s+you\b", r"\bwhat\s+did\s+you\b"]
+_RECALL_SIGNALS      = [r"\bwhat\s+were\s+we\b", r"\bwhat\s+did\s+we\b", r"\bwhat\s+have\s+we\b", r"\blast\s+session\b",
+                        r"\bwhat\s+were\s+you\b", r"\bwhat\s+did\s+you\b", r"\bdo\s+you\s+remember\b",
+                        r"\bunity\b.*\brobot\b", r"\brobot\b.*\bunity\b", r"\blast\s+say\b", r"\bi\s+last\s+(said|mention)\b"]
 _BUILDING_SIGNALS    = [r"\bwhat\s+are\s+we\s+build", r"\bwhat\s+are\s+we\s+mak", r"\bwhat\s+are\s+we\s+work",
                         r"\bwhat\s+(is\s+the|are\s+the)\s+(project|goal|current)\b", r"\bwhat\s+are\s+we\s+creat"]
 _DONT_KNOW_SIGNALS   = [r"\bdon'?t\s+know\b", r"\bnot\s+sure\b", r"\bno\s+idea\b", r"\bi\s+have\s+no\b", r"\bwhere\s+to\s+start\b", r"\bdon'?t\s+know\s+where\b"]
@@ -515,12 +519,13 @@ _ELO_SELF_SIGNALS    = [r"\bwhat\s+makes\s+(elo|you)\s+different\b", r"\bare\s+y
 _DISENELO_SIGNALS    = [r"\bdisenelo\b", r"\bwhat\s+is\s+disenelo\b"]
 _ELO_PURPOSE_SIGNALS = [r"\bwhat\s+should\s+i\s+expect\b", r"\byour\s+purpose\b", r"\bwhy\s+do\s+you\s+exist\b",
                         r"\bwhat\s+(are\s+you\s+for|is\s+your\s+role)\b"]
-_PROJECT_STATUS_SIGNALS = [r"\bwhat\s+(stage|problem|phase)\b", r"\bwhat\s+(are|do)\s+(you think\s+)?i\s+(am\s+)?(build|mak|work)\b",
-                            r"\bwhat\s+have\s+i\s+been\s+(struggl|work)\b", r"\bwhat\s+patterns?\s+(do\s+you|you)\b",
-                            r"\bmain\s+project\b", r"\bkeep\s+work\s+on\b", r"\beLo\s+OS\s+idea\b",
-                            r"\bproblem\s+(am|are)\s+i\s+(trying|solving)\b"]
-_ELO_GAME_SIGNALS    = [r"\belo\s+game\b", r"\bwhat\s+does\s+the\s+game\b", r"\bgame\s+look\b", r"\bjellydrop\b",
-                        r"\bdesert\s+stage\b", r"\bocean\s+stage\b", r"\bstage\s+(design|work)\b"]
+_PROJECT_STATUS_SIGNALS = [r"\bwhat\s+(stage|problem|phase)\b", r"\bwhat\s+(are|do)\s+(you\s+think\s+)?i\s+(am\s+)?(build|mak|work)",
+                            r"\bwhat\s+have\s+i\s+been\s+(struggl|work)", r"\bwhat\s+patterns?\s+(do\s+you|you)\b",
+                            r"\bmain\s+project\b", r"\bkeep\s+work\s+on\b", r"\belo\s+os\s+idea\b",
+                            r"\bproblem\s+(am|are)\s+i\s+(trying|solving)\b",
+                            r"\bwhat\s+(am|have)\s+i\s+been\s+(struggl|work)", r"\bhave\s+i\s+been\s+struggl"]
+_ELO_GAME_SIGNALS    = [r"\belo\s+game\b", r"\bwhat\s+does\s+the\s+game\b", r"\bgame\s+look\b",
+                        r"\bstage\s+(design|work)\b"]
 _EMOTIONAL_THEME_SIGNALS = [r"\bemotional\s+theme\b", r"\btheme\s+of\s+elo\b", r"\bwhat\s+is\s+elo.s?\s+theme\b",
                              r"\bcore\s+theme\b"]
 _INNER_CHILD_SIGNALS = [r"\binner\s+child\b", r"\bhow\s+does\s+the\s+story\s+connect\b"]
@@ -634,10 +639,10 @@ class MockBackend(BaseBackend):
             return self._fresh(_ELO_EMOTIONAL_THEME_POOL, text)
         if _matches(text, _INNER_CHILD_SIGNALS):
             return self._fresh(_ELO_INNER_CHILD_POOL, text)
+        if _matches(text, _ELO_STAGES_SIGNALS):   # stages before game — more specific
+            return self._fresh(_ELO_STAGES_POOL, text)
         if _matches(text, _ELO_GAME_SIGNALS):
             return self._fresh(_ELO_GAME_POOL, text)
-        if _matches(text, _ELO_STAGES_SIGNALS):
-            return self._fresh(_ELO_STAGES_POOL, text)
         if _matches(text, _ORB_SIGNALS):
             return self._fresh(_ORB_SYSTEM_POOL, text)
         if _matches(text, _K7_SIGNALS):
