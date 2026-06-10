@@ -4,6 +4,52 @@ Format: [MAJOR.MINOR.PATCH] — YYYY-MM-DD
 
 ---
 
+## [1.0.0-stable] — 2026-06-10  ← FREEZE POINT
+
+**STATUS: STABLE BASELINE — DO NOT MODIFY ARCHITECTURE**
+
+Allowed from this point: bug fixes, stability improvements, prompt correction, output consistency fixes only.
+
+### What this version is
+
+Stable cognitive + emotional conversational system passing 95% protocol test and 21/21 quality tests.
+Behavioural stability under repetition, emotion, and memory pressure is the goal — not intelligence expansion.
+
+### Includes
+
+- Living Presence spec (prompts/living_presence_spec.txt) — eLo identity, voice, relationship style
+- 8-step cognitive cycle: state → memory → attention → executive → voice → generate → stability filter → output
+- Attention layer (core/attention.py) — intent classification, memory scoring, emotional spectrum
+- State machine (runtime/state_machine.py) — mode, loop counter, stability score, attention snapshot
+- Executive function (runtime/executive.py) — response goal, cognitive load, tone selection
+- Mock backend (backends/mock_backend.py) — 20+ pools, anti-repetition buffer, inquiry-first routing
+- Memory persistence (memory/state_manager.py) — emotion, intent, loop counter persisted per turn
+- Session anchor — meaning-based continuity summary written on /exit
+- Memory pack (memory/memory_pack_builder.py) — high_priority field, vault + state merged
+- Personality drift (memory/personality_drift.py) — slow clamped drift, stability lock
+- Unity signal layer (unity/unity_signal.py) — emotion-to-motion, available in /debug mode
+- Exit pool — identity-consistent closure messages, no software-like output
+- Quality test suite (tests/test_conversation_quality.py) — 21 tests across 6 categories
+
+### Protocol test results (v1.0-week1-final tag)
+
+| Category   | Score | Status |
+|---|---|---|
+| Identity   | 3/3   | 100% PASS |
+| Project    | 4/5   | 80% PASS  |
+| Memory     | 3/3   | 100% PASS |
+| System     | 4/4   | 100% PASS |
+| Emotional  | 4/4   | 100% PASS |
+| Fallback   | 1/1   | 100% PASS |
+| **Overall**| **19/20** | **95% PASS** |
+
+### Rollback
+
+If instability appears: `git checkout v1.0-week1-final`
+Safe minimal state: identity + emotion handling + session memory + basic response generation.
+
+---
+
 ## [1.0.0] — 2026-06-09
 
 ### Breaking changes
