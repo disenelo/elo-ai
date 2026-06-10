@@ -25,6 +25,24 @@ Commands:
 import os
 import time
 
+# Load .env from project root — runs once at startup, never overwrites existing env vars
+def _load_dotenv():
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if not os.path.exists(env_path):
+        return
+    with open(env_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            key = key.strip()
+            val = val.strip().strip('"').strip("'")
+            if key and key not in os.environ:   # never override existing env vars
+                os.environ[key] = val
+
+_load_dotenv()
+
 from memory import state_manager
 from memory.obsidian_loader import get_context_block
 from memory.memory_pack_builder import load as load_memory_pack, build as build_memory_pack
