@@ -547,8 +547,8 @@ _SYS_MEMORY_SIGNALS  = [r"\bstored\s+in\s+memory\b", r"\bwhat\s+is\s+(stored|sav
 _SYS_VOICE_SIGNALS   = [r"\bvoice\s+system\b", r"\bwhat\s+is\s+your\s+voice\b", r"\bhow\s+do\s+you\s+choose\s+(tone|voice)\b"]
 _SYS_STATE_SIGNALS   = [r"\bstate\s+(and|vs|versus)\s+memory\b", r"\bmemory\s+(and|vs|versus)\s+state\b",
                         r"\bdifference\s+between\s+(state|memory)\b", r"\bwhat\s+is\s+(state|the\s+state)\b"]
-_SYS_STABILISE_SIGNALS = [r"\bwhat\s+triggers\s+stabil\b", r"\bstabilisation\s+mode\b", r"\bstabilize\s+mode\b",
-                           r"\bwhen\s+(does|do)\s+(you\s+)?stabil\b"]
+_SYS_STABILISE_SIGNALS = [r"\bwhat\s+triggers\s+stabil", r"\bstabilisation\s+mode\b", r"\bstabilize\s+mode\b",
+                           r"\bstabilization\s+mode\b", r"\bwhen\s+(does|do)\s+(you\s+)?stabil"]
 _SYS_CONFUSED_SIGNALS = [r"\bwhat\s+happens\s+when\s+you\s+are\s+confused\b", r"\bwhat\s+if\s+you\s+(don'?t|are\s+confused)\b"]
 _SYS_INTEGRITY_SIGNALS = [r"\bwhat\s+would\s+break\b", r"\bbreak\s+your\s+(system|consistency)\b",
                            r"\bwhat\s+(breaks|damages)\s+consistency\b"]
