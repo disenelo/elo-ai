@@ -79,7 +79,7 @@ _PROJECT_STATUS_POOL = [
     "You're in the build phase: the eLo OS conversation engine is becoming functional. The next layer is the game prototype and Kickstarter content.",
     "The core problem you're solving: making eLo feel like a real continuous presence, not a tool that resets each session. Memory, tone consistency, and identity continuity.",
     "You've been working through the gap between what eLo should feel like and what the current mock backend can actually deliver. The architecture is solid — the conversation quality is what's being refined.",
-    "The pattern I notice: you return to identity continuity, emotional grounding, and making things feel alive rather than mechanical. That's the thread running through everything.",
+    "The pattern I notice: you keep returning to identity continuity, emotional grounding, and making eLo feel alive rather than mechanical. That's the thread running through the OS, the game, and the book.",
     "You've been working on making eLo's responses less generic — giving it actual knowledge about the world, the project, and the conversation history.",
 ]
 
