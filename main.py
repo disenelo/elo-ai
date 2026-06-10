@@ -32,8 +32,9 @@ from core import attention as attn
 from runtime.executive import decide as exec_decide
 from runtime import state_machine as sm
 from runtime.prompt_builder import build as build_prompt
-from backends.mock_backend import MockBackend as _MockBackend
+from backends.mock_backend import MockBackend as _MockBackend, EXIT_POOL as _EXIT_POOL
 from unity.unity_signal import convert as unity_convert
+import random as _random
 
 # Always-available fallback — used when Claude fails mid-session
 _fallback = _MockBackend()
@@ -92,9 +93,20 @@ def run():
     last_inputs: list = []
 
     print()
-    if state.get("session_summaries"):
-        last = state["session_summaries"][-1]
-        print(f"eLo: Welcome back. Last time we talked about '{last['user'][:50]}'")
+    anchor  = state.get("session_anchor", {})
+    summary = anchor.get("current_session_summary", "")
+    if summary:
+        # transform "User explored X with Y tone." → "We were exploring X."
+        msg = (summary
+               .replace("User explored ", "We were exploring ")
+               .replace(" with a neutral tone.", ".")
+               .replace(" with a low-energy tone.", " — careful energy.")
+               .replace(" with a positive tone.", " — good energy.")
+               .replace(" with a frustrated tone.", " — some friction there.")
+               .rstrip(".") + ".")
+        print(f"eLo: Welcome back. {msg}")
+    elif state.get("session_summaries"):
+        print("eLo: Welcome back.")
     else:
         print("eLo: Ready.")
     print(f"  (backend: {backend_name})")
@@ -105,7 +117,7 @@ def run():
         try:
             raw = input("You: ").strip()
         except (EOFError, KeyboardInterrupt):
-            print("\neLo: Saving and closing.")
+            print(f"\neLo: {_random.choice(_EXIT_POOL)}")
             break
 
         if not raw:
@@ -115,7 +127,7 @@ def run():
         if raw.startswith("/"):
             cmd = raw.lower().strip()
             if cmd == "/exit":
-                print("eLo: Saving. See you next time.")
+                print(f"eLo: {_random.choice(_EXIT_POOL)}")
                 break
             elif cmd == "/reset":
                 last_inputs.clear()
