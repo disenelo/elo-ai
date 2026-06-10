@@ -194,11 +194,16 @@ def run():
         if debug:
             print(f"  [prompt: {len(system)} chars]")
 
+        _tone = exec_decision.get("tone", "CONVERSATIONAL")
         t0 = time.perf_counter()
         try:
-            response = send(system, raw)
+            if backend_name == "mock":
+                # pass the exec_decision tone so mock uses the right response pool
+                response = _fallback.generate_response(raw, _tone, {}, {}, {}, {})["response_text"]
+            else:
+                response = send(system, raw)
         except Exception:
-            response = _fallback.generate_response(raw, "CONVERSATIONAL", {}, {}, {}, {})["response_text"]
+            response = _fallback.generate_response(raw, _tone, {}, {}, {}, {})["response_text"]
         ms = int((time.perf_counter() - t0) * 1000)
 
         # Step 8: OUTPUT + OPTIONAL METADATA

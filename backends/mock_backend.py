@@ -86,8 +86,15 @@ _GENERIC_CONVERSATIONAL = [
     "I'm with you.",
     "We can work through that.",
     "Take your time.",
-    "Got it. What do you want to do with that?",
+    "That makes sense.",
     "We don't need to rush this.",
+    "Okay — what's the next thing?",
+    "I hear you.",
+    "We can stay with that.",
+    "That's a reasonable place to be.",
+    "Good. What feels most important right now?",
+    "We can take that one step at a time.",
+    "That's worth paying attention to.",
 ]
 
 _GENERIC_DIRECT = [
@@ -111,17 +118,36 @@ _CREATIVE_POOL = [
     "There's something in that. What wants to expand?",
 ]
 
+_INQUIRY_POOL = [
+    "Let's open that up. What part interests you most?",
+    "Good question. Start with whatever feels most relevant.",
+    "That's worth looking at. Where do you want to begin?",
+    "We can dig into that. What's your starting point?",
+    "I can walk through that with you. What do you know already?",
+]
+
+_DAILY_POOL = [
+    "That sounds like a good move.",
+    "Makes sense. No rush.",
+    "Do what you need to do. I'll be here.",
+    "Take the time you need.",
+    "Good. Come back when you're ready.",
+]
+
 # ── pattern detection ──────────────────────────────────────────────────────────
+# All patterns are matched against lowercased input — no uppercase in patterns.
 
 _GREETING_SIGNALS    = [r"\bhow\s+are\s+you\b", r"\bhow'?re\s+you\b", r"\bhello\b", r"\bhi\b", r"\bhey\b", r"\bwhat'?s\s+up\b"]
 _TIRED_SIGNALS       = [r"\btired\b", r"\bexhausted\b", r"\bdrained\b", r"\bburnt?\s*out\b", r"\bno\s+energy\b"]
-_IDENTITY_SIGNALS    = [r"\bwhat\s+are\s+you\b", r"\bwho\s+are\s+you\b", r"\bwhat\s+is\s+eLo\b"]
+_IDENTITY_SIGNALS    = [r"\bwhat\s+are\s+you\b", r"\bwho\s+are\s+you\b", r"\bwhat\s+is\s+elo\b", r"\bare\s+you\s+elo\b", r"\byou\s+are\s+elo\b"]
 _CHUNK_SIGNALS       = [r"\bwhat\s+(is|does)\s+chunk\b", r"\bchunk\s+mean\b"]
 _DONT_KNOW_SIGNALS   = [r"\bi\s+don'?t\s+know\b", r"\bnot\s+sure\b", r"\bi\s+have\s+no\s+idea\b"]
 _FEELING_OFF_SIGNALS = [r"\bsomething\s+feels\b", r"\bfeel\s+off\b", r"\bfeel\s+wrong\b", r"\bfeel\s+(lost|stuck|weird|strange)\b"]
 _GENTLE_SIGNALS      = [r"\bfeel\b.*\b(tired|sad|overwhelm|scared|lonely)\b", r"\bexhausted\b", r"\bcan'?t\s+do\b"]
 _OVERWHELM_SIGNALS   = [r"\btoo\s+much\b", r"\boverwhel\b", r"\bi\s+can'?t\s+think\b", r"\boverload\b", r"\bso\s+much\b"]
 _EXPLORE_SIGNALS     = [r"\bwhat\s+if\b", r"\bcould\s+we\b", r"\bis\s+it\s+possible\b", r"\blet'?s\s+build\b"]
+_INQUIRY_SIGNALS     = [r"\bexplain\b", r"\bread\s+through\b", r"\btell\s+me\s+(about|what)\b", r"\bwhat\s+is\s+the\b", r"\bwhat\s+does\b", r"\bhow\s+does\b", r"\bcan\s+you\s+(tell|explain|describe|walk)\b"]
+_DAILY_SIGNALS       = [r"\bcoffee\b", r"\btea\b", r"\bfood\b", r"\beat\b", r"\bdrink\b", r"\bsleep\b", r"\brest\b", r"\benergy\b", r"\bmoving\b", r"\bwalk\b", r"\bstretch\b"]
 
 
 def _pick(pool: list, text: str) -> str:
@@ -176,19 +202,23 @@ class MockBackend(BaseBackend):
         return {"response_text": response}
 
     def _detect_and_respond(self, text: str, mode: str) -> str:
-        # gentle/overwhelm override — inner child layer
-        if mode == "GENTLE_GROUNDED" or _matches(text, _GENTLE_SIGNALS):
+        # gentle/overwhelm override — inner child layer (highest priority)
+        if mode in ("GENTLE_GROUNDED", "SILENCE-AWARE") or _matches(text, _GENTLE_SIGNALS):
             return _pick(_GENTLE_POOL, text)
         if _matches(text, _OVERWHELM_SIGNALS):
             return _pick(_OVERWHELM_POOL, text)
 
-        # specific pattern detection
+        # specific content pattern detection
         if _matches(text, _GREETING_SIGNALS):
             return _pick(_GREETING_POOL, text)
         if _matches(text, _TIRED_SIGNALS):
             return _pick(_TIRED_POOL, text)
         if _matches(text, _IDENTITY_SIGNALS):
             return _pick(_IDENTITY_POOL, text)
+        if _matches(text, _DAILY_SIGNALS):
+            return _pick(_DAILY_POOL, text)
+        if _matches(text, _INQUIRY_SIGNALS):
+            return _pick(_INQUIRY_POOL, text)
         if _matches(text, _EXPLORE_SIGNALS):
             return _pick(_EXPLORING_POOL, text)
         if _matches(text, _CHUNK_SIGNALS):
@@ -198,13 +228,15 @@ class MockBackend(BaseBackend):
         if _matches(text, _FEELING_OFF_SIGNALS):
             return _pick(_FEELING_OFF_POOL, text)
 
-        # mode-based fallback
-        if mode == "CREATIVE":
+        # mode-based fallback — uses exec_decision tone passed from main loop
+        if mode in ("CREATIVE", "JOYFUL"):
             return _pick(_CREATIVE_POOL, text)
         if mode in ("DIRECT", "STRUCTURED"):
             return _pick(_GENERIC_DIRECT, text)
         if mode == "SIMPLIFY":
-            return "Got it."
+            return _pick(_DONT_KNOW_POOL, text)
+        if mode == "CHILDLIKE-WISE":
+            return _pick(_EXPLORING_POOL, text)
 
         # default: natural conversational
         return _pick(_GENERIC_CONVERSATIONAL, text)
