@@ -338,8 +338,8 @@ def build(
         momentum = exec_decision.get("momentum", "stable")
 
         _ACTION_INSTRUCTION = {
-            "celebrate": "User has positive energy or a breakthrough. Acknowledge it warmly. ONE or TWO sentences maximum. Do NOT end with a question. Do NOT ground or slow down.",
-            "build":     "User shared a creative or product insight. Add ONE concrete thought that extends their idea. Do NOT mention Sugarcore, K-7, orb, game stages, or any story world elements — the user is talking about the PRODUCT, not the story. Do NOT ask them to do the work. Contribute directly.",
+            "celebrate": "User has positive energy or a breakthrough. ONE sentence — just acknowledge it. No expansion. No questions. No 'game-changer' language. Match their energy simply.",
+            "build":     "User shared a creative or product insight. Add ONE concrete thought that extends it. Do NOT challenge or question their approach. Do NOT say 'have you considered'. Do NOT reference story world (Sugarcore, K-7, etc.). Simply add something true and useful.",
             "connect":   "Show how the things the user mentioned relate to each other. Make the connection explicit. One or two sentences.",
             "answer":    "Answer the question directly. No reflection before the answer. No grounding.",
             "ground":    "User is overwhelmed or distressed. One gentle sentence. Reduce. Stabilise.",

@@ -64,6 +64,25 @@ def _has_lore_drift(response: str, user_input: str) -> bool:
     u = user_input.lower()
     return any(term in r and term not in u for term in _WORLD_LORE_TERMS)
 
+
+def _is_duplicate(new: str, prev: str, threshold: float = 0.75) -> bool:
+    """True if new response is too similar to the previous one."""
+    if not prev or not new:
+        return False
+    n, p = new.lower().strip(), prev.lower().strip()
+    if n == p:
+        return True
+    # simple overlap: shared words / total unique words
+    nw, pw = set(n.split()), set(p.split())
+    if not nw or not pw:
+        return False
+    overlap = len(nw & pw) / max(len(nw), len(pw))
+    return overlap >= threshold
+
+
+# per-action last-response tracker (session-scoped, in-process)
+_last_responses: dict[str, str] = {}
+
 def normalise(text: str, max_sentences: int = 4) -> str:
     """
     Normalise LLM output to eLo voice standards.
@@ -227,13 +246,24 @@ def route(
             _logger.warning("Claude failed, trying Groq: %s", e)
 
     if _groq_available():
+        # short affirmations / < 25 chars → mock has precise pools, Groq over-expands
+        if len(user_input.strip()) < 25:
+            return _mock_fallback(user_input, action=action), "mock"
+
         try:
             raw = _groq_call(system_prompt, user_input)
             # catch lore drift — replace with mock using the original action
             if _has_lore_drift(raw, user_input):
                 _logger.debug("Lore drift detected — replacing with mock fallback")
                 return _mock_fallback(user_input, action=action), "mock"
-            return normalise(raw, max_sentences), "groq"
+            normalised = normalise(raw, max_sentences)
+            # catch duplicate — if too similar to last response, use mock
+            if _is_duplicate(normalised, _last_responses.get(action, "")):
+                _logger.debug("Duplicate response detected — replacing with mock fallback")
+                _last_responses[action] = ""   # reset so next call is fresh
+                return _mock_fallback(user_input, action=action), "mock"
+            _last_responses[action] = normalised
+            return normalised, "groq"
         except Exception as e:
             _logger.warning("Groq failed, trying Ollama: %s", e)
 
