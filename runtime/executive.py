@@ -71,7 +71,17 @@ _MAX_SENTENCES: dict[str, int] = {
 
 
 _BUILD_PHRASES    = ["build on that", "can you build", "expand on", "go further",
-                     "take that further", "add to that", "tell me more", "what else"]
+                     "take that further", "add to that", "tell me more", "what else",
+                     "i had an insight", "i think it's essentially", "elo is essentially",
+                     "the whole product", "the whole thing is", "i think elo is",
+                     "that's what makes it", "that is what makes it",
+                     "that's the difference", "the pitch is", "the mirror has",
+                     "a diary", "diary doesn't", "diary does not", "the whole pitch",
+                     "not a chatbot", "thinks alongside", "pushes back"]
+
+_SHORT_AFFIRM     = ["and stays", "that's it", "that is it", "yeah", "exactly",
+                     "right", "and that's it", "both", "i like that", "and remembers",
+                     "and stays", "yep", "good instinct"]
 _CONNECT_PHRASES  = ["how do they connect", "how does that connect", "are they related",
                      "why am i building all", "why are all these", "same idea",
                      "all matter", "they all", "all of them", "all connected",
@@ -98,19 +108,26 @@ def _conversation_action(
     """
     t = user_input.lower()
 
-    # 1. ANSWER — factual questions always first
-    if intent in ("inquiry", "recall"):
-        return {"action": "answer", "confidence": 0.95, "reason": "factual question"}
+    # Short affirmations checked first — they celebrate, not build
+    if any(p in t for p in _SHORT_AFFIRM) and len(t.strip()) < 35:
+        return {"action": "celebrate", "confidence": 0.8, "reason": "short affirmation"}
 
-    # 2. BUILD — explicit request or presenting an idea
+    # Explicit BUILD/CONNECT phrases override intent
     if any(p in t for p in _BUILD_PHRASES):
-        return {"action": "build", "confidence": 0.9, "reason": "explicit build request"}
+        return {"action": "build", "confidence": 0.9, "reason": "explicit build phrase"}
+    if any(p in t for p in _CONNECT_PHRASES):
+        return {"action": "connect", "confidence": 0.9, "reason": "explicit connect phrase"}
+
+    # 1. ANSWER — factual questions (must be interrogative, not just contain "what")
+    if intent in ("inquiry", "recall"):
+        is_question = t.strip().endswith("?") or \
+                      any(t.strip().startswith(w) for w in ("what ", "how ", "why ", "who ", "when ", "where "))
+        if is_question:
+            return {"action": "answer", "confidence": 0.95, "reason": "factual question"}
+
+    # 2. BUILD — creative positive context
     if intent == "creation" and valence in ("positive_high", "positive_low"):
         return {"action": "build", "confidence": 0.8, "reason": "creative positive context"}
-
-    # 3. CONNECT — multiple things / asking about relationships
-    if any(p in t for p in _CONNECT_PHRASES):
-        return {"action": "connect", "confidence": 0.9, "reason": "connection request"}
 
     # 4. CELEBRATE — positive breakthrough or momentum
     if valence == "positive_high" and momentum == "building":
@@ -135,6 +152,14 @@ def _conversation_action(
     # 7. WITNESS — personal emotional share, nothing to fix
     if any(p in t for p in _WITNESS_PHRASES):
         return {"action": "witness", "confidence": 0.8, "reason": "personal emotional share"}
+
+    # 8. Short affirmations — stay with the momentum
+    if any(p in t for p in _SHORT_AFFIRM) and len(t.strip()) < 35:
+        return {"action": "celebrate", "confidence": 0.75, "reason": "short affirmation in context"}
+
+    # 9. Building momentum — default to build, not reflect
+    if momentum == "building" and valence not in ("negative_low", "negative_high"):
+        return {"action": "build", "confidence": 0.65, "reason": "building momentum, stay in build mode"}
 
     # default
     return {"action": "reflect", "confidence": 0.5, "reason": "default — no stronger signal"}

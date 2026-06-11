@@ -204,7 +204,7 @@ def run():
         _max_s     = exec_decision.get("max_sentences", 4)
         t0 = time.perf_counter()
         try:
-            response, backend_name = router_route(system, raw, max_sentences=_max_s)
+            response, backend_name = router_route(system, raw, max_sentences=_max_s, action=_action)
         except Exception:
             # hard fallback — pass action as mode so mock uses the right pool
             response   = _fallback.generate_response(raw, _action, {}, {}, {}, {})["response_text"]

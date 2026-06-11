@@ -131,7 +131,9 @@ _POSITIVE_HIGH = ["clicking", "excited", "inspired", "finally", "figured it out"
                    "clear now", "understand now", "makes sense now", "i think i have",
                    "opening arc", "whole pitch", "things clicking", "feel clear",
                    "feel really good", "feeling really good", "slept well",
-                   "energy is", "high energy", "really good today"]
+                   "energy is", "high energy", "really good today",
+                   "feel real", "feels real", "feel genuine", "is working",
+                   "are working", "actually working", "conversations feel", "starting to work"]
 _POSITIVE_LOW  = ["content", "peaceful", "satisfied", "feeling okay", "settled",
                    "calm today", "good today", "doing well", "all good"]
 _NEGATIVE_HIGH = ["frustrated", "angry", "stressed", "furious", "annoyed",

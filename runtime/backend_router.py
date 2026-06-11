@@ -50,6 +50,20 @@ _AI_PREAMBLES = [
     r"^absolutely[,!]?\s",
 ]
 
+# World lore terms that should not appear in responses unless the user asked about them
+_WORLD_LORE_TERMS = [
+    "sugarcore", "jellydrop", "dessert desert", "gummy lands",
+    "ice cream mountain", "chocolate mountain", "cyber garden",
+    "orb system", "the orb", "world stage", "k-7", "k7",
+]
+
+
+def _has_lore_drift(response: str, user_input: str) -> bool:
+    """True if the response introduced world lore the user didn't mention."""
+    r = response.lower()
+    u = user_input.lower()
+    return any(term in r and term not in u for term in _WORLD_LORE_TERMS)
+
 def normalise(text: str, max_sentences: int = 4) -> str:
     """
     Normalise LLM output to eLo voice standards.
@@ -158,6 +172,7 @@ def route(
     user_input:    str,
     mode:          str = None,
     max_sentences: int = 4,
+    action:        str = "",
 ) -> tuple[str, str]:
     """
     Route a request to the appropriate backend.
@@ -214,6 +229,10 @@ def route(
     if _groq_available():
         try:
             raw = _groq_call(system_prompt, user_input)
+            # catch lore drift — replace with mock using the original action
+            if _has_lore_drift(raw, user_input):
+                _logger.debug("Lore drift detected — replacing with mock fallback")
+                return _mock_fallback(user_input, action=action), "mock"
             return normalise(raw, max_sentences), "groq"
         except Exception as e:
             _logger.warning("Groq failed, trying Ollama: %s", e)
@@ -228,14 +247,15 @@ def route(
     return _mock_fallback(user_input), "mock"
 
 
-def _mock_fallback(user_input: str) -> str:
+def _mock_fallback(user_input: str, action: str = "") -> str:
     from backends.mock_backend import MockBackend
     from core.attention import compute
     from runtime.executive import decide as exec_decide
-    m   = MockBackend()
-    att = compute(user_input, {}, {})
-    ex  = exec_decide(att, user_input=user_input)
-    # pass the conversation action as mode so mock routes to the right pool
+    m = MockBackend()
+    if action:
+        return m.generate_response(user_input, action, {}, {}, {}, {})["response_text"]
+    att  = compute(user_input, {}, {})
+    ex   = exec_decide(att, user_input=user_input)
     mode = ex.get("action", ex.get("tone", "reflect"))
     return m.generate_response(user_input, mode, {}, {}, {}, {})["response_text"]
 
