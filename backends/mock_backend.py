@@ -93,6 +93,23 @@ _BUILD_ON_POOL = [
     "If that's the pitch, the robot is the physical proof of it. That's what makes it different.",
 ]
 
+_PITCH_BUILD_POOL = [
+    "The diary comparison is the right one. A diary records. eLo responds. That's not a feature — that's the whole difference.",
+    "A companion that stays, remembers, and pushes back gently — that's not an AI assistant. That's something closer to a relationship.",
+    "If it stays and remembers, then every session is a continuation. That's what no other tool in this space offers.",
+    "The pitch is exactly that: it thinks alongside you, not for you. That changes the dynamic completely.",
+    "The 'stays' part is underrated. Most tools reset. eLo doesn't. That's the actual product.",
+    "Three things: thinks alongside, remembers what matters, stays. That's the whole pitch. Everything else is features.",
+]
+
+_AFFIRMATION_POOL = [
+    "Exactly.",
+    "That's the one.",
+    "Yes.",
+    "That's the whole thing right there.",
+    "That's it.",
+]
+
 _EXPAND_POOL = [
     "The interesting part of that is what it implies next.",
     "There's more in that than it looks like on the surface.",
@@ -670,6 +687,14 @@ _SYS_STABILISE_SIGNALS = [r"\bwhat\s+triggers\s+stabil", r"\bstabilisation\s+mod
 _SYS_CONFUSED_SIGNALS = [r"\bwhat\s+happens\s+when\s+you\s+are\s+confused\b", r"\bwhat\s+if\s+you\s+(don'?t|are\s+confused)\b"]
 _SYS_INTEGRITY_SIGNALS  = [r"\bwhat\s+would\s+break\b", r"\bbreak\s+your\s+(system|consistency)\b",
                             r"\bwhat\s+(breaks|damages)\s+consistency\b"]
+_PITCH_SIGNALS          = [r"\bnot\s+a\s+chatbot\b", r"\ba\s+diary\b", r"\bdiary\s+doesn'?t\b",
+                            r"\bpushes?\s+back\b", r"\bthe\s+whole\s+pitch\b", r"\bcompanion\s+that\b",
+                            r"\bthinks\s+alongside\b", r"\band\s+stays\b", r"\band\s+remembers\b",
+                            r"\bremember\s+what\s+matters\b"]
+_AFFIRMATION_SIGNALS    = [r"^\s*that'?s?\s+it\s*[.!]?\s*$", r"^\s*yeah\s*[.!]?\s*$",
+                            r"^\s*exactly\s*[.!]?\s*$", r"^\s*yes\s*[.!]?\s*$",
+                            r"^\s*right\s*[.!]?\s*$", r"^\s*and\s+stays\s*[.!]?\s*$",
+                            r"^\s*both\s*[?.]?\s*$", r"^\s*i\s+like\s+that\s*[.!]?\s*$"]
 _WONDER_SIGNALS         = [r"\btell\s+me\s+something\s+(interesting|cool|surprising|new)\b",
                             r"\bsomething\s+interesting\b", r"\bsurprise\s+me\b", r"\bgive\s+me\s+a\s+fact\b"]
 _KICKSTARTER_SIGNALS    = [r"\bkickstarter\b", r"\bfunding\b", r"\blaunch\b.*\bproject\b", r"\bpublic\b.*\bproject\b"]
@@ -763,6 +788,10 @@ class MockBackend(BaseBackend):
             return self._fresh(_GENTLE_POOL, text)
 
         # ── factual/informational queries — checked first, never route to comfort pools ──
+        if _matches(text, _AFFIRMATION_SIGNALS):
+            return self._fresh(_AFFIRMATION_POOL, text)
+        if _matches(text, _PITCH_SIGNALS):
+            return self._fresh(_PITCH_BUILD_POOL, text)
         if _matches(text, _WONDER_SIGNALS):
             return self._fresh(_WONDER_POOL, text)
         if _matches(text, _PATTERN_OBS_SIGNALS):

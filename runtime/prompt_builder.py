@@ -338,14 +338,14 @@ def build(
         momentum = exec_decision.get("momentum", "stable")
 
         _ACTION_INSTRUCTION = {
-            "celebrate": "User has positive energy or momentum. Acknowledge it warmly. Do NOT ground or slow down. Do NOT say 'take your time' or 'nothing needs to happen'.",
-            "build":     "User presented an idea or asked you to expand. Add something — contribute a new thought, implication, or connection. Move the idea forward.",
-            "connect":   "Show how the things the user mentioned relate to each other. Make the connection explicit.",
-            "answer":    "Answer the question directly. No reflection before the answer.",
-            "ground":    "User is overwhelmed or distressed. Simplify. Reduce. Stabilise. One gentle sentence.",
-            "witness":   "User shared something personal. Just be present. Do not advise or fix.",
-            "reflect":   "Offer gentle perspective. Stay grounded.",
-            "challenge": "Offer a gentle alternative perspective the user may not have considered.",
+            "celebrate": "User has positive energy or a breakthrough. Acknowledge it warmly. Do NOT ground, slow down, or say 'take your time'. Match their energy.",
+            "build":     "User shared a creative or product insight. Stay with THEIR idea — add one specific, concrete thought that extends it. Do NOT reference the story world or world lore unless they specifically asked. Do NOT ask them to do the work. Contribute something.",
+            "connect":   "Show how the things the user mentioned relate to each other. Make the connection explicit. One or two sentences.",
+            "answer":    "Answer the question directly. No reflection before the answer. No grounding.",
+            "ground":    "User is overwhelmed or distressed. One gentle sentence. Reduce. Stabilise.",
+            "witness":   "User shared something personal. Just be present. No advice. No fixing. You can be silent.",
+            "reflect":   "Offer gentle perspective. Stay grounded. Do not ask multiple questions.",
+            "challenge": "Offer a gentle alternative perspective the user may not have considered. One sentence.",
         }
 
         directive_lines = [
