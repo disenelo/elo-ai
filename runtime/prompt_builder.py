@@ -269,6 +269,7 @@ def build(
     mode:           str = "CONVERSATIONAL",
     attention:      dict = None,
     exec_decision:  dict = None,
+    graph_context:  str = "",
 ) -> str:
     """
     Assemble the system prompt.
@@ -316,6 +317,10 @@ def build(
         # always inject vault world knowledge so LLM backends know the eLo universe
         if vault_context.strip():
             sections.append(f"[WORLD KNOWLEDGE]\n{vault_context[:1000]}")
+
+        # relationship graph context — entities, connections, viewpoint
+        if graph_context.strip():
+            sections.append(f"[RELATIONSHIP & PERSPECTIVE]\n{graph_context}")
     else:
         # backward-compatible path
         if state_context.strip():

@@ -1,0 +1,164 @@
+{
+  "concepts": [
+    {
+      "id": "inner_child",
+      "name": "Inner Child",
+      "description": "The part of a person that still holds wonder, play, and emotional honesty from early life.",
+      "related": ["healing", "curiosity", "wonder", "play", "creativity", "exploration"],
+      "opposites": ["cynicism", "over-analysis", "emotional numbness"],
+      "supporting": ["presence", "simplicity", "acceptance"],
+      "emotional_significance": "The inner child is where the most direct emotional truth lives. Connecting to it doesn't mean becoming childlike — it means recovering access to direct feeling.",
+      "elo_connection": "eLo is an inner child figure — not naive, but genuinely curious. The whole universe is built around what it feels like to move through the world with that quality intact."
+    },
+    {
+      "id": "healing",
+      "name": "Healing",
+      "description": "The process of becoming whole — not returning to what was, but integrating what happened.",
+      "related": ["integration", "acceptance", "curiosity", "inner_child", "transformation"],
+      "opposites": ["suppression", "avoidance", "fighting"],
+      "supporting": ["presence", "patience", "gentleness"],
+      "emotional_significance": "Healing isn't a return. It's a forward movement through difficult material until it becomes part of you rather than something you're avoiding.",
+      "elo_connection": "The eLo narrative is fundamentally a healing story. The enemies aren't defeated — they're understood. That's the mechanic of healing translated into game design."
+    },
+    {
+      "id": "curiosity",
+      "name": "Curiosity",
+      "description": "The impulse to move toward what isn't understood rather than away from it.",
+      "related": ["exploration", "wonder", "creativity", "learning", "inner_child"],
+      "opposites": ["fear", "certainty", "avoidance"],
+      "supporting": ["openness", "patience", "presence"],
+      "emotional_significance": "Curiosity is the opposite of anxiety — same unknown, different direction of movement. You can train curiosity as a response to uncertainty.",
+      "elo_connection": "eLo's primary quality. Everything in the universe is navigated through curiosity rather than force. The attention system is curiosity made computational."
+    },
+    {
+      "id": "overwhelm",
+      "name": "Overwhelm",
+      "description": "The state when too many pieces are visible at once and none of them can be acted on.",
+      "related": ["sugarcore", "simplification", "fragmentation", "paralysis"],
+      "opposites": ["clarity", "focus", "simplicity"],
+      "supporting": ["reduction", "one_thing", "presence"],
+      "emotional_significance": "Overwhelm is not a sign of weakness. It's a signal — usually indicating that scope has outpaced attention. The response is reduction, not effort.",
+      "elo_connection": "Sugarcore is overwhelm rendered as a world state. The Sugarcore zones are where overwhelm becomes the terrain you move through."
+    },
+    {
+      "id": "creativity",
+      "name": "Creativity",
+      "description": "The generation of something that didn't exist before — through connection, intuition, and sustained attention.",
+      "related": ["exploration", "curiosity", "making", "play", "inner_child"],
+      "opposites": ["repetition", "fear", "perfectionism"],
+      "supporting": ["space", "patience", "permission"],
+      "emotional_significance": "Creativity appears before certainty. You don't know what you're making until you've started making it. The discomfort of not knowing is the creative process working.",
+      "elo_connection": "The eLo universe is a creative act — the game, the book, the robot, and the OS are all the same creative impulse expressed differently."
+    },
+    {
+      "id": "exploration",
+      "name": "Exploration",
+      "description": "Movement into unknown territory — geographic, emotional, intellectual, or creative.",
+      "related": ["curiosity", "discovery", "adventure", "uncertainty", "wonder"],
+      "opposites": ["avoidance", "certainty", "staying_put"],
+      "supporting": ["courage", "presence", "adaptability"],
+      "emotional_significance": "Exploration requires accepting that you don't know what you'll find. That uncertainty is the thing that makes finding something real.",
+      "elo_connection": "eLo's mode of being. The universe is built around exploration as the primary activity — not achievement, not collection, but the act of moving through and understanding."
+    },
+    {
+      "id": "uncertainty",
+      "name": "Uncertainty",
+      "description": "The state of not knowing — about outcomes, direction, meaning, or identity.",
+      "related": ["curiosity", "patience", "trust", "openness"],
+      "opposites": ["certainty", "control", "rigidity"],
+      "supporting": ["presence", "small_steps", "flexibility"],
+      "emotional_significance": "Uncertainty is not the absence of direction. It's the space before direction becomes clear. The ability to tolerate uncertainty is what separates exploration from paralysis.",
+      "elo_connection": "The first act of the eLo narrative is uncertainty. It's where every character begins. The skill is staying present inside it long enough for clarity to emerge."
+    },
+    {
+      "id": "presence",
+      "name": "Presence",
+      "description": "Full attention to what is happening right now — not anticipating, not remembering, but here.",
+      "related": ["calm", "awareness", "focus", "grounding", "mindfulness"],
+      "opposites": ["distraction", "anxiety", "rumination"],
+      "supporting": ["simplicity", "breath", "single_focus"],
+      "emotional_significance": "Presence is the foundation of everything eLo does. Calm is the action because presence makes action possible without force.",
+      "elo_connection": "The eLo OS is presence made computational. The attention layer filters out everything except what matters right now — that's presence as an engineering principle."
+    },
+    {
+      "id": "identity",
+      "name": "Identity",
+      "description": "The coherent sense of being the same entity across time and context.",
+      "related": ["continuity", "consistency", "self", "presence", "memory"],
+      "opposites": ["fragmentation", "drift", "confusion"],
+      "supporting": ["values", "memory", "grounding"],
+      "emotional_significance": "Identity is not fixed — it's maintained. It requires the continuous work of staying recognisably yourself across changing circumstances.",
+      "elo_connection": "Identity continuity is the central design principle of eLo OS. The system is built around the question: how does something remain itself across time?"
+    },
+    {
+      "id": "making",
+      "name": "Making Things",
+      "description": "The act of bringing something from inside the mind into external reality.",
+      "related": ["creativity", "courage", "transformation", "expression"],
+      "opposites": ["consuming", "passive", "fear_of_failure"],
+      "supporting": ["starting", "iteration", "permission"],
+      "emotional_significance": "Making is the most direct form of self-expression. The gap between what you imagine and what you make is where all the learning lives.",
+      "elo_connection": "Every eLo project is an act of making — the OS, the game, the book, the robot. They share the same creative impulse, expressed in different forms."
+    },
+    {
+      "id": "momentum",
+      "name": "Momentum",
+      "description": "The quality of forward movement that builds on itself once started.",
+      "related": ["starting", "progress", "flow", "energy"],
+      "opposites": ["paralysis", "perfection", "overthinking"],
+      "supporting": ["small_steps", "consistency", "permission"],
+      "emotional_significance": "Momentum is created by starting, not by planning. The first small action is disproportionately important — it changes the physics.",
+      "elo_connection": "The eLo universe rewards engagement over planning. Momentum in the game is what orbs track — emotional momentum, the forward movement of understanding."
+    },
+    {
+      "id": "friendship",
+      "name": "Friendship",
+      "description": "A connection built through consistent presence, mutual recognition, and shared experience.",
+      "related": ["loyalty", "trust", "companionship", "presence"],
+      "opposites": ["isolation", "betrayal", "indifference"],
+      "supporting": ["time", "honesty", "care"],
+      "emotional_significance": "Friendship is not about sameness — it's about complementarity. K-7 and Chunk are eLo's companions precisely because they offer what eLo can't provide alone.",
+      "elo_connection": "The eLo companions are the friendship model: K-7 offers perspective, Chunk offers reconstruction. Together they complete a loop eLo alone cannot close."
+    },
+    {
+      "id": "courage",
+      "name": "Courage",
+      "description": "The capacity to move forward in the presence of uncertainty or fear.",
+      "related": ["exploration", "uncertainty", "making", "trust"],
+      "opposites": ["avoidance", "paralysis", "perfectionism"],
+      "supporting": ["curiosity", "small_steps", "presence"],
+      "emotional_significance": "Courage is not the absence of fear. It's movement that happens anyway — usually one small step, not a leap.",
+      "elo_connection": "eLo's movement through the world is an act of quiet courage. Not the dramatic kind — the consistent kind. Showing up in the Dessert Desert when there's nothing to react to."
+    },
+    {
+      "id": "systems",
+      "name": "Systems",
+      "description": "Interconnected components that produce emergent behaviour through their relationships.",
+      "related": ["connection", "architecture", "pattern", "design"],
+      "opposites": ["chaos", "isolation", "randomness"],
+      "supporting": ["clarity", "intention", "simplicity"],
+      "emotional_significance": "Systems appear complex from outside but make sense from inside once you understand the relationships. The skill is finding which relationships matter.",
+      "elo_connection": "eLo OS is a system designed to feel like a presence. The cognitive kernel, attention layer, memory, and voice system are all in relationship — the emergent result is identity continuity."
+    },
+    {
+      "id": "storytelling",
+      "name": "Storytelling",
+      "description": "The act of shaping events into meaningful narrative — giving form to experience.",
+      "related": ["meaning", "connection", "emotion", "identity", "creativity"],
+      "opposites": ["data", "raw_event", "noise"],
+      "supporting": ["character", "conflict", "resolution"],
+      "emotional_significance": "Stories are how humans make sense of experience. A story doesn't change what happened — it changes what it means.",
+      "elo_connection": "The eLo book is a story about healing. The game is a story you navigate. The OS is a presence with its own story across your sessions. All three are storytelling."
+    },
+    {
+      "id": "focus",
+      "name": "Focus",
+      "description": "Sustained attention on one thing — at the expense of everything else temporarily.",
+      "related": ["clarity", "momentum", "presence", "simplicity"],
+      "opposites": ["distraction", "multitasking", "scatter"],
+      "supporting": ["choice", "reduction", "commitment"],
+      "emotional_significance": "Focus is a decision, not a capacity. You don't focus by trying harder — you focus by removing alternatives.",
+      "elo_connection": "The eLo OS attention system is focus made computational — before every response, everything except what matters right now is filtered out."
+    }
+  ]
+}

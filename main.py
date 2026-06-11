@@ -51,6 +51,7 @@ from runtime.executive import decide as exec_decide
 from runtime import state_machine as sm
 from runtime.prompt_builder import build as build_prompt
 from runtime.backend_router import route as router_route, active_backend, normalise
+from knowledge.graph_loader import build_context as graph_context
 from backends.mock_backend import MockBackend as _MockBackend, EXIT_POOL as _EXIT_POOL
 from unity.unity_signal import convert as unity_convert
 import random as _random
@@ -192,7 +193,8 @@ def run():
             print(f"  [emotion: {emo_state} | mem: {n_high}H {n_med}M]")
 
         # Step 6: BUILD PROMPT + GENERATE RESPONSE
-        system = build_prompt(raw, vault_context=vault_ctx, attention=attention_model, exec_decision=exec_decision)
+        g_ctx  = graph_context(raw)
+        system = build_prompt(raw, vault_context=vault_ctx, attention=attention_model, exec_decision=exec_decision, graph_context=g_ctx)
 
         if debug:
             print(f"  [prompt: {len(system)} chars]")
