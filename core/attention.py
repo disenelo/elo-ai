@@ -24,7 +24,8 @@ import re
 
 _INTENT_PATTERNS: dict[str, list] = {
     "inquiry":   [r"\bwhat\b", r"\bhow\b", r"\bwhy\b", r"\bexplain\b",
-                  r"\btell\s+me\b", r"\bwhat\s+is\b", r"\bwhat\s+are\b"],
+                  r"\btell\s+me\b", r"\bwhat\s+is\b", r"\bwhat\s+are\b",
+                  r"\bshould\s+i\b", r"\bdo\s+i\b", r"\bcan\s+i\b"],
     "creation":  [r"\bbuild\b", r"\bdesign\b", r"\bmake\b", r"\bcreate\b",
                   r"\bimplement\b", r"\bwhat\s+if\b", r"\bcould\s+we\b", r"\blet'?s\b"],
     "emotional": [r"\bfeel\b", r"\btired\b", r"\bsad\b", r"\boverwhel\b",
@@ -121,11 +122,34 @@ def _bucket(score: int) -> str:
     return "low"
 
 
+# ── emotional valence + momentum signals ──────────────────────────────────────
+
+_POSITIVE_HIGH = ["clicking", "excited", "inspired", "finally", "figured it out",
+                   "got it", "energy is high", "feeling good", "feeling great",
+                   "feel great", "feel good today", "feel amazing", "great today",
+                   "amazing", "breakthrough", "things are clicking", "it clicked",
+                   "clear now", "understand now", "makes sense now", "i think i have",
+                   "opening arc", "whole pitch", "things clicking", "feel clear",
+                   "feel really good", "feeling really good", "slept well",
+                   "energy is", "high energy", "really good today"]
+_POSITIVE_LOW  = ["content", "peaceful", "satisfied", "feeling okay", "settled",
+                   "calm today", "good today", "doing well", "all good"]
+_NEGATIVE_HIGH = ["frustrated", "angry", "stressed", "furious", "annoyed",
+                   "irritated", "fed up", "can't take", "so angry"]
+_BUILDING_MOM  = ["clicking", "figured", "understand", "makes sense", "coming together",
+                   "think i have", "got it", "opening arc", "i think i", "progress",
+                   "moving forward", "starting to see", "finally", "feel clear",
+                   "everything clicking", "things are clicking", "whole pitch",
+                   "that's it", "found it", "landed on"]
+_DECLINING_MOM = ["falling behind", "losing", "wrong direction", "can't find",
+                   "going backwards", "nothing working", "lost the thread"]
+
+
 # ── emotional spectrum ─────────────────────────────────────────────────────────
 
 def _emotional_context(user_input: str, emotional_history: list) -> dict:
     """
-    Infer user emotional state as Energy / Tension / Closure values.
+    Infer user emotional state as Energy / Tension / Closure / Valence / Momentum.
 
     eLo mirrors at 30% intensity only — 70% stays stable identity.
     """
@@ -134,6 +158,10 @@ def _emotional_context(user_input: str, emotional_history: list) -> dict:
     energy = 0.2 if any(w in t for w in _ENERGY_LOW) \
         else 0.85 if any(w in t for w in _ENERGY_HIGH) \
         else 0.5
+
+    # positive high energy overrides the base energy reading
+    if any(w in t for w in _POSITIVE_HIGH):
+        energy = max(energy, 0.8)
 
     tension = 0.8 if any(w in t for w in _TENSION_HIGH) \
          else 0.2 if any(w in t for w in _TENSION_LOW) \
@@ -159,12 +187,36 @@ def _emotional_context(user_input: str, emotional_history: list) -> dict:
         if last == "low-energy":
             energy = 0.4
 
+    # ── valence ────────────────────────────────────────────────────────────────
+    if any(w in t for w in _POSITIVE_HIGH):
+        valence = "positive_high"
+    elif any(w in t for w in _POSITIVE_LOW):
+        valence = "positive_low"
+    elif any(w in t for w in _NEGATIVE_HIGH):
+        valence = "negative_high"
+    elif tension > 0.5 or energy < 0.3:
+        valence = "negative_low"
+    else:
+        valence = "neutral"
+
+    # ── momentum ───────────────────────────────────────────────────────────────
+    if any(w in t for w in _BUILDING_MOM):
+        momentum = "building"
+    elif any(w in t for w in _DECLINING_MOM):
+        momentum = "declining"
+    elif tension > 0.6 and energy < 0.3:
+        momentum = "stuck"
+    else:
+        momentum = "stable"
+
     return {
         "energy":           round(energy, 2),
         "tension":          round(tension, 2),
         "closure":          closure,
         "inferred_state":   inferred,
-        "mirror_intensity": 0.3,   # spec: always 30%, non-negotiable
+        "valence":          valence,
+        "momentum":         momentum,
+        "mirror_intensity": 0.3,
     }
 
 

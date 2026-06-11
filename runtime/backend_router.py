@@ -232,10 +232,12 @@ def _mock_fallback(user_input: str) -> str:
     from backends.mock_backend import MockBackend
     from core.attention import compute
     from runtime.executive import decide as exec_decide
-    m = MockBackend()
+    m   = MockBackend()
     att = compute(user_input, {}, {})
-    ex  = exec_decide(att)
-    return m.generate_response(user_input, ex.get("tone", "CONVERSATIONAL"), {}, {}, {}, {})["response_text"]
+    ex  = exec_decide(att, user_input=user_input)
+    # pass the conversation action as mode so mock routes to the right pool
+    mode = ex.get("action", ex.get("tone", "reflect"))
+    return m.generate_response(user_input, mode, {}, {}, {}, {})["response_text"]
 
 
 def active_backend() -> str:

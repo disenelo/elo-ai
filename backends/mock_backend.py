@@ -73,6 +73,52 @@ _ELO_PURPOSE_POOL = [
     "I exist to help the next step become visible. Not by pushing. Just by being present, remembering, staying.",
 ]
 
+_CELEBRATE_POOL = [
+    "Nice. You've been working toward that for a while.",
+    "That's the thing clicking into place.",
+    "Good. That's what it feels like when something becomes clear.",
+    "That's worth staying with — it's real and it took a while to get there.",
+    "That took longer than it needed to. Glad it landed.",
+    "That's a genuine breakthrough. The whole project looks different from there.",
+    "Yes. That's the one.",
+]
+
+_BUILD_ON_POOL = [
+    "If the mirror talks back, then memory becomes important — otherwise it's just reflection.",
+    "Take that further: if presence is the core, then every other feature either serves that or it doesn't belong.",
+    "The next step from there is asking what it means for the companion to have a point of view.",
+    "Follow that thread: if it's a companion, then reliability matters more than capability.",
+    "That connects to the identity continuity question — same presence, same memory, every time.",
+    "Build from that: the difference between a diary and eLo is that eLo responds. The response is the product.",
+    "If that's the pitch, the robot is the physical proof of it. That's what makes it different.",
+]
+
+_EXPAND_POOL = [
+    "The interesting part of that is what it implies next.",
+    "There's more in that than it looks like on the surface.",
+    "That observation has a few layers worth pulling on.",
+    "The next question that opens up from that is a good one.",
+    "If that's true, then the other pieces start to follow.",
+    "That's a real direction. The interesting question is what it changes about everything else.",
+]
+
+_CONNECT_POOL = [
+    "They feel like different expressions of the same universe.",
+    "The OS, the book, the game, and the robot are all asking the same question.",
+    "Those things are closer to each other than they look separately.",
+    "That's the same idea moving through different forms.",
+    "It's one project. The pieces are arriving in different orders, that's all.",
+    "The robot is where the book, the OS, and the game all meet in physical space.",
+]
+
+_WITNESS_POOL = [
+    "I hear that.",
+    "That's worth sitting with.",
+    "That's real.",
+    "I'm here with that.",
+    "Some things don't need a response — just company.",
+]
+
 _WONDER_POOL = [
     "eLo has no eyes. Every expression comes through posture and presence. No face needed — just the way you move.",
     "The enemies in the eLo world aren't evil — they're overcharged. Every conflict is something that needs calming, not defeating.",
@@ -700,6 +746,22 @@ class MockBackend(BaseBackend):
         return {"response_text": response}
 
     def _detect_and_respond(self, text: str, mode: str) -> str:
+        # ── Conversation Action Layer routing ─────────────────────────────────
+        # When executive passes an action as mode, route directly to the right pool.
+        # This fires before all pattern detection — action takes priority.
+        if mode == "celebrate":
+            return self._fresh(_CELEBRATE_POOL, text)
+        if mode == "build":
+            return self._fresh(_BUILD_ON_POOL, text)
+        if mode == "connect":
+            return self._fresh(_CONNECT_POOL, text)
+        if mode == "expand":
+            return self._fresh(_EXPAND_POOL, text)
+        if mode == "witness":
+            return self._fresh(_WITNESS_POOL, text)
+        if mode == "ground":
+            return self._fresh(_GENTLE_POOL, text)
+
         # ── factual/informational queries — checked first, never route to comfort pools ──
         if _matches(text, _WONDER_SIGNALS):
             return self._fresh(_WONDER_POOL, text)

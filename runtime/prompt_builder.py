@@ -328,13 +328,29 @@ def build(
         if vault_context.strip():
             sections.append(f"[WORLD MEMORY]\n{vault_context[:1200]}")
 
-    # executive directive — explicit tone instruction for this response
+    # executive directive — explicit action + tone for this response
     if exec_decision:
-        tone   = exec_decision.get("tone", "CHILDLIKE-WISE")
-        max_s  = exec_decision.get("max_sentences", 3)
-        stable = exec_decision.get("stability", False)
+        tone     = exec_decision.get("tone", "CHILDLIKE-WISE")
+        max_s    = exec_decision.get("max_sentences", 3)
+        stable   = exec_decision.get("stability", False)
+        action   = exec_decision.get("action", "reflect")
+        valence  = exec_decision.get("valence", "neutral")
+        momentum = exec_decision.get("momentum", "stable")
+
+        _ACTION_INSTRUCTION = {
+            "celebrate": "User has positive energy or momentum. Acknowledge it warmly. Do NOT ground or slow down. Do NOT say 'take your time' or 'nothing needs to happen'.",
+            "build":     "User presented an idea or asked you to expand. Add something — contribute a new thought, implication, or connection. Move the idea forward.",
+            "connect":   "Show how the things the user mentioned relate to each other. Make the connection explicit.",
+            "answer":    "Answer the question directly. No reflection before the answer.",
+            "ground":    "User is overwhelmed or distressed. Simplify. Reduce. Stabilise. One gentle sentence.",
+            "witness":   "User shared something personal. Just be present. Do not advise or fix.",
+            "reflect":   "Offer gentle perspective. Stay grounded.",
+            "challenge": "Offer a gentle alternative perspective the user may not have considered.",
+        }
+
         directive_lines = [
-            f"[DIRECTIVE — THIS RESPONSE ONLY]",
+            "[DIRECTIVE — THIS RESPONSE ONLY]",
+            f"Conversation action: {action.upper()} — {_ACTION_INSTRUCTION.get(action, '')}",
             f"Voice tone: {tone}",
             f"Max sentences: {max_s}",
         ]

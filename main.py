@@ -161,8 +161,8 @@ def run():
         # Step 2 + 3: MEMORY RETRIEVAL + ATTENTION
         attention_model = attn.compute(raw, memory_pack, state, loop_detected=False)
 
-        # Step 4 + 5: EXECUTIVE DECISION + VOICE SELECTION
-        exec_decision = exec_decide(attention_model, loop_detected=False)
+        # Step 4 + 5: EXECUTIVE DECISION + VOICE SELECTION + CONVERSATION ACTION
+        exec_decision = exec_decide(attention_model, loop_detected=False, user_input=raw)
 
         # Update state machine — may override exec_decision if loop_counter > 3
         runtime_state = sm.update(runtime_state, attention_model, exec_decision, loop_signal=False)
@@ -200,13 +200,14 @@ def run():
             print(f"  [prompt: {len(system)} chars]")
 
         _tone      = exec_decision.get("tone", "CONVERSATIONAL")
+        _action    = exec_decision.get("action", "reflect")   # conversation action for mock routing
         _max_s     = exec_decision.get("max_sentences", 4)
         t0 = time.perf_counter()
         try:
             response, backend_name = router_route(system, raw, max_sentences=_max_s)
         except Exception:
-            # hard fallback — mock always works
-            response   = _fallback.generate_response(raw, _tone, {}, {}, {}, {})["response_text"]
+            # hard fallback — pass action as mode so mock uses the right pool
+            response   = _fallback.generate_response(raw, _action, {}, {}, {}, {})["response_text"]
             backend_name = "mock"
         ms = int((time.perf_counter() - t0) * 1000)
 

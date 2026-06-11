@@ -1,23 +1,34 @@
 """
-runtime/executive.py — eLo OS v2 Executive Function.
+runtime/executive.py — eLo OS v2 Executive Function + Conversation Action Layer.
 
 Step 4 of the cognitive cycle:
     Attention model → executive decision → prompt directive.
 
-Maps intent + emotional_context to:
+Maps intent + emotional_context + valence + momentum to:
+    - conversation_action (what kind of response to produce)
     - voice tone selection (one of 5)
     - max sentence count
     - stability mode flag
-    - loop protection override
 
-STABILITY FIRST RULE (hard priority order):
-    1. Stabilise user
-    2. Simplify response
-    3. Reduce output length
-    4. Avoid questions
+CONVERSATION ACTION LAYER:
+    Sits between attention and response generation.
+    Determines WHAT TO DO, not just what to say.
 
-LOOP PROTECTION:
-    If triggered → DIRECT mode, no abstraction, no expansion.
+    Actions (priority order):
+    ANSWER    — factual question → direct answer
+    BUILD     — idea presented or explicit "build on this" → contribute
+    CONNECT   — multiple concepts → show relationships
+    CELEBRATE — positive momentum / breakthrough → acknowledge progress
+    REFLECT   — exploring meaning → gentle perspective
+    GROUND    — overwhelm / distress → stabilise
+    CHALLENGE — stuck assumption → gentle alternative view
+    WITNESS   — personal/emotional share → presence only
+    SILENCE   — nothing useful to add
+
+POSITIVE EMOTION RULE:
+    Positive valence must NEVER trigger grounding.
+    Positive high energy + building momentum → CELEBRATE or BUILD.
+    Never route joy into stabilisation responses.
 """
 
 from __future__ import annotations
@@ -59,6 +70,76 @@ _MAX_SENTENCES: dict[str, int] = {
 }
 
 
+_BUILD_PHRASES    = ["build on that", "can you build", "expand on", "go further",
+                     "take that further", "add to that", "tell me more", "what else"]
+_CONNECT_PHRASES  = ["how do they connect", "how does that connect", "are they related",
+                     "why am i building all", "why are all these", "same idea",
+                     "all matter", "they all", "all of them", "all connected",
+                     "the game and", "the book and", "the robot and", "the os and"]
+_CELEBRATE_PHRASES= ["i finally", "think i have", "got it", "figured it out",
+                     "things are clicking", "it clicked", "feel clear", "opening arc",
+                     "whole pitch", "that's it", "i understand now"]
+_WITNESS_PHRASES  = ["i miss", "i wish i", "part of me", "sometimes i wonder",
+                     "i don't know why i feel", "i feel like i've lost"]
+
+
+def _conversation_action(
+    user_input: str,
+    intent:     str,
+    valence:    str,
+    momentum:   str,
+) -> dict:
+    """
+    Conversation Action Layer — decides what eLo should DO this turn.
+
+    Returns dict with action, confidence, reason.
+
+    Priority: ANSWER > BUILD > CONNECT > CELEBRATE > REFLECT > GROUND > CHALLENGE > WITNESS > SILENCE
+    """
+    t = user_input.lower()
+
+    # 1. ANSWER — factual questions always first
+    if intent in ("inquiry", "recall"):
+        return {"action": "answer", "confidence": 0.95, "reason": "factual question"}
+
+    # 2. BUILD — explicit request or presenting an idea
+    if any(p in t for p in _BUILD_PHRASES):
+        return {"action": "build", "confidence": 0.9, "reason": "explicit build request"}
+    if intent == "creation" and valence in ("positive_high", "positive_low"):
+        return {"action": "build", "confidence": 0.8, "reason": "creative positive context"}
+
+    # 3. CONNECT — multiple things / asking about relationships
+    if any(p in t for p in _CONNECT_PHRASES):
+        return {"action": "connect", "confidence": 0.9, "reason": "connection request"}
+
+    # 4. CELEBRATE — positive breakthrough or momentum
+    if valence == "positive_high" and momentum == "building":
+        return {"action": "celebrate", "confidence": 0.85, "reason": "positive momentum detected"}
+    if any(p in t for p in _CELEBRATE_PHRASES):
+        return {"action": "celebrate", "confidence": 0.8, "reason": "breakthrough signal"}
+    if valence in ("positive_high", "positive_low") and intent in ("conversation", "emotional"):
+        return {"action": "celebrate", "confidence": 0.7, "reason": "positive state"}
+
+    # 5. REFLECT — exploring meaning or genuinely uncertain
+    if intent == "emotional" and valence == "neutral":
+        return {"action": "reflect", "confidence": 0.7, "reason": "emotional + neutral valence"}
+
+    # 6. GROUND — overwhelm, distress, negative low energy, stuck
+    if intent in ("emotional", "stabilise") and valence in ("negative_low", "negative_high"):
+        return {"action": "ground", "confidence": 0.9, "reason": "negative emotional state"}
+    if momentum == "stuck" or intent == "stabilise":
+        return {"action": "ground", "confidence": 0.85, "reason": "stuck or stabilise intent"}
+    if valence in ("negative_low", "negative_high"):
+        return {"action": "ground", "confidence": 0.8, "reason": "negative valence"}
+
+    # 7. WITNESS — personal emotional share, nothing to fix
+    if any(p in t for p in _WITNESS_PHRASES):
+        return {"action": "witness", "confidence": 0.8, "reason": "personal emotional share"}
+
+    # default
+    return {"action": "reflect", "confidence": 0.5, "reason": "default — no stronger signal"}
+
+
 _RESPONSE_GOAL: dict[str, str] = {
     "inquiry":      "answer",
     "creation":     "create",
@@ -83,7 +164,7 @@ _COGNITIVE_LOAD: dict[str, str] = {
 }
 
 
-def decide(attention_model: dict, loop_detected: bool = False) -> dict:
+def decide(attention_model: dict, loop_detected: bool = False, user_input: str = "") -> dict:
     """
     Compute the executive decision from the attention model.
 
@@ -101,45 +182,66 @@ def decide(attention_model: dict, loop_detected: bool = False) -> dict:
             cognitive_load — low | medium | high
             priority_order — ["primary", "secondary", "ignore"] labels
     """
-    intent = attention_model.get("intent", "conversation")
-    emo    = attention_model.get("emotional_context", {})
-    state  = emo.get("inferred_state", "present")
+    intent   = attention_model.get("intent", "conversation")
+    emo      = attention_model.get("emotional_context", {})
+    state    = emo.get("inferred_state", "present")
+    valence  = emo.get("valence",  "neutral")
+    momentum = emo.get("momentum", "stable")
+
+    # compute conversation action
+    cal = _conversation_action(user_input, intent, valence, momentum)
+    action = cal["action"]
 
     # loop protection always wins
     if loop_detected or intent == "stabilise":
         return {
-            "tone":           _TONE_DIRECT,
-            "max_sentences":  1,
-            "stability":      True,
-            "intent":         intent,
-            "response_goal":  "stabilise",
-            "cognitive_load": "low",
-            "priority_order": ["stabilise", "simplify", "ignore"],
+            "tone":              _TONE_DIRECT,
+            "max_sentences":     1,
+            "stability":         True,
+            "intent":            intent,
+            "response_goal":     "stabilise",
+            "cognitive_load":    "low",
+            "priority_order":    ["stabilise", "simplify", "ignore"],
+            "action":            "ground",
+            "valence":           valence,
+            "momentum":          momentum,
         }
 
-    # emotional override on response goal
-    goal = _GOAL_EMO_OVERRIDE.get(state) or _RESPONSE_GOAL.get(intent, "answer")
-    if goal == "stabilise" and state not in ("overwhelmed", "stressed"):
-        # emotional intent without strong distress → reflect instead
-        goal = "reflect"
+    # response goal from action
+    _ACTION_GOAL = {
+        "answer":    "answer",
+        "build":     "create",
+        "connect":   "reflect",
+        "celebrate": "answer",
+        "reflect":   "reflect",
+        "ground":    "stabilise",
+        "witness":   "stabilise",
+        "challenge": "reflect",
+        "silence":   "stabilise",
+    }
+    goal = _ACTION_GOAL.get(action, "answer")
 
-    # tone selection: emotional state overrides intent; witty on calm curiosity
-    tone    = _EMO_TONE_OVERRIDE.get(state) or _INTENT_TONE.get(intent, _TONE_CHILDLIKE_WISE)
-    tension = emo.get("tension", 0.4)
-    energy  = emo.get("energy", 0.5)
-    if intent == "conversation" and tension < 0.3 and energy > 0.4:
-        tone = _TONE_WITTY
+    # tone from action — positive actions MUST get positive tones
+    _ACTION_TONE = {
+        "celebrate": _TONE_JOYFUL,
+        "build":     _TONE_JOYFUL,
+        "connect":   _TONE_CHILDLIKE_WISE,
+        "answer":    _TONE_DIRECT,
+        "ground":    _TONE_SILENCE_AWARE,
+        "witness":   _TONE_SILENCE_AWARE,
+        "reflect":   _TONE_CHILDLIKE_WISE,
+        "challenge": _TONE_WITTY,
+        "silence":   _TONE_SILENCE_AWARE,
+    }
+    tone = _ACTION_TONE.get(action, _TONE_CHILDLIKE_WISE)
 
-    is_stable = state in ("overwhelmed", "stressed") or intent in ("stabilise", "simplify")
+    tension   = emo.get("tension", 0.4)
+    energy    = emo.get("energy", 0.5)
+    is_stable = action in ("ground", "witness", "silence")
     cog_load  = _COGNITIVE_LOAD.get(tone, "medium")
 
-    # priority_order: what matters for this response
-    if is_stable:
-        priority_order = ["stabilise", "simplify", "ignore"]
-    elif intent in ("creation", "recall"):
-        priority_order = ["primary", "secondary", "ignore"]
-    else:
-        priority_order = ["primary", "secondary", "ignore"]
+    priority_order = ["stabilise", "simplify", "ignore"] if is_stable \
+                     else ["primary", "secondary", "ignore"]
 
     return {
         "tone":           tone,
@@ -149,4 +251,7 @@ def decide(attention_model: dict, loop_detected: bool = False) -> dict:
         "response_goal":  goal,
         "cognitive_load": cog_load,
         "priority_order": priority_order,
+        "action":         action,
+        "valence":        valence,
+        "momentum":       momentum,
     }
