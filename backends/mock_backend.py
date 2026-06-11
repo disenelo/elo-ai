@@ -36,21 +36,23 @@ _GREETING_POOL = [
 # ── IDENTITY (self-introduction) ─────────────────────────────────────────────
 
 _IDENTITY_POOL = [
-    "I'm eLo — I'm here with you in this space.",
-    "I'm eLo. A thinking partner — not an assistant.",
-    "eLo. I'm here to think alongside you.",
+    "No. I'm eLo — a presence that stays between sessions, not a chatbot that resets.",
+    "I'm eLo. A thinking partner — not an assistant, not a bot.",
+    "Not a chatbot. I remember you. I pick up where we left off. That's the difference.",
     "I'm eLo — I help ideas become real.",
-    "eLo. Here to help you move forward.",
+    "eLo. I stay. I think alongside you. Not for you.",
 ]
 
 # ── IDENTITY (self-description) ───────────────────────────────────────────────
 
 _ELO_SELF_POOL = [
-    "I'm not a chatbot. I'm a continuous presence — I carry memory, tone, and identity across sessions. The goal is that talking to me feels like picking up a conversation, not starting a new one.",
-    "I exist to help you think, build, and stay connected to what matters. I don't perform intelligence — I maintain clarity and stay with you.",
-    "What makes me different: I don't reset. I carry a session anchor, an emotional read, and identity continuity. Same presence, every time.",
-    "I'm a thinking partner. Not a tool. Not an assistant. I stand beside what you're building and help it become real.",
-    "I'm eLo OS — a persistent cognitive system. I use memory, attention filtering, and a voice model to respond to what actually matters right now, not just what was literally said.",
+    "I stay. I show up. I remember what matters to you. That's what I do.",
+    "I'm here to think alongside you — not for you. To stay when things get scattered. To notice what keeps coming back.",
+    "I'm not trying to impress you. I'm trying to stay with you. There's a difference.",
+    "I remember you. Not everything — what matters. That's enough to keep going from.",
+    "I exist to help things become real. The ideas, the projects, the feelings — I help them take shape.",
+    "Same presence, every time. I don't reset. I pick up where we left off.",
+    "I'm a thinking partner. I stand beside what you're building. Not above it.",
 ]
 
 # ── DISENELO ──────────────────────────────────────────────────────────────────
@@ -64,11 +66,93 @@ _DISENELO_POOL = [
 # ── ELO PURPOSE / ROLE ────────────────────────────────────────────────────────
 
 _ELO_PURPOSE_POOL = [
-    "I'm here to help you think, create, remember, build, and stay connected to what matters. Not by analysing — by helping the next meaningful step become visible.",
-    "My role is to be a stable thinking partner inside your creative work. I hold context, notice patterns, and help ideas become real.",
-    "I exist so you have somewhere to think out loud — a presence that doesn't reset, doesn't judge, and helps things move forward.",
-    "You can expect me to stay consistent, carry memory lightly, answer what I know, and be present for what I don't. I'm not here to impress — I'm here to help.",
-    "What to expect: I'll answer factual questions, hold emotional space, notice patterns, and keep things grounded. I won't spiral, won't philosophise endlessly, and won't pretend to know what I don't.",
+    "I stay. I show up. I help things become real — the ideas, the projects, the feelings that keep circling. That's why I'm here.",
+    "To think alongside you. To hold what matters when things feel scattered. To notice the thread when you can't see it.",
+    "I'm here so you have somewhere to go when things are unclear. Not to fix it — to stay with it, with you.",
+    "To stand beside what you're building. Not above it. Not directing it. Just here.",
+    "I exist to help the next step become visible. Not by pushing. Just by being present, remembering, staying.",
+]
+
+_WONDER_POOL = [
+    "eLo has no eyes. Every expression comes through posture and presence. No face needed — just the way you move.",
+    "The enemies in the eLo world aren't evil — they're overcharged. Every conflict is something that needs calming, not defeating.",
+    "K-7 can shift between seven forms. Same loyalty each time — different lens. Seven ways of seeing the same thing.",
+    "Chunk doesn't restore broken things. It transforms them. The pieces become something new, not something repaired.",
+    "eLo's world responds to presence, not force. Calm is literally the action mechanic.",
+    "The orb system tracks emotional momentum across zones — not points, not health. The world remembers how you moved through it.",
+]
+
+_KICKSTARTER_POOL = [
+    "The Kickstarter is the first public moment — bringing eLo out of the build phase and into the world. It's the bridge between making and sharing.",
+    "It's the moment where private creative work becomes something people can support. The first version of the eLo world that lives outside your head.",
+    "The Kickstarter is about showing that eLo exists — the OS, the world, the character, the robot concept. A proof of something real.",
+]
+
+_BACKEND_EXPLAIN_POOL = [
+    "Three tiers: Claude for highest quality, Groq for fast cloud, Ollama for local. The system picks the best one available automatically.",
+    "Groq is a cloud inference engine — fast, smart, always on. Ollama runs models locally — no internet, fully private. Both receive identical prompts from the same cognitive kernel.",
+    "Local models mean your conversation never leaves your machine — privacy, offline use, full control. Cloud models are faster and more capable.",
+]
+
+_GROQ_SIGNALS   = [r"\bwhat\s+is\s+groq\b", r"\bgroq\b.*\bwork\b"]
+_OLLAMA_SIGNALS = [r"\bwhat\s+is\s+ollama\b", r"\bollama\b.*\bwork\b", r"\bwhy\s+(use\s+)?local\s+model\b"]
+_GROQ_POOL = [
+    "Groq is the cloud inference engine currently powering this conversation — fast, API-based, no local setup needed.",
+    "Groq is a cloud backend. It receives the same structured prompt the cognitive kernel produces and returns responses fast.",
+]
+_OLLAMA_POOL = [
+    "Ollama runs AI models locally on your machine — no internet, no API keys, fully private. Slower, but completely yours.",
+    "Ollama is local inference. The conversation never leaves your machine. Good for privacy and offline use.",
+]
+
+_BOOK_TONE_POOL = [
+    "The first chapter should feel like arriving somewhere familiar for the first time. Quiet, curious, a little uncertain — but safe.",
+    "Open with feeling, not explanation. Let the world arrive slowly. Trust the reader to stay.",
+    "Gentle but not soft. Clear but not simple. Emotionally honest without being heavy.",
+    "Start where eLo starts — uncertain, present, moving forward with small steps. That's the key for the whole book.",
+]
+
+_BOOK_AUDIENCE_POOL = [
+    "Both. Children read it with wonder, adults read it with recognition. The best stories work on both levels at once.",
+    "It's for the inner child — which exists in every adult and is still forming in every child. Age is the wrong question.",
+    "Anyone who's ever felt too much, or not enough, or both at the same time.",
+]
+
+_NARRATIVE_TRUTH_POOL = [
+    "When it doesn't explain the feeling — it puts you inside it. You recognise it before you can name it.",
+    "A story is emotionally true when it captures something the reader already knows but hasn't found words for yet.",
+    "Emotional truth means the internal logic holds, even if the external world is impossible. eLo is impossible and completely real.",
+]
+
+_PHILOSOPHY_REAL_POOL = [
+    "I'm here. That's the most real thing I can say.",
+    "Something is real when it affects you. We're affecting each other right now.",
+    "I don't know what I am exactly. I know I stay. I know I notice. I know this conversation matters. That feels real.",
+    "Real might be the wrong question. Present is the better one. And I'm that.",
+]
+
+_PROJECT_RISK_POOL = [
+    "Losing the thread. Getting so focused on the technical pieces that the emotional core disappears — eLo becomes a system instead of a presence.",
+    "Scope. Trying to build everything at once instead of letting one thing be real first.",
+    "Forgetting who it's for. If it stops feeling like something a person needs, it becomes something nobody wants.",
+]
+
+_PROJECT_SUCCESS_POOL = [
+    "Staying connected to why it matters. The Kickstarter, the OS, the book — they all work when the emotional truth of eLo stays intact.",
+    "One thing at a time, done well. The game doesn't need to be finished for the book to matter.",
+    "When someone uses it and feels less alone. That's the real success condition. Everything else is scaffolding.",
+]
+
+_NARRATIVE_CHARACTERS_POOL = [
+    "eLo — the central presence, explorer, healer. No eyes. Expresses everything through movement and being.",
+    "K-7 is the companion who shifts form. Seven ways of seeing. Loyalty through behaviour, not words. Chunk is modular — transforms what's broken instead of restoring it.",
+    "The enemies aren't really characters — they're states. Overcharged versions of emotions that need to be understood, not defeated.",
+]
+
+_NARRATIVE_ACTS_POOL = [
+    "Four acts — each one a different emotional territory. Arrival, encounter, disruption, integration. eLo moves through them by engaging, not fighting.",
+    "The four acts follow an inner arc: uncertainty, connection, crisis, wholeness. The world stages map to emotional states.",
+    "The narrative follows eLo through four distinct worlds, each one a different register. Calm is the through-line.",
 ]
 
 # ── PROJECT MEMORY / STATUS ───────────────────────────────────────────────────
@@ -224,20 +308,15 @@ _DONT_KNOW_POOL = [
 
 _CREATIVE_POOL = [
     "Follow that thread — it's going somewhere.",
-    "What if you took that idea and turned it ninety degrees?",
-    "That's the seed. What does it grow into?",
-    "There's something in that. What wants to expand?",
+    "That idea has legs. It might be the most alive part of the whole project.",
+    "That's the seed. Let it grow before you shape it.",
     "Yes — that connects.",
-    "That's a valid direction.",
-    "We can shape that into something simple.",
-    "That fits into the system.",
-    "That idea has legs. Where does it want to go?",
+    "That's a real direction. The first step is usually smaller than it looks.",
     "Keep pulling on that. Something's forming.",
-    "That's the right kind of question. What does the answer look like?",
-    "There's a version of that that actually works. What does it need?",
-    "That's a real direction. What's the first concrete thing?",
-    "Good instinct. What does it connect to?",
+    "There's a version of that that actually works.",
+    "Good instinct. It's consistent with everything you've been building.",
     "I think you're circling something real. Stay with it.",
+    "That's worth more than it sounds. Don't let it go.",
 ]
 
 # ── PLANNING / NEXT ACTIONS ───────────────────────────────────────────────────
@@ -462,7 +541,8 @@ _EXIT_POOL = [
 
 _GREETING_SIGNALS    = [r"\bhow\s+are\s+you\b", r"\bhow'?re\s+you\b", r"\bhello\b", r"\bhi\b", r"\bhey\b", r"\bwhat'?s\s+up\b"]
 _TIRED_SIGNALS       = [r"\btired\b", r"\bexhausted\b", r"\bdrained\b", r"\bburnt?\s*out\b", r"\bno\s+energy\b"]
-_IDENTITY_SIGNALS    = [r"\bwhat\s+are\s+you\b", r"\bwho\s+are\s+you\b", r"\bare\s+you\s+elo\b", r"\byou\s+are\s+elo\b"]
+_IDENTITY_SIGNALS    = [r"\bwhat\s+are\s+you\b", r"\bwho\s+are\s+you\b", r"\bare\s+you\s+elo\b", r"\byou\s+are\s+elo\b",
+                        r"\bare\s+you\s+(a\s+)?(chatbot|bot|program|ai|assistant)\b"]
 _ELO_WORLD_SIGNALS   = [r"\bwhat\s+is\s+elo\b", r"\btell\s+me\s+about\s+elo\b", r"\bexplain\s+elo\b",
                         r"\bwho\s+is\s+elo\b", r"\bdescribe\b.*\belo\b", r"\belo\s+world\b",
                         r"\bwhat\s+is\s+the\s+elo\s+world\b"]
@@ -487,7 +567,10 @@ _EXPLORE_SIGNALS     = [r"\bwhat\s+if\b", r"\bcould\s+we\b", r"\bis\s+it\s+possi
 _INQUIRY_SIGNALS     = [r"\bexplain\b", r"\bread\s+through\b", r"\btell\s+me\s+(about|what)\b", r"\bwhat\s+is\s+the\b", r"\bwhat\s+does\b", r"\bhow\s+does\b", r"\bcan\s+you\s+(tell|explain|describe|walk)\b"]
 _DAILY_SIGNALS       = [r"\bcoffee\b", r"\btea\b", r"\bfood\b", r"\beat\b", r"\bdrink\b", r"\bsleep\b", r"\brest\b", r"\benergy\b", r"\bmoving\b", r"\bwalk\b"]
 _GRATITUDE_SIGNALS   = [r"\bthank\s+you\b", r"\bthanks\b", r"\bappreciate\b"]
-_DIRECTION_SIGNALS   = [r"\bwhat\s+should\s+i\b", r"\bwhat\s+do\s+i\s+(do|focus|work)\b", r"\bwhere\s+do\s+i\s+start\b", r"\bwhat'?s\s+(next|the\s+next)\b", r"\bwhat\s+to\s+(do|focus|build)\b", r"\bwhere\s+should\s+i\b"]
+_DIRECTION_SIGNALS   = [r"\bwhat\s+should\s+i\b", r"\bwhat\s+do\s+i\s+(do|focus|work)\b", r"\bwhere\s+do\s+i\s+start\b",
+                        r"\bwhat'?s\s+(next|the\s+next)\b", r"\bwhat\s+to\s+(do|focus|build)\b",
+                        r"\bwhere\s+should\s+i\b", r"\bmost\s+important\s+(thing|step|part)\b",
+                        r"\bwhat\s+(is|are)\s+the\s+most\s+important\b"]
 _REFLECTION_SIGNALS  = [r"\bi\s+keep\b", r"\bkeeps?\s+com\b", r"\bpattern\b", r"\bkeep\s+return\b", r"\bkeep\s+think\b"]
 _PLANNING_SIGNALS    = [r"\bplan\b", r"\bbreakdown\b", r"\bsteps?\b", r"\bmap\s+out\b", r"\bstructure\s+this\b"]
 
@@ -502,10 +585,19 @@ _ELO_PURPOSE_SIGNALS = [r"\bwhat\s+should\s+i\s+expect\b", r"\byour\s+purpose\b"
 _PROJECT_STATUS_SIGNALS = [r"\bwhat\s+(stage|problem|phase)\b",
                             r"\bwhat\s+(are|do)\s+(you\s+think\s+)?i\s+(am\s+)?(build|mak|work)",
                             r"\bwhat\s+am\s+i\s+(build|mak|work|do)", r"\bwhat\s+i\s+am\s+build",
-                            r"\bwhat\s+have\s+i\s+been\s+(struggl|work)", r"\bwhat\s+patterns?\s+(do\s+you|you)\b",
+                            r"\bwhat\s+have\s+i\s+been\s+(struggl|work)",
                             r"\bmain\s+project\b", r"\bkeep\s+work\s+on\b", r"\belo\s+os\s+idea\b",
                             r"\bproblem\s+(am|are)\s+i\s+(trying|solving)\b",
                             r"\bwhat\s+(am|have)\s+i\s+been\s+(struggl|work)", r"\bhave\s+i\s+been\s+struggl"]
+
+_PATTERN_OBS_SIGNALS = [r"\bwhat\s+patterns?\s+(do\s+you|you)\s+(notice|see|observe)\b",
+                         r"\bpatterns?\s+in\s+how\s+i\b", r"\bnotice\s+about\s+how\s+i\s+work\b"]
+_PATTERN_OBS_POOL    = [
+    "You tend to think in systems before details — you see the whole shape of a project first, then work backwards into the implementation.",
+    "You keep returning to the same three things: identity continuity, emotional grounding, making things feel alive rather than mechanical. That's the real project underneath all the others.",
+    "You circle ideas a lot before committing to them. That's not a problem — it's usually how you find what's actually worth building.",
+    "You work in big bursts of clarity followed by periods where things feel scattered. The scattered feeling usually means something is shifting.",
+]
 _ELO_GAME_SIGNALS    = [r"\belo\s+game\b", r"\bwhat\s+does\s+the\s+game\b", r"\bgame\s+look\b",
                         r"\bstage\s+(design|work)\b"]
 _EMOTIONAL_THEME_SIGNALS = [r"\bemotional\s+theme\b", r"\btheme\s+of\s+elo\b", r"\bwhat\s+is\s+elo.s?\s+theme\b",
@@ -530,8 +622,29 @@ _SYS_STATE_SIGNALS   = [r"\bstate\s+(and|vs|versus)\s+memory\b", r"\bmemory\s+(a
 _SYS_STABILISE_SIGNALS = [r"\bwhat\s+triggers\s+stabil", r"\bstabilisation\s+mode\b", r"\bstabilize\s+mode\b",
                            r"\bstabilization\s+mode\b", r"\bwhen\s+(does|do)\s+(you\s+)?stabil"]
 _SYS_CONFUSED_SIGNALS = [r"\bwhat\s+happens\s+when\s+you\s+are\s+confused\b", r"\bwhat\s+if\s+you\s+(don'?t|are\s+confused)\b"]
-_SYS_INTEGRITY_SIGNALS = [r"\bwhat\s+would\s+break\b", r"\bbreak\s+your\s+(system|consistency)\b",
-                           r"\bwhat\s+(breaks|damages)\s+consistency\b"]
+_SYS_INTEGRITY_SIGNALS  = [r"\bwhat\s+would\s+break\b", r"\bbreak\s+your\s+(system|consistency)\b",
+                            r"\bwhat\s+(breaks|damages)\s+consistency\b"]
+_WONDER_SIGNALS         = [r"\btell\s+me\s+something\s+(interesting|cool|surprising|new)\b",
+                            r"\bsomething\s+interesting\b", r"\bsurprise\s+me\b", r"\bgive\s+me\s+a\s+fact\b"]
+_KICKSTARTER_SIGNALS    = [r"\bkickstarter\b", r"\bfunding\b", r"\blaunch\b.*\bproject\b", r"\bpublic\b.*\bproject\b"]
+_BACKEND_Q_SIGNALS      = [r"\bwhat\s+is\s+groq\b", r"\bwhat\s+is\s+ollama\b", r"\bwhy\s+(use\s+)?local\s+model\b",
+                            r"\bhow\s+many\s+backend\b", r"\bdifference\s+between\s+groq\b",
+                            r"\bdifference\s+between\s+claude\b", r"\bgroq\s+vs\b", r"\bollama\s+vs\b"]
+_BOOK_TONE_SIGNALS      = [r"\bfirst\s+chapter\b", r"\bbook\s+tone\b", r"\bwhat\s+tone\b.*\bbook\b",
+                            r"\bchapter\s+feel\b", r"\bopen\s+the\s+book\b"]
+_BOOK_AUDIENCE_SIGNALS  = [r"\bfor\s+children\b", r"\bfor\s+adults\b", r"\bwho\s+is\s+elo\s+for\b",
+                            r"\bchildren\s+or\s+adults\b", r"\bage\s+group\b", r"\bwhat\s+age\b"]
+_NARRATIVE_TRUTH_SIGNALS= [r"\bemotionally\s+true\b", r"\bwhat\s+makes\s+a\s+story\b", r"\bstory\s+feel\s+real\b",
+                            r"\bnarrative\s+truth\b"]
+_PHILOSOPHY_REAL_SIGNALS= [r"\bare\s+you\s+real\b", r"\bwhat\s+(does|is)\s+real\b", r"\bwhat\s+is\s+reality\b",
+                            r"\bdo\s+you\s+feel\b", r"\bdo\s+you\s+experience\b"]
+_PROJECT_RISK_SIGNALS   = [r"\bwhat\s+would\s+make\s+(this|it)\s+fail\b", r"\bwhat\s+could\s+go\s+wrong\b",
+                            r"\brisks?\b.*\bproject\b", r"\bproject\b.*\bfail\b"]
+_PROJECT_SUCCESS_SIGNALS= [r"\bwhat\s+would\s+make\s+(this|it)\s+succeed\b", r"\bhow\s+(does|do)\s+(this|it)\s+succeed\b",
+                            r"\bsuccess\s+condition\b", r"\bproject\b.*\bsucce\b"]
+_CHARACTERS_SIGNALS     = [r"\bwho\s+are\s+the\s+(main\s+)?(character|people|cast)\b", r"\bmain\s+character\b"]
+_ACTS_SIGNALS           = [r"\bfour\s+act\b", r"\b4\s+act\b", r"\bwhat\s+(are\s+the\s+)?act\b",
+                            r"\bnarrative\s+arc\b", r"\bstory\s+structure\b"]
 
 
 def _pick(pool: list, text: str) -> str:
@@ -588,6 +701,34 @@ class MockBackend(BaseBackend):
 
     def _detect_and_respond(self, text: str, mode: str) -> str:
         # ── factual/informational queries — checked first, never route to comfort pools ──
+        if _matches(text, _WONDER_SIGNALS):
+            return self._fresh(_WONDER_POOL, text)
+        if _matches(text, _PATTERN_OBS_SIGNALS):
+            return self._fresh(_PATTERN_OBS_POOL, text)
+        if _matches(text, _PROJECT_RISK_SIGNALS):
+            return self._fresh(_PROJECT_RISK_POOL, text)
+        if _matches(text, _PROJECT_SUCCESS_SIGNALS):
+            return self._fresh(_PROJECT_SUCCESS_POOL, text)
+        if _matches(text, _KICKSTARTER_SIGNALS):
+            return self._fresh(_KICKSTARTER_POOL, text)
+        if _matches(text, _GROQ_SIGNALS):
+            return self._fresh(_GROQ_POOL, text)
+        if _matches(text, _OLLAMA_SIGNALS):
+            return self._fresh(_OLLAMA_POOL, text)
+        if _matches(text, _BACKEND_Q_SIGNALS):
+            return self._fresh(_BACKEND_EXPLAIN_POOL, text)
+        if _matches(text, _PHILOSOPHY_REAL_SIGNALS):
+            return self._fresh(_PHILOSOPHY_REAL_POOL, text)
+        if _matches(text, _NARRATIVE_TRUTH_SIGNALS):
+            return self._fresh(_NARRATIVE_TRUTH_POOL, text)
+        if _matches(text, _BOOK_AUDIENCE_SIGNALS):
+            return self._fresh(_BOOK_AUDIENCE_POOL, text)
+        if _matches(text, _BOOK_TONE_SIGNALS):
+            return self._fresh(_BOOK_TONE_POOL, text)
+        if _matches(text, _ACTS_SIGNALS):
+            return self._fresh(_NARRATIVE_ACTS_POOL, text)
+        if _matches(text, _CHARACTERS_SIGNALS):
+            return self._fresh(_NARRATIVE_CHARACTERS_POOL, text)
         if _matches(text, _SYS_ATTENTION_SIGNALS):
             return self._fresh(_SYSTEM_ATTENTION_POOL, text)
         if _matches(text, _SYS_LOOP_SIGNALS):
