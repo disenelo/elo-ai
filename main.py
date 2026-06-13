@@ -23,6 +23,7 @@ Commands:
 """
 
 import os
+import sys
 import time
 
 # Load .env from project root — runs once at startup, never overwrites existing env vars
@@ -64,14 +65,8 @@ import random as _random
 
 _behaviour_gate = _BehaviourGate()
 
-# Phase F — desktop avatar (optional, only when DESKTOP_AVATAR=1 in env)
+# Phase F — desktop avatar flag (subprocess spawned in __main__ when set)
 _DESKTOP_AVATAR = os.environ.get("DESKTOP_AVATAR", "0") == "1"
-if _DESKTOP_AVATAR:
-    try:
-        from desktop_avatar.avatar_renderer  import get as _desktop_renderer
-        from desktop_avatar.movement_controller import update as _desktop_update
-    except Exception:
-        _DESKTOP_AVATAR = False
 
 # Always-available fallback for hard failures
 _fallback = _MockBackend()
@@ -87,15 +82,6 @@ def run():
     state_manager.save(state)
     _presence_reset()   # fresh presence each session
     _obs_reset()        # fresh pattern observation each session
-
-    # Phase F — launch desktop avatar if enabled
-    if _DESKTOP_AVATAR:
-        try:
-            from desktop_avatar.launch import launch as _avatar_launch
-            import threading as _threading
-            _threading.Thread(target=_avatar_launch, daemon=True).start()
-        except Exception:
-            pass
 
     try:
         memory_pack = build_memory_pack(state)   # always rebuild — never load stale pack
@@ -238,6 +224,7 @@ def run():
 
         # Phase B — surface entity/viewpoint answers for ANSWER/CONNECT actions
         _why = _entity_why(raw) or _get_viewpoint(raw)
+        _action = exec_decision.get("action", "reflect")
         if _why and _action in ("answer", "connect", "reflect"):
             _hp = list(attention_model.get("high_priority_memory", []))
             if _why not in _hp:
@@ -273,11 +260,10 @@ def run():
             _behaviour_gate.mark_active()
             _presence = _presence_compute(attention_model, exec_decision)
             _motion   = _motion_map(_presence)
-            _motion   = _behaviour_gate.allow(_motion)
+            if not _DESKTOP_AVATAR:
+                _motion = _behaviour_gate.allow(_motion)
             _avatar_target = "console" if debug else "blender"
             _avatar_route(_motion, state=_presence, target=_avatar_target)
-            if _DESKTOP_AVATAR:
-                _desktop_update(_presence)
         except Exception:
             pass
 
@@ -312,4 +298,14 @@ def run():
 
 
 if __name__ == "__main__":
+    if _DESKTOP_AVATAR:
+        import subprocess as _sp
+        _avatar_log = open(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "avatar_process.log"), "w"
+        )
+        _sp.Popen(
+            [sys.executable, "-m", "desktop_avatar.avatar_process"],
+            cwd=os.path.dirname(os.path.abspath(__file__)),
+            stdout=_avatar_log, stderr=_avatar_log,
+        )
     run()

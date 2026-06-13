@@ -254,6 +254,20 @@ Batch 4 known failures (pre 2026-06-12 fix):
 
 ## §8 Change Log
 
+### 2026-06-13 (session 7) — Motion name fix + BehaviourGate bypass for desktop avatar
+
+**Bug**: Avatar window appeared and showed welcome sequence but ignored all conversation turns.
+**Root cause 1**: `motion_mapper.py` outputs "breathe/pace/hop/wander/settle" — none in `avatar_process._MOTIONS` except "sit" and "look". All other turns silently ignored.
+**Root cause 2**: `BehaviourGate.MIN_MOTION_INTERVAL = 8.0s` rate-limits all motions after the first active one to "breathe" (passive substitute). Designed for Blender; inappropriate for the desktop avatar.
+
+**Fixes**:
+- `desktop_avatar/avatar_process.py`: added `_MOTION_MAP = {"breathe":"idle","settle":"sit","pace":"walk","hop":"jump","wander":"walk"}` — applied in `_poll_state()` before `_MOTIONS` check. All motion_mapper outputs now resolve to a valid visual.
+- `main.py`: skips `_behaviour_gate.allow()` when `_DESKTOP_AVATAR=1`. Each conversation turn drives a direct motion update — no 8-second rate cap for desktop.
+- `main.py`: captures `avatar_process` stdout+stderr to `avatar_process.log` for diagnostics.
+- `main.py`: fixed `_action` used-before-assigned bug (line ~227 referenced `_action` before line ~240 set it). Moved assignment before the Phase B continuity inject.
+
+**Verification**: all 5 motion_mapper output names (breathe/pace/hop/wander/settle) now map through `_MOTION_MAP` to valid `_MOTIONS` visual names (idle/walk/jump/sit). Confirmed via direct test.
+
 ### 2026-06-13 (session 6) — Phases A–F: RELATIONSHIP → CONTINUITY → DESKTOP → AVATAR milestone
 
 **Phase A — PARTICIPATION → RELATIONSHIP** (`core/pattern_observer.py`):
