@@ -111,6 +111,9 @@ _SOCIAL_PHRASES   = ["nice to see you", "good to see you", "great to see you",
 _CAPABILITY_PHRASES = ("can you", "are you", "do you", "will you", "can elo", "does elo",
                        "are you able", "is elo able")
 
+_DEMO_PHRASES     = ("i want to see you", "show me you", "show me what you",
+                     "can i see you", "i'd like to see you", "let me see you")
+
 
 def _conversation_action(
     user_input: str,
@@ -132,6 +135,10 @@ def _conversation_action(
             and not t.strip().endswith("?")
             and len(t.strip()) < 60):
         return {"action": "celebrate", "confidence": 0.8, "reason": "social greeting"}
+
+    # Demonstration requests ("I want to see you move", "show me you jump") — no "?" needed
+    if any(p in t for p in _DEMO_PHRASES):
+        return {"action": "answer", "confidence": 0.88, "reason": "demonstration request"}
 
     # Capability / self-referential questions about eLo ("can you X?", "are you happy?")
     if t.strip().endswith("?") and any(p in t for p in _CAPABILITY_PHRASES):

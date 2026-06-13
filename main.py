@@ -222,6 +222,13 @@ def run():
         if _cont:
             g_ctx = f"{g_ctx}\n{_cont}" if g_ctx else _cont
 
+        # Desktop avatar context — model needs to know it has a visible presence
+        if _DESKTOP_AVATAR:
+            _av_note = ("[AVATAR] You have a small visual window in the bottom-right corner "
+                        "of the user's screen. You move with the conversation — walking, sitting, "
+                        "jumping, looking. The user can see you there right now.")
+            g_ctx = f"{g_ctx}\n{_av_note}" if g_ctx else _av_note
+
         # Phase B — surface entity/viewpoint answers for ANSWER/CONNECT actions
         _why = _entity_why(raw) or _get_viewpoint(raw)
         _action = exec_decision.get("action", "reflect")
