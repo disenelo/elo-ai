@@ -104,6 +104,13 @@ _CHALLENGE_PHRASES= ["is this too", "too ambitious", "maybe it's too", "maybe th
 _WITNESS_PHRASES  = ["i miss", "i wish i", "part of me", "sometimes i wonder",
                      "i don't know why i feel", "i feel like i've lost"]
 
+_SOCIAL_PHRASES   = ["nice to see you", "good to see you", "great to see you",
+                     "lovely to see you", "glad to see you", "hi again", "hello again",
+                     "good to be back", "nice to be back"]
+
+_CAPABILITY_PHRASES = ("can you", "are you", "do you", "will you", "can elo", "does elo",
+                       "are you able", "is elo able")
+
 
 def _conversation_action(
     user_input: str,
@@ -119,6 +126,16 @@ def _conversation_action(
     Priority: ANSWER > BUILD > CONNECT > CELEBRATE > REFLECT > GROUND > CHALLENGE > WITNESS > SILENCE
     """
     t = user_input.lower()
+
+    # Social greetings (no "?") — brief warm acknowledgement, not deep interpretation
+    if (any(p in t for p in _SOCIAL_PHRASES)
+            and not t.strip().endswith("?")
+            and len(t.strip()) < 60):
+        return {"action": "celebrate", "confidence": 0.8, "reason": "social greeting"}
+
+    # Capability / self-referential questions about eLo ("can you X?", "are you happy?")
+    if t.strip().endswith("?") and any(p in t for p in _CAPABILITY_PHRASES):
+        return {"action": "answer", "confidence": 0.92, "reason": "capability question"}
 
     # Short affirmations checked first — they celebrate, not build
     if any(p in t for p in _SHORT_AFFIRM) and len(t.strip()) < 35:

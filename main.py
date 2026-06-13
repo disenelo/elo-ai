@@ -300,12 +300,17 @@ def run():
 if __name__ == "__main__":
     if _DESKTOP_AVATAR:
         import subprocess as _sp
+        import atexit as _atexit
         _avatar_log = open(
             os.path.join(os.path.dirname(os.path.abspath(__file__)), "avatar_process.log"), "w"
         )
-        _sp.Popen(
+        _avatar_proc = _sp.Popen(
             [sys.executable, "-m", "desktop_avatar.avatar_process"],
             cwd=os.path.dirname(os.path.abspath(__file__)),
             stdout=_avatar_log, stderr=_avatar_log,
         )
+        def _kill_avatar():
+            if _avatar_proc.poll() is None:
+                _avatar_proc.terminate()
+        _atexit.register(_kill_avatar)
     run()

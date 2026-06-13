@@ -25,7 +25,9 @@ import re
 _INTENT_PATTERNS: dict[str, list] = {
     "inquiry":   [r"\bwhat\b", r"\bhow\b", r"\bwhy\b", r"\bexplain\b",
                   r"\btell\s+me\b", r"\bwhat\s+is\b", r"\bwhat\s+are\b",
-                  r"\bshould\s+i\b", r"\bdo\s+i\b", r"\bcan\s+i\b"],
+                  r"\bshould\s+i\b", r"\bdo\s+i\b", r"\bcan\s+i\b",
+                  r"\bcan\s+you\b", r"\bare\s+you\b", r"\bdo\s+you\b",
+                  r"\bwill\s+you\b", r"\bdoes\s+elo\b"],
     "creation":  [r"\bbuild\b", r"\bdesign\b", r"\bmake\b", r"\bcreate\b",
                   r"\bimplement\b", r"\bwhat\s+if\b", r"\bcould\s+we\b", r"\blet'?s\b"],
     "emotional": [r"\bfeel\b", r"\btired\b", r"\bsad\b", r"\boverwhel\b",
