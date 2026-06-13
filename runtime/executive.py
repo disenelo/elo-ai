@@ -90,7 +90,10 @@ _SHORT_AFFIRM     = ["and stays", "that's it", "that is it", "yeah", "exactly",
 _CONNECT_PHRASES  = ["how do they connect", "how does that connect", "are they related",
                      "why am i building all", "why are all these", "same idea",
                      "all matter", "they all", "all of them", "all connected",
-                     "the game and", "the book and", "the robot and", "the os and"]
+                     "the game and", "the book and", "the robot and", "the os and",
+                     "is one thing", "one thing expressed", "the same project",
+                     "expressed in", "expressed as", "expressed across",
+                     "all the same", "they're the same", "they are the same"]
 _CELEBRATE_PHRASES= ["i finally", "think i have", "got it", "figured it out",
                      "things are clicking", "it clicked", "feel clear", "opening arc",
                      "whole pitch", "that's it", "i understand now",
