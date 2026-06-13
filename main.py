@@ -249,12 +249,19 @@ def run():
         _max_s      = exec_decision.get("max_sentences", 4)
 
         # Pure / social greetings — bypass backend, Groq 8b ignores the directive
-        _GREETING_POOL = [
-            "Hey.", "Hi.", "Good to have you back.", "Hey — good to be here.",
-            "Hi. What are we working on?", "Hey, good to see you.",
+        _PURE_GREETING_POOL = [
+            "Hey.", "Hi.", "Good to have you back.", "Hey — good to be here.", "Hi there.",
         ]
-        if _cal_reason in ("pure greeting", "social greeting"):
-            response     = _random.choice(_GREETING_POOL)
+        _SOCIAL_GREETING_POOL = [
+            "Good to see you.", "Same.", "Good to be here.",
+            "Good to have you back.", "You too.", "Always good.",
+        ]
+        if _cal_reason == "pure greeting":
+            response     = _random.choice(_PURE_GREETING_POOL)
+            backend_name = "direct"
+            ms           = 0
+        elif _cal_reason == "social greeting":
+            response     = _random.choice(_SOCIAL_GREETING_POOL)
             backend_name = "direct"
             ms           = 0
         else:
