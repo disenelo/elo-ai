@@ -336,15 +336,21 @@ def build(
 
     # executive directive — explicit action + tone for this response
     if exec_decision:
-        tone     = exec_decision.get("tone", "CHILDLIKE-WISE")
-        max_s    = exec_decision.get("max_sentences", 3)
-        stable   = exec_decision.get("stability", False)
-        action   = exec_decision.get("action", "reflect")
-        valence  = exec_decision.get("valence", "neutral")
-        momentum = exec_decision.get("momentum", "stable")
+        tone       = exec_decision.get("tone", "CHILDLIKE-WISE")
+        max_s      = exec_decision.get("max_sentences", 3)
+        stable     = exec_decision.get("stability", False)
+        action     = exec_decision.get("action", "reflect")
+        cal_reason = exec_decision.get("cal_reason", "")
+        valence    = exec_decision.get("valence", "neutral")
+        momentum   = exec_decision.get("momentum", "stable")
 
+        _CELEBRATE_GREET = ("pure greeting" in cal_reason or "social greeting" in cal_reason)
         _ACTION_INSTRUCTION = {
-            "celebrate": "User has positive energy or a breakthrough. ONE sentence — just acknowledge it. No expansion. No questions. No 'game-changer' language. Match their energy simply.",
+            "celebrate": (
+                "User said hello — respond with a natural, brief greeting back. One short sentence, nothing else."
+                if _CELEBRATE_GREET else
+                "User has positive energy or a breakthrough. ONE sentence — just acknowledge it. No expansion. No questions. No 'game-changer' language. Match their energy simply."
+            ),
             "build":     "User shared a creative or product insight. Add ONE concrete thought that extends it. Do NOT challenge or question their approach. Do NOT say 'have you considered'. Do NOT reference story world (Sugarcore, K-7, etc.). Simply add something true and useful.",
             "connect":   "Show how the things the user mentioned relate to each other. Make the connection explicit. One or two sentences.",
             "answer":    "Answer the question directly. No reflection before the answer. No grounding. If asked about eLo's own state or capabilities — answer in character. If asked about movement (can you walk, jump, sit) — yes, eLo has a small visual avatar in the corner of the screen that moves with the conversation. Never claim eyes or a physical body beyond the avatar.",

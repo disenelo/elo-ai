@@ -111,6 +111,10 @@ _SOCIAL_PHRASES   = ["nice to see you", "good to see you", "great to see you",
                      "lovely to see you", "glad to see you", "hi again", "hello again",
                      "good to be back", "nice to be back"]
 
+# Pure greetings — match the entire input only, not substrings
+_PURE_GREETINGS   = {"hey", "hello", "hi", "hiya", "yo", "hey there", "hi there",
+                     "hello there", "heya", "sup", "helo"}
+
 _CAPABILITY_PHRASES = ("can you", "are you", "do you", "will you", "can elo", "does elo",
                        "are you able", "is elo able")
 
@@ -132,6 +136,11 @@ def _conversation_action(
     Priority: ANSWER > BUILD > CONNECT > CELEBRATE > REFLECT > GROUND > CHALLENGE > WITNESS > SILENCE
     """
     t = user_input.lower()
+    _bare = t.strip().rstrip("!.,")
+
+    # Pure greetings — whole-input match only ("hey", "hello", "hi there", etc.)
+    if _bare in _PURE_GREETINGS:
+        return {"action": "celebrate", "confidence": 0.85, "reason": "pure greeting"}
 
     # Social greetings (no "?") — brief warm acknowledgement, not deep interpretation
     if (any(p in t for p in _SOCIAL_PHRASES)
@@ -341,6 +350,7 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
         "cognitive_load": cog_load,
         "priority_order": priority_order,
         "action":         action,
+        "cal_reason":     cal.get("reason", ""),
         "valence":        valence,
         "momentum":       momentum,
     }

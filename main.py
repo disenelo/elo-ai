@@ -243,17 +243,28 @@ def run():
         if debug:
             print(f"  [prompt: {len(system)} chars]")
 
-        _tone      = exec_decision.get("tone", "CONVERSATIONAL")
-        _action    = exec_decision.get("action", "reflect")   # conversation action for mock routing
-        _max_s     = exec_decision.get("max_sentences", 4)
-        t0 = time.perf_counter()
-        try:
-            response, backend_name = router_route(system, raw, max_sentences=_max_s, action=_action)
-        except Exception:
-            # hard fallback — pass action as mode so mock uses the right pool
-            response   = _fallback.generate_response(raw, _action, {}, {}, {}, {})["response_text"]
-            backend_name = "mock"
-        ms = int((time.perf_counter() - t0) * 1000)
+        _tone       = exec_decision.get("tone", "CONVERSATIONAL")
+        _action     = exec_decision.get("action", "reflect")
+        _cal_reason = exec_decision.get("cal_reason", "")
+        _max_s      = exec_decision.get("max_sentences", 4)
+
+        # Pure / social greetings — bypass backend, Groq 8b ignores the directive
+        _GREETING_POOL = [
+            "Hey.", "Hi.", "Good to have you back.", "Hey — good to be here.",
+            "Hi. What are we working on?", "Hey, good to see you.",
+        ]
+        if _cal_reason in ("pure greeting", "social greeting"):
+            response     = _random.choice(_GREETING_POOL)
+            backend_name = "direct"
+            ms           = 0
+        else:
+            t0 = time.perf_counter()
+            try:
+                response, backend_name = router_route(system, raw, max_sentences=_max_s, action=_action)
+            except Exception:
+                response     = _fallback.generate_response(raw, _action, {}, {}, {}, {})["response_text"]
+                backend_name = "mock"
+            ms = int((time.perf_counter() - t0) * 1000)
 
         # Step 8: OUTPUT + pattern observation (Phase A)
         _obs_log(raw, attention_model)
