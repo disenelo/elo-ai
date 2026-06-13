@@ -256,6 +256,25 @@ def run():
             "Good to see you.", "Same.", "Good to be here.",
             "Good to have you back.", "You too.", "Always good.",
         ]
+
+        # Motion capability questions — confirm + demonstrate + check if visible
+        _MOTION_WORDS = {"walk", "jump", "sit", "breathe", "move", "float", "pace", "wander", "hop"}
+        _MOTION_MAP   = {"walk": "walk", "jump": "jump", "hop": "jump", "sit": "sit",
+                         "breathe": "idle", "move": "walk", "float": "float",
+                         "pace": "walk", "wander": "walk"}
+        _raw_lower    = raw.lower()
+        _motion_hit   = next((w for w in _MOTION_WORDS if w in _raw_lower), None)
+        _is_motion_q  = (_cal_reason in ("capability question", "demonstration request")
+                         and _motion_hit is not None)
+
+        _MOTION_CAPABILITY_POOL = [
+            "Yes — I'm in the corner of your screen right now. Can you see me moving?",
+            "I can. Watch the bottom-right — I should be there moving with the conversation.",
+            "That's me in the corner. Is the animation running for you?",
+            "Yes. I'm already there — bottom-right of your screen. Do you need me to move more?",
+            "I'm already moving — little figure, bottom-right. Can you see me?",
+        ]
+
         if _cal_reason == "pure greeting":
             response     = _random.choice(_PURE_GREETING_POOL)
             backend_name = "direct"
@@ -264,6 +283,14 @@ def run():
             response     = _random.choice(_SOCIAL_GREETING_POOL)
             backend_name = "direct"
             ms           = 0
+        elif _is_motion_q and _DESKTOP_AVATAR:
+            # confirm + trigger the matching animation so it's visible
+            response     = _random.choice(_MOTION_CAPABILITY_POOL)
+            backend_name = "direct"
+            ms           = 0
+            _demo_anim   = _MOTION_MAP.get(_motion_hit, "walk")
+            _avatar_route({"animation": _demo_anim, "duration": 4, "intensity": 0.7},
+                          state={}, target="blender")
         else:
             t0 = time.perf_counter()
             try:
