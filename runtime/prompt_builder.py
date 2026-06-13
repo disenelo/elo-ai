@@ -311,6 +311,12 @@ def build(
 
         lines.append(f"Intent: {intent}")
 
+        # session state — last topics, tone, last active, last exchange
+        if state_context.strip():
+            for sc_line in state_context.split("\n")[:4]:
+                if sc_line.strip():
+                    lines.append(sc_line.strip())
+
         if lines:
             sections.append("[ACTIVE MEMORY — ATTENTION FILTERED]\n" + "\n".join(lines))
 

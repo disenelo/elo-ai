@@ -45,7 +45,7 @@ _load_dotenv()
 
 from memory import state_manager
 from memory.obsidian_loader import get_context_block
-from memory.memory_pack_builder import load as load_memory_pack, build as build_memory_pack
+from memory.memory_pack_builder import build as build_memory_pack
 from core import attention as attn
 from runtime.executive import decide as exec_decide
 from runtime import state_machine as sm
@@ -54,7 +54,24 @@ from runtime.backend_router import route as router_route, active_backend, normal
 from knowledge.graph_loader import build_context as graph_context
 from backends.mock_backend import MockBackend as _MockBackend, EXIT_POOL as _EXIT_POOL
 from unity.unity_signal import convert as unity_convert
+from avatar.presence_engine    import compute as _presence_compute, reset as _presence_reset
+from avatar.motion_mapper      import map     as _motion_map
+from avatar.animation_router   import route   as _avatar_route
+from avatar.behaviour_protocol import BehaviourGate as _BehaviourGate
+from core.pattern_observer     import log as _obs_log, observe as _obs_observe, reset as _obs_reset, get_log as _obs_get_log
+from core.continuity           import get_entity_why as _entity_why, get_viewpoint as _get_viewpoint, cross_session_delta as _session_delta, context_block as _continuity_block, update_from_session as _continuity_update
 import random as _random
+
+_behaviour_gate = _BehaviourGate()
+
+# Phase F — desktop avatar (optional, only when DESKTOP_AVATAR=1 in env)
+_DESKTOP_AVATAR = os.environ.get("DESKTOP_AVATAR", "0") == "1"
+if _DESKTOP_AVATAR:
+    try:
+        from desktop_avatar.avatar_renderer  import get as _desktop_renderer
+        from desktop_avatar.movement_controller import update as _desktop_update
+    except Exception:
+        _DESKTOP_AVATAR = False
 
 # Always-available fallback for hard failures
 _fallback = _MockBackend()
@@ -68,11 +85,20 @@ def run():
     state        = state_manager.increment_session(state)
     runtime_state = sm.fresh()
     state_manager.save(state)
+    _presence_reset()   # fresh presence each session
+    _obs_reset()        # fresh pattern observation each session
+
+    # Phase F — launch desktop avatar if enabled
+    if _DESKTOP_AVATAR:
+        try:
+            from desktop_avatar.launch import launch as _avatar_launch
+            import threading as _threading
+            _threading.Thread(target=_avatar_launch, daemon=True).start()
+        except Exception:
+            pass
 
     try:
-        memory_pack = load_memory_pack()
-        if not memory_pack:
-            memory_pack = build_memory_pack(state)
+        memory_pack = build_memory_pack(state)   # always rebuild — never load stale pack
     except Exception:
         memory_pack = {}
 
@@ -86,7 +112,6 @@ def run():
     anchor  = state.get("session_anchor", {})
     summary = anchor.get("current_session_summary", "")
     if summary:
-        # transform "User explored X with Y tone." → "We were exploring X."
         msg = (summary
                .replace("User explored ", "We were exploring ")
                .replace(" with a neutral tone.", ".")
@@ -94,7 +119,11 @@ def run():
                .replace(" with a positive tone.", " — good energy.")
                .replace(" with a frustrated tone.", " — some friction there.")
                .rstrip(".") + ".")
-        print(f"eLo: Welcome back. {msg}")
+        delta = _session_delta(state)
+        if delta:
+            print(f"eLo: Welcome back. {msg} {delta}")
+        else:
+            print(f"eLo: Welcome back. {msg}")
     elif state.get("session_summaries"):
         print("eLo: Welcome back.")
     else:
@@ -107,6 +136,9 @@ def run():
         try:
             raw = input("You: ").strip()
         except (EOFError, KeyboardInterrupt):
+            _behaviour_gate.mark_exit()
+            _exit_gesture = _behaviour_gate.on_user_exit()
+            _avatar_route(_exit_gesture, target="blender")
             print(f"\neLo: {_random.choice(_EXIT_POOL)}")
             break
 
@@ -144,8 +176,12 @@ def run():
                 print(f"  Loop count:  {runtime_state.get('loop_counter', 0)}")
                 print(f"  Last seen:   {state.get('last_active', 'never')[:16]}")
                 continue
+            elif cmd == "/avatar":
+                from avatar.presence_engine import current as _presence_current
+                from blender.state_visualiser import show as _vis_show
+                _vis_show(_presence_current())
             else:
-                print("  Commands: /exit  /reset  /debug  /memory")
+                print("  Commands: /exit  /reset  /debug  /memory  /avatar")
                 continue
 
         # Step 7 (pre-check): hard loop detection — 3 identical inputs
@@ -193,8 +229,22 @@ def run():
             print(f"  [emotion: {emo_state} | mem: {n_high}H {n_med}M]")
 
         # Step 6: BUILD PROMPT + GENERATE RESPONSE
-        g_ctx  = graph_context(raw)
-        system = build_prompt(raw, vault_context=vault_ctx, attention=attention_model, exec_decision=exec_decision, graph_context=g_ctx)
+        g_ctx = graph_context(raw)
+
+        # Phase B — inject continuity context (world viewpoints) into graph block
+        _cont = _continuity_block()
+        if _cont:
+            g_ctx = f"{g_ctx}\n{_cont}" if g_ctx else _cont
+
+        # Phase B — surface entity/viewpoint answers for ANSWER/CONNECT actions
+        _why = _entity_why(raw) or _get_viewpoint(raw)
+        if _why and _action in ("answer", "connect", "reflect"):
+            _hp = list(attention_model.get("high_priority_memory", []))
+            if _why not in _hp:
+                attention_model = dict(attention_model)
+                attention_model["high_priority_memory"] = [_why] + _hp
+
+        system = build_prompt(raw, vault_context=vault_ctx, state_context=state_manager.as_context_string(state), attention=attention_model, exec_decision=exec_decision, graph_context=g_ctx)
 
         if debug:
             print(f"  [prompt: {len(system)} chars]")
@@ -211,8 +261,25 @@ def run():
             backend_name = "mock"
         ms = int((time.perf_counter() - t0) * 1000)
 
-        # Step 8: OUTPUT + OPTIONAL METADATA
+        # Step 8: OUTPUT + pattern observation (Phase A)
+        _obs_log(raw, attention_model)
+        _observation = _obs_observe(current_action=_action)
+        if _observation:
+            response = f"{response} {_observation}"
         print(f"\neLo: {response}\n")
+
+        # Step 9: AVATAR — non-blocking, best-effort
+        try:
+            _behaviour_gate.mark_active()
+            _presence = _presence_compute(attention_model, exec_decision)
+            _motion   = _motion_map(_presence)
+            _motion   = _behaviour_gate.allow(_motion)
+            _avatar_target = "console" if debug else "blender"
+            _avatar_route(_motion, state=_presence, target=_avatar_target)
+            if _DESKTOP_AVATAR:
+                _desktop_update(_presence)
+        except Exception:
+            pass
 
         if debug:
             emo_ctx = attention_model.get("emotional_context", {})
@@ -239,6 +306,9 @@ def run():
     # session close — compress meaning into anchor
     state = state_manager.close_session(state)
     state_manager.save(state)
+
+    # Phase B — persist pattern observations to identity_map.json
+    _continuity_update(_obs_get_log())
 
 
 if __name__ == "__main__":

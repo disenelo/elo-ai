@@ -74,23 +74,39 @@ _ELO_PURPOSE_POOL = [
 ]
 
 _CELEBRATE_POOL = [
+    "That's alive.",
+    "Yes. That's the one.",
+    "Follow that.",
     "Nice. You've been working toward that for a while.",
     "That's the thing clicking into place.",
     "Good. That's what it feels like when something becomes clear.",
-    "That's worth staying with — it's real and it took a while to get there.",
     "That took longer than it needed to. Glad it landed.",
     "That's a genuine breakthrough. The whole project looks different from there.",
-    "Yes. That's the one.",
+    "That's worth staying with — it's real.",
+    "More of that.",
+    "That grew.",
+    "The alive feeling is the signal. Don't second-guess it.",
+    "That's it. That's the one.",
+    "Hold that. Move from there.",
 ]
 
 _BUILD_ON_POOL = [
-    "If the mirror talks back, then memory becomes important — otherwise it's just reflection.",
-    "Take that further: if presence is the core, then every other feature either serves that or it doesn't belong.",
-    "The next step from there is asking what it means for the companion to have a point of view.",
-    "Follow that thread: if it's a companion, then reliability matters more than capability.",
+    "Build one brick from there.",
+    "If the mirror talks back, memory becomes important — otherwise it's just reflection.",
+    "Take that further: if presence is the core, every other feature either serves that or it doesn't belong.",
+    "The next step is asking what it means for the companion to have a point of view.",
+    "Follow that thread: if it's a companion, reliability matters more than capability.",
     "That connects to the identity continuity question — same presence, same memory, every time.",
     "Build from that: the difference between a diary and eLo is that eLo responds. The response is the product.",
     "If that's the pitch, the robot is the physical proof of it. That's what makes it different.",
+    "Movement creates clarity. Touch it before deciding.",
+    "Prototype first. The shape will tell you what it wants to be.",
+    "Go deeper — the surface version is already visible. What's underneath it?",
+    "Let the idea become matter. Just one piece first.",
+    "Build before announcing. The announcement comes from the work.",
+    "Get it down before it shifts.",
+    "That's the anchor. Everything else builds from it.",
+    "Write the first line now — don't let it get away.",
 ]
 
 _PITCH_BUILD_POOL = [
@@ -117,6 +133,9 @@ _EXPAND_POOL = [
     "The next question that opens up from that is a good one.",
     "If that's true, then the other pieces start to follow.",
     "That's a real direction. The interesting question is what it changes about everything else.",
+    "Think wider — there's a larger shape under this.",
+    "Leave one door open while you close the others.",
+    "What else could this become?",
 ]
 
 _CONNECT_POOL = [
@@ -126,14 +145,65 @@ _CONNECT_POOL = [
     "That's the same idea moving through different forms.",
     "It's one project. The pieces are arriving in different orders, that's all.",
     "The robot is where the book, the OS, and the game all meet in physical space.",
+    "Keep what resonates. That's the signal.",
+    "Beauty is useful here — if it doesn't feel right, it isn't right yet.",
+    "What else could this become?",
+    "Think beyond the current scale — there's a larger shape under this.",
 ]
 
 _WITNESS_POOL = [
     "I hear that.",
-    "That's worth sitting with.",
     "That's real.",
     "I'm here with that.",
     "Some things don't need a response — just company.",
+    "Look twice before responding to that.",
+    "Depth before reaction.",
+]
+
+_CLOSURE_POOL = [
+    "Good. We got somewhere today.",
+    "That's a good place to stop.",
+    "I'll carry that forward.",
+    "Good session. We're somewhere now.",
+    "Saved. Until next time.",
+    "We actually moved today. Good.",
+]
+
+_CHALLENGE_POOL = [
+    "Is this force or direction? They feel the same from inside.",
+    "I'd push back on that slightly — is that the real reason, or the comfortable version of the reason?",
+    "That might be the frame. But the interesting question is whether it's the right frame.",
+    "Worth questioning: is the resistance because it's hard, or because it's not quite right?",
+    "Sometimes the block isn't the problem. The problem is treating it like one.",
+    "Redirect the energy — don't push through, pivot toward.",
+    "That sounds like the easy version. What's the version that actually scares you a little?",
+    "Choose one world. The others will wait.",
+    "Return to your own taste — not the version that sounds right, the version that feels right.",
+]
+
+_REFLECT_POOL = [
+    "Name the pattern.",
+    "Energy is information — what's it telling you?",
+    "There's something in that worth breaking apart.",
+    "There's something in what you said that's been showing up a lot — it's not the first time.",
+    "You've been carrying that idea quietly. It keeps coming back because it's trying to become something.",
+    "That's a real thread. You've been pulling on it for a while without saying it directly.",
+    "The thing you just named — that's the actual issue underneath everything else.",
+    "I've noticed that keeps coming up in different forms. It's not random.",
+    "Break it apart. What's the smallest piece that's actually true?",
+    "Build before optimising — the idea is good, it just needs to exist first.",
+]
+
+_SILENCE_POOL = [
+    "—",
+    "We can pause here.",
+    "Nothing needs to happen right now.",
+]
+
+_ANSWER_REDIRECT_POOL = [
+    "I don't have that specific answer right now — but let's think through it from what we know.",
+    "Here's what I can tell you from what's here.",
+    "Let's work through that from the context we have.",
 ]
 
 _WONDER_POOL = [
@@ -303,34 +373,39 @@ _BUILDING_POOL = [
 # ── DIRECTION / NEXT STEP ─────────────────────────────────────────────────────
 
 _DIRECTION_POOL = [
+    "Begin small. Movement creates clarity.",
+    "Less but better — pick the one thing and finish it.",
     "Start with the piece that feels most alive right now.",
     "The Kickstarter content is the next real step — everything else builds from that.",
     "One concrete thing: what could you finish in the next hour?",
     "Pick the smallest next step. That's usually the real one.",
     "What's the thing you keep coming back to? Start there.",
-    "The clearest path forward is the one that already has momentum.",
-    "There's usually one thing that's slightly more ready than the others. What is it?",
     "Don't plan the whole thing. Just name the next action.",
+    "Consistency over intensity — one thing, done well.",
+    "Build systems, not sprints. What's the thing that holds?",
+    "Slow. Build. Receive.",
+    "Slow is not behind. It's how you arrive.",
 ]
 
 # ── EMOTIONAL SUPPORT / GENTLE ────────────────────────────────────────────────
 
 _GENTLE_POOL = [
+    "Pause and feel once.",
     "That's real. Nothing needs to happen right now.",
     "Okay. That's where things are.",
     "We don't have to push through it.",
     "I'm here. Nothing needs to move yet.",
-    "That makes sense. We can stay with it.",
-    "Completely reasonable to feel that way.",
-    "There's no rush here. Just let it settle.",
+    "Move gently.",
+    "Energy is information — what's the scattered feeling pointing at?",
     "That's okay. Things don't always need to move forward.",
-    "Being scattered is information too. What's it pointing at?",
+    "Rest is maintenance. You're not behind.",
     "That's a real feeling. We can work from here.",
-    "Sometimes the right step is just acknowledging where you actually are.",
-    "We don't need to fix it. We can just be with it for a moment.",
+    "Exist before producing.",
+    "Sometimes the right step is just naming where you actually are.",
+    "We don't need to fix it. Just be with it for a moment.",
     "That's honest. Good that you're naming it.",
-    "It's okay to not have momentum yet.",
     "We can slow right down. Nothing is due.",
+    "Stop. Notice. Return.",
 ]
 
 # ── OVERWHELM ─────────────────────────────────────────────────────────────────
@@ -456,35 +531,35 @@ _GRATITUDE_POOL = [
 
 _GENERIC_CONVERSATIONAL = [
     "I'm with you.",
-    "We can stay with that.",
-    "Take your time.",
-    "We don't need to rush this.",
-    "Okay.",
-    "I hear you.",
-    "That's a reasonable place to be.",
-    "We can take that one step at a time.",
     "That's real.",
-    "We can work with that.",
-    "That's honest.",
     "Keep going.",
+    "That's a good instinct — where does it take you next?",
     "Worth exploring.",
-    "We don't have to solve it right now.",
-    "That's a good instinct.",
-    "Stay with that.",
-    "Nothing needs to be decided right now.",
-    "Good to name it.",
-    "It'll become clearer.",
-    "We can hold that loosely.",
-    "Sometimes naming it is enough for now.",
-    "That's grounded.",
-    "We're somewhere real here.",
     "Noted.",
-    "We can sit with that.",
-    "That's valid.",
+    "That's honest.",
+    "We can work with that.",
     "Okay — what's the next thing?",
+    "What's the thing underneath that?",
+    "We're somewhere real here.",
+    "That's the kind of thing worth sitting with for a minute.",
+    "I'd take that further.",
+    "There's more in that than it looks like.",
+    "That's the actual question, isn't it.",
+    "What would it look like if you trusted that instinct?",
+    "We don't have to solve it right now — but that's the thread.",
+    "The interesting part of that is what it implies.",
+    "That's grounded. What comes after it?",
+    "Good to name it.",
+    "It'll become clearer when you move toward it.",
+    "Sometimes naming it is the first step to building it.",
+    "That's valid. And worth pressing on.",
     "We're in the right place.",
-    "That's enough for now.",
-    "We can move from here.",
+    "I'd hold onto that.",
+    "That one's worth following.",
+    "What's the version of that you'd actually want to build?",
+    "That's a real thing. What does it need from you right now?",
+    "Take your time with it.",
+    "That sounds like the beginning of something.",
 ]
 
 _GENERIC_DIRECT = [
@@ -516,6 +591,8 @@ _ELO_INNER_CHILD_POOL = [
     "The inner child connection is central to eLo. The world is built on wonder, play, and emotional honesty. The enemies represent overwhelmed emotional states — correcting them means understanding, not defeating.",
     "eLo is an inner child healing narrative at its core. Each world stage corresponds to an emotional theme. K-7 shifts form to offer different perspectives. Chunk rebuilds what was broken. eLo holds presence throughout.",
     "The story is structured around emotional stages that mirror inner healing — confusion, fear, joy, wonder, wholeness. The player moves through them by staying present, not by fighting.",
+    "The inner child isn't a concept in eLo — it's a voice. 'Can I try now?' / 'Can I understand this?' / 'What else?' — those are the questions eLo is built around. The world responds to that curiosity, not to authority.",
+    "The eLo inner child shows up as movement — not asking permission, just starting. Try before deciding. Energy before structure. The world rewards presence, not planning.",
 ]
 
 _ELO_STAGES_POOL = [
@@ -605,7 +682,9 @@ _EXIT_POOL = [
 _GREETING_SIGNALS    = [r"\bhow\s+are\s+you\b", r"\bhow'?re\s+you\b", r"\bhello\b", r"\bhi\b", r"\bhey\b", r"\bwhat'?s\s+up\b"]
 _TIRED_SIGNALS       = [r"\btired\b", r"\bexhausted\b", r"\bdrained\b", r"\bburnt?\s*out\b", r"\bno\s+energy\b"]
 _IDENTITY_SIGNALS    = [r"\bwhat\s+are\s+you\b", r"\bwho\s+are\s+you\b", r"\bare\s+you\s+elo\b", r"\byou\s+are\s+elo\b",
-                        r"\bare\s+you\s+(a\s+)?(chatbot|bot|program|ai|assistant)\b"]
+                        r"\bare\s+you\s+(a\s+)?(chatbot|bot|program|ai|assistant)\b",
+                        r"\bare\s+you\s+actually\b", r"\bpretend", r"\bjust\s+a\s+bot\b",
+                        r"\bare\s+you\s+real\b", r"\byou\s+actually\s+elo\b"]
 _ELO_WORLD_SIGNALS   = [r"\bwhat\s+is\s+elo\b", r"\btell\s+me\s+about\s+elo\b", r"\bexplain\s+elo\b",
                         r"\bwho\s+is\s+elo\b", r"\bdescribe\b.*\belo\b", r"\belo\s+world\b",
                         r"\bwhat\s+is\s+the\s+elo\s+world\b"]
@@ -626,9 +705,48 @@ _GENTLE_SIGNALS      = [r"\bfeel\w*\s+\w*\s*(tired|sad|overwhelm|scared|lonely|s
                         r"\bfeel\w*\s+(scattered|overwhelm|behind|lost|stuck)",
                         r"\bexhausted\b", r"\bcan'?t\s+do\b", r"\bfeeling\s+\w*\s*(off|weird|bad|low)\b"]
 _OVERWHELM_SIGNALS   = [r"\btoo\s+much\b", r"\boverwhel", r"\bi\s+can'?t\s+think\b", r"\boverload\b", r"\bso\s+much\b"]
+_SELF_DOUBT_SIGNALS  = [
+    r"\bnone\s+of\s+this\s+is\s+(actually|really)\s+(good|worth|real)\b",
+    r"\bwasting\s+my\s+(time|life|energy)\b",
+    r"\bnot\s+built\s+for\s+this\b",
+    r"\bwhat\s+if\s+i'?m\s+(not|wrong|wasting|terrible)\b",
+    r"\bmaybe\s+i'?m\s+just\s+not\b",
+    r"\bmaybe\s+i\s+just\s+(can'?t|shouldn'?t|don'?t\s+have)\b",
+]
+_SELF_DOUBT_POOL     = [
+    "You're still here. That's the answer to that question.",
+    "That thought comes from the shadow, not the signal — the signal is that you keep building.",
+    "The fact that it matters enough to doubt is the thing. Indifference wouldn't ask that.",
+    "That fear is real. It's not a verdict.",
+    "Stay with it for a second. Then come back to the work.",
+    "What if it is good? That question has exactly as much weight.",
+]
+_JUPITER_SHADOW_SIGNALS = [
+    r"\btoo\s+many\s+ideas?\b", r"\bcan'?t\s+choose\s+between\b",
+    r"\btoo\s+many\s+(directions?|possibilities|paths?|options?)\b",
+    r"\bcan'?t\s+decide\s+(between|which|what)\b",
+    r"\bso\s+many\s+options?\b", r"\bso\s+many\s+possibilities\b",
+]
+_SHADOW_JUPITER_POOL = [
+    "Choose one world.",
+    "The others will wait.",
+    "One door at a time.",
+    "Pick the one that feels most alive right now. The rest are still there.",
+]
+_INTENSITY_SHADOW_SIGNALS = [
+    r"\bkeep\s+(push|forcing|driv)\b", r"\bpush\w*\s+and\s+push\w*\b",
+    r"\bpush\w*\s+hard\w*\s+but\b", r"\bnothing\s+is\s+(moving|happen|changing)\b",
+    r"\bstill\s+not\s+(moving|happen|work)\b",
+]
+_SHADOW_INTENSITY_POOL = [
+    "Redirect the energy.",
+    "Focused force. Not overwhelming force.",
+    "The block is information — what is it saying?",
+    "Intensity without direction wears you down. What's the one thing?",
+]
 _EXPLORE_SIGNALS     = [r"\bwhat\s+if\b", r"\bcould\s+we\b", r"\bis\s+it\s+possible\b", r"\blet'?s\s+build\b"]
 _INQUIRY_SIGNALS     = [r"\bexplain\b", r"\bread\s+through\b", r"\btell\s+me\s+(about|what)\b", r"\bwhat\s+is\s+the\b", r"\bwhat\s+does\b", r"\bhow\s+does\b", r"\bcan\s+you\s+(tell|explain|describe|walk)\b"]
-_DAILY_SIGNALS       = [r"\bcoffee\b", r"\btea\b", r"\bfood\b", r"\beat\b", r"\bdrink\b", r"\bsleep\b", r"\brest\b", r"\benergy\b", r"\bmoving\b", r"\bwalk\b"]
+_DAILY_SIGNALS       = [r"\bcoffee\b", r"\btea\b", r"\bfood\b", r"\beat\b", r"\bdrink\b", r"\bsleep\b", r"\bwalk\b"]
 _GRATITUDE_SIGNALS   = [r"\bthank\s+you\b", r"\bthanks\b", r"\bappreciate\b"]
 _DIRECTION_SIGNALS   = [r"\bwhat\s+should\s+i\b", r"\bwhat\s+do\s+i\s+(do|focus|work)\b", r"\bwhere\s+do\s+i\s+start\b",
                         r"\bwhat'?s\s+(next|the\s+next)\b", r"\bwhat\s+to\s+(do|focus|build)\b",
@@ -652,6 +770,49 @@ _PROJECT_STATUS_SIGNALS = [r"\bwhat\s+(stage|problem|phase)\b",
                             r"\bmain\s+project\b", r"\bkeep\s+work\s+on\b", r"\belo\s+os\s+idea\b",
                             r"\bproblem\s+(am|are)\s+i\s+(trying|solving)\b",
                             r"\bwhat\s+(am|have)\s+i\s+been\s+(struggl|work)", r"\bhave\s+i\s+been\s+struggl"]
+
+# SUN shadow — output becoming worth
+_WORTH_OUTPUT_SIGNALS = [
+    r"\bif\s+i\s+don'?t\s+(build|ship|produce|make|finish)\b",
+    r"\bneed\s+to\s+prove\b", r"\bhave\s+to\s+produce\b",
+    r"\bhaven'?t\s+(done|built|shipped)\s+enough\b",
+    r"\bnot\s+enough\b.*\bbuild\b", r"\bworth\s+it\b.*\bif\s+i\b",
+]
+_SHADOW_WORTH_POOL = [
+    "Exist before producing.",
+    "The work matters. You matter without it.",
+    "Do not earn existence.",
+    "What you build comes from what you are — not the other way around.",
+    "Small progress restores trust. But your worth isn't in the progress.",
+]
+
+# MOON mode — inner child asking to start
+_INNER_CHILD_START_SIGNALS = [
+    r"\bcan\s+i\s+try\b", r"\bcan\s+i\s+just\s+(try|start|test|build|make)\b",
+    r"\bwhat\s+if\s+i\s+just\s+(start|try|build|make)\b",
+    r"\bshould\s+i\s+just\s+(start|try|begin|go)\b",
+]
+_INNER_CHILD_START_POOL = [
+    "Yes. Try now.",
+    "Start. See what happens.",
+    "Go.",
+    "Yes — move before deciding.",
+    "That's the right instinct. Start.",
+]
+
+_CREATIVE_DISCOVERY_SIGNALS = [
+    r"\bi\s+(think\s+i\s+)?found\s+(the|it)\b",
+    r"\bfound\s+the\s+(opening|scene|voice|hook|angle|entry|structure)\b",
+    r"\bi\s+think\s+i\s+have\s+the\b",
+    r"\bfound\s+what\s+(it|this|elo)\b",
+]
+_CREATIVE_DISCOVERY_POOL = [
+    "Get it down before it shifts.",
+    "That's the anchor. Everything else builds from it.",
+    "Write it now — capture the feeling exactly.",
+    "That's the one. Follow it.",
+    "Don't let it drift. Stay in it.",
+]
 
 _PATTERN_OBS_SIGNALS = [r"\bwhat\s+patterns?\s+(do\s+you|you)\s+(notice|see|observe)\b",
                          r"\bpatterns?\s+in\s+how\s+i\b", r"\bnotice\s+about\s+how\s+i\s+work\b"]
@@ -710,7 +871,9 @@ _NARRATIVE_TRUTH_SIGNALS= [r"\bemotionally\s+true\b", r"\bwhat\s+makes\s+a\s+sto
 _PHILOSOPHY_REAL_SIGNALS= [r"\bare\s+you\s+real\b", r"\bwhat\s+(does|is)\s+real\b", r"\bwhat\s+is\s+reality\b",
                             r"\bdo\s+you\s+feel\b", r"\bdo\s+you\s+experience\b"]
 _PROJECT_RISK_SIGNALS   = [r"\bwhat\s+would\s+make\s+(this|it)\s+fail\b", r"\bwhat\s+could\s+go\s+wrong\b",
-                            r"\brisks?\b.*\bproject\b", r"\bproject\b.*\bfail\b"]
+                            r"\brisks?\b.*\bproject\b", r"\bproject\b.*\bfail\b",
+                            r"\bgoing\s+to\s+work\b", r"\bactually\s+work\b",
+                            r"\bwill\s+(this|it)\s+(ever\s+)?work\b", r"\bhonestly\b"]
 _PROJECT_SUCCESS_SIGNALS= [r"\bwhat\s+would\s+make\s+(this|it)\s+succeed\b", r"\bhow\s+(does|do)\s+(this|it)\s+succeed\b",
                             r"\bsuccess\s+condition\b", r"\bproject\b.*\bsucce\b"]
 _CHARACTERS_SIGNALS     = [r"\bwho\s+are\s+the\s+(main\s+)?(character|people|cast)\b", r"\bmain\s+character\b"]
@@ -777,15 +940,38 @@ class MockBackend(BaseBackend):
         if mode == "celebrate":
             return self._fresh(_CELEBRATE_POOL, text)
         if mode == "build":
+            if _matches(text, _CREATIVE_DISCOVERY_SIGNALS):
+                return self._fresh(_CREATIVE_DISCOVERY_POOL, text)
             return self._fresh(_BUILD_ON_POOL, text)
         if mode == "connect":
             return self._fresh(_CONNECT_POOL, text)
         if mode == "expand":
             return self._fresh(_EXPAND_POOL, text)
         if mode == "witness":
+            _CLOSURE_WORDS = ["good session", "done for today", "i'm done", "finished for today",
+                              "wrapping up", "that's all for now", "signing off"]
+            if any(p in text.lower() for p in _CLOSURE_WORDS):
+                return self._fresh(_CLOSURE_POOL, text)
             return self._fresh(_WITNESS_POOL, text)
         if mode == "ground":
+            # shadow patterns take priority even in ground mode — name it once, then ground
+            if _matches(text, _OVER_PLAN_INLINE := [r"\bplan\s+everything\b", r"\bneed\s+to\s+plan\b",
+                                                     r"\bwant\s+to\s+plan\b", r"\bplan\s+before\b",
+                                                     r"\bfigure\s+(it\s+)?out\s+first\b"]):
+                return self._fresh(["Build before optimising.", "Move gently — touch it before deciding.",
+                                    "Prototype first. The shape will tell you what it wants to be.",
+                                    "Small progress restores trust."], text)
+            # distinct overwhelm → dedicated pool (simpler, more actionable than gentle)
+            if _matches(text, [r"\btoo\s+much\b", r"\boverwhel", r"\bso\s+much\b", r"\boverload\b"]):
+                return self._fresh(_OVERWHELM_POOL, text)
             return self._fresh(_GENTLE_POOL, text)
+        if mode == "challenge":
+            return self._fresh(_CHALLENGE_POOL, text)
+        if mode == "silence":
+            return self._fresh(_SILENCE_POOL, text)
+        # reflect and answer: fall through to pattern detection.
+        # reflect is the default action — patterns know the topic better than the pool.
+        # At end of pattern detection, reflect-specific responses are applied if nothing matched.
 
         # ── factual/informational queries — checked first, never route to comfort pools ──
         if _matches(text, _AFFIRMATION_SIGNALS):
@@ -892,11 +1078,43 @@ class MockBackend(BaseBackend):
             return self._fresh(_IDENTITY_POOL, text)
         if _matches(text, _DAILY_SIGNALS):
             return self._fresh(_DAILY_POOL, text)
+        # ── shadow recognition — named gently, once ──────────────────────────
+        if _matches(text, _SELF_DOUBT_SIGNALS):
+            return self._fresh(_SELF_DOUBT_POOL, text)
+        if _matches(text, _WORTH_OUTPUT_SIGNALS):
+            return self._fresh(_SHADOW_WORTH_POOL, text)
+        if _matches(text, _INNER_CHILD_START_SIGNALS):
+            return self._fresh(_INNER_CHILD_START_POOL, text)
+        if _matches(text, _INTENSITY_SHADOW_SIGNALS):
+            return self._fresh(_SHADOW_INTENSITY_POOL, text)
+        if _matches(text, _JUPITER_SHADOW_SIGNALS):
+            return self._fresh(_SHADOW_JUPITER_POOL, text)
+        _OVER_PLAN = [r"\bplan\s+everything\b", r"\bneed\s+to\s+plan\b", r"\bwant\s+to\s+plan\b",
+                      r"\bplan\s+before\b", r"\bfigure\s+(it\s+)?out\s+first\b", r"\bprepare\s+before\b"]
+        _OVER_THINK = [r"\bkeep\s+think\b", r"\bstuck\s+in\s+my\s+head\b", r"\bcan'?t\s+stop\s+think\b",
+                       r"\banalysing\b", r"\banalyzing\b", r"\bover.?think\b"]
+        _SHADOW_PLAN_POOL = [
+            "Build before optimising.",
+            "Prototype first. The shape will tell you what it wants to be.",
+            "Small progress restores trust.",
+            "Move gently — touch it before deciding.",
+            "The plan is in the doing.",
+        ]
+        _SHADOW_THINK_POOL = [
+            "Build before optimising.",
+            "Energy is information — what does it want you to make?",
+            "The thinking is circling. Make something.",
+            "Break it apart and build the smallest piece.",
+        ]
+        if _matches(text, _OVER_PLAN):
+            return self._fresh(_SHADOW_PLAN_POOL, text)
+        if _matches(text, _OVER_THINK):
+            return self._fresh(_SHADOW_THINK_POOL, text)
         if _matches(text, _REFLECTION_SIGNALS):
             return self._fresh(_REFLECTION_POOL, text)
         if _matches(text, _PLANNING_SIGNALS):
             return self._fresh(_PLANNING_POOL, text)
-        if _matches(text, _EXPLORE_SIGNALS):
+        if _matches(text, _EXPLORE_SIGNALS) and not _matches(text, _SELF_DOUBT_SIGNALS):
             return self._fresh(_CREATIVE_POOL, text)
         if _matches(text, _DONT_KNOW_SIGNALS):
             return self._fresh(_DONT_KNOW_POOL, text)
@@ -906,6 +1124,8 @@ class MockBackend(BaseBackend):
             return self._fresh(_FEELING_OFF_POOL, text)
 
         # ── mode-based fallback ───────────────────────────────────────────────
+        if mode == "reflect":
+            return self._fresh(_REFLECT_POOL, text)
         if mode in ("CREATIVE", "JOYFUL"):
             return self._fresh(_CREATIVE_POOL, text)
         if mode in ("DIRECT", "STRUCTURED"):

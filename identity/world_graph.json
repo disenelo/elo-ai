@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "eLo-OS": {
+      "why": "The brain — a persistent creative OS that knows your work and moves alongside you.",
+      "role": "intelligence",
+      "connects_to": ["robot", "book", "eLo-Planet"]
+    },
+    "eLo-Planet": {
+      "why": "eLo as a character moving through a world built from the same symbolic vocabulary as the AI.",
+      "role": "game",
+      "connects_to": ["eLo-OS", "book", "Chunk", "K-7"]
+    },
+    "book": {
+      "why": "The narrative foundation — how the world got here, what eLo is for.",
+      "role": "story",
+      "connects_to": ["eLo-OS", "eLo-Planet"]
+    },
+    "robot": {
+      "why": "eLo in the physical world. Presence needs weight. You can't love something that never takes up space.",
+      "role": "embodiment",
+      "connects_to": ["eLo-OS"]
+    },
+    "Chunk": {
+      "why": "eLo's modular body — the vehicle layer. eLo doesn't move alone. Chunk is how it crosses different terrain.",
+      "role": "movement",
+      "connects_to": ["eLo-Planet"]
+    },
+    "K-7": {
+      "why": "The spirit animal. Seven forms, one guide. Transformation as companionship.",
+      "role": "guide",
+      "connects_to": ["eLo-Planet"]
+    },
+    "DISENELO": {
+      "why": "Free tools for makers who can't access paid ones. Not gated. Attribution appreciated, never required.",
+      "role": "mission",
+      "connects_to": ["eLo-Planet", "eLo-OS"]
+    }
+  },
+  "connections": [
+    {"from": "eLo-OS", "to": "robot", "label": "same mind, different bodies"},
+    {"from": "eLo-OS", "to": "book", "label": "the OS maps the same symbolic vocabulary as the world"},
+    {"from": "book", "to": "eLo-Planet", "label": "narrative foundation for the game world"},
+    {"from": "Chunk", "to": "eLo-Planet", "label": "Chunk is eLo's vehicle layer in the game"},
+    {"from": "eLo-OS", "to": "eLo-Planet", "label": "same character, different surfaces"}
+  ]
+}

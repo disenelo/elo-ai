@@ -77,18 +77,30 @@ _BUILD_PHRASES    = ["build on that", "can you build", "expand on", "go further"
                      "that's what makes it", "that is what makes it",
                      "that's the difference", "the pitch is", "the mirror has",
                      "a diary", "diary doesn't", "diary does not", "the whole pitch",
-                     "not a chatbot", "thinks alongside", "pushes back"]
+                     "not a chatbot", "thinks alongside", "pushes back",
+                     "i want to make elo", "i want to build", "i want to create",
+                     "i want to make it", "i want to make the", "i want to make my",
+                     "i want to try", "i want elo to",
+                     "like a presence", "real aura", "feels like it has",
+                     "i think i found", "i found the", "i found what"]
 
 _SHORT_AFFIRM     = ["and stays", "that's it", "that is it", "yeah", "exactly",
-                     "right", "and that's it", "both", "i like that", "and remembers",
-                     "and stays", "yep", "good instinct"]
+                     "that's right", "and that's it", "both", "i like that", "and remembers",
+                     "yep", "good instinct"]
 _CONNECT_PHRASES  = ["how do they connect", "how does that connect", "are they related",
                      "why am i building all", "why are all these", "same idea",
                      "all matter", "they all", "all of them", "all connected",
                      "the game and", "the book and", "the robot and", "the os and"]
 _CELEBRATE_PHRASES= ["i finally", "think i have", "got it", "figured it out",
                      "things are clicking", "it clicked", "feel clear", "opening arc",
-                     "whole pitch", "that's it", "i understand now"]
+                     "whole pitch", "that's it", "i understand now",
+                     "suddenly feels", "feels alive", "came alive", "feels like itself",
+                     "finally feels", "starting to feel real", "feels real now"]
+
+_CHALLENGE_PHRASES= ["is this too", "too ambitious", "maybe it's too", "maybe this is too",
+                     "is this the right", "am i going about this wrong",
+                     "what if this is the wrong", "maybe this isn't right",
+                     "too big", "too much for one person", "scope too"]
 _WITNESS_PHRASES  = ["i miss", "i wish i", "part of me", "sometimes i wonder",
                      "i don't know why i feel", "i feel like i've lost"]
 
@@ -125,9 +137,13 @@ def _conversation_action(
         if is_question:
             return {"action": "answer", "confidence": 0.95, "reason": "factual question"}
 
-    # 2. BUILD — creative positive context
-    if intent == "creation" and valence in ("positive_high", "positive_low"):
-        return {"action": "build", "confidence": 0.8, "reason": "creative positive context"}
+    # 2. BUILD — creative intent in any non-negative valence (creation + neutral is still build)
+    if intent == "creation" and valence not in ("negative_low", "negative_high"):
+        return {"action": "build", "confidence": 0.8, "reason": "creative intent"}
+
+    # CHALLENGE — scope/frame doubt before positive routing (question the assumption, not the person)
+    if any(p in t for p in _CHALLENGE_PHRASES):
+        return {"action": "challenge", "confidence": 0.75, "reason": "scope or frame doubt"}
 
     # 4. CELEBRATE — positive breakthrough or momentum
     if valence == "positive_high" and momentum == "building":
@@ -213,8 +229,17 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
     valence  = emo.get("valence",  "neutral")
     momentum = emo.get("momentum", "stable")
 
-    # compute conversation action
-    cal = _conversation_action(user_input, intent, valence, momentum)
+    # silence signal — pure pause (ellipsis / single punctuation / empty pause)
+    _t = user_input.strip()
+    if set(_t).issubset(set(".,…- ")) or _t in ("...", "..", "…", "--", "—"):
+        cal = {"action": "silence", "confidence": 1.0, "reason": "explicit pause input"}
+    # closure signal — session-end phrases always route to witness regardless of valence
+    elif emo.get("closure") == "closed" and any(p in _t.lower() for p in
+            ["good session", "done for today", "i'm done", "that's enough for today",
+             "signing off", "finished for today", "wrapping up", "that's all for now"]):
+        cal = {"action": "witness", "confidence": 0.9, "reason": "session closure signal"}
+    else:
+        cal = _conversation_action(user_input, intent, valence, momentum)
     action = cal["action"]
 
     # loop protection always wins
@@ -257,20 +282,32 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
         "reflect":   _TONE_CHILDLIKE_WISE,
         "challenge": _TONE_WITTY,
         "silence":   _TONE_SILENCE_AWARE,
+        "expand":    _TONE_WITTY,   # MOON/JUPITER mode — wonder and play
     }
     tone = _ACTION_TONE.get(action, _TONE_CHILDLIKE_WISE)
 
     tension   = emo.get("tension", 0.4)
     energy    = emo.get("energy", 0.5)
+
+    # MOON mode — when energy is high + intent is playful/creative + tension is low,
+    # shift build/connect/reflect to WITTY so play and surprise can surface
+    if (energy >= 0.7 and tension < 0.4
+            and action in ("build", "connect", "reflect")
+            and intent in ("creation", "conversation")):
+        tone = _TONE_WITTY
     is_stable = action in ("ground", "witness", "silence")
     cog_load  = _COGNITIVE_LOAD.get(tone, "medium")
 
     priority_order = ["stabilise", "simplify", "ignore"] if is_stable \
                      else ["primary", "secondary", "ignore"]
 
+    max_s = _MAX_SENTENCES.get(tone, 3)
+    if action == "celebrate":
+        max_s = 1   # celebrate is one sentence only — no expansion
+
     return {
         "tone":           tone,
-        "max_sentences":  _MAX_SENTENCES.get(tone, 3),
+        "max_sentences":  max_s,
         "stability":      is_stable,
         "intent":         intent,
         "response_goal":  goal,

@@ -15,9 +15,18 @@ from datetime import datetime
 from memory.summariser import compress_session, compress_obsidian, emotional_summary
 from memory.obsidian_loader import get_context_block
 
-_ROOT       = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_STATE_PATH = os.path.join(_ROOT, "elo_state.json")
-_PACK_PATH  = os.path.join(_ROOT, "memory", "memory_pack.json")
+_ROOT            = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_STATE_PATH      = os.path.join(_ROOT, "elo_state.json")
+_PACK_PATH       = os.path.join(_ROOT, "memory", "memory_pack.json")
+_REGISTRY_PATH   = os.path.join(_ROOT, "memory", "project_registry.json")
+
+
+def _load_registry() -> dict:
+    try:
+        with open(_REGISTRY_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
 
 
 def _load_state() -> dict:
@@ -55,8 +64,10 @@ def build(state: dict = None, max_chars: int = 2000) -> dict:
     # entities: from vault
     entities = [e.strip() for e in entity_str.split(",")] if entity_str else []
 
-    # projects: last meaningful topics from state
-    projects = list(state.get("last_topics", []))[-5:]
+    # projects: real project registry, not keyword extraction
+    registry = _load_registry()
+    active   = registry.get("active_projects", {})
+    projects = [k for k, v in active.items() if v.get("status") in ("active", "prototype")]
 
     # user patterns: distinct emotional tones seen
     tones        = [h.get("tone", "neutral") for h in state.get("emotional_history", [])[-20:]]
@@ -73,6 +84,17 @@ def build(state: dict = None, max_chars: int = 2000) -> dict:
     # high_priority — pre-selected items always relevant to any turn.
     # Used directly by filter_memory() without needing the full attention layer.
     high_priority: list = []
+
+    # active projects always first — eLo must always know what we're building
+    if active:
+        proj_lines = []
+        for k, v in active.items():
+            if v.get("status") in ("active", "prototype"):
+                desc = v.get("description", "")[:70]
+                proj_lines.append(f"{k}: {desc}")
+        if proj_lines:
+            high_priority.append("Active projects — " + " | ".join(proj_lines[:4]))
+
     if identity:
         high_priority.append(identity)
     if anchor.get("emotional_tone_signature") and anchor["emotional_tone_signature"] != "neutral":

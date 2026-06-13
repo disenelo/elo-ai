@@ -291,6 +291,15 @@ def compute(
         else:
             low.append(text)
 
+    # pre-ranked pack items always reach HIGH — they are the standing OS context
+    # (scoring can't surface them because they rarely share words with short inputs)
+    for ph in memory_pack.get("high_priority", []):
+        if ph and ph.strip() and ph not in high:
+            high.append(ph)
+            # remove ALL occurrences from medium/low to avoid prompt duplication
+            medium = [m for m in medium if m != ph]
+            low    = [m for m in low    if m != ph]
+
     # loop/stabilise override — clear all except identity anchors
     if loop_detected or intent == "stabilise":
         medium = []

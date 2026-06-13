@@ -83,6 +83,17 @@ def _is_duplicate(new: str, prev: str, threshold: float = 0.75) -> bool:
 # per-action last-response tracker (session-scoped, in-process)
 _last_responses: dict[str, str] = {}
 
+# singleton mock backend — preserves anti-repetition buffer across all mock calls this session
+_mock_backend_instance = None
+
+def _strip_trailing_question(text: str) -> str:
+    """Remove trailing question sentence(s). Returns empty string if all sentences are questions."""
+    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    while sentences and sentences[-1].strip().endswith('?'):
+        sentences.pop()
+    return ' '.join(sentences).strip()
+
+
 def normalise(text: str, max_sentences: int = 4) -> str:
     """
     Normalise LLM output to eLo voice standards.
@@ -205,7 +216,11 @@ def route(
     Returns:
         (response_text, backend_name)
     """
-    mode = mode or os.environ.get("ELO_BACKEND", "auto")
+    _env_mode = os.environ.get("ELO_BACKEND", "")
+    if not _env_mode and not _groq_available() and not _claude_available():
+        # no API keys and no explicit backend set — go offline immediately
+        _env_mode = "local"
+    mode = mode or _env_mode or "auto"
 
     # explicit mode overrides
     if mode == "mock":
@@ -246,8 +261,12 @@ def route(
             _logger.warning("Claude failed, trying Groq: %s", e)
 
     if _groq_available():
-        # short affirmations / < 25 chars → mock has precise pools, Groq over-expands
-        if len(user_input.strip()) < 25:
+        _ulen = len(user_input.strip())
+        # < 30 chars → mock always (Groq misparses short statements, over-expands affirmations)
+        if _ulen < 30:
+            return _mock_fallback(user_input, action=action), "mock"
+        # BUILD/CELEBRATE < 60 chars → mock (8b model adds questions, breaks on short insights)
+        if action in ("build", "celebrate") and _ulen < 60:
             return _mock_fallback(user_input, action=action), "mock"
 
         try:
@@ -257,6 +276,13 @@ def route(
                 _logger.debug("Lore drift detected — replacing with mock fallback")
                 return _mock_fallback(user_input, action=action), "mock"
             normalised = normalise(raw, max_sentences)
+            # for BUILD/CELEBRATE: strip any trailing questions Groq added
+            if action in ("build", "celebrate"):
+                stripped = _strip_trailing_question(normalised)
+                if not stripped:
+                    _logger.debug("Trailing question stripped to empty — using mock")
+                    return _mock_fallback(user_input, action=action), "mock"
+                normalised = stripped
             # catch duplicate — if too similar to last response, use mock
             if _is_duplicate(normalised, _last_responses.get(action, "")):
                 _logger.debug("Duplicate response detected — replacing with mock fallback")
@@ -278,10 +304,13 @@ def route(
 
 
 def _mock_fallback(user_input: str, action: str = "") -> str:
+    global _mock_backend_instance
     from backends.mock_backend import MockBackend
     from core.attention import compute
     from runtime.executive import decide as exec_decide
-    m = MockBackend()
+    if _mock_backend_instance is None:
+        _mock_backend_instance = MockBackend()
+    m = _mock_backend_instance
     if action:
         return m.generate_response(user_input, action, {}, {}, {}, {})["response_text"]
     att  = compute(user_input, {}, {})
@@ -292,7 +321,10 @@ def _mock_fallback(user_input: str, action: str = "") -> str:
 
 def active_backend() -> str:
     """Return the name of the highest-priority backend currently available."""
-    mode = os.environ.get("ELO_BACKEND", "auto")
+    _env_mode = os.environ.get("ELO_BACKEND", "")
+    if not _env_mode and not _groq_available() and not _claude_available():
+        _env_mode = "local"   # no keys → go offline
+    mode = _env_mode or "auto"
     if mode == "mock":   return "mock"
     if mode == "local":  return "ollama" if _ollama_available() else "mock"
     if mode == "cloud":  return "claude" if _claude_available() else ("groq" if _groq_available() else "mock")
