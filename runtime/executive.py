@@ -81,8 +81,7 @@ _BUILD_PHRASES    = ["build on that", "can you build", "expand on", "go further"
                      "i want to make elo", "i want to build", "i want to create",
                      "i want to make it", "i want to make the", "i want to make my",
                      "i want to try", "i want elo to",
-                     "like a presence", "real aura", "feels like it has",
-                     "i think i found", "i found the", "i found what"]
+                     "like a presence", "real aura", "feels like it has"]
 
 _SHORT_AFFIRM     = ["and stays", "that's it", "that is it", "yeah", "exactly",
                      "that's right", "and that's it", "both", "i like that", "and remembers",
@@ -98,7 +97,8 @@ _CELEBRATE_PHRASES= ["i finally", "think i have", "got it", "figured it out",
                      "things are clicking", "it clicked", "feel clear", "opening arc",
                      "whole pitch", "that's it", "i understand now",
                      "suddenly feels", "feels alive", "came alive", "feels like itself",
-                     "finally feels", "starting to feel real", "feels real now"]
+                     "finally feels", "starting to feel real", "feels real now",
+                     "i think i found", "i found the", "i found what"]
 
 _CHALLENGE_PHRASES= ["is this too", "too ambitious", "maybe it's too", "maybe this is too",
                      "is this the right", "am i going about this wrong",

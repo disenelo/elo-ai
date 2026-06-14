@@ -257,12 +257,23 @@ def run():
             "Good to have you back.", "You too.", "Always good.",
         ]
 
+        _raw_lower = raw.lower()
+
+        # Self-referential "how do you work" questions — deterministic bypass, mock can't answer these
+        _SELF_REF_TRIGGERS = ("how do you work", "how does elo work", "how are you built",
+                              "what are you exactly", "how do you remember", "how do you think")
+        _SELF_REF_POOL = [
+            "Attention layer first — I score what's relevant in memory. Then executive picks the response mode. Then I speak.",
+            "I run a loop each turn: read what matters, decide what to do, respond. Each session connects to the last.",
+            "I process what you say, find what's relevant, and respond. I keep what matters across sessions and drop the rest.",
+        ]
+        _is_self_ref = any(p in _raw_lower for p in _SELF_REF_TRIGGERS)
+
         # Motion capability questions — confirm + demonstrate + check if visible
         _MOTION_WORDS = {"walk", "jump", "sit", "breathe", "move", "float", "pace", "wander", "hop"}
         _MOTION_MAP   = {"walk": "walk", "jump": "jump", "hop": "jump", "sit": "sit",
                          "breathe": "idle", "move": "walk", "float": "float",
                          "pace": "walk", "wander": "walk"}
-        _raw_lower    = raw.lower()
         _motion_hit   = next((w for w in _MOTION_WORDS if w in _raw_lower), None)
         _is_motion_q  = (_cal_reason in ("capability question", "demonstration request")
                          and _motion_hit is not None)
@@ -281,6 +292,10 @@ def run():
             ms           = 0
         elif _cal_reason == "social greeting":
             response     = _random.choice(_SOCIAL_GREETING_POOL)
+            backend_name = "direct"
+            ms           = 0
+        elif _is_self_ref:
+            response     = _random.choice(_SELF_REF_POOL)
             backend_name = "direct"
             ms           = 0
         elif _is_motion_q and _DESKTOP_AVATAR:
