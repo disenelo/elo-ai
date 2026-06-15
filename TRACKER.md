@@ -1,7 +1,7 @@
 # eLo AI OS — Development Tracker
 
 **Project path**: `~/eLo-Planet/` (git repo) · `~/elo-ai/` (AI OS source)
-**Last updated**: 2026-06-13 (session 6)
+**Last updated**: 2026-06-15 (session 7)
 **Current version**: 1.0.0 · Architecture frozen (see `RELEASE.md`)
 
 ---
@@ -61,6 +61,21 @@ It acts as a companion, not a mirror. It has its own perspective.
 | **Integration** | File/Obsidian reading | 🔴 | memory/obsidian_loader.py exists · not active in main loop |
 | **Integration** | Proactive memory surfacing | ✅ | core/pattern_observer.py fires observations in session (Phase A) · cross-session in identity_map.json (Phase B) |
 | **Integration** | Multi-project context | 🔴 | project_engine.py exists · not cross-loaded at session start |
+| **Meaning memory** | Continuity layer | ✅ | continuity/ — IdentityState, engine, summary. Startup: "Welcome back. Last time we were moving toward…" (2026-06-15) |
+| **Meaning memory** | Relationship layer | ✅ | relationships/ — WorldGraph/ConceptGraph/ViewpointGraph + RelationshipEngine. Max 1+1+1 injection per turn (2026-06-15) |
+| **Presence** | Presence runtime | ✅ | presence/ — PresenceMode (7 modes), PresenceState, engine (CAL→mode), scheduler (transitions + post-settle) (2026-06-15) |
+| **Presence** | Avatar controller | ✅ | avatar/avatar_controller.py + avatar_rules.py — PresenceState → clip/speed/intensity; CELEBRATE hold, energy floor guards (2026-06-15) |
+| **Presence** | Avatar runtime | ✅ | avatar_runtime/ — AvatarRuntimeState, AnimationBrain (min-hold 1.5s, energy gate), TransitionEngine (cross-fade) (2026-06-15) |
+| **Expression** | Expression mapper | ✅ | expression/ — real shape key names from eLo-BodyxHead w/Mouth file; mode+action → shape key blend dict + head_lean (2026-06-15) |
+| **Expression** | Micro expressions | ⚠️ | expression/micro_expression.py built · not yet inserted between turns in main.py |
+| **Blender bridge** | State writer | ✅ | blender_bridge/state_writer.py — atomic write: motion + expression{shape_keys, head_lean} + state + _ts (2026-06-15) |
+| **Blender bridge** | Blender receiver | ✅ | blender_bridge/blender_receiver.py — Blender timer script; NLA strips + shape keys + c_head.x bone; hardened against hangs (2026-06-15) |
+| **Blender bridge** | Animation driver | ✅ | blender_bridge/animation_driver.py — NLA command resolver; KNOWN_CLIPS + aliases (2026-06-15) |
+| **Presence playback** | Idle timeline | ✅ | presence_playback/ — 2-minute scripted 16-entry choreography; `python -m presence_playback.playback --continuous` drives Blender with no conversation (2026-06-15) |
+| **Desktop shadow** | Window observer | ✅ | desktop/window_state.py + desktop_presence.py — reads frontmost app, injects "You're in Blender right now." into prompt (macOS, graceful fallback) (2026-06-15) |
+| **Voice** | Phoneme → viseme map | ⚠️ | plugins/voice/voice_engine.py — full phoneme→shape key map using real eLo keys · speak() + text_to_phonemes() stubbed, not active (2026-06-15) |
+| **Robot** | Body signal | ⚠️ | plugins/hardware/robot_body.py — PresenceMode → NeoPixel glow + head servo degrees · hardware hooks stubbed for RPi phase (2026-06-15) |
+| **Architecture** | eLo OS / game separation | ✅ | eLo OS (`~/elo-ai/`) is standalone. Not part of eLo-Planet game. Integration is a future phase. Confirmed 2026-06-15. |
 
 ---
 
@@ -253,6 +268,74 @@ Batch 4 known failures (pre 2026-06-12 fix):
 ---
 
 ## §8 Change Log
+
+### 2026-06-15 (session 8) — STEP 02–07 + Blender Bridge + Real Shape Keys + Robot Body
+
+**Architecture clarification**: eLo OS (`~/elo-ai/`) is a standalone kernel — separate from eLo-Planet game. No integration between them in this phase. Future integration is a later decision.
+
+**STEP 02 — Continuity Layer** (`continuity/`):
+- `identity_state.py` — IdentityState dataclass: session_theme, confidence, emotional_direction, active_project, relationship_shift, what_changed, what_stayed, what_matters. Fixed syntax error (`]` → `}` on `_THEME_KEYWORDS`)
+- `continuity_engine.py` — derives IdentityState from session state (theme/project/direction via keyword scoring)
+- `continuity_summary.py` — `startup_message()` → "Welcome back. Last time we were moving toward clarity around the OS."
+- Wired into `main.py` startup with fallback to old logic
+
+**STEP 03 — Presence Runtime** (`presence/`):
+- `presence_state.py` — `PresenceMode` enum (7 modes: idle/thinking/observing/building/celebrating/resting/exploring) + `PresenceState` dataclass (mode/intensity/energy/duration/mood)
+- `presence_engine.py` — stateless: CAL action + tone → PresenceState. Energy from tone history, duration from response length
+- `presence_scheduler.py` — schedules transitions; `post_response_settle()` queues OBSERVING after response (skips CELEBRATING)
+
+**STEP 04 — Avatar Core** (`avatar/`):
+- `avatar_controller.py` — PresenceState → animation command dict (clip/speed/intensity/energy/duration/mood/mode). Speed modulated by energy
+- `avatar_rules.py` — constraints: energy floor (< 0.15 → idle), CELEBRATE hold guard, speed/intensity clamp to valid range
+
+**STEP 05 — Blender Simulation** (`blender/`):
+- `state_driver.py` — atomic write to `blender_state.json` via `os.replace()` temp file
+- `motion_preview.py` — terminal live view with `--watch` flag; color-coded by mood
+
+**STEP 07 — Desktop Shadow Mode** (`desktop/`):
+- `window_state.py` — read-only macOS frontmost app + activity class (osascript, graceful fallback)
+- `desktop_presence.py` — `shadow_context()` → "You're in Blender right now." / "" — injected into prompt each turn
+
+**Avatar Runtime v0.1** (`avatar_runtime/`):
+- `avatar_state.py` — `AvatarRuntimeState` dataclass with `is_expired()` and `as_dict()`
+- `animation_brain.py` — `AnimationBrain`: min-hold 1.5s before clip switch, energy gate (< 0.15 → idle), CELEBRATE hold until duration expires
+- `presence_driver.py` — module-level singleton routing commands through `AnimationBrain`
+- `transition_engine.py` — cross-fade progress 0→1 over 0.5s; `tick()` returns blend state
+
+**Expression Runtime** (`expression/`):
+- `expression_mapper.py` — real shape key names from `eLo-BodyxHead w/Mouth` (read from Blender file via background Python). Mode + action → `{shape_keys: dict, head_lean: float, pacing: str}`. Multiple keys blend simultaneously. Intensity scales all values.
+- `micro_expression.py` — brief 0.3–0.8s expression pulses per mode. Fires probabilistically by intensity. Built, not yet inserted between turns.
+
+**Presence Playback** (`presence_playback/`):
+- `timeline.py` — 2-minute scripted 16-entry idle choreography (120s loop). `get_at(t)` returns entry at any time offset
+- `playback.py` — drives `blender_state.json` at 250ms from timeline. `--continuous` loops forever. `--preview` prints timeline. No AI needed.
+
+**Blender Bridge v0.1** (`blender_bridge/`):
+- `state_writer.py` — consolidated atomic write: `{motion, expression{shape_keys, head_lean, pacing}, state, _ts}`
+- `blender_receiver.py` — Blender timer script (drop into text editor, Run Script). Drives NLA strips + shape keys + `c_head.x` bone. Hardened: all exceptions caught, `_warn_once` suppresses repeat noise, Edit mode guards, `update_tag()` not `view_layer.update()`, re-register on re-run
+- `animation_driver.py` — `resolve_clip()` with aliases (breathe→idle, hop→jump, etc.); `nla_command()` produces scale from speed
+
+**Real Blender data** (read via `blender --background --python-expr`):
+- Armature object: `rig`; head bone: `c_head.x`; mesh: `eLo-BodyxHead w/Mouth`
+- 40+ shape keys confirmed including phoneme set: Ah, Mbp, Oooh, Ee, Eh, Ai, Fv, S
+- Ranges: most -5.0 to 5.0; receiver clamps to `kb.slider_min / kb.slider_max` per key
+- `expression_mapper.py` updated to use real names. Emotion blends (CELEBRATE → MouthOpen.Wide + Smile.L/R + Smile-Cheeks + Satisfied/LittleJoy)
+
+**Robot body signal** (`plugins/hardware/robot_body.py`):
+- PresenceMode → NeoPixel glow (color/pattern/brightness) + head servo lean (degrees, ±30° range) + omni-wheel base speed
+- No mouth, no shape keys on robot — body and light only
+- Hardware hooks marked `# HARDWARE HOOK` for Raspberry Pi 5 phase
+
+**Voice phoneme map** (`plugins/voice/voice_engine.py`):
+- Full phoneme → viseme map using eLo's actual shape keys (Ah, Mbp, Oooh, Ee, etc.)
+- `speak()` and `text_to_phonemes()` stubbed for TTS phase — not active
+
+**main.py wiring** (new imports this session):
+- `presence_engine.derive()` + `PresenceScheduler` — after every response
+- `avatar_controller.build_command()` + `avatar_rules.apply()` — post-presence
+- `expression_mapper.build_expression()` — expression per turn
+- `blender_bridge/state_writer.write()` — replaces direct state_driver write
+- `desktop/desktop_presence.shadow_context()` — injected into prompt
 
 ### 2026-06-13 (session 7) — Motion name fix + BehaviourGate bypass for desktop avatar
 
