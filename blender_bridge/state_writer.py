@@ -46,10 +46,10 @@ def write(
 
     if expression:
         payload["expression"] = {
-            "mouth":     expression.get("mouth",     "closed"),
-            "head_lean": expression.get("head_lean", 0.0),
-            "pacing":    expression.get("pacing",    "steady"),
-            "intensity": expression.get("intensity", 0.5),
+            "shape_keys": expression.get("shape_keys", {}),  # dict of key→value
+            "head_lean":  expression.get("head_lean", 0.0),  # c_head.x Y rotation
+            "pacing":     expression.get("pacing",    "steady"),
+            "intensity":  expression.get("intensity", 0.5),
         }
 
     if presence:
