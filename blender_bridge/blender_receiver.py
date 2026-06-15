@@ -114,9 +114,10 @@ def _apply_shape_keys(shape_keys: dict) -> None:
         _warn("no_mesh", f"mesh '{MESH_NAME}' not found in scene")
         return
 
-    # shape keys can't be set in Edit mode
+    # shape keys can't be set while the mesh itself is in Edit mode
+    # (being in Object mode is fine even if armature is in Edit mode)
     if mesh_obj.mode == "EDIT":
-        return
+        return   # only skip when THIS mesh is in edit, not the rig
 
     if mesh_obj.data.shape_keys is None:
         _warn("no_keys", f"'{MESH_NAME}' has no shape keys")
