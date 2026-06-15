@@ -68,6 +68,9 @@ _behaviour_gate = _BehaviourGate()
 # Phase F — desktop avatar flag (subprocess spawned in __main__ when set)
 _DESKTOP_AVATAR = os.environ.get("DESKTOP_AVATAR", "0") == "1"
 
+# Dataset collection flag — passive capture, no behaviour change
+_ELO_COLLECT = os.environ.get("ELO_COLLECT", "false").lower() == "true"
+
 # Always-available fallback for hard failures
 _fallback = _MockBackend()
 
@@ -87,6 +90,17 @@ def run():
         memory_pack = build_memory_pack(state)   # always rebuild — never load stale pack
     except Exception:
         memory_pack = {}
+
+    # Dataset collection — passive, no behaviour change
+    _collector = None
+    if _ELO_COLLECT:
+        try:
+            from training.collector import Collector as _Collector
+            _collector = _Collector(
+                base_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)), "datasets")
+            )
+        except Exception:
+            pass
 
     vault_ctx = get_context_block(max_chars=1200)
 
@@ -323,6 +337,7 @@ def run():
         print(f"\neLo: {response}\n")
 
         # Step 9: AVATAR — non-blocking, best-effort
+        _presence = {}
         try:
             _behaviour_gate.mark_active()
             _presence = _presence_compute(attention_model, exec_decision)
@@ -333,6 +348,14 @@ def run():
             _avatar_route(_motion, state=_presence, target=_avatar_target)
         except Exception:
             pass
+
+        # Passive dataset capture — after presence is computed, before state update
+        if _collector is not None:
+            try:
+                _collector.record(raw, response, backend_name, exec_decision,
+                                  attention_model, _presence)
+            except Exception:
+                pass
 
         if debug:
             emo_ctx = attention_model.get("emotional_context", {})
@@ -362,6 +385,14 @@ def run():
 
     # Phase B — persist pattern observations to identity_map.json
     _continuity_update(_obs_get_log())
+
+    if _collector is not None:
+        try:
+            _summary = _collector.close()
+            if _summary.get("turns", 0) > 0:
+                print(f"  [dataset: {_summary['turns']} turns saved]")
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
