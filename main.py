@@ -236,6 +236,15 @@ def run():
         if _cont:
             g_ctx = f"{g_ctx}\n{_cont}" if g_ctx else _cont
 
+        # Relationship layer — 1 observation + 1 connection + 1 viewpoint max
+        try:
+            from relationships.relationship_engine import inject as _rel_inject
+            _rel_ctx = _rel_inject(raw)
+            if _rel_ctx:
+                g_ctx = f"{g_ctx}\n{_rel_ctx}" if g_ctx else _rel_ctx
+        except Exception:
+            pass
+
         # Desktop avatar context — model needs to know it has a visible presence
         if _DESKTOP_AVATAR:
             _av_note = ("[AVATAR] You have a small visual window in the bottom-right corner "
