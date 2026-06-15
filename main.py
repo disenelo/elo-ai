@@ -109,25 +109,34 @@ def run():
     last_inputs: list = []
 
     print()
-    anchor  = state.get("session_anchor", {})
-    summary = anchor.get("current_session_summary", "")
-    if summary:
-        msg = (summary
-               .replace("User explored ", "We were exploring ")
-               .replace(" with a neutral tone.", ".")
-               .replace(" with a low-energy tone.", " — careful energy.")
-               .replace(" with a positive tone.", " — good energy.")
-               .replace(" with a frustrated tone.", " — some friction there.")
-               .rstrip(".") + ".")
+    try:
+        from continuity.continuity_engine  import from_state  as _cont_from_state
+        from continuity.continuity_summary import startup_message as _cont_startup
+        _cont_state = _cont_from_state(state)
+        _greeting   = _cont_startup(_cont_state)
+    except Exception:
+        _cont_state = None
+        anchor  = state.get("session_anchor", {})
+        summary = anchor.get("current_session_summary", "")
+        if summary:
+            msg = (summary
+                   .replace("User explored ", "We were exploring ")
+                   .replace(" with a neutral tone.", ".")
+                   .rstrip(".") + ".")
+            _greeting = f"Welcome back. {msg}"
+        elif state.get("session_summaries"):
+            _greeting = "Welcome back."
+        else:
+            _greeting = "Ready."
+
+    if _cont_state and not _cont_state.is_empty():
         delta = _session_delta(state)
         if delta:
-            print(f"eLo: Welcome back. {msg} {delta}")
+            print(f"eLo: {_greeting} {delta}")
         else:
-            print(f"eLo: Welcome back. {msg}")
-    elif state.get("session_summaries"):
-        print("eLo: Welcome back.")
+            print(f"eLo: {_greeting}")
     else:
-        print("eLo: Ready.")
+        print(f"eLo: {_greeting}")
     print(f"  (backend: {backend_name})")
     print()
 
