@@ -61,7 +61,15 @@ from avatar.animation_router   import route   as _avatar_route
 from avatar.behaviour_protocol import BehaviourGate as _BehaviourGate
 from core.pattern_observer     import log as _obs_log, observe as _obs_observe, reset as _obs_reset, get_log as _obs_get_log
 from core.continuity           import get_entity_why as _entity_why, get_viewpoint as _get_viewpoint, cross_session_delta as _session_delta, context_block as _continuity_block, update_from_session as _continuity_update
+from presence.presence_engine    import derive as _pstate_derive
+from presence.presence_scheduler import PresenceScheduler as _PresenceScheduler
+from avatar.avatar_controller    import build_command as _avatar_cmd
+from avatar.avatar_rules         import apply as _avatar_rules
+from blender_bridge.state_writer import write as _state_write
+from expression.expression_mapper import build_expression as _expr_build
 import random as _random
+
+_pscheduler = _PresenceScheduler()
 
 _behaviour_gate = _BehaviourGate()
 
@@ -104,9 +112,10 @@ def run():
 
     vault_ctx = get_context_block(max_chars=1200)
 
-    backend_name = active_backend()
-    debug          = False
+    backend_name     = active_backend()
+    debug            = False
     last_inputs: list = []
+    _last_avatar_cmd: dict | None = None
 
     print()
     try:
@@ -254,6 +263,15 @@ def run():
         except Exception:
             pass
 
+        # Desktop shadow mode (STEP 07) — observe what's open, inject if meaningful
+        try:
+            from desktop.desktop_presence import shadow_context as _shadow_ctx
+            _dctx = _shadow_ctx()
+            if _dctx:
+                g_ctx = f"{g_ctx}\n{_dctx}" if g_ctx else _dctx
+        except Exception:
+            pass
+
         # Desktop avatar context — model needs to know it has a visible presence
         if _DESKTOP_AVATAR:
             _av_note = ("[AVATAR] You have a small visual window in the bottom-right corner "
@@ -364,6 +382,20 @@ def run():
                 _motion = _behaviour_gate.allow(_motion)
             _avatar_target = "console" if debug else "blender"
             _avatar_route(_motion, state=_presence, target=_avatar_target)
+        except Exception:
+            pass
+
+        # Presence Runtime (STEP 03) + Avatar Core (STEP 04) + Blender bridge (STEP 05)
+        try:
+            _tone   = state.get("emotional_history", [{}])[-1].get("tone", "present") if state.get("emotional_history") else "present"
+            _pstate = _pstate_derive(_action, attention_model, response, _tone)
+            _pscheduler.set(_pstate, hard=True)
+            _pscheduler.post_response_settle()
+            _cmd    = _avatar_cmd(_pstate)
+            _cmd    = _avatar_rules(_cmd, _last_avatar_cmd)
+            _last_avatar_cmd = _cmd
+            _expr   = _expr_build(_pstate.mode, _action, _pstate.intensity)
+            _state_write(_cmd, _expr, _presence)
         except Exception:
             pass
 
