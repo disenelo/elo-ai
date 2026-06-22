@@ -1,25 +1,25 @@
 """
 runtime/backend_router.py — eLo OS backend routing layer.
 
-Routes requests between local (Ollama) and cloud (Groq) backends.
-Falls back to mock when neither is available.
+Routes requests between local (Ollama) and cloud (Groq / Gemini / OpenAI) backends.
+Falls back to mock when nothing is available.
 
-Priority:
-    auto mode  → Groq for deep reasoning (>80 chars), Ollama for short responses
-    local mode → Ollama only
-    cloud mode → Groq only
-    mock mode  → deterministic mock (always available)
+Priority (auto mode):
+    OpenAI → Gemini → Claude → Groq → Ollama → Mock
 
 Routing mode set via ELO_BACKEND env var:
     export ELO_BACKEND=auto    (default)
-    export ELO_BACKEND=cloud   (Groq only)
+    export ELO_BACKEND=cloud   (cloud only — OpenAI → Gemini → Claude → Groq)
     export ELO_BACKEND=local   (Ollama only)
     export ELO_BACKEND=mock    (testing)
 
 Models:
-    Groq:   llama-3.1-70b-versatile (quality, default)
-            llama-3.1-8b-instant    (fast testing — set ELO_GROQ_MODEL=llama-3.1-8b-instant)
-    Ollama: mistral (default — set ELO_OLLAMA_MODEL to override)
+    OpenAI:  gpt-4o-mini (default — set ELO_OPENAI_MODEL to override)
+    Gemini:  gemini-1.5-flash (default — set ELO_GEMINI_MODEL to override)
+             Requires GOOGLE_API_KEY from Google AI Studio (free: 1500 req/day)
+    Groq:    llama-3.3-70b-versatile (quality, default)
+             llama-3.1-8b-instant    (fast — set ELO_GROQ_MODEL=llama-3.1-8b-instant)
+    Ollama:  mistral (default — set ELO_OLLAMA_MODEL to override)
 """
 
 from __future__ import annotations
@@ -160,6 +160,34 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
     return r.json().get("message", {}).get("content", "").strip()
 
 
+def _openai_available() -> bool:
+    return bool(os.environ.get("OPENAI_API_KEY", ""))
+
+
+def _openai_call(system_prompt: str, user_input: str) -> str:
+    """Call OpenAI GPT-4o-mini."""
+    import httpx
+    api_key = os.environ.get("OPENAI_API_KEY", "")
+    model   = os.environ.get("ELO_OPENAI_MODEL", "gpt-4o-mini")
+    resp = httpx.post(
+        "https://api.openai.com/v1/chat/completions",
+        json={
+            "model":    model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": user_input},
+            ],
+            "max_tokens":  512,
+            "temperature": 0.7,
+        },
+        headers={"Authorization": f"Bearer {api_key}",
+                 "Content-Type":  "application/json"},
+        timeout=30.0,
+    )
+    resp.raise_for_status()
+    return resp.json()["choices"][0]["message"]["content"].strip()
+
+
 def _ollama_available() -> bool:
     try:
         import requests
@@ -174,6 +202,26 @@ def _ollama_available() -> bool:
 
 def _groq_available() -> bool:
     return bool(os.environ.get("GROQ_API_KEY", ""))
+
+
+def _gemini_available() -> bool:
+    return bool(os.environ.get("GOOGLE_API_KEY", ""))
+
+
+def _gemini_call(system_prompt: str, user_input: str) -> str:
+    """Call Google Gemini Flash via AI Studio REST API (no SDK — httpx only)."""
+    import httpx
+    api_key = os.environ.get("GOOGLE_API_KEY", "")
+    model   = os.environ.get("ELO_GEMINI_MODEL", "gemini-1.5-flash")
+    url     = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    payload = {
+        "systemInstruction": {"parts": [{"text": system_prompt}]},
+        "contents": [{"parts": [{"text": user_input}]}],
+        "generationConfig": {"maxOutputTokens": 512, "temperature": 0.7},
+    }
+    resp = httpx.post(url, json=payload, params={"key": api_key}, timeout=30.0)
+    resp.raise_for_status()
+    return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
 
 
 def _claude_available() -> bool:
@@ -217,7 +265,8 @@ def route(
         (response_text, backend_name)
     """
     _env_mode = os.environ.get("ELO_BACKEND", "")
-    if not _env_mode and not _groq_available() and not _claude_available():
+    _any_cloud = _openai_available() or _gemini_available() or _groq_available() or _claude_available()
+    if not _env_mode and not _any_cloud:
         # no API keys and no explicit backend set — go offline immediately
         _env_mode = "local"
     mode = mode or _env_mode or "auto"
@@ -236,7 +285,19 @@ def route(
         return _mock_fallback(user_input), "mock"
 
     if mode == "cloud":
-        # cloud mode: Claude first, Groq fallback
+        # cloud mode: OpenAI → Gemini → Claude → Groq → Mock
+        if _openai_available():
+            try:
+                raw = _openai_call(system_prompt, user_input)
+                return normalise(raw, max_sentences), "openai"
+            except Exception as e:
+                _logger.warning("OpenAI failed: %s", e)
+        if _gemini_available():
+            try:
+                raw = _gemini_call(system_prompt, user_input)
+                return normalise(raw, max_sentences), "gemini"
+            except Exception as e:
+                _logger.warning("Gemini failed: %s", e)
         if _claude_available():
             try:
                 raw = _claude_call(system_prompt, user_input)
@@ -251,8 +312,37 @@ def route(
                 _logger.warning("Groq failed: %s", e)
         return _mock_fallback(user_input), "mock"
 
-    # auto mode: Claude → Groq → Ollama → Mock
-    # Every input goes through the best available backend — no length split.
+    # auto mode: OpenAI → Gemini → Claude → Groq → Ollama → Mock
+    if _openai_available():
+        try:
+            raw = _openai_call(system_prompt, user_input)
+            if _has_lore_drift(raw, user_input):
+                _logger.debug("Lore drift in OpenAI response — falling back")
+            else:
+                normalised = normalise(raw, max_sentences)
+                if action in ("build", "celebrate"):
+                    normalised = _strip_trailing_question(normalised) or normalised
+                if not _is_duplicate(normalised, _last_responses.get(action, "")):
+                    _last_responses[action] = normalised
+                    return normalised, "openai"
+        except Exception as e:
+            _logger.warning("OpenAI failed, trying Gemini: %s", e)
+
+    if _gemini_available():
+        try:
+            raw = _gemini_call(system_prompt, user_input)
+            if _has_lore_drift(raw, user_input):
+                _logger.debug("Lore drift in Gemini response — falling back")
+            else:
+                normalised = normalise(raw, max_sentences)
+                if action in ("build", "celebrate"):
+                    normalised = _strip_trailing_question(normalised) or normalised
+                if not _is_duplicate(normalised, _last_responses.get(action, "")):
+                    _last_responses[action] = normalised
+                    return normalised, "gemini"
+        except Exception as e:
+            _logger.warning("Gemini failed, trying Claude: %s", e)
+
     if _claude_available():
         try:
             raw = _claude_call(system_prompt, user_input)
@@ -327,8 +417,14 @@ def active_backend() -> str:
     mode = _env_mode or "auto"
     if mode == "mock":   return "mock"
     if mode == "local":  return "ollama" if _ollama_available() else "mock"
-    if mode == "cloud":  return "claude" if _claude_available() else ("groq" if _groq_available() else "mock")
-    # auto: Claude → Groq → Ollama → Mock
+    if mode == "cloud":
+        if _openai_available():  return "openai"
+        if _gemini_available():  return "gemini"
+        if _claude_available():  return "claude"
+        return "groq" if _groq_available() else "mock"
+    # auto: OpenAI → Gemini → Claude → Groq → Ollama → Mock
+    if _openai_available():  return "openai"
+    if _gemini_available():  return "gemini"
     if _claude_available():  return "claude"
     if _groq_available():    return "groq"
     if _ollama_available():  return "ollama"
