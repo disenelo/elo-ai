@@ -76,6 +76,11 @@ It acts as a companion, not a mirror. It has its own perspective.
 | **Tools** | Weather location priority | ✅ | Explicit→session→ELO_LOCATION env→IP auto. "I'm in London" sets session default (2026-06-22) |
 | **Tools** | Follow-up continuity | ✅ | "what about in London?" re-runs last agent with new subject. _last_agent/_last_arg tracking (2026-06-22) |
 | **Tools** | File operations | ✅ | system_agent.py cp/mv/rename/delete (Trash) — executes immediately, no confirmation (2026-06-22) |
+| **Tools** | DuckDuckGo search | ✅ | _agent_duckduckgo() — Instant Answers API, free, no key. DDG→Wikipedia fallback chain (2026-06-22) |
+| **Tools** | Translation agent | ✅ | _agent_translate() — Gemini 2.0 primary, OpenAI fallback. Extracts text+lang from natural language (2026-06-22) |
+| **Tools** | News RSS | ✅ | _agent_news() — BBC News, BBC Science, Hacker News. Intent-routed, no key (2026-06-22) |
+| **Tools** | Obsidian on-demand search | ✅ | _agent_obsidian() — keyword search internal vault + ELO_VAULT_PATH for real vault. Handles K-7 style terms (2026-06-22) |
+| **Backends** | Gemini model | ✅ | Updated default gemini-1.5-flash → gemini-2.0-flash across router + tool_router (2026-06-22) |
 | **Identity** | Multilingual greetings | ✅ | 17-language greeting pool. eLo tries foreign, catches himself. Greeting event signals Unity wave (2026-06-22) |
 | **Identity** | Identity direct pool | ✅ | "Are you eLo?" bypasses LLM — warm response pool, no awkward negation (2026-06-22) |
 | **Ambient** | Meditation state machine | ✅ | enter_meditation()/exit_meditation() — Enter→Loop→Exit phases, deliberate only. Wander never fires calm (2026-06-22) |
@@ -337,6 +342,39 @@ Batch 4 known failures (pre 2026-06-12 fix):
 ---
 
 ## §8 Change Log
+
+### 2026-06-22 (session 12 cont. 2) — Phase 2 Agent Expansion
+
+**DuckDuckGo + search chain (tool_router.py):**
+- `_agent_duckduckgo()` — DDG Instant Answers API, free, no key. Returns AbstractText (entity/fact) or first RelatedTopic.
+- `_agent_search()` — DDG first, Wikipedia fallback. Wikipedia User-Agent header fixed (was 403, now 200).
+- `search` intent added to `_INTENT_MAP`: covers "what is/who is/explain/define/look up/search for". Commit: 8a37182.
+
+**Translation (tool_router.py):**
+- `_agent_translate()` — natural language extraction (3 regex patterns: "translate X to Y", "how do you say X in Y", "what is X in Y"). Routes to Gemini 2.0 Flash (fast, free tier), falls back to OpenAI. Returns `"X" in Y: translation` as CONTEXT prefix. When backends quota-limited, falls through gracefully to LLM. Commit: 8a37182.
+
+**News RSS (tool_router.py):**
+- `_agent_news()` — intent-routed: tech/code/AI → Hacker News, science/space → BBC Science, else BBC News.
+- RSS parser handles CDATA and plain title tags. Filters feed-title lines (e.g. "Hacker News: Front Page"). Returns top 5 headlines. No key needed. Commit: 8a37182.
+
+**Obsidian on-demand search (tool_router.py):**
+- `_agent_obsidian()` — checks `ELO_VAULT_PATH` env var first (real Obsidian vault), falls back to internal `obsidian_vault/`.
+- `_search_vault_raw()` — raw .md keyword search, no frontmatter required (works with any Obsidian vault).
+- `_search_notes()` — typed vault search; handles K-7-style hyphenated/short terms by also generating joined form ("k7"); title substring bonus (+3). Commit: 8a37182.
+
+**Gemini model default updated (backend_router.py + tool_router.py):**
+- `gemini-1.5-flash` → `gemini-2.0-flash` — API key only supports 2.x family. Commit: 8a37182.
+
+**Unity agent confirmed (head_motion + meditation):**
+- `head_motion: {gesture, ts}` contract wired in DesktopBuddy — drives c_head.x/z coroutine. Gestures: nod/shake/tilt/think/lookup. ts-bump triggers once, same pattern as greeting_event.
+- `meditation_state.phase` → Calm Animator state machine wired (enter/loop/exit/none).
+- `greeting_event {type, ts}` → Wave clip (Walk-burst if Wave not yet in Animator).
+- Cursor smile smoothed via SmoothDamp (0.35s ease-in/out). Random mood variants.
+
+**ELO_VAULT_PATH config:**
+- Added to `.env` as placeholder comment. Set to real Obsidian vault path (e.g. `/Users/Disenelo/Documents/Obsidian/My Vault`) to enable live note search.
+
+---
 
 ### 2026-06-22 (session 12 cont.) — Weather Location, Follow-up Continuity, File Operations, Meditation State, Head Gestures
 
