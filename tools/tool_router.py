@@ -100,8 +100,8 @@ def detect_location_set(user_input: str) -> Optional[str]:
 
 _INTENT_MAP = [
     ("calculator", [
-        r"\b(\d[\d\s\+\-\*\/\(\)\.\^%]+\d)\b",   # bare expression like 12 * 4
-        r"\bwhat(?:'s| is)\s+[\d\(]",             # "what is 42 + 8"
+        r"\b(\d[\d\s\+\-\*\/\(\)\.\^%]+\d)\b",
+        r"\bwhat(?:'s| is)\s+[\d\(]",
         r"\bcalculat",
         r"\bhow much is\s+[\d\(]",
     ]),
@@ -121,13 +121,41 @@ _INTENT_MAP = [
         r"\bforecast\b",
         r"\bwhat(?:'s| is)\s+it\s+like\s+outside\b",
     ]),
-    ("wikipedia", [
-        r"\bwhat(?:'s| is)\s+(?:a\s|an\s|the\s)?(?!\d)",   # "what is a black hole" etc
+    ("translate", [
+        r"\btranslate\s+.+\s+(?:to|into)\b",
+        r"\bhow\s+(?:do\s+you|to)\s+say\b",
+        r"\bsay\s+['\"].+['\"]\s+in\s+\w+",
+        r"\bwhat(?:'s| is)\s+['\"].+['\"]\s+in\s+\w+",
+        r"\bin\s+(?:spanish|french|german|italian|japanese|chinese|korean|arabic|portuguese|russian|hindi|dutch|swedish|polish|turkish|greek|hebrew|thai|vietnamese|malay|indonesian)\b",
+    ]),
+    ("news", [
+        r"\bnews\b",
+        r"\bheadlines\b",
+        r"\bwhat(?:['']s?|\s+is)?\s+(?:happening|going\s+on)\b",
+        r"\blatest\b.*\b(?:news|stories|events)\b",
+        r"\btoday'?s?\s+(?:news|stories)\b",
+        r"\btop\s+stories\b",
+    ]),
+    ("obsidian", [
+        r"\bmy\s+notes?\b",
+        r"\bwhat\s+did\s+i\s+(?:write|note)\b",
+        r"\bobsidian\b",
+        r"\bmy\s+journal\b",
+        r"\bmy\s+vault\b",
+        r"\bi\s+wrote\s+about\b",
+        r"\bin\s+my\s+notes\b",
+        r"\bmy\s+(?:writing|thoughts)\s+on\b",
+    ]),
+    ("search", [
+        r"\bwhat(?:'s| is)\s+(?:a\s|an\s|the\s)?(?!\d)",
         r"\bwho(?:'s| is)\s+",
         r"\btell me about\b",
         r"\bexplain\b",
         r"\bwiki\b",
         r"\bdefine\b",
+        r"\bsearch\s+(?:for\s+)?",
+        r"\blook\s+up\b",
+        r"\bfind\s+(?:out\s+)?(?:about\s+)?",
     ]),
 ]
 
@@ -233,10 +261,9 @@ def _agent_weather(query: str) -> str:
 
 def _agent_wikipedia(query: str) -> str:
     import httpx
-    # strip intent prefixes to isolate the topic
     topic = re.sub(
         r"^(?:what(?:'s| is)\s+(?:a\s+|an\s+|the\s+)?|who(?:'s| is)\s+|"
-        r"tell me about\s+|explain\s+|define\s+|wiki\s+)",
+        r"tell me about\s+|explain\s+|define\s+|wiki\s+|search\s+(?:for\s+)?)",
         "", query.strip(), flags=re.IGNORECASE
     ).strip().rstrip("?")
     if not topic:
@@ -245,6 +272,7 @@ def _agent_wikipedia(query: str) -> str:
         "https://en.wikipedia.org/api/rest_v1/page/summary/" + httpx.URL(topic).path,
         timeout=8.0,
         follow_redirects=True,
+        headers={"User-Agent": "eLo-OS/1.0"},
         params={"redirect": "true"},
     )
     resp.raise_for_status()
@@ -252,24 +280,229 @@ def _agent_wikipedia(query: str) -> str:
     if data.get("type") == "disambiguation":
         raise ValueError("disambiguation page")
     extract = data.get("extract", "")
-    # first two sentences max
     sentences = re.split(r'(?<=[.!?])\s+', extract)
     summary   = " ".join(sentences[:2])
     title     = data.get("title", topic)
     return f"From Wikipedia — {title}: {summary}"
 
 
+def _agent_duckduckgo(query: str) -> str:
+    """DuckDuckGo Instant Answers — free, no key. Best for entity lookups and quick facts."""
+    import httpx
+    resp = httpx.get(
+        "https://api.duckduckgo.com/",
+        params={"q": query, "format": "json", "no_html": "1", "skip_disambig": "1"},
+        timeout=8.0,
+        follow_redirects=True,
+        headers={"User-Agent": "eLo-OS/1.0"},
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    abstract = data.get("AbstractText", "").strip()
+    if abstract:
+        heading = data.get("Heading", "")
+        return f"From {data.get('AbstractSource', 'DuckDuckGo')} — {heading}: {abstract[:400]}"
+    # Try related topics
+    for topic in data.get("RelatedTopics", [])[:3]:
+        if isinstance(topic, dict) and topic.get("Text"):
+            return f"From DuckDuckGo — {topic['Text'][:300]}"
+    raise ValueError("no DDG result")
+
+
+def _agent_search(query: str) -> str:
+    """Try DuckDuckGo first, fall back to Wikipedia."""
+    try:
+        return _agent_duckduckgo(query)
+    except Exception:
+        pass
+    return _agent_wikipedia(query)
+
+
+def _agent_translate(query: str) -> str:
+    """Extract text + target language, translate via Gemini then OpenAI."""
+    import httpx, os as _os
+
+    # Pattern 1: "translate X to Spanish"
+    m = re.search(r'translate\s+["\']?(.+?)["\']?\s+(?:to|into)\s+([\w\s]+?)(?:\?|$)', query, re.IGNORECASE)
+    if not m:
+        # Pattern 2: "how do you say X in Spanish"
+        m = re.search(r'(?:how\s+(?:do\s+you|to)\s+say|say)\s+["\']?(.+?)["\']?\s+in\s+([\w]+)', query, re.IGNORECASE)
+    if not m:
+        # Pattern 3: "what is X in Spanish"
+        m = re.search(r'what(?:\'s| is)\s+["\']?(.+?)["\']?\s+in\s+([\w]+)', query, re.IGNORECASE)
+    if not m:
+        raise ValueError("can't parse translation request")
+
+    text = m.group(1).strip().strip("\"'")
+    lang = m.group(2).strip().rstrip("?").strip().title()
+
+    prompt_text = f'Translate this to {lang}. Output ONLY the translation, no explanation: "{text}"'
+
+    # Try Gemini (great at translation)
+    api_key = _os.environ.get("GOOGLE_API_KEY", "")
+    if api_key:
+        model = _os.environ.get("ELO_GEMINI_MODEL", "gemini-2.0-flash")
+        url   = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+        payload = {
+            "contents": [{"parts": [{"text": prompt_text}]}],
+            "generationConfig": {"maxOutputTokens": 150, "temperature": 0.1},
+        }
+        resp = httpx.post(url, json=payload, params={"key": api_key}, timeout=10.0)
+        if resp.status_code == 200:
+            translated = resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip().strip('"')
+            return f'"{text}" in {lang}: {translated}'
+
+    # Fall back to OpenAI
+    openai_key = _os.environ.get("OPENAI_API_KEY", "")
+    if openai_key:
+        resp = httpx.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
+            json={
+                "model": "gpt-4o-mini",
+                "messages": [
+                    {"role": "system", "content": "You are a translator. Output ONLY the translation, no explanation."},
+                    {"role": "user",   "content": f'Translate "{text}" to {lang}'},
+                ],
+                "max_tokens": 150, "temperature": 0.1,
+            },
+            timeout=10.0,
+        )
+        if resp.status_code == 200:
+            translated = resp.json()["choices"][0]["message"]["content"].strip().strip('"')
+            return f'"{text}" in {lang}: {translated}'
+
+    raise ValueError("no translation backend available")
+
+
+def _agent_news(query: str) -> str:
+    """Pull headlines from RSS — BBC News, BBC Science, or Hacker News. No key needed."""
+    import httpx
+
+    text = query.lower()
+    if any(k in text for k in ["tech", "technology", "software", "ai ", " ai", "startup", "hacker", "developer", "coding", "code"]):
+        url, source = "https://hnrss.org/frontpage?count=10", "Hacker News"
+    elif any(k in text for k in ["science", "space", "nature", "health", "climate"]):
+        url, source = "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml", "BBC Science"
+    else:
+        url, source = "https://feeds.bbci.co.uk/news/rss.xml", "BBC News"
+
+    resp = httpx.get(url, timeout=8.0, follow_redirects=True, headers={"User-Agent": "eLo-OS/1.0"})
+    resp.raise_for_status()
+    xml = resp.text
+
+    # Parse titles — handles CDATA and plain text
+    raw_titles = re.findall(r'<title>(?:<!\[CDATA\[)?\s*(.*?)\s*(?:\]\]>)?</title>', xml, re.DOTALL)
+    skip_terms = {"bbc news", "bbc", "hacker news", "reuters", "rss"}
+    headlines  = []
+    for t in raw_titles:
+        t = re.sub(r'\s+', ' ', t).strip()
+        tl = t.lower()
+        if t and len(t) > 10 and not any(tl == s or tl.startswith(s + ":") for s in skip_terms):
+            headlines.append(t)
+        if len(headlines) == 5:
+            break
+
+    if not headlines:
+        raise ValueError("no headlines found")
+
+    return f"Top headlines from {source}: " + " | ".join(headlines)
+
+
+def _search_notes(notes: list, query: str) -> list:
+    """Rank typed vault notes by keyword relevance. Handles hyphenated terms like K-7."""
+    _stop = {"what", "is", "are", "the", "my", "a", "an", "about", "notes", "on",
+             "in", "obsidian", "did", "i", "write", "wrote", "have", "tell", "me"}
+    # Extract keywords two ways: strip all punctuation, and also strip only non-alphanum
+    raw_words  = re.sub(r"[^\w\s]", " ", query.lower()).split()  # K-7 → "k" "7"
+    joined     = re.sub(r"(\w)-(\w)", r"\1\2", query.lower())    # K-7 → "k7"
+    joined_words = re.sub(r"[^\w\s]", "", joined).split()         # adds "k7"
+    all_words  = set(raw_words + joined_words)
+    keywords   = {w for w in all_words if w not in _stop and len(w) > 1}
+    if not keywords:
+        return notes[:3]
+    scored = []
+    for i, note in enumerate(notes):
+        title   = note.get("title", "").lower()
+        text    = " ".join([title, note.get("summary", ""),
+                            " ".join(note.get("tags", []))]).lower()
+        score   = sum(text.count(kw) for kw in keywords if kw in text)
+        # Bonus: direct title substring match (e.g. "K-7" in title "K-7")
+        if any(kw in title for kw in keywords):
+            score += 3
+        if score > 0:
+            scored.append((score, i, note))
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return [n for _, _, n in scored]
+
+
+def _search_vault_raw(vault_path: str, query: str) -> list:
+    """Keyword search across all .md files in a real Obsidian vault (no frontmatter required)."""
+    _stop = {"what", "is", "are", "the", "my", "a", "an", "about", "notes", "on",
+             "in", "obsidian", "did", "i", "write", "wrote", "have", "tell", "me"}
+    keywords = {w for w in re.sub(r"[^\w\s]", "", query.lower()).split() if w not in _stop and len(w) > 2}
+    results = []
+    idx = 0
+    for dirpath, dirnames, filenames in os.walk(vault_path):
+        dirnames[:] = [d for d in dirnames if not d.startswith(".")]
+        for fname in filenames:
+            if not fname.endswith(".md"):
+                continue
+            try:
+                path = os.path.join(dirpath, fname)
+                with open(path, encoding="utf-8") as f:
+                    content = f.read()
+                title = fname[:-3]
+                text  = (title + " " + content).lower()
+                score = sum(text.count(kw) for kw in keywords if kw in text)
+                if score > 0:
+                    lines   = [l.strip() for l in content.splitlines()
+                               if l.strip() and not l.startswith("#") and not l.startswith("---")]
+                    summary = lines[0][:200] if lines else ""
+                    results.append((score, idx, {"title": title, "summary": summary}))
+                    idx += 1
+            except Exception:
+                continue
+    results.sort(key=lambda x: x[0], reverse=True)
+    return [n for _, _, n in results[:5]]
+
+
+def _agent_obsidian(query: str) -> str:
+    """Search the Obsidian vault on demand. Uses ELO_VAULT_PATH if set, else internal vault."""
+    vault_path = os.environ.get("ELO_VAULT_PATH", "").strip()
+
+    if vault_path and os.path.isdir(vault_path):
+        results = _search_vault_raw(vault_path, query)
+    else:
+        from memory.obsidian_loader import load
+        pack    = load()
+        results = _search_notes(pack.get("notes", []), query)
+
+    if not results:
+        raise ValueError("no matching notes in vault")
+
+    top    = results[0]
+    others = [r["title"] for r in results[1:3]]
+    result = f"From your notes — {top['title']}: {top['summary']}"
+    if others:
+        result += f" (Related: {', '.join(others)})"
+    return result
+
+
 # ── agent registry ─────────────────────────────────────────────────────────────
 
 _AGENTS = {
-    "time":       _agent_time,
-    "calculator": _agent_calculator,
-    "weather":    _agent_weather,
-    "wikipedia":  _agent_wikipedia,
+    "time":        _agent_time,
+    "calculator":  _agent_calculator,
+    "weather":     _agent_weather,
+    "search":      _agent_search,
+    "translate":   _agent_translate,
+    "news":        _agent_news,
+    "obsidian":    _agent_obsidian,
 }
 
-# agents that accept a direct subject string as their query (for follow-up re-runs)
-_SUBJECT_AGENTS = {"weather", "wikipedia"}
+# agents that accept a direct subject string for follow-up re-runs
+_SUBJECT_AGENTS = {"weather", "search", "news"}
 
 
 # ── system agent — checked separately with confirmation flow ───────────────────

@@ -15,7 +15,7 @@ Routing mode set via ELO_BACKEND env var:
 
 Models:
     OpenAI:  gpt-4o-mini (default — set ELO_OPENAI_MODEL to override)
-    Gemini:  gemini-1.5-flash (default — set ELO_GEMINI_MODEL to override)
+    Gemini:  gemini-2.0-flash (default — set ELO_GEMINI_MODEL to override)
              Requires GOOGLE_API_KEY from Google AI Studio (free: 1500 req/day)
     Groq:    llama-3.3-70b-versatile (quality, default)
              llama-3.1-8b-instant    (fast — set ELO_GROQ_MODEL=llama-3.1-8b-instant)
@@ -212,7 +212,7 @@ def _gemini_call(system_prompt: str, user_input: str) -> str:
     """Call Google Gemini Flash via AI Studio REST API (no SDK — httpx only)."""
     import httpx
     api_key = os.environ.get("GOOGLE_API_KEY", "")
-    model   = os.environ.get("ELO_GEMINI_MODEL", "gemini-1.5-flash")
+    model   = os.environ.get("ELO_GEMINI_MODEL", "gemini-2.0-flash")
     url     = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     payload = {
         "systemInstruction": {"parts": [{"text": system_prompt}]},
