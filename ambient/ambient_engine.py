@@ -94,11 +94,22 @@ _last_anim    = 0.0
 _stop_ev      = threading.Event()
 _greeted      = False
 
-_STATE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                           "blender", "blender_state.json")
+_STATE_PATH    = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                               "blender", "blender_state.json")
+_PRESENCE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                               "blender", "presence.json")
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _is_away() -> bool:
+    """Return True if DesktopBuddy reports the user has been away for 5+ min."""
+    try:
+        with open(_PRESENCE_PATH, encoding="utf-8") as f:
+            return json.load(f).get("state") == "away"
+    except Exception:
+        return False  # file absent = assume present
+
 
 def _is_speaking() -> bool:
     try:
@@ -258,15 +269,16 @@ def _run(unity_present: bool) -> None:
         now = time.time()
 
         # ── Idle ambient utterances ───────────────────────────────────────────
-        if _last_ambient > 0:
-            if now - _last_ambient >= random.uniform(_AMBIENT_MIN, _AMBIENT_MAX) and not _is_speaking():
-                _speak(random.choice(_AMBIENT_LINES))
+        if not _is_away():
+            if _last_ambient > 0:
+                if now - _last_ambient >= random.uniform(_AMBIENT_MIN, _AMBIENT_MAX) and not _is_speaking():
+                    _speak(random.choice(_AMBIENT_LINES))
+                    _last_ambient = now
+            elif _greeted:
                 _last_ambient = now
-        elif _greeted:
-            _last_ambient = now
 
         # ── Random smiles ─────────────────────────────────────────────────────
-        if _greeted and not _is_speaking():
+        if _greeted and not _is_speaking() and not _is_away():
             if _last_smile == 0.0:
                 _last_smile = now
             elif now - _last_smile >= random.uniform(_SMILE_MIN, _SMILE_MAX):
@@ -274,7 +286,7 @@ def _run(unity_present: bool) -> None:
                 _last_smile = now
 
         # ── Idle animation wanders ────────────────────────────────────────────
-        if _greeted and not _is_speaking():
+        if _greeted and not _is_speaking() and not _is_away():
             if _last_anim == 0.0:
                 _last_anim = now
             elif now - _last_anim >= random.uniform(_ANIM_MIN, _ANIM_MAX):
