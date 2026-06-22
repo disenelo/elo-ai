@@ -343,6 +343,34 @@ Batch 4 known failures (pre 2026-06-12 fix):
 
 ## §8 Change Log
 
+### 2026-06-22 (session 12 cont. 3) — Unity: Micro-expressions, Walk/Run, Pacing, Idle, Anchor
+
+**Micro-expressions (Unity-side, fully autonomous — no Python contract change):**
+- True Ekman-spec rapid involuntary flashes: sin rise-and-fall over random 40–450ms (classic-micro → subtle range).
+- Fire every 4–11s. Pool: Smile.L+R, Satisfied/LittleJoy, Confident, occasional Worried.
+- Layer OVER lipsync — keep flashing while eLo is speaking. Macro expressions (matching words) still eLo OS's job via `expression.shape_keys`.
+- Python only writes `head_motion {gesture, ts}` — micro-expressions are zero-contract autonomous.
+
+**Walk / Run loop behaviour (Unity):**
+- eLo-OS reaction (keyword_motion sends `motion.animation: "walk"/"run"`) → plays 2 loops → eases to Idle automatically. Python's manual revert after duration is redundant but harmless.
+- Actual screen relocation (DesktopBuddy moves a real distance) → Walk loops continuously until arrival, then Idle. Run kicks in for fast travel.
+- Driven by new SetLocomotion the window driver calls each frame.
+
+**Pace −25% (Unity):**
+- lookSmooth: 3 → 2.25 · sway: 3 → 2.25 · head-lean: 8 → 6
+- Blendshape blends: 12 → 9 · smile ease: 0.35s → 0.44s
+- Head-gesture durations: ×1.25 across nod/shake/tilt/think/lookup
+
+**Idle — slower, always alive (Unity):**
+- Speed oscillates 0.35 ↔ 0.6 (capped, never full-speed, never stopped) at a slower base rate (0.2 → 0.15).
+- Always-on head explore (up/down scan) + micro-expressions = calm alive idle with no extra Python signal.
+
+**Screen anchor (Unity):**
+- Moved from (0.5, old) to (0.8, 0.28) — bottom-right. Mesh offset estimated.
+- If he lands too far right or short: nudge x (single value, instant fix).
+
+---
+
 ### 2026-06-22 (session 12 cont. 2) — Phase 2 Agent Expansion
 
 **DuckDuckGo + search chain (tool_router.py):**
