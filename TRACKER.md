@@ -71,6 +71,8 @@ It acts as a companion, not a mirror. It has its own perspective.
 | **Backends** | Gemini Flash | ⚠️ | _gemini_call() wired — GOOGLE_API_KEY needed to activate (free: aistudio.google.com) |
 | **Tools** | Tool agent router | ✅ | tools/tool_router.py — time, weather, wikipedia, calculator (all free, no key). Injects CONTEXT prefix, kernel unchanged (2026-06-22) |
 | **Tools** | Keyword motion system | ✅ | tools/keyword_motion.py — keyword→animation burst, async, non-blocking. 7 emotions mapped (2026-06-22) |
+| **Expression** | state.emotion + intensity | ✅ | map_emotion(valence, action) → continuous mood. Drives Unity breathing rate + baseline shape floor (2026-06-22) |
+| **Expression** | emotion_event one-shots | ✅ | keyword_motion fires cheek_puff/lip_curl/sad per keyword. Unity: 0.25s attack, 1.0s hold, 1.5s decay (2026-06-22) |
 | **Tools** | System agent (macOS) | ✅ | tools/system_agent.py — window/app/folder/file control via AppleScript + Python. All actions execute immediately (2026-06-22) |
 | **Tools** | Head gesture system | ✅ | blender_state.json head_motion key — nod/shake/tilt/think/lookup via c_head.x/z. No NLA clips — Unity coroutine only (2026-06-22) |
 | **Tools** | Weather location priority | ✅ | Explicit→session→ELO_LOCATION env→IP auto. "I'm in London" sets session default (2026-06-22) |
