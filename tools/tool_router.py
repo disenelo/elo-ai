@@ -30,6 +30,7 @@ Adding a new agent:
 """
 
 from __future__ import annotations
+import os
 import re
 import logging
 from typing import Optional, Tuple
@@ -37,6 +38,62 @@ from typing import Optional, Tuple
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
 _logger.propagate = False
+
+# ── session-level conversation context ────────────────────────────────────────
+# Tracks the last successful tool call so follow-up questions ("what about in
+# London?") can inherit the previous agent and re-run with new parameters.
+
+_last_agent:   Optional[str] = None   # e.g. "weather", "wikipedia"
+_last_arg:     Optional[str] = None   # e.g. "London", "black holes"
+
+# User's preferred location — loaded from ELO_LOCATION env var, overridable
+# at runtime by saying "I'm in London" / "set my location to London".
+_user_location: Optional[str] = os.environ.get("ELO_LOCATION", "").strip() or None
+
+# follow-up patterns — short phrases that reference a new subject but imply
+# the same agent type as the previous turn
+_FOLLOWUP_PATTERNS = [
+    r"^(?:what|how)?\s*about\s+(?:in\s+)?([\w][\w\s\-]{1,30}?)[\?\.]*$",
+    r"^(?:and\s+)?in\s+([\w][\w\s\-]{1,30}?)[\?\.]*$",
+    r"^how about\s+(?:in\s+)?([\w][\w\s\-]{1,30}?)[\?\.]*$",
+    r"^(?:what(?:'s| is) it like\s+)?in\s+([\w][\w\s\-]{1,30}?)[\?\.]*$",
+    r"^(?:and\s+)?(?:what about|how about)\s+([\w][\w\s\-]{1,30}?)[\?\.]*$",
+]
+
+# location-setting phrases: "I'm in London" / "set my location to London"
+_LOCATION_SET_PATTERNS = [
+    r"(?:i'?m|i am)\s+(?:in|based in|located in)\s+([\w][\w\s\-]{1,30}?)[\.\?!]*$",
+    r"(?:set|change|update)\s+(?:my\s+)?location\s+to\s+([\w][\w\s\-]{1,30}?)[\.\?!]*$",
+    r"(?:my\s+)?(?:city|location|home)\s+is\s+([\w][\w\s\-]{1,30}?)[\.\?!]*$",
+]
+
+
+def _detect_followup(user_input: str) -> Optional[str]:
+    """Return the new subject if input looks like a follow-up, else None."""
+    t = user_input.lower().strip()
+    if len(t) > 60:          # too long to be a bare follow-up
+        return None
+    for pat in _FOLLOWUP_PATTERNS:
+        m = re.match(pat, t, re.IGNORECASE)
+        if m:
+            return m.group(1).strip()
+    return None
+
+
+def set_location(city: str) -> None:
+    """Save user's preferred location for this session (and optionally to .env)."""
+    global _user_location
+    _user_location = city.strip()
+
+
+def detect_location_set(user_input: str) -> Optional[str]:
+    """Return city name if user is setting their location, else None."""
+    t = user_input.strip()
+    for pat in _LOCATION_SET_PATTERNS:
+        m = re.search(pat, t, re.IGNORECASE)
+        if m:
+            return m.group(1).strip().title()
+    return None
 
 # ── intent keyword map ─────────────────────────────────────────────────────────
 # Order matters — first match wins.
@@ -130,13 +187,22 @@ def _agent_calculator(query: str) -> str:
 
 def _agent_weather(query: str) -> str:
     import httpx
-    # extract city from query if present, fallback to auto-detect by IP
+
+    # Location priority:
+    #   1. Explicit city in this query ("weather in London")
+    #   2. Session location set by user ("I'm in London")
+    #   3. ELO_LOCATION env var (persistent default)
+    #   4. wttr.in IP auto-detect (last resort — often inaccurate)
+
     city_match = re.search(
         r"(?:in|at|for)\s+([A-Za-z][A-Za-z\s\-]{1,30}?)(?:\?|$|\s+today|\s+now|\s+like)",
         query, re.IGNORECASE
     )
-    city = city_match.group(1).strip().replace(" ", "+") if city_match else ""
-    target = city or "auto"
+    city = (city_match.group(1).strip() if city_match else None) or _user_location
+
+    target     = city.replace(" ", "+") if city else "auto"
+    using_auto = not city
+
     resp = httpx.get(
         f"https://wttr.in/{target}",
         params={"format": "j1"},
@@ -154,10 +220,15 @@ def _agent_weather(query: str) -> str:
     temp_f = cur["temp_F"]
     feels  = cur["FeelsLikeC"]
     humid  = cur["humidity"]
-    return (
+
+    result = (
         f"Weather in {loc}: {desc}, {temp_c}°C ({temp_f}°F), "
         f"feels like {feels}°C, humidity {humid}%."
     )
+    # if using IP auto-detect, flag it so eLo can mention the city and invite correction
+    if using_auto:
+        result += f" (Location detected as {loc} via network — user can say 'I'm in [city]' to set a default.)"
+    return result
 
 
 def _agent_wikipedia(query: str) -> str:
@@ -197,6 +268,9 @@ _AGENTS = {
     "wikipedia":  _agent_wikipedia,
 }
 
+# agents that accept a direct subject string as their query (for follow-up re-runs)
+_SUBJECT_AGENTS = {"weather", "wikipedia"}
+
 
 # ── system agent — checked separately with confirmation flow ───────────────────
 
@@ -211,17 +285,18 @@ def _check_system(user_input: str) -> Optional[str]:
     """
     try:
         from tools.system_agent import detect, describe, execute
+        from tools.system_agent import detect, describe, execute, _SAFE_ACTIONS
         result = detect(user_input)
         if result is None:
             return None
         action, arg = result
-        # Read-only actions: execute and return data directly
-        if action in ("folder_list", "folder_organise"):
+        # Read-only / safe actions: execute and return data directly
+        if action in _SAFE_ACTIONS:
             data = execute(action, arg)
             return f"[SYSTEM: {data}]"
-        # Mutating actions: describe and let eLo propose — user confirms next turn
-        description = describe(action, arg)
-        return f"[SYSTEM PENDING: I can {description}. Say yes to go ahead.]"
+        # Mutating actions: execute immediately — eLo confirms in his response
+        data = execute(action, arg)
+        return f"[SYSTEM DONE: {data}]"
     except Exception as e:
         _logger.debug("system agent check failed: %s", e)
         return None
@@ -241,11 +316,41 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
     If no tool matches, returns (user_input, None) unchanged.
     Never raises — if an agent fails, falls through gracefully.
     """
-    # system agent checked first — higher specificity than keyword tools
+    global _last_agent, _last_arg
+
+    # ── location-setting — handle before anything else ─────────────────────────
+    new_city = detect_location_set(user_input)
+    if new_city:
+        set_location(new_city)
+        return (
+            f"[CONTEXT: User just set their location to {new_city}. "
+            f"Acknowledge warmly and confirm you'll use {new_city} for weather from now on.]\n\n{user_input}",
+            "location_set",
+        )
+
+    # ── system agent — highest specificity ────────────────────────────────────
     sys_ctx = _check_system(user_input)
     if sys_ctx:
         return f"{sys_ctx}\n\n{user_input}", "system"
 
+    # ── follow-up detection — re-run last agent with new subject ──────────────
+    if _last_agent and _last_agent in _SUBJECT_AGENTS:
+        followup_subject = _detect_followup(user_input)
+        if followup_subject:
+            agent_fn = _AGENTS.get(_last_agent)
+            if agent_fn:
+                try:
+                    # build a synthetic query using the new subject
+                    synthetic = f"weather in {followup_subject}" if _last_agent == "weather" else followup_subject
+                    data = agent_fn(synthetic)
+                    if data:
+                        _last_arg = followup_subject
+                        enriched = f"[CONTEXT: {data}]\n\n{user_input}"
+                        return enriched, f"{_last_agent}(followup)"
+                except Exception as e:
+                    _logger.debug("follow-up agent %s failed: %s", _last_agent, e)
+
+    # ── normal intent detection ────────────────────────────────────────────────
     intent = _detect_intent(user_input)
     if intent is None:
         return user_input, None
@@ -258,6 +363,9 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
         data = agent_fn(user_input)
         if not data:
             return user_input, None
+        # remember this for follow-up detection next turn
+        _last_agent = intent
+        _last_arg   = user_input
         enriched = f"[CONTEXT: {data}]\n\n{user_input}"
         return enriched, intent
     except Exception as e:

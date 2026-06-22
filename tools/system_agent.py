@@ -172,6 +172,59 @@ def _do_folder_organise(path: str) -> str:
     return "\n".join(lines)
 
 
+def _do_file_copy(args: str) -> str:
+    """Copy a file or folder. args: 'source -> destination'"""
+    import shutil
+    parts = re.split(r"\s*[-–→>]+\s*", args, maxsplit=1)
+    if len(parts) != 2:
+        raise ValueError("Need source and destination: 'file -> destination'")
+    src, dst = os.path.expanduser(parts[0].strip()), os.path.expanduser(parts[1].strip())
+    if not os.path.exists(src):
+        raise ValueError(f"Source not found: {src}")
+    if os.path.isdir(src):
+        shutil.copytree(src, os.path.join(dst, os.path.basename(src)))
+    else:
+        shutil.copy2(src, dst)
+    return f"Copied {os.path.basename(src)} to {dst}."
+
+
+def _do_file_move(args: str) -> str:
+    """Move a file or folder. args: 'source -> destination'"""
+    import shutil
+    parts = re.split(r"\s*[-–→>]+\s*", args, maxsplit=1)
+    if len(parts) != 2:
+        raise ValueError("Need source and destination")
+    src, dst = os.path.expanduser(parts[0].strip()), os.path.expanduser(parts[1].strip())
+    if not os.path.exists(src):
+        raise ValueError(f"Source not found: {src}")
+    shutil.move(src, dst)
+    return f"Moved {os.path.basename(src)} to {dst}."
+
+
+def _do_file_rename(args: str) -> str:
+    """Rename a file or folder. args: 'old_name -> new_name' or 'path/to/file new_name'"""
+    import shutil
+    parts = re.split(r"\s*[-–→>]+\s*|(?<=\S)\s+(?=\S)", args, maxsplit=1)
+    if len(parts) != 2:
+        raise ValueError("Need old and new name")
+    src  = os.path.expanduser(parts[0].strip())
+    new  = parts[1].strip()
+    dst  = os.path.join(os.path.dirname(src), new)
+    if not os.path.exists(src):
+        raise ValueError(f"File not found: {src}")
+    shutil.move(src, dst)
+    return f"Renamed {os.path.basename(src)} to {new}."
+
+
+def _do_file_delete(args: str) -> str:
+    """Move to Trash via AppleScript — safer than rm."""
+    path = os.path.expanduser(args.strip())
+    if not os.path.exists(path):
+        raise ValueError(f"Not found: {path}")
+    _osascript(f'tell application "Finder" to delete POSIX file "{path}"')
+    return f"Moved {os.path.basename(path)} to Trash."
+
+
 # ── Action registry ────────────────────────────────────────────────────────────
 
 _ACTIONS = {
@@ -183,7 +236,14 @@ _ACTIONS = {
     "folder_open":       _do_folder_open,
     "folder_list":       _do_folder_list,
     "folder_organise":   _do_folder_organise,
+    "file_copy":         _do_file_copy,
+    "file_move":         _do_file_move,
+    "file_rename":       _do_file_rename,
+    "file_delete":       _do_file_delete,
 }
+
+# read-only actions — execute immediately without confirmation
+_SAFE_ACTIONS = {"folder_list", "folder_organise"}
 
 
 # ── Intent detection ───────────────────────────────────────────────────────────
@@ -202,8 +262,15 @@ _SYSTEM_INTENTS = [
     (r"\bshow\s+(?:me\s+)?(~?[\w\/\.\-]+)\s+(?:folder|in finder)", "folder_open", 1),
     (r"\bwhat'?s?\s+in\s+(~?[\w\/\.\-]+)\b",             "folder_list",       1),
     (r"\blist\s+(~?[\w\/\.\-]+)\b",                      "folder_list",       1),
-    (r"\borgan(?:ise|ize)\s+(~?[\w\/\.\-]+)\b",          "folder_organise",   1),
-    (r"\btidy\s+(?:up\s+)?(~?[\w\/\.\-]+)\b",            "folder_organise",   1),
+    (r"\borgan(?:ise|ize)\s+(~?[\w\/\.\-]+)\b",                                 "folder_organise", 1),
+    (r"\btidy\s+(?:up\s+)?(~?[\w\/\.\-]+)\b",                                   "folder_organise", 1),
+    (r"\bcp\s+(~?[\w\/\.\- ]+(?:->|–>|→)[\w\/\.\- ]+)\b",                       "file_copy",       1),
+    (r"\bcopy\s+(~?[\w\/\.\-]+)\s+(?:to|into)\s+(~?[\w\/\.\-]+)",               "file_copy",       0),
+    (r"\bmove\s+(~?[\w\/\.\-]+)\s+(?:to|into)\s+(~?[\w\/\.\-]+)",               "file_move",       0),
+    (r"\bmv\s+(~?[\w\/\.\- ]+(?:->|–>|→)[\w\/\.\- ]+)\b",                       "file_move",       1),
+    (r"\brename\s+(~?[\w\/\.\-]+)\s+(?:to|as)\s+([\w\.\-]+)",                   "file_rename",     0),
+    (r"\bdelete\s+(~?[\w\/\.\-]+)\b",                                            "file_delete",     1),
+    (r"\btrash\s+(~?[\w\/\.\-]+)\b",                                             "file_delete",     1),
 ]
 
 
