@@ -468,16 +468,32 @@ def _search_vault_raw(vault_path: str, query: str) -> list:
 
 
 def _agent_obsidian(query: str) -> str:
-    """Search the Obsidian vault on demand. Uses ELO_VAULT_PATH if set, else internal vault."""
-    vault_path = os.environ.get("ELO_VAULT_PATH", "").strip()
-
-    if vault_path and os.path.isdir(vault_path):
-        results = _search_vault_raw(vault_path, query)
-    else:
+    """
+    Search the Obsidian vault on demand.
+    Always tries obsidian_loader first (handles typed frontmatter notes correctly).
+    Falls back to raw .md search for external vaults without frontmatter.
+    """
+    # Typed vault path (internal or ELO_VAULT_PATH if it has typed notes)
+    try:
         from memory.obsidian_loader import load
         pack    = load()
         results = _search_notes(pack.get("notes", []), query)
+        if results:
+            top    = results[0]
+            others = [r["title"] for r in results[1:3]]
+            result = f"From your notes — {top['title']}: {top['summary']}"
+            if others:
+                result += f" (Related: {', '.join(others)})"
+            return result
+    except Exception:
+        pass
 
+    # Raw fallback for external vaults without typed frontmatter
+    vault_path = os.environ.get("ELO_VAULT_PATH", "").strip()
+    if not vault_path or not os.path.isdir(vault_path):
+        raise ValueError("no matching notes in vault")
+
+    results = _search_vault_raw(vault_path, query)
     if not results:
         raise ValueError("no matching notes in vault")
 
