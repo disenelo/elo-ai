@@ -1,7 +1,7 @@
 # eLo AI OS — Development Tracker
 
 **Project path**: `~/eLo-Planet/` (git repo) · `~/elo-ai/` (AI OS source)
-**Last updated**: 2026-06-15 (session 7)
+**Last updated**: 2026-06-15 (session 9)
 **Current version**: 1.0.0 · Architecture frozen (see `RELEASE.md`)
 
 ---
@@ -25,7 +25,7 @@ It acts as a companion, not a mirror. It has its own perspective.
 | **Runtime** | Attention (intent/valence/momentum) | ✅ | Core/attention.py — 5 intent types, 5 valence states, 4 momentum states |
 | **Runtime** | Executive (CAL — 9 actions) | ✅ | Priority routing: short affirm → build → connect → answer → celebrate → ground → witness → silence |
 | **Runtime** | Prompt builder | ✅ | Living Presence Spec + action directive + graph context injection |
-| **Runtime** | Backend router | ✅ | Claude → Groq → Ollama → Mock, with lore-drift + duplicate guards |
+| **Runtime** | Backend router | ✅ | OpenAI → Gemini → Claude → Groq → Ollama → Mock; lore-drift + duplicate guards (2026-06-22) |
 | **Runtime** | State machine | ✅ | Session state tracking |
 | **Backends** | Mock | ✅ | Singleton, anti-repetition buffer, 30+ pools, CAL-action routing |
 | **Backends** | Groq | ⚠️ | Working · 8b-instant active (quota) · needs 70b when quota resets |
@@ -56,8 +56,34 @@ It acts as a companion, not a mirror. It has its own perspective.
 | **Avatar** | Desktop renderer | ✅ | desktop_avatar/avatar_renderer.py — tkinter window, 8 motions, no eyes (Phase F, 2026-06-13) |
 | **Avatar** | Movement controller | ✅ | desktop_avatar/movement_controller.py — presence → motion mapping (Phase F, 2026-06-13) |
 | **Avatar** | Milestone launch | ✅ | desktop_avatar/launch.py — DESKTOP_AVATAR=1 python main.py → appears, looks around, says welcome, walks to corner (Phase F, 2026-06-13) |
-| **Avatar** | Unity signal bridge | 🔴 | avatar_signal.json written by animation_router · Unity C# scripts not yet in eLo-Planet |
+| **Avatar** | Unity signal bridge (game) | ⚠️ | EloStateController + EloAnimationMapper + EloSignalData in eLo-Planet — reads avatar_signal.json · needs wiring to eLo character in scene |
+| **Avatar** | Unity Desktop Avatar scripts | ✅ | EloOSAvatarReceiver.cs + DesktopBuddy.cs built (2026-06-15) · reads blender_state.json · drop-in for blender_receiver.py · alias table mirrors animation_driver.py |
+| **Avatar** | Unity Desktop Avatar project | ✅ | Separate Unity project · build running · eLo on desktop parked bottom-right, transparent, animating · eLo OS main.py as subprocess · state file flowing → moods drive animation · dark chat panel bottom-left + speech bubble at c_head.x · click-and-drag to reposition · MILESTONE 2026-06-16 |
 | **Avatar** | Robot signal | 🔴 | Spec ready · no physical build yet |
+| **Backends** | OpenAI GPT-4o-mini | ✅ | Primary in auto + cloud modes via _openai_call() — httpx, OPENAI_API_KEY (2026-06-22) |
+| **Backends** | Semantic memory (embeddings) | ✅ | memory/embedding_store.py — warm() at startup, search() boosts attention scoring ×5 (2026-06-22) |
+| **Voice** | OpenAI TTS (shimmer) | ✅ | voice/voice_engine.py — tts-1-hd, afplay, phoneme lipsync pipeline (2026-06-22) |
+| **Voice** | ElevenLabs API keyed | ⚠️ | Key in .env + backup · voice ID not yet selected · voice_engine not yet wired to EL |
+| **Voice** | is_speaking() | ✅ | voice_engine.py — public bool for ambient/wander suppression |
+| **Ambient** | Ambient engine | ✅ | ambient/ambient_engine.py — startup greeting, idle utterances (8-20min), random smiles (2-5min), animation wanders (3-8min), unity_events.json polling (2026-06-22) |
+| **Server** | Parent death detection | ✅ | server.py _watch_parent() — kills server within 2s of parent process dying (2026-06-22) |
+| **Expression** | Expression values boosted | ✅ | expression_mapper.py — 2-3× boost on all modes, intensity floor 0.6, THINKING/RESTING → calm clip, extended action bonuses (2026-06-22) |
+| **Backends** | Gemini Flash | ⚠️ | _gemini_call() wired — GOOGLE_API_KEY needed to activate (free: aistudio.google.com) |
+| **Tools** | Tool agent router | ✅ | tools/tool_router.py — time, weather, wikipedia, calculator (all free, no key). Injects CONTEXT prefix, kernel unchanged (2026-06-22) |
+| **Tools** | Keyword motion system | ✅ | tools/keyword_motion.py — keyword→animation burst, async, non-blocking. 7 emotions mapped (2026-06-22) |
+| **Tools** | System agent (macOS) | ✅ | tools/system_agent.py — window/app/folder/file control via AppleScript + Python. All actions execute immediately (2026-06-22) |
+| **Tools** | Head gesture system | ✅ | blender_state.json head_motion key — nod/shake/tilt/think/lookup via c_head.x/z. No NLA clips — Unity coroutine only (2026-06-22) |
+| **Tools** | Weather location priority | ✅ | Explicit→session→ELO_LOCATION env→IP auto. "I'm in London" sets session default (2026-06-22) |
+| **Tools** | Follow-up continuity | ✅ | "what about in London?" re-runs last agent with new subject. _last_agent/_last_arg tracking (2026-06-22) |
+| **Tools** | File operations | ✅ | system_agent.py cp/mv/rename/delete (Trash) — executes immediately, no confirmation (2026-06-22) |
+| **Identity** | Multilingual greetings | ✅ | 17-language greeting pool. eLo tries foreign, catches himself. Greeting event signals Unity wave (2026-06-22) |
+| **Identity** | Identity direct pool | ✅ | "Are you eLo?" bypasses LLM — warm response pool, no awkward negation (2026-06-22) |
+| **Ambient** | Meditation state machine | ✅ | enter_meditation()/exit_meditation() — Enter→Loop→Exit phases, deliberate only. Wander never fires calm (2026-06-22) |
+| **Ambient** | Ambient utterances expanded | ✅ | 35-line pool: quiet presence + encouragement + quirky/playful (2026-06-22) |
+| **Runtime** | Intent model routing | ✅ | "ask Claude to..." / "translate..." detected → routes directly to Claude/Gemini override. backend_router.py (2026-06-22) |
+| **Mobile** | iOS shadow vision | ⚠️ | Defined — Mac=full eLo, iPhone=shadow (Dynamic Island orb + Lock Screen + widget). Unity iOS build + hosted server.py needed. |
+| **Mobile** | Dynamic Island orb | ⚠️ | Designed — colour language: idle=teal, listening=white, thinking=amber, speaking=coral, calm=violet. Syncs from blender_state.json state.mode. |
+| **Robot** | NeoPixel ↔ OS sync | ⚠️ | Designed — same blender_state.json state.mode drives NeoPixel colours on Pi. Colour map matches Dynamic Island. |
 | **Integration** | File/Obsidian reading | 🔴 | memory/obsidian_loader.py exists · not active in main loop |
 | **Integration** | Proactive memory surfacing | ✅ | core/pattern_observer.py fires observations in session (Phase A) · cross-session in identity_map.json (Phase B) |
 | **Integration** | Multi-project context | 🔴 | project_engine.py exists · not cross-loaded at session start |
@@ -267,7 +293,217 @@ Batch 4 known failures (pre 2026-06-12 fix):
 
 ---
 
+## §9 Multi-Platform Roadmap
+
+**Design principle**: Mac is eLo's home — full 3D, floating, conversational. Every other surface is his **shadow** — felt without being fully present. The further from the Mac, the less detail, but never fully absent.
+
+| Platform | Surface | eLo presence | Status |
+|----------|---------|-------------|--------|
+| Mac | DesktopBuddy.app | Full 3D — floating, animated, conversational, ambient | ✅ Live |
+| Mac | Terminal | Cognitive core only, no visuals | ✅ Live |
+| iPhone | Dynamic Island | Orb — colour + rhythm, state-synced | ⚠️ Designed |
+| iPhone | Lock Screen / StandBy | Last ambient line + mood colour | ⚠️ Designed |
+| iPhone | Home Screen widget | Glanceable card — last thought, mood | ⚠️ Designed |
+| iPhone | App (full) | Unity iOS build — near-full experience | 🔴 Planned |
+| iPad | Slide Over | Near-full experience floating over other apps | 🔴 Planned |
+| Apple Watch | Complication | Orb breathing — colour only | 🔴 Future |
+| Robot (Pi 5) | NeoPixel shell | Physical orb glow — same colour language as Dynamic Island | 🔴 Phase 1 |
+
+**Orb colour language (shared across Dynamic Island + Robot NeoPixels + future surfaces):**
+
+| eLo state | Colour | Behaviour |
+|-----------|--------|-----------|
+| idle | Soft teal / blue-white | Slow breathing pulse |
+| listening | Bright white | Steady, attentive |
+| thinking | Warm amber | Slow irregular pulse |
+| speaking | Warm coral / gold | Pulses with speech rhythm |
+| celebrating | Bright warm yellow | Quick bright flash |
+| resting / calm | Deep violet | Very slow, near still |
+
+**State source**: `blender_state.json → state.mode` — already written every turn by eLo OS. All surfaces read this file (or its hosted equivalent).
+
+**iOS technical path:**
+- Host `server.py` on cloud (Railway/Fly.io free tier) → change one URL in `EloConversationUI.cs`
+- Replace file polling with `/state` HTTP endpoint
+- Unity iOS build (standard) + mic permission entitlement
+- Dynamic Island / Live Activity via Swift (separate native layer, reads hosted state)
+- UniWindowController not available on iOS — full app window or Slide Over (iPad)
+
+**Robot NeoPixel sync path:**
+- Pi 5 polls `blender_state.json` (local file when tethered to Mac, or hosted API call)
+- Maps `state.mode` → NeoPixel colour + pulse pattern (same table as above)
+- No new state machine needed — reads the one eLo OS already writes
+
+---
+
 ## §8 Change Log
+
+### 2026-06-22 (session 12 cont.) — Weather Location, Follow-up Continuity, File Operations, Meditation State, Head Gestures
+
+**Weather location priority (tool_router.py):**
+- Location chain: (1) explicit in query ("weather in London") → (2) session `_user_location` → (3) `ELO_LOCATION` env var → (4) wttr.in IP auto-detect.
+- "I'm in London" / "set my location to London" phrases set `_user_location` for the session. Commit: c0ca095.
+- `.env`: `# ELO_LOCATION=London` placeholder added.
+
+**Follow-up continuity (tool_router.py):**
+- `_last_agent` / `_last_arg` session vars track previous tool call.
+- `_detect_followup()` matches "what about in London?" / "and in X?" style short phrases.
+- Re-runs previous agent with new subject — no fallthrough to generic LLM response. Commit: c0ca095.
+
+**File operations + immediate execution (system_agent.py):**
+- `_do_file_copy`, `_do_file_move`, `_do_file_rename`, `_do_file_delete` (Trash via Finder AppleScript) added.
+- `_SAFE_ACTIONS = {"folder_list", "folder_organise"}` — all other actions execute immediately.
+- `_check_system()` in tool_router: no confirmation step — executes and returns `[SYSTEM DONE: result]`. Commit: c0ca095.
+
+**macOS system agent + intent model routing (system_agent.py + backend_router.py):**
+- Window/app actions: fullscreen, focus, close, open, quit. Folder: open, list, organise. Commit: e190290.
+- Intent model routing: "ask Claude to..." / "translate..." patterns route directly to Claude or Gemini regardless of default chain. `_detect_model_override(user_input)` in backend_router. Commit: e190290.
+
+**Meditation state machine (ambient_engine.py):**
+- `enter_meditation(duration_seconds)` and `exit_meditation()` added — proper Enter→Loop→Exit phases.
+- `_wander_animation()` pool changed from `["walk", "calm", "calm"]` to `["walk", "walk", "run"]` — calm NEVER fires randomly.
+- `keyword_motion.py` calm/stress/tired keywords now use head-gesture-only (None animation) instead of calm clip burst. Commit: 1da7483.
+
+**Head gesture system (keyword_motion.py + blender_state.json):**
+- `head_motion: {gesture, ts}` key added to blender_state.json contract.
+- Gestures: "nod", "shake", "tilt", "think", "lookup", "none" — driven by c_head.x/z bone in Unity (same path as cursor tracking, no NLA clips needed).
+- 5-tuple keyword map: `(patterns, animation, duration, expr_patch, head_motion)`. Head-only entries (None animation) for thinking/disagreement/calm. Commit: bb66724.
+
+**Ambient utterances expanded (ambient_engine.py):**
+- Pool expanded 14 → 35 entries: quiet presence (7), encouragement (13), quirky/playful (15). Commit: bb66724.
+
+**Multilingual greetings + identity pool (server.py):**
+- `_MULTILINGUAL_GREETING_POOL` — eLo tries a foreign greeting, catches himself: "¡Hola! — wait. Hi." 17 languages wired. Commit: 26004e7.
+- `_IDENTITY_POOL` / `_IDENTITY_TRIGGERS` — "Are you eLo?" bypasses LLM entirely with warm pool: "Yeah. I'm eLo.", "eLo. That's me.", etc. Fixes "No. I'm eLo." awkward negation. Commit: 26004e7.
+- `_signal_greeting_event(greeting_type)` patches `blender_state.json` greeting_event key so Unity can trigger wave animation on greeting. Commit: 26004e7.
+
+**Architecture rules reconfirmed:**
+- Core kernel (CAL, attention, presence, identity) must not be touched by agents.
+- Tool agents inject data as CONTEXT prefix only.
+- Keyword motion + meditation patch blender_state.json only, no kernel state.
+
+---
+
+### 2026-06-22 (session 12) — Gemini Flash + Tool Agent Router + Keyword Motion System
+
+**Gemini Flash backend:**
+- `runtime/backend_router.py`: `_gemini_available()` + `_gemini_call()` added. Pure httpx, no SDK. Activates on `GOOGLE_API_KEY`. Inserted in chain: OpenAI → **Gemini** → Claude → Groq → Ollama → Mock (auto + cloud modes). Offline detection updated to include Gemini/OpenAI. Docstring updated to reflect full chain. Commit: 1cf891c
+- `.env`: `GOOGLE_API_KEY=` placeholder added with note (free: 1500 req/day at aistudio.google.com). `ELO_GEMINI_MODEL=gemini-1.5-flash` override documented.
+
+**Tool agent router:**
+- `tools/tool_router.py` created: intent classifier (keyword regex) + 4 free agents: `time` (datetime.now), `weather` (wttr.in JSON, no key), `wikipedia` (REST API, no key), `calculator` (safe AST eval). Returns `(enriched_input, agent_name)`. Enriched input adds `[CONTEXT: ...]` prefix — eLo's kernel + state completely untouched.
+- `server.py`: wires `_tool_enrich(raw)` before `router_route()`. Agent name appended to `backend_used` string for observability (e.g. `openai+weather`).
+
+**Keyword emotion motion system:**
+- `tools/keyword_motion.py` created: scans user input for emotional keywords, fires async daemon thread that patches `blender_state.json` with animation burst + expression patch, reverts after duration. Non-blocking — never delays response delivery. Emotion map: excited→run, joy/love→walk, milestone/shipped→longjump, calm/breathe→calm, stressed→calm (grounding), tired→idle, agreement→walk. Animation clip names documented for Blender animator (wave, stretch, nod, celebrate, worried, think — planned additions).
+- `server.py`: `_keyword_motion_scan(raw)` called after LLM response, before obs_log.
+
+**Platform vision confirmed:**
+- User vision: Mac desktop (full eLo) → iPhone StandBy when charging (full widget, large format) → tap to open full iOS app with agents. "Co-Pilot for information/context/translation — eLo is core, the feeling, the output."
+- Free platform list confirmed: Groq (already wired), Google AI Studio (Gemini, wired), OpenRouter, GitHub Models, Nvidia Build, Cloudflare Workers AI.
+
+**Rules confirmed (architecture):**
+- Core kernel (CAL, attention, presence, state machine, identity) must not be modified by agents or backends.
+- Tool agents inject data ONLY as context prefix into the input string.
+- Keyword motion patches blender_state.json only — same mechanism as ambient engine pulse_smile().
+
+---
+
+### 2026-06-22 (session 11) — GPT-4o-mini + Semantic Memory + Ambient Engine + iOS Shadow Vision
+
+**Phase 1 — GPT-4o-mini backend:**
+- `runtime/backend_router.py`: `_openai_call()` added, GPT-4o-mini first in auto + cloud routing chains. Falls through to Claude → Groq → Ollama → Mock.
+- `_openai_available()`: checks `OPENAI_API_KEY` env var.
+
+**Phase 2 — Semantic memory (embeddings):**
+- `memory/embedding_store.py` created: `warm(items)` pre-embeds memory pack at session start, caches to `embedding_cache.json`. `search(query, candidates, top_k)` cosine similarity ranking.
+- `core/attention.py`: semantic boost wired in — similarity × 5 added to keyword score before bucket assignment. Falls back silently when no OpenAI key.
+- `server.py`: embedding cache warmed at startup in background thread.
+
+**Server cleanup — parent death detection:**
+- `server.py _watch_parent()`: background thread checks `os.kill(parent_pid, 0)` every 2s. Shuts down cleanly when Unity/main.py dies. Prevents zombie server on app force-quit.
+
+**Phase 3 Python — Ambient engine:**
+- `ambient/ambient_engine.py` created. Background thread inside server.py:
+  - Startup greeting: fires on `unity_events.json` arrival event (or after 4s auto-delay). Waits 2.8s for Unity head-look sequence to finish.
+  - Idle ambient utterances: 14-line pool, random pick every 8-20min, suppressed while speaking.
+  - Random smiles: `_pulse_smile()` — patches Smile.L/R + Satisfied/LittleJoy into blender_state.json for 3.5s then clears. Fires every 2-5min.
+  - Animation wanders: `_wander_animation()` — writes walk or calm to motion.animation for 8s then returns to idle. Fires every 3-8min.
+  - Unity event polling: 0.5s poll on `blender/unity_events.json`. Handles `arrival` (greeting) + `listening` (attentive mode patch).
+- `voice/voice_engine.py`: `is_speaking()` public function added.
+- `server.py`: ambient engine started in `_init_session()`, stopped in `_shutdown_cleanly()`.
+
+**Expression + avatar — boosted:**
+- `expression/expression_mapper.py`: all mode base values boosted 2-3×. Intensity floor raised from 0 to max(intensity, 0.6) — expressions visible at all energy levels. CONNECT/BUILD/ANSWER/GROUND action bonuses added. Head lean values doubled.
+- `avatar/avatar_controller.py`: THINKING + RESTING modes now map to `calm` animation clip (was idle).
+
+**ElevenLabs:**
+- API key saved to `.env` (`ELEVENLABS_API_KEY`) and `openai_key_backup.txt`. Voice not yet wired — waiting on voice ID from studio.
+
+**Unity briefs issued to other agent:**
+- Phase 3 Unity: `EloHeadLook.cs` (cursor +25% strength), arrival coroutine in `DesktopBuddy.cs`, speaking-aware wander.
+- "Make alive" brief: `EloIdleBehaviour.cs` (drift/tilt coroutines), `IsSpeaking` property on receiver, Animator calm transitions.
+
+**Multi-platform vision defined (brainstorm → recorded):**
+- Design principle: Mac = full eLo. iOS = his shadow. Every other surface loses detail but keeps presence.
+- Dynamic Island orb: teal/white/amber/coral/violet colour language. State source: `blender_state.json state.mode`.
+- Orb colour language shared across Dynamic Island + Robot NeoPixels + future surfaces. One state machine, multiple outputs.
+- §9 Multi-Platform Roadmap added to this tracker.
+
+**Robot cross-reference:**
+- NeoPixel sync path defined: Pi 5 reads `blender_state.json state.mode` → same colour language as Dynamic Island. No new state machine needed.
+- See `eLo_Robot_Tracker.md §10 D16`.
+
+---
+
+### 2026-06-16 (session 10) — Desktop Avatar MILESTONE: live build on desktop
+
+**MILESTONE REACHED**: eLo is live on the desktop as a real 3D character.
+
+- Unity Desktop Avatar build running as a standalone app (separate project from eLo-Planet)
+- eLo parked bottom-right, transparent window, always-on-top, animating to eLo OS moods
+- eLo OS `main.py` running as the build's own subprocess — one clean instance, stray killed on exit
+- `blender_state.json` flowing: eLo OS → animation driver → state writer → Unity `EloOSAvatarReceiver` → Animator
+- Dark chat panel (bottom-left) + speech bubble anchored at `c_head.x` — both wired
+- Click-and-drag eLo to reposition anywhere on screen
+- `server.py` added to `~/elo-ai/` — HTTP interface (`POST /chat`) for Unity conversation UI, same cognitive cycle as `main.py`, no eLo OS changes needed
+- `EloConversationUI.cs` added to Desktop Avatar scripts — terminal-style 50% opacity panel, Tab to toggle, Enter to send, auto-scroll
+
+**Signal paths confirmed**:
+- Desktop Avatar reads `blender_state.json` via `EloOSAvatarReceiver.cs`
+- eLo-Planet game reads `avatar_signal.json` via `EloStateController.cs`
+- Both exist and are independent
+
+### 2026-06-15 (session 9) — Unity Desktop Avatar + Retargeter Pipeline + Memory sync
+
+**Architecture decision**: Desktop Avatar is a **separate Unity project** from eLo-Planet game.
+- Game (`~/eLo-Planet/`) — uses `EloStateController` + `avatar_signal.json` (richer signal, orb, emotion blend)
+- Desktop Avatar (separate project) — uses `EloOSAvatarReceiver.cs` + `blender_state.json` (same JSON eLo OS already writes for Blender, zero eLo OS changes needed)
+
+**Unity Desktop Avatar scripts built** (`~/Desktop/Output/DISENELO - eLo AI System/unity-desktop-avatar/`):
+- `EloOSAvatarReceiver.cs` — reads `blender_state.json`, drives Animator + head lean + blendshapes. Alias table mirrors `animation_driver.py` exactly (wander→eLo_Walk, hop→eLo_LongJ, breathe→eLo_Idle). Drop-in for `blender_receiver.py`.
+- `DesktopBuddy.cs` — transparent borderless always-on-top window via UniWindowController; wander + cursor-react behaviour
+- `README.md` — full setup: clean project, eLo package export from game, UniWindowController install, Newtonsoft dep, test with `python -m presence_playback.playback --continuous`
+
+**Known flags in README**:
+- UniWindowController API names vary by release — match script to installed version if compiler complains
+- Blendshape scale: Blender −5..5 vs Unity 0..100 — `blendshapeScale` default 20, needs live tuning
+
+**NLA prefix bug** (`blender_receiver.py:86`) — Blender-side only, does NOT affect Unity path (Unity resolves by alias table, not NLA strip names). Left untouched per handover.
+
+**Signal path summary**:
+| Receiver | Reads | Used for |
+|---|---|---|
+| `EloOSAvatarReceiver.cs` | `blender/blender_state.json` | Desktop Avatar (separate Unity project) |
+| `EloStateController.cs` | `avatar/avatar_signal.json` | Game character in eLo-Planet |
+| `blender_receiver.py` | `blender/blender_state.json` | Blender viewport (same source as EloOSAvatarReceiver) |
+
+**eLo Retargeter pipeline established** (`~/Desktop/Output/DISENELO-EloRetargeter/`):
+- v2.3.0 (Blender 4.5), v2.1.0 (Blender 5.1, older — needs update)
+- `DISENELO_EloRetargeter_TRACKER.md` written
+- Retarget rig blend: `~/Library/CloudStorage/Dropbox/HD/Disenelo/3d/elo/eLo-Retarget-Rig.blend`
+
+**Memory + trackers synced** via `sync_memory.command`
 
 ### 2026-06-15 (session 8) — STEP 02–07 + Blender Bridge + Real Shape Keys + Robot Body
 
