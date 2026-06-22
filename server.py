@@ -64,7 +64,7 @@ from presence.presence_scheduler import PresenceScheduler as _PresenceScheduler
 from avatar.avatar_controller    import build_command as _avatar_cmd
 from avatar.avatar_rules         import apply as _avatar_rules
 from blender_bridge.state_writer import write as _state_write
-from expression.expression_mapper import build_expression as _expr_build
+from expression.expression_mapper import build_expression as _expr_build, map_emotion as _expr_map_emotion
 from voice.voice_engine import speak as _voice_speak
 
 # ── session state (shared across requests, protected by lock) ─────────────────
@@ -348,7 +348,9 @@ def _process_turn(raw: str) -> dict:
             _cmd      = _avatar_rules(_cmd, _last_avatar_cmd)
             _last_avatar_cmd = _cmd
             _expr     = _expr_build(_pstate.mode, _action, _pstate.intensity)
-            _state_write(_cmd, _expr, _presence)
+            _valence  = attention_model.get("emotional_context", {}).get("valence", "neutral")
+            _emotion  = _expr_map_emotion(_valence, _action)
+            _state_write(_cmd, _expr, _presence, _emotion)
         except Exception:
             pass
 

@@ -65,34 +65,38 @@ _ROOT       = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _STATE_PATH = os.path.join(_ROOT, "blender", "blender_state.json")
 
 # ── emotion keyword → motion intent ───────────────────────────────────────────
-# Each entry: (pattern_list, animation, duration_sec, expression_patch, head_motion)
-# head_motion is optional — None means no head gesture.
-# First match wins.
+# Each entry: (pattern_list, animation, duration_sec, expression_patch, head_motion, emotion_event)
+# emotion_event fires a one-shot reactive accent on the face (Unity: 0.25s attack/1.0s hold/1.5s decay).
+# Types: "cheek_puff" (surprise/joy), "lip_curl" (playful), "sad" (concern), "disgust" (ugh).
+# None = no emotion_event. head_motion None = no head gesture. First match wins.
 
 _KEYWORD_MAP = [
-    # Excitement / amazement — run burst + lookup (idea moment)
+    # Excitement / amazement — run burst + lookup + cheek puff
     (
         [r"\b(wow|amazing|incredible|unbelievable|holy|oh my|no way|seriously)\b",
          r"\b(excited|excitement|can't believe|blown away)\b"],
         "run", 3.0,
         {"Smile.L": 0.85, "Smile.R": 0.85, "Satisfied": 0.6},
         "lookup",
+        "cheek_puff",
     ),
-    # Joy / love / celebration — walk with smile + tilt
+    # Joy / love / celebration — walk + tilt + lip curl (happy)
     (
         [r"\b(love|wonderful|perfect|brilliant|beautiful|yes!|awesome|fantastic|great news)\b",
          r"\b(so happy|made my day|this is great|thrilled)\b"],
         "walk", 4.0,
         {"Smile.L": 0.75, "Smile.R": 0.75, "LittleJoy": 0.5},
         "tilt",
+        "lip_curl",
     ),
-    # Big moment / milestone — long jump + lookup
+    # Big moment / milestone — long jump + lookup + cheek puff
     (
         [r"\b(finally|milestone|shipped|launched|we did it|just finished|done!|completed)\b",
          r"\b(big news|announcement|breaking|major)\b"],
         "longjump", 2.5,
         {"Smile.L": 0.9, "Smile.R": 0.9, "Satisfied": 0.8},
         "lookup",
+        "cheek_puff",
     ),
     # Agreement / confirmation — walk + nod
     (
@@ -101,46 +105,51 @@ _KEYWORD_MAP = [
         "walk", 2.5,
         {"Smile.L": 0.6, "Smile.R": 0.6, "LittleJoy": 0.4},
         "nod",
+        None,
     ),
-    # Thinking / figuring out — head gesture only (no body clip)
+    # Thinking / figuring out — head gesture only
     (
         [r"\b(hmm|let me think|interesting|i wonder|not sure|maybe|perhaps|good question)\b",
          r"\b(thinking|figuring out|working it out|curious)\b"],
         None, 3.0,
         {},
         "think",
+        None,
     ),
-    # Disagreement / uncertainty — head shake only
+    # Disagreement / uncertainty — head shake
     (
         [r"\b(no wait|that's not right|actually no|hold on|i don't think so)\b",
          r"\b(not quite|hmm no|wait wait)\b"],
         None, 2.0,
         {"Worried": 0.15},
         "shake",
+        None,
     ),
-    # Calm / peace / breathe — head gesture + expression only, no body clip
-    # Calm animation is a deliberate entered state, not a burst
+    # Calm / peace / breathe — no body clip, deliberate state only
     (
         [r"\b(calm|peace|breathe|relax|meditat|quiet|slow down|rest|take a break)\b",
          r"\b(it's okay|you're okay|breathe|gentle|soft|easy)\b"],
         None, 4.0,
         {"Satisfied": 0.45},
         "tilt",
+        None,
     ),
-    # Stress / anxiety — grounding head gesture + worried expression, no body clip
+    # Stress / anxiety — grounding + sad accent
     (
         [r"\b(stress|anxious|anxiety|overwhelm|panic|worried|can't cope|struggling)\b",
          r"\b(too much|falling behind|behind schedule|deadline|pressure)\b"],
         None, 4.0,
         {"Worried": 0.35, "Satisfied": 0.1},
         "think",
+        "sad",
     ),
-    # Tired / exhausted — idle + tilt
+    # Tired / exhausted — idle + sad accent
     (
         [r"\b(tired|exhausted|drained|burnt out|burnout|need sleep|so sleepy)\b"],
         "idle", 5.0,
         {"Worried": 0.2},
         "tilt",
+        "sad",
     ),
 ]
 
@@ -184,9 +193,8 @@ def _read_base_animation() -> str:
 
 # ── burst runner ───────────────────────────────────────────────────────────────
 
-def _run_burst(animation: str, duration: float, expr_patch: dict, head_motion: str) -> None:
+def _run_burst(animation: str, duration: float, expr_patch: dict, head_motion: str, emotion_event: Optional[str]) -> None:
     base_anim = _read_base_animation()
-    # build patch
     patch = {}
     if animation:
         patch["motion"] = {"animation": animation, "duration": duration, "intensity": 0.75}
@@ -196,10 +204,10 @@ def _run_burst(animation: str, duration: float, expr_patch: dict, head_motion: s
         patch.update(expr_full)
     if head_motion:
         patch["head_motion"] = {"gesture": head_motion, "ts": int(time.time())}
+    if emotion_event:
+        patch["emotion_event"] = {"type": emotion_event, "ts": time.time()}
     _patch_state(patch)
-    # hold for duration
     time.sleep(duration)
-    # revert
     revert = {"head_motion": {"gesture": "none", "ts": int(time.time())}}
     if animation:
         revert["motion"] = {"animation": base_anim, "duration": 8, "intensity": 0.3}
@@ -218,12 +226,12 @@ def scan(user_input: str) -> Optional[str]:
     Non-blocking — the burst runs in a daemon thread so it never delays response.
     """
     text = user_input.lower()
-    for patterns, animation, duration, expr_patch, head_motion in _KEYWORD_MAP:
+    for patterns, animation, duration, expr_patch, head_motion, emotion_event in _KEYWORD_MAP:
         for pat in patterns:
             if re.search(pat, text):
                 t = threading.Thread(
                     target=_run_burst,
-                    args=(animation, duration, expr_patch, head_motion),
+                    args=(animation, duration, expr_patch, head_motion, emotion_event),
                     daemon=True,
                 )
                 t.start()

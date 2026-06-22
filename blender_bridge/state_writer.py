@@ -20,6 +20,7 @@ def write(
     motion:     dict,
     expression: dict | None = None,
     presence:   dict | None = None,
+    emotion:    dict | None = None,
 ) -> bool:
     """
     Write a consolidated state to blender_state.json.
@@ -54,8 +55,10 @@ def write(
 
     if presence:
         payload["state"] = {
-            "energy": presence.get("energy", 0.5),
-            "mode":   presence.get("mode",   "idle"),
+            "energy":    presence.get("energy",   0.5),
+            "mode":      presence.get("mode",     "idle"),
+            "emotion":   emotion.get("emotion",   "neutral") if emotion else "neutral",
+            "intensity": emotion.get("intensity", 0.3)       if emotion else 0.3,
         }
 
     try:
