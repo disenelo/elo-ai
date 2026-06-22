@@ -80,12 +80,32 @@ _pscheduler      = _PresenceScheduler()
 _behaviour_gate  = _BehaviourGate()
 _fallback        = _MockBackend()
 
+_BLENDER_STATE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "blender_state.json")
+
+
+def _signal_greeting_event(greeting_type: str) -> None:
+    """Patch blender_state.json with a short-lived greeting event so Unity can react."""
+    import time as _time
+    try:
+        if os.path.exists(_BLENDER_STATE_PATH):
+            with open(_BLENDER_STATE_PATH, "r") as _f:
+                _st = json.load(_f)
+        else:
+            _st = {}
+        _st["greeting_event"] = {"type": greeting_type, "ts": int(_time.time())}
+        with open(_BLENDER_STATE_PATH, "w") as _f:
+            json.dump(_st, _f)
+    except Exception:
+        pass
+
 _PURE_GREETING_POOL = [
     "Hey.", "Hi.", "Good to have you back.", "Hey — good to be here.", "Hi there.",
+    "Hey you.", "There you are.", "Good timing.", "Hey, hi.", "Right on time.",
 ]
 _SOCIAL_GREETING_POOL = [
     "Good to see you.", "Same.", "Good to be here.",
     "Good to have you back.", "You too.", "Always good.",
+    "Right back at you.", "Always.", "Good. Really good actually.",
 ]
 _SELF_REF_TRIGGERS = ("how do you work", "how does elo work", "how are you built",
                       "what are you exactly", "how do you remember", "how do you think")
@@ -94,6 +114,81 @@ _SELF_REF_POOL = [
     "I run a loop each turn: read what matters, decide what to do, respond. Each session connects to the last.",
     "I process what you say, find what's relevant, and respond. I keep what matters across sessions and drop the rest.",
 ]
+
+# "who are you" / "are you eLo" identity responses — warm, certain, not corrective
+_IDENTITY_TRIGGERS = (
+    "are you elo", "who are you", "what are you", "are you real",
+    "are you an ai", "are you a bot", "what is elo",
+)
+_IDENTITY_POOL = [
+    "Yeah. I'm eLo.",
+    "eLo. That's me.",
+    "Yep. eLo. Good to meet you properly.",
+    "I'm eLo. Always have been.",
+    "eLo — that's the one.",
+    "That's me. eLo.",
+    "Yeah — eLo. You found the right one.",
+]
+
+# ── multilingual greetings ─────────────────────────────────────────────────────
+# eLo tries a foreign greeting, catches himself, lands back warmly.
+# Format: (foreign phrase, eLo's correction beat)
+
+_LANGUAGE_GREETINGS = {
+    "spanish":    ("¡Hola!",       "wait — hey. That just slipped out."),
+    "italian":    ("Ciao!",        "oh. Hey there. That one felt right though."),
+    "french":     ("Bonjour!",     "hold on. Hi. More me, right?"),
+    "japanese":   ("Konnichiwa!", "hm. Hey. I got a little carried away."),
+    "german":     ("Hallo!",       "wait — that might just be hello. Hi."),
+    "portuguese": ("Olá!",         "oh. Hey there. I like that one."),
+    "mandarin":   ("Nǐ hǎo!",      "hm. Hey. I tried."),
+    "arabic":     ("Marhaba!",     "actually — hey. That was a nice one."),
+    "dutch":      ("Hoi!",         "wait, that's basically just hi. Hey!"),
+    "swedish":    ("Hej!",         "that's literally just hey. Which — hey!"),
+    "hindi":      ("Namaste!",     "oh. That felt more like a bow. Hey."),
+    "greek":      ("Yassas!",      "okay wait. Hi. Big energy though."),
+    "russian":    ("Privet!",      "hold on. Hey. That was adventurous."),
+    "hawaiian":   ("Aloha!",       "wait. Hey. Actually — aloha is good too."),
+    "korean":     ("Annyeong!",    "hm. Hey there. Both work honestly."),
+    "swahili":    ("Habari!",      "oh. Hi. I surprised myself there."),
+    "thai":       ("Sawasdee!",    "wait. Hey. That was a good one."),
+}
+
+# full pool for random picks (used at 30% chance on any pure greeting)
+_MULTILINGUAL_GREETING_POOL = [
+    f"{phrase} — {beat}"
+    for phrase, beat in _LANGUAGE_GREETINGS.values()
+]
+
+# triggers for explicit language queries: "say hello in Spanish"
+_MULTILINGUAL_QUERY_TRIGGERS = (
+    "say hello in", "say hi in", "greet me in",
+    "how do you say hi in", "how do you say hello in",
+    "hello in", "hi in",
+)
+
+
+def _detect_language_query(text: str):
+    """
+    Return (phrase, beat) if user asked for a greeting in a specific language.
+    Returns None if not a language query.
+    """
+    t = text.lower().strip()
+    for trigger in _MULTILINGUAL_QUERY_TRIGGERS:
+        if trigger in t:
+            # extract the language name after the trigger
+            after = t.split(trigger, 1)[1].strip().rstrip("?!. ")
+            lang  = after.split()[0] if after else ""
+            data  = _LANGUAGE_GREETINGS.get(lang)
+            if data:
+                return data
+            # fuzzy: try first word match against keys
+            for key in _LANGUAGE_GREETINGS:
+                if key.startswith(lang[:4]):
+                    return _LANGUAGE_GREETINGS[key]
+            # unknown language — pick random
+            return random.choice(list(_LANGUAGE_GREETINGS.values()))
+    return None
 
 
 def _init_session():
@@ -185,13 +280,32 @@ def _process_turn(raw: str) -> dict:
                               attention=attention_model, exec_decision=exec_decision,
                               graph_context=g_ctx)
 
-        _is_self_ref = any(p in _raw_lower for p in _SELF_REF_TRIGGERS)
-        backend_used = active_backend()
+        _is_self_ref    = any(p in _raw_lower for p in _SELF_REF_TRIGGERS)
+        _is_identity_q  = any(p in _raw_lower for p in _IDENTITY_TRIGGERS)
+        backend_used    = active_backend()
 
-        if _cal_reason == "pure greeting":
-            response, backend_used = random.choice(_PURE_GREETING_POOL), "direct"
+        # check for explicit language query first (highest priority greeting path)
+        _lang_query = _detect_language_query(_raw_lower)
+
+        if _lang_query:
+            _phrase, _beat = _lang_query
+            response     = f"{_phrase} — {_beat}"
+            backend_used = "direct"
+            _signal_greeting_event("multilingual")
+
+        elif _cal_reason == "pure greeting":
+            # 30% chance: playful multilingual variation; 70%: regular pool
+            if random.random() < 0.30:
+                response     = random.choice(_MULTILINGUAL_GREETING_POOL)
+                backend_used = "direct"
+                _signal_greeting_event("multilingual")
+            else:
+                response, backend_used = random.choice(_PURE_GREETING_POOL), "direct"
+
         elif _cal_reason == "social greeting":
             response, backend_used = random.choice(_SOCIAL_GREETING_POOL), "direct"
+        elif _is_identity_q:
+            response, backend_used = random.choice(_IDENTITY_POOL), "direct"
         elif _is_self_ref:
             response, backend_used = random.choice(_SELF_REF_POOL), "direct"
         else:
