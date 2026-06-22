@@ -51,6 +51,7 @@ from runtime.prompt_builder import build as build_prompt
 from runtime.backend_router import route as router_route, active_backend, normalise
 from tools.tool_router import enrich as _tool_enrich
 from tools.keyword_motion import scan as _keyword_motion_scan
+from memory.quirk_bank import maybe_generate as _quirk_observe
 from knowledge.graph_loader import build_context as graph_context
 from backends.mock_backend import MockBackend as _MockBackend, EXIT_POOL as _EXIT_POOL
 from avatar.presence_engine    import compute as _presence_compute, reset as _presence_reset
@@ -321,6 +322,12 @@ def _process_turn(raw: str) -> dict:
         # keyword-driven animation burst — fires async, never blocks response
         try:
             _keyword_motion_scan(raw)
+        except Exception:
+            pass
+
+        # quirk bank — 15% chance, generates a topic-specific eLo observation in background
+        try:
+            _quirk_observe(raw)
         except Exception:
             pass
 

@@ -272,7 +272,17 @@ def _run(unity_present: bool) -> None:
         if not _is_away():
             if _last_ambient > 0:
                 if now - _last_ambient >= random.uniform(_AMBIENT_MIN, _AMBIENT_MAX) and not _is_speaking():
-                    _speak(random.choice(_AMBIENT_LINES))
+                    # 30% chance: draw from quirk bank if it has content
+                    line = None
+                    if random.random() < 0.30:
+                        try:
+                            from memory.quirk_bank import draw as _quirk_draw
+                            drawn = _quirk_draw(1)
+                            if drawn:
+                                line = drawn[0]
+                        except Exception:
+                            pass
+                    _speak(line or random.choice(_AMBIENT_LINES))
                     _last_ambient = now
             elif _greeted:
                 _last_ambient = now
