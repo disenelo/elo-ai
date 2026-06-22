@@ -6,7 +6,7 @@ Behaviours:
   1. Startup greeting — speaks once on arrival signal from Unity (or after 4s delay).
   2. Idle ambient utterances — every 8-20 minutes.
   3. Random smiles — patches smile blendshapes every 2-5 minutes for 3-4s then clears.
-  4. Idle animation wander — occasionally switches to walk/calm then back to idle.
+  4. Idle animation wander — occasionally switches to walk/run then back to idle. Calm never fires here — it is a deliberate entered state only.
   5. Unity event polling — watches unity_events.json for DesktopBuddy triggers.
 """
 from __future__ import annotations
@@ -165,13 +165,62 @@ def _pulse_smile() -> None:
 
 def _wander_animation() -> None:
     """Switch to a non-idle animation for _ANIM_DURATION then return to idle."""
-    clip = random.choice(["walk", "calm", "calm"])  # calm weighted more — meditative
+    # calm is a deliberate state only — never fires randomly
+    clip = random.choice(["walk", "walk", "run"])  # walk weighted; run is occasional burst
     speed = round(random.uniform(0.4, 0.7), 2)
     _patch_state({"motion": {"animation": clip, "speed": speed, "intensity": 0.6,
                               "duration": _ANIM_DURATION, "mood": "exploring", "mode": clip}})
     _stop_ev.wait(timeout=_ANIM_DURATION)
     _patch_state({"motion": {"animation": "idle", "speed": 0.5, "intensity": 0.5,
                               "duration": 4.0, "mood": "open", "mode": "idle"}})
+
+
+# ── Deliberate meditation state ────────────────────────────────────────────────
+# Meditation is NOT a burst. It is an entered state with three phases.
+# Unity reads meditation_state.phase and drives: Enter clip → Loop → Exit clip.
+# Call enter_meditation() deliberately — from a voice command, a CAL GROUND action,
+# or when the user explicitly asks eLo to meditate.
+
+import threading as _th
+
+_meditation_active = False
+_meditation_lock   = _th.Lock()
+
+
+def enter_meditation(duration_seconds: float = 60.0) -> None:
+    """
+    Enter eLo's meditation state. Writes enter → loop → exit phases to
+    blender_state.json so Unity can run the full Calm state machine.
+    Runs in a background thread — non-blocking.
+    """
+    def _run_meditation():
+        global _meditation_active
+        with _meditation_lock:
+            if _meditation_active:
+                return
+            _meditation_active = True
+        try:
+            import time as _t
+            _patch_state({"meditation_state": {"phase": "enter"},
+                          "motion":           {"animation": "calm", "intensity": 0.8}})
+            _t.sleep(2.0)  # enter clip duration — Unity transitions to loop after this
+            _patch_state({"meditation_state": {"phase": "loop"}})
+            _t.sleep(max(0.0, duration_seconds - 4.0))  # hold loop
+            _patch_state({"meditation_state": {"phase": "exit"}})
+            _t.sleep(2.0)  # exit clip plays
+            _patch_state({"meditation_state": {"phase": "none"},
+                          "motion":           {"animation": "idle", "intensity": 0.5}})
+        finally:
+            with _meditation_lock:
+                _meditation_active = False
+
+    _th.Thread(target=_run_meditation, daemon=True).start()
+
+
+def exit_meditation() -> None:
+    """Force an early exit from meditation — jumps straight to the exit phase."""
+    if _meditation_active:
+        _patch_state({"meditation_state": {"phase": "exit"}})
 
 
 # ── Main loop ─────────────────────────────────────────────────────────────────

@@ -118,19 +118,20 @@ _KEYWORD_MAP = [
         {"Worried": 0.15},
         "shake",
     ),
-    # Calm / peace / breathe / rest — calm clip + tilt
+    # Calm / peace / breathe — head gesture + expression only, no body clip
+    # Calm animation is a deliberate entered state, not a burst
     (
         [r"\b(calm|peace|breathe|relax|meditat|quiet|slow down|rest|take a break)\b",
          r"\b(it's okay|you're okay|breathe|gentle|soft|easy)\b"],
-        "calm", 8.0,
-        {"Satisfied": 0.4},
+        None, 4.0,
+        {"Satisfied": 0.45},
         "tilt",
     ),
-    # Stress / anxiety — calm grounding + think gesture
+    # Stress / anxiety — grounding head gesture + worried expression, no body clip
     (
         [r"\b(stress|anxious|anxiety|overwhelm|panic|worried|can't cope|struggling)\b",
          r"\b(too much|falling behind|behind schedule|deadline|pressure)\b"],
-        "calm", 6.0,
+        None, 4.0,
         {"Worried": 0.35, "Satisfied": 0.1},
         "think",
     ),
