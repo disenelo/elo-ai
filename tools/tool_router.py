@@ -198,6 +198,35 @@ _AGENTS = {
 }
 
 
+# ── system agent — checked separately with confirmation flow ───────────────────
+
+def _check_system(user_input: str) -> Optional[str]:
+    """
+    Check if this is a macOS system control request. If so, return a CONTEXT
+    string describing what eLo can do — so the LLM proposes the action in eLo's
+    voice rather than executing it silently.
+
+    Actual execution happens when the user confirms (follow-up turn with 'yes'/'do it').
+    For safe read-only actions (folder_list, folder_organise) — execute immediately.
+    """
+    try:
+        from tools.system_agent import detect, describe, execute
+        result = detect(user_input)
+        if result is None:
+            return None
+        action, arg = result
+        # Read-only actions: execute and return data directly
+        if action in ("folder_list", "folder_organise"):
+            data = execute(action, arg)
+            return f"[SYSTEM: {data}]"
+        # Mutating actions: describe and let eLo propose — user confirms next turn
+        description = describe(action, arg)
+        return f"[SYSTEM PENDING: I can {description}. Say yes to go ahead.]"
+    except Exception as e:
+        _logger.debug("system agent check failed: %s", e)
+        return None
+
+
 # ── public API ─────────────────────────────────────────────────────────────────
 
 def enrich(user_input: str) -> Tuple[str, Optional[str]]:
@@ -212,6 +241,11 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
     If no tool matches, returns (user_input, None) unchanged.
     Never raises — if an agent fails, falls through gracefully.
     """
+    # system agent checked first — higher specificity than keyword tools
+    sys_ctx = _check_system(user_input)
+    if sys_ctx:
+        return f"{sys_ctx}\n\n{user_input}", "system"
+
     intent = _detect_intent(user_input)
     if intent is None:
         return user_input, None

@@ -243,6 +243,27 @@ def _claude_call(system_prompt: str, user_input: str) -> str:
     return msg.content[0].text.strip()
 
 
+# ── intent-based model override ───────────────────────────────────────────────
+# Lets users explicitly direct a query to a specific model.
+# eLo still delivers the response — only the reasoning engine changes.
+
+_CLAUDE_OVERRIDE   = ("ask claude", "use claude", "claude answer", "run it through claude")
+_GEMINI_OVERRIDE   = ("ask gemini", "use gemini", "gemini answer", "translate", "long context")
+_GROQ_OVERRIDE     = ("ask groq", "use groq", "fast answer", "quick answer")
+
+
+def _detect_model_override(user_input: str) -> Optional[str]:
+    """Return a forced backend name if the user explicitly named one, else None."""
+    t = user_input.lower()
+    if any(p in t for p in _CLAUDE_OVERRIDE):
+        return "claude"
+    if any(p in t for p in _GEMINI_OVERRIDE):
+        return "gemini"
+    if any(p in t for p in _GROQ_OVERRIDE):
+        return "groq"
+    return None
+
+
 # ── public router ──────────────────────────────────────────────────────────────
 
 def route(
@@ -270,6 +291,27 @@ def route(
         # no API keys and no explicit backend set — go offline immediately
         _env_mode = "local"
     mode = mode or _env_mode or "auto"
+
+    # intent-based model override — user explicitly named a backend
+    _override = _detect_model_override(user_input)
+    if _override == "claude" and _claude_available():
+        try:
+            raw = _claude_call(system_prompt, user_input)
+            return normalise(raw, max_sentences), "claude(direct)"
+        except Exception:
+            pass  # fall through to normal routing
+    elif _override == "gemini" and _gemini_available():
+        try:
+            raw = _gemini_call(system_prompt, user_input)
+            return normalise(raw, max_sentences), "gemini(direct)"
+        except Exception:
+            pass
+    elif _override == "groq" and _groq_available():
+        try:
+            raw = _groq_call(system_prompt, user_input)
+            return normalise(raw, max_sentences), "groq(direct)"
+        except Exception:
+            pass
 
     # explicit mode overrides
     if mode == "mock":
