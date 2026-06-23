@@ -399,12 +399,22 @@ def speak(text: str) -> None:
     _active_thread.start()
 
 
+def _split_sentences(text: str) -> list:
+    """Split response into sentences for sequential playback."""
+    parts = re.split(r'(?<=[.!?…])\s+', text.strip())
+    return [p.strip() for p in parts if p.strip()]
+
+
 def _speak_thread(text: str, stop: threading.Event) -> None:
-    success = False
-    if _EL_KEY and _EL_VOICE:
-        success = _play_elevenlabs(text, stop)
-    if not success and _OPENAI_KEY:
-        success = _play_openai(text, stop)
-    if not success:
-        _play_say(text, stop)
+    sentences = _split_sentences(text)
+    for sentence in sentences:
+        if stop.is_set():
+            break
+        success = False
+        if _EL_KEY and _EL_VOICE:
+            success = _play_elevenlabs(sentence, stop)
+        if not success and _OPENAI_KEY:
+            success = _play_openai(sentence, stop)
+        if not success:
+            _play_say(sentence, stop)
     clear_lipsync()
