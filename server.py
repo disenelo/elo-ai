@@ -68,6 +68,8 @@ from avatar.avatar_rules         import apply as _avatar_rules
 from blender_bridge.state_writer import write as _state_write
 from expression.expression_mapper import build_expression as _expr_build, map_emotion as _expr_map_emotion
 from voice.voice_engine import speak as _voice_speak
+from memory import personality_drift as _personality_drift
+from elo_personality_engine.injection_layer import load_personality_profile as _load_profile
 
 # ── session state (shared across requests, protected by lock) ─────────────────
 
@@ -81,6 +83,12 @@ _last_inputs     = []
 _last_avatar_cmd = None
 _pscheduler      = _PresenceScheduler()
 _behaviour_gate  = _BehaviourGate()
+
+# ── personality profile (loaded once at startup, injected into every prompt) ──
+try:
+    _personality_profile = _load_profile(project_ids=["elo-planet", "elo-robot", "plushies"])
+except Exception:
+    _personality_profile = None
 _fallback        = _MockBackend()
 
 _BLENDER_STATE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "blender_state.json")
@@ -278,10 +286,12 @@ def _process_turn(raw: str) -> dict:
                 attention_model = dict(attention_model)
                 attention_model["high_priority_memory"] = [_why] + _hp
 
+        _mode_str = exec_decision.get("mode", "CONVERSATIONAL") if exec_decision else "CONVERSATIONAL"
+        _pers_block = _personality_profile.to_prompt_block(_mode_str) if _personality_profile else ""
         system = build_prompt(raw, vault_context=_vault_ctx,
                               state_context=state_manager.as_context_string(_state),
                               attention=attention_model, exec_decision=exec_decision,
-                              graph_context=g_ctx)
+                              graph_context=g_ctx, personality_block=_pers_block)
 
         _is_self_ref    = any(p in _raw_lower for p in _SELF_REF_TRIGGERS)
         _is_identity_q  = any(p in _raw_lower for p in _IDENTITY_TRIGGERS)
@@ -468,6 +478,18 @@ def _shutdown_cleanly(server: ThreadingHTTPServer) -> None:
     try:
         if _obs_store.message_count >= 10:
             _export_skeleton(_gen_skeleton(_obs_store))
+    except Exception:
+        pass
+    # personality drift — update slow drift from this session's emotional history
+    try:
+        if _state:
+            _ps = _personality_drift.load()
+            _ps = _personality_drift.update(
+                _ps,
+                _state.get("emotional_history", []),
+                _state.get("session_summaries", []),
+            )
+            _personality_drift.save(_ps)
     except Exception:
         pass
     server.shutdown()

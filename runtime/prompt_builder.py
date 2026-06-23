@@ -263,13 +263,14 @@ Tone changes are adjustments in expression, not personality shifts."""
 
 
 def build(
-    user_input:     str,
-    state_context:  str = "",
-    vault_context:  str = "",
-    mode:           str = "CONVERSATIONAL",
-    attention:      dict = None,
-    exec_decision:  dict = None,
-    graph_context:  str = "",
+    user_input:        str,
+    state_context:     str = "",
+    vault_context:     str = "",
+    mode:              str = "CONVERSATIONAL",
+    attention:         dict = None,
+    exec_decision:     dict = None,
+    graph_context:     str = "",
+    personality_block: str = "",
 ) -> str:
     """
     Assemble the system prompt.
@@ -286,6 +287,9 @@ def build(
         Injects a tone directive telling Claude exactly which voice mode to use.
     """
     sections = [load_living_presence_spec()]
+
+    if personality_block.strip():
+        sections.append(personality_block)
 
     if attention:
         # v2 path — attention-filtered memory only
