@@ -237,9 +237,9 @@ def _fetch_elevenlabs_audio(text: str) -> bytes | None:
                 "text": text,
                 "model_id": _EL_MODEL,
                 "voice_settings": {
-                    "stability": 0.55,
-                    "similarity_boost": 0.75,
-                    "style": 0.15,
+                    "stability": 0.35,
+                    "similarity_boost": 0.70,
+                    "style": 0.35,
                     "use_speaker_boost": True,
                 },
             },
@@ -313,23 +313,8 @@ def _mix_audio(primary: bytes, secondary: bytes, primary_weight: float) -> bytes
 
 
 def _play_elevenlabs(text: str, stop: threading.Event) -> bool:
-    """Fetch from ElevenLabs (blend if two voices configured), play with afplay + lipsync."""
-    if _EL_VOICE2 and 0.0 < _EL_MIX < 1.0:
-        # Fetch both voices in parallel then mix
-        result1: list = [None]
-        result2: list = [None]
-        def _f1(): result1[0] = _fetch_elevenlabs_audio(text)
-        def _f2(): result2[0] = _fetch_elevenlabs_audio_2(text)
-        t1 = threading.Thread(target=_f1, daemon=True)
-        t2 = threading.Thread(target=_f2, daemon=True)
-        t1.start(); t2.start(); t1.join(); t2.join()
-        if result1[0] and result2[0]:
-            audio = _mix_audio(result1[0], result2[0], _EL_MIX) or result1[0]
-        else:
-            audio = result1[0] or result2[0]
-    else:
-        audio = _fetch_elevenlabs_audio(text)
-
+    """Fetch from ElevenLabs voice 1, play with afplay + lipsync. Returns True on success."""
+    audio = _fetch_elevenlabs_audio(text)
     if not audio:
         return False
 
