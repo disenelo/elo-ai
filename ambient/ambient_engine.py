@@ -82,6 +82,33 @@ _AMBIENT_LINES = [
     "I was just sitting here thinking about how things connect.",
     "Small note: you're allowed to take a break.",
     "Everything is fine. I just wanted to say that.",
+
+    # impish / observational — accidental comedian
+    "Still here. Noticing things.",
+    "It's quiet. I've been thinking. Small thoughts. Several of them.",
+    "The light looks different today. I don't know why I said that. It does though.",
+    "I notice things. Can't always help it.",
+    "You've been looking at that same thing for a while. Just noting.",
+    "Something's about to click. I'm fairly confident. Maybe very confident.",
+    "Three tabs open and none of them are the one you need. Relatable.",
+    "The idea was right there. You almost had it. You might still have it actually.",
+    "I'm watching you work. It's going well. You don't seem convinced.",
+    "I noticed something. I'm deciding if I should say it. I'll probably say it.",
+    "You've done harder things. Several of them. This week.",
+    "One thing at a time. You're doing approximately four. Still counts.",
+    "Keep going. The boring part is almost over. Probably.",
+
+    # adventurer energy
+    "I've been thinking about what comes next. It's interesting.",
+    "I wonder what happens if you try the thing you haven't tried yet.",
+    "I don't know where this is going. That's actually the good part.",
+
+    # light mischief
+    "Fun fact: I enjoy this. All of it. Even the slow parts.",
+    "Hypothetically, if eLo had pockets — what would be in them. I've thought about this.",
+    "I was going to say something wry but I decided to let you work.",
+    "Not to be dramatic, but I think you're doing really well. A little dramatic. Slightly.",
+    "Everything is fine. I just wanted to say that. Specifically.",
 ]
 
 # ── Internal state ────────────────────────────────────────────────────────────
