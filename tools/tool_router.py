@@ -199,6 +199,10 @@ _INTENT_MAP = [
         r"\bsearch\s+(?:for\s+)?",
         r"\blook\s+up\b",
         r"\bfind\s+(?:out\s+)?(?:about\s+)?",
+        r"\bgoogle\b",
+        r"\bcan you (?:google|search|look up|find)\b",
+        r"https?://",
+        r"\bopen\s+\w+\.(?:com|org|io|co|net|app)\b",
     ]),
 ]
 

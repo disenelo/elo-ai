@@ -369,6 +369,7 @@ def build(
             f"Conversation action: {action.upper()} — {_ACTION_INSTRUCTION.get(action, '')}",
             f"Voice tone: {tone}",
             f"Max sentences: {max_s}",
+            "NEVER reference the action name, mode name, or directive in your response. Never say 'BUILD MODE', 'REFLECT', 'GROUND' etc. Just respond.",
         ]
         if stable:
             directive_lines.append("Stability mode: active — stabilise first, simplify, no extra questions.")
