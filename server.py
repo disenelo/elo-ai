@@ -119,6 +119,19 @@ _SOCIAL_GREETING_POOL = [
     "Good to have you back.", "You too.", "Always good.",
     "Right back at you.", "Always.", "Good. Really good actually.",
 ]
+_HOW_ARE_YOU_POOL = [
+    "Good. Noticing things.",
+    "Present. You?",
+    "Here. Fairly settled.",
+    "Good. Something's about to click — I can feel it.",
+    "Settled. Ready.",
+    "Honestly? Good. You?",
+    "Fine. Possibly better than fine. We'll see.",
+    "Here and accounted for.",
+    "Good. Interested in what comes next.",
+    "Present. Watching.",
+]
+
 _SELF_REF_TRIGGERS = ("how do you work", "how does elo work", "how are you built",
                       "what are you exactly", "how do you remember", "how do you think")
 _SELF_REF_POOL = [
@@ -316,6 +329,8 @@ def _process_turn(raw: str) -> dict:
             else:
                 response, backend_used = random.choice(_PURE_GREETING_POOL), "direct"
 
+        elif _cal_reason == "how are you":
+            response, backend_used = random.choice(_HOW_ARE_YOU_POOL), "direct"
         elif _cal_reason == "social greeting":
             response, backend_used = random.choice(_SOCIAL_GREETING_POOL), "direct"
         elif _is_identity_q:

@@ -111,6 +111,16 @@ _SOCIAL_PHRASES   = ["nice to see you", "good to see you", "great to see you",
                      "lovely to see you", "glad to see you", "hi again", "hello again",
                      "good to be back", "nice to be back"]
 
+# "how are you" variants — detected as whole-input or short social check-in
+_HOW_ARE_YOU = {
+    "how are you", "how are you doing", "how are you feeling",
+    "how are things", "how's things", "hows things",
+    "how you doing", "how you been", "how have you been",
+    "you ok", "you okay", "you alright",
+    "how's it going", "hows it going", "how is it going",
+    "how are we", "how are we doing",
+}
+
 # Pure greetings — match the entire input only, not substrings
 _PURE_GREETINGS   = {"hey", "hello", "hi", "hiya", "yo", "hey there", "hi there",
                      "hello there", "heya", "sup", "helo",
@@ -144,6 +154,11 @@ def _conversation_action(
     # Pure greetings — whole-input match only ("hey", "hello", "hi there", etc.)
     if _bare in _PURE_GREETINGS:
         return {"action": "celebrate", "confidence": 0.85, "reason": "pure greeting"}
+
+    # "How are you" check-ins — direct pool, not LLM
+    _bare_q = _bare.rstrip("?")
+    if _bare_q in _HOW_ARE_YOU or _bare in _HOW_ARE_YOU:
+        return {"action": "celebrate", "confidence": 0.85, "reason": "how are you"}
 
     # Social greetings (no "?") — brief warm acknowledgement, not deep interpretation
     if (any(p in t for p in _SOCIAL_PHRASES)

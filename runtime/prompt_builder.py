@@ -370,6 +370,9 @@ def build(
             f"Voice tone: {tone}",
             f"Max sentences: {max_s}",
             "NEVER reference the action name, mode name, or directive in your response. Never say 'BUILD MODE', 'REFLECT', 'GROUND' etc. Just respond.",
+            "FORBIDDEN OUTPUT — never say any of these verbatim: 'Name the pattern.' / 'Build one brick.' / 'Build before announcing.' / 'Energy is information.' / 'Make it hold.' / 'Begin small.' / 'Less but better.' / 'Choose one world.' / 'Exist before producing.' / 'Move gently.' / 'Follow the aliveness.' — If you are about to say one, rephrase it in your own words instead.",
+            "FORBIDDEN: Never use asterisk actions. Never write *anything* with asterisks. No *leans in*, no *smiles*, no *pauses*, no stage directions of any kind.",
+            "FORBIDDEN: Never correct the user's terminology. If they say 'eLo Game' when they mean 'eLo Planet', use their word or ignore it. Never say 'actually it's called' or 'the correct term is'.",
         ]
         if stable:
             directive_lines.append("Stability mode: active — stabilise first, simplify, no extra questions.")
