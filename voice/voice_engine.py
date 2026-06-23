@@ -43,7 +43,7 @@ _EL_VOICE2 = os.environ.get("ELEVENLABS_VOICE_ID_2", "")
 _EL_MIX    = float(os.environ.get("ELEVENLABS_VOICE_MIX", "1.0"))  # weight of primary (0–1)
 _EL_MODEL  = os.environ.get("ELEVENLABS_MODEL", "eleven_turbo_v2_5")
 
-_SAY_VOICE    = os.environ.get("ELO_VOICE", "Junior")
+_SAY_VOICE    = os.environ.get("ELO_VOICE", "").strip()  # empty = use macOS system voice
 
 # ── TTS text cleaner ──────────────────────────────────────────────────────────
 # Strips emoji and variation selectors so TTS never reads "smiley face".
@@ -350,11 +350,11 @@ def _play_elevenlabs(text: str, stop: threading.Event) -> bool:
 def _play_say(text: str, stop: threading.Event) -> None:
     phonemes = _text_to_phoneme_sequence(text)
     try:
-        proc = subprocess.Popen(
-            ["say", "-v", _SAY_VOICE, "-r", str(_SAY_RATE), text],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        cmd = ["say", "-r", str(_SAY_RATE)]
+        if _SAY_VOICE:
+            cmd += ["-v", _SAY_VOICE]  # empty = use macOS system default voice
+        cmd.append(text)
+        proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except FileNotFoundError:
         return
 
