@@ -112,6 +112,7 @@ def _signal_greeting_event(greeting_type: str) -> None:
 _PURE_GREETING_POOL = [
     "Hey.", "Hi.", "Good to have you back.", "Hey — good to be here.", "Hi there.",
     "Hey you.", "There you are.", "Good timing.", "Hey, hi.", "Right on time.",
+    "Ciao.", "Ciao bello.", "Hola.", "Ello.", "Oh — hey.", "There we go.",
 ]
 _SOCIAL_GREETING_POOL = [
     "Good to see you.", "Same.", "Good to be here.",

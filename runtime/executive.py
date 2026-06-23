@@ -113,7 +113,10 @@ _SOCIAL_PHRASES   = ["nice to see you", "good to see you", "great to see you",
 
 # Pure greetings — match the entire input only, not substrings
 _PURE_GREETINGS   = {"hey", "hello", "hi", "hiya", "yo", "hey there", "hi there",
-                     "hello there", "heya", "sup", "helo"}
+                     "hello there", "heya", "sup", "helo",
+                     "ciao", "ciao bello", "ciao bella", "ello", "alright",
+                     "hola", "bonjour", "salut", "hallo", "oi", "wagwan",
+                     "morning", "good morning", "afternoon", "evening"}
 
 _CAPABILITY_PHRASES = ("can you", "are you", "do you", "will you", "can elo", "does elo",
                        "are you able", "is elo able")
