@@ -52,6 +52,7 @@ from runtime.backend_router import route as router_route, active_backend, normal
 from tools.tool_router import enrich as _tool_enrich
 from tools.keyword_motion import scan as _keyword_motion_scan
 from memory.quirk_bank import maybe_generate as _quirk_observe
+from elo_personality_engine.skeleton_generator import ObservationStore as _ObsStore, generate_skeleton as _gen_skeleton, export_skeleton as _export_skeleton
 from knowledge.graph_loader import build_context as graph_context
 from backends.mock_backend import MockBackend as _MockBackend, EXIT_POOL as _EXIT_POOL
 from avatar.presence_engine    import compute as _presence_compute, reset as _presence_reset
@@ -72,6 +73,7 @@ from voice.voice_engine import speak as _voice_speak
 
 _lock            = threading.Lock()
 _state           = None
+_obs_store       = _ObsStore()   # accumulates user messages across this session
 _runtime_state   = None
 _memory_pack     = {}
 _vault_ctx       = ""
@@ -331,6 +333,12 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # personality skeleton — observe every user message (no LLM call, pure pattern extraction)
+        try:
+            _obs_store.observe(raw)
+        except Exception:
+            pass
+
         _obs_log(raw, attention_model)
         _observation = _obs_observe(current_action=_action)
         if _observation:
@@ -456,6 +464,12 @@ def _shutdown_cleanly(server: ThreadingHTTPServer) -> None:
             _state_ref = state_manager.close_session(_state)
             state_manager.save(_state_ref)
             _continuity_update(_obs_get_log())
+    # export personality skeleton if enough messages were observed this session
+    try:
+        if _obs_store.message_count >= 10:
+            _export_skeleton(_gen_skeleton(_obs_store))
+    except Exception:
+        pass
     server.shutdown()
 
 
