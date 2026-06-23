@@ -37,6 +37,10 @@ _TTS_VOICE    = os.environ.get("ELO_TTS_VOICE",  "shimmer")   # childlike, light
 _TTS_SPEED    = float(os.environ.get("ELO_TTS_SPEED", "1.0"))
 _TTS_URL      = "https://api.openai.com/v1/audio/speech"
 
+_EL_KEY   = os.environ.get("ELEVENLABS_API_KEY", "")
+_EL_VOICE = os.environ.get("ELEVENLABS_VOICE_ID", "")
+_EL_MODEL = os.environ.get("ELEVENLABS_MODEL", "eleven_turbo_v2_5")
+
 _SAY_VOICE    = os.environ.get("ELO_VOICE", "Junior")
 
 # ── TTS text cleaner ──────────────────────────────────────────────────────────
@@ -216,6 +220,71 @@ def _play_openai(text: str, stop: threading.Event) -> bool:
     return True
 
 
+# ── ElevenLabs TTS ───────────────────────────────────────────────────────────
+
+def _fetch_elevenlabs_audio(text: str) -> bytes | None:
+    """Call ElevenLabs TTS API and return raw mp3 bytes, or None on failure."""
+    if not _EL_KEY or not _EL_VOICE:
+        return None
+    try:
+        import httpx
+        resp = httpx.post(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{_EL_VOICE}",
+            headers={"xi-api-key": _EL_KEY, "Content-Type": "application/json"},
+            json={
+                "text": text,
+                "model_id": _EL_MODEL,
+                "voice_settings": {
+                    "stability": 0.55,
+                    "similarity_boost": 0.75,
+                    "style": 0.15,
+                    "use_speaker_boost": True,
+                },
+            },
+            timeout=15.0,
+        )
+        if resp.status_code == 200:
+            return resp.content
+        print(f"[eLo voice] ElevenLabs TTS error {resp.status_code}: {resp.text[:120]}")
+        return None
+    except Exception as e:
+        print(f"[eLo voice] ElevenLabs TTS exception: {e}")
+        return None
+
+
+def _play_elevenlabs(text: str, stop: threading.Event) -> bool:
+    """Fetch from ElevenLabs, write to tmp file, play with afplay + lipsync. Returns True on success."""
+    audio = _fetch_elevenlabs_audio(text)
+    if not audio:
+        return False
+
+    phonemes = _text_to_phoneme_sequence(text)
+
+    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
+        f.write(audio)
+        tmp_path = f.name
+
+    try:
+        proc = subprocess.Popen(
+            ["afplay", tmp_path],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        _pulse_lipsync(phonemes, stop)
+
+        try:
+            proc.wait(timeout=30.0)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+
+    return True
+
+
 # ── macOS say fallback ────────────────────────────────────────────────────────
 
 def _play_say(text: str, stop: threading.Event) -> None:
@@ -272,10 +341,10 @@ def speak(text: str) -> None:
 
 def _speak_thread(text: str, stop: threading.Event) -> None:
     success = False
-    if _OPENAI_KEY:
+    if _EL_KEY and _EL_VOICE:
+        success = _play_elevenlabs(text, stop)
+    if not success and _OPENAI_KEY:
         success = _play_openai(text, stop)
-
     if not success:
         _play_say(text, stop)
-
     clear_lipsync()
