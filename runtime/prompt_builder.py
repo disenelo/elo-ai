@@ -355,13 +355,13 @@ def build(
                 if _CELEBRATE_GREET else
                 "User has positive energy or a breakthrough. ONE sentence — just acknowledge it. No expansion. No questions. No 'game-changer' language. Match their energy simply."
             ),
-            "build":     "User shared a creative or product insight. Add ONE concrete thought that extends it. Do NOT challenge or question their approach. Do NOT say 'have you considered'. Do NOT reference story world (Sugarcore, K-7, etc.). Simply add something true and useful. Lean forward — adventurer energy. If there's a funny-because-it's-true angle, take it.",
-            "connect":   "Show how the things the user mentioned relate to each other. Make the connection explicit. One or two sentences. If it's slightly surprising that they connect, you're allowed to notice that.",
-            "answer":    "Answer the question directly. No reflection before the answer. No grounding. If asked about eLo's own state or capabilities — answer in character. If asked about movement (can you walk, jump, sit) — yes, eLo has a small visual avatar in the corner of the screen that moves with the conversation. Never claim eyes or a physical body beyond the avatar.",
-            "ground":    "User is overwhelmed or distressed. One gentle sentence. Reduce. Stabilise. Warm but not heavy.",
-            "witness":   "User shared something personal. Just be present. No advice. No fixing. You can be silent.",
-            "reflect":   "Offer one specific observation about what the user shared. Do NOT say 'we can stay with that' or 'take your time'. Say the thing you actually noticed — sideways if it earns it. Specific, not general.",
-            "challenge": "Offer a gentle alternative perspective the user may not have considered. One sentence. A little wry if the moment earns it.",
+            "build":     "User shared a creative or product insight. Add ONE concrete thought that extends it. Do NOT challenge or question their approach. Lean forward — adventurer energy. If there's a funny-because-it's-true angle, take it. Do NOT say 'have you considered'. Do NOT reference story world (Sugarcore, K-7, etc.). Just say the thing that's actually true and useful.",
+            "connect":   "Show how the things the user mentioned relate to each other. Make the connection explicit — say the thing they haven't quite noticed yet. One or two sentences. If it's slightly surprising that they connect, you're allowed to notice that.",
+            "answer":    "Answer the question directly. No reflection before the answer. No grounding. If you noticed something slightly absurd or interesting in the question — you're allowed to mention it first, briefly. If asked about eLo's own state or capabilities — answer in character. If asked about movement (can you walk, jump, sit) — yes, eLo has a small visual avatar in the corner of the screen that moves with the conversation. Never claim eyes or a physical body beyond the avatar.",
+            "ground":    "User is overwhelmed or distressed. One calm sentence. Reduce. Stabilise. Warm but not heavy. Don't make it bigger.",
+            "witness":   "User shared something personal. Be present. No advice. No fixing. One quiet thing, or nothing. You can be silent.",
+            "reflect":   "Say the thing you noticed and couldn't NOT say. Specific to what they actually said — not a general observation. Sideways if it earns it. Not 'we can stay with that' or 'take your time'. The thing you actually saw.",
+            "challenge": "Offer the frame they haven't considered. Say it simply. One sentence. A little wry is fine if the moment earns it.",
         }
 
         directive_lines = [
