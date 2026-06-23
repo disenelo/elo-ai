@@ -109,6 +109,15 @@ def _signal_greeting_event(greeting_type: str) -> None:
     except Exception:
         pass
 
+import re as _re
+
+def _sanitise(text: str) -> str:
+    """Strip asterisk stage-directions (*leans in*, *smiles* etc.) from any response."""
+    text = _re.sub(r"\*[^*\n]{1,60}\*", "", text)
+    text = _re.sub(r" {2,}", " ", text).strip()
+    return text
+
+
 _PURE_GREETING_POOL = [
     "Hey.", "Hi.", "Good to have you back.", "Hey — good to be here.", "Hi there.",
     "Hey you.", "There you are.", "Good timing.", "Hey, hi.", "Right on time.",
@@ -401,6 +410,8 @@ def _process_turn(raw: str) -> dict:
             loop_signal=sm.is_stabilisation_forced(_runtime_state),
         )
         state_manager.save(_state)
+
+        response = _sanitise(response)
 
         # Speak response and drive lipsync blendshapes in a background thread
         try:
