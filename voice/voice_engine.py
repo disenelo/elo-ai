@@ -37,9 +37,11 @@ _TTS_VOICE    = os.environ.get("ELO_TTS_VOICE",  "shimmer")   # childlike, light
 _TTS_SPEED    = float(os.environ.get("ELO_TTS_SPEED", "1.0"))
 _TTS_URL      = "https://api.openai.com/v1/audio/speech"
 
-_EL_KEY   = os.environ.get("ELEVENLABS_API_KEY", "")
-_EL_VOICE = os.environ.get("ELEVENLABS_VOICE_ID", "")
-_EL_MODEL = os.environ.get("ELEVENLABS_MODEL", "eleven_turbo_v2_5")
+_EL_KEY    = os.environ.get("ELEVENLABS_API_KEY", "")
+_EL_VOICE  = os.environ.get("ELEVENLABS_VOICE_ID", "")
+_EL_VOICE2 = os.environ.get("ELEVENLABS_VOICE_ID_2", "")
+_EL_MIX    = float(os.environ.get("ELEVENLABS_VOICE_MIX", "1.0"))  # weight of primary (0–1)
+_EL_MODEL  = os.environ.get("ELEVENLABS_MODEL", "eleven_turbo_v2_5")
 
 _SAY_VOICE    = os.environ.get("ELO_VOICE", "Junior")
 
@@ -252,9 +254,82 @@ def _fetch_elevenlabs_audio(text: str) -> bytes | None:
         return None
 
 
+def _fetch_elevenlabs_audio_2(text: str) -> bytes | None:
+    """Fetch from the secondary EL voice (for blending). Same settings as primary."""
+    if not _EL_KEY or not _EL_VOICE2:
+        return None
+    try:
+        import httpx
+        resp = httpx.post(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{_EL_VOICE2}",
+            headers={"xi-api-key": _EL_KEY, "Content-Type": "application/json"},
+            json={
+                "text": text,
+                "model_id": _EL_MODEL,
+                "voice_settings": {
+                    "stability": 0.55,
+                    "similarity_boost": 0.75,
+                    "style": 0.15,
+                    "use_speaker_boost": True,
+                },
+            },
+            timeout=15.0,
+        )
+        return resp.content if resp.status_code == 200 else None
+    except Exception:
+        return None
+
+
+def _mix_audio(primary: bytes, secondary: bytes, primary_weight: float) -> bytes | None:
+    """Blend two MP3 streams using ffmpeg amix. Returns mixed MP3 bytes or None."""
+    try:
+        import subprocess as _sp, tempfile as _tf
+        w2 = round(1.0 - primary_weight, 3)
+        with (_tf.NamedTemporaryFile(suffix=".mp3", delete=False) as f1,
+              _tf.NamedTemporaryFile(suffix=".mp3", delete=False) as f2,
+              _tf.NamedTemporaryFile(suffix=".mp3", delete=False) as fout):
+            f1.write(primary);   p1 = f1.name
+            f2.write(secondary); p2 = f2.name
+            pout = fout.name
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", p1, "-i", p2,
+            "-filter_complex",
+            f"[0:a]volume={primary_weight}[a1];[1:a]volume={w2}[a2];[a1][a2]amix=inputs=2:duration=longest[aout]",
+            "-map", "[aout]", "-codec:a", "libmp3lame", "-q:a", "4", pout,
+        ]
+        result = _sp.run(cmd, stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+        if result.returncode != 0:
+            return None
+        with open(pout, "rb") as f:
+            mixed = f.read()
+        for p in (p1, p2, pout):
+            try: os.unlink(p)
+            except OSError: pass
+        return mixed
+    except Exception as e:
+        print(f"[eLo voice] ffmpeg mix error: {e}")
+        return None
+
+
 def _play_elevenlabs(text: str, stop: threading.Event) -> bool:
-    """Fetch from ElevenLabs, write to tmp file, play with afplay + lipsync. Returns True on success."""
-    audio = _fetch_elevenlabs_audio(text)
+    """Fetch from ElevenLabs (blend if two voices configured), play with afplay + lipsync."""
+    if _EL_VOICE2 and 0.0 < _EL_MIX < 1.0:
+        # Fetch both voices in parallel then mix
+        result1: list = [None]
+        result2: list = [None]
+        def _f1(): result1[0] = _fetch_elevenlabs_audio(text)
+        def _f2(): result2[0] = _fetch_elevenlabs_audio_2(text)
+        t1 = threading.Thread(target=_f1, daemon=True)
+        t2 = threading.Thread(target=_f2, daemon=True)
+        t1.start(); t2.start(); t1.join(); t2.join()
+        if result1[0] and result2[0]:
+            audio = _mix_audio(result1[0], result2[0], _EL_MIX) or result1[0]
+        else:
+            audio = result1[0] or result2[0]
+    else:
+        audio = _fetch_elevenlabs_audio(text)
+
     if not audio:
         return False
 
