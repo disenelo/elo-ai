@@ -35,6 +35,14 @@ import re
 import logging
 from typing import Optional, Tuple
 
+try:
+    from tools.spotify_agent  import agent as _agent_spotify
+    from tools.github_agent   import agent as _agent_github
+    from tools.calendar_agent import agent as _agent_calendar
+    from tools.vision_agent   import agent as _agent_vision
+except ImportError:
+    _agent_spotify = _agent_github = _agent_calendar = _agent_vision = None
+
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
 _logger.propagate = False
@@ -99,6 +107,41 @@ def detect_location_set(user_input: str) -> Optional[str]:
 # Order matters — first match wins.
 
 _INTENT_MAP = [
+    ("spotify", [
+        r"\bspotify\b",
+        r"\bwhat(?:'s| is)\s+(?:playing|on)\b",
+        r"\bskip\b.*\btrack\b|\bnext\s+(?:track|song)\b",
+        r"\bpause\s+(?:music|spotify|song|track)\b",
+        r"\bplay\s+(?:music|spotify|something)\b",
+        r"\bwhat\s+(?:song|track|music)\b",
+        r"\bwho(?:'s| is)\s+(?:this|playing)\b",
+    ]),
+    ("github", [
+        r"\bgithub\b",
+        r"\bmy\s+repo\b",
+        r"\bopen\s+(?:prs?|pull\s+requests?)\b",
+        r"\blast\s+commit\b",
+        r"\bcommits?\b.*\brepo\b",
+        r"\bwhat(?:'s| is)\s+(?:the\s+)?(?:status|state)\s+of\b.*\brepo\b",
+    ]),
+    ("calendar", [
+        r"\b(?:my\s+)?calendar\b",
+        r"\bwhat(?:'s| is|'ve)\s+(?:i\s+got\s+)?(?:on|today|tomorrow|this\s+week)\b",
+        r"\bany\s+meetings?\b",
+        r"\bschedule\b",
+        r"\bwhat\s+(?:do\s+i\s+have|have\s+i\s+got)\b",
+        r"\bcoming\s+up\b",
+        r"\bupcoming\s+events?\b",
+    ]),
+    ("vision", [
+        r"\bwhat(?:'s| is)\s+on\s+(?:my\s+)?screen\b",
+        r"\bwhat\s+(?:do\s+you|can\s+you)\s+see\b",
+        r"\blook\s+at\s+(?:my\s+)?screen\b",
+        r"\bwhat(?:'s| am)\s+i\s+(?:working\s+on|looking\s+at)\b",
+        r"\bscreen(?:shot|capture)?\b",
+        r"\bdescribe\s+(?:my\s+)?screen\b",
+        r"\bcan\s+you\s+see\b",
+    ]),
     ("calculator", [
         r"\b(\d[\d\s\+\-\*\/\(\)\.\^%]+\d)\b",
         r"\bwhat(?:'s| is)\s+[\d\(]",
@@ -515,6 +558,10 @@ _AGENTS = {
     "translate":   _agent_translate,
     "news":        _agent_news,
     "obsidian":    _agent_obsidian,
+    "spotify":     _agent_spotify,
+    "github":      _agent_github,
+    "calendar":    _agent_calendar,
+    "vision":      _agent_vision,
 }
 
 # agents that accept a direct subject string for follow-up re-runs
