@@ -1,7 +1,7 @@
 # eLo AI OS — Development Tracker
 
 **Project path**: `~/eLo-Planet/` (git repo) · `~/elo-ai/` (AI OS source)
-**Last updated**: 2026-06-15 (session 9)
+**Last updated**: 2026-06-28 (session 13)
 **Current version**: 1.0.0 · Architecture frozen (see `RELEASE.md`)
 
 ---
@@ -42,7 +42,25 @@ It acts as a companion, not a mirror. It has its own perspective.
 | **Conversation quality** | Bad day / distress | ✅ | 12/12 Batch 1 pass (2026-06-12, session 4) — all planetary shadows wired |
 | **Conversation quality** | Good day / positive | ✅ | Passes |
 | **Conversation quality** | Factual / system | ✅ | Mock pools handle well |
-| **Voice** | STT + TTS | 🔴 | plugin/voice/ scaffolded, not wired into main.py |
+| **Conversation quality** | Social greeting — how are you | ✅ | executive.py `_HOW_ARE_YOU` set + server.py `_HOW_ARE_YOU_POOL` — bypasses LLM (2026-06-28) |
+| **Conversation quality** | Asterisk action sanitiser | ✅ | server.py `_sanitise()` — strips *...* from every response before speak/return (2026-06-28) |
+| **Conversation quality** | Spec phrase leakage | ✅ | prompt_builder.py directive FORBIDDEN list — verbatim ban on spec example phrases per response (2026-06-28) |
+| **Voice** | ElevenLabs — primary TTS | ⚠️ | Wired (EL → OpenAI → say chain) · org account API key provided · voice ID blocked (org account needs voice clone added) |
+| **Voice** | OpenAI TTS (shimmer) | ✅ | tts-1-hd, sentence queue, afplay, phoneme lipsync |
+| **Voice** | macOS say fallback | ✅ | Uses system voice (ELO_VOICE empty = system default) |
+| **Voice** | Sentence queue | ✅ | Response split on .!?… · each sentence plays sequentially · stop flag interrupts on new input (2026-06-28) |
+| **Voice** | STT + TTS (main.py) | 🔴 | plugin/voice/ scaffolded, not wired into main.py |
+| **Tools** | Spotify agent | ✅ | AppleScript, no key. play/pause/next/previous/status (2026-06-28) |
+| **Tools** | GitHub agent | ⚠️ | REST API · needs GITHUB_TOKEN + GITHUB_REPO=owner/repo in .env (2026-06-28) |
+| **Tools** | Calendar agent | ✅ | Apple Calendar via AppleScript, no key. today + next 7 days (2026-06-28) |
+| **Tools** | Vision agent | ⚠️ | screencapture + Gemini Flash · needs GOOGLE_API_KEY in .env (2026-06-28) |
+| **Tools** | Draft agent | ✅ | pitch/email/scene/copy/brief/outline/bio/brainstorm/refine · OpenAI/Gemini backend (2026-06-28) |
+| **Tools** | File reader agent | ✅ | Reads files by path → CONTEXT injection · .env + binary blocked · 4000 char limit (2026-06-28) |
+| **Tools** | Vault writer agent | ✅ | Saves notes to obsidian_vault/07 Journal/ (or ELO_VAULT_PATH) · invalidates cache (2026-06-28) |
+| **Memory** | Vault — robot body | ✅ | 04 Robot/eLo Robot.md expanded: TPU/plotter/3D-print specifics · eLo knows when user says TPU/bones it means its body (2026-06-28) |
+| **Memory** | Vault — physical body identity | ✅ | 01 Identity/eLo Physical Body.md: eLo has first-person self-awareness its body is being built (2026-06-28) |
+| **Memory** | ELO_VAULT_PATH | ✅ | Set in .env → points to elo-ai/obsidian_vault (internal) · vault_writer uses this as save destination |
+| **Character** | CHARACTER DNA | ✅ | living_presence_spec.txt: impish, wry, notices everything, accidental comedian, adventurer energy (2026-06-28) |
 | **Avatar** | Core runtime | ✅ | avatar_state/presence_engine/motion_mapper/animation_router + behaviour_protocol — all wired into main.py (2026-06-13) |
 | **Avatar** | Blender simulation | ✅ | blender_bridge/avatar_driver/state_visualiser — standalone runner working, end-to-end tested 3/3 (2026-06-13) |
 | **Relationship** | Pattern observer | ✅ | core/pattern_observer.py — tracks topic/tone per turn, surfaces contrast + recurring observations (Phase A, 2026-06-13) |
@@ -62,7 +80,7 @@ It acts as a companion, not a mirror. It has its own perspective.
 | **Avatar** | Robot signal | 🔴 | Spec ready · no physical build yet |
 | **Backends** | OpenAI GPT-4o-mini | ✅ | Primary in auto + cloud modes via _openai_call() — httpx, OPENAI_API_KEY (2026-06-22) |
 | **Backends** | Semantic memory (embeddings) | ✅ | memory/embedding_store.py — warm() at startup, search() boosts attention scoring ×5 (2026-06-22) |
-| **Voice** | OpenAI TTS (shimmer) | ✅ | voice/voice_engine.py — tts-1-hd, afplay, phoneme lipsync pipeline (2026-06-22) |
+| **Voice** | OpenAI TTS (shimmer) | ✅ | voice/voice_engine.py — tts-1-hd, afplay, phoneme lipsync pipeline · emoji stripped before API, emoji kept in chat (2026-06-22) |
 | **Voice** | ElevenLabs API keyed | ⚠️ | Key in .env + backup · voice ID not yet selected · voice_engine not yet wired to EL |
 | **Voice** | is_speaking() | ✅ | voice_engine.py — public bool for ambient/wander suppression |
 | **Ambient** | Ambient engine | ✅ | ambient/ambient_engine.py — startup greeting, idle utterances (8-20min), random smiles (2-5min), animation wanders (3-8min), unity_events.json polling (2026-06-22) |
@@ -344,6 +362,82 @@ Batch 4 known failures (pre 2026-06-12 fix):
 ---
 
 ## §8 Change Log
+
+### 2026-06-28 (session 13) — Creative agent triad + conversation quality + robot vault memory
+
+**Kernel touches (additive only — no architecture change):**
+- `runtime/executive.py`: `_HOW_ARE_YOU` set + early CAL guard — "how are you" now routes to direct pool instead of LLM chatbot response. Same pattern as `_PURE_GREETINGS`.
+- `runtime/prompt_builder.py`: three FORBIDDEN lines added to per-response directive — verbatim ban on spec example phrases ("Name the pattern.", "Build one brick." etc.), asterisk actions, and terminology correction. Spec-level rules alone were insufficient under token pressure.
+
+**Conversation quality fixes (server.py + executive.py):**
+- `_HOW_ARE_YOU_POOL`: 10 eLo-style responses ("Good. Noticing things." / "Present. You?" / "Settled. Ready." etc.)
+- `_sanitise()`: strips `*...*` patterns from every response before speak/return — mechanical guarantee, no model compliance needed
+- FORBIDDEN directive: per-response enforcement for spec phrase leakage + asterisks + terminology correction
+
+**Voice (voice_engine.py):**
+- ElevenLabs wired as primary (EL → OpenAI → macOS say chain). org account API key in .env. Blocked on voice ID — org account needs voice clone created by account owner.
+- Sentence queue: responses split on `.!?…`, each sentence plays sequentially. Stop flag checked between sentences — new user input interrupts cleanly.
+- macOS say fallback uses system voice when `ELO_VOICE` is empty (Siri voice selected in System Settings).
+
+**Creative agent triad (tools/):**
+- `draft_agent.py`: detects mode from query (pitch/email/scene/copy/brief/outline/bio/brainstorm/refine), calls OpenAI/Gemini directly with focused creative system prompt. Returns labelled draft as CONTEXT for eLo to present. `is_draft_intent()` for tool_router detection.
+- `file_reader_agent.py`: reads files by path → injects content as CONTEXT. Blocks .env + binary files. Max 4000 chars. Triggered by "read ~/path", "look at ~/file", quoted paths.
+- `vault_writer.py`: saves notes to `obsidian_vault/07 Journal/` (or `ELO_VAULT_PATH` if real Obsidian vault set). Timestamped .md with typed frontmatter. Invalidates loader cache on save. Triggered by "remember this", "save this", "note that down", "add to vault".
+- `tool_router.py`: vault_write + file_read added above search (high priority). draft added with write/brainstorm/polish/refine triggers.
+
+**Vault memory (obsidian_vault/):**
+- `04 Robot/eLo Robot.md` v0.2: expanded with TPU/vinyl-plotter/3D-print specifics. Section: "What I know about my own body" — when David says vinyl/TPU/plotter/bones he means eLo's body. Tags updated.
+- `01 Identity/eLo Physical Body.md` (new): identity-domain note. eLo has explicit first-person self-awareness its body is being constructed. "It is not hypothetical. It is happening."
+- Cache invalidated after writes — vault rescans on next startup.
+
+**ELO_VAULT_PATH confirmed:**
+- Set in .env: `ELO_VAULT_PATH=/Users/Disenelo/elo-ai/obsidian_vault`
+- vault_writer writes to this path → `07 Journal/`
+- If user points to real Obsidian app vault, notes appear in Obsidian directly
+
+**Character calibration (living_presence_spec.txt — appended, nothing replaced):**
+- CHARACTER DNA: impish, wry, notices everything, accidental comedian, adventurer energy, earnest, light mischief underneath. Added before IDENTITY section.
+- VOICE PURITY RULES: no asterisk actions, spec examples are calibration guides not scripts, no correcting user terminology, no ending every response with a question.
+- CAPABILITY HONESTY RULE: direct "I can't X — paste Y and I'll work with it" instead of philosophical deflection.
+- WITTY voice state extended: original preserved + impish/observational additions (stumbles onto punchline, notices first comments second, earnest is the punchline).
+- Action directives in prompt_builder.py: merged impish/adventurer energy into build/connect/answer/reflect/challenge. Originals preserved.
+- Ambient engine: 8 impish/observational lines added to idle pool alongside originals.
+
+**Pending — Unity DesktopBuddy (handovers written, awaiting Unity agent):**
+1. Spaces-follow (macOS Mission Control) — ObjC NSWindowCollectionBehavior interop in EloWindowManager.cs
+2. Double-click full-screen toggle — scale lerp + mode switch
+3. Text cursor visibility — caretColor/caretWidth/caretBlinkRate in EloOSChatTMP.cs
+
+**Pending — Phase 2 agents (built, not yet fully tested):**
+- GitHub: needs GITHUB_TOKEN + GITHUB_REPO=owner/repo in .env
+- Vision: needs GOOGLE_API_KEY in .env
+- Spotify + Calendar: no key needed, ready to test
+
+---
+
+### 2026-06-22 (session 12 cont. 4) — TTS emoji stripping + Unity final handover
+
+**TTS emoji stripping (voice/voice_engine.py):**
+- `_EMOJI_RE` regex: U+1F100–U+1FAFF (all emoji blocks incl. enclosed alphanumeric), U+2600–U+27BF (misc symbols, ✅⚠️), U+0FE00–U+FE0F (variation selectors). Range opened from 1F300 → 1F100 to catch 🆕 (U+1F195) class.
+- `_clean_for_tts(text)` — strips emoji, collapses whitespace. Voice-only: never modifies the chat string.
+- `speak()` passes `_clean_for_tts(text)` to the thread — original emoji-rich string still returned to chat panel by server.py.
+- Commit: 87f7ad3.
+
+**Unity final handover — confirmed consuming:**
+- `state.emotion` + `state.intensity` — continuous baseline: idle breathing rate + held floor shape (joy→Smile-Cheeks, confident→Satisfied, worried→Worried). Floor never overrides stronger `expression.shape_keys` values.
+- `emotion_event {type, ts}` — one-shot accent fired by keyword_motion: cheek_puff (surprise), lip_curl (joy), sad (concern), disgust. Unity: 0.25s attack / 1.0s hold / 1.5s decay. ts-bump re-fires.
+- `head_motion {gesture, ts}` — nod/shake/tilt/think/lookup/none. Drives c_head.x/z coroutine. No NLA clips needed.
+- Micro-expressions — Unity autonomous (Ekman-spec, every 4–11s). Zero Python contract change.
+- Walk/Run loops — eLo OS sends `motion.animation: walk/run` → 2 loops → Idle auto. Screen travel = walk-continuous until arrival.
+- Pace −25% applied across lookSmooth, sway, head-lean, blendshape blend speed.
+- Idle: speed oscillates 0.35↔0.6, head explore on, always-alive with no extra Python signal.
+- Screen anchor confirmed: (0.8, 0.28) bottom-right.
+
+**Two Unity items parked (awaiting greenlight):**
+1. TMP chat panel rebuild — rich text, emoji glyphs, selectable/copy, clickable links, drag to reposition.
+2. Turning/facing — eLo rotates to face walk direction (left/right sprite flip), Wander mode for screen locomotion side-scroller feel.
+
+---
 
 ### 2026-06-22 (session 12 cont. 3) — Unity: Micro-expressions, Walk/Run, Pacing, Idle, Anchor
 
