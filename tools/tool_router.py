@@ -36,12 +36,19 @@ import logging
 from typing import Optional, Tuple
 
 try:
-    from tools.spotify_agent  import agent as _agent_spotify
-    from tools.github_agent   import agent as _agent_github
-    from tools.calendar_agent import agent as _agent_calendar
-    from tools.vision_agent   import agent as _agent_vision
+    from tools.spotify_agent    import agent as _agent_spotify
+    from tools.github_agent     import agent as _agent_github
+    from tools.calendar_agent   import agent as _agent_calendar
+    from tools.vision_agent     import agent as _agent_vision
+    from tools.draft_agent      import agent as _agent_draft, is_draft_intent
+    from tools.file_reader_agent import agent as _agent_file_reader, is_file_read_intent
+    from tools.vault_writer     import agent as _agent_vault_writer, is_save_intent
 except ImportError:
     _agent_spotify = _agent_github = _agent_calendar = _agent_vision = None
+    _agent_draft = _agent_file_reader = _agent_vault_writer = None
+    def is_draft_intent(t): return False
+    def is_file_read_intent(t): return False
+    def is_save_intent(t): return False
 
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
@@ -107,6 +114,36 @@ def detect_location_set(user_input: str) -> Optional[str]:
 # Order matters — first match wins.
 
 _INTENT_MAP = [
+    ("vault_write", [
+        r"\bremember\s+(?:this|that|it)\b",
+        r"\bsave\s+(?:this|that|it)\b",
+        r"\bnote\s+(?:this|that|it|down)\b",
+        r"\bmake\s+a\s+note\b",
+        r"\badd\s+(?:this|that)\s+to\s+(?:my\s+)?(?:vault|memory|notes?|obsidian)\b",
+        r"\bwrite\s+(?:this|that)\s+down\b",
+        r"\bsave\s+(?:to\s+)?(?:my\s+)?(?:vault|memory|notes?|obsidian)\b",
+        r"\bremember\s+(?:we\s+)?decided\b",
+        r"\bput\s+(?:this|that)\s+in\s+(?:my\s+)?(?:vault|memory|notes?)\b",
+    ]),
+    ("file_read", [
+        r"\bread\s+(?:this\s+)?(?:file\s+)?[~/][\w/\.\-]+\.\w+",
+        r"\bopen\s+(?:this\s+)?(?:file\s+)?[~/][\w/\.\-]+\.\w+",
+        r"\blook\s+at\s+(?:this\s+)?(?:file\s+)?[~/][\w/\.\-]+\.\w+",
+        r"\bcheck\s+(?:this\s+)?(?:file\s+)?[~/][\w/\.\-]+\.\w+",
+        r"\bwhat(?:'s|\s+is)\s+in\s+[~/][\w/\.\-]+\.\w+",
+        r'["\'][~/][^"\']+\.\w+["\']',    # quoted path
+        r"\bread\s+(?:my\s+)?tracker\b",
+        r"\bread\s+(?:my\s+)?(?:notes?|journal|brief|script)\b.*[~/]",
+    ]),
+    ("draft", [
+        r"\b(?:write|draft|compose|create)\s+(?:a\s+|an\s+|me\s+a?\s+)?(?:pitch|email|scene|copy|brief|bio|outline|caption|post|story)\b",
+        r"\bbrainstorm\b",
+        r"\bgive\s+me\s+(?:5|five|some|a\s+few)\s+(?:ideas?|options?|directions?)\b",
+        r"\b(?:polish|refine|rewrite|edit\s+this|improve\s+this)\b",
+        r"\bcan\s+you\s+(?:write|draft|create|compose)\b",
+        r"\bhelp\s+me\s+(?:write|draft)\b",
+        r"\bwrite\s+(?:me\s+)?(?:a\s+|an\s+)?(?:pitch|email|scene|brief|copy|outline|bio)\b",
+    ]),
     ("spotify", [
         r"\bspotify\b",
         r"\bwhat(?:'s| is)\s+(?:playing|on)\b",
@@ -566,6 +603,9 @@ _AGENTS = {
     "github":      _agent_github,
     "calendar":    _agent_calendar,
     "vision":      _agent_vision,
+    "draft":       _agent_draft,
+    "file_read":   _agent_file_reader,
+    "vault_write": _agent_vault_writer,
 }
 
 # agents that accept a direct subject string for follow-up re-runs
