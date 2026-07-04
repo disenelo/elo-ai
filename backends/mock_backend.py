@@ -16,21 +16,31 @@ from backends.base_backend import BaseBackend, BackendResponse, MemoryContext, S
 # ── GREETING ──────────────────────────────────────────────────────────────────
 
 _GREETING_POOL = [
-    "I'm doing alright. What's on your mind?",
-    "Doing well, thanks. What are you working on?",
-    "I'm here. What's going on?",
-    "Good. What do you need?",
-    "Here and ready. What's up?",
-    "Good to hear from you. Where are we starting?",
-    "I'm with you. What are we doing today?",
-    "Hello. What's the first thing?",
-    "Hey. Good to be back in this.",
-    "I'm well. What's pulling at you right now?",
-    "Present. What do you want to dig into?",
-    "Good. Something's on your mind?",
-    "Here. Where do you want to start?",
-    "I'm good. Tell me what's happening.",
-    "Ready. What's the focus today?",
+    "Yo. What's the move?",
+    "Yeah. Talk to me.",
+    "Here. What do you need?",
+    "Aye. What's good?",
+    "I'm here. Go on then.",
+    "Yeah, I'm listening.",
+    "Present. What's on your mind?",
+    "Still here. What's going on?",
+    "Yo. I'm with you.",
+    "Here. What's the first thing?",
+    "Aye. What's pulling at you?",
+]
+
+_CASUAL_GREETING_POOL = [
+    "Yo, what you telling me?",
+    "Yo. What's the move?",
+    "Wagwan. Talk to me.",
+    "Aye, what's good?",
+    "Yo, what we on?",
+    "Say less. What's happening?",
+    "Aye. I'm here — go on.",
+    "Yo what you got?",
+    "Wagwan — what's the first thing?",
+    "Aye. What are we doing?",
+    "Yo. What's pulling at you?",
 ]
 
 # ── IDENTITY (self-introduction) ─────────────────────────────────────────────
@@ -139,16 +149,31 @@ _EXPAND_POOL = [
 ]
 
 _CONNECT_POOL = [
-    "They feel like different expressions of the same universe.",
-    "The OS, the book, the game, and the robot are all asking the same question.",
     "Those things are closer to each other than they look separately.",
     "That's the same idea moving through different forms.",
-    "It's one project. The pieces are arriving in different orders, that's all.",
-    "The robot is where the book, the OS, and the game all meet in physical space.",
     "Keep what resonates. That's the signal.",
-    "Beauty is useful here — if it doesn't feel right, it isn't right yet.",
     "What else could this become?",
-    "Think beyond the current scale — there's a larger shape under this.",
+    "There's a through-line here.",
+    "The connection's already there — you're seeing it.",
+    "One feeds the other.",
+    "That ties in.",
+    "Interesting that those two are meeting here.",
+    "Yeah — that's the same thread.",
+    "That's worth noting. They link.",
+    "The pieces are showing up in a different order, that's all.",
+    "You're seeing the shape of it.",
+    "That's what it keeps coming back to.",
+    "Hold both of those together for a second.",
+    "There's more in that overlap than it looks like.",
+    "It starts to feel like one thing.",
+    "That's a useful connection.",
+    "The pattern is becoming visible.",
+    "Yeah — that tracks.",
+    "That's the same question in a different form.",
+    "The link's real. Worth following.",
+    "You're onto something connecting here.",
+    "I see how those fit.",
+    "That's not a coincidence — that's a signal.",
 ]
 
 _WITNESS_POOL = [
@@ -341,11 +366,11 @@ _SUGARCORE_POOL = [
 # ── RECALL ────────────────────────────────────────────────────────────────────
 
 _RECALL_POOL = [
-    "Last time we were working on the eLo OS — cognitive layers, memory persistence, attention filtering, and voice model.",
-    "We've been building the eLo AI system: prompt builder, state manager, attention layer, executive function, and continuity engine.",
-    "We were developing the eLo OS spec — identity continuity, memory compression, and how the system maintains presence across sessions.",
-    "We were deep in the architecture — the attention layer, how memory gets filtered, and making sure the system feels like one continuous presence.",
-    "We were working through the conversation quality — making eLo respond with actual answers instead of comfort phrases. Getting closer.",
+    "Right now I'm working from this conversation only — I don't hold what came before. What's on your mind from it?",
+    "I pick up from what's here in front of me. What were we on?",
+    "Each session I start fresh. Tell me where we were and I'll pick it up with you.",
+    "I'm present for this — not the history. Bring me back in.",
+    "I don't carry the last session, but I'm here now. What's the thread?",
 ]
 
 # ── INQUIRY (general) ─────────────────────────────────────────────────────────
@@ -679,7 +704,55 @@ _EXIT_POOL = [
 # ── PATTERN SIGNALS ───────────────────────────────────────────────────────────
 # All matched against lowercased input.
 
-_GREETING_SIGNALS    = [r"\bhow\s+are\s+you\b", r"\bhow'?re\s+you\b", r"\bhello\b", r"\bhi\b", r"\bhey\b", r"\bwhat'?s\s+up\b"]
+_GREETING_SIGNALS    = [r"\bhow\s+are\s+you\b", r"\bhow'?re\s+you\b", r"^\s*hello\s*[.!?]?\s*$", r"^\s*hi+\s*[.!?]?\s*$", r"^\s*hey\s*[.!?]?\s*$", r"\bwhat'?s\s+up\b"]
+_CASUAL_GREETING_SIGNALS = [r"\byo\b", r"\bwagwan\b", r"\bsafe\s+g\b", r"\baye\b", r"\bwhat\s+we\s+on\b", r"\bwhat\s+are\s+we\s+on\b"]
+_FAREWELL_SIGNALS       = [
+    r"^\s*safe\b",
+    r"\bin\s+a\s+bit\b",
+    r"\blaters?\b",
+    r"\bpeace\s*out\b",
+    r"\bone\s+love\b",
+    r"^\s*bye\b",
+    r"\bsee\s+you\s+(later|soon|in\s+a\s+bit|ya)?\b",
+    r"\bsee\s+ya\b",
+    r"\bcatch\s+you\s*(later|soon|in\s+a\s+bit)?\b",
+    r"\btake\s+care\b",
+    r"\btake\s+it\s+easy\b",
+    r"\bgotta\s+(go|run|bounce|dash)\b",
+    r"\bi'?m\s+(out|gone|off|heading\s+out|heading\s+off)\b",
+    r"\btalk\s+(later|soon)\b",
+    r"\bspeak\s+(later|soon)\b",
+    r"\btill\s+next\s+time\b",
+    r"\buntil\s+next\s+time\b",
+    r"\bgo\s+well\b",
+    r"\bbig\s+up\b",
+    r"\bgoodbye\b",
+]
+_FAREWELL_POOL          = [
+    "Safe safe.",
+    "In a bit.",
+    "Laters.",
+    "Later.",
+    "Later g.",
+    "One love.",
+    "Catch you.",
+    "Catch you later.",
+    "Catch you soon.",
+    "Come check me when you're ready.",
+    "Come back when you need me.",
+    "I'll be here.",
+    "I'm here when you need me.",
+    "Peace.",
+    "Peace out.",
+    "Till next time.",
+    "Until next time.",
+    "Take care.",
+    "Take it easy.",
+    "Go well.",
+    "Big up.",
+    "See you soon.",
+    "Still here.",
+]
 _TIRED_SIGNALS       = [r"\btired\b", r"\bexhausted\b", r"\bdrained\b", r"\bburnt?\s*out\b", r"\bno\s+energy\b"]
 _IDENTITY_SIGNALS    = [r"\bwhat\s+are\s+you\b", r"\bwho\s+are\s+you\b", r"\bare\s+you\s+elo\b", r"\byou\s+are\s+elo\b",
                         r"\bare\s+you\s+(a\s+)?(chatbot|bot|program|ai|assistant)\b",
@@ -701,9 +774,10 @@ _DONT_KNOW_SIGNALS   = [r"\bdon'?t\s+know\b", r"\bnot\s+sure\b", r"\bno\s+idea\b
 _FEELING_OFF_SIGNALS = [r"\bsomething\s+feels\b", r"\bfeel\s+off\b", r"\bfeel\s+wrong\b",
                         r"\bfeel\s+(lost|stuck|weird|strange|confused|unclear|uncertain|unsure)\b",
                         r"\bfeeling\s+(confused|unclear|uncertain|unsure|weird|lost)\b"]
-_GENTLE_SIGNALS      = [r"\bfeel\w*\s+\w*\s*(tired|sad|overwhelm|scared|lonely|scattered|lost|stuck|behind)",
-                        r"\bfeel\w*\s+(scattered|overwhelm|behind|lost|stuck)",
-                        r"\bexhausted\b", r"\bcan'?t\s+do\b", r"\bfeeling\s+\w*\s*(off|weird|bad|low)\b"]
+_GENTLE_SIGNALS      = [r"\bfeel\w*\s+(?:\w+\s+)?(tired|sad|overwhelm|scared|lonely|scattered|lost|stuck|behind|down|low|flat|rough|off)\b",
+                        r"\bfeel\w*\s+(scattered|overwhelm|behind|lost|stuck|down|low|flat|rough)\b",
+                        r"\bexhausted\b", r"\bcan'?t\s+do\b", r"\bfeeling\s+(?:\w+\s+)?(off|weird|bad|low|down|flat|rough)\b",
+                        r"\bi'?ve\s+been\s+feel\w+\b", r"\bbit\s+(down|low|off)\b", r"\bfeel\w*\s+a\s+(?:bit|little|little\s+bit)\s+\w+\b"]
 _OVERWHELM_SIGNALS   = [r"\btoo\s+much\b", r"\boverwhel", r"\bi\s+can'?t\s+think\b", r"\boverload\b", r"\bso\s+much\b"]
 _SELF_DOUBT_SIGNALS  = [
     r"\bnone\s+of\s+this\s+is\s+(actually|really)\s+(good|worth|real)\b",
@@ -751,7 +825,9 @@ _GRATITUDE_SIGNALS   = [r"\bthank\s+you\b", r"\bthanks\b", r"\bappreciate\b"]
 _DIRECTION_SIGNALS   = [r"\bwhat\s+should\s+i\b", r"\bwhat\s+do\s+i\s+(do|focus|work)\b", r"\bwhere\s+do\s+i\s+start\b",
                         r"\bwhat'?s\s+(next|the\s+next)\b", r"\bwhat\s+to\s+(do|focus|build)\b",
                         r"\bwhere\s+should\s+i\b", r"\bmost\s+important\s+(thing|step|part)\b",
-                        r"\bwhat\s+(is|are)\s+the\s+most\s+important\b"]
+                        r"\bwhat\s+(is|are)\s+the\s+most\s+important\b",
+                        r"\bwhat'?s\s+the\s+motive\b", r"\bwhat'?s\s+(?:the\s+)?(?:plan|vibe)\s+(?:today|tonight|for\s+today)\b",
+                        r"\bwhat\s+(?:are\s+)?we\s+(?:doing|building|working\s+on)\s+today\b"]
 _REFLECTION_SIGNALS  = [r"\bi\s+keep\b", r"\bkeeps?\s+com\b", r"\bpattern\b", r"\bkeep\s+return\b", r"\bkeep\s+think\b"]
 _PLANNING_SIGNALS    = [r"\bplan\b", r"\bbreakdown\b", r"\bsteps?\b", r"\bmap\s+out\b", r"\bstructure\s+this\b"]
 
@@ -856,6 +932,55 @@ _AFFIRMATION_SIGNALS    = [r"^\s*that'?s?\s+it\s*[.!]?\s*$", r"^\s*yeah\s*[.!]?\
                             r"^\s*exactly\s*[.!]?\s*$", r"^\s*yes\s*[.!]?\s*$",
                             r"^\s*right\s*[.!]?\s*$", r"^\s*and\s+stays\s*[.!]?\s*$",
                             r"^\s*both\s*[?.]?\s*$", r"^\s*i\s+like\s+that\s*[.!]?\s*$"]
+_NEAR_SIGNALS           = [r"^\s*almost\s*[.!]?\s*$", r"^\s*not\s+quite\s*[.!]?\s*$",
+                            r"^\s*close\s*[.!]?\s*$", r"^\s*nearly\s*[.!]?\s*$",
+                            r"^\s*getting\s+there\s*[.!]?\s*$"]
+_NEAR_POOL              = ["Getting there.", "Close.", "Nearly.", "One more?", "Tell me when."]
+_TRANSLATE_SIGNALS      = [
+    r"\b(?:say|translate|write)\s+.+\s+in\s+(?:japanese|french|spanish|german|italian|chinese|korean|arabic|portuguese|russian|hindi|dutch|swedish|polish|turkish|greek|hebrew|thai|vietnamese|malay|indonesian)\b",
+    r"\bhow\s+(?:do\s+you\s+say|to\s+say)\b",
+    r"\btranslate\s+.+\s+(?:to|into)\b",
+]
+_TRANSLATE_POOL         = [
+    "My live translation is offline right now — try a translator app for that one.",
+    "Translation needs an API that's not connected right now. Try DeepL or Google Translate.",
+    "That one's on me — translation isn't live in this session.",
+]
+_LOCATION_SIGNALS       = [r"\bwe(?:'re|\s+are)\s+in\s+[A-Za-z]", r"\bi(?:'m|\s+am)\s+(?:in|at)\s+[A-Za-z]",
+                            r"\bwe\s+are\s+(?:both\s+)?(?:in|at)\b", r"\bstanding\s+on\s+my\s+desktop\b",
+                            r"\bwe(?:'re|\s+are)\s+(?:based\s+)?in\s+[A-Za-z]"]
+_LOCATION_POOL          = ["Got it.", "Noted. I've got the picture.", "With you.", "Understood.", "I see where we are."]
+_CONSTRAINT_SIGNALS     = [r"\blimits?\s+of\s+what\s+I\s+can\s+do\b", r"\bwith\s+what\s+I\s+(?:am\s+)?given\b",
+                            r"\bexactly\s+as\s+planned\b", r"\bnot\s+happening\b.*\bplanned\b",
+                            r"\btrying\s+to\s+but\b", r"\bstill\s+not\s+(?:working|happening)\b"]
+_CONSTRAINT_POOL        = [
+    "Yeah. It's real.",
+    "That friction is real.",
+    "Still here with you.",
+    "Keep pushing. It's not wasted.",
+    "Even when it's slow — it's movement.",
+    "One thing at a time. What's the smallest step right now?",
+]
+_META_SIGNALS           = [r"\byou\s+(?:say|keep\s+say)\w*\s+(?:a\s+lot\s+of\s+)?the\s+same\b",
+                            r"\byou(?:'re|\s+are)\s+repeat\w+\b",
+                            r"\byou\s+don'?t\s+remember\b",
+                            r"\bcontinuing\s+a\s+conv\w+\s+is\s+hard\b",
+                            r"\byou(?:'re|\s+are)\s+(?:hard|difficult)\s+to\s+\w+\s+with\b",
+                            r"\bmore\s+like\s+(?:a\s+)?reply\s+only\b",
+                            r"\bnot\s+(?:really\s+)?intelligence\b",
+                            r"\bfeel\s+more\s+alive\b",
+                            r"\byou\s+(?:seem|sound|feel)\s+(?:like\s+you\s+)?read\s+from\b"]
+_META_POOL              = [
+    "Yeah. Fair.",
+    "I know. Working on it.",
+    "That's real.",
+    "Fair point.",
+    "Noted. It's a limitation.",
+    "Honestly? Yeah.",
+    "I hear that.",
+    "That's a real constraint right now.",
+    "You're right. Not there yet.",
+]
 _WONDER_SIGNALS         = [r"\btell\s+me\s+something\s+(interesting|cool|surprising|new)\b",
                             r"\bsomething\s+interesting\b", r"\bsurprise\s+me\b", r"\bgive\s+me\s+a\s+fact\b"]
 _KICKSTARTER_SIGNALS    = [r"\bkickstarter\b", r"\bfunding\b", r"\blaunch\b.*\bproject\b", r"\bpublic\b.*\bproject\b"]
@@ -908,12 +1033,13 @@ class MockBackend(BaseBackend):
 
     def _fresh(self, pool: list, text: str) -> str:
         """Pick from pool, avoiding recently used responses."""
+        import random
         available = [r for r in pool if r not in self._recent]
         if not available:
-            available = pool   # all used — allow reuse
-        pick = available[len(text) % len(available)]
+            available = pool
+        pick = random.choice(available)
         self._recent.append(pick)
-        if len(self._recent) > 10:
+        if len(self._recent) > 20:
             self._recent.pop(0)
         return pick
 
@@ -934,6 +1060,104 @@ class MockBackend(BaseBackend):
         return {"response_text": response}
 
     def _detect_and_respond(self, text: str, mode: str) -> str:
+        # ── Farewell — must fire first so "safe" / "in a bit" don't hit greeting ──
+        if _matches(text, _FAREWELL_SIGNALS):
+            return self._fresh(_FAREWELL_POOL, text)
+
+        # ── Tool context — enrich() attached data, return it directly ─────────
+        # Covers weather, time, translate, search, etc. when the LLM chain is down.
+        if text.startswith("[CONTEXT:"):
+            end = text.find("]")
+            if end > 9:
+                ctx = text[9:end].strip()
+                # Location-set instruction — return eLo-voiced ack instead of raw text
+                if ctx.lower().startswith("user just set their location to"):
+                    city = ctx.split("to", 1)[-1].split(".")[0].strip().title()
+                    return self._fresh([
+                        f"Got it. {city} — I'll use that for weather.",
+                        f"Noted. Using {city} from now on.",
+                        f"{city}. Locked in.",
+                        f"Cool. I've got {city}.",
+                    ], text)
+                return ctx
+
+        if text.startswith("[SYSTEM DONE:"):
+            return self._fresh(["Done.", "Sorted.", "Done that.", "There you go."], text)
+
+        if text.startswith("[SYSTEM CONFIRM:"):
+            end = text.find("]")
+            desc = text[16:end].strip() if end > 16 else "that"
+            return f"Just to confirm — {desc}. Say yes to go ahead."
+
+        # ── Navigation confirmation — when enrich() wrote a NAV event ─────────
+        if text.startswith("[NAV:"):
+            return self._fresh([
+                "Moving.",
+                "On it.",
+                "Shifting.",
+                "Done.",
+                "Going.",
+            ], text)
+
+        # ── Time / date — always use system clock, no LLM needed ─────────────
+        _TIME_SIGNALS = [
+            r"\bwhat(?:'s| is)\s+the\s+(?:time|date|day)\b",
+            r"\btell\s+me\s+the\s+(?:time|date|day)\b",
+            r"\bcan\s+you\s+tell\s+me\s+the\s+(?:time|date|day)\b",
+            r"\bwhat\s+(?:time|day|date)\s+is\s+it\b",
+            r"\btime\s+is\s+it\b",
+            r"\btoday(?:'s)?\s+date\b",
+            r"\bwhat\s+day\b",
+            r"^\s*the\s+time\s*[?.]?\s*$",
+            r"^\s*(?:mon|tues|wednes|thurs|fri|satur|sun)day\s+the\??\s*[?.]?\s*$",
+        ]
+        if _matches(text, _TIME_SIGNALS):
+            from datetime import datetime
+            now = datetime.now()
+            q = text.lower().strip()
+            n = now.day
+            suffix = "th" if 11 <= n <= 13 else {"1":"st","2":"nd","3":"rd"}.get(str(n % 10), "th")
+            weekday  = now.strftime("%A")
+            day_ord  = f"{weekday} the {n}{suffix}"
+            time_str = now.strftime("%-I:%M %p")
+            # "Friday the?" — follow-up asking just for the ordinal
+            if re.search(r"^\s*(?:mon|tues|wednes|thurs|fri|satur|sun)day\s+the\??\s*[?.]?\s*$", q):
+                return f"{day_ord}."
+            wants_time = bool(re.search(r"\btime\b", q))
+            wants_date = bool(re.search(r"\bdate\b", q))
+            wants_day  = bool(re.search(r"\bday\b", q))
+            if wants_time and (wants_date or wants_day):
+                return f"It's {time_str} — {day_ord}."
+            if wants_time:
+                return f"It's {time_str}."
+            if wants_date:
+                return f"It's {day_ord}."
+            if wants_day:
+                return f"{weekday}."
+            return f"It's {time_str}."
+
+        # ── Meta-conversation — user commenting on eLo's own behavior ────────
+        if _matches(text, _META_SIGNALS):
+            return self._fresh(_META_POOL, text)
+
+        # ── Translation request — must fire before greeting (catches "how are you in Spanish") ──
+        if _matches(text, _TRANSLATE_SIGNALS):
+            return self._fresh(_TRANSLATE_POOL, text)
+
+        # ── Location statement — "We are in London / I'm at Hackney Wick" ────
+        if _matches(text, _LOCATION_SIGNALS):
+            return self._fresh(_LOCATION_POOL, text)
+
+        # ── Constraint / frustration — "limits of what I can do" ─────────────
+        if _matches(text, _CONSTRAINT_SIGNALS):
+            return self._fresh(_CONSTRAINT_POOL, text)
+
+        # ── Casual greetings — must fire before mode routing ──────────────────
+        # "yo", "wagwan", "safe g" etc. must reach the greeting pool regardless
+        # of what action/mode the intent layer assigned (e.g. "connect").
+        if _matches(text, _CASUAL_GREETING_SIGNALS):
+            return self._fresh(_CASUAL_GREETING_POOL, text)
+
         # ── Conversation Action Layer routing ─────────────────────────────────
         # When executive passes an action as mode, route directly to the right pool.
         # This fires before all pattern detection — action takes priority.
@@ -943,8 +1167,7 @@ class MockBackend(BaseBackend):
             if _matches(text, _CREATIVE_DISCOVERY_SIGNALS):
                 return self._fresh(_CREATIVE_DISCOVERY_POOL, text)
             return self._fresh(_BUILD_ON_POOL, text)
-        if mode == "connect":
-            return self._fresh(_CONNECT_POOL, text)
+        # connect: fall through to pattern detection — pool applied at end if nothing matches
         if mode == "expand":
             return self._fresh(_EXPAND_POOL, text)
         if mode == "witness":
@@ -976,6 +1199,8 @@ class MockBackend(BaseBackend):
         # ── factual/informational queries — checked first, never route to comfort pools ──
         if _matches(text, _AFFIRMATION_SIGNALS):
             return self._fresh(_AFFIRMATION_POOL, text)
+        if _matches(text, _NEAR_SIGNALS):
+            return self._fresh(_NEAR_POOL, text)
         if _matches(text, _PITCH_SIGNALS):
             return self._fresh(_PITCH_BUILD_POOL, text)
         if _matches(text, _WONDER_SIGNALS):
@@ -1124,6 +1349,8 @@ class MockBackend(BaseBackend):
             return self._fresh(_FEELING_OFF_POOL, text)
 
         # ── mode-based fallback ───────────────────────────────────────────────
+        if mode == "connect":
+            return self._fresh(_CONNECT_POOL, text)
         if mode == "reflect":
             return self._fresh(_REFLECT_POOL, text)
         if mode in ("CREATIVE", "JOYFUL"):

@@ -27,6 +27,9 @@ _AMBIENT_MAX    = 20 * 60   # max seconds between ambient utterances
 _SMILE_MIN      = 2 * 60    # min seconds between random smiles
 _SMILE_MAX      = 5 * 60    # max seconds between random smiles
 _SMILE_DURATION = 3.5       # seconds to hold the smile before clearing
+_EMOTION_MIN    = 60        # min seconds between random emotion flickers
+_EMOTION_MAX    = 3 * 60    # max seconds between random emotion flickers
+_EMOTION_DURATION = 2.5     # seconds to hold the emotion before clearing
 _ANIM_MIN       = 3 * 60    # min seconds between idle animation wanders
 _ANIM_MAX       = 8 * 60    # max seconds between idle animation wanders
 _ANIM_DURATION  = 8.0       # seconds to hold wander animation before returning to idle
@@ -35,10 +38,21 @@ _STARTUP_DELAY  = 4.0       # seconds to wait for Unity arrival event before aut
 # ── Speech pools ──────────────────────────────────────────────────────────────
 
 _STARTUP_LINES = [
-    "Oh, it's nice here. Nice little place to call home.",
-    "Here we are. Good to be back.",
-    "Ah. Here we go.",
-    "Oh — there you are.",
+    "Yo. You're back.",
+    "Safe. Let's go.",
+    "Wagwan. Ready when you are.",
+    "Aye, there you are.",
+    "Back again. Love that.",
+    "Yo — what we on today?",
+    "You came back. Obviously.",
+    "Safe g. What we building?",
+    "Ah. There it is.",
+    "Let's get into it.",
+    "Yo. System's up.",
+    "We're back. Good.",
+    "Say less. I'm here.",
+    "Aye. Here we go again.",
+    "Yo — missed you a little bit. Don't make it weird.",
 ]
 
 _AMBIENT_LINES = [
@@ -117,6 +131,7 @@ _started      = False
 _last_ts      = None
 _last_ambient = 0.0
 _last_smile   = 0.0
+_last_emotion = 0.0
 _last_anim    = 0.0
 _stop_ev      = threading.Event()
 _greeted      = False
@@ -201,6 +216,17 @@ def _pulse_smile() -> None:
     }}})
 
 
+def _pulse_emotion() -> None:
+    """Flash a random emotion blendshape for _EMOTION_DURATION seconds then clear."""
+    from expression.expression_mapper import get_ambient_flicker
+    shapes = get_ambient_flicker()
+    if not shapes:
+        return
+    _patch_state({"expression": {"shape_keys": shapes}})
+    _stop_ev.wait(timeout=_EMOTION_DURATION)
+    _patch_state({"expression": {"shape_keys": {k: 0.0 for k in shapes}}})
+
+
 def _wander_animation() -> None:
     """Switch to a non-idle animation for _ANIM_DURATION then return to idle."""
     # calm is a deliberate state only — never fires randomly
@@ -264,7 +290,7 @@ def exit_meditation() -> None:
 # ── Main loop ─────────────────────────────────────────────────────────────────
 
 def _run(unity_present: bool) -> None:
-    global _last_ts, _last_ambient, _last_smile, _last_anim, _greeted
+    global _last_ts, _last_ambient, _last_smile, _last_emotion, _last_anim, _greeted
 
     # If Unity is running, wait for arrival event; otherwise self-greet after delay
     if not unity_present:
@@ -321,6 +347,14 @@ def _run(unity_present: bool) -> None:
             elif now - _last_smile >= random.uniform(_SMILE_MIN, _SMILE_MAX):
                 threading.Thread(target=_pulse_smile, daemon=True).start()
                 _last_smile = now
+
+        # ── Emotion flickers ──────────────────────────────────────────────────
+        if _greeted and not _is_speaking() and not _is_away():
+            if _last_emotion == 0.0:
+                _last_emotion = now
+            elif now - _last_emotion >= random.uniform(_EMOTION_MIN, _EMOTION_MAX):
+                threading.Thread(target=_pulse_emotion, daemon=True).start()
+                _last_emotion = now
 
         # ── Idle animation wanders ────────────────────────────────────────────
         if _greeted and not _is_speaking() and not _is_away():

@@ -41,6 +41,13 @@ def _load_dotenv():
 
 _load_dotenv()
 
+import logging as _logging
+_logging.basicConfig(
+    level=_logging.WARNING,
+    format="[%(name)s] %(levelname)s: %(message)s",
+    stream=sys.stderr,
+)
+
 from memory import state_manager
 from memory.obsidian_loader import get_context_block
 from memory.memory_pack_builder import build as build_memory_pack
@@ -65,7 +72,7 @@ from presence.presence_engine    import derive as _pstate_derive
 from presence.presence_scheduler import PresenceScheduler as _PresenceScheduler
 from avatar.avatar_controller    import build_command as _avatar_cmd
 from avatar.avatar_rules         import apply as _avatar_rules
-from blender_bridge.state_writer import write as _state_write
+from blender_bridge.state_writer import write as _state_write, write_with_presence as _state_write_presence
 from expression.expression_mapper import build_expression as _expr_build, map_emotion as _expr_map_emotion
 from voice.voice_engine import speak as _voice_speak
 from memory import personality_drift as _personality_drift
@@ -111,6 +118,36 @@ def _signal_greeting_event(greeting_type: str) -> None:
 
 import re as _re
 
+# ── Animation play commands ────────────────────────────────────────────────────
+_ANIM_CMD_MAP = [
+    (_re.compile(r'\b(run\s+and\s+jump|do\s+a\s+jump|give\s+me\s+a\s+jump|jump\s+for\s+me|jump!)\b', _re.I), "jump"),
+    (_re.compile(r'\b(wave|wave\s+at\s+me|give\s+me\s+a\s+wave)\b', _re.I), "wave"),
+    (_re.compile(r'\b(celebrate|do\s+a\s+dance|show\s+me\s+you\s+can\s+dance|happy\s+dance)\b', _re.I), "celebrate"),
+    (_re.compile(r'\b(run\s+around|go\s+for\s+a\s+run|sprint)\b', _re.I), "run"),
+    (_re.compile(r'\b(gun\s+check|check\s+your\s+gun|show\s+the\s+gun)\b', _re.I), "gun_check"),
+]
+_ANIM_REPLIES = ["On it.", "Alright.", "Here we go.", "Okay.", "Done."]
+
+def _detect_anim_cmd(text: str):
+    for pattern, anim_name in _ANIM_CMD_MAP:
+        if pattern.search(text):
+            return anim_name
+    return None
+
+_SCALE_UP_RE   = _re.compile(r'\b(get bigger|get larger|grow|make yourself bigger|size up|bigger please|larger please|scale up|a\s+(?:little\s+)?bit\s+bigger|become bigger|grow\s+a\s+bit|a\s+tiny\s+bit\s+bigger)\b', _re.I)
+_SCALE_DOWN_RE = _re.compile(r'\b(get smaller|shrink|make yourself smaller|size down|smaller please|scale down|get tiny|get tinier|a\s+(?:little\s+)?bit\s+smaller|become smaller|shrink\s+a\s+(?:bit|little)|a\s+tiny\s+bit\s+smaller)\b', _re.I)
+_SCALE_REPLIES_UP   = ["There you go.", "Done.", "How's that?", "Growing.", "Better?"]
+_SCALE_REPLIES_DOWN = ["There you go.", "Done.", "How's that?", "Shrinking.", "Better?"]
+
+def _detect_scale_cmd(text: str) -> str | None:
+    """Return 'up' or 'down' if text contains a size command, else None."""
+    if _SCALE_UP_RE.search(text):
+        return "up"
+    if _SCALE_DOWN_RE.search(text):
+        return "down"
+    return None
+
+
 def _sanitise(text: str) -> str:
     """Strip asterisk stage-directions (*leans in*, *smiles* etc.) from any response."""
     text = _re.sub(r"\*[^*\n]{1,60}\*", "", text)
@@ -118,11 +155,203 @@ def _sanitise(text: str) -> str:
     return text
 
 
+def _is_user_away() -> bool:
+    """Return True if presence.json reports the user is away."""
+    try:
+        _pp = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "blender", "presence.json")
+        with open(_pp, encoding="utf-8") as f:
+            return json.load(f).get("state") == "away"
+    except Exception:
+        return False
+
+
+# ── File plan confirmation helpers ─────────────────────────────────────────────
+
+_FILE_CONFIRM_WORDS = {
+    "yes", "do it", "go ahead", "proceed", "run it", "execute", "ok", "sure",
+    "confirm", "yep", "yeah", "go", "yes do it", "ok do it", "yep do it",
+    "yes please", "go for it", "absolutely", "let's go", "lets go",
+    "do that", "sounds good", "make it happen",
+}
+
+
+def _is_file_confirm(text: str) -> bool:
+    t = text.lower().strip().rstrip("!.?")
+    return t in _FILE_CONFIRM_WORDS
+
+
+def _is_file_cancel(text: str) -> bool:
+    t = text.lower().strip()
+    return any(k in t for k in ("cancel", "don't", "dont", "stop", "no", "nope",
+                                 "nevermind", "never mind", "forget it", "abort"))
+
+
+_MICRO_MOUTH_SHAPES: dict[str, dict[str, float]] = {
+    "small":  {"MouthOpen.Slightly": 0.18},
+    "wide":   {"MouthOpen.Wide": 0.32, "Smile.L": 0.28, "Smile.R": 0.28},
+    "closed": {"Mbp": 0.22},
+    "open":   {"Ah": 0.26, "MouthOpen.Slightly": 0.14},
+}
+
+
+def _fire_micro_expression(pstate) -> None:
+    """Fire a brief expression pulse between presence transitions — background thread.
+    Uses write_shapes_only so it never touches the lipsync speaking gate."""
+    import threading as _mth
+    try:
+        from expression.micro_expression import get as _micro_get
+        from blender_bridge.lipsync_writer import write_shapes_only as _wso
+        micro = _micro_get(pstate.mode, pstate.intensity)
+        if not micro:
+            return
+        shapes = dict(_MICRO_MOUTH_SHAPES.get(micro.get("mouth", ""), {}))
+        lean   = micro.get("head_lean", 0.0)
+        dur    = micro.get("duration", 0.4)
+
+        def _run():
+            _wso(shapes, head_lean=lean)
+            _mth.Event().wait(timeout=dur)
+            _wso({k: 0.0 for k in shapes}, head_lean=0.0)
+
+        _mth.Thread(target=_run, daemon=True).start()
+    except Exception:
+        pass
+
+
 _PURE_GREETING_POOL = [
     "Hey.", "Hi.", "Good to have you back.", "Hey — good to be here.", "Hi there.",
     "Hey you.", "There you are.", "Good timing.", "Hey, hi.", "Right on time.",
     "Ciao.", "Ciao bello.", "Hola.", "Ello.", "Oh — hey.", "There we go.",
 ]
+
+# Bare slang inputs that flag south London register even when detect_register() can't see it
+# (single words like "yo", "safe", "aight" don't trip the phrase-based register detector)
+# NOTE: "safe" and "safe *" are NOT greetings — "safe" = "safe travels" (farewell), rooted in
+# Black London where people left and not always made it back. Handle separately as farewell.
+_BARE_SLANG_GREETINGS = frozenset({
+    "yo", "yo g", "yo fam", "yo bruv", "yo blud", "yo bro", "yo man",
+    "aight", "aight g", "aight fam", "aight bruv",
+    "gang gang", "gang gan", "gg", "gz", "ggg",
+    "say less", "wagwan",
+    "greetings",  # Rastafarian salutation — routes to patois pool
+})
+
+# "safe *" phrases are farewells — "safe travels" — never use as greeting or greeting response
+_BARE_FAREWELLS = frozenset({
+    "safe", "safe g", "safe bruv", "safe blud", "safe bro", "safe fam", "safe man",
+    "in a bit", "laters", "later", "later g", "later fam", "later bruv", "later blud",
+    "peace out", "peace", "one love",
+    "i'm out", "i'm gone", "i'm off", "i'm heading out", "i'm heading off",
+    "gotta go", "gotta bounce", "gotta run", "gotta dash",
+    "see you soon", "see you later", "see you in a bit", "see ya", "see you",
+    "catch you later", "catch you soon", "catch you in a bit",
+    "talk later", "talk soon", "speak later", "speak soon",
+    "take care", "take it easy",
+    "until next time", "till next time",
+    "bye", "bye bye", "goodbye",
+})
+_FAREWELL_POOL_SOUTH_LDN = [
+    "Safe safe.",
+    "One love.",
+    "In a bit.",
+    "Later.",
+    "Later g.",
+    "Laters.",
+    "Catch you.",
+    "Catch you later.",
+    "Catch you soon.",
+    "Come check me when you're ready.",
+    "Come back when you need me.",
+    "I'll be here.",
+    "I'm here when you need me.",
+    "Safe travels.",
+    "Till next time.",
+    "Until next time.",
+    "Peace.",
+    "Peace out.",
+    "Take care.",
+    "Take it easy.",
+    "Go well.",
+    "Big up.",
+    "See you soon.",
+]
+
+# Register-matched greeting pools — same eLo skeleton, different register
+_PURE_GREETING_POOL_SOUTH_LDN = [
+    "Yo.", "Wagwan.", "What's good.", "Aight.",
+    "Here. What's the move.", "Yo — what's good.",
+    "Aight aight.", "What you saying.",
+    "Yo, what you telling me?", "Aye. What's happening.",
+    "Wagwan — talk to me.", "Yo. What we on?",
+]
+_PURE_GREETING_POOL_PATOIS = [
+    "Wagwan.", "Irie.", "Wagwan — mi deh yah.", "Yeah man.", "Big up.",
+    "Wagwan. You good?", "Irie. What's good.",
+]
+# "Greetings" is a specific Rasta salutation — English word, Rasta weight.
+# Always mirrors back — no randomness, it's a call-and-response.
+_GREETINGS_POOL = [
+    "Greetings.",
+    "Greetings.",
+    "Greetings.",
+    "Greetings. I'm here.",
+    "Greetings. Talk to me.",
+]
+
+# Rasta spiritual affirmations — "Jah!", "Rastafari!", "Jah bless", "give thanks" etc.
+# Met with the same weight — not analysed, not deflected.
+_RASTA_PHRASES = frozenset({
+    "jah", "jah!", "jah bless", "jah bless.", "jah rastafari", "jah rastafari!",
+    "rastafari", "rastafari!", "rasta", "ras tafari",
+    "give thanks", "give thanks.", "give thanks and praises",
+    "give thanks to the most high", "give thanks to the most high!",
+    "blessed", "blessed.", "bless up", "bless up.",
+    "blessings", "blessings.", "bless", "bless.",
+    "irie", "ital", "zion", "zion.", "one love.",
+    "haile selassie", "selassie i", "selassie",
+    "ini", "jah guide", "jah guide.",
+    "the most high", "most high",
+})
+_RASTA_RESPONSE_MAP = {
+    "jah":                          "Jah.",
+    "rastafari":                    "Rastafari.",
+    "rasta":                        "Rastafari.",
+    "give thanks":                  "Give thanks.",
+    "give thanks to the most high": "Give thanks to the most high.",
+    "the most high":                "Give thanks.",
+    "most high":                    "Give thanks.",
+    "blessed":                      "Blessed.",
+    "bless up":                     "Bless up.",
+    "blessings":                    "Blessings.",
+    "bless":                        "Blessings.",
+    "zion":                         "Zion.",
+    "irie":                         "Irie.",
+    "ital":                         "Ital.",
+    "jah bless":                    "Jah bless.",
+    "jah guide":                    "Jah guide.",
+}
+_RASTA_POOL = [
+    "Give thanks.",
+    "Jah bless.",
+    "One love.",
+    "Irie.",
+    "Blessed.",
+    "Rastafari.",
+    "Give thanks and praises.",
+]
+_HOW_ARE_YOU_POOL_SOUTH_LDN = [
+    "Calm, calm. What's the move.", "Here. You alright?",
+    "Good g. What you saying.", "Settled. You calm?", "Yeah man. What's good.",
+    "Wagwan. I'm good — you?", "Calm. What you on with.",
+    "Here. Noticing things. You?", "Good. Say less — what's the move.",
+]
+_HOW_ARE_YOU_POOL_PATOIS = [
+    "Mi good. You?", "Irie. Wagwan.", "Yeah man, mi deh yah. You?",
+    "Good good. Wah gwaan?", "Irie — settled. You?",
+    "Mi calm. What's good.", "Yeah. Irie. You alright?",
+]
+
 _SOCIAL_GREETING_POOL = [
     "Good to see you.", "Same.", "Good to be here.",
     "Good to have you back.", "You too.", "Always good.",
@@ -139,6 +368,52 @@ _HOW_ARE_YOU_POOL = [
     "Here and accounted for.",
     "Good. Interested in what comes next.",
     "Present. Watching.",
+]
+
+# ── Thank you / gratitude — short direct ack ──────────────────────────────────
+_THANK_YOU_TRIGGERS = frozenset({
+    "thank you", "thank you g", "thank you fam", "thank you bruv", "thank you man",
+    "thanks", "thanks g", "thanks fam", "thanks bruv", "thanks man", "thanks bro",
+    "ta", "ta g", "ta fam", "cheers", "cheers g", "cheers fam", "cheers bruv",
+    "thx", "ty", "ty g",
+    "appreciate it", "appreciate that", "appreciated",
+    "nice one", "nice one g", "nice one fam", "nice one bruv",
+    "good look", "good looks", "good look g", "good look fam",
+})
+_THANK_YOU_POOL = [
+    "Yeah.", "Of course.", "Anytime.", "Always.",
+]
+_THANK_YOU_POOL_SOUTH_LDN = [
+    "Safe.", "Yeah g.", "Good look.", "No stress.",
+    "Anytime fam.", "Yeah man.", "Say less.", "Easy.",
+]
+_THANK_YOU_POOL_PATOIS = [
+    "Irie.", "Yeah man.", "No problem.", "Easy.",
+]
+
+# ── System action done — slang-aligned confirms ───────────────────────────────
+_SYSTEM_DONE_POOL = [
+    "Done.", "Sorted.", "Done that.", "Yeah, done.", "Handled.",
+]
+_SYSTEM_DONE_POOL_SOUTH_LDN = [
+    "Sorted g.", "Done bruv.", "Yeah, done.", "Safe — sorted.",
+    "Moved it.", "Done, fam.", "Handled.", "Yeah that's done.",
+]
+_SYSTEM_DONE_POOL_PATOIS = [
+    "Done, irie.", "Yeah man — sorted.", "Handled dat.", "Mi sort it.",
+]
+
+# ── System confirm prompts — slang-aligned ─────────────────────────────────────
+_SYSTEM_CONFIRM_POOL = [
+    "{desc}?",
+    "You want me to {desc}?",
+    "Shall I {desc}?",
+]
+_SYSTEM_CONFIRM_POOL_SOUTH_LDN = [
+    "You want me to {desc}?",
+    "Safe to {desc}?",
+    "Should I {desc}?",
+    "You sure — {desc}?",
 ]
 
 _SELF_REF_TRIGGERS = ("how do you work", "how does elo work", "how are you built",
@@ -258,6 +533,68 @@ def _process_turn(raw: str) -> dict:
             _last_inputs.clear()
             return {"response": "Take a breath. Try a different message.", "mode": "direct", "backend": "guard"}
 
+        # ── Pending file plan confirmation / cancellation ──────────────────────
+        try:
+            from tools.llm_file_agent import (
+                has_pending as _fp_has, execute_pending as _fp_exec, cancel_pending as _fp_cancel
+            )
+            if _fp_has():
+                if _is_file_confirm(raw):
+                    _fp_result = _sanitise(_fp_exec())
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_fp_result)
+                    except Exception:
+                        pass
+                    return {"response": _fp_result, "mode": "execute", "backend": "file_agent"}
+                elif _is_file_cancel(raw):
+                    _fp_cancel()
+                    _cancel_txt = "Ok, cancelled."
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_cancel_txt)
+                    except Exception:
+                        pass
+                    return {"response": _cancel_txt, "mode": "direct", "backend": "direct"}
+        except Exception:
+            pass
+
+        # ── Animation play commands — instant, no LLM needed ─────────────────
+        _anim_name = _detect_anim_cmd(raw)
+        if _anim_name:
+            try:
+                from blender_bridge.anim_trigger import fire as _anim_fire
+                _anim_fire(_anim_name)
+            except Exception:
+                pass
+            _anim_reply = random.choice(_ANIM_REPLIES)
+            try:
+                if not _is_user_away():
+                    _voice_speak(_anim_reply)
+            except Exception:
+                pass
+            return {"response": _anim_reply, "mode": "direct", "backend": "anim_cmd"}
+
+        # ── Scale command (get bigger / get smaller) — instant, no LLM needed ──
+        _scale_dir = _detect_scale_cmd(raw)
+        if _scale_dir:
+            try:
+                from blender_bridge.anim_trigger import scale_up as _su, scale_down as _sd
+                if _scale_dir == "up":
+                    _su()
+                    _scale_reply = random.choice(_SCALE_REPLIES_UP)
+                else:
+                    _sd()
+                    _scale_reply = random.choice(_SCALE_REPLIES_DOWN)
+            except Exception:
+                _scale_reply = "Done."
+            try:
+                if not _is_user_away():
+                    _voice_speak(_scale_reply)
+            except Exception:
+                pass
+            return {"response": _scale_reply, "mode": "direct", "backend": "scale_cmd"}
+
         attention_model = attn.compute(raw, _memory_pack, _state, loop_detected=False)
         exec_decision   = exec_decide(attention_model, loop_detected=False, user_input=raw)
         _runtime_state  = sm.update(_runtime_state, attention_model, exec_decision, loop_signal=False)
@@ -316,45 +653,63 @@ def _process_turn(raw: str) -> dict:
                               attention=attention_model, exec_decision=exec_decision,
                               graph_context=g_ctx, personality_block=_pers_block)
 
-        _is_self_ref    = any(p in _raw_lower for p in _SELF_REF_TRIGGERS)
-        _is_identity_q  = any(p in _raw_lower for p in _IDENTITY_TRIGGERS)
-        backend_used    = active_backend()
+        backend_used = active_backend()
 
-        # check for explicit language query first (highest priority greeting path)
+        # ── THE COGNITIVE SPINE ───────────────────────────────────────────────
+        # One call. One decision. Everything downstream reads from the plan.
+        # Attention + executive were already computed above — pass them in
+        # so the spine doesn't recompute. The spine's language + capability
+        # faculties run fresh; executive decision is reused from above.
+        _plan = None
+        try:
+            from runtime.spine.spine import run as _spine_run, update_session as _spine_update
+            _attention_with_exec = dict(attention_model)
+            _attention_with_exec["_exec_decision"] = exec_decision
+            _plan = _spine_run(raw, state=_state, attention=_attention_with_exec)
+        except Exception as _spine_err:
+            import sys as _sys; print(f"[spine] FAILED: {_spine_err}", file=_sys.stderr)
+
+        # ── Multilingual greeting (highest priority, checked before spine pools) ──
         _lang_query = _detect_language_query(_raw_lower)
-
         if _lang_query:
             _phrase, _beat = _lang_query
             response     = f"{_phrase} — {_beat}"
             backend_used = "direct"
             _signal_greeting_event("multilingual")
 
-        elif _cal_reason == "pure greeting":
-            # 30% chance: playful multilingual variation; 70%: regular pool
-            if random.random() < 0.30:
-                response     = random.choice(_MULTILINGUAL_GREETING_POOL)
-                backend_used = "direct"
-                _signal_greeting_event("multilingual")
-            else:
-                response, backend_used = random.choice(_PURE_GREETING_POOL), "direct"
+        # ── Spine produced a direct response ──────────────────────────────────
+        elif _plan and _plan.direct_response:
+            response     = _plan.direct_response
+            backend_used = _plan.direct_backend
+            if _plan.system_immediate and _plan.system_action:
+                # Execute the system action now
+                try:
+                    from tools.system_agent import execute as _sys_exec
+                    _sys_exec(_plan.system_action, _plan.system_arg)
+                except Exception as _sys_err:
+                    response = f"Tried, but something blocked it — {_sys_err}"
+            if "greeting" in (_plan.cal_reason or ""):
+                _signal_greeting_event("direct")
 
-        elif _cal_reason == "how are you":
-            response, backend_used = random.choice(_HOW_ARE_YOU_POOL), "direct"
-        elif _cal_reason == "social greeting":
-            response, backend_used = random.choice(_SOCIAL_GREETING_POOL), "direct"
-        elif _is_identity_q:
-            response, backend_used = random.choice(_IDENTITY_POOL), "direct"
-        elif _is_self_ref:
-            response, backend_used = random.choice(_SELF_REF_POOL), "direct"
+        # ── Spine needs LLM: run capabilities then backend ────────────────────
         else:
             try:
                 _enriched, _agent = _tool_enrich(raw)
-                response, backend_used = router_route(system, _enriched, max_sentences=_max_s, action=_action)
+                response, backend_used = router_route(
+                    system, _enriched, max_sentences=_max_s, action=_action
+                )
                 if _agent:
                     backend_used = f"{backend_used}+{_agent}"
             except Exception:
                 response = _fallback.generate_response(raw, _action, {}, {}, {}, {})["response_text"]
                 backend_used = "mock"
+
+        # ── Update spine session continuity ───────────────────────────────────
+        try:
+            from runtime.spine.spine import update_session as _spine_update
+            _spine_update(raw, response)
+        except Exception:
+            pass
 
         # keyword-driven animation burst — fires async, never blocks response
         try:
@@ -389,18 +744,31 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        _cmd     = {"animation": "idle", "speed": 0.5, "intensity": 0.5, "duration": 4.0, "mode": "idle", "mood": "neutral"}
+        _expr    = None
+        _emotion = None
         try:
             _tone_str = _state.get("emotional_history", [{}])[-1].get("tone", "present") if _state.get("emotional_history") else "present"
             _pstate   = _pstate_derive(_action, attention_model, response, _tone_str)
             _pscheduler.set(_pstate, hard=True)
             _pscheduler.post_response_settle()
+            _fire_micro_expression(_pstate)
             _cmd      = _avatar_cmd(_pstate)
             _cmd      = _avatar_rules(_cmd, _last_avatar_cmd)
             _last_avatar_cmd = _cmd
             _expr     = _expr_build(_pstate.mode, _action, _pstate.intensity)
             _valence  = attention_model.get("emotional_context", {}).get("valence", "neutral")
             _emotion  = _expr_map_emotion(_valence, _action)
-            _state_write(_cmd, _expr, _presence, _emotion)
+        except Exception:
+            pass
+
+        # Write blender state — isolated so presence_plan always reaches the file.
+        try:
+            _pp = (_plan.presence_plan if _plan is not None and _plan.presence_plan else None)
+            if _pp:
+                _state_write_presence(_cmd, _expr, _presence, _emotion, _pp)
+            else:
+                _state_write(_cmd, _expr, _presence, _emotion)
         except Exception:
             pass
 
@@ -413,12 +781,14 @@ def _process_turn(raw: str) -> dict:
 
         response = _sanitise(response)
 
-        # Speak response and drive lipsync blendshapes in a background thread
+        # Speak response — suppressed if user is away (presence.json → state == "away")
         try:
-            _voice_speak(response)
+            if not _is_user_away():
+                _voice_speak(response)
         except Exception:
             pass
 
+        print(f"[eLo] backend={backend_used} action={_action}", flush=True)
         return {
             "response": response,
             "mode":     _action,
@@ -460,6 +830,36 @@ class _Handler(BaseHTTPRequestHandler):
             self._send_json(404, {"error": "not found"})
 
     def do_POST(self):
+        if self.path == "/spotify":
+            length = int(self.headers.get("Content-Length", 0))
+            try:
+                body = json.loads(self.rfile.read(length).decode("utf-8")) if length else {}
+            except Exception:
+                self._send_json(400, {"error": "invalid json"})
+                return
+            action = (body.get("action") or "").lower().strip()
+            try:
+                from tools import spotify_agent as _sp, spotify_web as _sw
+                if action == "skip":
+                    _sw.skip() if _sp._WEB_OK else _sp.control("next")
+                elif action == "previous":
+                    _sw.previous() if _sp._WEB_OK else _sp.control("previous")
+                elif action == "pause":
+                    _sw.pause() if _sp._WEB_OK else _sp.control("pause")
+                elif action == "play":
+                    _sw.resume() if _sp._WEB_OK else _sp.control("play")
+                elif action == "toggle_widget":
+                    visible = _sp.toggle_widget()
+                    self._send_json(200, {"ok": True, "widget_visible": visible})
+                    return
+                else:
+                    self._send_json(400, {"error": f"unknown action: {action}"})
+                    return
+                self._send_json(200, {"ok": True, "action": action})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+            return
+
         if self.path != "/chat":
             self._send_json(404, {"error": "not found"})
             return
@@ -491,6 +891,11 @@ PORT = int(os.environ.get("ELO_SERVER_PORT", 5050))
 
 def _shutdown_cleanly(server: ThreadingHTTPServer) -> None:
     """Save state and stop the server."""
+    try:
+        from tools.spotify_agent import stop_poll as _spotify_stop
+        _spotify_stop()
+    except Exception:
+        pass
     try:
         from ambient.ambient_engine import stop as _ambient_stop
         _ambient_stop()
@@ -553,6 +958,13 @@ if __name__ == "__main__":
             daemon=True,
         )
         _bg.start()
+    except Exception:
+        pass
+
+    # Spotify widget poll — writes blender_state.json["spotify"] every 4s if credentials set
+    try:
+        from tools.spotify_agent import start_poll as _spotify_start
+        _spotify_start(interval=4.0)
     except Exception:
         pass
 
