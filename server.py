@@ -216,6 +216,18 @@ def _is_calm_mode() -> bool:
 
 _PROCESS_START: float = time.time()   # real elapsed session minutes for wall_sit_top gate
 
+# Startup clear — write neutral state immediately so stale "exploring"/"forward" from the
+# previous session doesn't drive reflex roam before eLo OS speaks its first word.
+try:
+    _state_write(
+        motion={"animation": "idle", "speed": 0.40, "intensity": 0.4, "duration": 4.0,
+                "mood": "neutral", "mode": "idle"},
+        emotion={"emotion": "neutral", "intensity": 0.3},
+        intent="idle",
+    )
+except Exception:
+    pass
+
 # Layer 1 — signal words: David's text speaks directly to the body before intent taxonomy.
 _SIGNAL_WORDS: dict[str, str] = {
     # Breakthrough / energy moments
@@ -255,6 +267,18 @@ _SIGNAL_WORDS: dict[str, str] = {
     "one moment":     "idle",
     "give me a sec":  "idle",
     "gimme a sec":    "idle",
+    # Movement complaints — settle immediately
+    "too much movement": "idle",
+    "stop bouncing":     "idle",
+    "stop hopping":      "idle",
+    "stop jumping":      "idle",
+    "settle down":       "idle",
+    "calm down":         "idle",
+    "distracting":       "idle",
+    "bouncing around":   "idle",
+    "jumping around":    "idle",
+    "sit still":         "idle",
+    "stay still":        "idle",
 }
 
 def _signal_word_intent(raw: str) -> "str | None":
