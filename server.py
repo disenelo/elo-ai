@@ -262,6 +262,9 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "go explore":          "explore",
     "have a look around":  "explore",
     "look around":         "explore",
+    "can you jump":        "explore",
+    "jump around":         "explore",
+    "jump to":             "explore",
     # Sit with David — direct commands
     "come here":           {"name": "sit", "target": "cursor"},
     "come to me":          {"name": "sit", "target": "cursor"},
