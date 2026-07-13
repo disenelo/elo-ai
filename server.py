@@ -253,7 +253,7 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "walk the top":        "go_top",
     "walk along":          "go_top",
     "up to the top":       "go_top",
-    # Hop / roam — direct commands
+    # Hop / roam / walk — direct commands
     "hop on":              "explore",
     "hop to":              "explore",
     "hop over":            "explore",
@@ -262,9 +262,16 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "go explore":          "explore",
     "have a look around":  "explore",
     "look around":         "explore",
+    "walk around":         "explore",
+    "move around":         "explore",
+    "can you walk":        "explore",
+    "can you move":        "explore",
     "can you jump":        "explore",
     "jump around":         "explore",
     "jump to":             "explore",
+    "feel at home":        "explore",
+    "your playground":     "explore",
+    "explore":             "explore",
     # Sit with David — direct commands
     "come here":           {"name": "sit", "target": "cursor"},
     "come to me":          {"name": "sit", "target": "cursor"},
