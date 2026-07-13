@@ -229,7 +229,8 @@ except Exception:
     pass
 
 # Layer 1 — signal words: David's text speaks directly to the body before intent taxonomy.
-_SIGNAL_WORDS: dict[str, str] = {
+# Values are str (intent) or dict (structured command e.g. sit-at-cursor).
+_SIGNAL_WORDS: "dict[str, str | dict]" = {
     # Breakthrough / energy moments
     "breakthrough":   "creation",
     "figured it out": "creation",
@@ -240,10 +241,33 @@ _SIGNAL_WORDS: dict[str, str] = {
     "let's build":    "creation",
     "let's create":   "creation",
     "what if we":     "creation",
-    # Climbing / upward curiosity
-    "let's look":     "go_top",
-    "get up there":   "go_top",
-    "go up":          "go_top",
+    # Climbing / upward — direct commands
+    "let's look":          "go_top",
+    "get up there":        "go_top",
+    "go up":               "go_top",
+    "to the top":          "go_top",
+    "get to the top":      "go_top",
+    "go to the top":       "go_top",
+    "top of the screen":   "go_top",
+    "top of the window":   "go_top",
+    "walk the top":        "go_top",
+    "walk along":          "go_top",
+    "up to the top":       "go_top",
+    # Hop / roam — direct commands
+    "hop on":              "explore",
+    "hop to":              "explore",
+    "hop over":            "explore",
+    "nearest window":      "explore",
+    "next window":         "explore",
+    "go explore":          "explore",
+    "have a look around":  "explore",
+    "look around":         "explore",
+    # Sit with David — direct commands
+    "come here":           {"name": "sit", "target": "cursor"},
+    "come to me":          {"name": "sit", "target": "cursor"},
+    "sit with me":         {"name": "sit", "target": "cursor"},
+    "walk to me":          {"name": "sit", "target": "cursor"},
+    "sit next to me":      {"name": "sit", "target": "cursor"},
     # Grounding / stuck moments
     "stuck":          "grounding",
     "frustrated":     "grounding",
@@ -281,7 +305,7 @@ _SIGNAL_WORDS: dict[str, str] = {
     "stay still":        "idle",
 }
 
-def _signal_word_intent(raw: str) -> "str | None":
+def _signal_word_intent(raw: str) -> "str | dict | None":
     raw_l = raw.lower()
     for phrase, directive in _SIGNAL_WORDS.items():
         if phrase in raw_l:
