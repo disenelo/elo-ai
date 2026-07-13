@@ -315,25 +315,29 @@ def _signal_word_intent(raw: str) -> "str | dict | None":
 
 # Layer 2 — light engine emotional state → body directive.
 # Maps the 20-state presence vocab to movement directives.
+# RULE: never emit _biRoam-triggering intents (explore/creation/roam/wander) from
+# cognitive/emotional signals — those bypass PresenceAllowsHop and cause hopping
+# mid-conversation. Only signal words (explicit user commands) may trigger roaming.
 _EMOTIONAL_DIRECTIVES: dict[str, str] = {
-    "celebration":        "creation",
-    "joy":                "creation",
-    "play":               "creation",
-    "momentum":           "creation",
-    "creative_discovery": "creation",
-    "challenge":          "go_top",   # pushing upward — energetic climb
-    "curiosity":          "go_top",   # curious → peek from above
-    "exploring":          "creation",
+    # Energetic states → targeted climb (biClimbTop, not _biRoam — purposeful, not chaotic)
+    "challenge":          "go_top",
+    "curiosity":          "go_top",
+    # Grounding states → settle in place
     "comfort":            "grounding",
     "repair":             "grounding",
     "witnessing":         "grounding",
     "connection":         "grounding",
+    # Quiet states → still
     "wonder":             "idle",
     "listening":          "idle",
     "thinking":           "idle",
     "focus":              "idle",
     "reflection":         "idle",
     "waiting":            "idle",
+    # celebration / joy / play / momentum / creative_discovery / exploring
+    # → removed: these were mapping to "creation" (_biRoam) and causing mid-conversation
+    # hopping. The movement_style "forward" from presence_plan already energises the
+    # body's reflex without forcing a roam command.
 }
 
 
@@ -384,17 +388,9 @@ def _movement_intent(
             return {"name": "sit", "target": "cursor"}
         return "grounding"
 
-    # Creation + high energy → explore
-    if intent == "creation" and energy > 0.65:
-        return "creation"
-
-    # Inquiry / curious energy → climb and see
+    # Inquiry / curious energy → climb and see (targeted biClimbTop, not _biRoam)
     if intent == "inquiry" and energy > 0.55:
         return "go_top"
-
-    # Layer 3 — building momentum + positive → energised roam
-    if momentum == "building" and valence in ("positive_high", "positive_low"):
-        return "creation"
 
     # Layer 2 — emotional state from light engine (20-state vocab)
     _ed = _EMOTIONAL_DIRECTIVES.get(emotional_state)
