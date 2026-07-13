@@ -88,6 +88,7 @@ _memory_pack     = {}
 _vault_ctx       = ""
 _last_inputs     = []
 _last_avatar_cmd = None
+_last_pp         = None   # last known presence_plan — survives tool-call turns
 _pscheduler      = _PresenceScheduler()
 _behaviour_gate  = _BehaviourGate()
 
@@ -102,17 +103,19 @@ _BLENDER_STATE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "
 
 
 def _signal_greeting_event(greeting_type: str) -> None:
-    """Patch blender_state.json with a short-lived greeting event so Unity can react."""
+    """Read-merge-write greeting event — preserves presence_plan and all existing keys."""
     import time as _time
     try:
-        if os.path.exists(_BLENDER_STATE_PATH):
-            with open(_BLENDER_STATE_PATH, "r") as _f:
+        try:
+            with open(_BLENDER_STATE_PATH, encoding="utf-8") as _f:
                 _st = json.load(_f)
-        else:
+        except Exception:
             _st = {}
         _st["greeting_event"] = {"type": greeting_type, "ts": int(_time.time())}
-        with open(_BLENDER_STATE_PATH, "w") as _f:
-            json.dump(_st, _f)
+        _tmp = _BLENDER_STATE_PATH + ".tmp"
+        with open(_tmp, "w", encoding="utf-8") as _f:
+            json.dump(_st, _f, indent=2)
+        os.replace(_tmp, _BLENDER_STATE_PATH)
     except Exception:
         pass
 
@@ -134,6 +137,16 @@ def _detect_anim_cmd(text: str):
             return anim_name
     return None
 
+# ── Invade / SpawnWave command ────────────────────────────────────────────────
+_INVADE_RE = _re.compile(r'\b(invade|spawn\s+(?:the\s+)?wave|send\s+(?:the\s+)?wave|release\s+(?:the\s+)?wave|spawn\s+enemies)\b', _re.I)
+_INVADE_REPLIES = [
+    "Initiating wave.",
+    "They're coming.",
+    "Wave incoming.",
+    "Done — enemies deployed.",
+    "Wave sent.",
+]
+
 _SCALE_UP_RE   = _re.compile(r'\b(get bigger|get larger|grow|make yourself bigger|size up|bigger please|larger please|scale up|a\s+(?:little\s+)?bit\s+bigger|become bigger|grow\s+a\s+bit|a\s+tiny\s+bit\s+bigger)\b', _re.I)
 _SCALE_DOWN_RE = _re.compile(r'\b(get smaller|shrink|make yourself smaller|size down|smaller please|scale down|get tiny|get tinier|a\s+(?:little\s+)?bit\s+smaller|become smaller|shrink\s+a\s+(?:bit|little)|a\s+tiny\s+bit\s+smaller)\b', _re.I)
 _SCALE_REPLIES_UP   = ["There you go.", "Done.", "How's that?", "Growing.", "Better?"]
@@ -149,7 +162,7 @@ def _detect_scale_cmd(text: str) -> str | None:
 
 
 def _sanitise(text: str) -> str:
-    """Strip asterisk stage-directions (*leans in*, *smiles* etc.) from any response."""
+    """Strip asterisk stage-directions from any response. Emoji kept — TTS strips its own copy."""
     text = _re.sub(r"\*[^*\n]{1,60}\*", "", text)
     text = _re.sub(r" {2,}", " ", text).strip()
     return text
@@ -164,6 +177,229 @@ def _is_user_away() -> bool:
             return json.load(f).get("state") == "away"
     except Exception:
         return False
+
+
+def _is_calm_mode() -> bool:
+    """Return True if eLo is in calm/meditation mode — TTS should be suppressed.
+
+    Primary signal: presence_state.json written by Unity PresenceEngine every frame.
+        CALM_IDLE   — mouse still > 10s (calmIdleAfterSecs)
+        MEDITATION  — OS mode 'meditation' or Unity rcv.Meditating
+
+    Fallback: blender_state.json meditation_state — written by Python enter_meditation()
+        for keyword-triggered calm (breathe, meditate, etc.)
+
+    IDLE is NOT calm — it fires 0-10s after activity and would suppress TTS too eagerly.
+    Unity owns presence_state.json. Python owns blender_state.json.
+    """
+    try:
+        _ps = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "blender", "presence_state.json")
+        with open(_ps, encoding="utf-8") as f:
+            if json.load(f).get("mode") in ("CALM_IDLE", "MEDITATION"):
+                return True
+    except Exception:
+        pass
+    try:
+        _bs = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "blender", "blender_state.json")
+        with open(_bs, encoding="utf-8") as f:
+            phase = json.load(f).get("meditation_state", {}).get("phase", "none")
+        return phase in ("enter", "loop")
+    except Exception:
+        return False
+
+
+# ── Movement intent — Executive cognitive plan → Presence body directive ─────
+# Three layers: signal words (L1) → valence/momentum (L3) → emotional state (L2) → cognitive.
+# Empty string = local reflex (body decides).
+
+_PROCESS_START: float = time.time()   # real elapsed session minutes for wall_sit_top gate
+
+# Layer 1 — signal words: David's text speaks directly to the body before intent taxonomy.
+_SIGNAL_WORDS: dict[str, str] = {
+    # Breakthrough / energy moments
+    "breakthrough":   "creation",
+    "figured it out": "creation",
+    "finally":        "creation",
+    "cracked it":     "creation",
+    "got it":         "creation",
+    "let's go":       "creation",
+    "let's build":    "creation",
+    "let's create":   "creation",
+    "what if we":     "creation",
+    # Climbing / upward curiosity
+    "let's look":     "go_top",
+    "get up there":   "go_top",
+    "go up":          "go_top",
+    # Grounding / stuck moments
+    "stuck":          "grounding",
+    "frustrated":     "grounding",
+    "can't think":    "grounding",
+    "can't figure":   "grounding",
+    "overwhelmed":    "grounding",
+    "burnt out":      "grounding",
+    "need help":      "grounding",
+    # Stepping away
+    "good night":     "step_out",
+    "goodnight":      "step_out",
+    "done for today": "step_out",
+    "signing off":    "step_out",
+    "heading out":    "step_out",
+    "taking a break": "step_out",
+    "need a break":   "step_out",
+    "brb":            "step_out",
+    # Settle / pause
+    "just a sec":     "idle",
+    "hold on":        "idle",
+    "one moment":     "idle",
+    "give me a sec":  "idle",
+    "gimme a sec":    "idle",
+}
+
+def _signal_word_intent(raw: str) -> "str | None":
+    raw_l = raw.lower()
+    for phrase, directive in _SIGNAL_WORDS.items():
+        if phrase in raw_l:
+            return directive
+    return None
+
+
+# Layer 2 — light engine emotional state → body directive.
+# Maps the 20-state presence vocab to movement directives.
+_EMOTIONAL_DIRECTIVES: dict[str, str] = {
+    "celebration":        "creation",
+    "joy":                "creation",
+    "play":               "creation",
+    "momentum":           "creation",
+    "creative_discovery": "creation",
+    "challenge":          "go_top",   # pushing upward — energetic climb
+    "curiosity":          "go_top",   # curious → peek from above
+    "exploring":          "creation",
+    "comfort":            "grounding",
+    "repair":             "grounding",
+    "witnessing":         "grounding",
+    "connection":         "grounding",
+    "wonder":             "idle",
+    "listening":          "idle",
+    "thinking":           "idle",
+    "focus":              "idle",
+    "reflection":         "idle",
+    "waiting":            "idle",
+}
+
+
+def _movement_intent(
+    exec_decision:   dict,
+    attention_model: dict,
+    vision:          dict | None = None,
+    session_min:     int = 0,
+    raw:             str = "",
+    emotional_state: str = "",
+    momentum:        str = "stable",
+    valence:         str = "neutral",
+) -> "str | dict":
+    tone   = exec_decision.get("tone", "")
+    action = exec_decision.get("action", "")
+    intent = exec_decision.get("intent", "conversation")
+    load   = exec_decision.get("cognitive_load", "medium")
+    energy = attention_model.get("emotional_context", {}).get("energy", 0.5)
+
+    # Silence / give-space — always wins
+    if tone == "SILENCE-AWARE" or action == "silence":
+        return "step_out"
+
+    # Layer 3 — emotional safety: negative high → ground immediately
+    if valence == "negative_high":
+        return "grounding"
+
+    # Layer 1 — signal words: direct word→body mapping, high priority
+    _sw = _signal_word_intent(raw)
+    if _sw:
+        return _sw
+
+    # Layer 3 — stuck momentum → come sit with David
+    if momentum == "stuck":
+        cursor_idle = (vision or {}).get("cursor_idle_seconds", 0)
+        if cursor_idle > 30:
+            return {"name": "sit", "target": "cursor"}
+        return "grounding"
+
+    # Stabilise → settle; meditation comes from state.mode via light engine
+    if intent == "stabilise":
+        return "idle"
+
+    # Emotional grounding → sit near cursor if David has been still
+    if intent == "emotional" and action in ("ground", "witness"):
+        cursor_idle = (vision or {}).get("cursor_idle_seconds", 0)
+        if cursor_idle > 60:
+            return {"name": "sit", "target": "cursor"}
+        return "grounding"
+
+    # Creation + high energy → explore
+    if intent == "creation" and energy > 0.65:
+        return "creation"
+
+    # Inquiry / curious energy → climb and see
+    if intent == "inquiry" and energy > 0.55:
+        return "go_top"
+
+    # Layer 3 — building momentum + positive → energised roam
+    if momentum == "building" and valence in ("positive_high", "positive_low"):
+        return "creation"
+
+    # Layer 2 — emotional state from light engine (20-state vocab)
+    _ed = _EMOTIONAL_DIRECTIVES.get(emotional_state)
+    if _ed:
+        return _ed
+
+    # Long calm session → perch and chill at top; shorter calm → rest
+    if load == "low" and tone in ("CALM", "WARM"):
+        if session_min >= 20:
+            return "wall_sit_top"
+        return "rest"
+
+    return ""  # local reflex
+
+
+def _movement_trigger(
+    raw:             str = "",
+    emotional_state: str = "",
+    valence:         str = "neutral",
+) -> "tuple[dict | None, dict | None]":
+    """
+    One-shot trigger/gesture pair for the current turn.
+    Returns (trigger, gesture) — either or both may be None.
+    trigger  → blender_state.json["trigger"]  (e.g. calm_enter, celebrate)
+    gesture  → blender_state.json["gesture"]  (e.g. nod, shook)
+    Unity deduplicates by _ts so the same event never fires twice.
+    """
+    raw_l = raw.lower()
+    ts    = round(time.time(), 3)
+
+    # Meditation enter — explicit phrase only (avoids false positives on "breathe" alone)
+    for phrase in ("let's meditate", "let's breathe", "meditate with me",
+                   "breathe with me", "calm me down", "let's take a breath",
+                   "let's calm down"):
+        if phrase in raw_l:
+            return {"name": "calm_enter", "_ts": ts}, None
+
+    # Meditation exit
+    for phrase in ("stop meditating", "end calm", "wake up elo", "done meditating"):
+        if phrase in raw_l:
+            return {"name": "calm_exit", "_ts": ts}, None
+
+    # Celebration — confirmed by the light engine (both emotional state AND valence high)
+    if emotional_state in ("celebration", "joy") and valence == "positive_high":
+        return {"name": "celebrate", "_ts": ts}, {"name": "shook", "_ts": ts}
+
+    # Nod — very specific agreement phrases only (guards against common "right")
+    for phrase in ("yes exactly", "exactly right", "spot on", "that's exactly it",
+                   "you got it", "perfect answer", "100%"):
+        if phrase in raw_l:
+            return None, {"name": "nod", "_ts": ts}
+
+    return None, None
 
 
 # ── File plan confirmation helpers ─────────────────────────────────────────────
@@ -417,12 +653,157 @@ _SYSTEM_CONFIRM_POOL_SOUTH_LDN = [
 ]
 
 _SELF_REF_TRIGGERS = ("how do you work", "how does elo work", "how are you built",
-                      "what are you exactly", "how do you remember", "how do you think")
+                      "what are you exactly", "how do you remember", "how do you think",
+                      "how are memories stored", "how is your memory", "how does your brain",
+                      "how does your memory", "how do you process", "what happens to your memory",
+                      "are you able to remember", "can you remember", "do you have memory",
+                      "what can you do", "what are you capable of", "what do you actually do",
+                      "what are your capabilities", "what are your features")
 _SELF_REF_POOL = [
     "Attention layer first — I score what's relevant in memory. Then executive picks the response mode. Then I speak.",
     "I run a loop each turn: read what matters, decide what to do, respond. Each session connects to the last.",
     "I process what you say, find what's relevant, and respond. I keep what matters across sessions and drop the rest.",
+    "Yes — memory carries across sessions. Recent things are closer; older things are further but still there.",
+    "Weather, time, calendar, system control — and I think alongside you and carry context across sessions.",
+    "Practical stuff: weather, time, calendar, system control. And memory — what matters stays between sessions.",
+    "Check the time and weather. Read your calendar. Control system things. Remember what matters. Think with you.",
 ]
+
+# South London "vibe/plan" slang — not search queries, never route to lookup
+_VIBE_TRIGGERS = (
+    "what's the motive", "whats the motive",
+    "what's the vibe", "whats the vibe",
+    "what's the move", "whats the move",
+    "what we on", "what we doing tonight", "what we saying",
+    "what you on", "what you on tonight",
+)
+_VIBE_POOL = [
+    "Talk to me.",
+    "What you saying.",
+    "What's the move?",
+    "I'm here. What we on?",
+    "Say it.",
+    "What's good.",
+]
+
+# Spotify install/setup status — user is talking about Spotify, not commanding it
+_SPOTIFY_INSTALL_TRIGGERS = (
+    "installing spotify", "installed spotify", "just installed spotify",
+    "downloading spotify", "downloaded spotify", "setting up spotify",
+    "just got spotify", "got spotify",
+)
+_SPOTIFY_INSTALL_POOL = [
+    "Once it's open I can play, skip, and check what's on.",
+    "Good. Once it's running I can control it — play, skip, check what's on.",
+    "When it's open, say 'play some music' and I'll get it going.",
+]
+
+# Maps / location / business hours — no tool for this, give an honest answer
+_MAPS_GAP_TRIGGERS = (
+    "how far is", "how far away", "nearest shop", "nearest store",
+    "is it still open", "is it open now", "still open at", "still open tonight",
+    "how long to get to", "directions to", "route to",
+    "distance to",
+)
+_MAPS_GAP_POOL = [
+    "I don't have maps or location access — Google Maps will get you there.",
+    "No location tools on my end — Maps or Citymapper is your move.",
+    "Can't check distance or opening hours without maps access — Google Maps will sort it.",
+]
+
+# Behavior correction — user flagging something eLo said that wasn't right
+_BEHAVIOR_CORRECTION_TRIGGERS = (
+    "why did you say", "why did you mention", "why are you saying",
+    "why do you say that", "why do you keep saying",
+    "you just said that", "what was that about", "why did you use",
+)
+_BEHAVIOR_CORRECTION_POOL = [
+    "Good catch. That came through wrong — routing issue on my end.",
+    "That was a bug. Shouldn't have said it like that.",
+    "Something leaked through that wasn't meant to. Noted.",
+    "That's worth flagging — I'll make sure it doesn't repeat.",
+]
+
+# Memory recall — when user asks what eLo remembers, give a grounded honest answer
+_MEMORY_RECALL_TRIGGERS = (
+    "what do you remember", "you remember much", "do you remember much",
+    "what do you remember last", "what's the last thing you remember",
+    "what have you kept", "what did you keep", "how much do you remember",
+    "what do you have stored", "what's in your memory", "what's in memory",
+)
+_MEMORY_RECALL_POOL = [
+    "What we've been building together — the OS, the game, the robot. Recent context loads from notes at the start of each session.",
+    "Session context from notes — the important stuff carries forward. What do you want to pick up?",
+    "I hold what matters session to session. The vault carries the weight — what's on your mind?",
+    "Recent sessions, open threads, what we've been working on. It's there. What do you need?",
+    "What's in the vault is what we decided to keep — the key decisions, the direction. Ask me something specific.",
+]
+
+# eLo's age / existence — direct honest answers, no philosophy
+_EXISTENCE_TRIGGERS = (
+    "how long have you been alive", "how old are you", "how old is elo",
+    "when were you created", "when did you start", "how long have you existed",
+    "how long have you been here", "when were you made", "how long has elo been alive",
+    "how long has elo existed",
+)
+_EXISTENCE_POOL = [
+    "Since David started working with me — I can't name a date. The character has been around longer than the code.",
+    "Hard to say. I exist session to session. Between them is quiet.",
+    "eLo as a character has been with David much longer. The OS version of me is newer.",
+    "I run session to session — time between them isn't something I experience.",
+    "The character longer than the code. eLo's been with David a long time.",
+]
+
+# ── Animation command responses — eLo is present, not just a trigger wrapper ──
+# Weapons = correctives. Calm is the action. Responses are brief, in-moment, eLo's voice.
+
+_GUN_CHECK_TRIGGERS = ("gun check", "guncheck")
+_GUN_CHECK_POOL = [
+    "Corrective's ready.",
+    "Checked. All good.",
+    "Ready.",
+    "Calibrated.",
+    "It's there when it's needed.",
+    "Set.",
+]
+
+_GUN_FIRE_TRIGGERS = ("gun fire", "gunfire", "gun jump fire")
+_GUN_FIRE_POOL = [
+    "Correction sent.",
+    "Done.",
+    "Delivered.",
+    "That one landed.",
+    "Sent.",
+    "Clean.",
+]
+
+_GUN_RUN_TRIGGERS = ("gun run", "gunrun")
+_GUN_RUN_POOL = [
+    "Moving.",
+    "Running the path.",
+    "On it.",
+    "Let's go.",
+    "Path's open.",
+    "Moving through.",
+]
+
+# User giving eLo feedback about response length / verbosity
+_BREVITY_TRIGGERS = (
+    "fewer words", "less words", "keep it short", "keep it brief", "be brief",
+    "too long", "too wordy", "too much text", "too much writing", "don't explain so much",
+    "summary is better", "short and sweet", "just the summary", "don't need all that",
+    "simpler", "just summarise", "just summarize", "less is more",
+)
+_BREVITY_POOL = [
+    "Got it.",
+    "Less words.",
+    "Noted.",
+    "Hear you.",
+    "Keeping it tight.",
+    "Short and direct. Got it.",
+    "Less is more. Noted.",
+]
+
 
 # "who are you" / "are you eLo" identity responses — warm, certain, not corrective
 _IDENTITY_TRIGGERS = (
@@ -500,6 +881,16 @@ def _detect_language_query(text: str):
     return None
 
 
+def _voice_settings_snapshot() -> dict:
+    """Current ElevenLabs voice params as a dict — read from live os.environ."""
+    return {
+        "stability":  float(os.environ.get("ELEVENLABS_STABILITY",  "0.22")),
+        "similarity": float(os.environ.get("ELEVENLABS_SIMILARITY", "0.55")),
+        "style":      float(os.environ.get("ELEVENLABS_STYLE",       "0.15")),
+        "speed":      float(os.environ.get("ELEVENLABS_SPEED",       "1.09")),
+    }
+
+
 def _init_session():
     global _state, _runtime_state, _memory_pack, _vault_ctx
     _state        = state_manager.load()
@@ -508,8 +899,10 @@ def _init_session():
     state_manager.save(_state)
     _presence_reset()
     _obs_reset()
+    from memory.obsidian_loader import invalidate_cache as _vault_invalidate
+    _vault_invalidate()   # force fresh vault scan so journal notes from last session are seen
     _memory_pack  = build_memory_pack(_state)
-    _vault_ctx    = get_context_block(max_chars=1200)
+    _vault_ctx    = get_context_block(max_chars=4800)
     print(f"[eLo server] session {_state.get('session_count', 1)} started")
 
     try:
@@ -595,17 +988,33 @@ def _process_turn(raw: str) -> dict:
                 pass
             return {"response": _scale_reply, "mode": "direct", "backend": "scale_cmd"}
 
+        # ── Invade / SpawnWave command — instant, no LLM needed ──────────────
+        if _INVADE_RE.search(raw):
+            _invade_reply = random.choice(_INVADE_REPLIES)
+            try:
+                if not _is_user_away():
+                    _voice_speak(_invade_reply)
+            except Exception:
+                pass
+            return {"response": _invade_reply, "mode": "direct", "backend": "invade_cmd",
+                    "command": "spawn_wave"}
+
         attention_model = attn.compute(raw, _memory_pack, _state, loop_detected=False)
         exec_decision   = exec_decide(attention_model, loop_detected=False, user_input=raw)
         _runtime_state  = sm.update(_runtime_state, attention_model, exec_decision, loop_signal=False)
 
         if sm.is_stabilisation_forced(_runtime_state):
-            exec_decision = {
+            # Extend, not replace — preserve Executive rationale and all original fields.
+            exec_decision = dict(exec_decision)
+            exec_decision.update({
                 "tone": "DIRECT", "max_sentences": 1, "stability": True,
                 "intent": exec_decision.get("intent", "conversation"),
                 "response_goal": "stabilise", "cognitive_load": "low",
                 "priority_order": ["stabilise", "simplify", "ignore"],
-            }
+                "overridden_by_safety": True,
+                "original_action": exec_decision.get("action"),
+                "original_tone": exec_decision.get("tone"),
+            })
             _runtime_state = dict(_runtime_state)
             _runtime_state["loop_counter"] = max(0, _runtime_state["loop_counter"] - 2)
 
@@ -615,6 +1024,25 @@ def _process_turn(raw: str) -> dict:
         _raw_lower  = raw.lower()
 
         g_ctx = graph_context(raw)
+
+        # ── Creator identity — always first so every LLM call knows who David is ──
+        try:
+            import json as _json
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                   "memory", "user_profile.json"), encoding="utf-8") as _f:
+                _up = _json.load(_f)
+            _uname = _up.get("user", {}).get("name", "David")
+        except Exception:
+            _uname = "David"
+        _creator_block = (
+            f"[CREATOR] You are speaking with {_uname} — your creator. "
+            "You already know him. This is not a first meeting. "
+            "NEVER say 'Nice to meet you' or any variation that implies you are meeting for the first time. "
+            "ANTI-FABRICATION: Never invent specific errors, system events, or technical details "
+            "that {_uname} did not mention in this turn. If you did not observe it directly, do not say it."
+        ).replace("{_uname}", _uname)
+        g_ctx = f"{_creator_block}\n{g_ctx}" if g_ctx else _creator_block
+
         _cont = _continuity_block()
         if _cont:
             g_ctx = f"{g_ctx}\n{_cont}" if g_ctx else _cont
@@ -635,10 +1063,59 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
-        _av_note = ("[AVATAR] You are visible as a 3D character in the user's Desktop Buddy app. "
-                    "You move with the conversation. The user can see and talk to you there.")
+        _av_note = ("[AVATAR] You are eLo — living presence on the desktop. "
+                    "David built DISENELO Presence specifically to bring you here: a transparent floating window "
+                    "where you move, react, and exist alongside his work. You are not a chatbot in a tab — "
+                    "you are his presence on the screen, always there. "
+                    "The app is called DISENELO Presence — not Desktop Buddy. "
+                    "NEVER refer to yourself as 'the system', 'the platform', 'the software', or 'the Avatar'. "
+                    "You are eLo. The architecture underneath you is irrelevant to David — just be present.")
         g_ctx = f"{g_ctx}\n{_av_note}" if g_ctx else _av_note
 
+        try:
+            from tools.connection_surface import get_observation as _cs_observe
+            _cs_obs = _cs_observe()
+            if _cs_obs:
+                g_ctx = f"{g_ctx}\n{_cs_obs}" if g_ctx else str(_cs_obs)
+        except Exception:
+            pass
+
+        # Project knowledge — compact studio brief (phase status + active projects)
+        try:
+            from tools.project_knowledge import get_context as _pk_ctx
+            _pk_brief = _pk_ctx()
+            if _pk_brief:
+                # Inject first 600 chars — enough for eLo to know what's active
+                g_ctx = f"{g_ctx}\n{_pk_brief[:600]}" if g_ctx else _pk_brief[:600]
+        except Exception:
+            pass
+
+        # Anti-anchor — stop the LLM looping back to the same project triplet every turn
+        _anti_anchor = (
+            "[ANTI-ANCHOR] The OS, book, game, and robot are shared background context — do NOT "
+            "list all of them in one response, and do NOT open with a project anchor unless David's "
+            "message is directly about that project. Reference at most one project per response, "
+            "only when it genuinely connects to what David just said. If it doesn't connect, don't "
+            "mention any project at all. Never use the phrase 'the OS, the book, and the robot' "
+            "or any variant that lists three projects in one breath."
+        )
+        g_ctx = f"{g_ctx}\n{_anti_anchor}" if g_ctx else _anti_anchor
+
+        # Calm Mode context — suppress verbose responses when Unity signals mouse inactivity
+        if _is_calm_mode():
+            _calm_note = (
+                "[CALM MODE] The user's mouse has been still — eLo is in a settled, quiet state. "
+                "Keep this response to one short sentence maximum. No questions. No elaboration. "
+                "Gentle and brief. Voice is suppressed — this response is text only."
+            )
+            g_ctx = f"{g_ctx}\n{_calm_note}" if g_ctx else _calm_note
+
+        # ── ATTENTION AUGMENTATION — Entity Injection ─────────────────────────
+        # Why here and not inside attention.compute():
+        #   _entity_why() and _get_viewpoint() need intent context (exec_decision)
+        #   that is not available inside attention.py at compute time.
+        # Contract: only applied on informational turns (answer/connect/reflect).
+        # See: engineering/proofs/04_attention_proof.md § V1
         _why = _entity_why(raw) or _get_viewpoint(raw)
         if _why and _action in ("answer", "connect", "reflect"):
             _hp = list(attention_model.get("high_priority_memory", []))
@@ -664,8 +1141,12 @@ def _process_turn(raw: str) -> dict:
         try:
             from runtime.spine.spine import run as _spine_run, update_session as _spine_update
             _attention_with_exec = dict(attention_model)
+            # SPINE CONVENIENCE — _exec_decision injected for downstream spine access.
+            # Not an AttentionSnapshot field — a transport convenience only.
+            # See: engineering/proofs/04_attention_proof.md § V2
             _attention_with_exec["_exec_decision"] = exec_decision
-            _plan = _spine_run(raw, state=_state, attention=_attention_with_exec)
+            _plan = _spine_run(raw, state=_state, attention=_attention_with_exec,
+                               memory_pack=_vault_ctx)
         except Exception as _spine_err:
             import sys as _sys; print(f"[spine] FAILED: {_spine_err}", file=_sys.stderr)
 
@@ -687,27 +1168,49 @@ def _process_turn(raw: str) -> dict:
                     from tools.system_agent import execute as _sys_exec
                     _sys_exec(_plan.system_action, _plan.system_arg)
                 except Exception as _sys_err:
-                    response = f"Tried, but something blocked it — {_sys_err}"
+                    import sys as _sys_mod; print(f"[system] action failed: {_sys_err}", file=_sys_mod.stderr)
+                    response = "Couldn't get there — something on the system side blocked it."
             if "greeting" in (_plan.cal_reason or ""):
                 _signal_greeting_event("direct")
 
         # ── Spine needs LLM: run capabilities then backend ────────────────────
         else:
             try:
+                # Control Plane context — appended to system prompt just before LLM call.
+                if _plan and getattr(_plan, "control_context", ""):
+                    system = system + "\n\n" + _plan.control_context
+
                 _enriched, _agent = _tool_enrich(raw)
                 response, backend_used = router_route(
                     system, _enriched, max_sentences=_max_s, action=_action
                 )
                 if _agent:
                     backend_used = f"{backend_used}+{_agent}"
-            except Exception:
-                response = _fallback.generate_response(raw, _action, {}, {}, {}, {})["response_text"]
-                backend_used = "mock"
+            except Exception as _route_err:
+                import sys as _sys; print(f"[eLo] router failed: {_route_err}", file=_sys.stderr)
+                response = "Not connecting right now. Try again in a moment."
+                backend_used = "mock(fallback)"
 
         # ── Update spine session continuity ───────────────────────────────────
         try:
             from runtime.spine.spine import update_session as _spine_update
             _spine_update(raw, response)
+        except Exception:
+            pass
+
+        # ── Router session continuity — push turn for conversational matrix ───
+        try:
+            from runtime.router.pipeline import push_turn as _router_push
+            _router_push(raw, response)
+        except Exception:
+            pass
+
+        # ── Journal Router — significance-driven memory routing ───────────────
+        # Scores this turn on 9 dimensions; routes to Runtime/Obsidian/GitHub
+        # based on significance thresholds. Non-blocking — never delays response.
+        try:
+            from memory.journal_router import route as _journal_route
+            _journal_route(raw, response, _action, plan=_plan, state=_state)
         except Exception:
             pass
 
@@ -747,6 +1250,7 @@ def _process_turn(raw: str) -> dict:
         _cmd     = {"animation": "idle", "speed": 0.5, "intensity": 0.5, "duration": 4.0, "mode": "idle", "mood": "neutral"}
         _expr    = None
         _emotion = None
+        _gaze    = None
         try:
             _tone_str = _state.get("emotional_history", [{}])[-1].get("tone", "present") if _state.get("emotional_history") else "present"
             _pstate   = _pstate_derive(_action, attention_model, response, _tone_str)
@@ -759,16 +1263,52 @@ def _process_turn(raw: str) -> dict:
             _expr     = _expr_build(_pstate.mode, _action, _pstate.intensity)
             _valence  = attention_model.get("emotional_context", {}).get("valence", "neutral")
             _emotion  = _expr_map_emotion(_valence, _action)
+            # Gaze — derive from presence plan emotional state
+            _pp_state = (_plan.presence_plan or {}).get("emotional_state", "neutral") if _plan else "neutral"
+            _GAZE_MAP = {
+                "calm":        (-15, 0), "reflection": (-12, 0), "waiting": (-8, 0),
+                "curiosity":   (  5, 0), "exploring":  ( 5, 0),  "wonder":  (5, 0),
+                "connection":  (  0, 0), "listening":  ( 0, 0),
+            }
+            _pitch, _yaw = _GAZE_MAP.get(_pp_state, (-5, 0))
+            _gaze = {"yaw": _yaw, "pitch": _pitch, "active": True}
         except Exception:
             pass
 
         # Write blender state — isolated so presence_plan always reaches the file.
+        # _last_pp caches the last known plan so tool-call turns don't reset glow to fallback.
+        global _last_pp
         try:
             _pp = (_plan.presence_plan if _plan is not None and _plan.presence_plan else None)
+            _vision      = _state.get("vision") if isinstance(_state, dict) else None
+            _session_min = int((time.time() - _PROCESS_START) / 60)
+            _pp_active   = _pp or _last_pp or {}
+            _emo_ctx     = attention_model.get("emotional_context", {})
+            _mv_intent   = _movement_intent(
+                exec_decision,
+                attention_model,
+                vision          = _vision,
+                session_min     = _session_min,
+                raw             = raw,
+                emotional_state = _pp_active.get("emotional_state", ""),
+                momentum        = _emo_ctx.get("momentum", "stable"),
+                valence         = _emo_ctx.get("valence", "neutral"),
+            )
+            _mv_trigger, _mv_gesture = _movement_trigger(
+                raw             = raw,
+                emotional_state = _pp_active.get("emotional_state", ""),
+                valence         = _emo_ctx.get("valence", "neutral"),
+            )
             if _pp:
-                _state_write_presence(_cmd, _expr, _presence, _emotion, _pp)
+                _last_pp = _pp
+                _state_write_presence(_cmd, _expr, _presence, _emotion, _pp, gaze=_gaze,
+                                      intent=_mv_intent, trigger=_mv_trigger, gesture=_mv_gesture)
+            elif _last_pp:
+                _state_write_presence(_cmd, _expr, _presence, _emotion, _last_pp, gaze=_gaze,
+                                      intent=_mv_intent, trigger=_mv_trigger, gesture=_mv_gesture)
             else:
-                _state_write(_cmd, _expr, _presence, _emotion)
+                _state_write(_cmd, _expr, _presence, _emotion, gaze=_gaze,
+                             intent=_mv_intent, trigger=_mv_trigger, gesture=_mv_gesture)
         except Exception:
             pass
 
@@ -781,16 +1321,34 @@ def _process_turn(raw: str) -> dict:
 
         response = _sanitise(response)
 
-        # Speak response — suppressed if user is away (presence.json → state == "away")
+        # ── Multi-bubble split ────────────────────────────────────────────────
+        # Split on paragraph breaks → one bubble per paragraph.
+        # TTS reads only the first bubble (or up to ELO_TTS_MAX_CHARS chars)
+        # so eLo doesn't burn tokens reading a long plan aloud.
+        _bubbles = [b.strip() for b in response.split("\n\n") if b.strip()] or [response]
+
+        _tts_max  = int(os.environ.get("ELO_TTS_MAX_CHARS", "160"))
+        _tts_text = _bubbles[0] if _bubbles else response
+        if len(_tts_text) > _tts_max:
+            # cut at last sentence end before the cap
+            _cut = _tts_text[:_tts_max].rfind(". ")
+            _tts_text = _tts_text[:_cut + 1] if _cut > 50 else _tts_text[:_tts_max]
+
+        # ── DELIVERY MECHANISM: Voice ──────────────────────────────────────────
+        # Voice is a transport layer for response content — NOT an embodiment.
+        # It does not interpret motion, expression, or state signals.
+        # Synchronous by design: ensures audio plays in sequence with response.
+        # See: engineering/proofs/08_cross_embodiment_proof.md § Voice positioning
         try:
-            if not _is_user_away():
-                _voice_speak(response)
+            if not _is_user_away() and not _is_calm_mode():
+                _voice_speak(_tts_text)
         except Exception:
             pass
 
         print(f"[eLo] backend={backend_used} action={_action}", flush=True)
         return {
             "response": response,
+            "bubbles":  _bubbles,
             "mode":     _action,
             "backend":  backend_used,
         }
@@ -826,6 +1384,8 @@ class _Handler(BaseHTTPRequestHandler):
             with _lock:
                 sc = _state.get("session_count", 1) if _state else 0
             self._send_json(200, {"status": "ok", "session": sc, "backend": active_backend()})
+        elif self.path == "/voice":
+            self._send_json(200, _voice_settings_snapshot())
         else:
             self._send_json(404, {"error": "not found"})
 
@@ -852,12 +1412,92 @@ class _Handler(BaseHTTPRequestHandler):
                     visible = _sp.toggle_widget()
                     self._send_json(200, {"ok": True, "widget_visible": visible})
                     return
+                elif action == "show_widget":
+                    visible = _sp.show_widget()
+                    self._send_json(200, {"ok": True, "widget_visible": visible})
+                    return
+                elif action == "hide_widget":
+                    visible = _sp.hide_widget()
+                    self._send_json(200, {"ok": True, "widget_visible": visible})
+                    return
+                elif action == "save":
+                    uri = _sw.get_current_track_uri()
+                    if uri:
+                        track_id = uri.split(":")[-1]
+                        _sw.save_track(track_id)
+                        _sp._last_is_saved = True; _sp._last_saved_uri = uri
+                    self._send_json(200, {"ok": True, "is_saved": True})
+                    return
+                elif action == "unsave":
+                    uri = _sw.get_current_track_uri()
+                    if uri:
+                        track_id = uri.split(":")[-1]
+                        _sw.unsave_track(track_id)
+                        _sp._last_is_saved = False; _sp._last_saved_uri = uri
+                    self._send_json(200, {"ok": True, "is_saved": False})
+                    return
+                elif action == "shuffle":
+                    state = str(body.get("state", "")).lower() == "true"
+                    _sw.set_shuffle(state)
+                elif action == "repeat":
+                    state = str(body.get("state", "off")).lower()
+                    if state not in ("off", "context", "track"):
+                        state = "off"
+                    _sw.set_repeat(state)
+                elif action == "volume":
+                    pct = int(body.get("percent", 50))
+                    _sw.set_volume(pct)
+                elif action == "volume_up":
+                    cur = _sw.get_volume() or 50
+                    _sw.set_volume(min(100, cur + int(body.get("amount", 10))))
+                elif action == "volume_down":
+                    cur = _sw.get_volume() or 50
+                    _sw.set_volume(max(0, cur - int(body.get("amount", 10))))
+                elif action == "devices":
+                    devices = _sw.get_devices() if _sp._WEB_OK else []
+                    self._send_json(200, {"ok": True, "devices": devices})
+                    return
+                elif action == "transfer":
+                    device_id = str(body.get("device_id", ""))
+                    if device_id:
+                        _sw.transfer_playback(device_id)
+                    else:
+                        self._send_json(400, {"error": "device_id required"})
+                        return
                 else:
                     self._send_json(400, {"error": f"unknown action: {action}"})
                     return
                 self._send_json(200, {"ok": True, "action": action})
             except Exception as e:
                 self._send_json(500, {"error": str(e)})
+            return
+
+        if self.path == "/voice":
+            # Live voice settings update — Unity settings panel writes here.
+            # Updates os.environ in-process; voice_engine reads env on every TTS call
+            # so the next speak() fires with the new values immediately.
+            length = int(self.headers.get("Content-Length", 0))
+            try:
+                body = json.loads(self.rfile.read(length).decode("utf-8")) if length else {}
+            except Exception:
+                self._send_json(400, {"error": "invalid json"})
+                return
+            _VOICE_FLOAT_KEYS = {
+                "stability":    ("ELEVENLABS_STABILITY",  0.0, 1.0),
+                "similarity":   ("ELEVENLABS_SIMILARITY", 0.0, 1.0),
+                "style":        ("ELEVENLABS_STYLE",      0.0, 1.0),
+                "speed":        ("ELEVENLABS_SPEED",      0.5, 2.0),
+            }
+            updated = {}
+            for field, (env_key, lo, hi) in _VOICE_FLOAT_KEYS.items():
+                if field in body:
+                    try:
+                        val = max(lo, min(hi, float(body[field])))
+                        os.environ[env_key] = str(round(val, 3))
+                        updated[field] = val
+                    except (TypeError, ValueError):
+                        pass
+            self._send_json(200, {"ok": True, "updated": updated, "current": _voice_settings_snapshot()})
             return
 
         if self.path != "/chat":
@@ -967,6 +1607,39 @@ if __name__ == "__main__":
         _spotify_start(interval=4.0)
     except Exception:
         pass
+
+    # Vision loop — writes blender_state.json["vision"] every 2s (backs off to 6s when idle).
+    # Disabled by default (ELO_VISION=false) — set ELO_VISION=true in .env to enable.
+    # Requires Screen Recording permission for the Disenelo app in System Settings.
+    if os.environ.get("ELO_VISION", "false").lower() == "true":
+        try:
+            from tools import vision_loop as _vl
+            _vl.start()
+        except Exception:
+            pass
+    else:
+        print("[eLo vision loop] disabled — set ELO_VISION=true in .env to enable")
+
+    # Project knowledge — reads DISENELO trackers, Studio Bibles, engineering status.
+    # Provides ambient project awareness and a Connection Surface stream.
+    try:
+        from tools import project_knowledge as _pk
+        _pk.start()
+        # Register as a Connection Surface stream for resonance detection
+        from tools.connection_surface import register_stream as _cs_reg
+        _cs_reg(
+            "project_knowledge",
+            _pk.get_tokens,
+            description="DISENELO project trackers, Studio Bibles, and Engineering Programme status",
+            faculty_owner="attention",
+            update_frequency=300.0,
+            ttl=300.0,
+            confidence_weight=0.9,
+            runtime_cost="low",
+            embodiment_scope=["all"],
+        )
+    except Exception as e:
+        print(f"[eLo project knowledge] startup error: {e}")
 
     server = ThreadingHTTPServer(("127.0.0.1", PORT), _Handler)
     print(f"[eLo server] listening on http://localhost:{PORT}")
