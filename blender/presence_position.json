@@ -1,0 +1,16 @@
+{
+  "target_x": 0.85,
+  "target_y": 0.07,
+  "keep_out_applied": false,
+  "keep_out": {
+    "x_min": 0.0,
+    "x_max": 1.0,
+    "y_min": 1.0,
+    "y_max": 1.0
+  },
+  "active_window": "Code",
+  "active_window_px": {},
+  "screen_w": 2560,
+  "screen_h": 1440,
+  "_ts": 1785560990.393
+}

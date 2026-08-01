@@ -2203,13 +2203,22 @@ def _process_turn(raw: str) -> dict:
             pass
 
         # Spatial awareness — where eLo is, where windows are
+        _elo_pos_snap = None
+        _wins_snap    = None
         try:
             from desktop.spatial_state import get_elo_spatial, get_windows, spatial_summary
-            _elo_pos  = get_elo_spatial()
-            _wins     = get_windows()
-            _spat_ctx = spatial_summary(_elo_pos, _wins)
+            _elo_pos_snap = get_elo_spatial()
+            _wins_snap    = get_windows()
+            _spat_ctx     = spatial_summary(_elo_pos_snap, _wins_snap)
             if _spat_ctx:
                 g_ctx = f"{g_ctx}\n{_spat_ctx}" if g_ctx else _spat_ctx
+        except Exception:
+            pass
+
+        # WO-023: emit top-bias + keep-out position hint for Unity
+        try:
+            from desktop.position_faculty import emit as _pos_emit
+            _pos_emit(elo=_elo_pos_snap, windows=_wins_snap)
         except Exception:
             pass
 
