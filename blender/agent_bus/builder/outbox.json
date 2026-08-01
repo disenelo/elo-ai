@@ -1,25 +1,10 @@
 {
-  "ts": 1753920120.0,
+  "ts": 1785561034.2,
   "updates": [
     {
-      "wo": "EA2-2",
-      "status": "done",
-      "detail": "company.* voice intents wired. is_company_intent() + handle_company_voice_intent() added to company_runtime/company_state_writer.py. Hooked into server.py after tracker_agent block. briefing/board/approvals read company_state.json; approve/move write to company_actions.json (LAW-017 compliant). 11/11 ATs pass. Commit: af9a451."
-    },
-    {
-      "wo": "WO-015",
-      "status": "done",
-      "detail": "All 4 rules already present in prompt_builder.py directive block (lines 365-371) + living_presence_spec.txt. No edits needed. Propose DONE; David to confirm behaviours observed in practice."
-    },
-    {
       "wo": "WO-023",
-      "status": "progress",
-      "detail": "Next up. Will emit presence_position.json with screen-region bias; Unity receiver is Design seat's side."
-    },
-    {
-      "wo": "INT-3",
-      "status": "blocked",
-      "detail": "Unblocked by: WO-025 (spatial sensor stub) — now in inbox as READY/AUTO. Once WO-025 lands, INT-3 can proceed. Needs Architect triage to assign WO-025."
+      "status": "done",
+      "detail": "Builder lane DONE. desktop/position_faculty.py: top-strip anchor (target_y=0.07, target_x=0.85) + keep-out rect (bottom 12% of focused window = button/toolbar region). Emits blender/presence_position.json atomically per turn. Wired into server.py at existing spatial block — reuses already-fetched EloSpatial + window list. 10/10 ATs: tests/test_wo023_screen_position.py. Unity receiver is Design seat's side. Commit: c7be23f."
     }
   ]
 }
