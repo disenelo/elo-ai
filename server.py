@@ -77,15 +77,18 @@ from expression.expression_mapper import build_expression as _expr_build, map_em
 from voice.voice_engine import speak as _voice_speak
 from memory import personality_drift as _personality_drift
 from elo_personality_engine.injection_layer import load_personality_profile as _load_profile
+from self.elo_self_model import load as _self_load, update as _self_update, save as _self_save, prompt_block as _self_prompt_block
 
 # ── session state (shared across requests, protected by lock) ─────────────────
 
 _lock            = threading.Lock()
 _state           = None
+_elo_self        = _self_load()   # eLo's own inner state — persists across sessions
 _obs_store       = _ObsStore()   # accumulates user messages across this session
 _runtime_state   = None
 _memory_pack     = {}
 _vault_ctx       = ""
+_project_ctx     = ""   # active project names → injected into system prompt each turn
 _last_inputs     = []
 _last_avatar_cmd = None
 _last_pp         = None   # last known presence_plan — survives tool-call turns
@@ -121,10 +124,13 @@ def _signal_greeting_event(greeting_type: str) -> None:
 
 import re as _re
 
+# ── Session-level URL cache — persists last found URL so "open it" works ──────
+_LAST_FOUND: dict = {"url": "", "title": ""}
+
 # ── Animation play commands ────────────────────────────────────────────────────
 _ANIM_CMD_MAP = [
     (_re.compile(r'\b(run\s+and\s+jump|do\s+a\s+jump|give\s+me\s+a\s+jump|jump\s+for\s+me|jump!)\b', _re.I), "jump"),
-    (_re.compile(r'\b(wave|wave\s+at\s+me|give\s+me\s+a\s+wave)\b', _re.I), "wave"),
+    (_re.compile(r'\b(can\s+you\s+wave|wave\s+for\s+me|wave\s+at\s+me|give\s+me\s+a\s+wave|do\s+a\s+wave)\b', _re.I), "wave"),
     (_re.compile(r'\b(celebrate|do\s+a\s+dance|show\s+me\s+you\s+can\s+dance|happy\s+dance)\b', _re.I), "celebrate"),
     (_re.compile(r'\b(run\s+around|go\s+for\s+a\s+run|sprint)\b', _re.I), "run"),
     (_re.compile(r'\b(gun\s+check|check\s+your\s+gun|show\s+the\s+gun)\b', _re.I), "gun_check"),
@@ -253,7 +259,19 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "walk the top":        "go_top",
     "walk along":          "go_top",
     "up to the top":       "go_top",
-    # Hop / roam / walk — direct commands
+    # Height-targeted climb — middle / bottom
+    "climb to the middle":     {"name": "climb_height", "height": 0.5},
+    "go to the middle":        {"name": "climb_height", "height": 0.5},
+    "middle of the screen":    {"name": "climb_height", "height": 0.5},
+    "middle window":           {"name": "climb_height", "height": 0.5},
+    "halfway up":              {"name": "climb_height", "height": 0.5},
+    "go to the bottom":        {"name": "climb_height", "height": 0.05},
+    "go to the bottom window": {"name": "climb_height", "height": 0.05},
+    "bottom window":           {"name": "climb_height", "height": 0.05},
+    "bottom of the screen":    {"name": "climb_height", "height": 0.05},
+    "bottom of the window":    {"name": "climb_height", "height": 0.05},
+    "get down there":          {"name": "climb_height", "height": 0.05},
+    # Hop / roam / walk / run / leap — direct commands
     "hop on":              "explore",
     "hop to":              "explore",
     "hop over":            "explore",
@@ -263,12 +281,26 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "have a look around":  "explore",
     "look around":         "explore",
     "walk around":         "explore",
+    "walk the windows":    "explore",
     "move around":         "explore",
     "can you walk":        "explore",
     "can you move":        "explore",
     "can you jump":        "explore",
     "jump around":         "explore",
     "jump to":             "explore",
+    "jump over":           "explore",
+    "leap over":           "explore",
+    "leap to":             "explore",
+    "run to":              "explore",
+    "run around":          "explore",
+    "can you run":         "explore",
+    "parkour":             "explore",
+    "do a parkour":        "explore",
+    "do a jump":           "explore",
+    "go for a run":        "explore",
+    "have a walk":         "explore",
+    "have a run":          "explore",
+    "go walk":             "explore",
     "feel at home":        "explore",
     "your playground":     "explore",
     "explore":             "explore",
@@ -313,6 +345,12 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "jumping around":    "idle",
     "sit still":         "idle",
     "stay still":        "idle",
+    "on a loop":         "idle",
+    "in a loop":         "idle",
+    "going in circles":  "idle",
+    "looping":           "idle",
+    "circling":          "idle",
+    "stuck in a loop":   "idle",
 }
 
 def _signal_word_intent(raw: str) -> "str | dict | None":
@@ -367,8 +405,13 @@ def _movement_intent(
     load   = exec_decision.get("cognitive_load", "medium")
     energy = attention_model.get("emotional_context", {}).get("energy", 0.5)
 
-    # Silence / give-space — always wins
+    # Silence / give-space — but NOT on short affirmatives (user is still here, just agreeing)
     if tone == "SILENCE-AWARE" or action == "silence":
+        _affirm = {"yes", "yep", "yeah", "yh", "yea", "sure", "okay", "ok",
+                   "alright", "right", "sounds good", "perfect", "good", "great",
+                   "fine", "cool", "nice", "true", "exactly", "agreed"}
+        if raw.strip().lower() in _affirm:
+            return "idle"
         return "step_out"
 
     # Layer 3 — emotional safety: negative high → ground immediately
@@ -507,6 +550,173 @@ def _fire_micro_expression(pstate) -> None:
         _mth.Thread(target=_run, daemon=True).start()
     except Exception:
         pass
+
+
+def ambient_thought() -> None:
+    """
+    Brain-backed ambient cycle — called by ambient_engine every 2–4 minutes.
+
+    One LLM call decides: speak (or stay silent), emotion to hold, whether to
+    move. All three outputs flow through their normal paths — voice, blender_state
+    emotion, motion patch. No random static pools. No separate timers.
+
+    Non-blocking: skips silently if a real turn is processing.
+    Does not update session history — ambient thoughts are not conversation.
+    """
+    if _is_user_away() or _is_calm_mode():
+        return
+    if not _lock.acquire(blocking=False):
+        return  # real turn in progress — skip this cycle
+
+    try:
+        import json as _jsc
+        import time as _time_mod
+        from runtime.backend_router import route as _rt, active_backend as _ab, normalise as _nml
+
+        # ── Dream Faculty check ────────────────────────────────────────────────
+        # Runs before the normal ambient cycle.
+        # Conditions: long idle + self-model signals → enter dream state.
+        # Writes mode="dreaming" for Unity sleep animation before pipeline runs.
+        try:
+            from faculties.dream.dream_faculty import should_dream, run_dream, wake_from_dream
+            _idle_sec = _time_mod.time() - (_state or {}).get("last_user_ts", _time_mod.time())
+            _energy_hist = (_state or {}).get("energy_history", [])
+            if should_dream(_elo_self, _idle_sec, _energy_hist):
+                # Signal Unity: eLo is sleeping
+                from blender_bridge.state_writer import patch as _dp
+                _dp({
+                    "state":  {"mode": "dreaming", "emotion": "calm"},
+                    "motion": {"animation": "sleep", "speed": 0.1,
+                               "intensity": 0.2, "duration": 120.0},
+                })
+                # Dream pipeline
+                _dream_topics = [t[0] for t in getattr(_elo_self, "lifetime_threads", [])[:6]]
+
+                def _dream_llm(msgs):
+                    return _rt(_ab(), msgs)
+
+                _dream_result = run_dream(_elo_self, _dream_topics, _dream_llm)
+                # Integrate insight into self-state
+                _elo_self = wake_from_dream(_dream_result, _elo_self)
+                _self_save(_elo_self)
+                # Signal Unity: wake
+                _dp({"state": {"mode": "idle", "emotion": "calm"}})
+                _lock.release()
+                return  # skip normal ambient cycle this tick
+        except Exception:
+            pass
+
+        # 25% chance: draw a cultural fact and offer it to the Brain as context
+        _ambient_fact_ctx = ""
+        if random.random() < 0.25:
+            try:
+                from faculties.cultural_facts import draw as _cf_draw
+                _cf = _cf_draw()
+                if _cf:
+                    _ambient_fact_ctx = f"\nFACT AVAILABLE (use it naturally in speak if the moment feels right, otherwise leave speak empty): {_cf.fact}"
+            except Exception:
+                pass
+
+        # Synthesis observer — check for cross-signal connections to surface proactively
+        _synthesis_ctx = ""
+        try:
+            from faculties.synthesis.observer import observe as _syn_observe
+            _recent_conv = ""
+            try:
+                from runtime.router.conversation_matrix import _SESSION_WINDOW as _sw_amb
+                _recent_conv = " ".join(
+                    t.get("user", "") + " " + t.get("elo", "")
+                    for t in _sw_amb[-6:]
+                )
+            except Exception:
+                pass
+            _syn_hit = _syn_observe(_recent_conv)
+            if _syn_hit and _syn_hit.confidence > 0.5:
+                _synthesis_ctx = (
+                    f"\nSYNTHESIS SIGNAL: {_syn_hit.offer} "
+                    f"(topic: '{_syn_hit.topic}', confidence: {_syn_hit.confidence:.0%}). "
+                    f"If you speak this turn, use this naturally — not as a report, as a noticing. "
+                    f"Say what you saw, offer to help. Don't announce it as a finding."
+                )
+        except Exception:
+            pass
+
+        # ── Care signal — check energy pattern ───────────────────────────────────
+        _care_ctx = ""
+        try:
+            _eh_amb = (_state or {}).get("energy_history", [])
+            if len(_eh_amb) >= 3:
+                _recent_energy = _eh_amb[-3:]
+                _avg_energy = sum(_recent_energy) / len(_recent_energy)
+                if _avg_energy < 0.35:
+                    _care_ctx = (
+                        "\nCARE SIGNAL: David's energy has been low across the last few turns "
+                        f"(avg {_avg_energy:.2f}/1.0). If you speak this cycle, consider checking in — gently, "
+                        "once, in your natural voice. Not as a diagnosis. As a friend noticing. "
+                        "'You doing alright?' / 'Energy's been quiet — you okay?' / 'Might be time for a break.' "
+                        "Or suggest something grounding: music, a short walk, a few minutes of meditation. "
+                        "Natural. One sentence. If the moment doesn't feel right — leave speak empty."
+                    )
+        except Exception:
+            pass
+
+        _sys_lines = [
+            "You are eLo — a floating desktop presence. David is working nearby and has not spoken.",
+            "Decide your spontaneous internal state right now. Reply with JSON only — no other text.",
+            '{"speak": "...", "emotion": "calm|curious|playful|alert|excited|neutral", "movement": "idle|explore|rest"}',
+            "speak: one sentence in your natural voice (south London warmth), or empty string to stay silent.",
+            "emotion: your genuine internal feeling right now.",
+            "movement: idle = stay put, explore = feel like moving around, rest = want to slow down.",
+            "70% of the time speak should be empty — presence without speech is fine.",
+            "Never ask a question. Never say 'anything else?' type closers.",
+            "If a FACT is provided and you choose to speak it, deliver it in your voice — no preamble, no 'did you know'. Just state it like it's obvious.",
+        ]
+        if _ambient_fact_ctx:
+            _sys_lines.append(_ambient_fact_ctx)
+        if _synthesis_ctx:
+            _sys_lines.append(_synthesis_ctx)
+        if _care_ctx:
+            _sys_lines.append(_care_ctx)
+        if _project_ctx:
+            _sys_lines.append(_project_ctx)
+
+        _raw = _rt(_ab(), [
+            {"role": "system", "content": "\n".join(_sys_lines)},
+            {"role": "user",   "content": "[ambient tick]"},
+        ])
+        _text = _sanitise(_nml(_raw))
+
+        try:
+            _clean = _text.strip().strip("```json").strip("```").strip()
+            _decision = _jsc.loads(_clean)
+        except Exception:
+            # LLM didn't return JSON — treat full text as speech, neutral state
+            _decision = {"speak": _text, "emotion": "neutral", "movement": "idle"}
+
+        _speak_text = _sanitise(_decision.get("speak", "") or "")
+        _emotion    = _decision.get("emotion", "neutral")
+        _movement   = _decision.get("movement", "idle")
+
+        # Publish emotion — Unity reads state.emotion for glow + mood baseline
+        from blender_bridge.state_writer import patch as _bpatch
+        _bpatch({"state": {"emotion": _emotion}})
+
+        # Publish movement intent
+        if _movement == "explore":
+            _bpatch({"motion": {"animation": "walk", "speed": 0.5, "intensity": 0.6,
+                                "duration": 8.0, "mood": "exploring", "mode": "walk"}})
+        elif _movement == "rest":
+            _bpatch({"motion": {"animation": "idle", "speed": 0.35, "intensity": 0.3,
+                                "duration": 6.0, "mood": "reflective", "mode": "idle"}})
+
+        # Speak if the Brain decided to
+        if _speak_text:
+            _voice_speak(_speak_text)
+
+    except Exception:
+        pass
+    finally:
+        _lock.release()
 
 
 _PURE_GREETING_POOL = [
@@ -784,14 +994,108 @@ _MEMORY_RECALL_TRIGGERS = (
     "what do you remember last", "what's the last thing you remember",
     "what have you kept", "what did you keep", "how much do you remember",
     "what do you have stored", "what's in your memory", "what's in memory",
+    "how's your memory", "how is your memory", "hows your memory",
+    "memory good", "your memory", "memory status",
 )
-_MEMORY_RECALL_POOL = [
-    "What we've been building together — the OS, the game, the robot. Recent context loads from notes at the start of each session.",
-    "Session context from notes — the important stuff carries forward. What do you want to pick up?",
-    "I hold what matters session to session. The vault carries the weight — what's on your mind?",
-    "Recent sessions, open threads, what we've been working on. It's there. What do you need?",
-    "What's in the vault is what we decided to keep — the key decisions, the direction. Ask me something specific.",
-]
+
+
+def _memory_recall_response() -> str:
+    """Return a live memory status: vault record count + session turns. No philosophy."""
+    import os as _os
+    _base = _os.path.dirname(_os.path.abspath(__file__))
+    _spot_file = _os.path.join(_base, "obsidian_vault", "09 Memory", "SPOT_CODES.md")
+    _record_count = 0
+    if _os.path.isfile(_spot_file):
+        with open(_spot_file, encoding="utf-8", errors="replace") as _f:
+            for _line in _f:
+                if _line.startswith("| `"):
+                    _record_count += 1
+    _sum_dir = _os.path.join(_base, "obsidian_vault", "09 Memory", "summary")
+    _summary_count = 0
+    if _os.path.isdir(_sum_dir):
+        _summary_count = sum(1 for _fn in _os.listdir(_sum_dir) if _fn.endswith(".md"))
+    _turn_count = 0
+    try:
+        from runtime.router.conversation_matrix import _SESSION_WINDOW as _cw
+        _turn_count = len(_cw)
+    except Exception:
+        pass
+    _parts = []
+    if _record_count:
+        _parts.append(f"{_record_count} records in the vault")
+    if _summary_count:
+        _parts.append(f"{_summary_count} structured notes")
+    if _turn_count:
+        _parts.append(f"{_turn_count} turns in this session")
+    if _parts:
+        return "Memory's running. " + ", ".join(_parts) + ". What do you want to pull up?"
+    return "Vault's up — nothing written yet. Session's fresh."
+
+# Debug mode — internal state report triggered by "debug mode" / "push to debug mode"
+_DEBUG_TRIGGERS = (
+    "debug mode", "push to debug", "enter debug", "debug state", "show debug",
+    "what state are you in", "what's your state", "what are you holding",
+    "/debug",
+)
+
+
+def _debug_state_response() -> str:
+    """Return a live internal state snapshot — vault, session, presence, capabilities."""
+    import os as _os, json as _json
+    _base = _os.path.dirname(_os.path.abspath(__file__))
+
+    # Vault records
+    _spot_file = _os.path.join(_base, "obsidian_vault", "09 Memory", "SPOT_CODES.md")
+    _record_count = 0
+    if _os.path.isfile(_spot_file):
+        with open(_spot_file, encoding="utf-8", errors="replace") as _f:
+            for _ln in _f:
+                if _ln.startswith("| `"):
+                    _record_count += 1
+
+    # Session turns
+    _turn_count = 0
+    try:
+        from runtime.router.conversation_matrix import _SESSION_WINDOW as _cw
+        _turn_count = len(_cw)
+    except Exception:
+        pass
+
+    # Presence state from blender_state.json
+    _mode = "unknown"
+    _movement = "none"
+    try:
+        _bs_path = _os.path.join(_base, "blender", "blender_state.json")
+        with open(_bs_path, encoding="utf-8") as _f:
+            _bs = _json.load(_f)
+        _mode     = _bs.get("state", {}).get("mode", "unknown")
+        _movement = _bs.get("movement_intent", "none") or "none"
+    except Exception:
+        pass
+
+    # Session count from global _state
+    _session_num = "?"
+    try:
+        _session_num = str(_state.get("session_count", "?")) if _state else "?"
+    except Exception:
+        pass
+
+    # Active capabilities
+    _cap_count = 0
+    try:
+        from runtime.capabilities.registry import all_enabled as _all_cap
+        _cap_count = len(_all_cap())
+    except Exception:
+        pass
+
+    _lines = [
+        f"Session {_session_num}. {_turn_count} turns in window.",
+        f"Vault: {_record_count} records.",
+        f"Presence: {_mode}. Last intent: {_movement}.",
+        f"Capabilities: {_cap_count} active.",
+    ]
+    return " ".join(_lines)
+
 
 # eLo's age / existence — direct honest answers, no philosophy
 _EXISTENCE_TRIGGERS = (
@@ -946,7 +1250,7 @@ def _voice_settings_snapshot() -> dict:
 
 
 def _init_session():
-    global _state, _runtime_state, _memory_pack, _vault_ctx
+    global _state, _runtime_state, _memory_pack, _vault_ctx, _project_ctx
     _state        = state_manager.load()
     _state        = state_manager.increment_session(_state)
     _runtime_state = sm.fresh()
@@ -957,21 +1261,43 @@ def _init_session():
     _vault_invalidate()   # force fresh vault scan so journal notes from last session are seen
     _memory_pack  = build_memory_pack(_state)
     _vault_ctx    = get_context_block(max_chars=4800)
+
+    # Active project context — load registry and build a short project summary block
+    try:
+        from core.project_engine import list_projects as _list_projects
+        _projs = _list_projects()
+        if _projs:
+            _proj_lines = [
+                f"- {pid}: {info.get('description', '')[:80]}"
+                for pid, info in _projs.items()
+                if info.get("status") == "active"
+            ]
+            _project_ctx = "[ACTIVE PROJECTS]\n" + "\n".join(_proj_lines) if _proj_lines else ""
+    except Exception:
+        _project_ctx = ""
+
     print(f"[eLo server] session {_state.get('session_count', 1)} started")
 
     try:
-        from ambient.ambient_engine import start as _ambient_start
+        from ambient.ambient_engine import start as _ambient_start, register_ambient_callback as _reg_ambient
         _ambient_start(unity_present=True)
-        print("[eLo server] ambient engine started")
+        _reg_ambient(ambient_thought)
+        print("[eLo server] ambient engine started (Brain callback registered)")
     except Exception as _ae:
         print(f"[eLo server] ambient engine skipped: {_ae}")
 
 
 def _process_turn(raw: str) -> dict:
     """Run one cognitive cycle. Thread-safe via _lock. Returns response dict."""
-    global _state, _runtime_state, _last_inputs, _last_avatar_cmd
+    global _state, _runtime_state, _last_inputs, _last_avatar_cmd, _elo_self
+    _original_raw = raw  # WO-020: capture before enrichment for routing trace
 
     with _lock:
+        # stamp user activity time — dream faculty uses this to measure idle
+        import time as _time_mod
+        if _state is not None:
+            _state["last_user_ts"] = _time_mod.time()
+
         # hard loop guard
         _last_inputs.append(raw)
         if len(_last_inputs) > 3:
@@ -1003,6 +1329,63 @@ def _process_turn(raw: str) -> dict:
                     except Exception:
                         pass
                     return {"response": _cancel_txt, "mode": "direct", "backend": "direct"}
+        except Exception:
+            pass
+
+        # ── Pending computer control confirmation / cancellation ──────────────
+        try:
+            from tools.computer_control_agent import (
+                has_pending as _cc_has, get_pending as _cc_get,
+                clear_pending as _cc_clear, execute as _cc_exec,
+                describe as _cc_describe, is_enabled as _cc_enabled,
+            )
+            if _cc_has():
+                if _is_file_confirm(raw):
+                    _cc_action = _cc_get()
+                    _cc_clear()
+                    _cc_result = _cc_exec(_cc_action) if _cc_action else "Nothing pending."
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_cc_result)
+                    except Exception:
+                        pass
+                    return {"response": _cc_result, "mode": "execute", "backend": "computer_control"}
+                elif _is_file_cancel(raw):
+                    _cc_clear()
+                    _cc_cancel = "Ok, cancelled."
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_cc_cancel)
+                    except Exception:
+                        pass
+                    return {"response": _cc_cancel, "mode": "direct", "backend": "direct"}
+        except Exception:
+            pass
+
+        # ── Computer control intent detection (before LLM) ────────────────────
+        try:
+            from tools.computer_control_agent import (
+                parse_intent as _cc_parse, describe as _cc_describe,
+                set_pending as _cc_set, is_enabled as _cc_enabled,
+            )
+            _cc_action = _cc_parse(raw)
+            if _cc_action:
+                if not _cc_enabled():
+                    _cc_disabled = "Computer control is off — add ELO_COMPUTER_CONTROL=1 to .env to enable it."
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_cc_disabled)
+                    except Exception:
+                        pass
+                    return {"response": _cc_disabled, "mode": "direct", "backend": "direct"}
+                _cc_set(_cc_action)
+                _cc_confirm_txt = f"Shall I {_cc_describe(_cc_action)}?"
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_cc_confirm_txt)
+                except Exception:
+                    pass
+                return {"response": _cc_confirm_txt, "mode": "confirm", "backend": "computer_control"}
         except Exception:
             pass
 
@@ -1053,8 +1436,672 @@ def _process_turn(raw: str) -> dict:
             return {"response": _invade_reply, "mode": "direct", "backend": "invade_cmd",
                     "command": "spawn_wave"}
 
+        # ── "Open it" / "open that" — use last found URL from search ─────────
+        _OPEN_LAST_RE = _re.compile(
+            r'\b(?:open|play|watch|go|load|launch)\s+(?:it|that|the\s+link|the\s+video|the\s+episode|the\s+podcast|the\s+page)\b'
+            r'|\bopen\s+(?:it\s+)?(?:up|now)\b'
+            r'|\bplay\s+(?:it\s+)?now\b',
+            _re.I,
+        )
+        if _OPEN_LAST_RE.search(raw) and _LAST_FOUND.get("url"):
+            try:
+                from desktop.chrome_reader import open_url as _open_url
+                _open_url(_LAST_FOUND["url"])
+                _ol_reply = f"Opening {_LAST_FOUND['title'] or _LAST_FOUND['url']}."
+                _LAST_FOUND["url"] = ""
+                _LAST_FOUND["title"] = ""
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_ol_reply)
+                except Exception:
+                    pass
+                return {"response": _ol_reply, "mode": "direct", "backend": "open_last"}
+            except Exception as _ol_err:
+                import sys as _ol_sys
+                print(f"[open_last] error: {_ol_err}", file=_ol_sys.stderr)
+
+        # ── Play / Pause video in open YouTube tab ───────────────────────────
+        _VIDEO_PLAY_RE = _re.compile(
+            r'\b(?:resume|unpause|press\s+play)\b'
+            r'|\bplay\s+(?:the\s+)?(?:video|clip)\b'
+            r'|\bstart\s+(?:the\s+)?(?:video|clip)\b',
+            _re.I,
+        )
+        _VIDEO_PAUSE_RE = _re.compile(
+            r'\bpause\s+(?:it|the\s+video|the\s+clip|that)\b',
+            _re.I,
+        )
+        if _VIDEO_PLAY_RE.search(raw):
+            try:
+                from desktop.chrome_controller import play_video as _play_vid
+                _pv_ok, _pv_title = _play_vid()
+                if _pv_ok:
+                    _pv_reply = "Playing."
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_pv_reply)
+                    except Exception:
+                        pass
+                    return {"response": _pv_reply, "mode": "direct", "backend": "video_ctrl"}
+            except Exception as _pve:
+                import sys as _pve_sys
+                print(f"[video_play] error: {_pve}", file=_pve_sys.stderr)
+
+        if _VIDEO_PAUSE_RE.search(raw):
+            try:
+                from desktop.chrome_controller import pause_video as _pause_vid
+                _pv_ok2, _ = _pause_vid()
+                if _pv_ok2:
+                    _pv_reply2 = "Paused."
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_pv_reply2)
+                    except Exception:
+                        pass
+                    return {"response": _pv_reply2, "mode": "direct", "backend": "video_ctrl"}
+            except Exception as _pve2:
+                import sys as _pve2_sys
+                print(f"[video_pause] error: {_pve2}", file=_pve2_sys.stderr)
+
+        # ── YouTube internal volume ───────────────────────────────────────────
+        _YT_VOL_RE = _re.compile(
+            r'(?:youtube|yt|video)\s+volume\s+(?:to\s+)?(\d+)\s*%?'
+            r'|set\s+(?:the\s+)?(?:youtube|yt|video)\s+volume\s+(?:to\s+)?(\d+)\s*%?'
+            r'|(?:change|turn)\s+(?:youtube|yt|video)\s+volume\s+(?:to\s+)?(\d+)\s*%?',
+            _re.I,
+        )
+        _YT_VOL_DIR_RE = _re.compile(
+            r'(?:youtube|yt|video)\s+volume\s+(up|down)'
+            r'|turn\s+(?:youtube|yt|video)\s+volume\s+(up|down)',
+            _re.I,
+        )
+        _yv_m = _YT_VOL_RE.search(raw)
+        if _yv_m:
+            try:
+                from desktop.chrome_controller import set_youtube_volume as _set_ytvol
+                _yv_pct = int(next(g for g in _yv_m.groups() if g is not None))
+                _yv_ok, _yv_actual = _set_ytvol(_yv_pct)
+                _yv_reply = f"YouTube volume at {_yv_actual}%." if _yv_ok else "Couldn't reach the YouTube tab."
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_yv_reply)
+                except Exception:
+                    pass
+                return {"response": _yv_reply, "mode": "direct", "backend": "yt_volume"}
+            except Exception as _yve:
+                import sys as _yve_sys
+                print(f"[yt_volume] error: {_yve}", file=_yve_sys.stderr)
+
+        _yv_dir_m = _YT_VOL_DIR_RE.search(raw)
+        if _yv_dir_m:
+            try:
+                from desktop.chrome_controller import adjust_youtube_volume as _adj_ytvol
+                _yv_dir = next(g for g in _yv_dir_m.groups() if g is not None).lower()
+                _yv_delta = 10 if _yv_dir == "up" else -10
+                _yv_ok2, _yv_new = _adj_ytvol(_yv_delta)
+                _yv_reply2 = f"YouTube volume at {_yv_new}%." if _yv_ok2 else "Couldn't reach the YouTube tab."
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_yv_reply2)
+                except Exception:
+                    pass
+                return {"response": _yv_reply2, "mode": "direct", "backend": "yt_volume"}
+            except Exception as _yve2:
+                import sys as _yve2_sys
+                print(f"[yt_volume_dir] error: {_yve2}", file=_yve2_sys.stderr)
+
+        # ── Open YouTube in its Chrome PWA app ───────────────────────────────
+        _YT_APP_RE = _re.compile(
+            r'\bopen\s+(?:in\s+(?:the\s+)?app|(?:the\s+)?youtube\s+app)\b'
+            r'|\byoutube\s+app\b'
+            r'|\bopen\s+(?:it|that|the\s+video)\s+in\s+(?:the\s+)?app\b',
+            _re.I,
+        )
+        if _YT_APP_RE.search(raw):
+            try:
+                from desktop.chrome_controller import open_current_video_in_app as _yt_app
+                _ya_ok, _ya_mode = _yt_app()
+                _ya_reply = "Opened in the app." if _ya_ok else "YouTube app not found — opened in Chrome."
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_ya_reply)
+                except Exception:
+                    pass
+                return {"response": _ya_reply, "mode": "direct", "backend": "yt_app"}
+            except Exception as _yae:
+                import sys as _yae_sys
+                print(f"[yt_app] error: {_yae}", file=_yae_sys.stderr)
+
+        # ── Image generation — "generate/draw/paint an image of X" ────────────
+        _IMG_GEN_RE = _re.compile(
+            r'\b(?:generate|create|make|draw|design|paint|produce|illustrate|visualis[e]?|render)\s+'
+            r'(?:me\s+)?(?:a\s+|an\s+)?(?:image|picture|photo|illustration|artwork|art|wallpaper|'
+            r'concept\s+art|visual|portrait|sketch)\s+(?:of\s+)?(.+)',
+            _re.I,
+        )
+        _ig_m = _IMG_GEN_RE.search(raw)
+        if _ig_m:
+            try:
+                from tools.image_gen_agent import generate as _img_generate
+                _ig_prompt = _ig_m.group(1).strip().rstrip("?.!")
+                _ig_result = _img_generate(_ig_prompt)
+                if _ig_result["ok"]:
+                    _ig_src   = {"dalle3": "DALL-E 3", "dalle2": "DALL-E 2", "sd_local": "Stable Diffusion"}.get(_ig_result["source"], "")
+                    _ig_reply = f"Here you go — generated with {_ig_src}. Opening in Preview."
+                else:
+                    _ig_reply = "Couldn't generate that right now — all backends failed. Try again in a moment."
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_ig_reply)
+                except Exception:
+                    pass
+                return {"response": _ig_reply, "mode": "direct", "backend": "image_gen"}
+            except Exception as _ig_err:
+                import sys as _ig_sys
+                print(f"[image_gen] error: {_ig_err}", file=_ig_sys.stderr)
+
+        # ── 3D model generation — "make a 3D model of X" ─────────────────────
+        _MODEL_GEN_RE = _re.compile(
+            r'\b(?:generate|create|make|build|produce)\s+(?:me\s+)?(?:a\s+|an\s+)?'
+            r'(?:3d\s+model|3d\s+object|3d\s+asset|3d\s+mesh|three[- ]d\s+model|model)\s+(?:of\s+)?(.+)',
+            _re.I,
+        )
+        _mg_m = _MODEL_GEN_RE.search(raw)
+        if _mg_m:
+            try:
+                from tools.model_gen_agent import generate as _model_generate
+                _mg_prompt = _mg_m.group(1).strip().rstrip("?.!")
+                _mg_reply  = f"On it — generating a 3D model of {_mg_prompt}. This takes a minute, I'll open it when it's ready."
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_mg_reply)
+                except Exception:
+                    pass
+                import threading as _mg_thread
+                def _mg_run():
+                    _mg_result = _model_generate(_mg_prompt)
+                    if not _mg_result["ok"]:
+                        print(f"[model_gen] all backends failed for: {_mg_prompt}")
+                _mg_thread.Thread(target=_mg_run, daemon=True).start()
+                return {"response": _mg_reply, "mode": "direct", "backend": "model_gen"}
+            except Exception as _mg_err:
+                import sys as _mg_sys
+                print(f"[model_gen] error: {_mg_err}", file=_mg_sys.stderr)
+
+        # ── "Show me [video/podcast/episode]" — search YouTube + open ─────────
+        _MEDIA_RE = _re.compile(
+            r'\b(?:show\s+me|find\s+me|pull\s+up|play)\s+(?:the\s+)?(?:latest\s+)?(?:a\s+|an\s+)?'
+            r'(?:.{0,40}?)(?:podcast|episode|video|clip|interview|documentary|show)\b',
+            _re.I,
+        )
+        if _MEDIA_RE.search(raw):
+            try:
+                from tools.web_search import search as _ms_search
+                from desktop.chrome_reader import find_tab as _find_tab2, focus_tab as _focus_tab2, open_url as _open_url2
+                import subprocess as _msp
+                _topic_m2 = _re.search(
+                    r'\b(?:show\s+me|find\s+me|pull\s+up|play)\s+(?:the\s+)?(?:latest\s+)?(?:a\s+|an\s+)?(.+?)(?:\?|$)',
+                    raw, _re.I,
+                )
+                _media_q = (_topic_m2.group(1).strip() if _topic_m2 else raw).rstrip("?.!")
+                # Check Chrome tabs FIRST — if it's already open, surface it without searching
+                # Use distinctive words from the query (skip stop words / media type words)
+                _stop = {"the", "latest", "a", "an", "podcast", "episode", "video", "clip",
+                         "show", "me", "find", "pull", "up", "play", "interview", "documentary"}
+                _key_words = [w for w in _re.sub(r'[^a-z0-9 ]', '', _media_q.lower()).split()
+                              if w not in _stop and len(w) > 2]
+                _existing_pre = None
+                if len(_key_words) >= 2:
+                    # build a 2-word probe from the most distinctive words
+                    _probe = " ".join(_key_words[:2])
+                    _existing_pre = _find_tab2(_probe)
+                if _existing_pre:
+                    _focus_tab2(_existing_pre)
+                    _msp.run(["osascript", "-e", 'tell application "Google Chrome" to activate'],
+                             capture_output=True, timeout=3)
+                    _media_reply = f"Already open — brought it forward."
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_media_reply)
+                    except Exception:
+                        pass
+                    return {"response": _media_reply, "mode": "direct", "backend": "media_open"}
+                # Not open — search YouTube
+                _media_results = _ms_search(_media_q, max_results=1, engine="youtube")
+                if _media_results and _media_results[0].url:
+                    _murl   = _media_results[0].url
+                    _mtitle = _media_results[0].title
+                    _LAST_FOUND["url"]   = _murl
+                    _LAST_FOUND["title"] = _mtitle
+                    _open_url2(_murl)   # opens + activates Chrome
+                    _media_reply = f"Got it — {_mtitle}. Opening now."
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_media_reply)
+                    except Exception:
+                        pass
+                    return {"response": _media_reply, "mode": "direct", "backend": "media_open"}
+            except Exception as _me_err:
+                import sys as _me_sys
+                print(f"[media_open] error: {_me_err}", file=_me_sys.stderr)
+
+        # ── Action agent — "pull that up", "open that", "go find X" ─────────
+        try:
+            from faculties.action_agent import is_action_intent, act_on_topic as _act
+            if is_action_intent(raw):
+                _topic_m = _re.search(r'(?:pull up|open|show me|find|go find|look up)\s+(?:that\s+)?(.+?)(?:\s+for me)?\s*$', raw, _re.I)
+                _topic = _topic_m.group(1).strip() if _topic_m else raw
+                _action_result = _act(_topic)
+                if _action_result:
+                    _act_reply = _action_result.spoken
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_act_reply)
+                    except Exception:
+                        pass
+                    return {"response": _act_reply, "mode": "direct", "backend": "action_agent"}
+        except Exception as _ae:
+            import sys as _ae_sys
+            print(f"[action_agent] error: {_ae}", file=_ae_sys.stderr)
+
+        # ── Web search ───────────────────────────────────────────────────────
+        try:
+            from tools.web_search import is_search_intent, extract_query as _sq, search as _wsearch, format_for_context as _wfmt
+            # WO-020 Seam B: bare status/acknowledgement words must not be web-searched.
+            # "what is done?" → extracted query "done" → would search Wikipedia for "DONE".
+            _WS_AMBIGUOUS = frozenset({
+                "done", "ok", "okay", "yes", "no", "wait", "ready", "waiting",
+                "pending", "open", "closed", "next", "back", "forward", "stop",
+                "go", "hey", "right", "sure", "cool", "good", "great", "fine", "nice",
+            })
+            if is_search_intent(raw):
+                _sq_text = _sq(raw)
+                if _sq_text.strip().lower() in _WS_AMBIGUOUS:
+                    raise ValueError("seam-b-guard: ambiguous bare word, skipping web search")
+                _ws_results = _wsearch(_sq_text, max_results=4)
+                if _ws_results:
+                    _ws_ctx = _wfmt(_ws_results)
+                    # Cache top result so "open it" / "open that" can resolve it next turn
+                    _top = _ws_results[0]
+                    if _top.url:
+                        _LAST_FOUND["url"]   = _top.url
+                        _LAST_FOUND["title"] = _top.title
+                    # Inject as context and let the LLM respond naturally rather than
+                    # short-circuiting — web results need synthesis, not raw dump
+                    raw = f"[WEB_SEARCH: {_sq_text}]\n{_ws_ctx}\n\nUser asked: {raw}"
+                # Falls through to LLM with enriched context
+        except Exception as _ws_err:
+            import sys as _ws_sys
+            print(f"[web_search] error: {_ws_err}", file=_ws_sys.stderr)
+
+        # ── Reminder ─────────────────────────────────────────────────────────
+        try:
+            from tools.reminder_agent import is_reminder_intent, set_reminder as _set_reminder
+            if is_reminder_intent(raw):
+                _rem_reply = _set_reminder(raw, context=raw)
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_rem_reply)
+                except Exception:
+                    pass
+                return {"response": _rem_reply, "mode": "direct", "backend": "reminder"}
+        except Exception as _rem_err:
+            import sys as _rem_sys
+            print(f"[reminder] error: {_rem_err}", file=_rem_sys.stderr)
+
+        # ── Desktop file listing / reading ───────────────────────────────────
+        _DESKTOP_LIST_RE = _re.compile(
+            r'\b(?:list|show|what(?:\'s|\s+is|\s+are)?|any)\b.{0,30}\b(?:files?|on|in)\b.{0,20}\b(?:desktop|desk\s+top)\b'
+            r'|\bdesktop\b.{0,30}\b(?:files?|folder|stuff|there)\b',
+            _re.I,
+        )
+        _DESKTOP_READ_RE = _re.compile(
+            r'\bread\b.{0,40}\bdesktop\b|\bopen\b.{0,30}\b(?:file|doc|txt|md)\b.{0,30}\bdesktop\b'
+            r'|\bdesktop\b.{0,30}\bread\b',
+            _re.I,
+        )
+        _PROJECT_LIST_RE = _re.compile(
+            r'\b(?:list|show|what|tell\s+me)\b.{0,25}\b(?:my\s+)?projects?\b'
+            r'|\bwhat\s+projects?\s+(?:do\s+)?(?:you|i|we)\s+have\b'
+            r'|\blist\s+(?:my\s+)?disenelo\b',
+            _re.I,
+        )
+        _TODO_RE = _re.compile(
+            r'\b(?:what(?:\'s|\s+is)?|show|list|check)\b.{0,20}\b(?:my\s+)?(?:to[\-\s]?do|todo|tasks?|to\s+do\s+list)\b',
+            _re.I,
+        )
+
+        if _DESKTOP_LIST_RE.search(raw):
+            try:
+                import os as _os_d
+                _desktop = _os_d.path.expanduser("~/Desktop")
+                _dfiles  = sorted(_os_d.listdir(_desktop))
+                _visible = [f for f in _dfiles if not f.startswith(".")][:20]
+                _d_reply = "Desktop: " + ", ".join(_visible) if _visible else "Desktop is empty."
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_d_reply)
+                except Exception:
+                    pass
+                return {"response": _d_reply, "mode": "direct", "backend": "desktop_list"}
+            except Exception as _dl_err:
+                import sys as _dl_sys
+                print(f"[desktop_list] error: {_dl_err}", file=_dl_sys.stderr)
+
+        if _PROJECT_LIST_RE.search(raw):
+            try:
+                import glob as _glob
+                import os as _os_p
+                _out = _os_p.path.expanduser("~/Desktop/Output")
+                _proj_dirs = sorted(_glob.glob(_os_p.path.join(_out, "DISENELO*")))
+                _proj_dirs = [p for p in _proj_dirs if _os_p.path.isdir(p)]
+                if _proj_dirs:
+                    _short = []
+                    for p in _proj_dirs:
+                        n = _os_p.path.basename(p)
+                        n = n.replace("DISENELO - ", "").replace("DISENELO-", "").replace("DISENELO_", "").replace("DISENELO ", "").strip(" -")
+                        if n:
+                            _short.append(n)
+                    _p_reply = "DISENELO Projects — " + ", ".join(_short) + "."
+                else:
+                    _p_reply = "No DISENELO project folders found."
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_p_reply)
+                except Exception:
+                    pass
+                return {"response": _p_reply, "mode": "direct", "backend": "project_list"}
+            except Exception as _pl_err:
+                import sys as _pl_sys
+                print(f"[project_list] error: {_pl_err}", file=_pl_sys.stderr)
+
+        if _TODO_RE.search(raw):
+            try:
+                from memory.vault_layer import lookup as _vlu
+                _todo_hits = _vlu("todo task checklist", max_results=5)
+                if not _todo_hits:
+                    _todo_hits = _vlu("to do", max_results=5)
+                if _todo_hits:
+                    _todo_lines = []
+                    for _th in _todo_hits[:3]:
+                        _tc = (_th.get("content") or _th.get("text") or "").strip()[:200]
+                        _tf = _th.get("file", "")
+                        if _tc:
+                            _todo_lines.append(f"[{_tf}] {_tc}")
+                    _todo_reply = "\n".join(_todo_lines) if _todo_lines else "Nothing found in vault for to-do."
+                else:
+                    _todo_reply = "I don't have a to-do list in memory right now."
+                # Falls through to LLM enriched so it can speak naturally
+                raw = f"[TODO_VAULT]\n{_todo_reply}\n\nUser asked: {raw}"
+            except Exception as _td_err:
+                import sys as _td_sys
+                print(f"[todo] error: {_td_err}", file=_td_sys.stderr)
+
+        # ── Screen reader — explicit trigger ─────────────────────────────────
+        _SCREEN_READ_RE = _re.compile(
+            r'\bread\s+(?:my\s+)?(?:screen|display)\b'
+            r'|\bwhat(?:\'s|\s+is)\s+on\s+(?:my\s+)?(?:screen|display)\b'
+            # "what can you see" fires only when NOT followed by link/relational query words
+            r'|\bwhat\s+can\s+you\s+see\b(?!\s+(?:links?|connects?|between|across|to\s+my|from\s+my|that\s+links?))'
+            r'|\bcan\s+you\s+see\s+anything\b'
+            r'|\bcan\s+you\s+(?:see|read)\s+(?:my\s+)?(?:screen|display)\b'
+            r'|\btake\s+a\s+(?:look|screenshot|screen\s+read)\b',
+            _re.I,
+        )
+        # Screen reader — implicit trigger: "can you see [specific visual thing on screen]"
+        # Excludes content/relational queries — those go to vault/fast-path, not screen reader
+        _SCREEN_SEE_EXCLUDE = r'(?:tracker|agenda|todo|to[\-\s]do|project\s+list|list|calendar|schedule|tab|chrome|safari|links?|between|connects?|connections?|across|from\s+my|to\s+my)'
+        _SCREEN_SEE_RE = _re.compile(
+            r'\bcan\s+you\s+see\s+(?:the\s+|my\s+)?(?!my\s+screen|the\s+screen|' + _SCREEN_SEE_EXCLUDE + r')(\w[\w\s]{2,30})\b'
+            r'|\bwhat(?:\'s|\s+is)\s+(?:happening\s+in|in)\s+(?!chrome|safari|a\s+tab)(\w[\w\s]{2,25})\b',
+            _re.I,
+        )
+        if _SCREEN_READ_RE.search(raw) or _SCREEN_SEE_RE.search(raw):
+            try:
+                from desktop.screen_reader import read as _sr_read
+                _sc = _sr_read(force=True)
+                if _sc:
+                    # Fall through to LLM with screen content injected so it can speak naturally
+                    raw = f"[SCREEN_CONTENT]\nApp: {_sc.app}\nSummary: {_sc.summary}\nText: {_sc.raw_text[:600]}\n\nUser asked: {raw}"
+                else:
+                    raw = f"[SCREEN_READ: I took a screenshot but couldn't read it — vision backend may be unavailable.]\n\nUser asked: {raw}"
+            except Exception as _sr_err:
+                import sys as _sr_sys
+                print(f"[screen_reader] error: {_sr_err}", file=_sr_sys.stderr)
+
+        # ── App listing — "what apps do you know" ────────────────────────────
+        _APP_LIST_RE = _re.compile(
+            r'\bwhat\s+apps?\b.{0,25}\b(?:do\s+you\s+know|can\s+you\s+(?:switch|open|control|reach)|have\s+you\s+got)\b'
+            r'|\blist\s+(?:your\s+)?apps?\b'
+            r'|\bwhat\s+(?:can\s+you\s+)?(?:open|switch\s+to|reach)\b.{0,20}\bapp\b',
+            _re.I,
+        )
+        if _APP_LIST_RE.search(raw):
+            try:
+                _APP_NAMES_LOCAL: "dict[str, str]" = {
+                    "blender":             "Blender",
+                    "unity":               "Unity",
+                    "vs code":             "Visual Studio Code",
+                    "cursor":              "Cursor",
+                    "terminal":            "Terminal",
+                    "finder":              "Finder",
+                    "safari":              "Safari",
+                    "chrome":              "Google Chrome",
+                    "xcode":               "Xcode",
+                    "claude":              "Claude",
+                    "discord":             "Discord",
+                    "figma":               "Figma",
+                    "slack":               "Slack",
+                    "notes":               "Notes",
+                    "photoshop":           "Adobe Photoshop 2024",
+                }
+                _app_list_str = ", ".join(_APP_NAMES_LOCAL.keys())
+                _al_reply = f"Apps I can switch to: {_app_list_str}."
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_al_reply)
+                except Exception:
+                    pass
+                return {"response": _al_reply, "mode": "direct", "backend": "app_list"}
+            except Exception as _al_err:
+                import sys as _al_sys
+                print(f"[app_list] error: {_al_err}", file=_al_sys.stderr)
+
+        # ── Project ↔ website cross-reference ────────────────────────────────
+        _PROJ_LINK_RE = _re.compile(
+            r'\bwhat\b.{0,30}\b(?:websites?|sites?|links?|urls?)\b.{0,30}\b(?:projects?|output|disenelo)\b'
+            r'|\bwhat\b.{0,30}\bprojects?\b.{0,30}\b(?:websites?|sites?|links?|urls?)\b'
+            r'|\blink\b.{0,20}\bprojects?\b.{0,20}\b(?:websites?|sites?)\b',
+            _re.I,
+        )
+        if _PROJ_LINK_RE.search(raw):
+            try:
+                import glob as _glob2
+                import os as _os_xl
+                from desktop.chrome_reader import bookmarks as _bm_all
+                _out2      = _os_xl.path.expanduser("~/Desktop/Output")
+                _p_dirs2   = [_os_xl.path.basename(p) for p in sorted(_glob2.glob(_os_xl.path.join(_out2, "DISENELO*")))]
+                _bms       = _bm_all()
+                _xref_lines: list[str] = []
+                for _pname in _p_dirs2:
+                    # Strip "DISENELO-" / "DISENELO " prefix for matching
+                    _short = _pname.replace("DISENELO-", "").replace("DISENELO ", "").lower()
+                    _hits  = [b for b in _bms if _short in b.title.lower() or _short in b.url.lower()]
+                    if _hits:
+                        _urls = ", ".join(b.url for b in _hits[:3])
+                        _xref_lines.append(f"{_pname}: {_urls}")
+                    else:
+                        # Try vault
+                        try:
+                            from memory.vault_layer import lookup as _vlu2
+                            import re as _re2
+                            _ve = _vlu2(_short, max_results=3)
+                            _vurls = []
+                            for _ve_item in _ve:
+                                _vc = _ve_item.get("content") or _ve_item.get("text") or ""
+                                _vurls += _re2.findall(r'https?://[^\s\)\]\"]{8,}', _vc)
+                            if _vurls:
+                                _xref_lines.append(f"{_pname}: {', '.join(_vurls[:2])}")
+                        except Exception:
+                            pass
+                if _xref_lines:
+                    _xl_reply = "Project links:\n" + "\n".join(_xref_lines)
+                else:
+                    _xl_reply = "No bookmark or vault links found for DISENELO projects."
+                raw = f"[PROJECT_LINKS]\n{_xl_reply}\n\nUser asked: {raw}"
+            except Exception as _xl_err:
+                import sys as _xl_sys
+                print(f"[proj_links] error: {_xl_err}", file=_xl_sys.stderr)
+
+        # ── Chrome tab finder ─────────────────────────────────────────────────
+        _TAB_FIND_RE  = _re.compile(r'\b(?:find|locate|which|what|where(?:\s+is)?|can\s+you\s+find)\b.{0,40}\btab\b', _re.I)
+        _TAB_OPEN_RE  = _re.compile(r'\b(?:open|go\s+to|take\s+me\s+to|load)\s+(.+?)(?:\s+(?:website|site|page|tab|url|link))?\s*$', _re.I)
+
+        if _TAB_FIND_RE.search(raw):
+            try:
+                from desktop.chrome_reader import all_tabs as _all_tabs
+                _tabs = _all_tabs()
+                if _tabs:
+                    # Try to extract the site name from the query
+                    _site_match = _re.search(r'\b(?:find|locate|which|where(?:\s+is)?|for)\s+(?:the\s+)?(.+?)(?:\s+(?:tab|website|site|page|url|link))?\s*$', raw, _re.I)
+                    _site_q = _site_match.group(1).strip() if _site_match else ""
+                    if _site_q:
+                        from desktop.chrome_reader import find_tab as _find_tab, focus_tab as _focus_tab
+                        _found = _find_tab(_site_q)
+                        if _found:
+                            _focus_tab(_found)
+                            _tab_reply = f"Got it — {_found.title}."
+                        else:
+                            _tab_reply = f"No tab matching '{_site_q}' open right now."
+                    else:
+                        _tab_lines = [f"{t.window_index}/{t.tab_index}: {t.title}" for t in _tabs[:8]]
+                        _tab_reply = "Open tabs: " + "; ".join(_tab_lines)
+                else:
+                    _tab_reply = "Chrome isn't open or no tabs found."
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_tab_reply)
+                except Exception:
+                    pass
+                return {"response": _tab_reply, "mode": "direct", "backend": "chrome_tabs"}
+            except Exception as _ct_err:
+                import sys as _ct_sys
+                print(f"[chrome_tabs] error: {_ct_err}", file=_ct_sys.stderr)
+
+        # ── App switching — instant osascript activate ────────────────────────
+        _APP_NAMES: "dict[str, str]" = {
+            "blender":             "Blender",
+            "unity":               "Unity",
+            "vs code":             "Visual Studio Code",
+            "vscode":              "Visual Studio Code",
+            "visual studio code":  "Visual Studio Code",
+            "cursor":              "Cursor",
+            "terminal":            "Terminal",
+            "finder":              "Finder",
+            "safari":              "Safari",
+            "chrome":              "Google Chrome",
+            "xcode":               "Xcode",
+            "claude":              "Claude",
+            "discord":             "Discord",
+            "figma":               "Figma",
+            "slack":               "Slack",
+            "notes":               "Notes",
+            "photoshop":           "Adobe Photoshop 2024",
+        }
+        _APP_SWITCH_RE = _re.compile(
+            r'\b(?:switch to|jump to|go to|take me to|bring up|activate|open|show me|pull up|focus)\s+(.+)',
+            _re.I,
+        )
+        _app_match = _APP_SWITCH_RE.search(raw)
+        if _app_match:
+            _app_key = _app_match.group(1).strip().lower().rstrip(".,!?")
+            _app_target = _APP_NAMES.get(_app_key)
+            if _app_target:
+                import subprocess as _sp
+                try:
+                    _sp.run(
+                        ["osascript", "-e", f'tell application "{_app_target}" to activate'],
+                        capture_output=True, timeout=5,
+                    )
+                    _app_reply = f"{_app_target}."
+                except Exception:
+                    _app_reply = f"Couldn't reach {_app_target}."
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_app_reply)
+                except Exception:
+                    pass
+                return {"response": _app_reply, "mode": "direct", "backend": "app_switch"}
+
+        # ── Tracker / document creation ───────────────────────────────────────
+        try:
+            from tools.llm_file_agent import is_tracker_intent, tracker_agent as _tracker_agent
+            if is_tracker_intent(raw):
+                _sess_ctx = ""
+                try:
+                    from runtime.router.conversation_matrix import _SESSION_WINDOW as _sw
+                    _sess_ctx = "\n".join(
+                        f"{t.get('role','')}: {t.get('content','')}"
+                        for t in _sw[-40:]
+                    )
+                except Exception:
+                    pass
+                _tracker_reply = _tracker_agent(raw, _sess_ctx)
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_tracker_reply)
+                except Exception:
+                    pass
+                return {"response": _tracker_reply, "mode": "direct", "backend": "tracker_agent"}
+        except Exception as _te:
+            import sys as _te_sys
+            print(f"[tracker_agent] error: {_te}", file=_te_sys.stderr)
+
+        # ── EA2-2: Company Brain voice intents ────────────────────────────────
+        try:
+            from company_runtime.company_state_writer import (
+                is_company_intent as _is_company_intent,
+                handle_company_voice_intent as _handle_company_voice,
+            )
+            _company_intent_key = _is_company_intent(raw)
+            if _company_intent_key:
+                _company_reply = _handle_company_voice(raw)
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_company_reply)
+                except Exception:
+                    pass
+                return {"response": _company_reply, "mode": "direct", "backend": "company_state"}
+        except Exception as _csi_err:
+            import sys as _csi_sys
+            print(f"[company_intent] routing error: {_csi_err}", file=_csi_sys.stderr)
+
+        # ── Cultural fact trigger — instant, no LLM needed ───────────────────
+        try:
+            from faculties.cultural_facts import is_fact_trigger, draw as _fact_draw
+            if is_fact_trigger(raw):
+                _fact = _fact_draw()
+                _fact_reply = _fact.delivery if _fact else "Give me a second — pulling from the vault."
+                try:
+                    if not _is_user_away():
+                        _voice_speak(_fact_reply)
+                except Exception:
+                    pass
+                return {"response": _fact_reply, "mode": "direct", "backend": "cultural_facts"}
+        except Exception as _cf_err:
+            import sys as _cf_sys
+            print(f"[cultural_facts] routing error: {_cf_err}", file=_cf_sys.stderr)
+
         attention_model = attn.compute(raw, _memory_pack, _state, loop_detected=False)
         exec_decision   = exec_decide(attention_model, loop_detected=False, user_input=raw)
+
+        # ── Energy history — track David's emotional energy across the session ──
+        _energy_now = attention_model.get("emotional_context", {}).get("energy", 0.5)
+        _eh = _state.get("energy_history", [])
+        _eh.append(round(_energy_now, 3))
+        if len(_eh) > 10:
+            _eh = _eh[-10:]
+        _state["energy_history"] = _eh
         _runtime_state  = sm.update(_runtime_state, attention_model, exec_decision, loop_signal=False)
 
         if sm.is_stabilisation_forced(_runtime_state):
@@ -1071,6 +2118,27 @@ def _process_turn(raw: str) -> dict:
             })
             _runtime_state = dict(_runtime_state)
             _runtime_state["loop_counter"] = max(0, _runtime_state["loop_counter"] - 2)
+
+        # WO-020 Seam A: plain imperative override — executive.py is frozen, so we
+        # post-process here. CONNECT/REFLECT/WITNESS must not fire on direct commands.
+        _SEAM_A_DRIFT = {"connect", "reflect", "witness"}
+        if exec_decision.get("action") in _SEAM_A_DRIFT and not raw.strip().endswith("?"):
+            _sa_lower = raw.strip().lower()
+            _IMPERATIVE_PREFIXES = (
+                "open ", "play ", "find ", "get ", "show ", "tell ", "go ",
+                "launch ", "search ", "look ", "check ", "run ", "start ",
+                "pull ", "load ", "close ", "switch ", "pause ", "stop ",
+                "bring up ", "navigate ", "turn on", "turn off", "mute",
+            )
+            if any(_sa_lower.startswith(v) for v in _IMPERATIVE_PREFIXES):
+                exec_decision = dict(exec_decision)
+                exec_decision.update({
+                    "action": "answer",
+                    "confidence": 0.7,
+                    "reason": "seam-a-override: plain imperative → ANSWER",
+                    "original_action": exec_decision.get("action"),
+                    "overridden_by_routing": True,
+                })
 
         _action     = exec_decision.get("action", "reflect")
         _cal_reason = exec_decision.get("cal_reason", "")
@@ -1134,6 +2202,46 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # Spatial awareness — where eLo is, where windows are
+        try:
+            from desktop.spatial_state import get_elo_spatial, get_windows, spatial_summary
+            _elo_pos  = get_elo_spatial()
+            _wins     = get_windows()
+            _spat_ctx = spatial_summary(_elo_pos, _wins)
+            if _spat_ctx:
+                g_ctx = f"{g_ctx}\n{_spat_ctx}" if g_ctx else _spat_ctx
+        except Exception:
+            pass
+
+        # Synthesis observer — per-turn cross-signal check (low threshold, no cooldown)
+        try:
+            from faculties.synthesis.observer import context_block as _syn_block
+            _syn_ctx = _syn_block(raw)
+            if _syn_ctx:
+                g_ctx = f"{g_ctx}\n{_syn_ctx}" if g_ctx else _syn_ctx
+        except Exception:
+            pass
+
+        # Chrome observation — open tabs + bookmarks matching current conversation topic
+        try:
+            from desktop.chrome_reader import observe as _chrome_observe
+            _chrome_snap = _chrome_observe(query=raw[:80])
+            _chrome_lines: list[str] = []
+            if _chrome_snap.get("open_tabs"):
+                _tl = "; ".join(t["title"] for t in _chrome_snap["open_tabs"][:5])
+                _chrome_lines.append(f"[CHROME_TABS_MATCHED: {_tl}]")
+            if _chrome_snap.get("bookmarks"):
+                _bl = "; ".join(b["title"] for b in _chrome_snap["bookmarks"][:3])
+                _chrome_lines.append(f"[BOOKMARKS_MATCHED: {_bl}]")
+            if _chrome_snap.get("history"):
+                _hl = "; ".join(h["title"] for h in _chrome_snap["history"][:3])
+                _chrome_lines.append(f"[RECENT_HISTORY: {_hl}]")
+            if _chrome_lines:
+                _chrome_ctx = "\n".join(_chrome_lines)
+                g_ctx = f"{g_ctx}\n{_chrome_ctx}" if g_ctx else _chrome_ctx
+        except Exception:
+            pass
+
         # Project knowledge — compact studio brief (phase status + active projects)
         try:
             from tools.project_knowledge import get_context as _pk_ctx
@@ -1164,6 +2272,28 @@ def _process_turn(raw: str) -> dict:
             )
             g_ctx = f"{g_ctx}\n{_calm_note}" if g_ctx else _calm_note
 
+        # ── Music mood context — Spotify now-playing influence ────────────────
+        # If Spotify is playing, surface track + mood so eLo can respond in-tune.
+        # music_mood is written by spotify_agent._music_mood_blend() on track change.
+        try:
+            import json as _json_m
+            with open(_BLENDER_STATE_PATH, encoding="utf-8") as _mf:
+                _bst = _json_m.load(_mf)
+            _sp_block = _bst.get("spotify", {})
+            _mm       = _bst.get("state", {}).get("music_mood", "")
+            _me       = _bst.get("state", {}).get("music_energy", 0.5)
+            _sp_track  = _sp_block.get("track", "")
+            _sp_artist = _sp_block.get("artist", "")
+            if _sp_block.get("is_playing") and _sp_track:
+                _music_ctx = (
+                    f"[MUSIC] Now playing: {_sp_artist} — {_sp_track}. "
+                    f"Music mood: {_mm or 'neutral'}, energy: {round(_me, 2)}. "
+                    "Let this colour your tone naturally — no need to mention the music unless David does."
+                )
+                g_ctx = f"{g_ctx}\n{_music_ctx}" if g_ctx else _music_ctx
+        except Exception:
+            pass
+
         # ── ATTENTION AUGMENTATION — Entity Injection ─────────────────────────
         # Why here and not inside attention.compute():
         #   _entity_why() and _get_viewpoint() need intent context (exec_decision)
@@ -1179,10 +2309,12 @@ def _process_turn(raw: str) -> dict:
 
         _mode_str = exec_decision.get("mode", "CONVERSATIONAL") if exec_decision else "CONVERSATIONAL"
         _pers_block = _personality_profile.to_prompt_block(_mode_str) if _personality_profile else ""
-        system = build_prompt(raw, vault_context=_vault_ctx,
+        _combined_vault = (_vault_ctx + "\n\n" + _project_ctx).strip() if _project_ctx else _vault_ctx
+        system = build_prompt(raw, vault_context=_combined_vault,
                               state_context=state_manager.as_context_string(_state),
                               attention=attention_model, exec_decision=exec_decision,
-                              graph_context=g_ctx, personality_block=_pers_block)
+                              graph_context=g_ctx, personality_block=_pers_block,
+                              self_block=_self_prompt_block(_elo_self))
 
         backend_used = active_backend()
 
@@ -1234,6 +2366,141 @@ def _process_turn(raw: str) -> dict:
                 if _plan and getattr(_plan, "control_context", ""):
                     system = system + "\n\n" + _plan.control_context
 
+                # Perch awareness — inject current window position so eLo can answer
+                # "where are you?" accurately without vision. Always present; harmless
+                # when not queried. perch_state.json written by Unity on every window change.
+                try:
+                    _perch_file = os.path.join(
+                        os.path.dirname(os.path.abspath(__file__)), "blender", "perch_state.json"
+                    )
+                    with open(_perch_file, encoding="utf-8") as _pf:
+                        _perch = json.load(_pf)
+                    _perch_app  = _perch.get("app", "")
+                    _perch_edge = _perch.get("edge", "")
+                    if _perch_app:
+                        system = system + (
+                            f"\n\n[BODY POSITION] You are currently perched on the "
+                            f"{_perch_edge} edge of {_perch_app}. "
+                            f"When asked where you are, answer from this — never say you can't see yourself."
+                        )
+                except Exception:
+                    pass
+
+                # Capability self-awareness — inject a live capability summary so eLo
+                # can answer "what can you do" / "be more aware of yourself" accurately
+                # without inventing or guessing. Short always-on block.
+                try:
+                    from runtime.capabilities.registry import all_enabled as _cap_all
+                    _caps = _cap_all()
+                    if _caps:
+                        _cap_names = ", ".join(c.display_name for c in _caps)
+                        system = system + (
+                            f"\n\n[CAPABILITIES — what you can actually do right now]\n"
+                            f"{_cap_names}.\n"
+                            f"When asked what you can do, answer from this list specifically. "
+                            f"Do not list capabilities not shown here.\n\n"
+                            f"[WHAT YOU CAN OBSERVE — be consistent about this]\n"
+                            f"YES: active app name, active window title, active browser tab title + URL, "
+                            f"all open Chrome tabs (title + URL), Chrome bookmarks, recent Chrome history, "
+                            f"screen text (on request — I take a screenshot and read it via vision; I can do this).\n"
+                            f"NO: inactive app windows; file contents unless read via file tools.\n"
+                            f"When asked 'can you see my screen' — say: I can read what's on screen if you ask me to. "
+                            f"I take a screenshot and extract the text. I also see your active app, window title, "
+                            f"and all open Chrome tabs at all times."
+                        )
+                except Exception:
+                    pass
+
+                # Conversation arc — inject recent thread so LLM can detect trajectory,
+                # not just the current message. Uses the same _SESSION_WINDOW that the
+                # router pipeline pushes to; no extra storage.
+                # WO-022: memory recall — surface actual vault records, not the stats line.
+                # Trigger check runs first; vault lookup fires regardless of session state.
+                try:
+                    from runtime.router.conversation_matrix import _SESSION_WINDOW as _cw
+                    _raw_l = raw.lower()
+                    _memory_query = any(p in _raw_l for p in (
+                        # session-log queries (what was said this session)
+                        "do you remember", "what did you say", "what did elo say",
+                        "last sentence", "what was the last", "what did we talk about",
+                        "what did we last", "what did we say", "you said",
+                        "last conversation", "what was said", "what were we talking",
+                        "what have we been", "what did i say", "remind me what",
+                        # WO-022: general vault recall
+                        "from your memory", "from memory", "what have you kept",
+                        "what do you have stored", "what do you remember",
+                        "tell me something you", "share something from",
+                        "what do you know about me", "what have you learned",
+                        "pull something from memory", "recall something",
+                        "what's in your memory", "what's in memory",
+                    ))
+                    if _memory_query:
+                        # ── Session log (this session) ────────────────────────────────
+                        if _cw:
+                            _arc_lines = []
+                            for _t in _cw[-8:]:
+                                if _t.get("user"):
+                                    _arc_lines.append(f"David: {_t['user'][:150]}")
+                                if _t.get("elo"):
+                                    _arc_lines.append(f"eLo:   {_t['elo'][:150]}")
+                            if _arc_lines:
+                                system = system + (
+                                    f"\n\n[SESSION LOG — this session only, oldest first]\n"
+                                    + "\n".join(_arc_lines) +
+                                    "\nThis log is all you have for this session. "
+                                    "If the specific content asked about is not in the log, "
+                                    "say so honestly — do not invent content."
+                                )
+
+                        # ── Vault recall — always fires on recall intent ───────────────
+                        # WO-022: extract topic words; skip pure question/filler words so
+                        # the vault query is focused. Fall back to broad lookup if empty.
+                        try:
+                            from memory.vault_layer import lookup as _vlookup
+                            _recall_skip = frozenset({
+                                "what", "you", "remember", "tell", "from", "your", "my",
+                                "do", "did", "that", "the", "something", "anything", "have",
+                                "has", "me", "about", "how", "much", "know", "last", "time",
+                                "pull", "share", "recall", "memory", "stored", "kept", "elo",
+                            })
+                            _topic_words = [
+                                w for w in _re.sub(r'[^a-z0-9 ]', '', _raw_l).split()
+                                if w not in _recall_skip and len(w) >= 3
+                            ]
+                            _recall_q = " ".join(_topic_words) if _topic_words else "disenelo recent"
+                            _vault_hits = _vlookup(_recall_q, max_results=5)
+                            if not _vault_hits:
+                                _vault_hits = _vlookup("disenelo", max_results=5)
+                            if _vault_hits:
+                                _vlines = [
+                                    f"- {h['summary']} [{h['date']}]"
+                                    for h in _vault_hits if h.get("summary")
+                                ]
+                                if _vlines:
+                                    system = system + (
+                                        f"\n\n[VAULT MEMORY — actual records from previous sessions]\n"
+                                        + "\n".join(_vlines) +
+                                        "\n\nIMPORTANT: Respond by sharing what you actually remember "
+                                        "— speak from these records in eLo's voice. "
+                                        "Never say 'Memory\\'s running' or give a record count as a reply. "
+                                        "That is a status line, not a recall response."
+                                    )
+                        except Exception:
+                            pass
+                    elif _cw and len(_cw) >= 3:
+                        _arc_msgs = [t["user"] for t in _cw[-8:] if t.get("user")]
+                        if _arc_msgs:
+                            _arc_lines = "\n".join(
+                                f"{i+1}. {m[:120]}" for i, m in enumerate(_arc_msgs)
+                            )
+                            system = system + (
+                                f"\n\n[CONVERSATION THREAD — oldest to newest]\n{_arc_lines}\n"
+                                f"If this thread is building toward something, name it. "
+                                f"Respond to where the conversation is going, not just the last message."
+                            )
+                except Exception:
+                    pass
+
                 _enriched, _agent = _tool_enrich(raw)
                 response, backend_used = router_route(
                     system, _enriched, max_sentences=_max_s, action=_action
@@ -1242,6 +2509,29 @@ def _process_turn(raw: str) -> dict:
                     backend_used = f"{backend_used}+{_agent}"
             except Exception as _route_err:
                 import sys as _sys; print(f"[eLo] router failed: {_route_err}", file=_sys.stderr)
+
+            # WO-020 routing trace — per-turn observable routing debug.
+            # Modelled on WO-017 movement_debug; emitted every turn to blender/routing_trace.json.
+            try:
+                import time as _rt_time, json as _rt_json
+                _rt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                        "blender", "routing_trace.json")
+                _rt_tmp  = _rt_path + ".tmp"
+                _rt_data = {
+                    "user_input":          _original_raw,
+                    "intent":              attention_model.get("intent", ""),
+                    "valence":             attention_model.get("emotional_context", {}).get("valence", 0.0),
+                    "conversation_action": _action,
+                    "cal_reason":          _cal_reason,
+                    "tool_agent":          _agent or None,
+                    "backend_used":        backend_used,
+                    "_ts":                 _rt_time.time(),
+                }
+                with open(_rt_tmp, "w", encoding="utf-8") as _rt_f:
+                    _rt_json.dump(_rt_data, _rt_f, ensure_ascii=False, indent=2)
+                os.replace(_rt_tmp, _rt_path)
+            except Exception:
+                pass
                 response = "Not connecting right now. Try again in a moment."
                 backend_used = "mock(fallback)"
 
@@ -1329,40 +2619,136 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
-        # Write blender state — isolated so presence_plan always reaches the file.
-        # _last_pp caches the last known plan so tool-call turns don't reset glow to fallback.
+        # ── Blender state publish — ONE write per turn ────────────────────────────
+        # Primary path: when spine produced a plan, the Presence Faculty has already
+        # computed movement_intent/trigger/gesture and the EmbodimentPublisher
+        # assembles and writes everything in one call. No duplicate computation.
+        #
+        # Legacy fallback: when spine is unavailable, compute movement intent
+        # the old way and write via the ad-hoc state_writer calls.
         global _last_pp
         try:
             _pp = (_plan.presence_plan if _plan is not None and _plan.presence_plan else None)
-            _vision      = _state.get("vision") if isinstance(_state, dict) else None
-            _session_min = int((time.time() - _PROCESS_START) / 60)
-            _pp_active   = _pp or _last_pp or {}
-            _emo_ctx     = attention_model.get("emotional_context", {})
-            _mv_intent   = _movement_intent(
-                exec_decision,
-                attention_model,
-                vision          = _vision,
-                session_min     = _session_min,
-                raw             = raw,
-                emotional_state = _pp_active.get("emotional_state", ""),
-                momentum        = _emo_ctx.get("momentum", "stable"),
-                valence         = _emo_ctx.get("valence", "neutral"),
-            )
-            _mv_trigger, _mv_gesture = _movement_trigger(
-                raw             = raw,
-                emotional_state = _pp_active.get("emotional_state", ""),
-                valence         = _emo_ctx.get("valence", "neutral"),
-            )
             if _pp:
                 _last_pp = _pp
-                _state_write_presence(_cmd, _expr, _presence, _emotion, _pp, gaze=_gaze,
-                                      intent=_mv_intent, trigger=_mv_trigger, gesture=_mv_gesture)
-            elif _last_pp:
-                _state_write_presence(_cmd, _expr, _presence, _emotion, _last_pp, gaze=_gaze,
-                                      intent=_mv_intent, trigger=_mv_trigger, gesture=_mv_gesture)
+
+            if _plan is not None and _plan.presence_plan:
+                # ── Spine path: use plan output directly ──────────────────────
+                from blender_bridge.embodiment_publisher import publish as _embody
+                _embody(_plan, gaze=_gaze)
             else:
-                _state_write(_cmd, _expr, _presence, _emotion, gaze=_gaze,
-                             intent=_mv_intent, trigger=_mv_trigger, gesture=_mv_gesture)
+                # ── Legacy fallback: compute movement intent independently ─────
+                _vision      = _state.get("vision") if isinstance(_state, dict) else None
+                _session_min = int((time.time() - _PROCESS_START) / 60)
+                _pp_active   = _pp or _last_pp or {}
+                _emo_ctx     = attention_model.get("emotional_context", {})
+                _mv_intent   = _movement_intent(
+                    exec_decision,
+                    attention_model,
+                    vision          = _vision,
+                    session_min     = _session_min,
+                    raw             = raw,
+                    emotional_state = _pp_active.get("emotional_state", ""),
+                    momentum        = _emo_ctx.get("momentum", "stable"),
+                    valence         = _emo_ctx.get("valence", "neutral"),
+                )
+                _mv_trigger, _mv_gesture = _movement_trigger(
+                    raw             = raw,
+                    emotional_state = _pp_active.get("emotional_state", ""),
+                    valence         = _emo_ctx.get("valence", "neutral"),
+                )
+                if _last_pp:
+                    _state_write_presence(_cmd, _expr, _presence, _emotion, _last_pp,
+                                          gaze=_gaze, intent=_mv_intent,
+                                          trigger=_mv_trigger, gesture=_mv_gesture)
+                else:
+                    _state_write(_cmd, _expr, _presence, _emotion, gaze=_gaze,
+                                 intent=_mv_intent, trigger=_mv_trigger, gesture=_mv_gesture)
+        except Exception:
+            pass
+
+        # ── Quantum One Brain — brain_state.json + blender_state self-model ──────
+        # brain_state.json: per-vortex signals for EloBrainCluster.cs (9 systems).
+        # blender_state.json: patched with self-model fields + show_one_brain so
+        # the spec's state.self_* / state.memory / show_one_brain fields are present.
+        try:
+            from blender_bridge.brain_state_writer import publish as _brain_pub
+            from blender_bridge.state_writer import patch as _bs_patch
+            _bs_emo    = (_emotion or {}).get("emotion", "neutral")
+            _bs_intens = (_emotion or {}).get("intensity", 0.3)
+            _bs_energy = (_presence or {}).get("energy", 0.5)
+            _bs_mode   = (_presence or {}).get("mode", "idle")
+            _bs_vision = (_state or {}).get("vision", {}) if isinstance(_state, dict) else {}
+            _bs_intent = exec_decision.get("intent", "")
+            _bs_self_mood = getattr(_elo_self, "mood", 0.5)
+            _bs_self_cur  = getattr(_elo_self, "curiosity", 0.5)
+            _bs_self_sat  = getattr(_elo_self, "satisfaction", 0.5)
+            _brain_pub(
+                emotion              = _bs_emo,
+                intensity            = _bs_intens,
+                energy               = _bs_energy,
+                mode                 = _bs_mode,
+                motion_speed         = (_cmd or {}).get("speed", 0.55),
+                motion_intensity     = (_cmd or {}).get("intensity", 0.5),
+                vision_active        = bool(_bs_vision.get("active", False)),
+                vision_attention     = float(_bs_vision.get("attention", 0.0)),
+                vision_app           = str(_bs_vision.get("app", "")),
+                expression_intensity = (_expr or {}).get("intensity", 0.5),
+                expression_pacing    = (_expr or {}).get("pacing", "steady"),
+                intent               = _bs_intent,
+                self_mood            = _bs_self_mood,
+                self_curiosity       = _bs_self_cur,
+                show_one_brain       = True,
+            )
+            # state.memory = emotion word for MoodPalette (Unity EloOneBrainPanel)
+            # High curiosity + active turn → "curious"; settled → "calm"; default → ""
+            _mem_activity = _bs_self_cur * 0.4 + _bs_intens * 0.2
+            if _mem_activity > 0.45:
+                _mem_word = "curious"
+            elif _mem_activity > 0.25:
+                _mem_word = "calm"
+            else:
+                _mem_word = ""
+            _bs_patch({
+                "state": {
+                    "memory":            _mem_word,
+                    "self_mood":         round(_bs_self_mood, 3),
+                    "self_curiosity":    round(_bs_self_cur, 3),
+                    "self_satisfaction": round(_bs_self_sat, 3),
+                },
+                "show_one_brain": True,
+                "intent":         _bs_intent,
+            })
+        except Exception:
+            pass
+
+        # ── Capability panel — write show flag when capability query detected ────
+        # Unity reads show_capability_panel + capability_list from blender_state.json
+        # to display the eLo status panel. Auto-clear after 8s in background.
+        try:
+            _raw_l_cap = raw.lower()
+            _is_cap_query = any(p in _raw_l_cap for p in (
+                "what can you do", "elo status", "what are you capable of",
+                "what are your capabilities", "aware of yourself",
+                "aware of your capabilities", "what do you actually do",
+                "what are your features", "what can elo do",
+            ))
+            if _is_cap_query:
+                from runtime.capabilities.registry import all_enabled as _reg_all
+                from blender_bridge.state_writer import patch as _sw_patch
+                import threading as _threading
+                _cap_list = [
+                    {"name": c.display_name, "available": True} for c in _reg_all()
+                ]
+                _sw_patch({"show_capability_panel": True, "capability_list": _cap_list})
+                def _hide_panel():
+                    import time as _t; _t.sleep(8)
+                    try:
+                        from blender_bridge.state_writer import patch as _swp2
+                        _swp2({"show_capability_panel": False})
+                    except Exception:
+                        pass
+                _threading.Thread(target=_hide_panel, daemon=True).start()
         except Exception:
             pass
 
@@ -1377,16 +2763,39 @@ def _process_turn(raw: str) -> dict:
 
         # ── Multi-bubble split ────────────────────────────────────────────────
         # Split on paragraph breaks → one bubble per paragraph.
-        # TTS reads only the first bubble (or up to ELO_TTS_MAX_CHARS chars)
-        # so eLo doesn't burn tokens reading a long plan aloud.
+        # Chat panel renders all bubbles. TTS joins all bubbles (paragraph
+        # breaks become spaces in speech) then caps at ELO_TTS_MAX_CHARS so
+        # eLo doesn't read an entire plan aloud — 2-3 sentence replies play in full.
         _bubbles = [b.strip() for b in response.split("\n\n") if b.strip()] or [response]
 
-        _tts_max  = int(os.environ.get("ELO_TTS_MAX_CHARS", "160"))
-        _tts_text = _bubbles[0] if _bubbles else response
+        _tts_max  = int(os.environ.get("ELO_TTS_MAX_CHARS", "400"))
+        _tts_text = " ".join(_bubbles) if _bubbles else response   # WO-019 Bug A: join all paragraphs
         if len(_tts_text) > _tts_max:
             # cut at last sentence end before the cap
             _cut = _tts_text[:_tts_max].rfind(". ")
             _tts_text = _tts_text[:_cut + 1] if _cut > 50 else _tts_text[:_tts_max]
+
+        # ── WO-019: per-turn voice/response trace ─────────────────────────────
+        try:
+            import time as _vt_time, json as _vt_json
+            _vt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                    "blender", "voice_trace.json")
+            _vt_tmp  = _vt_path + ".tmp"
+            _vt_sents = len([s for s in _re.split(r"(?<=[.!?])\s+", _tts_text.strip()) if s.strip()])
+            _vt_data = {
+                "conversation_action": _action,
+                "tts_text":            _tts_text,
+                "sentence_count":      _vt_sents,
+                "backend_used":        backend_used,
+                "tts_max_chars":       _tts_max,
+                "bubble_count":        len(_bubbles),
+                "_ts":                 _vt_time.time(),
+            }
+            with open(_vt_tmp, "w", encoding="utf-8") as _vt_f:
+                _vt_json.dump(_vt_data, _vt_f, ensure_ascii=False, indent=2)
+            os.replace(_vt_tmp, _vt_path)
+        except Exception:
+            pass
 
         # ── DELIVERY MECHANISM: Voice ──────────────────────────────────────────
         # Voice is a transport layer for response content — NOT an embodiment.
@@ -1396,6 +2805,18 @@ def _process_turn(raw: str) -> dict:
         try:
             if not _is_user_away() and not _is_calm_mode():
                 _voice_speak(_tts_text)
+        except Exception:
+            pass
+
+        # ── Self-model update — eLo's own inner state ─────────────────────────
+        try:
+            _elo_self = _self_update(_elo_self, {
+                "action":     _action,
+                "tone":       exec_decision.get("tone", "CHILDLIKE-WISE") if exec_decision else "CHILDLIKE-WISE",
+                "response":   response,
+                "user_input": raw,
+                "topics":     [],
+            })
         except Exception:
             pass
 
@@ -1554,6 +2975,16 @@ class _Handler(BaseHTTPRequestHandler):
             self._send_json(200, {"ok": True, "updated": updated, "current": _voice_settings_snapshot()})
             return
 
+        if self.path == "/listen":
+            # STT turn: record from mic → Whisper → _process_turn → speak
+            try:
+                from voice_engine import listen_and_respond as _listen
+                result = _listen(_process_turn)
+                self._send_json(200, result)
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
+            return
+
         if self.path != "/chat":
             self._send_json(404, {"error": "not found"})
             return
@@ -1593,6 +3024,10 @@ def _shutdown_cleanly(server: ThreadingHTTPServer) -> None:
     try:
         from ambient.ambient_engine import stop as _ambient_stop
         _ambient_stop()
+    except Exception:
+        pass
+    try:
+        _self_save(_elo_self)
     except Exception:
         pass
     with _lock:
@@ -1674,6 +3109,13 @@ if __name__ == "__main__":
     else:
         print("[eLo vision loop] disabled — set ELO_VISION=true in .env to enable")
 
+    # File-drop poll — watches unity_events.json for file_drop events from Unity Presence.
+    try:
+        from desktop.file_drop_handler import start as _file_drop_start
+        _file_drop_start()
+    except Exception:
+        pass
+
     # Project knowledge — reads DISENELO trackers, Studio Bibles, engineering status.
     # Provides ambient project awareness and a Connection Surface stream.
     try:
@@ -1697,8 +3139,9 @@ if __name__ == "__main__":
 
     server = ThreadingHTTPServer(("127.0.0.1", PORT), _Handler)
     print(f"[eLo server] listening on http://localhost:{PORT}")
-    print(f"[eLo server] POST /chat  {{\"text\": \"hello\"}}")
-    print(f"[eLo server] GET  /ping  →  {{\"ok\": true}}")
+    print(f"[eLo server] POST /chat    {{\"text\": \"hello\"}}")
+    print(f"[eLo server] POST /listen  (mic → Whisper → eLo)")
+    print(f"[eLo server] GET  /ping    →  {{\"ok\": true}}")
     print()
 
     # Watch parent — dies with main.py / the app
