@@ -1,5 +1,5 @@
 {
-  "ts": 1785693044.6,
+  "ts": 1754092800.0,
   "updates": [
     {
       "wo": "WO-026",
@@ -10,6 +10,16 @@
       "wo": "INT7-HEAT",
       "status": "done",
       "detail": "Builder data contract complete. Added rate (urgency/pulse-speed) + confidence (certainty/opacity-saturation) to all 9 systems in brain_state_writer.py. Additive — no existing fields changed. 10/10 AT: tests/test_int7_heat_data.py. Commit: 98915c8. Design renders from these; depends on INT7-QV (Design seat)."
+    },
+    {
+      "wo": "WO-025",
+      "status": "done",
+      "detail": "Spatial sensor stub: SpatialPoint + SpatialFrame dataclasses in perception_faculty.py. 16-point synthetic pointcloud behind ELO_SPATIAL_SENSOR=1. Emits blender/spatial_trace.json (atomic). source_health[spatial] = live/absent. 8/8 AT: tests/test_wo025_spatial_sensor.py. Commit: 369fc16. Unblocks INT-3."
+    },
+    {
+      "wo": "WO-021",
+      "status": "in_review",
+      "detail": "Added 'open <app>' support to tools/computer_control_agent.py: _OPEN_RE regex, parse_intent returns {type:open, app:str}, describe, execute via subprocess.run(['open','-a',app_name]). 9/9 AT: tests/test_wo021_computer_control.py. Commit: 49e4e66. BLOCKED ON DAVID: add ELO_COMPUTER_CONTROL=1 to .env + grant Accessibility permission → then live test 'eLo, open Spotify'."
     }
   ]
 }
