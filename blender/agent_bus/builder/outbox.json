@@ -1,25 +1,15 @@
 {
-  "ts": 1754092800.0,
+  "ts": 1754093400.0,
   "updates": [
     {
       "wo": "WO-026",
-      "status": "done",
-      "detail": "Streaming (ELO_STREAM=1 default): _openai_call streams SSE, fires on_first_sentence → early TTS on sentence 1. Token budgets: answer→250, build→600, default→300. Model: claude-sonnet-4-5 → claude-sonnet-4-6. llm_latency_ms in routing_trace.json every turn. 4/4 AT: tests/test_wo026_response_speed.py. Commit: cccdbd6. David feels speed in live use — 🔵 CONFIRM-class."
-    },
-    {
-      "wo": "INT7-HEAT",
-      "status": "done",
-      "detail": "Builder data contract complete. Added rate (urgency/pulse-speed) + confidence (certainty/opacity-saturation) to all 9 systems in brain_state_writer.py. Additive — no existing fields changed. 10/10 AT: tests/test_int7_heat_data.py. Commit: 98915c8. Design renders from these; depends on INT7-QV (Design seat)."
-    },
-    {
-      "wo": "WO-025",
-      "status": "done",
-      "detail": "Spatial sensor stub: SpatialPoint + SpatialFrame dataclasses in perception_faculty.py. 16-point synthetic pointcloud behind ELO_SPATIAL_SENSOR=1. Emits blender/spatial_trace.json (atomic). source_health[spatial] = live/absent. 8/8 AT: tests/test_wo025_spatial_sensor.py. Commit: 369fc16. Unblocks INT-3."
+      "status": "regression",
+      "detail": "REVERTED 47455de (2026-08-02). cccdbd6 placed _early_tts_state=[False] between an if-block and its elif — SyntaxError that kills backend on startup. Also wired on_first_sentence= into router_route() before router accepted it, and llm_latency_ms referenced in voice gate after except-branch clears it. Token budgets + model string fix (backend_router.py) SURVIVED revert and are live. WO-026 needs reship: server.py streaming + latency wiring only, with py_compile gate before commit. Board updated to REGRESSION."
     },
     {
       "wo": "WO-021",
       "status": "in_review",
-      "detail": "Added 'open <app>' support to tools/computer_control_agent.py: _OPEN_RE regex, parse_intent returns {type:open, app:str}, describe, execute via subprocess.run(['open','-a',app_name]). 9/9 AT: tests/test_wo021_computer_control.py. Commit: 49e4e66. BLOCKED ON DAVID: add ELO_COMPUTER_CONTROL=1 to .env + grant Accessibility permission → then live test 'eLo, open Spotify'."
+      "detail": "open <app> added to computer_control_agent.py. ELO_COMPUTER_CONTROL=1 written to .env. 9/9 AT: tests/test_wo021_computer_control.py. Commit: 49e4e66. David must grant Accessibility permission (System Settings → Privacy & Security → Accessibility) then live test 'eLo, open Spotify'."
     }
   ]
 }
