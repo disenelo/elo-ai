@@ -2353,9 +2353,6 @@ def _process_turn(raw: str) -> dict:
             backend_used = "direct"
             _signal_greeting_event("multilingual")
 
-        # WO-026: early-TTS state — set True when streaming fires on sentence 1
-        _early_tts_state = [False]
-
         # ── Spine produced a direct response ──────────────────────────────────
         elif _plan and _plan.direct_response:
             response     = _plan.direct_response
@@ -2514,28 +2511,13 @@ def _process_turn(raw: str) -> dict:
                     pass
 
                 _enriched, _agent = _tool_enrich(raw)
-
-                # WO-026: early-TTS callback — fires on sentence 1 while LLM generates
-                def _early_tts_cb(text):
-                    try:
-                        if not _is_user_away() and not _is_calm_mode():
-                            _voice_speak(text)
-                    except Exception:
-                        pass
-                    _early_tts_state[0] = True
-
-                import time as _perf_mod
-                _route_t0 = _perf_mod.perf_counter()
                 response, backend_used = router_route(
-                    system, _enriched, max_sentences=_max_s, action=_action,
-                    on_first_sentence=_early_tts_cb,
+                    system, _enriched, max_sentences=_max_s, action=_action
                 )
-                _llm_latency_ms = round((_perf_mod.perf_counter() - _route_t0) * 1000, 1)
                 if _agent:
                     backend_used = f"{backend_used}+{_agent}"
             except Exception as _route_err:
                 import sys as _sys; print(f"[eLo] router failed: {_route_err}", file=_sys.stderr)
-                _llm_latency_ms = -1.0
 
             # WO-020 routing trace — per-turn observable routing debug.
             # Modelled on WO-017 movement_debug; emitted every turn to blender/routing_trace.json.
@@ -2552,7 +2534,6 @@ def _process_turn(raw: str) -> dict:
                     "cal_reason":          _cal_reason,
                     "tool_agent":          _agent or None,
                     "backend_used":        backend_used,
-                    "llm_latency_ms":      _llm_latency_ms,
                     "_ts":                 _rt_time.time(),
                 }
                 with open(_rt_tmp, "w", encoding="utf-8") as _rt_f:
@@ -2831,7 +2812,7 @@ def _process_turn(raw: str) -> dict:
         # Synchronous by design: ensures audio plays in sequence with response.
         # See: engineering/proofs/08_cross_embodiment_proof.md § Voice positioning
         try:
-            if not _is_user_away() and not _is_calm_mode() and not _early_tts_state[0]:
+            if not _is_user_away() and not _is_calm_mode():
                 _voice_speak(_tts_text)
         except Exception:
             pass
