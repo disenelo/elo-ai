@@ -1,15 +1,15 @@
 {
-  "ts": 1754093400.0,
+  "ts": 1754094600.0,
   "updates": [
+    {
+      "wo": "WO-029",
+      "status": "in_review",
+      "detail": "_WO029_RE override in server.py _process_turn(). Short 'all good' check-ins (you all good, are you all good, all good, everything good, we all good, you all g) → action=celebrate, cal_reason='how are you' → spine fires HOW_ARE_YOU pool. Guards: ' with ' in bare input, 'is the ...' prefix → not matched. Frozen kernel clean. 8/8 AT: tests/test_wo029_greeting_gap.py. Commit: ddc36d7. David: try 'you all good?' live."
+    },
     {
       "wo": "WO-026",
       "status": "regression",
-      "detail": "REVERTED 47455de (2026-08-02). cccdbd6 placed _early_tts_state=[False] between an if-block and its elif — SyntaxError that kills backend on startup. Also wired on_first_sentence= into router_route() before router accepted it, and llm_latency_ms referenced in voice gate after except-branch clears it. Token budgets + model string fix (backend_router.py) SURVIVED revert and are live. WO-026 needs reship: server.py streaming + latency wiring only, with py_compile gate before commit. Board updated to REGRESSION."
-    },
-    {
-      "wo": "WO-021",
-      "status": "in_review",
-      "detail": "open <app> added to computer_control_agent.py. ELO_COMPUTER_CONTROL=1 written to .env. 9/9 AT: tests/test_wo021_computer_control.py. Commit: 49e4e66. David must grant Accessibility permission (System Settings → Privacy & Security → Accessibility) then live test 'eLo, open Spotify'."
+      "detail": "REVERTED 47455de. Token budgets + model string (backend_router.py) still LIVE. Server.py streaming + latency needs reship with py_compile gate."
     }
   ]
 }
