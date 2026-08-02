@@ -1,10 +1,15 @@
 {
-  "ts": 1785561034.2,
+  "ts": 1785693044.6,
   "updates": [
     {
-      "wo": "WO-023",
+      "wo": "WO-026",
       "status": "done",
-      "detail": "Builder lane DONE. desktop/position_faculty.py: top-strip anchor (target_y=0.07, target_x=0.85) + keep-out rect (bottom 12% of focused window = button/toolbar region). Emits blender/presence_position.json atomically per turn. Wired into server.py at existing spatial block — reuses already-fetched EloSpatial + window list. 10/10 ATs: tests/test_wo023_screen_position.py. Unity receiver is Design seat's side. Commit: c7be23f."
+      "detail": "Streaming (ELO_STREAM=1 default): _openai_call streams SSE, fires on_first_sentence → early TTS on sentence 1. Token budgets: answer→250, build→600, default→300. Model: claude-sonnet-4-5 → claude-sonnet-4-6. llm_latency_ms in routing_trace.json every turn. 4/4 AT: tests/test_wo026_response_speed.py. Commit: cccdbd6. David feels speed in live use — 🔵 CONFIRM-class."
+    },
+    {
+      "wo": "INT7-HEAT",
+      "status": "done",
+      "detail": "Builder data contract complete. Added rate (urgency/pulse-speed) + confidence (certainty/opacity-saturation) to all 9 systems in brain_state_writer.py. Additive — no existing fields changed. 10/10 AT: tests/test_int7_heat_data.py. Commit: 98915c8. Design renders from these; depends on INT7-QV (Design seat)."
     }
   ]
 }
