@@ -2140,6 +2140,29 @@ def _process_turn(raw: str) -> dict:
                     "overridden_by_routing": True,
                 })
 
+        # WO-029: "all good" greeting family — not in frozen _HOW_ARE_YOU set.
+        # Short social check-ins only; guard against "you all good with X?" over-match.
+        _WO029_RE = _re.compile(
+            r'^(?:(?:are\s+)?you(?:\'re|re)?\s+all\s+good'
+            r'|we\s+all\s+good'
+            r'|(?:is\s+)?everything(?:\s+all)?\s+good'
+            r'|all\s+good'
+            r'|you\s+all\s+g'
+            r')[?.!]*$',
+            _re.I,
+        )
+        _wo029_bare = raw.strip().lower().rstrip("?.!")
+        _wo029_no_false_pos = " with " not in _wo029_bare and not _wo029_bare.startswith("is the ")
+        if len(_wo029_bare) < 40 and _wo029_no_false_pos and _WO029_RE.match(_wo029_bare):
+            exec_decision = dict(exec_decision)
+            exec_decision.update({
+                "action":    "celebrate",
+                "cal_reason": "how are you",
+                "confidence": 0.85,
+                "original_action": exec_decision.get("action"),
+                "overridden_by_routing": True,
+            })
+
         _action     = exec_decision.get("action", "reflect")
         _cal_reason = exec_decision.get("cal_reason", "")
         _max_s      = exec_decision.get("max_sentences", 4)
