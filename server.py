@@ -3194,6 +3194,17 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"[eLo project knowledge] startup error: {e}")
 
+    # WO-031: auto-start the continuation loop — always-on, event-driven.
+    # Single-instance guard inside continuation.start_thread() prevents double-start
+    # if the dashboard server is also running. DISENELO_NO_AUTOLOOP=1 disables.
+    try:
+        from company_runtime.continuation import start_thread as _cont_start
+        _ct = _cont_start()
+        if _ct:
+            print("[eLo continuation] background loop started")
+    except Exception:
+        pass
+
     server = ThreadingHTTPServer(("127.0.0.1", PORT), _Handler)
     print(f"[eLo server] listening on http://localhost:{PORT}")
     print(f"[eLo server] POST /chat    {{\"text\": \"hello\"}}")
