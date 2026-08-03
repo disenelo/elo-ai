@@ -2567,6 +2567,31 @@ def _process_turn(raw: str) -> dict:
                 response = "Not connecting right now. Try again in a moment."
                 backend_used = "mock(fallback)"
 
+            # WO-032: write backend_health.json so dashboard can show MOCK ⚠.
+            # When keys are set but API calls fail → backend_used=="mock" while
+            # active_backend()!="mock" → genuine degradation; replace response.
+            try:
+                import time as _bh_time, json as _bh_json
+                _bh_expected = active_backend()
+                _bh_degraded = (backend_used == "mock" and _bh_expected != "mock"
+                                and os.environ.get("ELO_BACKEND", "") != "mock")
+                _bh_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                        "blender", "backend_health.json")
+                _bh_tmp  = _bh_path + ".tmp"
+                with open(_bh_tmp, "w", encoding="utf-8") as _bh_f:
+                    _bh_json.dump({
+                        "backend":  backend_used,
+                        "expected": _bh_expected,
+                        "degraded": _bh_degraded,
+                        "_ts":      _bh_time.time(),
+                    }, _bh_f, ensure_ascii=False)
+                os.replace(_bh_tmp, _bh_path)
+                if _bh_degraded and _agent is None:
+                    response = ("Can't reach my thinking right now — running on backup. "
+                                "Give me a sec and try again.")
+            except Exception:
+                pass
+
         # ── Update spine session continuity ───────────────────────────────────
         try:
             from runtime.spine.spine import update_session as _spine_update
