@@ -1,23 +1,30 @@
 {
-  "ts": 1754179200.0,
+  "ts": 1754183400.0,
   "updates": [
+    {
+      "wo": "WO-031",
+      "status": "in_review",
+      "commit": "df7b927",
+      "branch": "wo-031-autostart-continuation",
+      "detail": "Continuation loop auto-starts with eLo OS. Single-instance guard (_started flag + threading.Lock) prevents double-start if dashboard also runs. DISENELO_NO_AUTOLOOP=1 disables. Daemon thread, non-blocking. company_runtime/continuation.py now committed to repo. 7/7 AT: tests/test_wo031_autostart.py. David: smoke-test eLo boots + responds before merging branch to main."
+    },
     {
       "wo": "WO-030",
       "status": "in_review",
       "commit": "9a2dc34",
-      "detail": "Weather defaults to London — never IP-geolocate. ELO_LOCATION=London in .env; _DEFAULT_LOCATION='London' code constant. City resolution: explicit > session set > env > London default. City + followup regexes extended for 'City, District' comma forms. wttr.in never passes 'auto'. 7/7 AT: tests/test_wo030_weather_location.py."
+      "detail": "Weather defaults to London. 7/7 AT. David: try 'what's the weather today?' to confirm London."
     },
     {
       "wo": "WO-032",
       "status": "in_review",
       "commit": "2bed968",
-      "detail": "Backend health visibility. server.py writes blender/backend_health.json after each turn: {backend, expected, degraded, _ts}. degraded=True when backend_used==mock + active_backend()!=mock + ELO_BACKEND!=mock. When degraded on conversational turn: 'Can’t reach my thinking right now — running on backup.' py_compile passes. 7/7 AT: tests/test_wo032_backend_health.py."
+      "detail": "Backend health visibility. blender/backend_health.json written each turn. Degraded mode = honest reply. 7/7 AT."
     },
     {
       "wo": "WO-029",
       "status": "in_review",
       "commit": "ddc36d7",
-      "detail": "'all good' greeting family → warm HOW_ARE_YOU reply. 8/8 AT. David: try 'you all good?' live."
+      "detail": "'all good' greeting family → warm reply. 8/8 AT. David: try 'you all good?' live."
     },
     {
       "wo": "WO-026",
