@@ -122,7 +122,7 @@ def normalise(text: str, max_sentences: int = 4) -> str:
 
 # ── backend calls ──────────────────────────────────────────────────────────────
 
-def _groq_call(system_prompt: str, user_input: str, model: str = None) -> str:
+def _groq_call(system_prompt: str, user_input: str, model: str = None, max_tokens: int = None) -> str:
     """Call Groq cloud inference."""
     from groq import Groq
     api_key = os.environ.get("GROQ_API_KEY", "")
@@ -136,7 +136,7 @@ def _groq_call(system_prompt: str, user_input: str, model: str = None) -> str:
             {"role": "system", "content": system_prompt},
             {"role": "user",   "content": user_input},
         ],
-        max_tokens=512,
+        max_tokens=max_tokens or 400,
     )
     return response.choices[0].message.content.strip()
 
@@ -164,7 +164,16 @@ def _openai_available() -> bool:
     return bool(os.environ.get("OPENAI_API_KEY", ""))
 
 
-def _openai_call(system_prompt: str, user_input: str) -> str:
+def _token_budget(action: str) -> int:
+    """Return max_tokens for the given CAL action. Shorter = faster for casual turns."""
+    if action in ("build", "challenge", "reflect", "plan", "deep", "diagnose"):
+        return 600
+    # celebrate, connect, ground, navigate, witness, silence, answer, ""
+    # answer kept short — factual one-liners dominate; LLM rarely needs >280 for factual Q&A
+    return 280
+
+
+def _openai_call(system_prompt: str, user_input: str, max_tokens: int = None) -> str:
     """Call OpenAI GPT-4o-mini."""
     import httpx
     api_key = os.environ.get("OPENAI_API_KEY", "")
@@ -177,7 +186,7 @@ def _openai_call(system_prompt: str, user_input: str) -> str:
                 {"role": "system", "content": system_prompt},
                 {"role": "user",   "content": user_input},
             ],
-            "max_tokens":  512,
+            "max_tokens":  max_tokens or 400,
             "temperature": 0.7,
         },
         headers={"Authorization": f"Bearer {api_key}",
@@ -186,6 +195,76 @@ def _openai_call(system_prompt: str, user_input: str) -> str:
     )
     resp.raise_for_status()
     return resp.json()["choices"][0]["message"]["content"].strip()
+
+
+def _openai_stream(
+    system_prompt: str,
+    user_input: str,
+    max_tokens: int = None,
+    on_first_sentence=None,
+) -> tuple[str, float]:
+    """Stream OpenAI tokens. Fires on_first_sentence(sentence) when sentence 1 ends.
+    Returns (full_assembled_text, first_token_latency_ms).
+    """
+    import httpx, time as _t
+    api_key = os.environ.get("OPENAI_API_KEY", "")
+    model   = os.environ.get("ELO_OPENAI_MODEL", "gpt-4o-mini")
+
+    t_start = _t.monotonic()
+    first_token_ms = 0.0
+    buffer = []
+    first_sent_fired = False
+
+    with httpx.stream(
+        "POST",
+        "https://api.openai.com/v1/chat/completions",
+        json={
+            "model":    model,
+            "stream":  True,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": user_input},
+            ],
+            "max_tokens":  max_tokens or 400,
+            "temperature": 0.7,
+        },
+        headers={"Authorization": f"Bearer {api_key}",
+                 "Content-Type":  "application/json"},
+        timeout=httpx.Timeout(connect=10.0, read=60.0, write=10.0, pool=5.0),
+    ) as resp:
+        resp.raise_for_status()
+        import json as _json
+        for line in resp.iter_lines():
+            if not line or not line.startswith("data: "):
+                continue
+            payload = line[6:]
+            if payload.strip() == "[DONE]":
+                break
+            try:
+                chunk = _json.loads(payload)
+                delta = chunk["choices"][0]["delta"].get("content", "")
+            except Exception:
+                continue
+            if delta:
+                if not buffer:
+                    first_token_ms = (_t.monotonic() - t_start) * 1000
+                buffer.append(delta)
+                # Fire on_first_sentence when we see end-of-sentence punctuation
+                if not first_sent_fired and on_first_sentence:
+                    assembled = "".join(buffer)
+                    m = _SENTENCE_END_RE.search(assembled)
+                    if m:
+                        first_sent = assembled[:m.end()].strip()
+                        first_sent_fired = True
+                        try:
+                            on_first_sentence(first_sent)
+                        except Exception:
+                            pass
+
+    return "".join(buffer).strip(), first_token_ms
+
+
+_SENTENCE_END_RE = __import__("re").compile(r"(?<=[.!?…])\s")
 
 
 def _ollama_available() -> bool:
@@ -228,15 +307,14 @@ def _claude_available() -> bool:
     return bool(os.environ.get("ANTHROPIC_API_KEY", ""))
 
 
-def _claude_call(system_prompt: str, user_input: str) -> str:
+def _claude_call(system_prompt: str, user_input: str, max_tokens: int = None) -> str:
     """Call Anthropic Claude."""
     import anthropic
     api_key = os.environ["ANTHROPIC_API_KEY"]
     client  = anthropic.Anthropic(api_key=api_key)
-    # smoke-test: if key is invalid this raises immediately
     msg = client.messages.create(
-        model      = os.environ.get("ELO_MODEL", "claude-sonnet-4-5"),
-        max_tokens = 512,
+        model      = os.environ.get("ELO_MODEL", "claude-sonnet-4-6"),
+        max_tokens = max_tokens or 400,
         system     = system_prompt,
         messages   = [{"role": "user", "content": user_input}],
     )
@@ -285,6 +363,7 @@ def route(
     Returns:
         (response_text, backend_name)
     """
+    _budget = _token_budget(action)
     _env_mode = os.environ.get("ELO_BACKEND", "")
     _any_cloud = _openai_available() or _gemini_available() or _groq_available() or _claude_available()
     if not _env_mode and not _any_cloud:
@@ -296,7 +375,7 @@ def route(
     _override = _detect_model_override(user_input)
     if _override == "claude" and _claude_available():
         try:
-            raw = _claude_call(system_prompt, user_input)
+            raw = _claude_call(system_prompt, user_input, max_tokens=_budget)
             return normalise(raw, max_sentences), "claude(direct)"
         except Exception:
             pass  # fall through to normal routing
@@ -330,7 +409,7 @@ def route(
         # cloud mode: OpenAI → Gemini → Claude → Groq → Mock
         if _openai_available():
             try:
-                raw = _openai_call(system_prompt, user_input)
+                raw = _openai_call(system_prompt, user_input, max_tokens=_budget)
                 return normalise(raw, max_sentences), "openai"
             except Exception as e:
                 _logger.warning("OpenAI failed: %s", e)
@@ -342,13 +421,13 @@ def route(
                 _logger.warning("Gemini failed: %s", e)
         if _claude_available():
             try:
-                raw = _claude_call(system_prompt, user_input)
+                raw = _claude_call(system_prompt, user_input, max_tokens=_budget)
                 return normalise(raw, max_sentences), "claude"
             except Exception as e:
                 _logger.warning("Claude failed: %s", e)
         if _groq_available():
             try:
-                raw = _groq_call(system_prompt, user_input)
+                raw = _groq_call(system_prompt, user_input, max_tokens=_budget)
                 return normalise(raw, max_sentences), "groq"
             except Exception as e:
                 _logger.warning("Groq failed: %s", e)
@@ -357,7 +436,7 @@ def route(
     # auto mode: OpenAI → Gemini → Claude → Groq → Ollama → Mock
     if _openai_available():
         try:
-            raw = _openai_call(system_prompt, user_input)
+            raw = _openai_call(system_prompt, user_input, max_tokens=_budget)
             if _has_lore_drift(raw, user_input):
                 _logger.debug("Lore drift in OpenAI response — falling back")
             else:
@@ -387,7 +466,7 @@ def route(
 
     if _claude_available():
         try:
-            raw = _claude_call(system_prompt, user_input)
+            raw = _claude_call(system_prompt, user_input, max_tokens=_budget)
             return normalise(raw, max_sentences), "claude"
         except Exception as e:
             _logger.warning("Claude failed, trying Groq: %s", e)
@@ -402,7 +481,7 @@ def route(
             return _mock_fallback(user_input, action=action), "mock"
 
         try:
-            raw = _groq_call(system_prompt, user_input)
+            raw = _groq_call(system_prompt, user_input, max_tokens=_budget)
             # catch lore drift — replace with mock using the original action
             if _has_lore_drift(raw, user_input):
                 _logger.debug("Lore drift detected — replacing with mock fallback")
@@ -433,6 +512,60 @@ def route(
             _logger.warning("Ollama failed, falling to mock: %s", e)
 
     return _mock_fallback(user_input), "mock"
+
+
+def route_streaming(
+    system_prompt: str,
+    user_input:    str,
+    mode:          str = None,
+    max_sentences: int = 4,
+    action:        str = "",
+    on_first_sentence=None,
+) -> tuple[str, str, float]:
+    """
+    Like route() but streams OpenAI tokens when available.
+
+    Fires on_first_sentence(sentence) as soon as sentence 1 is complete —
+    allowing TTS to start before the full response finishes.
+
+    Returns (response_text, backend_name, first_token_latency_ms).
+    Falls back to route() with 0.0 latency if streaming fails or OpenAI unavailable.
+    """
+    import time as _t
+    _budget = _token_budget(action)
+    _env_mode = os.environ.get("ELO_BACKEND", "")
+    _env_mode = _env_mode or "auto"
+    mode = mode or _env_mode
+
+    if mode not in ("auto", "cloud") or not _openai_available():
+        # Non-streaming path — latency not measured
+        text, backend = route(system_prompt, user_input, mode=mode,
+                              max_sentences=max_sentences, action=action)
+        return text, backend, 0.0
+
+    try:
+        t0 = _t.monotonic()
+        raw, first_token_ms = _openai_stream(
+            system_prompt, user_input,
+            max_tokens=_budget,
+            on_first_sentence=on_first_sentence,
+        )
+        total_ms = (_t.monotonic() - t0) * 1000
+        if not raw or _has_lore_drift(raw, user_input):
+            raise ValueError("empty or lore-drifted stream response")
+        normalised = normalise(raw, max_sentences)
+        if action in ("build", "celebrate"):
+            normalised = _strip_trailing_question(normalised) or normalised
+        if _is_duplicate(normalised, _last_responses.get(action, "")):
+            raise ValueError("duplicate stream response")
+        _last_responses[action] = normalised
+        _logger.debug("WO-026 stream: first_token=%.0fms total=%.0fms", first_token_ms, total_ms)
+        return normalised, "openai(stream)", first_token_ms
+    except Exception as _se:
+        _logger.warning("Streaming failed (%s), falling back to route()", _se)
+        text, backend = route(system_prompt, user_input, mode=mode,
+                              max_sentences=max_sentences, action=action)
+        return text, backend, 0.0
 
 
 def _mock_fallback(user_input: str, action: str = "") -> str:

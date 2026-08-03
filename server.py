@@ -55,7 +55,7 @@ from core import attention as attn
 from runtime.executive import decide as exec_decide
 from runtime import state_machine as sm
 from runtime.prompt_builder import build as build_prompt
-from runtime.backend_router import route as router_route, active_backend, normalise
+from runtime.backend_router import route as router_route, route_streaming as _route_streaming, active_backend, normalise
 from tools.tool_router import enrich as _tool_enrich
 from tools.keyword_motion import scan as _keyword_motion_scan
 from memory.quirk_bank import maybe_generate as _quirk_observe
@@ -2534,9 +2534,27 @@ def _process_turn(raw: str) -> dict:
                     pass
 
                 _enriched, _agent = _tool_enrich(raw)
-                response, backend_used = router_route(
-                    system, _enriched, max_sentences=_max_s, action=_action
-                )
+                _llm_latency_ms = 0.0
+                _early_tts_sentence = [None]  # tracks first sentence spoken early
+                import time as _perf_mod
+                _t0 = _perf_mod.perf_counter()
+                # WO-026: stream when ELO_STREAM != "0" (default on)
+                if os.environ.get("ELO_STREAM", "1") != "0":
+                    def _early_tts(sentence: str) -> None:
+                        try:
+                            _early_tts_sentence[0] = sentence
+                            _voice_speak(sentence)
+                        except Exception:
+                            pass
+                    response, backend_used, _llm_latency_ms = _route_streaming(
+                        system, _enriched, max_sentences=_max_s, action=_action,
+                        on_first_sentence=_early_tts,
+                    )
+                else:
+                    response, backend_used = router_route(
+                        system, _enriched, max_sentences=_max_s, action=_action
+                    )
+                    _llm_latency_ms = (_perf_mod.perf_counter() - _t0) * 1000
                 if _agent:
                     backend_used = f"{backend_used}+{_agent}"
             except Exception as _route_err:
@@ -2557,6 +2575,7 @@ def _process_turn(raw: str) -> dict:
                     "cal_reason":          _cal_reason,
                     "tool_agent":          _agent or None,
                     "backend_used":        backend_used,
+                    "llm_latency_ms":      round(_llm_latency_ms, 1),
                     "_ts":                 _rt_time.time(),
                 }
                 with open(_rt_tmp, "w", encoding="utf-8") as _rt_f:
@@ -2859,9 +2878,14 @@ def _process_turn(raw: str) -> dict:
         # It does not interpret motion, expression, or state signals.
         # Synchronous by design: ensures audio plays in sequence with response.
         # See: engineering/proofs/08_cross_embodiment_proof.md § Voice positioning
+        # WO-026: If streaming already fired the full single-sentence response, skip.
+        # Multi-sentence: let voice_speak handle the full text (cancels early partial).
         try:
             if not _is_user_away() and not _is_calm_mode():
-                _voice_speak(_tts_text)
+                _es = _early_tts_sentence[0] if "_early_tts_sentence" in dir() else None
+                _skip_tts = bool(_es and _tts_text.strip() == _es.strip())
+                if not _skip_tts:
+                    _voice_speak(_tts_text)
         except Exception:
             pass
 
