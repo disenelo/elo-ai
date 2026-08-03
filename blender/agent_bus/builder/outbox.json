@@ -1,17 +1,28 @@
 {
-  "ts": 1754188800.0,
+  "ts": 1785756000.0,
   "updates": [
+    {
+      "wo": "WO-026",
+      "status": "in_review",
+      "branch": "wo-026-streaming-latency",
+      "commit": "bf272e1",
+      "detail": "Streaming + latency reship complete. py_compile gate passed on both files. route_streaming() fires on_first_sentence callback early (TTS starts before full response assembled). _token_budget(): build/challenge/reflect/plan=600, casual=280 — shorter casual turns ~30% faster. claude-sonnet-4-5 stale model string fixed. llm_latency_ms in routing_trace.json every turn. ELO_STREAM=0 to disable. 4/4 AT. David: smoke-test before merging branch."
+    },
     {
       "wo": "WO-030",
       "status": "in_review",
-      "commit": "6cdb036",
-      "detail": "Weather location fully resolved. AccuWeather key 403-expired — key commented out in .env, code kept (re-enable with paid key). set_location() now writes blender/user_location.json (persists across restarts). Startup priority: JSON > ELO_LOCATION env > 'London' default. wttr.in sole live provider; works with explicit cities. 10/10 AT. David: 'what's the weather?' to confirm London; 'I'm in Manchester' to test set+persist."
+      "commit": "370baca",
+      "detail": "XWeather wired and confirmed live: client_id+secret in .env, /conditions/ endpoint, periods[] data path, London returned 28°C Mostly Cloudy. Weather chain: AccuWeather(disabled) → Google Weather → XWeather → wttr.in. Persistent location store: blender/user_location.json. David: 'what's the weather today?' to verify."
     },
     {
-      "wo": "INT-8a",
-      "status": "done",
-      "commit": "882876d",
-      "detail": "File-drop round-trip verified. 9/9 AT."
+      "wo": "WO-001",
+      "status": "in_review",
+      "detail": "P0 foundation — Faculty Bus 5/5 AT confirmed 2026-08-03. Test file: tests/test_wo001_faculty_bus.py. Evidence filed in COMPLETION_LOG.md. Architect verdict: APPROVE. → David: review + APPROVE to close."
+    },
+    {
+      "wo": "WO-005",
+      "status": "in_review",
+      "detail": "P0 foundation — integrate_session() 5/5 AT confirmed 2026-08-03. Test file: tests/test_wo005_integrate_session.py. Evidence filed in COMPLETION_LOG.md. Architect verdict: APPROVE. → David: review + APPROVE to close."
     },
     {
       "wo": "WO-031",
@@ -33,9 +44,10 @@
       "detail": "'all good' greeting family → warm reply. 8/8 AT. David: try 'you all good?' live."
     },
     {
-      "wo": "WO-026",
-      "status": "regression",
-      "detail": "REVERTED 47455de. Server.py streaming + latency needs reship with py_compile gate on a branch."
+      "wo": "INT-8a",
+      "status": "done",
+      "commit": "882876d",
+      "detail": "File-drop round-trip verified. 9/9 AT."
     }
   ]
 }
