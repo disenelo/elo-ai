@@ -87,9 +87,34 @@ _logger.propagate = False
 _last_agent:   Optional[str] = None   # e.g. "weather", "wikipedia"
 _last_arg:     Optional[str] = None   # e.g. "London", "black holes"
 
-# User's preferred location — loaded from ELO_LOCATION env var, overridable
-# at runtime by saying "I'm in London" / "set my location to London".
-_user_location: Optional[str] = os.environ.get("ELO_LOCATION", "").strip() or None
+# Persistent location store — blender/user_location.json
+# set_location() writes here; any tool can read it.
+_LOCATION_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "blender", "user_location.json",
+)
+
+def _load_persisted_location() -> Optional[str]:
+    try:
+        import json as _j
+        data = _j.loads(open(_LOCATION_FILE, encoding="utf-8").read())
+        return data.get("city") or None
+    except Exception:
+        return None
+
+def _save_persisted_location(city: str) -> None:
+    import json as _j, time as _t
+    tmp = _LOCATION_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        _j.dump({"city": city, "_ts": _t.time()}, f)
+    os.replace(tmp, _LOCATION_FILE)
+
+# Priority: persisted JSON > ELO_LOCATION env > code default
+_user_location: Optional[str] = (
+    _load_persisted_location()
+    or os.environ.get("ELO_LOCATION", "").strip()
+    or None
+)
 # Hard-coded fallback — never IP-detect when David is always in London.
 _DEFAULT_LOCATION = "London"
 
@@ -125,9 +150,13 @@ def _detect_followup(user_input: str) -> Optional[str]:
 
 
 def set_location(city: str) -> None:
-    """Save user's preferred location for this session (and optionally to .env)."""
+    """Save user's preferred location in memory + blender/user_location.json (survives restarts)."""
     global _user_location
     _user_location = city.strip()
+    try:
+        _save_persisted_location(_user_location)
+    except Exception:
+        pass
 
 
 def detect_location_set(user_input: str) -> Optional[str]:

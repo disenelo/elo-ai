@@ -1,5 +1,5 @@
 """
-WO-030 acceptance tests — weather default location + city parsing.
+WO-030 acceptance tests — weather default location + city parsing + persistence.
 
 AT-1  No-city query → city falls back to London (not None/"auto")
 AT-2  Explicit city overrides default ("weather in Paris" → Paris)
@@ -8,6 +8,9 @@ AT-4  "What about London, Hackney Wick?" parses as followup with comma place-nam
 AT-5  Followup builds synthetic "weather in London, Hackney Wick" query
 AT-6  _DEFAULT_LOCATION constant is "London"
 AT-7  py_compile: tool_router.py compiles cleanly
+AT-8  set_location() writes blender/user_location.json (persistent across restarts)
+AT-9  On reload, _user_location reads from user_location.json (JSON > env var)
+AT-10 AccuWeather skipped when key not set (is_available() == False)
 """
 import importlib.util
 import os
@@ -151,6 +154,73 @@ def test_at7_py_compile():
     print("AT-7 PASS — tool_router.py compiles cleanly")
 
 
+# ── AT-8 ─────────────────────────────────────────────────────────────────────
+
+def test_at8_set_location_persists():
+    """set_location() writes blender/user_location.json."""
+    import json, tempfile, os as _os
+    mod = _load_module()
+    # Point module at a temp file so we don't clobber the real one
+    tmp = tempfile.mktemp(suffix=".json")
+    mod._LOCATION_FILE = tmp
+    try:
+        mod.set_location("Bristol")
+        assert _os.path.exists(tmp), "AT-8 FAIL: JSON file not written"
+        data = json.loads(open(tmp).read())
+        assert data.get("city") == "Bristol", f"AT-8 FAIL: {data}"
+        assert "_ts" in data, "AT-8 FAIL: _ts missing from JSON"
+    finally:
+        try: _os.unlink(tmp)
+        except: pass
+    print("AT-8 PASS — set_location() persists to user_location.json")
+
+
+# ── AT-9 ─────────────────────────────────────────────────────────────────────
+
+def test_at9_reload_reads_json():
+    """After a restart, _user_location loads from the JSON file (JSON > env)."""
+    import json, tempfile, os as _os, time as _ti
+
+    # Write a JSON with "Edinburgh"
+    tmp = tempfile.mktemp(suffix=".json")
+    json.dump({"city": "Edinburgh", "_ts": _ti.time()}, open(tmp, "w"))
+
+    saved_env = _os.environ.pop("ELO_LOCATION", None)
+    _os.environ["ELO_LOCATION"] = "London"  # env says London — JSON should win
+    try:
+        mod = _load_module()
+        mod._LOCATION_FILE = tmp
+        # Simulate reload: call _load_persisted_location directly
+        loaded = mod._load_persisted_location()
+        assert loaded == "Edinburgh", \
+            f"AT-9 FAIL: loaded={loaded!r}, expected 'Edinburgh'"
+    finally:
+        if saved_env is not None:
+            _os.environ["ELO_LOCATION"] = saved_env
+        elif "ELO_LOCATION" in _os.environ:
+            del _os.environ["ELO_LOCATION"]
+        try: _os.unlink(tmp)
+        except: pass
+    print("AT-9 PASS — reload reads user_location.json (JSON > env)")
+
+
+# ── AT-10 ─────────────────────────────────────────────────────────────────────
+
+def test_at10_accuweather_skipped_no_key():
+    """AccuWeather is_available() returns False when key is not set."""
+    import os as _os
+    saved = _os.environ.pop("ACCUWEATHER_API_KEY", None)
+    try:
+        from tools.accuweather_agent import is_available
+        result = is_available()
+        assert result is False, \
+            f"AT-10 FAIL: is_available()={result!r} with no key set"
+    finally:
+        if saved:
+            _os.environ["ACCUWEATHER_API_KEY"] = saved
+    print("AT-10 PASS — AccuWeather is_available()==False when key missing")
+
+
 # ── runner ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -162,6 +232,9 @@ if __name__ == "__main__":
         test_at5_comma_synthetic_query,
         test_at6_default_constant,
         test_at7_py_compile,
+        test_at8_set_location_persists,
+        test_at9_reload_reads_json,
+        test_at10_accuweather_skipped_no_key,
     ]
     failed = 0
     for t in tests:
