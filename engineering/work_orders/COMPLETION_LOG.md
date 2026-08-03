@@ -117,7 +117,7 @@ batch-clear — nothing waits on a signature. (Change Control gate stays; it jus
     ✅ ST-2: get_bus() module singleton — same instance across calls
   Result: 5/5 passed, 0 failed
   ```
-- — David review: ☐ APPROVE (→ DONE)   ☐ LOOP BACK: ______
+- — David review: ✅ APPROVE → **DONE** (2026-08-03)
 
 ### WO-005 — integrate_session() replaces compress_session() · Builder
 - Reviewed: `runtime/reflection_faculty.py` against Vol V Ch.6 + 17_memory_update §6.
@@ -136,7 +136,7 @@ batch-clear — nothing waits on a signature. (Change Control gate stays; it jus
     ✅ FT-5: error path — bad input handled without crash
   Result: 5/5 passed, 0 failed
   ```
-- — David review: ☐ APPROVE (→ DONE)   ☐ LOOP BACK: ______
+- — David review: ✅ APPROVE → **DONE** (2026-08-03)
 
 ### WO-011 — Memory consolidation + forgetting curve · Builder
 - Reviewed: `memory/consolidation_faculty.py` against Vol VIII §1.3–1.4.

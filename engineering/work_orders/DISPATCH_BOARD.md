@@ -394,12 +394,11 @@ Rule (Executive Directive): implement against the **Canon**, not conversational 
 ## 4. Status roll-up
 
 ```
-DONE (David-approved):  5  (WO-002, WO-008, WO-009, WO-011, WO-012)  — Policy A
+DONE (David-approved 2026-08-03): WO-001 · WO-005 · WO-015 · WO-026 · WO-029 · WO-031
+DONE (David-approved pre-2026-08-03): WO-002 · WO-008 · WO-009 · WO-011 · WO-012  — Policy A
 DONE (Builder-claimed, awaiting David):
-                        14 (WO-001, WO-004a, WO-004b, WO-005, WO-010, WO-006, WO-007, INT-2, WO-013, WO-014, WO-016, WO-017, WO-018, EA2-1)
-                           WO-001: tests/test_wo001_faculty_bus.py 5/5
+                        14 (WO-004a, WO-004b, WO-010, WO-006, WO-007, INT-2, WO-013, WO-014, WO-016, WO-017, WO-018, EA2-1, INT-8a, WO-032-PartB)
                            WO-004a/b: tests/test_wo004_contracts.py 12/12
-                           WO-005: tests/test_wo005_integrate_session.py 5/5
                            WO-010: state_writer dup removed · blender/shared_tables.json copied
                            WO-006: tests/test_wo006_emotional_processing.py 10/10
                            WO-007: tests/test_wo007_personality_evolution.py 13/11
@@ -410,6 +409,8 @@ DONE (Builder-claimed, awaiting David):
                            WO-017: tests/test_wo017_movement_trace.py 6/6 (Python lane; Unity lane OPEN)
                            WO-018: tests/test_wo018_capability_gate.py 6/6
                            EA2-1: tests/test_ea2_1_company_state.py 6/6 · company_runtime/ additive · frozen kernel 20/20
+                           INT-8a: file-drop round-trip 9/9
+                           WO-032-PartB: backend_health.json visibility 7/7
 READY (Builder lane):   WO-003 (Architecture)
 BLOCKED:                INT-3 + Creative/Fashion streams (other lanes)
 WO-015 (resolved — D-K ratified, all 4 behaviour rules already present in living_presence_spec.txt lines 364-405 + 961-973; no code change needed; → IN_REVIEW, David review to close)
