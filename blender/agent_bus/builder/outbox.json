@@ -1,24 +1,24 @@
 {
-  "ts": 1754186400.0,
+  "ts": 1754188800.0,
   "updates": [
+    {
+      "wo": "WO-030",
+      "status": "in_review",
+      "commit": "6cdb036",
+      "detail": "Weather location fully resolved. AccuWeather key 403-expired — key commented out in .env, code kept (re-enable with paid key). set_location() now writes blender/user_location.json (persists across restarts). Startup priority: JSON > ELO_LOCATION env > 'London' default. wttr.in sole live provider; works with explicit cities. 10/10 AT. David: 'what's the weather?' to confirm London; 'I'm in Manchester' to test set+persist."
+    },
     {
       "wo": "INT-8a",
       "status": "done",
       "commit": "882876d",
-      "detail": "File-drop round-trip verified. 9/9 AT: routing (image/pdf/model/text/other), stale-ts guard, new event fires, missing file safe. Python side confirmed; no code changes needed. INT-8b blocked on WO-028 (avatar wave gesture)."
+      "detail": "File-drop round-trip verified. 9/9 AT."
     },
     {
       "wo": "WO-031",
       "status": "in_review",
       "commit": "df7b927",
       "branch": "wo-031-autostart-continuation",
-      "detail": "Continuation auto-starts with eLo OS. Single-instance guard. DISENELO_NO_AUTOLOOP=1 disables. 7/7 AT. David: smoke-test eLo boots + responds normally before merging branch."
-    },
-    {
-      "wo": "WO-030",
-      "status": "in_review",
-      "commit": "9a2dc34",
-      "detail": "Weather defaults to London. 7/7 AT. David: try 'what's the weather today?' to confirm London."
+      "detail": "Continuation auto-starts with eLo OS. 7/7 AT. David: smoke-test before merging branch."
     },
     {
       "wo": "WO-032",
