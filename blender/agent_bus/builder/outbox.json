@@ -1,15 +1,28 @@
 {
-  "ts": 1754094600.0,
+  "ts": 1754179200.0,
   "updates": [
+    {
+      "wo": "WO-030",
+      "status": "in_review",
+      "commit": "9a2dc34",
+      "detail": "Weather defaults to London — never IP-geolocate. ELO_LOCATION=London in .env; _DEFAULT_LOCATION='London' code constant. City resolution: explicit > session set > env > London default. City + followup regexes extended for 'City, District' comma forms. wttr.in never passes 'auto'. 7/7 AT: tests/test_wo030_weather_location.py."
+    },
+    {
+      "wo": "WO-032",
+      "status": "in_review",
+      "commit": "2bed968",
+      "detail": "Backend health visibility. server.py writes blender/backend_health.json after each turn: {backend, expected, degraded, _ts}. degraded=True when backend_used==mock + active_backend()!=mock + ELO_BACKEND!=mock. When degraded on conversational turn: 'Can’t reach my thinking right now — running on backup.' py_compile passes. 7/7 AT: tests/test_wo032_backend_health.py."
+    },
     {
       "wo": "WO-029",
       "status": "in_review",
-      "detail": "_WO029_RE override in server.py _process_turn(). Short 'all good' check-ins (you all good, are you all good, all good, everything good, we all good, you all g) → action=celebrate, cal_reason='how are you' → spine fires HOW_ARE_YOU pool. Guards: ' with ' in bare input, 'is the ...' prefix → not matched. Frozen kernel clean. 8/8 AT: tests/test_wo029_greeting_gap.py. Commit: ddc36d7. David: try 'you all good?' live."
+      "commit": "ddc36d7",
+      "detail": "'all good' greeting family → warm HOW_ARE_YOU reply. 8/8 AT. David: try 'you all good?' live."
     },
     {
       "wo": "WO-026",
       "status": "regression",
-      "detail": "REVERTED 47455de. Token budgets + model string (backend_router.py) still LIVE. Server.py streaming + latency needs reship with py_compile gate."
+      "detail": "REVERTED 47455de. Server.py streaming + latency needs reship with py_compile gate."
     }
   ]
 }
