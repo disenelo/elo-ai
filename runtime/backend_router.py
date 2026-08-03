@@ -148,6 +148,36 @@ def _groq_call(system_prompt: str, user_input: str, model: str = None, max_token
     return resp.json()["choices"][0]["message"]["content"].strip()
 
 
+def _cerebras_available() -> bool:
+    return bool(os.environ.get("CEREBRAS_API_KEY", ""))
+
+
+def _cerebras_call(system_prompt: str, user_input: str, model: str = None, max_tokens: int = None) -> str:
+    """Call Cerebras fast inference via httpx (OpenAI-compatible REST)."""
+    import httpx
+    api_key = os.environ.get("CEREBRAS_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("CEREBRAS_API_KEY not set")
+    model = model or os.environ.get("ELO_CEREBRAS_MODEL", "llama-3.3-70b")
+    resp = httpx.post(
+        "https://api.cerebras.ai/v1/chat/completions",
+        json={
+            "model":       model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": user_input},
+            ],
+            "max_tokens":  max_tokens or 400,
+            "temperature": 0.7,
+        },
+        headers={"Authorization": f"Bearer {api_key}",
+                 "Content-Type":  "application/json"},
+        timeout=30.0,
+    )
+    resp.raise_for_status()
+    return resp.json()["choices"][0]["message"]["content"].strip()
+
+
 def _ollama_call(system_prompt: str, user_input: str) -> str:
     """Call local Ollama instance."""
     import requests
@@ -372,7 +402,7 @@ def route(
     """
     _budget = _token_budget(action)
     _env_mode = os.environ.get("ELO_BACKEND", "")
-    _any_cloud = _openai_available() or _gemini_available() or _groq_available() or _claude_available()
+    _any_cloud = _openai_available() or _gemini_available() or _groq_available() or _claude_available() or _cerebras_available()
     if not _env_mode and not _any_cloud:
         # no API keys and no explicit backend set — go offline immediately
         _env_mode = "local"
@@ -438,9 +468,15 @@ def route(
                 return normalise(raw, max_sentences), "groq"
             except Exception as e:
                 _logger.warning("Groq failed: %s", e)
+        if _cerebras_available():
+            try:
+                raw = _cerebras_call(system_prompt, user_input, max_tokens=_budget)
+                return normalise(raw, max_sentences), "cerebras"
+            except Exception as e:
+                _logger.warning("Cerebras failed: %s", e)
         return _mock_fallback(user_input), "mock"
 
-    # auto mode: OpenAI → Gemini → Claude → Groq → Ollama → Mock
+    # auto mode: OpenAI → Gemini → Claude → Groq → Cerebras → Ollama → Mock
     if _openai_available():
         try:
             raw = _openai_call(system_prompt, user_input, max_tokens=_budget)
@@ -479,14 +515,12 @@ def route(
             _logger.warning("Claude failed, trying Groq: %s", e)
 
     if _groq_available():
-        _ulen = len(user_input.strip())
-        # < 30 chars → mock always (Groq misparses short statements, over-expands affirmations)
-        if _ulen < 30:
-            return _mock_fallback(user_input, action=action), "mock"
-        # BUILD/CELEBRATE < 60 chars → mock (8b model adds questions, breaks on short insights)
-        if action in ("build", "celebrate") and _ulen < 60:
-            return _mock_fallback(user_input, action=action), "mock"
-
+        # NOTE (WO-032 Part C, 2026-08-03): reaching this block means OpenAI/Gemini/Claude all
+        # failed or were unavailable — Groq is now the SOLE working engine, so it must handle ALL
+        # inputs. The old "< 30 chars → mock" / "build < 60 → mock" gates forced short turns to the
+        # canned mock even while Groq worked (backend_health showed backend:"mock" for every short
+        # input). Those length gates are LIFTED — mock is a worse outcome than a Groq answer.
+        # (Greetings are already handled by the greeting pool upstream, so pure "yo"/"hi" don't reach here.)
         try:
             raw = _groq_call(system_prompt, user_input, max_tokens=_budget)
             # catch lore drift — replace with mock using the original action
@@ -509,7 +543,24 @@ def route(
             _last_responses[action] = normalised
             return normalised, "groq"
         except Exception as e:
-            _logger.warning("Groq failed, trying Ollama: %s", e)
+            _logger.warning("Groq failed, trying Cerebras: %s", e)
+
+    if _cerebras_available():
+        try:
+            raw = _cerebras_call(system_prompt, user_input, max_tokens=_budget)
+            if _has_lore_drift(raw, user_input):
+                _logger.debug("Lore drift in Cerebras — falling to mock")
+                return _mock_fallback(user_input, action=action), "mock"
+            normalised = normalise(raw, max_sentences)
+            if action in ("build", "celebrate"):
+                normalised = _strip_trailing_question(normalised) or normalised
+            if _is_duplicate(normalised, _last_responses.get(action, "")):
+                _last_responses[action] = ""
+                return _mock_fallback(user_input, action=action), "mock"
+            _last_responses[action] = normalised
+            return normalised, "cerebras"
+        except Exception as e:
+            _logger.warning("Cerebras failed, trying Ollama: %s", e)
 
     if _ollama_available():
         try:
@@ -594,20 +645,22 @@ def _mock_fallback(user_input: str, action: str = "") -> str:
 def active_backend() -> str:
     """Return the name of the highest-priority backend currently available."""
     _env_mode = os.environ.get("ELO_BACKEND", "")
-    if not _env_mode and not _groq_available() and not _claude_available():
+    if not _env_mode and not _groq_available() and not _claude_available() and not _cerebras_available():
         _env_mode = "local"   # no keys → go offline
     mode = _env_mode or "auto"
     if mode == "mock":   return "mock"
     if mode == "local":  return "ollama" if _ollama_available() else "mock"
     if mode == "cloud":
-        if _openai_available():  return "openai"
-        if _gemini_available():  return "gemini"
-        if _claude_available():  return "claude"
-        return "groq" if _groq_available() else "mock"
-    # auto: OpenAI → Gemini → Claude → Groq → Ollama → Mock
-    if _openai_available():  return "openai"
-    if _gemini_available():  return "gemini"
-    if _claude_available():  return "claude"
-    if _groq_available():    return "groq"
-    if _ollama_available():  return "ollama"
+        if _openai_available():    return "openai"
+        if _gemini_available():    return "gemini"
+        if _claude_available():    return "claude"
+        if _groq_available():      return "groq"
+        return "cerebras" if _cerebras_available() else "mock"
+    # auto: OpenAI → Gemini → Claude → Groq → Cerebras → Ollama → Mock
+    if _openai_available():    return "openai"
+    if _gemini_available():    return "gemini"
+    if _claude_available():    return "claude"
+    if _groq_available():      return "groq"
+    if _cerebras_available():  return "cerebras"
+    if _ollama_available():    return "ollama"
     return "mock"
