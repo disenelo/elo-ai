@@ -123,22 +123,29 @@ def normalise(text: str, max_sentences: int = 4) -> str:
 # ── backend calls ──────────────────────────────────────────────────────────────
 
 def _groq_call(system_prompt: str, user_input: str, model: str = None, max_tokens: int = None) -> str:
-    """Call Groq cloud inference."""
-    from groq import Groq
+    """Call Groq cloud inference via httpx (OpenAI-compatible REST, no groq SDK required)."""
+    import httpx
     api_key = os.environ.get("GROQ_API_KEY", "")
     if not api_key:
         raise RuntimeError("GROQ_API_KEY not set")
     model = model or os.environ.get("ELO_GROQ_MODEL", "llama-3.3-70b-versatile")
-    client = Groq(api_key=api_key)
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user",   "content": user_input},
-        ],
-        max_tokens=max_tokens or 400,
+    resp = httpx.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        json={
+            "model":       model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": user_input},
+            ],
+            "max_tokens":  max_tokens or 400,
+            "temperature": 0.7,
+        },
+        headers={"Authorization": f"Bearer {api_key}",
+                 "Content-Type":  "application/json"},
+        timeout=30.0,
     )
-    return response.choices[0].message.content.strip()
+    resp.raise_for_status()
+    return resp.json()["choices"][0]["message"]["content"].strip()
 
 
 def _ollama_call(system_prompt: str, user_input: str) -> str:
