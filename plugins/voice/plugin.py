@@ -31,9 +31,11 @@ class VoicePlugin(PluginBase):
     CAPABILITIES = ["voice_input", "voice_output"]
 
     def is_available(self) -> bool:
-        # Available in stub/print mode always.
-        # Return True when STT/TTS hardware or API is confirmed present.
-        return False   # set True once STT/TTS is wired
+        try:
+            import voice.stt as _stt
+            return _stt.is_available()
+        except Exception:
+            return False
 
     def generate_response(self, user_input: str, context: dict) -> str:
         # Voice plugin does not generate — it delegates to the active text plugin.
@@ -46,30 +48,26 @@ class VoicePlugin(PluginBase):
         )
 
     def capture_input(self) -> str:
-        """
-        Capture audio and return transcribed text.
-
-        HARDWARE HOOK — replace with Whisper:
-            import whisper
-            model = whisper.load_model("base")
-            result = model.transcribe(audio_path)
-            return result["text"].strip()
-        """
-        logger.info("VoicePlugin: capture_input() stub — no STT engine wired.")
-        return ""
+        try:
+            import voice.stt as _stt
+            return _stt.capture()
+        except Exception as e:
+            logger.info("VoicePlugin: capture_input() error: %s", e)
+            return ""
 
     def deliver_output(self, response: str, context: dict):
-        """
-        Speak the response using TTS.
-
-        HARDWARE HOOK — replace with pyttsx3:
-            import pyttsx3
-            engine = pyttsx3.init()
-            engine.say(response)
-            engine.runAndWait()
-        """
-        logger.info("VoicePlugin: deliver_output() stub — no TTS engine wired.")
-        print(f"[VOICE OUTPUT] {response}")
+        snap = {
+            "emotion": context.get("emotional_state", "neutral"),
+            "tone":    context.get("tone", "DIRECT"),
+            "pacing":  context.get("voice_pacing", "measured"),
+            "warmth":  context.get("voice_warmth", 0.7),
+        }
+        try:
+            import plugins.voice.tts_output as _tts
+            _tts.speak(response, emotion_snapshot=snap)
+        except Exception as e:
+            logger.warning("VoicePlugin: deliver_output() TTS error: %s", e)
+            print(f"[VOICE OUTPUT] {response}")
 
     def on_load(self):
         logger.info("VoicePlugin loaded — STT/TTS hooks available, engines not yet wired.")

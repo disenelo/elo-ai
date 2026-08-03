@@ -381,6 +381,23 @@ def run(
     except Exception as e:
         _log.debug("light_engine/translate: %s", e)
 
+    # ── S3: Assemble CognitiveState — after all plan mutations are complete ────
+    try:
+        lang_with_register = {**language, "register": plan.register}
+        plan.cognitive_state = assemble_cognitive_state(
+            lang_with_register, memory_pack, attention, capabilities, None, state
+        )
+    except Exception as e:
+        _log.debug("assemble_cognitive_state: %s", e)
+        plan.cognitive_state = None
+
+    # ── S6: Build EmbodimentState ─────────────────────────────────────────────
+    try:
+        plan.embodiment_state = build_embodiment_state(plan)
+    except Exception as e:
+        _log.debug("build_embodiment_state: %s", e)
+        plan.embodiment_state = None
+
     # ── Conversation Faculty — direct response if applicable ──────────────────
     plan = _conversation_faculty(plan)
 
@@ -394,3 +411,97 @@ def update_session(user_input: str, elo_response: str = "") -> None:
         push(user_input, elo_response)
     except Exception:
         pass
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONTRACT FACTORIES
+# Assemble immutable runtime contracts from faculty outputs.
+# ─────────────────────────────────────────────────────────────────────────────
+
+_LED_FROM_EMOTIONAL_STATE = {
+    "calm":      "teal",
+    "neutral":   "teal",
+    "curious":   "teal",
+    "listening": "white",
+    "focused":   "white",
+    "thinking":  "amber",
+    "alert":     "amber",
+    "speaking":  "coral",
+    "excited":   "coral",
+    "joy":       "coral",
+    "sad":       "violet",
+    "distress":  "violet",
+}
+
+
+def assemble_cognitive_state(
+    language:     dict,
+    memory_result,
+    attention:    dict,
+    capabilities: list,
+    vault_result,
+    prior_state,
+):
+    """
+    Assemble CognitiveState from all faculty outputs.
+    Returns a frozen CognitiveState. Confidence degrades for missing faculties.
+    """
+    from runtime.contracts import CognitiveState
+
+    conf = 1.0
+    if not attention:
+        conf -= 0.15
+    if not capabilities:
+        conf -= 0.05
+    if memory_result is None:
+        conf -= 0.05
+    conf = max(0.0, min(1.0, conf))
+
+    cap_candidates = tuple(
+        (c.get("name") or c.get("id", "unknown"), c.get("available", True), c.get("latency_ms", 0))
+        for c in (capabilities or [])
+    )
+
+    return CognitiveState(
+        raw_input=language.get("original", ""),
+        intent_signal=language.get("intent", "conversation"),
+        register=language.get("register", ""),
+        social_signal=language.get("social", ""),
+        momentum=(attention or {}).get("momentum", "stable"),
+        valence=(attention or {}).get("valence", "neutral"),
+        assembly_confidence=conf,
+        capability_candidates=cap_candidates,
+    )
+
+
+def build_embodiment_state(plan, sequence_id: int = 0):
+    """Build EmbodimentState from a completed CognitivePlan."""
+    from runtime.contracts import EmbodimentState
+    import datetime
+
+    pp         = getattr(plan, "presence_plan", None) or {}
+    es_name    = pp.get("emotional_state") or getattr(plan, "emotional_state", "calm") or "calm"
+    led        = _LED_FROM_EMOTIONAL_STATE.get(es_name, "teal")
+    resp       = getattr(plan, "direct_response", "") or ""
+    ts         = datetime.datetime.utcnow().isoformat() + "Z"
+
+    return EmbodimentState(
+        response_text=resp,
+        display_text=resp,
+        tts_text=resp,
+        emotional_state=es_name,
+        motion_command=dict(pp),
+        robot_led_state=led,
+        sequence_id=sequence_id,
+        published_at=ts,
+    )
+
+
+def build_execution_report(plan, **kwargs):
+    """Build ExecutionReport from a completed CognitivePlan and execution results."""
+    from runtime.contracts import ExecutionReport
+
+    comp_state = kwargs.get("completion_state", "delivered")
+    kwargs.setdefault("completed", comp_state in ("delivered", "partial"))
+    kwargs.setdefault("planned_action", getattr(plan, "conversation_action", ""))
+    return ExecutionReport(**kwargs)
