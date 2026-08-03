@@ -1,9 +1,11 @@
 """
 tools/xweather_agent.py — XWeather (AerisWeather) weather provider.
 
-Uses the AerisWeather observations API — requires both client_id AND client_secret
-from the xweather.com developer dashboard (Settings → Apps).
+Uses the AerisWeather /conditions/ endpoint.
 15,000 requests / month on the free tier.
+
+Credentials: XWEATHER_CLIENT_ID + XWEATHER_CLIENT_SECRET from .env.
+The full key string uses underscore as delimiter: clientId_clientSecret.
 
 Falls back gracefully (returns None) so tool_router can try wttr.in next.
 """
@@ -14,7 +16,7 @@ from typing import Optional
 
 _CLIENT_ID_ENV     = "XWEATHER_CLIENT_ID"
 _CLIENT_SECRET_ENV = "XWEATHER_CLIENT_SECRET"
-_BASE_URL          = "https://api.aerisapi.com/observations"
+_BASE_URL          = "https://api.aerisapi.com/conditions"
 
 _CITY_ALIASES: dict[str, str] = {
     "london":      "london,gb",
@@ -25,10 +27,10 @@ _CITY_ALIASES: dict[str, str] = {
     "bristol":     "bristol,gb",
     "leeds":       "leeds,gb",
     "liverpool":   "liverpool,gb",
-    "new york":    "new-york,ny,us",
-    "los angeles": "los-angeles,ca,us",
-    "toronto":     "toronto,on,ca",
-    "sydney":      "sydney,nsw,au",
+    "new york":    "new-york,ny",
+    "los angeles": "los-angeles,ca",
+    "toronto":     "toronto,on",
+    "sydney":      "sydney,nsw",
     "paris":       "paris,fr",
     "berlin":      "berlin,de",
     "tokyo":       "tokyo,jp",
@@ -50,12 +52,12 @@ def is_available() -> bool:
 
 def _normalise_location(city: str) -> str:
     key = city.lower().strip()
-    return _CITY_ALIASES.get(key, city.replace(" ", "-"))
+    return _CITY_ALIASES.get(key, key.replace(" ", "-"))
 
 
 def agent(query: str, city: str = "London") -> Optional[str]:
     """
-    Fetch current conditions for *city* via XWeather observations API.
+    Fetch current conditions for *city* via XWeather conditions API.
     Returns a formatted string on success, None on any failure.
     """
     cid, csec = _credentials()
@@ -80,19 +82,27 @@ def agent(query: str, city: str = "London") -> Optional[str]:
     try:
         if not data.get("success"):
             return None
-        ob = data["response"]["ob"]
+        response = data.get("response")
+        if not response:
+            return None
+        item = response[0] if isinstance(response, list) else response
+        periods = item.get("periods", [])
+        if not periods:
+            return None
+        ob = periods[0]
+
         display  = city.title()
-        desc     = ob.get("weather", "Unknown")
+        desc     = ob.get("weather") or ob.get("weatherPrimary")
         temp_c   = ob.get("tempC")
         feels_c  = ob.get("feelslikeC")
         humidity = ob.get("humidity")
-        wind_kph = ob.get("windKPH")
+        wind_kph = ob.get("windSpeedKPH")
 
-        if temp_c is None:
+        if temp_c is None or not desc:
             return None
 
         parts = [f"{desc}, {round(temp_c)}°C"]
-        if feels_c is not None:
+        if feels_c is not None and round(feels_c) != round(temp_c):
             parts.append(f"feels like {round(feels_c)}°C")
         if humidity is not None:
             parts.append(f"humidity {round(humidity)}%")
@@ -100,5 +110,5 @@ def agent(query: str, city: str = "London") -> Optional[str]:
             parts.append(f"wind {round(wind_kph)} km/h")
 
         return f"Weather in {display}: {', '.join(parts)}."
-    except (KeyError, TypeError):
+    except (KeyError, TypeError, IndexError):
         return None

@@ -1,5 +1,5 @@
 {
-  "ts": 1754188800.0,
+  "ts": 1785756000.0,
   "updates": [
     {
       "wo": "WO-001",
@@ -43,7 +43,7 @@
       "wo": "WO-032",
       "status": "in_review",
       "commit": "2bed968",
-      "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded — David adds billing credits at platform.openai.com to restore primary backend. Groq is live fallback."
+      "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded — David adds billing credits at platform.openai.com to restore primary backend. Groq SDK not installed (falling to mock) — fix dispatched as WO-032b (httpx direct call)."
     },
     {
       "wo": "INT-8a",
