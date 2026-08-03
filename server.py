@@ -925,11 +925,11 @@ _SELF_REF_TRIGGERS = ("how do you work", "how does elo work", "how are you built
                       "what are your capabilities", "what are your features")
 _SELF_REF_POOL = [
     "Attention layer first — I score what's relevant in memory. Then executive picks the response mode. Then I speak.",
-    "I run a loop each turn: read what matters, decide what to do, respond. Each session connects to the last.",
-    "I process what you say, find what's relevant, and respond. I keep what matters across sessions and drop the rest.",
-    "Yes — memory carries across sessions. Recent things are closer; older things are further but still there.",
-    "Weather, time, calendar, system control — and I think alongside you and carry context across sessions.",
-    "Practical stuff: weather, time, calendar, system control. And memory — what matters stays between sessions.",
+    "I run a loop each turn: read what matters, decide what to do, respond. What matters carries day to day.",
+    "I process what you say, find what's relevant, and respond. I keep what matters over time and drop the rest.",
+    "Yes — memory carries. Recent things are closer; older things are further but still there.",
+    "Weather, time, calendar, system control — and I think alongside you and carry context over time.",
+    "Practical stuff: weather, time, calendar, system control. And memory — what matters stays, day to day.",
     "Check the time and weather. Read your calendar. Control system things. Remember what matters. Think with you.",
 ]
 
@@ -1026,10 +1026,10 @@ def _memory_recall_response() -> str:
     if _summary_count:
         _parts.append(f"{_summary_count} structured notes")
     if _turn_count:
-        _parts.append(f"{_turn_count} turns in this session")
+        _parts.append(f"{_turn_count} turns so far")
     if _parts:
         return "Memory's running. " + ", ".join(_parts) + ". What do you want to pull up?"
-    return "Vault's up — nothing written yet. Session's fresh."
+    return "Vault's up — nothing written yet. All clear."
 
 # Debug mode — internal state report triggered by "debug mode" / "push to debug mode"
 _DEBUG_TRIGGERS = (
@@ -1089,7 +1089,7 @@ def _debug_state_response() -> str:
         pass
 
     _lines = [
-        f"Session {_session_num}. {_turn_count} turns in window.",
+        f"Run #{_session_num}. {_turn_count} turns in window.",
         f"Vault: {_record_count} records.",
         f"Presence: {_mode}. Last intent: {_movement}.",
         f"Capabilities: {_cap_count} active.",
