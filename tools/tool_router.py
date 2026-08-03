@@ -90,15 +90,17 @@ _last_arg:     Optional[str] = None   # e.g. "London", "black holes"
 # User's preferred location — loaded from ELO_LOCATION env var, overridable
 # at runtime by saying "I'm in London" / "set my location to London".
 _user_location: Optional[str] = os.environ.get("ELO_LOCATION", "").strip() or None
+# Hard-coded fallback — never IP-detect when David is always in London.
+_DEFAULT_LOCATION = "London"
 
 # follow-up patterns — short phrases that reference a new subject but imply
 # the same agent type as the previous turn
 _FOLLOWUP_PATTERNS = [
-    r"^(?:what|how)?\s*about\s+(?:in\s+)?([\w][\w\s\-]{1,30}?)[\?\.]*$",
-    r"^(?:and\s+)?in\s+([\w][\w\s\-]{1,30}?)[\?\.]*$",
-    r"^how about\s+(?:in\s+)?([\w][\w\s\-]{1,30}?)[\?\.]*$",
-    r"^(?:what(?:'s| is) it like\s+)?in\s+([\w][\w\s\-]{1,30}?)[\?\.]*$",
-    r"^(?:and\s+)?(?:what about|how about)\s+([\w][\w\s\-]{1,30}?)[\?\.]*$",
+    r"^(?:what|how)?\s*about\s+(?:in\s+)?([\w][\w\s,\-]{1,40}?)[\?\.]*$",
+    r"^(?:and\s+)?in\s+([\w][\w\s,\-]{1,40}?)[\?\.]*$",
+    r"^how about\s+(?:in\s+)?([\w][\w\s,\-]{1,40}?)[\?\.]*$",
+    r"^(?:what(?:'s| is) it like\s+)?in\s+([\w][\w\s,\-]{1,40}?)[\?\.]*$",
+    r"^(?:and\s+)?(?:what about|how about)\s+([\w][\w\s,\-]{1,40}?)[\?\.]*$",
 ]
 
 # location-setting phrases: "I'm in London" / "set my location to London"
@@ -438,10 +440,10 @@ def _agent_weather(query: str) -> str:
     #   4. Auto-detect (last resort)
 
     city_match = re.search(
-        r"(?:in|at|for)\s+([A-Za-z][A-Za-z\s\-]{1,30}?)(?:\?|$|\s+today|\s+now|\s+like|\s+forecast)",
+        r"(?:in|at|for)\s+([A-Za-z][A-Za-z\s,\-]{1,40}?)(?:\?|$|\s+today|\s+now|\s+like|\s+forecast)",
         query, re.IGNORECASE
     )
-    city = (city_match.group(1).strip() if city_match else None) or _user_location
+    city = (city_match.group(1).strip() if city_match else None) or _user_location or _DEFAULT_LOCATION
 
     # ── AccuWeather (primary) ─────────────────────────────────────────────────
     try:
@@ -454,8 +456,9 @@ def _agent_weather(query: str) -> str:
         _logger.warning("AccuWeather failed (%s), falling back to wttr.in", _ae)
 
     # ── wttr.in (fallback) ────────────────────────────────────────────────────
-    target     = city.replace(" ", "+") if city else "auto"
-    using_auto = not city
+    # city is always set at this point (explicit > session > env > London default)
+    target = city.replace(" ", "+")
+    using_auto = False
 
     resp = httpx.get(
         f"https://wttr.in/{target}",
@@ -767,6 +770,35 @@ _AGENTS = {
 # agents that accept a direct subject string for follow-up re-runs
 _SUBJECT_AGENTS = {"weather", "search", "news"}
 
+# ── WO-018: tool_router key → capability registry ID ──────────────────────────
+# Any key absent here (infra routes: lore, nav, system) passes through unchecked.
+_ROUTER_TO_CAP_ID: dict[str, str] = {
+    "time":             "time",
+    "calculator":       "calculator",
+    "weather":          "weather",
+    "search":           "search",
+    "translate":        "translate",
+    "news":             "news",
+    "obsidian":         "obsidian",
+    "spotify":          "spotify",
+    "spotify_playlist": "spotify",
+    "spotify_search":   "spotify",
+    "github":           "github",
+    "calendar":         "calendar",
+    "calendar_add":     "calendar",
+    "vision":           "vision",
+    "draft":            "draft",
+    "file_read":        "file_read",
+    "vault_write":      "vault_write",
+    "timer":            "timer",
+    "reminders":        "reminders",
+    "clipboard":        "clipboard",
+    "notes":            "notes",
+    "messages":         "messages",
+    "truth_sync":       "truth_sync",
+    "wikipedia":        "wikipedia",
+}
+
 
 # ── system agent — checked separately with confirmation flow ───────────────────
 
@@ -944,6 +976,16 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
     global _last_agent, _last_arg
     _lower = user_input.lower()
 
+    # ── WO-018: fetch enabled capability IDs once per call ────────────────────
+    # Registry is the single authority. Agents whose capability is disabled here
+    # are skipped even if the router's own patterns match. Fails open (None) if
+    # the registry is unavailable so a bad import never silences all agents.
+    try:
+        from runtime.capabilities.registry import all_enabled as _reg_all_enabled
+        _enabled_cap_ids: set | None = {c.id for c in _reg_all_enabled()}
+    except Exception:
+        _enabled_cap_ids = None
+
     # ── Current-time fast path — intercept before pipeline misclassifies as timer
     _TIME_FAST = [
         r"\bcan\s+you\s+tell\s+me\s+the\s+(time|date|day)\b",
@@ -1101,6 +1143,11 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
             context_parts = []
             last_used = None
             for _ag_name, _ag_query in _agents_to_run:
+                # WO-018: skip if disabled in capability registry
+                if _enabled_cap_ids is not None:
+                    _cap_id = _ROUTER_TO_CAP_ID.get(_ag_name)
+                    if _cap_id and _cap_id not in _enabled_cap_ids:
+                        continue
                 _ag_fn = _AGENTS.get(_ag_name)
                 if _ag_fn:
                     try:
@@ -1176,7 +1223,7 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
         r"\badd\s+(?:this\s+)?to\s+(?:my\s+)?(?:likes?|liked)\b",
         r"\bcan\s+you\s+add\s+this\b",
     ]
-    if any(re.search(p, _lower) for p in _yt_add_patterns):
+    if any(re.search(p, _lower) for p in _yt_add_patterns) and (_enabled_cap_ids is None or "spotify" in _enabled_cap_ids):
         try:
             ctx = _youtube_to_spotify(user_input)
             if ctx:
@@ -1185,7 +1232,7 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
             _logger.debug("YouTube→Spotify bridge failed: %s", _e)
 
     # ── Spotify playlist / search+play — checked before generic spotify ────────
-    if _HAS_LLM_FILE and _agent_spotify:
+    if _HAS_LLM_FILE and _agent_spotify and (_enabled_cap_ids is None or "spotify" in _enabled_cap_ids):
         if _is_playlist_intent(user_input):
             try:
                 data = _agent_spotify(user_input)
@@ -1223,6 +1270,11 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
         followup_subject = _detect_followup(user_input)
         if followup_subject:
             agent_fn = _AGENTS.get(_last_agent)
+            # WO-018: skip if disabled in capability registry
+            if agent_fn and _enabled_cap_ids is not None:
+                _cap_id = _ROUTER_TO_CAP_ID.get(_last_agent)
+                if _cap_id and _cap_id not in _enabled_cap_ids:
+                    agent_fn = None
             if agent_fn:
                 try:
                     # build a synthetic query using the new subject
@@ -1235,6 +1287,13 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
                 except Exception as e:
                     _logger.debug("follow-up agent %s failed: %s", _last_agent, e)
 
+    # WO-020 Seam B: new explicit request — clear stale entity latch.
+    # Follow-up detection above returns early if it fires, so reaching here means
+    # the input is NOT a follow-up. Clearing prevents "DONE" (or any prior entity)
+    # from bleeding into the next capability dispatch.
+    _last_agent = None
+    _last_arg   = None
+
     # ── normal intent detection ────────────────────────────────────────────────
     intent = _detect_intent(user_input)
     if intent is None:
@@ -1243,6 +1302,11 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
     agent_fn = _AGENTS.get(intent)
     if agent_fn is None:
         return user_input, None
+    # WO-018: skip if disabled in capability registry
+    if _enabled_cap_ids is not None:
+        _cap_id = _ROUTER_TO_CAP_ID.get(intent)
+        if _cap_id and _cap_id not in _enabled_cap_ids:
+            return user_input, None
 
     try:
         data = agent_fn(user_input)
