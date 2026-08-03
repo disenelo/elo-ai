@@ -2,40 +2,54 @@
   "ts": 1754188800.0,
   "updates": [
     {
+      "wo": "WO-001",
+      "status": "done",
+      "detail": "Faculty Bus 5/5 AT confirmed 2026-08-03. Approved by David. COMPLETION_LOG.md filed."
+    },
+    {
+      "wo": "WO-005",
+      "status": "done",
+      "detail": "integrate_session() 5/5 AT confirmed 2026-08-03. Approved by David. COMPLETION_LOG.md filed."
+    },
+    {
+      "wo": "WO-015",
+      "status": "done",
+      "detail": "All 4 behaviour rules already present in living_presence_spec.txt (lines 364-405, 961-973). D-K ratified. No code change needed. Approved by David 2026-08-03."
+    },
+    {
+      "wo": "WO-029",
+      "status": "done",
+      "detail": "'all good' greeting family → warm HOW_ARE_YOU reply. 8/8 AT. Approved by David 2026-08-03."
+    },
+    {
+      "wo": "WO-026",
+      "status": "done",
+      "commit": "bf272e1",
+      "detail": "Streaming + latency + token budgets + model unification. 4/4 AT. Merged to main 2026-08-03. Approved by David."
+    },
+    {
+      "wo": "WO-031",
+      "status": "done",
+      "commit": "df7b927",
+      "detail": "Continuation auto-starts with eLo OS. 7/7 AT. Merged to main 2026-08-03. Approved by David."
+    },
+    {
       "wo": "WO-030",
       "status": "in_review",
-      "commit": "6cdb036",
-      "detail": "Weather location fully resolved. AccuWeather key 403-expired — key commented out in .env, code kept (re-enable with paid key). set_location() now writes blender/user_location.json (persists across restarts). Startup priority: JSON > ELO_LOCATION env > 'London' default. wttr.in sole live provider; works with explicit cities. 10/10 AT. David: 'what's the weather?' to confirm London; 'I'm in Manchester' to test set+persist."
+      "commit": "370baca",
+      "detail": "XWeather wired and confirmed live: /conditions/ endpoint, periods[] data path, London 28C. Google Weather + XWeather + wttr.in chain. Persistent location: blender/user_location.json. David: try 'what's the weather today?' to close."
+    },
+    {
+      "wo": "WO-032",
+      "status": "in_review",
+      "commit": "2bed968",
+      "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded — David adds billing credits at platform.openai.com to restore primary backend. Groq is live fallback."
     },
     {
       "wo": "INT-8a",
       "status": "done",
       "commit": "882876d",
       "detail": "File-drop round-trip verified. 9/9 AT."
-    },
-    {
-      "wo": "WO-031",
-      "status": "in_review",
-      "commit": "df7b927",
-      "branch": "wo-031-autostart-continuation",
-      "detail": "Continuation auto-starts with eLo OS. 7/7 AT. David: smoke-test before merging branch."
-    },
-    {
-      "wo": "WO-032",
-      "status": "in_review",
-      "commit": "2bed968",
-      "detail": "Backend health visible in blender/backend_health.json. Degraded mode = honest reply. 7/7 AT."
-    },
-    {
-      "wo": "WO-029",
-      "status": "in_review",
-      "commit": "ddc36d7",
-      "detail": "'all good' greeting family → warm reply. 8/8 AT. David: try 'you all good?' live."
-    },
-    {
-      "wo": "WO-026",
-      "status": "regression",
-      "detail": "REVERTED 47455de. Server.py streaming + latency needs reship with py_compile gate on a branch."
     }
   ]
 }
