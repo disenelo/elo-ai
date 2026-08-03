@@ -474,7 +474,7 @@ def _agent_weather(query: str) -> str:
     )
     city = (city_match.group(1).strip() if city_match else None) or _user_location or _DEFAULT_LOCATION
 
-    # ── AccuWeather (primary) ─────────────────────────────────────────────────
+    # ── AccuWeather (primary — disabled; re-enable with a paid key) ─────────────
     try:
         from tools.accuweather_agent import agent as _accu_agent, is_available as _accu_ok
         if _accu_ok():
@@ -482,7 +482,17 @@ def _agent_weather(query: str) -> str:
             if result:
                 return result
     except Exception as _ae:
-        _logger.warning("AccuWeather failed (%s), falling back to wttr.in", _ae)
+        _logger.warning("AccuWeather failed (%s), trying Google Weather", _ae)
+
+    # ── Google Weather API (primary when key set) ─────────────────────────────
+    try:
+        from tools.google_weather_agent import agent as _gw_agent, is_available as _gw_ok
+        if _gw_ok():
+            result = _gw_agent(query, city=city)
+            if result:
+                return result
+    except Exception as _gwe:
+        _logger.warning("Google Weather failed (%s), falling back to wttr.in", _gwe)
 
     # ── wttr.in (fallback) ────────────────────────────────────────────────────
     # city is always set at this point (explicit > session > env > London default)
