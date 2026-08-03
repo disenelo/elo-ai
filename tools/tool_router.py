@@ -492,7 +492,17 @@ def _agent_weather(query: str) -> str:
             if result:
                 return result
     except Exception as _gwe:
-        _logger.warning("Google Weather failed (%s), falling back to wttr.in", _gwe)
+        _logger.warning("Google Weather failed (%s), trying XWeather", _gwe)
+
+    # ── XWeather / AerisWeather (15,000 req/month free) ──────────────────────
+    try:
+        from tools.xweather_agent import agent as _xw_agent, is_available as _xw_ok
+        if _xw_ok():
+            result = _xw_agent(query, city=city)
+            if result:
+                return result
+    except Exception as _xwe:
+        _logger.warning("XWeather failed (%s), falling back to wttr.in", _xwe)
 
     # ── wttr.in (fallback) ────────────────────────────────────────────────────
     # city is always set at this point (explicit > session > env > London default)
