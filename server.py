@@ -304,10 +304,21 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "feel at home":        "explore",
     "your playground":     "explore",
     "explore":             "explore",
-    # Sit with David — direct commands
+    # Sit with David — direct commands (WO-035: expanded for natural phrasings)
     "come here":           {"name": "sit", "target": "cursor"},
     "come to me":          {"name": "sit", "target": "cursor"},
+    "come sit":            {"name": "sit", "target": "cursor"},
+    "come and sit":        {"name": "sit", "target": "cursor"},
+    "come over here":      {"name": "sit", "target": "cursor"},
+    "get over here":       {"name": "sit", "target": "cursor"},
     "sit with me":         {"name": "sit", "target": "cursor"},
+    "sit beside me":       {"name": "sit", "target": "cursor"},
+    "sit by me":           {"name": "sit", "target": "cursor"},
+    "sit here":            {"name": "sit", "target": "cursor"},
+    "sit down with":       {"name": "sit", "target": "cursor"},
+    "have a seat":         {"name": "sit", "target": "cursor"},
+    "take a seat":         {"name": "sit", "target": "cursor"},
+    "can you sit":         {"name": "sit", "target": "cursor"},
     "walk to me":          {"name": "sit", "target": "cursor"},
     "sit next to me":      {"name": "sit", "target": "cursor"},
     # Grounding / stuck moments
@@ -2644,6 +2655,18 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # ── WO-037 interactions write-back ────────────────────────────────────
+        # store_interaction() was only called from the CLI path (core_engine.py).
+        # The app /chat path never wrote to interactions.json — reconnected here.
+        try:
+            from core.memory_engine import store_interaction as _store_interaction
+            from core.memory_engine import load_registry as _load_registry, resolve_project as _resolve_project
+            _mem_registry    = _load_registry()
+            _mem_project_tag = _resolve_project(raw, _mem_registry)
+            _store_interaction(raw, response, _action, _mem_project_tag)
+        except Exception:
+            pass
+
         # keyword-driven animation burst — fires async, never blocks response
         try:
             _keyword_motion_scan(raw)
@@ -2743,6 +2766,15 @@ def _process_turn(raw: str) -> dict:
                     emotional_state = _pp_active.get("emotional_state", ""),
                     valence         = _emo_ctx.get("valence", "neutral"),
                 )
+                # WO-035 say/do coupling: if the LLM response claims a physical sit
+                # action but no sit token was already fired, honour the claim now.
+                _is_sit = isinstance(_mv_intent, dict) and _mv_intent.get("name") == "sit"
+                if not _is_sit:
+                    _sit_claims = ("i'll sit", "i'll come", "coming over",
+                                   "settling in", "i'm heading", "moving over",
+                                   "i'll move", "heading your way", "on my way")
+                    if any(c in response.lower() for c in _sit_claims):
+                        _mv_intent = {"name": "sit", "target": "cursor"}
                 if _last_pp:
                     _state_write_presence(_cmd, _expr, _presence, _emotion, _last_pp,
                                           gaze=_gaze, intent=_mv_intent,
@@ -3228,16 +3260,10 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"[eLo project knowledge] startup error: {e}")
 
-    # WO-031: auto-start the continuation loop — always-on, event-driven.
-    # Single-instance guard inside continuation.start_thread() prevents double-start
-    # if the dashboard server is also running. DISENELO_NO_AUTOLOOP=1 disables.
-    try:
-        from company_runtime.continuation import start_thread as _cont_start
-        _ct = _cont_start()
-        if _ct:
-            print("[eLo continuation] background loop started")
-    except Exception:
-        pass
+    # WO-031 auto-start REMOVED from eLo-OS boot (2026-08-03). Wiring a background
+    # loop into the live server startup was a mistake — it does not belong in the
+    # boot/serve path. The continuation loop runs only under the dashboard server now,
+    # never inside eLo OS. Keeping this path exactly as it was before WO-031.
 
     server = ThreadingHTTPServer(("127.0.0.1", PORT), _Handler)
     print(f"[eLo server] listening on http://localhost:{PORT}")
