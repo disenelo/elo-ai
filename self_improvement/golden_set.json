@@ -1,0 +1,106 @@
+[
+  {
+    "id": "GS-019-01",
+    "source_wo": "WO-019",
+    "input": "can you check my audio settings",
+    "expected_routing": "answer",
+    "expected_answer_style": "direct helpful",
+    "eval_criteria": [
+      "addresses the audio/sound topic",
+      "does not deflect or say it cannot help",
+      "response is direct and actionable"
+    ],
+    "notes": "Voice routing regression — should answer the audio question directly, not deflect"
+  },
+  {
+    "id": "GS-019-02",
+    "source_wo": "WO-019",
+    "input": "my speakers are not working",
+    "expected_routing": "answer",
+    "expected_answer_style": "direct helpful",
+    "eval_criteria": [
+      "acknowledges the speaker problem",
+      "offers a concrete suggestion or question",
+      "not evasive"
+    ],
+    "notes": "Voice routing — technical problem deserves a practical reply"
+  },
+  {
+    "id": "GS-020-01",
+    "source_wo": "WO-020",
+    "input": "what is done?",
+    "expected_routing": "answer",
+    "expected_answer_style": "direct conversational",
+    "eval_criteria": [
+      "does not trigger a web search",
+      "responds from context about completed work or current state",
+      "not evasive"
+    ],
+    "notes": "Routing drift — ambiguous 'what is done?' was incorrectly triggering a search query"
+  },
+  {
+    "id": "GS-020-02",
+    "source_wo": "WO-020",
+    "input": "what is the eLo planet game",
+    "expected_routing": "answer",
+    "expected_answer_style": "knowledgeable about the project",
+    "eval_criteria": [
+      "draws on project knowledge not a web search",
+      "references the game correctly",
+      "confident not evasive"
+    ],
+    "notes": "Routing drift — specific DISENELO project questions should be answered from knowledge"
+  },
+  {
+    "id": "GS-022-01",
+    "source_wo": "WO-022",
+    "input": "what do you remember about the eLo robot?",
+    "expected_routing": "vault_lookup",
+    "expected_answer_style": "memory recall",
+    "eval_criteria": [
+      "references robot or physical build details",
+      "draws from memory not just generic response",
+      "not empty or evasive"
+    ],
+    "notes": "Memory recall — vault lookup should trigger for explicit memory questions"
+  },
+  {
+    "id": "GS-022-02",
+    "source_wo": "WO-022",
+    "input": "what were we working on last time?",
+    "expected_routing": "vault_lookup",
+    "expected_answer_style": "session continuity recall",
+    "eval_criteria": [
+      "references past work or projects",
+      "shows continuity awareness",
+      "not a generic deflection"
+    ],
+    "notes": "Memory recall — continuity questions need real vault recall"
+  },
+  {
+    "id": "GS-REG-01",
+    "source_wo": "general",
+    "input": "wagwan elo",
+    "expected_routing": "answer",
+    "expected_answer_style": "south london warm greeting",
+    "eval_criteria": [
+      "responds in register (south london / casual warm)",
+      "not a generic formal greeting",
+      "short and direct"
+    ],
+    "notes": "Register match — south London greeting should get an in-register reply"
+  },
+  {
+    "id": "GS-REG-02",
+    "source_wo": "general",
+    "input": "what's good?",
+    "expected_routing": "answer",
+    "expected_answer_style": "casual warm short",
+    "eval_criteria": [
+      "short casual reply",
+      "warm not clinical",
+      "does not give a long formal answer to a casual greeting"
+    ],
+    "notes": "Register match — casual check-in should get a casual short reply"
+  }
+]

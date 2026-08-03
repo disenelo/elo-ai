@@ -2534,6 +2534,16 @@ def _process_turn(raw: str) -> dict:
                     pass
 
                 _enriched, _agent = _tool_enrich(raw)
+
+                # WO-027 Seam A — inject relevant past corrections as few-shot ICL examples
+                try:
+                    from self_improvement.correction_store import search_corrections, inject_corrections
+                    _corrections = search_corrections(raw, top_k=3)
+                    if _corrections:
+                        system = inject_corrections(_corrections, system)
+                except Exception:
+                    pass
+
                 _llm_latency_ms = 0.0
                 _early_tts_sentence = [None]  # tracks first sentence spoken early
                 import time as _perf_mod
