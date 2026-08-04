@@ -5,7 +5,7 @@ Routes requests between local (Ollama) and cloud (Groq / Gemini / OpenAI) backen
 Falls back to mock when nothing is available.
 
 Priority (auto mode):
-    OpenAI → Gemini → Claude → Groq → Ollama → Mock
+    OpenAI → Gemini → Claude → Groq → Cerebras → Ollama → Mock
 
 Routing mode set via ELO_BACKEND env var:
     export ELO_BACKEND=auto    (default)
@@ -85,6 +85,9 @@ _last_responses: dict[str, str] = {}
 
 # singleton mock backend — preserves anti-repetition buffer across all mock calls this session
 _mock_backend_instance = None
+
+# WO-032: session-level OpenAI quota flag — set on first 429, skip OpenAI for the rest of the session
+_openai_quota_exceeded = False
 
 def _strip_trailing_question(text: str) -> str:
     """Remove trailing question sentence(s). Returns empty string if all sentences are questions."""
@@ -477,7 +480,9 @@ def route(
         return _mock_fallback(user_input), "mock"
 
     # auto mode: OpenAI → Gemini → Claude → Groq → Cerebras → Ollama → Mock
-    if _openai_available():
+    # WO-032: skip OpenAI for the rest of the session once quota is confirmed exceeded
+    global _openai_quota_exceeded
+    if _openai_available() and not _openai_quota_exceeded:
         try:
             raw = _openai_call(system_prompt, user_input, max_tokens=_budget)
             if _has_lore_drift(raw, user_input):
@@ -490,7 +495,13 @@ def route(
                     _last_responses[action] = normalised
                     return normalised, "openai"
         except Exception as e:
-            _logger.warning("OpenAI failed, trying Gemini: %s", e)
+            # WO-032: 429 = quota exceeded — flag it so we don't retry every turn
+            import httpx as _httpx_mod
+            if isinstance(e, _httpx_mod.HTTPStatusError) and e.response.status_code == 429:
+                _openai_quota_exceeded = True
+                _logger.warning("OpenAI quota exceeded — skipping for this session, routing to Groq")
+            else:
+                _logger.warning("OpenAI failed, trying Gemini: %s", e)
 
     if _gemini_available():
         try:
@@ -531,15 +542,13 @@ def route(
             # for BUILD/CELEBRATE: strip any trailing questions Groq added
             if action in ("build", "celebrate"):
                 stripped = _strip_trailing_question(normalised)
-                if not stripped:
-                    _logger.debug("Trailing question stripped to empty — using mock")
-                    return _mock_fallback(user_input, action=action), "mock"
-                normalised = stripped
-            # catch duplicate — if too similar to last response, use mock
+                # WO-032: if stripping empties the response, keep original — real > mock
+                if stripped:
+                    normalised = stripped
+            # WO-032: near-duplicate real response beats a canned mock — return it, reset cache
             if _is_duplicate(normalised, _last_responses.get(action, "")):
-                _logger.debug("Duplicate response detected — replacing with mock fallback")
+                _logger.debug("Duplicate Groq response — returning anyway (real > mock)")
                 _last_responses[action] = ""   # reset so next call is fresh
-                return _mock_fallback(user_input, action=action), "mock"
             _last_responses[action] = normalised
             return normalised, "groq"
         except Exception as e:
@@ -553,10 +562,13 @@ def route(
                 return _mock_fallback(user_input, action=action), "mock"
             normalised = normalise(raw, max_sentences)
             if action in ("build", "celebrate"):
-                normalised = _strip_trailing_question(normalised) or normalised
+                stripped = _strip_trailing_question(normalised)
+                if stripped:
+                    normalised = stripped
+            # WO-032: near-duplicate real response beats a canned mock — return it, reset cache
             if _is_duplicate(normalised, _last_responses.get(action, "")):
+                _logger.debug("Duplicate Cerebras response — returning anyway (real > mock)")
                 _last_responses[action] = ""
-                return _mock_fallback(user_input, action=action), "mock"
             _last_responses[action] = normalised
             return normalised, "cerebras"
         except Exception as e:
