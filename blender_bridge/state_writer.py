@@ -122,6 +122,8 @@ def write(
 
     if intent is not None:
         payload["intent"] = intent
+        if isinstance(intent, dict) and intent.get("name") == "sit":
+            payload["sit_command"] = {"_ts": round(time.time(), 3)}
     if trigger is not None:
         payload["trigger"] = trigger
     if gesture is not None:
@@ -197,6 +199,8 @@ def write_with_presence(
 
     if intent is not None:
         payload["intent"] = intent
+        if isinstance(intent, dict) and intent.get("name") == "sit":
+            payload["sit_command"] = {"_ts": round(time.time(), 3)}
     if trigger is not None:
         payload["trigger"] = trigger
     if gesture is not None:
