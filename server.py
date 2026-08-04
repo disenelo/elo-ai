@@ -2383,7 +2383,17 @@ def _process_turn(raw: str) -> dict:
 
         _mode_str = exec_decision.get("mode", "CONVERSATIONAL") if exec_decision else "CONVERSATIONAL"
         _pers_block = _personality_profile.to_prompt_block(_mode_str) if _personality_profile else ""
-        _combined_vault = (_vault_ctx + "\n\n" + _project_ctx).strip() if _project_ctx else _vault_ctx
+        # WO-037: prepend durable fact snapshots so eLo always knows them
+        try:
+            from memory.fact_store import facts_summary as _facts_summary_fn
+            _facts_block = _facts_summary_fn()
+            if _facts_block:
+                _facts_prefix = f"[DURABLE FACTS — always true, survive restart]\n{_facts_block}\n\n"
+            else:
+                _facts_prefix = ""
+        except Exception:
+            _facts_prefix = ""
+        _combined_vault = (_facts_prefix + _vault_ctx + "\n\n" + _project_ctx).strip() if _project_ctx else (_facts_prefix + _vault_ctx).strip()
         system = build_prompt(raw, vault_context=_combined_vault,
                               state_context=state_manager.as_context_string(_state),
                               attention=attention_model, exec_decision=exec_decision,
@@ -2559,6 +2569,33 @@ def _process_turn(raw: str) -> dict:
                                         "Never say 'Memory\\'s running' or give a record count as a reply. "
                                         "That is a status line, not a recall response."
                                     )
+                            # WO-037: also surface concrete interactions.json entries (specific, not gloss)
+                            try:
+                                from core.memory_engine import retrieve as _mem_retrieve
+                                _raw_hits = _mem_retrieve(_recall_q, top_k=3)
+                                if _raw_hits:
+                                    _raw_lines = [
+                                        f"- [{r.get('timestamp','')[:10]}] David: {r.get('user','')[:120]!r}"
+                                        for r in _raw_hits if r.get("user")
+                                    ]
+                                    if _raw_lines:
+                                        system = system + (
+                                            "\n\n[RECENT INTERACTIONS — concrete turns]\n"
+                                            + "\n".join(_raw_lines)
+                                            + "\n\nUse the actual words above — do not paraphrase into a mood gloss."
+                                        )
+                            except Exception:
+                                pass
+                            # WO-037: include durable fact snapshots when recalling
+                            try:
+                                from memory.fact_store import facts_summary as _fs
+                                _fsummary = _fs()
+                                if _fsummary:
+                                    system = system + (
+                                        f"\n\n[SAVED FACTS — durable, survive restart]\n{_fsummary}"
+                                    )
+                            except Exception:
+                                pass
                         except Exception:
                             pass
                     elif _cw and len(_cw) >= 3:

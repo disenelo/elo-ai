@@ -159,6 +159,12 @@ def set_location(city: str) -> None:
         _save_persisted_location(_user_location)
     except Exception:
         pass
+    # WO-037: also save as a durable semantic fact so recall surfaces it specifically
+    try:
+        from memory.fact_store import save_fact as _sf
+        _sf("location", f"Studio / home location: {_user_location}")
+    except Exception:
+        pass
 
 
 def detect_location_set(user_input: str) -> Optional[str]:
