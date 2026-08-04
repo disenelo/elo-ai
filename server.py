@@ -2508,6 +2508,13 @@ def _process_turn(raw: str) -> dict:
                     _caps = _cap_all()
                     if _caps:
                         _cap_names = ", ".join(c.display_name for c in _caps)
+                        # WO-044: inject live faculty health so eLo answers self-diagnosis truthfully
+                        try:
+                            from runtime.faculty_health import health_summary as _fh_sum
+                            _health_line = f"\n\n[FACULTY HEALTH — live state]\n{_fh_sum()}\n" \
+                                           f"When asked 'are you working right?' / 'what can't you access?' — answer from this, not philosophy."
+                        except Exception:
+                            _health_line = ""
                         system = system + (
                             f"\n\n[CAPABILITIES — what you can actually do right now]\n"
                             f"{_cap_names}.\n"
@@ -2521,6 +2528,7 @@ def _process_turn(raw: str) -> dict:
                             f"When asked 'can you see my screen' — say: I can read what's on screen if you ask me to. "
                             f"I take a screenshot and extract the text. I also see your active app, window title, "
                             f"and all open Chrome tabs at all times."
+                            + _health_line
                         )
                 except Exception:
                     pass
@@ -3090,6 +3098,20 @@ class _Handler(BaseHTTPRequestHandler):
             self._send_json(200, {"status": "ok", "session": sc, "backend": active_backend()})
         elif self.path == "/voice":
             self._send_json(200, _voice_settings_snapshot())
+        elif self.path == "/health":
+            # WO-044 — per-faculty live health from the WO-042 registry
+            try:
+                from runtime.faculty_health import all_statuses as _fh_all, health_summary as _fh_sum
+                _statuses = _fh_all()
+                _ok = all(s == "CONNECTED" for s in _statuses.values())
+                self._send_json(200, {
+                    "ok":       _ok,
+                    "faculties": _statuses,
+                    "summary":  _fh_sum(),
+                    "backend":  active_backend(),
+                })
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
         else:
             self._send_json(404, {"error": "not found"})
 
