@@ -92,6 +92,9 @@ _project_ctx     = ""   # active project names → injected into system prompt e
 _last_inputs     = []
 _last_avatar_cmd = None
 _last_pp         = None   # last known presence_plan — survives tool-call turns
+# WO-041: pending embodiment action tracker — set when a sit/move intent fires,
+# cleared on timeout or when Unity ACKs completion (or a new intent replaces it).
+_PENDING_SIT: dict = {"active": False, "since": 0.0}
 _pscheduler      = _PresenceScheduler()
 _behaviour_gate  = _BehaviourGate()
 
@@ -624,7 +627,11 @@ def ambient_thought() -> None:
                 from faculties.cultural_facts import draw as _cf_draw
                 _cf = _cf_draw()
                 if _cf:
-                    _ambient_fact_ctx = f"\nFACT AVAILABLE (use it naturally in speak if the moment feels right, otherwise leave speak empty): {_cf.fact}"
+                    # WO-043: removed "use it naturally if the moment feels right" —
+                    # that instruction caused the backup model to weave facts into
+                    # unverified assertions ("it's 37° in your studio"). Fact is now
+                    # presented as optional ambient curiosity, never as a truth-claim.
+                    _ambient_fact_ctx = f"\nCURIOUS FACT (speak this ONLY if you choose to say something this tick — as a curiosity, never as a personal observation about David's situation or location): {_cf.fact}"
             except Exception:
                 pass
 
@@ -2195,8 +2202,13 @@ def _process_turn(raw: str) -> dict:
             "You already know him. This is not a first meeting. "
             "NEVER say 'Nice to meet you' or any variation that implies you are meeting for the first time. "
             "ANTI-FABRICATION: Never invent specific errors, system events, or technical details "
-            "that {_uname} did not mention in this turn. If you did not observe it directly, do not say it."
-        ).replace("{_uname}", _uname)
+            f"that {_uname} did not mention in this turn. If you did not observe it directly, do not say it. "
+            # WO-043: weather/area facts are broad forecasts, not personal observations
+            "Any weather or temperature data in your context is an AREA-LEVEL forecast — "
+            f"NEVER assert it as specific to {_uname}'s room, studio, or current body state "
+            "('it's 37° in your studio', 'you must be feeling the heat'). "
+            "Facts from tool outputs describe what the tool observed, not what is true right now for the person."
+        )
         g_ctx = f"{_creator_block}\n{g_ctx}" if g_ctx else _creator_block
 
         _cont = _continuity_block()
@@ -2349,6 +2361,25 @@ def _process_turn(raw: str) -> dict:
             if _why not in _hp:
                 attention_model = dict(attention_model)
                 attention_model["high_priority_memory"] = [_why] + _hp
+
+        # WO-041: verify-before-speak — if a sit action is pending and not yet
+        # ACKed by Unity, inject a transit note so the LLM says "heading over"
+        # rather than claiming "I'm sitting with you" before it has arrived.
+        import time as _wo41_time
+        if _PENDING_SIT["active"]:
+            _sit_age = _wo41_time.time() - _PENDING_SIT["since"]
+            if _sit_age < 45.0:
+                _transit_note = (
+                    "[MOVEMENT IN TRANSIT — WO-041] You issued a sit intent in a recent turn. "
+                    "You are currently MOVING toward David — you have NOT arrived yet. "
+                    "If you reference your physical position this turn, say 'heading over' / "
+                    "'on my way' — NEVER 'I'm sitting with you' or 'I'm right beside you'. "
+                    "Claim completion only after you have been there for a moment."
+                )
+                g_ctx = f"{g_ctx}\n{_transit_note}" if g_ctx else _transit_note
+            else:
+                # timeout — assume arrival
+                _PENDING_SIT["active"] = False
 
         _mode_str = exec_decision.get("mode", "CONVERSATIONAL") if exec_decision else "CONVERSATIONAL"
         _pers_block = _personality_profile.to_prompt_block(_mode_str) if _personality_profile else ""
@@ -2775,6 +2806,14 @@ def _process_turn(raw: str) -> dict:
                                    "i'll move", "heading your way", "on my way")
                     if any(c in response.lower() for c in _sit_claims):
                         _mv_intent = {"name": "sit", "target": "cursor"}
+                # WO-041: activate pending tracker when sit fires — clears after 45s
+                # (Unity ACK not yet implemented; timeout = safe fallback)
+                import time as _wo41_t
+                if isinstance(_mv_intent, dict) and _mv_intent.get("name") == "sit":
+                    _PENDING_SIT["active"] = True
+                    _PENDING_SIT["since"]  = _wo41_t.time()
+                elif _PENDING_SIT["active"] and _wo41_t.time() - _PENDING_SIT["since"] > 45.0:
+                    _PENDING_SIT["active"] = False
                 if _last_pp:
                     _state_write_presence(_cmd, _expr, _presence, _emotion, _last_pp,
                                           gaze=_gaze, intent=_mv_intent,

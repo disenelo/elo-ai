@@ -481,6 +481,13 @@ def route(
 
     # auto mode: OpenAI → Gemini → Claude → Groq → Cerebras → Ollama → Mock
     # WO-032: skip OpenAI for the rest of the session once quota is confirmed exceeded
+    # WO-042: import faculty health registry for reasoning faculty tracking
+    try:
+        from runtime.faculty_health import mark_degraded as _fh_degraded, mark_recovered as _fh_recovered
+    except Exception:
+        _fh_degraded = lambda *a, **k: None  # noqa: E731
+        _fh_recovered = lambda *a, **k: None  # noqa: E731
+
     global _openai_quota_exceeded
     if _openai_available() and not _openai_quota_exceeded:
         try:
@@ -499,6 +506,7 @@ def route(
             import httpx as _httpx_mod
             if isinstance(e, _httpx_mod.HTTPStatusError) and e.response.status_code == 429:
                 _openai_quota_exceeded = True
+                _fh_degraded("reasoning", "OpenAI quota exceeded")  # WO-042
                 _logger.warning("OpenAI quota exceeded — skipping for this session, routing to Groq")
             else:
                 _logger.warning("OpenAI failed, trying Gemini: %s", e)
@@ -550,6 +558,7 @@ def route(
                 _logger.debug("Duplicate Groq response — returning anyway (real > mock)")
                 _last_responses[action] = ""   # reset so next call is fresh
             _last_responses[action] = normalised
+            _fh_recovered("reasoning")  # WO-042: Groq working — mark reasoning healthy
             return normalised, "groq"
         except Exception as e:
             _logger.warning("Groq failed, trying Cerebras: %s", e)
@@ -581,6 +590,7 @@ def route(
         except Exception as e:
             _logger.warning("Ollama failed, falling to mock: %s", e)
 
+    _fh_degraded("reasoning", "all providers failed — mock fallback")  # WO-042
     return _mock_fallback(user_input), "mock"
 
 
