@@ -9,6 +9,7 @@ Priority (auto mode):
 
 Routing mode set via ELO_BACKEND env var:
     export ELO_BACKEND=auto    (default)
+    export ELO_BACKEND=groq    (pinned Groq — voice-consistent, WO-032)
     export ELO_BACKEND=cloud   (cloud only — OpenAI → Gemini → Claude → Groq)
     export ELO_BACKEND=local   (Ollama only)
     export ELO_BACKEND=mock    (testing)
@@ -479,6 +480,32 @@ def route(
                 _logger.warning("Cerebras failed: %s", e)
         return _mock_fallback(user_input), "mock"
 
+    if mode == "groq":
+        # WO-032: pinned Groq mode — voice-consistent, no Claude/OpenAI drift.
+        # Falls through to Cerebras → Mock only; never touches OpenAI, Gemini, or Claude.
+        if _groq_available():
+            try:
+                raw = _groq_call(system_prompt, user_input, max_tokens=_budget)
+                if _has_lore_drift(raw, user_input):
+                    return _mock_fallback(user_input, action=action), "mock"
+                normalised = normalise(raw, max_sentences)
+                if action in ("build", "celebrate"):
+                    stripped = _strip_trailing_question(normalised)
+                    if stripped:
+                        normalised = stripped
+                _last_responses[action] = normalised
+                return normalised, "groq"
+            except Exception as e:
+                _logger.warning("Groq failed in pinned mode: %s", e)
+        if _cerebras_available():
+            try:
+                raw = _cerebras_call(system_prompt, user_input, max_tokens=_budget)
+                normalised = normalise(raw, max_sentences)
+                return normalised, "cerebras"
+            except Exception as e:
+                _logger.warning("Cerebras failed in pinned mode: %s", e)
+        return _mock_fallback(user_input), "mock"
+
     # auto mode: OpenAI → Gemini → Claude → Groq → Cerebras → Ollama → Mock
     # WO-032: skip OpenAI for the rest of the session once quota is confirmed exceeded
     # WO-042: import faculty health registry for reasoning faculty tracking
@@ -672,6 +699,9 @@ def active_backend() -> str:
     mode = _env_mode or "auto"
     if mode == "mock":   return "mock"
     if mode == "local":  return "ollama" if _ollama_available() else "mock"
+    if mode == "groq":
+        if _groq_available():      return "groq"
+        return "cerebras" if _cerebras_available() else "mock"
     if mode == "cloud":
         if _openai_available():    return "openai"
         if _gemini_available():    return "gemini"
