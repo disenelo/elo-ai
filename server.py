@@ -434,6 +434,13 @@ def _movement_intent(
     load   = exec_decision.get("cognitive_load", "medium")
     energy = attention_model.get("emotional_context", {}).get("energy", 0.5)
 
+    # Layer 1 — signal words: HIGHEST priority — explicit user command always wins.
+    # Must run before SILENCE-AWARE / negative_high so a sit/step_out/return request
+    # can never be pre-empted by the executive's tone assessment.
+    _sw = _signal_word_intent(raw)
+    if _sw:
+        return _sw
+
     # Silence / give-space — but NOT on short affirmatives (user is still here, just agreeing)
     if tone == "SILENCE-AWARE" or action == "silence":
         _affirm = {"yes", "yep", "yeah", "yh", "yea", "sure", "okay", "ok",
@@ -446,11 +453,6 @@ def _movement_intent(
     # Layer 3 — emotional safety: negative high → ground immediately
     if valence == "negative_high":
         return "grounding"
-
-    # Layer 1 — signal words: direct word→body mapping, high priority
-    _sw = _signal_word_intent(raw)
-    if _sw:
-        return _sw
 
     # Layer 3 — stuck momentum → come sit with David
     if momentum == "stuck":
@@ -2891,9 +2893,13 @@ def _process_turn(raw: str) -> dict:
                 # action but no sit token was already fired, honour the claim now.
                 _is_sit = isinstance(_mv_intent, dict) and _mv_intent.get("name") == "sit"
                 if not _is_sit:
-                    _sit_claims = ("i'll sit", "i'll come", "coming over",
-                                   "settling in", "i'm heading", "moving over",
-                                   "i'll move", "heading your way", "on my way")
+                    _sit_claims = (
+                        "i'll sit", "i'll come", "coming over", "settling in",
+                        "i'm heading", "moving over", "i'll move", "heading your way",
+                        "on my way", "sitting down", "sitting with", "sit with you",
+                        "come sit", "right there", "right next to", "next to you",
+                        "beside you", "right beside", "coming to sit", "i'm coming",
+                    )
                     if any(c in response.lower() for c in _sit_claims):
                         _mv_intent = {"name": "sit", "target": "cursor"}
                 # WO-041: activate pending tracker when sit fires — clears after 45s
