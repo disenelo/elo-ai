@@ -341,6 +341,21 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "taking a break": "step_out",
     "need a break":   "step_out",
     "brb":            "step_out",
+    # WO-045 — privacy / take-five phrasings
+    "take 5":         "step_out",
+    "take five":      "step_out",
+    "give me a minute": "step_out",
+    "give me a moment": "step_out",
+    "some privacy":   "step_out",
+    "step away":      "step_out",
+    "leave me to it": "step_out",
+    "go away for a bit": "step_out",
+    "pop off":        "step_out",
+    # WO-045 — return from step-out
+    "come back":      "return_elo",
+    "you there":      "return_elo",
+    "where are you":  "return_elo",
+    "elo come back":  "return_elo",
     # Settle / pause
     "just a sec":     "idle",
     "hold on":        "idle",

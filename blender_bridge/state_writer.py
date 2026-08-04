@@ -124,6 +124,10 @@ def write(
         payload["intent"] = intent
         if isinstance(intent, dict) and intent.get("name") == "sit":
             payload["sit_command"] = {"_ts": round(time.time(), 3)}
+        elif intent == "step_out":
+            payload["leave_command"] = {"_ts": round(time.time(), 3)}
+        elif intent == "return_elo":
+            payload["return_command"] = {"_ts": round(time.time(), 3)}
     if trigger is not None:
         payload["trigger"] = trigger
     if gesture is not None:
@@ -201,6 +205,10 @@ def write_with_presence(
         payload["intent"] = intent
         if isinstance(intent, dict) and intent.get("name") == "sit":
             payload["sit_command"] = {"_ts": round(time.time(), 3)}
+        elif intent == "step_out":
+            payload["leave_command"] = {"_ts": round(time.time(), 3)}
+        elif intent == "return_elo":
+            payload["return_command"] = {"_ts": round(time.time(), 3)}
     if trigger is not None:
         payload["trigger"] = trigger
     if gesture is not None:
