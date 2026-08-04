@@ -2383,6 +2383,36 @@ def _process_turn(raw: str) -> dict:
 
         _mode_str = exec_decision.get("mode", "CONVERSATIONAL") if exec_decision else "CONVERSATIONAL"
         _pers_block = _personality_profile.to_prompt_block(_mode_str) if _personality_profile else ""
+
+        # WO-036: style monitor — detect repetitive banned openers in last 2 eLo replies
+        # Active check so the LLM gets penalised even when it ignores the static BREVITY RULE.
+        _STYLE_BANNED = (
+            "i notice you", "i hear you", "i see you", "i notice that you",
+            "it feels like", "it sounds like", "it seems like",
+            "that's an interesting", "that's a great", "i can feel",
+            "there's something about",
+        )
+        try:
+            _recent_elo_replies = [
+                t.get("assistant", "").lower().strip()
+                for t in (_cw[-2:] if _cw else [])
+                if t.get("assistant")
+            ]
+            _style_violations = [
+                phrase for phrase in _STYLE_BANNED
+                if any(r.startswith(phrase) for r in _recent_elo_replies)
+            ]
+            if _style_violations:
+                _style_note = (
+                    f"\n\n[STYLE MONITOR — WO-036] Your last reply opened with a banned phrase "
+                    f"({', '.join(repr(v) for v in _style_violations[:2])}). "
+                    "Do NOT open this reply the same way. "
+                    "Answer directly or observe freshly — no mirroring openers."
+                )
+                g_ctx = (g_ctx + _style_note) if g_ctx else _style_note
+        except Exception:
+            pass
+
         # WO-037: prepend durable fact snapshots so eLo always knows them
         try:
             from memory.fact_store import facts_summary as _facts_summary_fn
