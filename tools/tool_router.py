@@ -134,6 +134,8 @@ _LOCATION_SET_PATTERNS = [
     r"(?:set|change|update)\s+(?:my\s+)?location\s+to\s+([\w][\w\s\-]{1,30}?)[\.\?!]*$",
     r"(?:my\s+)?(?:city|location|home)\s+is\s+([\w][\w\s\-]{1,30}?)[\.\?!]*$",
     r"(?:we'?re|we are)\s+(?:in|based in|at)\s+([A-Za-z][A-Za-z\s\-]{0,25}?)(?:[,\.\?!]|$)",
+    # WO-030: "the studio is in X" / "my studio is in X" / "studio is in X"
+    r"(?:the\s+|my\s+)?studio\s+is\s+in\s+([A-Za-z][A-Za-z\s\-]{0,25}?)(?:[,\.\?!]|$)",
 ]
 
 
@@ -472,7 +474,13 @@ def _agent_weather(query: str) -> str:
         r"(?:in|at|for)\s+([A-Za-z][A-Za-z\s,\-]{1,40}?)(?:\?|$|\s+today|\s+now|\s+like|\s+forecast)",
         query, re.IGNORECASE
     )
-    city = (city_match.group(1).strip() if city_match else None) or _user_location or _DEFAULT_LOCATION
+    # WO-030: explicit city in query > persisted location > ASK (never silently default)
+    city = (city_match.group(1).strip() if city_match else None) or _user_location
+    if not city:
+        return (
+            "No location saved. Ask David: 'Where are you?' — do NOT look up weather, "
+            "do NOT fabricate a city or default to London. Wait for his answer, then save it."
+        )
 
     # ── AccuWeather (primary — disabled; re-enable with a paid key) ─────────────
     try:
@@ -518,15 +526,14 @@ def _agent_weather(query: str) -> str:
     )
     resp.raise_for_status()
     data = resp.json()
-    area   = data["nearest_area"][0]
-    loc    = f"{area['areaName'][0]['value']}, {area['country'][0]['value']}"
     cur    = data["current_condition"][0]
     desc   = cur["weatherDesc"][0]["value"]
     temp_c = cur["temp_C"]
     feels  = cur["FeelsLikeC"]
     humid  = cur["humidity"]
 
-    result = f"Weather in {loc}: {desc}, {temp_c}°C, feels like {feels}°C, humidity {humid}%."
+    # WO-030: use queried city name, not nearest_area (avoids "Nine Elms" sub-area invention)
+    result = f"Weather in {city}: {desc}, {temp_c}°C, feels like {feels}°C, humidity {humid}%."
     if using_auto:
         result += f" (Detected as {loc} — say 'I'm in [city]' to set a default.)"
     return result
