@@ -1741,6 +1741,7 @@ def _process_turn(raw: str) -> dict:
 
         # ── Web search ───────────────────────────────────────────────────────
         try:
+            import tools.web_search as _ws_mod
             from tools.web_search import is_search_intent, extract_query as _sq, search as _wsearch, format_for_context as _wfmt
             # WO-020 Seam B: bare status/acknowledgement words must not be web-searched.
             # "what is done?" → extracted query "done" → would search Wikipedia for "DONE".
@@ -1761,9 +1762,12 @@ def _process_turn(raw: str) -> dict:
                     if _top.url:
                         _LAST_FOUND["url"]   = _top.url
                         _LAST_FOUND["title"] = _top.title
+                    # WO-051: honest fallback — tell eLo when DDG served instead of Google.
+                    _ws_src    = getattr(_ws_mod, "last_source", "")
+                    _ws_backup = "\n[SEARCH_NOTE: Google search unavailable — results are from backup search (DuckDuckGo). Mention this briefly if David asks about search quality.]" if _ws_src == "ddg" else ""
                     # Inject as context and let the LLM respond naturally rather than
                     # short-circuiting — web results need synthesis, not raw dump
-                    raw = f"[WEB_SEARCH: {_sq_text}]\n{_ws_ctx}\n\nUser asked: {raw}"
+                    raw = f"[WEB_SEARCH: {_sq_text}]\n{_ws_ctx}{_ws_backup}\n\nUser asked: {raw}"
                 # Falls through to LLM with enriched context
         except Exception as _ws_err:
             import sys as _ws_sys
