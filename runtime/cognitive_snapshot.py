@@ -72,6 +72,17 @@ class CognitiveSnapshot:
     # ── Pending intentions ─────────────────────────────────────────────────────
     pending_intentions: tuple = field(default_factory=tuple)   # ((name, target), ...)
 
+    # ── WO-056: Affordances — surface → possible actions ──────────────────────
+    surface_type: str = "unknown"
+    surface_affordances: tuple = field(default_factory=tuple)  # ("stand","run",…)
+
+    # ── WO-057: Perception scope — Chrome + capability gate ───────────────────
+    chrome_open: bool = False
+    chrome_tab_count: int = 0
+    chrome_active_url: str = ""
+    chrome_recent_domains: tuple = field(default_factory=tuple)  # top 5 domains
+    gated_capabilities: tuple = field(default_factory=tuple)     # enabled cap IDs
+
     # ── Assembly metadata ──────────────────────────────────────────────────────
     assembled_ts: float = 0.0
     turn_id: str = ""
@@ -143,6 +154,64 @@ def build_snapshot(
         )
         pending_intentions.append(("sit", "cursor"))
 
+    # ── WO-056: Affordances ────────────────────────────────────────────────────
+    surface_type = "unknown"
+    surface_affordances: tuple = ()
+    try:
+        from blender_bridge.state_writer import read as _bbs_read
+        _bbs = _bbs_read()
+        surface_type = str(_bbs.get("surface_type", "unknown"))
+    except Exception:
+        pass
+    try:
+        from runtime.affordances import affordances_for as _aff_for
+        surface_affordances = _aff_for(surface_type)
+    except Exception:
+        confidence -= 0.02
+
+    # ── WO-057: Perception scope — Chrome + capability gate ───────────────────
+    chrome_open = False
+    chrome_tab_count = 0
+    chrome_active_url = ""
+    chrome_recent_domains: tuple = ()
+    try:
+        from desktop.chrome_reader import all_tabs as _chrome_tabs, recent_history as _chrome_hist
+        _tabs = _chrome_tabs()
+        if _tabs:
+            chrome_open = True
+            chrome_tab_count = len(_tabs)
+            chrome_active_url = _tabs[0].url if _tabs else ""
+        _hist = _chrome_hist(limit=20)
+        _domains: list = []
+        _seen: set = set()
+        for _h in _hist:
+            import re as _re
+            _m = _re.search(r"https?://(?:www\.)?([^/]+)", _h.url)
+            if _m:
+                _d = _m.group(1)
+                if _d not in _seen:
+                    _seen.add(_d)
+                    _domains.append(_d)
+                    if len(_domains) >= 5:
+                        break
+        chrome_recent_domains = tuple(_domains)
+    except Exception:
+        pass
+
+    gated_capabilities: tuple = ()
+    try:
+        from runtime.capabilities.registry import ALL_CAPABILITIES
+        from runtime.capabilities.capability import Capability
+        _enabled = []
+        for _cap in ALL_CAPABILITIES:
+            if not hasattr(_cap, "future") or not _cap.future:
+                _fac = getattr(_cap, "requires_faculty", None)
+                if _fac is None or fac_health.get(_fac) not in ("OFFLINE", "DEGRADED"):
+                    _enabled.append(_cap.id)
+        gated_capabilities = tuple(_enabled)
+    except Exception:
+        pass
+
     return CognitiveSnapshot(
         self_mood=round(self_mood, 3),
         self_curiosity=round(self_curiosity, 3),
@@ -159,6 +228,13 @@ def build_snapshot(
         action=att.get("action", ""),
         body=body,
         pending_intentions=tuple(pending_intentions),
+        surface_type=surface_type,
+        surface_affordances=surface_affordances,
+        chrome_open=chrome_open,
+        chrome_tab_count=chrome_tab_count,
+        chrome_active_url=chrome_active_url,
+        chrome_recent_domains=chrome_recent_domains,
+        gated_capabilities=gated_capabilities,
         assembled_ts=assembled_ts,
         turn_id=turn_id,
         confidence=max(0.0, min(1.0, confidence)),
