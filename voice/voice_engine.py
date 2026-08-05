@@ -190,8 +190,10 @@ def _fetch_openai_audio(text: str) -> bytes | None:
 
 def _play_openai(text: str, stop: threading.Event) -> bool:
     """Fetch from OpenAI, write to tmp file, play with afplay + lipsync. Returns True on success."""
+    if stop.is_set():
+        return False
     audio = _fetch_openai_audio(text)
-    if not audio:
+    if not audio or stop.is_set():   # WO-019: check stop after API fetch (may have been cancelled)
         return False
 
     phonemes = _text_to_phoneme_sequence(text)
@@ -209,10 +211,13 @@ def _play_openai(text: str, stop: threading.Event) -> bool:
         )
         _pulse_lipsync(phonemes, stop)
 
-        try:
-            proc.wait(timeout=30.0)
-        except subprocess.TimeoutExpired:
-            proc.kill()
+        if stop.is_set():
+            proc.kill()              # WO-019: immediately cancel afplay when interrupted
+        else:
+            try:
+                proc.wait(timeout=60.0)
+            except subprocess.TimeoutExpired:
+                proc.kill()
     finally:
         try:
             os.unlink(tmp_path)
@@ -314,8 +319,10 @@ def _mix_audio(primary: bytes, secondary: bytes, primary_weight: float) -> bytes
 
 def _play_elevenlabs(text: str, stop: threading.Event) -> bool:
     """Fetch from ElevenLabs voice 1, play with afplay + lipsync. Returns True on success."""
+    if stop.is_set():
+        return False
     audio = _fetch_elevenlabs_audio(text)
-    if not audio:
+    if not audio or stop.is_set():
         return False
 
     phonemes = _text_to_phoneme_sequence(text)
@@ -332,10 +339,13 @@ def _play_elevenlabs(text: str, stop: threading.Event) -> bool:
         )
         _pulse_lipsync(phonemes, stop)
 
-        try:
-            proc.wait(timeout=30.0)
-        except subprocess.TimeoutExpired:
+        if stop.is_set():
             proc.kill()
+        else:
+            try:
+                proc.wait(timeout=60.0)
+            except subprocess.TimeoutExpired:
+                proc.kill()
     finally:
         try:
             os.unlink(tmp_path)
@@ -405,16 +415,28 @@ def _split_sentences(text: str) -> list:
     return [p.strip() for p in parts if p.strip()]
 
 
+# OpenAI TTS supports up to 4096 chars per call; longer text falls back sentence-by-sentence.
+_OPENAI_TTS_MAX_CHARS = 4096
+
+
 def _speak_thread(text: str, stop: threading.Event) -> None:
-    sentences = _split_sentences(text)
-    for sentence in sentences:
-        if stop.is_set():
-            break
-        success = False
-        if _EL_KEY and _EL_VOICE:
-            success = _play_elevenlabs(sentence, stop)
-        if not success and _OPENAI_KEY:
-            success = _play_openai(sentence, stop)
-        if not success:
+    """
+    WO-019 fix: send the FULL reply as ONE TTS call to avoid per-sentence
+    API round-trips. Per-sentence splits meant any slow fetch or interruption
+    between sentences dropped the tail. OpenAI/EL handle multi-sentence text
+    natively; only the say fallback uses sentence-by-sentence.
+    """
+    success = False
+    # Try the full text as one call — no mid-reply truncation risk.
+    if _EL_KEY and _EL_VOICE and not stop.is_set():
+        success = _play_elevenlabs(text, stop)
+    if not success and _OPENAI_KEY and len(text) <= _OPENAI_TTS_MAX_CHARS and not stop.is_set():
+        success = _play_openai(text, stop)
+    if not success:
+        # macOS say fallback: sentence-by-sentence (say has no long-text API limit)
+        sentences = _split_sentences(text)
+        for sentence in sentences:
+            if stop.is_set():
+                break
             _play_say(sentence, stop)
     clear_lipsync()
