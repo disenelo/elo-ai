@@ -78,6 +78,12 @@ class CognitivePlan:
     # ── Presence hints (avatar/desktop — legacy, kept for backwards compat) ──
     presence_hints:       dict  = field(default_factory=dict)
 
+    # ── WO-052: Assembled BEFORE Executive decision (push, not pull) ──────────
+    snapshot:             object = None    # CognitiveSnapshot | None
+    # ── Assembled AFTER decision (S3/S6 — post-plan contracts) ───────────────
+    cognitive_state:      object = None    # CognitiveState | None
+    embodiment_state:     object = None    # EmbodimentState | None
+
     def needs_llm(self) -> bool:
         return not self.direct_response and not self.system_immediate and not self.system_pending
 

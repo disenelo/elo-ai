@@ -323,11 +323,13 @@ def run(
     state:       dict | None = None,
     memory_pack: dict | None = None,
     attention:   dict | None = None,
+    pending_sit: dict | None = None,
 ) -> CognitivePlan:
     """
     The Cognitive Spine. One call. One plan.
 
-    v1.7 aligned pipeline:
+    v1.8 aligned pipeline:
+        [WO-052] CognitiveSnapshot (assembled first, pushed to Executive) →
         Language → Relationship → Capability → System →
         Executive → [COGNITIVE PLAN] →
         Executive Faculty (enrich: relationship + emotional vector) →
@@ -339,6 +341,7 @@ def run(
         state       — session state from memory
         memory_pack — pre-built memory context
         attention   — pre-computed attention model (from server.py)
+        pending_sit — _PENDING_SIT dict from server.py (body schema)
 
     Returns: CognitivePlan — one plan, fully populated. All downstream reads from this.
     """
@@ -346,6 +349,14 @@ def run(
         state = {}
     if attention is None:
         attention = {}
+
+    # ── WO-052: CognitiveSnapshot — assembled BEFORE any faculty decides ──────
+    _snapshot = None
+    try:
+        from runtime.cognitive_snapshot import build_snapshot as _build_snap
+        _snapshot = _build_snap(attention=attention, pending_sit=pending_sit)
+    except Exception as _snap_err:
+        _log.debug("build_snapshot: %s", _snap_err)
 
     # ── v1.4 Language Faculty ─────────────────────────────────────────────────
     language = _language_faculty(raw)
@@ -366,6 +377,9 @@ def run(
 
     # ── Executive Faculty — ONE DECISION ─────────────────────────────────────
     plan = _executive_faculty(raw, language, attention, capabilities, system_det)
+
+    # ── WO-052: Store snapshot on plan (assembled before; now pinned to it) ───
+    plan.snapshot = _snapshot
 
     # ── v1.5 Executive Faculty enrichment (relationship + emotional vector) ───
     try:
