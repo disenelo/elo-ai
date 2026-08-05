@@ -94,7 +94,8 @@ _last_avatar_cmd = None
 _last_pp         = None   # last known presence_plan — survives tool-call turns
 # WO-041: pending embodiment action tracker — set when a sit/move intent fires,
 # cleared on timeout or when Unity ACKs completion (or a new intent replaces it).
-_PENDING_SIT: dict = {"active": False, "since": 0.0}
+# WO-054: "queued" holds an intent that arrived while sit is in-flight; emitted once sit clears.
+_PENDING_SIT: dict = {"active": False, "since": 0.0, "queued": None}
 _pscheduler      = _PresenceScheduler()
 _behaviour_gate  = _BehaviourGate()
 
@@ -2920,14 +2921,31 @@ def _process_turn(raw: str) -> dict:
                     )
                     if any(c in response.lower() for c in _sit_claims):
                         _mv_intent = {"name": "sit", "target": "cursor"}
-                # WO-041: activate pending tracker when sit fires — clears after 45s
-                # (Unity ACK not yet implemented; timeout = safe fallback)
+                # WO-041/054: pending tracker + movement queue.
+                # Sit-in-flight: deduplicate to avoid repeated Unity edge-triggers.
+                # Different-intent-in-flight: queue and emit after timeout.
                 import time as _wo41_t
+                _now54 = _wo41_t.time()
                 if isinstance(_mv_intent, dict) and _mv_intent.get("name") == "sit":
-                    _PENDING_SIT["active"] = True
-                    _PENDING_SIT["since"]  = _wo41_t.time()
-                elif _PENDING_SIT["active"] and _wo41_t.time() - _PENDING_SIT["since"] > 45.0:
-                    _PENDING_SIT["active"] = False
+                    if _PENDING_SIT["active"]:
+                        # Duplicate sit while in-flight — suppress re-emit; note for eLo.
+                        _mv_intent = ""
+                        g_ctx = g_ctx + "\n[ALREADY_IN_MOTION: sit already commanded — acknowledge briefly, don't re-announce]" if g_ctx else "[ALREADY_IN_MOTION: sit already commanded — acknowledge briefly, don't re-announce]"
+                    else:
+                        _PENDING_SIT["active"] = True
+                        _PENDING_SIT["since"]  = _now54
+                        _PENDING_SIT["queued"] = None
+                elif _PENDING_SIT["active"]:
+                    if _now54 - _PENDING_SIT["since"] > 45.0:
+                        # Timeout: clear sit, emit queued intent if any.
+                        _PENDING_SIT["active"] = False
+                        if _PENDING_SIT["queued"]:
+                            _mv_intent = _PENDING_SIT["queued"]
+                            _PENDING_SIT["queued"] = None
+                    elif _mv_intent:
+                        # Different intent while sit is in-flight — queue it, hold position.
+                        _PENDING_SIT["queued"] = _mv_intent
+                        _mv_intent = ""
                 if _last_pp:
                     _state_write_presence(_cmd, _expr, _presence, _emotion, _last_pp,
                                           gaze=_gaze, intent=_mv_intent,
