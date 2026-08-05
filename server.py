@@ -2299,19 +2299,25 @@ def _process_turn(raw: str) -> dict:
             pass
 
         # Chrome observation — open tabs + bookmarks matching current conversation topic
+        # WO-038: label source clearly (live tab vs history vs no-match-but-open) so eLo
+        # doesn't flip between "Chrome isn't open" and "here's your history" for the same data.
         try:
             from desktop.chrome_reader import observe as _chrome_observe
             _chrome_snap = _chrome_observe(query=raw[:80])
             _chrome_lines: list[str] = []
+            _chr_tab_count = _chrome_snap.get("tab_count", 0)
             if _chrome_snap.get("open_tabs"):
                 _tl = "; ".join(t["title"] for t in _chrome_snap["open_tabs"][:5])
-                _chrome_lines.append(f"[CHROME_TABS_MATCHED: {_tl}]")
+                _chrome_lines.append(f"[CHROME_LIVE_TABS: {_tl}]")
+            elif _chr_tab_count > 0:
+                # Chrome IS open but no tabs matched this query — don't say "Chrome isn't open"
+                _chrome_lines.append(f"[CHROME_OPEN: {_chr_tab_count} tab(s) open — none matched this topic]")
             if _chrome_snap.get("bookmarks"):
                 _bl = "; ".join(b["title"] for b in _chrome_snap["bookmarks"][:3])
                 _chrome_lines.append(f"[BOOKMARKS_MATCHED: {_bl}]")
             if _chrome_snap.get("history"):
                 _hl = "; ".join(h["title"] for h in _chrome_snap["history"][:3])
-                _chrome_lines.append(f"[RECENT_HISTORY: {_hl}]")
+                _chrome_lines.append(f"[BROWSER_HISTORY (not a live tab): {_hl}]")
             if _chrome_lines:
                 _chrome_ctx = "\n".join(_chrome_lines)
                 g_ctx = f"{g_ctx}\n{_chrome_ctx}" if g_ctx else _chrome_ctx
