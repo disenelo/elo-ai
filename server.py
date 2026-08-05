@@ -2467,6 +2467,12 @@ def _process_turn(raw: str) -> dict:
         except Exception as _spine_err:
             import sys as _sys; print(f"[spine] FAILED: {_spine_err}", file=_sys.stderr)
 
+        # WO-032: track whether this turn actually attempted an LLM call.
+        # Direct/greeting/command turns never set this; only the LLM else-block does.
+        # Gates the "Can't reach my thinking" degraded message so it can't false-fire
+        # on signal-word or spine-direct turns where no backend was ever called.
+        _llm_turn = False
+
         # ── Multilingual greeting (highest priority, checked before spine pools) ──
         _lang_query = _detect_language_query(_raw_lower)
         if _lang_query:
@@ -2492,6 +2498,7 @@ def _process_turn(raw: str) -> dict:
 
         # ── Spine needs LLM: run capabilities then backend ────────────────────
         else:
+            _llm_turn = True   # WO-032: genuine LLM attempt — degraded message allowed
             try:
                 # Control Plane context — appended to system prompt just before LLM call.
                 if _plan and getattr(_plan, "control_context", ""):
@@ -2736,7 +2743,8 @@ def _process_turn(raw: str) -> dict:
             try:
                 import time as _bh_time, json as _bh_json
                 _bh_expected = active_backend()
-                _bh_degraded = (backend_used == "mock" and _bh_expected != "mock"
+                _bh_degraded = (_llm_turn and backend_used == "mock"
+                                and _bh_expected != "mock"
                                 and os.environ.get("ELO_BACKEND", "") != "mock")
                 _bh_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                         "blender", "backend_health.json")
@@ -3013,6 +3021,20 @@ def _process_turn(raw: str) -> dict:
         state_manager.save(_state)
 
         response = _sanitise(response)
+
+        # WO-043: scrub leaked control markers from LLM response.
+        # The web-search injection prepends [WEB_SEARCH: query] to the user input;
+        # the model sometimes echoes it. Strip any [UPPER_WORD...] token at the
+        # start of the response so it never reaches chat display or TTS.
+        try:
+            import re as _scrub_re
+            response = _scrub_re.sub(
+                r"^\s*\[[A-Z][A-Z_\s:][^\]]{0,80}\]\s*",
+                "",
+                response,
+            ).strip() or response
+        except Exception:
+            pass
 
         # ── Multi-bubble split ────────────────────────────────────────────────
         # Split on paragraph breaks → one bubble per paragraph.
