@@ -50,6 +50,12 @@
       "status": "done",
       "commit": "882876d",
       "detail": "File-drop round-trip verified. 9/9 AT."
+    },
+    {
+      "wo": "WO-035b",
+      "status": "in_review",
+      "commit": "49323a8",
+      "detail": "Semantic sit intent — Layer 1.5 pattern classifier in presence_faculty + server.py. Catches: 'join me' / 'would you sit' / 'why don't you sit' / 'can you come sit' / 'feel like sitting' / 'come chill with me' / 'park yourself here'. 2 false-positive guards (I need to sit and think, let's sit back and watch). Fires only when exact _signal_word_intent() misses. 15/15 AT test_wo035b_semantic_sit_intent.py. David: live-confirm with any of those phrasings to close."
     }
   ]
 }
