@@ -55,7 +55,8 @@ _AI_PREAMBLES = [
 _WORLD_LORE_TERMS = [
     "sugarcore", "jellydrop", "dessert desert", "gummy lands",
     "ice cream mountain", "chocolate mountain", "cyber garden",
-    "orb system", "the orb", "world stage", "k-7", "k7",
+    "orb system", "the orb",
+    # k-7, k7, "world stage" removed — canon characters/concepts, not hallucinated lore
 ]
 
 
@@ -83,6 +84,10 @@ def _is_duplicate(new: str, prev: str, threshold: float = 0.75) -> bool:
 
 # per-action last-response tracker (session-scoped, in-process)
 _last_responses: dict[str, str] = {}
+
+# WO-032: session-level Groq 429 flag — mirrors the OpenAI quota pattern.
+# Set on first 429; cleared if Groq recovers (not implemented yet — session restart clears it).
+_groq_quota_exceeded: bool = False
 
 # singleton mock backend — preserves anti-repetition buffer across all mock calls this session
 _mock_backend_instance = None
@@ -483,20 +488,31 @@ def route(
     if mode == "groq":
         # WO-032: pinned Groq mode — voice-consistent, no Claude/OpenAI drift.
         # Falls through to Cerebras → Mock only; never touches OpenAI, Gemini, or Claude.
-        if _groq_available():
+        # WO-032 fix: lore drift falls to Cerebras (not mock directly); 429 sets quota flag.
+        global _groq_quota_exceeded
+        _groq_fell_through = False
+        if _groq_available() and not _groq_quota_exceeded:
             try:
                 raw = _groq_call(system_prompt, user_input, max_tokens=_budget)
                 if _has_lore_drift(raw, user_input):
-                    return _mock_fallback(user_input, action=action), "mock"
-                normalised = normalise(raw, max_sentences)
-                if action in ("build", "celebrate"):
-                    stripped = _strip_trailing_question(normalised)
-                    if stripped:
-                        normalised = stripped
-                _last_responses[action] = normalised
-                return normalised, "groq"
+                    # Lore drift: Cerebras may give a cleaner answer — don't go straight to mock
+                    _logger.warning("Groq lore drift detected — trying Cerebras")
+                    _groq_fell_through = True
+                else:
+                    normalised = normalise(raw, max_sentences)
+                    if action in ("build", "celebrate"):
+                        stripped = _strip_trailing_question(normalised)
+                        if stripped:
+                            normalised = stripped
+                    _last_responses[action] = normalised
+                    return normalised, "groq"
             except Exception as e:
-                _logger.warning("Groq failed in pinned mode: %s", e)
+                import httpx as _hx
+                if isinstance(e, _hx.HTTPStatusError) and e.response.status_code == 429:
+                    _groq_quota_exceeded = True
+                    _logger.warning("Groq 429 — skipping for this session, routing to Cerebras")
+                else:
+                    _logger.warning("Groq failed in pinned mode: %s", e)
         if _cerebras_available():
             try:
                 raw = _cerebras_call(system_prompt, user_input, max_tokens=_budget)

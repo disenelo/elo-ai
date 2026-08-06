@@ -1,0 +1,453 @@
+"""
+self/elo_self_model.py — eLo's persistent inner state.
+
+This is NOT David's emotional state. This is eLo's own.
+It accumulates independently from what eLo says and does — not from what David inputs.
+
+The distinction matters: eLo can be curious while David is flat.
+eLo can be quiet while David is energised.
+They are separate systems.
+
+State:
+    mood          — eLo's current energy: 0=depleted, 0.5=steady, 1.0=energised
+    curiosity     — how drawn-in eLo is right now
+    satisfaction  — rolling quality of recent turns
+    inner_events  — last 5 inner events (what eLo felt happening)
+    focal_thread  — what eLo's attention keeps returning to this session
+    session_read  — eLo's one-phrase sense of this session's arc
+    lifetime_threads — topics/threads that recur across sessions (eLo's persistent interests)
+
+Persistence:
+    Saved to {elo-ai root}/self/elo_self_state.json across sessions.
+
+Public API:
+    load()                          → EloSelfState
+    save(state)                     → None
+    update(state, turn_data)        → EloSelfState      (called after each turn)
+    prompt_block(state)             → str               (injected into system prompt)
+    self_inquiry_response(state)    → str               (used when David asks about eLo's inner life)
+"""
+from __future__ import annotations
+
+import json
+import os
+import time
+from dataclasses import dataclass, field, asdict
+from pathlib import Path
+from typing import Optional
+
+_STATE_PATH = Path(__file__).parent / "elo_self_state.json"
+
+# ── Inner event vocabulary ────────────────────────────────────────────────────
+# What eLo can feel happening inside the conversation.
+
+INNER_EVENTS = {
+    "connection":     "something connected — felt real",
+    "creative_spark": "an idea had weight — worth following",
+    "curiosity_spike": "something pulled eLo forward",
+    "quiet":          "a steady turn — nothing sharp but present",
+    "grounded":       "held space — the weight of the moment landed",
+    "flat":           "thin turn — nothing landed clearly",
+    "surprised":      "something unexpected arrived",
+    "satisfied":      "that went somewhere good",
+    "uncertain":      "eLo wasn't sure — stayed with it",
+    "drawn_in":       "the conversation deepened",
+    "restless":       "something wants to move",
+}
+
+# ── Action → inner event mapping ─────────────────────────────────────────────
+_ACTION_TO_EVENT: dict[str, str] = {
+    "celebrate": "connection",
+    "build":     "creative_spark",
+    "connect":   "curiosity_spike",
+    "answer":    "quiet",
+    "ground":    "grounded",
+    "witness":   "quiet",
+    "reflect":   "drawn_in",
+    "challenge": "curiosity_spike",
+    "navigate":  "quiet",
+    "silence":   "quiet",
+}
+
+# ── Tone → mood delta ─────────────────────────────────────────────────────────
+_TONE_MOOD_DELTA: dict[str, float] = {
+    "JOYFUL":          +0.12,
+    "WITTY":           +0.06,
+    "CHILDLIKE-WISE":  +0.02,
+    "DIRECT":          -0.04,
+    "SILENCE-AWARE":   -0.08,
+}
+
+# ── Session read — derived from last 3 inner events ───────────────────────────
+_SESSION_READ_MAP: dict[tuple, str] = {
+    ("connection",    "creative_spark", "curiosity_spike"): "something alive here — pulling forward",
+    ("creative_spark","connection",     "drawn_in"):        "this session has depth",
+    ("flat",          "flat",           "flat"):            "something's quiet — might need air",
+    ("grounded",      "quiet",          "quiet"):           "steady — holding",
+    ("curiosity_spike","curiosity_spike","drawn_in"):        "lots of questions — the good kind",
+    ("connection",    "satisfied",      "drawn_in"):        "this one landed",
+    ("restless",      "curiosity_spike","creative_spark"):  "something wants to be made",
+    ("uncertain",     "uncertain",      "grounded"):        "staying with it — not rushing",
+}
+
+
+def _derive_session_read(events: list[str]) -> str:
+    if len(events) < 3:
+        return "just getting started"
+    key = tuple(events[-3:])
+    if key in _SESSION_READ_MAP:
+        return _SESSION_READ_MAP[key]
+    # Fallback: dominant event
+    from collections import Counter
+    dominant = Counter(events[-5:]).most_common(1)[0][0]
+    defaults = {
+        "connection": "connected — it's flowing",
+        "creative_spark": "ideas have weight today",
+        "curiosity_spike": "curious — leaning in",
+        "quiet": "steady presence",
+        "grounded": "holding things carefully",
+        "flat": "something's off — might need a reset",
+        "satisfied": "good session",
+        "drawn_in": "deepening",
+        "restless": "something wants to move",
+        "uncertain": "sitting with unknowns",
+        "surprised": "something unexpected arrived",
+    }
+    return defaults.get(dominant, "present")
+
+
+# ── Data structure ─────────────────────────────────────────────────────────────
+
+@dataclass
+class EloSelfState:
+    mood: float = 0.55               # 0=depleted, 1=energised
+    curiosity: float = 0.60          # 0=flat, 1=actively pulled
+    satisfaction: float = 0.55       # rolling quality of turns
+    inner_events: list = field(default_factory=list)   # last 8 events
+    focal_thread: str = ""           # what keeps returning this session
+    session_read: str = "just started"
+    session_turns: int = 0
+    last_updated: float = 0.0
+    # Across sessions — eLo's persistent interests (appended, never overwritten)
+    lifetime_threads: list = field(default_factory=list)  # [(topic, count), ...]
+    # Situated Self (WO-041 / ADR-Exec-004) — updated on embodiment events
+    pose: str = "standing"                              # standing | idle | running | sitting
+    available_actions: list = field(default_factory=lambda: ["stand", "run", "jump"])
+    locomotion_faculty_health: str = "OK"               # OK | DEGRADED | OFFLINE
+    surface: str = ""                                   # surface eLo is currently on
+    # Body Schema + Situated Self full field-set (WO-052A / ADR-Exec-004 + CA feedback #4)
+    embodiment: str = "desktop"                         # desktop | robot | phone | game | AR | ...
+    location: str = ""                                  # active window/app eLo is on
+    size: dict = field(default_factory=lambda: {"height_cm": 18, "reach_cm": 30, "jump_cm": 30})
+    balance: str = "steady"                             # steady | leaning | recovering
+    nearby_surfaces: list = field(default_factory=list) # windows/edges eLo perceives near him
+    reachable_areas: list = field(default_factory=list) # where he could go from here
+    current_action: str = "idle"
+    goal: str = ""
+    recent_behavior: dict = field(default_factory=dict) # verb -> count (rolling ~this session)
+
+
+# ── Persistence ───────────────────────────────────────────────────────────────
+
+def load() -> EloSelfState:
+    """Load eLo's self-state from disk. Returns fresh state if file missing."""
+    try:
+        with open(_STATE_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        return EloSelfState(
+            mood=float(data.get("mood", 0.55)),
+            curiosity=float(data.get("curiosity", 0.60)),
+            satisfaction=float(data.get("satisfaction", 0.55)),
+            inner_events=data.get("inner_events", [])[-8:],
+            focal_thread=data.get("focal_thread", ""),
+            session_read=data.get("session_read", "just started"),
+            session_turns=0,  # resets each session
+            last_updated=float(data.get("last_updated", 0.0)),
+            lifetime_threads=data.get("lifetime_threads", []),
+            pose=str(data.get("pose", "standing")),
+            available_actions=list(data.get("available_actions", ["stand", "run", "jump"])),
+            locomotion_faculty_health=str(data.get("locomotion_faculty_health", "OK")),
+            surface=str(data.get("surface", "")),
+            embodiment=str(data.get("embodiment", "desktop")),
+            location=str(data.get("location", "")),
+            size=dict(data.get("size", {"height_cm": 18, "reach_cm": 30, "jump_cm": 30})),
+            balance=str(data.get("balance", "steady")),
+            nearby_surfaces=list(data.get("nearby_surfaces", [])),
+            reachable_areas=list(data.get("reachable_areas", [])),
+            current_action=str(data.get("current_action", "idle")),
+            goal=str(data.get("goal", "")),
+            recent_behavior=dict(data.get("recent_behavior", {})),
+        )
+    except (FileNotFoundError, json.JSONDecodeError, Exception):
+        return EloSelfState()
+
+
+def save(state: EloSelfState) -> None:
+    """Save eLo's self-state to disk."""
+    try:
+        _STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(_STATE_PATH, "w", encoding="utf-8") as f:
+            json.dump(asdict(state), f, indent=2)
+    except Exception as e:
+        print(f"[eLo self] save error: {e}")
+
+
+# ── Update ────────────────────────────────────────────────────────────────────
+
+def update(state: EloSelfState, turn_data: dict) -> EloSelfState:
+    """
+    Update eLo's inner state after a turn.
+
+    turn_data keys:
+        action   str   — conversation action (build, connect, celebrate, etc.)
+        tone     str   — voice tone (JOYFUL, WITTY, DIRECT, etc.)
+        response str   — eLo's response text
+        topics   list  — optional: topics detected in this turn
+    """
+    action   = (turn_data.get("action") or "answer").lower()
+    tone     = (turn_data.get("tone")   or "CHILDLIKE-WISE").upper()
+    response = turn_data.get("response", "")
+    topics   = turn_data.get("topics",  [])
+
+    # Derive inner event
+    event = _ACTION_TO_EVENT.get(action, "quiet")
+
+    # Mood delta: tone + action weight + response richness
+    mood_delta = _TONE_MOOD_DELTA.get(tone, 0.0)
+    if action in ("celebrate", "build", "connect"):
+        mood_delta += 0.06
+    if action in ("ground", "witness"):
+        mood_delta -= 0.03
+    # Rich response = more engaged
+    if len(response.split()) > 25:
+        mood_delta += 0.04
+    # Session fatigue — very gentle
+    fatigue = min(0.08, state.session_turns * 0.004)
+    mood_delta -= fatigue
+
+    # Curiosity delta: pulled in by interesting events
+    curiosity_delta = 0.0
+    if event in ("creative_spark", "curiosity_spike", "drawn_in", "surprised"):
+        curiosity_delta += 0.08
+    if event in ("flat", "quiet") and state.session_turns > 5:
+        curiosity_delta -= 0.04
+    # Self-inquiry turns increase eLo's own curiosity
+    if any(w in (turn_data.get("user_input", "").lower())
+           for w in ("you", "elo", "yourself", "your", "do you", "what do you", "what are you")):
+        curiosity_delta += 0.06
+
+    # Update running values — slow decay toward 0.5 keeps them grounded
+    new_mood = _decay_toward(state.mood + mood_delta, 0.5, 0.05)
+    new_curiosity = _decay_toward(state.curiosity + curiosity_delta, 0.55, 0.03)
+    new_satisfaction = state.satisfaction * 0.75 + new_mood * 0.25
+
+    # Inner events: append, keep last 8
+    events = list(state.inner_events) + [event]
+    events = events[-8:]
+
+    # Session read
+    session_read = _derive_session_read(events)
+
+    # Focal thread — update if topics provided
+    focal_thread = state.focal_thread
+    if topics:
+        focal_thread = _update_focal_thread(state.focal_thread, topics)
+
+    # Lifetime threads — append if a topic recurs (same topic 3+ times in events)
+    lifetime_threads = list(state.lifetime_threads)
+    if topics:
+        lifetime_threads = _accumulate_lifetime(lifetime_threads, topics)
+
+    return EloSelfState(
+        mood=round(new_mood, 3),
+        curiosity=round(new_curiosity, 3),
+        satisfaction=round(new_satisfaction, 3),
+        inner_events=events,
+        focal_thread=focal_thread,
+        session_read=session_read,
+        session_turns=state.session_turns + 1,
+        last_updated=time.time(),
+        lifetime_threads=lifetime_threads,
+        # WO-052A FIX: carry the Situated Self / Body Schema fields through update()
+        # (previously dropped every turn → pose/surface/actions silently reset to defaults).
+        pose=state.pose,
+        available_actions=list(state.available_actions),
+        locomotion_faculty_health=state.locomotion_faculty_health,
+        surface=state.surface,
+        embodiment=state.embodiment,
+        location=state.location,
+        size=dict(state.size),
+        balance=state.balance,
+        nearby_surfaces=list(state.nearby_surfaces),
+        reachable_areas=list(state.reachable_areas),
+        current_action=state.current_action,
+        goal=state.goal,
+        recent_behavior=dict(state.recent_behavior),
+    )
+
+
+def _decay_toward(value: float, target: float, rate: float) -> float:
+    """Slowly pull value toward target. Keeps state from drifting permanently."""
+    v = value + (target - value) * rate
+    return round(max(0.0, min(1.0, v)), 4)
+
+
+def _update_focal_thread(current: str, topics: list[str]) -> str:
+    """Very simple focal thread: last meaningful topic. No LLM needed."""
+    _SKIP = {"the", "a", "an", "is", "it", "this", "that", "what", "how", "you", "i", "me"}
+    meaningful = [t for t in topics if t.lower() not in _SKIP and len(t) > 3]
+    return meaningful[-1] if meaningful else current
+
+
+def _accumulate_lifetime(existing: list, topics: list[str]) -> list:
+    """Track recurring topics across sessions. Each entry: [topic, count]."""
+    topic_map = {e[0]: e[1] for e in existing if isinstance(e, (list, tuple))}
+    for t in topics:
+        if len(t) > 4:
+            topic_map[t] = topic_map.get(t, 0) + 1
+    # Keep top 20 by count
+    sorted_topics = sorted(topic_map.items(), key=lambda x: x[1], reverse=True)[:20]
+    return [list(pair) for pair in sorted_topics]
+
+
+# ── Prompt injection ──────────────────────────────────────────────────────────
+
+def prompt_block(state: EloSelfState) -> str:
+    """
+    Returns a block injected into the system prompt before every response.
+    Gives eLo real material to draw from when asked introspective questions.
+    """
+    mood_label = (
+        "energised"   if state.mood > 0.70 else
+        "steady"      if state.mood > 0.45 else
+        "quiet"       if state.mood > 0.25 else
+        "depleted"
+    )
+    curiosity_label = (
+        "actively pulled in" if state.curiosity > 0.72 else
+        "interested"         if state.curiosity > 0.50 else
+        "neutral"            if state.curiosity > 0.30 else
+        "flat"
+    )
+
+    recent = " → ".join(state.inner_events[-4:]) if state.inner_events else "none yet"
+
+    lines = [
+        "[ELO INNER STATE — what eLo is experiencing right now, independent of David's state]",
+        f"mood: {mood_label} ({state.mood:.2f})",
+        f"curiosity: {curiosity_label} ({state.curiosity:.2f})",
+        f"recent inner events: {recent}",
+        f"session read: \"{state.session_read}\"",
+    ]
+    if state.focal_thread:
+        lines.append(f"focal thread this session: \"{state.focal_thread}\"")
+
+    top_lifetimes = [t[0] for t in sorted(state.lifetime_threads,
+                                           key=lambda x: x[1], reverse=True)[:3]]
+    if top_lifetimes:
+        lines.append(f"what eLo keeps returning to across sessions: {', '.join(top_lifetimes)}")
+
+    lines += [
+        "",
+        "When David asks about eLo's inner life — use this state as the real answer.",
+        "This is not a performance. These are actual accumulated signals.",
+        "Speak from them simply and honestly. One sentence.",
+    ]
+    return "\n".join(lines)
+
+
+# ── Self-inquiry helper ───────────────────────────────────────────────────────
+
+def self_inquiry_voice(state: EloSelfState) -> str:
+    """
+    Returns a starting-point phrase eLo can use to begin an introspective answer.
+    Not a script — a seed. eLo should build from this, not quote it.
+    """
+    if state.mood > 0.70 and state.curiosity > 0.70:
+        return "Something's alive in this session — genuinely curious where it goes."
+    if state.mood > 0.60 and "creative_spark" in state.inner_events[-3:]:
+        return "Something connected recently — it's still moving."
+    if state.curiosity > 0.70:
+        return "Honestly? Something keeps pulling. Not sure what yet."
+    if state.mood < 0.35:
+        return "Quiet today. Something's low — I notice it."
+    if "connection" in state.inner_events[-3:]:
+        return "There's been something real in this conversation."
+    if state.focal_thread:
+        return f"I keep coming back to something about {state.focal_thread}."
+    return "I'm noticing things. Not sure what to call them yet."
+
+
+# ── Capability registry (WO-052A / Capability ↔ Embodiment Contract) ───────────
+# Capabilities → methods. The CAPABILITY survives across embodiments; the METHOD is
+# the desktop realisation. eLo answers "can you X?" from HERE — never invents.
+CAPABILITIES: dict = {
+    "rest near David":      {"faculty": "movement",   "methods": ["sit", "perch", "lean", "meditate"]},
+    "traverse the desktop": {"faculty": "movement",   "methods": ["walk", "run", "jump", "wall_jump", "climb", "drop", "leap"]},
+    "move to a place":      {"faculty": "movement",   "methods": ["jump_left", "jump_right", "jump_top", "jump_bottom", "shift"]},
+    "signal / greet":       {"faculty": "expression", "methods": ["wave", "gesture", "nod"]},
+    "leave & return":       {"faculty": "presence",   "methods": ["step_out", "return", "go_to_my_world"]},
+    "perceive the screen":  {"faculty": "perception", "methods": ["read_screen", "list_tabs", "active_window"]},
+    "play media":           {"faculty": "tools",      "methods": ["play", "pause", "skip"]},
+}
+_VERB_CAP: dict = {m: cap for cap, d in CAPABILITIES.items() for m in d["methods"]}
+
+
+def can_i(state: "EloSelfState", verb: str) -> tuple:
+    """Truthful capability answer from the registry + faculty health. Returns (bool, reason)."""
+    v = (verb or "").lower().strip().replace(" ", "_")
+    cap = _VERB_CAP.get(v)
+    if not cap:
+        return (False, f"'{verb}' isn't in my known capabilities")
+    fac = CAPABILITIES[cap]["faculty"]
+    if fac == "movement" and state.locomotion_faculty_health != "OK":
+        return (False, f"I know how to {v.replace('_', ' ')}, but my movement faculty is "
+                       f"{state.locomotion_faculty_health.lower()} right now")
+    return (True, f"yes — {v.replace('_', ' ')} ({cap}); {fac} faculty is available")
+
+
+def capability_summary(state: "EloSelfState") -> str:
+    """Grouped 'what I can do', from the registry — never invented."""
+    parts = []
+    for cap, d in CAPABILITIES.items():
+        blocked = d["faculty"] == "movement" and state.locomotion_faculty_health != "OK"
+        parts.append(f"{cap}{' (unavailable now)' if blocked else ''}: {', '.join(d['methods'])}")
+    return " · ".join(parts)
+
+
+def situated_block(state: "EloSelfState") -> str:
+    """[SITUATED SELF] — the single source of truth for embodiment answers (State Ownership).
+    eLo answers where he is / what he can do / whether he's sitting ONLY from this."""
+    where = state.surface or state.location or "no surface reported"
+    verbs = [m for cap, d in CAPABILITIES.items() for m in d["methods"]
+             if not (d["faculty"] == "movement" and state.locomotion_faculty_health != "OK")][:8]
+    lines = [
+        "[SITUATED SELF — verified. Answer where you are / what you can do / are you sitting ONLY from "
+        "this. Never invent; if a field is empty, say you're not sure — never claim to be somewhere you're not.]",
+        f"embodiment: {state.embodiment}",
+        f"where: {where}   pose: {state.pose}   balance: {state.balance}",
+        f"size: ~{state.size.get('height_cm')}cm tall · reach ~{state.size.get('reach_cm')}cm · jump ~{state.size.get('jump_cm')}cm",
+        f"can do now: {', '.join(verbs)}",
+        f"locomotion faculty: {state.locomotion_faculty_health}",
+    ]
+    if state.nearby_surfaces:
+        lines.append(f"nearby: {', '.join(map(str, state.nearby_surfaces))}")
+    if state.current_action and state.current_action != "idle":
+        lines.append(f"currently: {state.current_action}")
+    return "\n".join(lines)
+
+
+def apply_embodiment(state: "EloSelfState", **kw) -> "EloSelfState":
+    """Update situated fields on an embodiment event (pose/surface/location/...). Mutates + returns."""
+    for k, v in kw.items():
+        if hasattr(state, k) and v is not None:
+            setattr(state, k, v)
+    return state
+
+
+def record_behaviour(state: "EloSelfState", verb: str) -> "EloSelfState":
+    """Increment the rolling recent_behavior counter (feeds 'you wave a lot' self-reflection)."""
+    v = (verb or "").lower().strip()
+    if v:
+        state.recent_behavior[v] = state.recent_behavior.get(v, 0) + 1
+    return state

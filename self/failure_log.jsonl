@@ -1,0 +1,2 @@
+{"ts": "2026-07-27T05:46:34+00:00", "project": "elo-os", "action": "build", "delta": "partial", "summary": "The integration attempt for the Reflection Faculty hit an obstacle — the vault_layer write_memory signature was different than expected. Partial success: structure written, deep tier incomplete."}
+{"ts": "2026-07-27T05:46:34+00:00", "project": "elo-os", "action": "build", "delta": "failed", "summary": "The memory vault write completely failed due to missing directory. The integrate_session call could not write the tiered record."}

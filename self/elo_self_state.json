@@ -1,0 +1,28 @@
+{
+  "mood": 0.266,
+  "curiosity": 1.0,
+  "satisfaction": 0.312,
+  "inner_events": [
+    "creative_spark",
+    "drawn_in",
+    "drawn_in",
+    "quiet",
+    "quiet",
+    "drawn_in",
+    "drawn_in",
+    "drawn_in"
+  ],
+  "focal_thread": "",
+  "session_read": "deepening",
+  "session_turns": 0,
+  "last_updated": 1786030258.304529,
+  "lifetime_threads": [],
+  "pose": "standing",
+  "available_actions": [
+    "stand",
+    "run",
+    "jump"
+  ],
+  "locomotion_faculty_health": "OK",
+  "surface": ""
+}

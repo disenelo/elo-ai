@@ -77,7 +77,12 @@ from expression.expression_mapper import build_expression as _expr_build, map_em
 from voice.voice_engine import speak as _voice_speak
 from memory import personality_drift as _personality_drift
 from elo_personality_engine.injection_layer import load_personality_profile as _load_profile
-from self.elo_self_model import load as _self_load, update as _self_update, save as _self_save, prompt_block as _self_prompt_block
+from self.elo_self_model import (
+    load as _self_load, update as _self_update, save as _self_save,
+    prompt_block as _self_prompt_block,
+    apply_embodiment as _self_apply_embodiment,
+    situated_block as _self_situated_block,
+)
 
 # ── session state (shared across requests, protected by lock) ─────────────────
 
@@ -95,7 +100,8 @@ _last_pp         = None   # last known presence_plan — survives tool-call turn
 # WO-041: pending embodiment action tracker — set when a sit/move intent fires,
 # cleared on timeout or when Unity ACKs completion (or a new intent replaces it).
 # WO-054: "queued" holds an intent that arrived while sit is in-flight; emitted once sit clears.
-_PENDING_SIT: dict = {"active": False, "since": 0.0, "queued": None}
+_PENDING_SIT:  dict = {"active": False, "since": 0.0, "queued": None}
+_PENDING_MOVE: dict = {"active": False, "since": 0.0, "direction": ""}   # IO contract UP/DOWN
 _pscheduler      = _PresenceScheduler()
 _behaviour_gate  = _BehaviourGate()
 
@@ -106,7 +112,8 @@ except Exception:
     _personality_profile = None
 _fallback        = _MockBackend()
 
-_BLENDER_STATE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "blender_state.json")
+_BLENDER_STATE_PATH  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "blender_state.json")
+_UNITY_EVENTS_PATH   = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "unity_events.json")
 
 
 def _signal_greeting_event(greeting_type: str) -> None:
@@ -308,6 +315,27 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "feel at home":        "explore",
     "your playground":     "explore",
     "explore":             "explore",
+    # Directional movement — emits move_command (IO contract: DOWN channel blender_state.json)
+    "go left":              {"name": "move", "direction": "left"},
+    "move left":            {"name": "move", "direction": "left"},
+    "shift left":           {"name": "move", "direction": "left"},
+    "go to the left":       {"name": "move", "direction": "left"},
+    "go right":             {"name": "move", "direction": "right"},
+    "move right":           {"name": "move", "direction": "right"},
+    "shift right":          {"name": "move", "direction": "right"},
+    "go to the right":      {"name": "move", "direction": "right"},
+    "go up":                {"name": "move", "direction": "up"},
+    "move up":              {"name": "move", "direction": "up"},
+    "up a bit":             {"name": "move", "direction": "up"},
+    "go down":              {"name": "move", "direction": "down"},
+    "move down":            {"name": "move", "direction": "down"},
+    "jump down":            {"name": "move", "direction": "down"},
+    "get down":             {"name": "move", "direction": "down"},
+    "go lower":             {"name": "move", "direction": "down"},
+    "shift over":           {"name": "move", "direction": "over"},
+    "move over":            {"name": "move", "direction": "over"},
+    "scoot over":           {"name": "move", "direction": "over"},
+    "get out of the way":   {"name": "move", "direction": "over"},
     # Sit with David — direct commands (WO-035: expanded for natural phrasings)
     "come here":           {"name": "sit", "target": "cursor"},
     "come to me":          {"name": "sit", "target": "cursor"},
@@ -2390,24 +2418,97 @@ def _process_turn(raw: str) -> dict:
                 attention_model = dict(attention_model)
                 attention_model["high_priority_memory"] = [_why] + _hp
 
-        # WO-041: verify-before-speak — if a sit action is pending and not yet
-        # ACKed by Unity, inject a transit note so the LLM says "heading over"
-        # rather than claiming "I'm sitting with you" before it has arrived.
+        # WO-041: verify-before-speak — gate Executive speech on sit_complete ACK.
+        # eLo NEVER claims "I'm sitting" until Unity writes sit_complete=true.
+        # Timeout (15s) → honest fallback (ADR-Exec-001). Never a false claim.
         import time as _wo41_time
         if _PENDING_SIT["active"]:
             _sit_age = _wo41_time.time() - _PENDING_SIT["since"]
-            if _sit_age < 45.0:
+            _sit_acked = False
+            _sit_ack_event: dict = {}
+            try:
+                with open(_UNITY_EVENTS_PATH, encoding="utf-8") as _bsf:
+                    _sit_ack_event = json.load(_bsf)
+                # ACK valid only if type=sit_complete AND timestamp is after we sent the intent
+                _sit_acked = (
+                    _sit_ack_event.get("type") == "sit_complete"
+                    and float(_sit_ack_event.get("_ts", 0)) > _PENDING_SIT["since"]
+                )
+            except Exception:
+                pass
+            if _sit_acked:
+                # ACK received — body confirms sit. Update Situated Self.
+                _PENDING_SIT["active"] = False
+                _elo_self.pose = "idle"
+                _elo_self.available_actions = ["stand", "look", "wave", "gesture"]
+                try:
+                    with open(_BLENDER_STATE_PATH, encoding="utf-8") as _bsf2:
+                        _elo_self.surface = str(json.load(_bsf2).get("surface_type", ""))
+                except Exception:
+                    pass
+                _self_save(_elo_self)
+                # Consume the ACK so next sit starts fresh
+                try:
+                    with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bsf3:
+                        json.dump({}, _bsf3)
+                except Exception:
+                    pass
+            elif _sit_age < 15.0:
                 _transit_note = (
                     "[MOVEMENT IN TRANSIT — WO-041] You issued a sit intent in a recent turn. "
                     "You are currently MOVING toward David — you have NOT arrived yet. "
                     "If you reference your physical position this turn, say 'heading over' / "
                     "'on my way' — NEVER 'I'm sitting with you' or 'I'm right beside you'. "
-                    "Claim completion only after you have been there for a moment."
+                    "Claim completion only after Unity confirms arrival."
                 )
                 g_ctx = f"{g_ctx}\n{_transit_note}" if g_ctx else _transit_note
             else:
-                # timeout — assume arrival
+                # 15s timeout — honest fallback (ADR-Exec-001), never assume arrival
                 _PENDING_SIT["active"] = False
+                _timeout_note = (
+                    "[SIT_FAILED — WO-041] The sit command timed out — body did not confirm. "
+                    "If you reference your physical position this turn, say something honest: "
+                    "'I tried to come sit with you but couldn't reach my spot — something pulled me back.' "
+                    "Never claim you are sitting. Body truth only."
+                )
+                g_ctx = f"{g_ctx}\n{_timeout_note}" if g_ctx else _timeout_note
+
+        # Move verify-before-speak (IO contract — same loop as sit, every move verb)
+        if _PENDING_MOVE["active"]:
+            _move_age = _wo41_time.time() - _PENDING_MOVE["since"]
+            _move_acked = False
+            try:
+                with open(_UNITY_EVENTS_PATH, encoding="utf-8") as _bsmf:
+                    _mv_ev = json.load(_bsmf)
+                _move_acked = (
+                    _mv_ev.get("type") == "move_complete"
+                    and float(_mv_ev.get("_ts", 0)) > _PENDING_MOVE["since"]
+                )
+            except Exception:
+                pass
+            if _move_acked:
+                _PENDING_MOVE["active"] = False
+                try:
+                    with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bsmf2:
+                        json.dump({}, _bsmf2)
+                except Exception:
+                    pass
+            elif _move_age < 8.0:
+                _mv_dir = _PENDING_MOVE.get("direction", "")
+                _move_transit = (
+                    f"[MOVEMENT IN TRANSIT] You issued a move command ({_mv_dir or 'unknown direction'}). "
+                    "Body has NOT confirmed arrival. Do not say 'I moved' or 'I'm over there'. "
+                    "Say 'heading over' or 'on my way' only if directly asked."
+                )
+                g_ctx = f"{g_ctx}\n{_move_transit}" if g_ctx else _move_transit
+            else:
+                _PENDING_MOVE["active"] = False
+                _move_fail = (
+                    "[MOVE_FAILED] Move command timed out — body did not confirm. "
+                    "If asked, say honestly you tried to move but something held you back. "
+                    "Never claim you moved. Body truth only."
+                )
+                g_ctx = f"{g_ctx}\n{_move_fail}" if g_ctx else _move_fail
 
         _mode_str = exec_decision.get("mode", "CONVERSATIONAL") if exec_decision else "CONVERSATIONAL"
         _pers_block = _personality_profile.to_prompt_block(_mode_str) if _personality_profile else ""
@@ -2515,9 +2616,10 @@ def _process_turn(raw: str) -> dict:
                 if _plan and getattr(_plan, "control_context", ""):
                     system = system + "\n\n" + _plan.control_context
 
-                # Perch awareness — inject current window position so eLo can answer
-                # "where are you?" accurately without vision. Always present; harmless
-                # when not queried. perch_state.json written by Unity on every window change.
+                # STATE OWNERSHIP (WO-059/052A): perch_state.json written by Unity on
+                # every window change → update elo_self_state → inject situated_block.
+                # eLo answers "where are you / can you sit / what's your pose" ONLY from
+                # this structured block. Never invents a location.
                 try:
                     _perch_file = os.path.join(
                         os.path.dirname(os.path.abspath(__file__)), "blender", "perch_state.json"
@@ -2527,13 +2629,14 @@ def _process_turn(raw: str) -> dict:
                     _perch_app  = _perch.get("app", "")
                     _perch_edge = _perch.get("edge", "")
                     if _perch_app:
-                        system = system + (
-                            f"\n\n[BODY POSITION] You are currently perched on the "
-                            f"{_perch_edge} edge of {_perch_app}. "
-                            f"When asked where you are, answer from this — never say you can't see yourself."
+                        _self_apply_embodiment(
+                            _elo_self,
+                            location=_perch_app,
+                            surface=f"{_perch_edge} edge of {_perch_app}" if _perch_edge else _perch_app,
                         )
                 except Exception:
                     pass
+                system = system + "\n\n" + _self_situated_block(_elo_self)
 
                 # Capability self-awareness — inject a live capability summary so eLo
                 # can answer "what can you do" / "be more aware of yourself" accurately
@@ -2744,9 +2847,7 @@ def _process_turn(raw: str) -> dict:
                     _rt_json.dump(_rt_data, _rt_f, ensure_ascii=False, indent=2)
                 os.replace(_rt_tmp, _rt_path)
             except Exception:
-                pass
-                response = "Not connecting right now. Try again in a moment."
-                backend_used = "mock(fallback)"
+                pass   # routing trace write failure is non-fatal — response unchanged
 
             # WO-032: write backend_health.json so dashboard can show MOCK ⚠.
             # When keys are set but API calls fail → backend_used=="mock" while
@@ -2932,9 +3033,30 @@ def _process_turn(raw: str) -> dict:
                         _mv_intent = ""
                         g_ctx = g_ctx + "\n[ALREADY_IN_MOTION: sit already commanded — acknowledge briefly, don't re-announce]" if g_ctx else "[ALREADY_IN_MOTION: sit already commanded — acknowledge briefly, don't re-announce]"
                     else:
+                        # Situated Self READ (ADR-Exec-004) — read before planning
+                        _sit_self_pose   = getattr(_elo_self, "pose", "standing")
+                        _sit_self_acts   = getattr(_elo_self, "available_actions", [])
+                        _sit_self_loco   = getattr(_elo_self, "locomotion_faculty_health", "OK")
+                        _sit_self_surf   = getattr(_elo_self, "surface", "")
+                        _self_ctx_parts  = [
+                            f"[SITUATED_SELF — WO-041] Current pose: {_sit_self_pose}.",
+                            f"Available actions: {', '.join(_sit_self_acts) if _sit_self_acts else 'unknown'}.",
+                            f"Locomotion faculty: {_sit_self_loco}.",
+                        ]
+                        if _sit_self_surf:
+                            _self_ctx_parts.append(f"Surface: {_sit_self_surf}.")
+                        if _sit_self_loco in ("OFFLINE", "DEGRADED"):
+                            _self_ctx_parts.append("WARN: locomotion degraded — sit may fail.")
+                        _self_ctx = " ".join(_self_ctx_parts)
+                        g_ctx = (g_ctx + "\n" + _self_ctx) if g_ctx else _self_ctx
                         _PENDING_SIT["active"] = True
                         _PENDING_SIT["since"]  = _now54
                         _PENDING_SIT["queued"] = None
+                elif isinstance(_mv_intent, dict) and _mv_intent.get("name") == "move":
+                    # Directional move intent — activate pending tracker (IO contract)
+                    _PENDING_MOVE["active"]    = True
+                    _PENDING_MOVE["since"]     = _now54
+                    _PENDING_MOVE["direction"] = _mv_intent.get("direction", "")
                 elif _PENDING_SIT["active"]:
                     if _now54 - _PENDING_SIT["since"] > 45.0:
                         # Timeout: clear sit, emit queued intent if any.
@@ -3061,6 +3183,31 @@ def _process_turn(raw: str) -> dict:
                 "",
                 response,
             ).strip() or response
+        except Exception:
+            pass
+
+        # WO-036b: deterministic mirror scrub — strip banned opener before TTS/display.
+        # Prompt monitor (reactive, WO-036) is not enough — this fires every turn.
+        try:
+            _MIRROR_OPENERS = (
+                "i notice you", "i see you", "i hear you", "i notice that you",
+                "you've been", "you're offering", "you seem to be", "you seem ",
+                "it seems you", "it sounds like you", "it feels like you",
+                "i can see you", "i can feel you",
+            )
+            _resp_stripped = response.lstrip()
+            _resp_lower    = _resp_stripped.lower()
+            for _mo in _MIRROR_OPENERS:
+                if _resp_lower.startswith(_mo):
+                    # Strip first sentence (up to first . ? !) — keep the rest
+                    _end = next(
+                        (i for i, c in enumerate(_resp_stripped) if c in ".?!" and i > 8),
+                        -1,
+                    )
+                    _tail = _resp_stripped[_end + 1:].lstrip(" —,\n") if _end > 0 else ""
+                    if len(_tail) > 12:
+                        response = _tail
+                    break
         except Exception:
             pass
 
