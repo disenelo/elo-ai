@@ -124,6 +124,13 @@ def write(
         payload["intent"] = intent
         if isinstance(intent, dict) and intent.get("name") == "sit":
             payload["sit_command"] = {"_ts": round(time.time(), 3)}
+        elif isinstance(intent, dict) and intent.get("name") == "move":
+            # sub_type (fire_jump/wall_jump/step_back_run_fire/drop) takes priority;
+            # otherwise map directional → ExecuteNav type (IO contract DOWN channel)
+            _D2NAV = {"left": "jump_left", "right": "jump_right",
+                      "up": "jump_top", "down": "jump_bottom", "over": "shift"}
+            _nav_type = intent.get("sub_type") or _D2NAV.get(intent.get("direction", ""), intent.get("direction", ""))
+            payload["move_command"] = {"type": _nav_type, "_ts": round(time.time(), 3)}
         elif intent == "step_out":
             payload["leave_command"] = {"_ts": round(time.time(), 3)}
         elif intent == "return_elo":
@@ -205,6 +212,13 @@ def write_with_presence(
         payload["intent"] = intent
         if isinstance(intent, dict) and intent.get("name") == "sit":
             payload["sit_command"] = {"_ts": round(time.time(), 3)}
+        elif isinstance(intent, dict) and intent.get("name") == "move":
+            # sub_type (fire_jump/wall_jump/step_back_run_fire/drop) takes priority;
+            # otherwise map directional → ExecuteNav type (IO contract DOWN channel)
+            _D2NAV = {"left": "jump_left", "right": "jump_right",
+                      "up": "jump_top", "down": "jump_bottom", "over": "shift"}
+            _nav_type = intent.get("sub_type") or _D2NAV.get(intent.get("direction", ""), intent.get("direction", ""))
+            payload["move_command"] = {"type": _nav_type, "_ts": round(time.time(), 3)}
         elif intent == "step_out":
             payload["leave_command"] = {"_ts": round(time.time(), 3)}
         elif intent == "return_elo":

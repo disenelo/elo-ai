@@ -101,7 +101,7 @@ _last_pp         = None   # last known presence_plan — survives tool-call turn
 # cleared on timeout or when Unity ACKs completion (or a new intent replaces it).
 # WO-054: "queued" holds an intent that arrived while sit is in-flight; emitted once sit clears.
 _PENDING_SIT:  dict = {"active": False, "since": 0.0, "queued": None}
-_PENDING_MOVE: dict = {"active": False, "since": 0.0, "direction": ""}   # IO contract UP/DOWN
+_PENDING_MOVE: dict = {"active": False, "since": 0.0, "direction": "", "sub_type": ""}  # IO contract UP/DOWN
 _PENDING_EXIT: dict = {"active": False, "since": 0.0}                     # IO contract UP/DOWN exit_complete ACK
 _pscheduler      = _PresenceScheduler()
 _behaviour_gate  = _BehaviourGate()
@@ -321,6 +321,18 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "feel at home":        "explore",
     "your playground":     "explore",
     "explore":             "explore",
+    # Free-form move sub-types (Designer: fire_jump | wall_jump | step_back_run_fire | drop)
+    "fire jump":            {"name": "move", "sub_type": "fire_jump"},
+    "do a fire jump":       {"name": "move", "sub_type": "fire_jump"},
+    "wall jump":            {"name": "move", "sub_type": "wall_jump"},
+    "do a wall jump":       {"name": "move", "sub_type": "wall_jump"},
+    "climb that":           {"name": "move", "sub_type": "wall_jump"},
+    "climb it":             {"name": "move", "sub_type": "wall_jump"},
+    "back up and run":      {"name": "move", "sub_type": "step_back_run_fire"},
+    "run at it":            {"name": "move", "sub_type": "step_back_run_fire"},
+    "step back and run":    {"name": "move", "sub_type": "step_back_run_fire"},
+    "drop down":            {"name": "move", "sub_type": "drop"},
+    "drop off":             {"name": "move", "sub_type": "drop"},
     # Directional movement — emits move_command (IO contract: DOWN channel blender_state.json)
     "go left":              {"name": "move", "direction": "left"},
     "move left":            {"name": "move", "direction": "left"},
@@ -2500,7 +2512,7 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
             elif _move_age < 8.0:
-                _mv_dir = _PENDING_MOVE.get("direction", "")
+                _mv_dir = _PENDING_MOVE.get("sub_type", "") or _PENDING_MOVE.get("direction", "")
                 _move_transit = (
                     f"[MOVEMENT IN TRANSIT] You issued a move command ({_mv_dir or 'unknown direction'}). "
                     "Body has NOT confirmed arrival. Do not say 'I moved' or 'I'm over there'. "
@@ -3098,10 +3110,11 @@ def _process_turn(raw: str) -> dict:
                         _PENDING_SIT["since"]  = _now54
                         _PENDING_SIT["queued"] = None
                 elif isinstance(_mv_intent, dict) and _mv_intent.get("name") == "move":
-                    # Directional move intent — activate pending tracker (IO contract)
+                    # Directional or sub-type move intent — activate pending tracker (IO contract)
                     _PENDING_MOVE["active"]    = True
                     _PENDING_MOVE["since"]     = _now54
                     _PENDING_MOVE["direction"] = _mv_intent.get("direction", "")
+                    _PENDING_MOVE["sub_type"]  = _mv_intent.get("sub_type", "")
                 elif _mv_intent == "step_out":
                     # Exit intent — activate pending tracker; gate "stepping away" on exit_complete
                     _PENDING_EXIT["active"] = True
