@@ -35,9 +35,9 @@ _INTENT_PATTERNS: list[tuple[str, list[str]]] = [
         r"\bturn\s+(?:the\s+)?(?:volume|brightness)\b",
         r"\b(?:set|put)\s+(?:the\s+)?(?:volume|brightness)\b",
         r"\b(?:open|launch|start)\s+\w+\s*(?:app|application)?\b",
-        # WO-039: require command to appear at sentence start — prevents prose words
-        # ("built", "called") that fuzzy-match to "quit" from triggering system intent
-        r"^(?:please\s+)?(?:quit|exit|close|kill|force.?quit)\s+\w+",
+        # WO-039b: require a real app/process TARGET — "close friends"/"exit strategy"
+        # must NOT fire (no real target). Target = known app word OR explicit "app/window/tab/process".
+        r"^(?:please\s+)?(?:quit|exit|close|kill|force.?quit)\s+(?:the\s+)?(?:app|window|tab|browser|finder|chrome|safari|terminal|vscode|code|spotify|script|process|task|programme|program|\w+\.(?:app|exe|py|sh))\b",
         r"\b(?:focus|bring)\s+\w+\s+(?:to\s+)?(?:the\s+)?front\b",
         r"\bdark\s+mode\b",
         r"\blight\s+mode\b",

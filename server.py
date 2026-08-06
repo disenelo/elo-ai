@@ -102,6 +102,7 @@ _last_pp         = None   # last known presence_plan — survives tool-call turn
 # WO-054: "queued" holds an intent that arrived while sit is in-flight; emitted once sit clears.
 _PENDING_SIT:  dict = {"active": False, "since": 0.0, "queued": None}
 _PENDING_MOVE: dict = {"active": False, "since": 0.0, "direction": ""}   # IO contract UP/DOWN
+_PENDING_EXIT: dict = {"active": False, "since": 0.0}                     # IO contract UP/DOWN exit_complete ACK
 _pscheduler      = _PresenceScheduler()
 _behaviour_gate  = _BehaviourGate()
 
@@ -298,6 +299,11 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "can you move":        "explore",
     "can you jump":        "explore",
     "jump around":         "explore",
+    # WO-036: specific directional "jump to" phrases → movement (before generic "jump to" → explore)
+    "jump to the top":     {"name": "move", "direction": "up"},
+    "jump to the bottom":  {"name": "move", "direction": "down"},
+    "jump to the left":    {"name": "move", "direction": "left"},
+    "jump to the right":   {"name": "move", "direction": "right"},
     "jump to":             "explore",
     "jump over":           "explore",
     "leap over":           "explore",
@@ -2510,6 +2516,45 @@ def _process_turn(raw: str) -> dict:
                 )
                 g_ctx = f"{g_ctx}\n{_move_fail}" if g_ctx else _move_fail
 
+        # Exit verify-before-speak (WO-045/ADR-Exec-001): gate "stepping away" on exit_complete.
+        # eLo NEVER says "I've stepped away" until Unity confirms the body is gone.
+        if _PENDING_EXIT["active"]:
+            _exit_age = _wo41_time.time() - _PENDING_EXIT["since"]
+            _exit_acked = False
+            try:
+                with open(_UNITY_EVENTS_PATH, encoding="utf-8") as _bsef:
+                    _ex_ev = json.load(_bsef)
+                _exit_acked = (
+                    _ex_ev.get("type") == "exit_complete"
+                    and float(_ex_ev.get("_ts", 0)) > _PENDING_EXIT["since"]
+                )
+            except Exception:
+                pass
+            if _exit_acked:
+                _PENDING_EXIT["active"] = False
+                _self_apply_embodiment(_elo_self, pose="hidden", current_action="hidden")
+                _self_save(_elo_self)
+                try:
+                    with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bsef2:
+                        json.dump({}, _bsef2)
+                except Exception:
+                    pass
+                g_ctx = (
+                    f"{g_ctx}\n[EXIT_CONFIRMED] Body has left the screen — you can say 'stepping away' or "
+                    "a quiet goodbye now. Body truth: you are gone."
+                ) if g_ctx else "[EXIT_CONFIRMED] Body has left the screen — say stepping away / quiet goodbye."
+            elif _exit_age < 12.0:
+                g_ctx = (
+                    f"{g_ctx}\n[EXIT_IN_TRANSIT] Leave command sent — body not yet confirmed gone. "
+                    "Do NOT say 'stepping away' or 'I've left'. Stay quiet or say 'on my way out'."
+                ) if g_ctx else "[EXIT_IN_TRANSIT] Body leaving — do not claim departure yet."
+            else:
+                _PENDING_EXIT["active"] = False
+                g_ctx = (
+                    f"{g_ctx}\n[EXIT_FAILED] Leave command timed out — body did not confirm departure. "
+                    "If asked, say honestly you tried to step away but something kept you here."
+                ) if g_ctx else "[EXIT_FAILED] Leave command timed out — honest fallback."
+
         _mode_str = exec_decision.get("mode", "CONVERSATIONAL") if exec_decision else "CONVERSATIONAL"
         _pers_block = _personality_profile.to_prompt_block(_mode_str) if _personality_profile else ""
 
@@ -3057,6 +3102,10 @@ def _process_turn(raw: str) -> dict:
                     _PENDING_MOVE["active"]    = True
                     _PENDING_MOVE["since"]     = _now54
                     _PENDING_MOVE["direction"] = _mv_intent.get("direction", "")
+                elif _mv_intent == "step_out":
+                    # Exit intent — activate pending tracker; gate "stepping away" on exit_complete
+                    _PENDING_EXIT["active"] = True
+                    _PENDING_EXIT["since"]  = _now54
                 elif _PENDING_SIT["active"]:
                     if _now54 - _PENDING_SIT["since"] > 45.0:
                         # Timeout: clear sit, emit queued intent if any.
