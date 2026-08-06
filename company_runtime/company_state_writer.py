@@ -29,7 +29,9 @@ _logger = logging.getLogger(__name__)
 
 # Builder status vocab → dashboard kanban columns (READY/WORKING/REVIEW/BLOCKED/DONE)
 _KANBAN = {
-    "done_david": "DONE", "done_claimed": "REVIEW", "ready": "READY",
+    # "DONE" means done — both David-approved and agent-claimed land in DONE, so approvals STICK
+    # and never bounce back into review. Items genuinely awaiting David use IN_REVIEW (→ REVIEW).
+    "done_david": "DONE", "done_claimed": "DONE", "ready": "READY",
     "blocked": "BLOCKED", "in_progress": "WORKING", "in_review": "REVIEW",
     "dispatched": "WORKING", "queued": "READY", "deferred": "BLOCKED",
     "superseded": "DONE",
@@ -128,6 +130,22 @@ def _build_graph(rows: list[dict]) -> dict:
     return graph
 
 
+def _parse_company_focus(board_text: str) -> dict | None:
+    """Extract the COMPANY_FOCUS HTML comment from the board top.
+    Format: <!-- COMPANY_FOCUS: <milestone> | items: <csv> | note: <note> -->
+    Returns {"milestone": str, "items": [str], "note": str} or None.
+    """
+    m = re.search(r"COMPANY_FOCUS:\s*([^|]+)\|\s*items:\s*([^|]+)(?:\|\s*note:\s*(.+?))?(?:\s*-->)",
+                  board_text[:10000])
+    if not m:
+        return None
+    return {
+        "milestone": m.group(1).strip(),
+        "items":     [x.strip() for x in m.group(2).split(",") if x.strip()],
+        "note":      (m.group(3) or "").strip(),
+    }
+
+
 def _voiced_briefing(today: list, waiting: list, blocked: list, in_progress: list) -> str:
     parts = []
     if today:
@@ -220,10 +238,53 @@ def publish(board_path: str = _BOARD_PATH, state_path: str = _STATE_PATH) -> boo
              **{k: _pol(r)[k] for k in ("importance", "needs_david", "badge")})
         for r in rows
     ]
-    today = [
-        {"text": r["title"], "owner": r["agent"], "priority": r["priority"]}
-        for r in rows if r["status"] == "ready" and r["priority"] in ("P0", "P1")
-    ][:5]
+    # WO-061: read COMPANY_FOCUS marker → today_priorities reflects the active milestone, not stale backlog.
+    # When the marker exists, surface IN_PROGRESS/IN_REVIEW P0/P1 items that match the focus WO IDs.
+    _focus = _parse_company_focus(board_text)
+    if _focus:
+        # Extract focus WO IDs from the items list.
+        # Handles slash-series notation: "TTS(WO-016/019)" → {"WO-016", "WO-019"}
+        # and suffix variants: "WO-052A" → normalised base "WO-052" for matching.
+        _focus_nums: set[str] = set()
+        for _fi in _focus["items"]:
+            for _m2 in re.finditer(r"WO-(\d+[A-Z]?)(/\d+[A-Z]?)*", _fi):
+                # First ID: full match group "WO-NNN[A]"
+                _parts = _m2.group(0).split("/")
+                for _i, _part in enumerate(_parts):
+                    _raw = _part if _i == 0 else f"WO-{_part}"
+                    # Normalise: strip trailing letter suffix so WO-052A matches row WO-052
+                    _focus_nums.add(re.sub(r"[A-Z]+$", "", _raw.strip()))
+
+        def _wo_base(wid: str) -> str:
+            return re.sub(r"[A-Z]+$", "", wid.strip())
+
+        _active_rows = [
+            r for r in rows
+            if r["status"] in ("in_progress", "dispatched", "in_review")
+            and r["priority"] in ("P0", "P1")
+            and (not _focus_nums or _wo_base(r["id"]) in _focus_nums)
+        ]
+        # Fallback: any dispatched/in_progress Builder-lane P0/P1 (never surfaces MK/BO/LG)
+        if not _active_rows:
+            _active_rows = [
+                r for r in rows
+                if r["status"] in ("in_progress", "dispatched")
+                and r["priority"] in ("P0", "P1")
+                and "Builder" in r["agent"]
+            ]
+        today = [
+            {"text": r["title"], "owner": r["agent"], "priority": r["priority"],
+             "status": r["status"], "focus_milestone": _focus["milestone"]}
+            for r in _active_rows
+        ][:5] or [
+            {"text": f"Focus: {_focus['milestone']}", "owner": "Builder",
+             "priority": "P0", "items": _focus["items"]}
+        ]
+    else:
+        today = [
+            {"text": r["title"], "owner": r["agent"], "priority": r["priority"]}
+            for r in rows if r["status"] == "ready" and r["priority"] in ("P0", "P1")
+        ][:5]
     waiting = [
         dict({"wo": r["id"], "text": r["title"], "level": "L3"},
              **{k: _pol(r)[k] for k in ("importance", "needs_david", "badge", "label")})
@@ -244,6 +305,7 @@ def publish(board_path: str = _BOARD_PATH, state_path: str = _STATE_PATH) -> boo
         "greeting":             {"founder": "David",
                                  "phase": "Phase I → II (Digital Companion → Executive Partner)"},
         "voiced_briefing":      _voiced_briefing(today, waiting, blocked, in_progress),
+        "company_focus":        _focus or {},
         "today_priorities":     today,
         "waiting_for_approval": waiting,
         "blocked":              blocked,
