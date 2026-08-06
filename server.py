@@ -437,6 +437,28 @@ def _signal_word_intent(raw: str) -> "str | dict | None":
     return None
 
 
+# ── Layer 1.5: Semantic sit intent ───────────────────────────────────────────
+# (synced with presence_faculty._semantic_body_intent)
+
+_SIT_SEMANTIC: list[str] = [
+    r"\bjoin\s+me\b",
+    r"\b(?:can|could)\s+you\s+come\s+(?:and\s+)?sit\b",
+    r"\b(?:would\s+you|why\s+don'?t\s+you)\s+(?:come\s+(?:and\s+)?)?sit\b",
+    r"\bhow\s+about\s+(?:you\s+)?sit(?:ting)?\b",
+    r"\bfeel\s+like\s+sit(?:ting)?\b",
+    r"\bcome\s+(?:and\s+)?(?:chill|hang|vibe|relax)\s+(?:with\s+me|here|beside\s+me)\b",
+    r"\b(?:plant|park|plop|perch|nestle)\s+(?:yourself\s+)?(?:down|here|beside\s+me|next\s+to\s+me|with\s+me)\b",
+]
+
+
+def _semantic_body_intent(raw: str) -> "dict | None":
+    raw_l = raw.lower()
+    for pattern in _SIT_SEMANTIC:
+        if _re.search(pattern, raw_l):
+            return {"name": "sit", "target": "cursor"}
+    return None
+
+
 # Layer 2 — light engine emotional state → body directive.
 # Maps the 20-state presence vocab to movement directives.
 # RULE: never emit _biRoam-triggering intents (explore/creation/roam/wander) from
@@ -485,6 +507,8 @@ def _movement_intent(
     # Must run before SILENCE-AWARE / negative_high so a sit/step_out/return request
     # can never be pre-empted by the executive's tone assessment.
     _sw = _signal_word_intent(raw)
+    if _sw is None:
+        _sw = _semantic_body_intent(raw)
     if _sw:
         return _sw
 

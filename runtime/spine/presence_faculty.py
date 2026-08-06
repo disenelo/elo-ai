@@ -22,6 +22,7 @@ that into body vocabulary. It may not override the Executive's decision —
 it may only express it.
 """
 from __future__ import annotations
+import re
 import time
 from runtime.spine.plan import CognitivePlan
 
@@ -107,6 +108,27 @@ _SIGNAL_WORDS: dict[str, object] = {
     "feel at home":        "explore",
     "your playground":     "explore",
     "explore":             "explore",
+    # Directional movement — emits move_command (IO contract: DOWN channel blender_state.json)
+    "go left":              {"name": "move", "direction": "left"},
+    "move left":            {"name": "move", "direction": "left"},
+    "shift left":           {"name": "move", "direction": "left"},
+    "go to the left":       {"name": "move", "direction": "left"},
+    "go right":             {"name": "move", "direction": "right"},
+    "move right":           {"name": "move", "direction": "right"},
+    "shift right":          {"name": "move", "direction": "right"},
+    "go to the right":      {"name": "move", "direction": "right"},
+    "go up":                {"name": "move", "direction": "up"},
+    "move up":              {"name": "move", "direction": "up"},
+    "up a bit":             {"name": "move", "direction": "up"},
+    "go down":              {"name": "move", "direction": "down"},
+    "move down":            {"name": "move", "direction": "down"},
+    "jump down":            {"name": "move", "direction": "down"},
+    "get down":             {"name": "move", "direction": "down"},
+    "go lower":             {"name": "move", "direction": "down"},
+    "shift over":           {"name": "move", "direction": "over"},
+    "move over":            {"name": "move", "direction": "over"},
+    "scoot over":           {"name": "move", "direction": "over"},
+    "get out of the way":   {"name": "move", "direction": "over"},
     # Sit with David — direct commands (synced with server.py _SIGNAL_WORDS)
     "come here":           {"name": "sit", "target": "cursor"},
     "come to me":          {"name": "sit", "target": "cursor"},
@@ -203,6 +225,31 @@ def _signal_word_intent(raw: str) -> "str | dict | None":
     return None
 
 
+# ── Layer 1.5: Semantic sit intent ───────────────────────────────────────────
+# Catches grammatical variants that exact substring matching misses.
+# Runs only when _signal_word_intent returns None.
+# Patterns are conservative: require enough context to avoid false positives.
+# (synced with server.py _semantic_body_intent)
+
+_SIT_SEMANTIC: list[str] = [
+    r"\bjoin\s+me\b",
+    r"\b(?:can|could)\s+you\s+come\s+(?:and\s+)?sit\b",
+    r"\b(?:would\s+you|why\s+don'?t\s+you)\s+(?:come\s+(?:and\s+)?)?sit\b",
+    r"\bhow\s+about\s+(?:you\s+)?sit(?:ting)?\b",
+    r"\bfeel\s+like\s+sit(?:ting)?\b",
+    r"\bcome\s+(?:and\s+)?(?:chill|hang|vibe|relax)\s+(?:with\s+me|here|beside\s+me)\b",
+    r"\b(?:plant|park|plop|perch|nestle)\s+(?:yourself\s+)?(?:down|here|beside\s+me|next\s+to\s+me|with\s+me)\b",
+]
+
+
+def _semantic_body_intent(raw: str) -> "dict | None":
+    raw_l = raw.lower()
+    for pattern in _SIT_SEMANTIC:
+        if re.search(pattern, raw_l):
+            return {"name": "sit", "target": "cursor"}
+    return None
+
+
 def compute(
     plan:        CognitivePlan,
     attention:   dict,
@@ -237,8 +284,10 @@ def compute(
     _now = time.time()
     _in_grace = (_now - _last_non_empty_intent_ts) < _SETTLE_GRACE_SECONDS
 
-    # Pre-compute signal word once (avoids double-call in elif condition + body)
+    # Pre-compute signal word once; fall back to semantic classifier if no exact match.
     _signal_intent = _signal_word_intent(raw)
+    if _signal_intent is None:
+        _signal_intent = _semantic_body_intent(raw)
 
     # WO-017: trace which layer fired and why
     _dbg_layer  = "fallback"
