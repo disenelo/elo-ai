@@ -2826,10 +2826,20 @@ def _process_turn(raw: str) -> dict:
                                         "Never say 'Memory\\'s running' or give a record count as a reply. "
                                         "That is a status line, not a recall response."
                                     )
-                            # WO-037: also surface concrete interactions.json entries (specific, not gloss)
+                            # WO-037/022: surface concrete interactions.json entries.
+                            # When no topic words extracted, fall back to most-recent
+                            # interactions (retrieve_by_project) instead of a keyword
+                            # query that returns previous recall queries as "memories".
                             try:
                                 from core.memory_engine import retrieve as _mem_retrieve
-                                _raw_hits = _mem_retrieve(_recall_q, top_k=3)
+                                from core.memory_engine import retrieve_by_project as _mem_recency
+                                _is_bare_recall = (_recall_q == "disenelo recent")
+                                if _is_bare_recall:
+                                    _raw_hits = _mem_recency("elo_core", top_k=5)
+                                    # drop trivially short user turns (bare questions < 10 chars)
+                                    _raw_hits = [r for r in _raw_hits if len(r.get("user", "")) >= 10]
+                                else:
+                                    _raw_hits = _mem_retrieve(_recall_q, top_k=3)
                                 if _raw_hits:
                                     _raw_lines = [
                                         f"- [{r.get('timestamp','')[:10]}] David: {r.get('user','')[:120]!r}"
@@ -3206,6 +3216,11 @@ def _process_turn(raw: str) -> dict:
                 _mem_word = "calm"
             else:
                 _mem_word = ""
+            # Designer handoff: brain's engagement truth for sit-linger.
+            # True = user just sent input this turn (idle_sec ≈ 0).
+            # Unity uses this to hold the commanded sit while conversing;
+            # falls back to its own 30s timer when no new turn arrives.
+            _bs_conversing = True
             _bs_patch({
                 "state": {
                     "memory":            _mem_word,
@@ -3215,6 +3230,7 @@ def _process_turn(raw: str) -> dict:
                 },
                 "show_one_brain": True,
                 "intent":         _bs_intent,
+                "conversing":     _bs_conversing,
             })
         except Exception:
             pass
