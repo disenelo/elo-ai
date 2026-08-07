@@ -58,6 +58,12 @@
       "detail": "Semantic sit intent — Layer 1.5 pattern classifier in presence_faculty + server.py. Catches: 'join me' / 'would you sit' / 'why don't you sit' / 'can you come sit' / 'feel like sitting' / 'come chill with me' / 'park yourself here'. 2 false-positive guards (I need to sit and think, let's sit back and watch). Fires only when exact _signal_word_intent() misses. 15/15 AT test_wo035b_semantic_sit_intent.py. David: live-confirm with any of those phrasings to close."
     },
     {
+      "wo": "WO-036b",
+      "status": "in_review",
+      "commit": "1e8407b",
+      "detail": "Deterministic mirror scrub verified + tail guard fixed. Bug: guard was > 12 so 'Let's talk.' (12 chars) silently kept the full opener. Fixed to >= 8. All 5 banned openers ('I notice you', 'I see you', 'I hear you', 'You've been', 'You're offering') now correctly stripped to their tail. Mid-reply mirror phrases NOT stripped (scrub is opener-only). 10/10 AT test_wo036b_mirror_scrub.py + original 7/7 test_wo036_reply_length.py clean. David: no action needed."
+    },
+    {
       "wo": "WO-020",
       "status": "in_review",
       "commit": "a2d1b79",
