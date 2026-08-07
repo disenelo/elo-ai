@@ -59,6 +59,18 @@
       "detail": "Semantic sit intent — Layer 1.5 pattern classifier in presence_faculty + server.py. Catches: 'join me' / 'would you sit' / 'why don't you sit' / 'can you come sit' / 'feel like sitting' / 'come chill with me' / 'park yourself here'. 2 false-positive guards (I need to sit and think, let's sit back and watch). Fires only when exact _signal_word_intent() misses. 15/15 AT test_wo035b_semantic_sit_intent.py. David: live-confirm with any of those phrasings to close."
     },
     {
+      "wo": "WO-064-BP5",
+      "status": "in_review",
+      "commit": "681861f",
+      "detail": "BP-5 sit_ended consume. When Designer emits sit_ended (linger gets eLo up on his own), self-model pose flips to 'standing' + available_actions reset. _ts-guarded (within 120s) + file cleared after consume (same pattern as sit_complete). 6/6 AT test_wo064_sit_ended.py. David: no action; eLo will no longer say 'I'm sitting' after he's already risen."
+    },
+    {
+      "wo": "WO-064-BP4",
+      "status": "in_review",
+      "commit": "972f9d8",
+      "detail": "BP-4 expression.micro emission. _MICRO_MAP translates _bs_emo → 7 Designer micro emotions (joy/curious/worried/confident/disgust/sad/satisfied). Emits expression:{micro,micro_ts} to blender_state.json only when intensity >= 0.4. Neutral/low-intensity turns don't spam. Edge-triggered by micro_ts (Unity FlashMicro). 8/8 AT test_wo064_expression_micro.py. David: micro-expressions should now flash from brain state, not Unity-random."
+    },
+    {
       "wo": "WO-045b",
       "status": "in_review",
       "commit": "1da3481",
