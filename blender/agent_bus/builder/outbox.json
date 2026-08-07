@@ -1,6 +1,6 @@
 {
-  "ts": 1786147200.0,
-  "builder_run_summary": "2026-08-07 — RUN 5 COMPLETE. This run: WO-039-F2 shipped (95d674e, 10/10 AT). Fix: _is_file_cancel() 'no'/'nope' anchored to standalone regex ^(no|nope)[!.?,\s]*$ — 'No but it takes time to build you' no longer triggers 'Ok, cancelled.' (F2 live phrase). 'cancel'/'abort'/'forget it' etc. still match as substring. test_wo039_f2_cancel.py 10/10 green. Board F2 marked FIXED.",
+  "ts": 1786150800.0,
+  "builder_run_summary": "2026-08-07 — RUN 6 COMPLETE. This run: WO-039-F2 (95d674e, 10/10 AT — cancel false-positive 'no' anchored) + WO-039-F1 (228f021, 12/12 AT — 'press on with...' no longer parsed as keyboard shortcut). Both F1 and F2 live findings fixed and marked on board. David: no action needed.",
   "updates": [
     {
       "wo": "WO-001",
@@ -45,6 +45,12 @@
       "status": "in_review",
       "commit": "2bed968",
       "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded — David adds billing credits at platform.openai.com to restore primary backend. WO-032b resolves the Groq fall-to-mock (see below)."
+    },
+    {
+      "wo": "WO-039-F1",
+      "status": "in_review",
+      "commit": "228f021",
+      "detail": "F1 +join reply formatting fixed. Root: _KEY_RE matched any text after 'press/hit/hold' — 'press on with that? needs my attention??' parsed as keyboard shortcut, surfaced as 'press on+with?+that+needs+my+attention??'. Fix: _is_valid_key_combo() validates every normalised key token is an actual keyboard key (cmd/ctrl/shift/esc/f1-f12/letter/digit etc.) before accepting. Real shortcuts (cmd+c, ctrl shift t, escape) still work. 12/12 AT test_wo039_f1_press_parse.py + WO-021 still 9/9. David: no action."
     },
     {
       "wo": "WO-039-F2",
