@@ -1,5 +1,6 @@
 {
-  "ts": 1785756000.0,
+  "ts": 1785832800.0,
+  "builder_run_summary": "2026-08-07 — CLOSE-OUT QUEUE COMPLETE. Shipped: WO-022+037 bare-recall fix (65ec35f, 9/9 AT) · WO-020 tool-layer re-verify / httpx guard (a2d1b79, 6/6+6/6 AT) · WO-036b mirror-scrub tail guard fix (1e8407b, 10/10 AT) · WO-045b exit-gate ordering fix (1da3481, 7/7 AT). BP-1 conversing already done (65ec35f). BP-2 move words already in WO-060. BP-3 take-five done (1da3481). Remaining: BP-4 expression.micro + BP-5 sit_ended consume — both need new implementation. Next Builder run: read board for BP-4/BP-5 + any new Architect-authored WOs.",
   "updates": [
     {
       "wo": "WO-001",
