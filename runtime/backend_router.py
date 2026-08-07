@@ -24,13 +24,25 @@ Models:
 """
 
 from __future__ import annotations
+import json as _json
 import os
 import re
+import time
 import logging
+import urllib.request as _urllib_req
+import urllib.error as _urllib_err
 
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
 _logger.propagate = False
+
+
+def _json_post(url: str, payload: dict, headers: dict, timeout: float = 30.0) -> dict:
+    """POST JSON to url, return parsed response dict. Raises urllib.error.HTTPError on 4xx/5xx."""
+    data = _json.dumps(payload).encode()
+    req = _urllib_req.Request(url, data=data, headers=headers, method="POST")
+    with _urllib_req.urlopen(req, timeout=timeout) as resp:
+        return _json.loads(resp.read().decode())
 
 # ── routing thresholds ─────────────────────────────────────────────────────────
 _AUTO_LOCAL_MAX_CHARS = 80   # inputs under this → Ollama (fast local)
@@ -85,9 +97,9 @@ def _is_duplicate(new: str, prev: str, threshold: float = 0.75) -> bool:
 # per-action last-response tracker (session-scoped, in-process)
 _last_responses: dict[str, str] = {}
 
-# WO-032: session-level Groq 429 flag — mirrors the OpenAI quota pattern.
-# Set on first 429; cleared if Groq recovers (not implemented yet — session restart clears it).
-_groq_quota_exceeded: bool = False
+# WO-032b: time-boxed Groq 429 cooldown — clears automatically after 60 s so one transient
+# rate-limit doesn't pin the entire session to mock.  0.0 = not in cooldown.
+_groq_quota_cooldown_until: float = 0.0
 
 # singleton mock backend — preserves anti-repetition buffer across all mock calls this session
 _mock_backend_instance = None
@@ -132,15 +144,15 @@ def normalise(text: str, max_sentences: int = 4) -> str:
 # ── backend calls ──────────────────────────────────────────────────────────────
 
 def _groq_call(system_prompt: str, user_input: str, model: str = None, max_tokens: int = None) -> str:
-    """Call Groq cloud inference via httpx (OpenAI-compatible REST, no groq SDK required)."""
-    import httpx
+    """Call Groq cloud inference via stdlib urllib (OpenAI-compatible REST, no SDK required).
+    WO-032b: switched from httpx to urllib — zero external dependencies."""
     api_key = os.environ.get("GROQ_API_KEY", "")
     if not api_key:
         raise RuntimeError("GROQ_API_KEY not set")
     model = model or os.environ.get("ELO_GROQ_MODEL", "llama-3.3-70b-versatile")
-    resp = httpx.post(
+    result = _json_post(
         "https://api.groq.com/openai/v1/chat/completions",
-        json={
+        payload={
             "model":       model,
             "messages": [
                 {"role": "system", "content": system_prompt},
@@ -151,10 +163,8 @@ def _groq_call(system_prompt: str, user_input: str, model: str = None, max_token
         },
         headers={"Authorization": f"Bearer {api_key}",
                  "Content-Type":  "application/json"},
-        timeout=30.0,
     )
-    resp.raise_for_status()
-    return resp.json()["choices"][0]["message"]["content"].strip()
+    return result["choices"][0]["message"]["content"].strip()
 
 
 def _cerebras_available() -> bool:
@@ -162,15 +172,15 @@ def _cerebras_available() -> bool:
 
 
 def _cerebras_call(system_prompt: str, user_input: str, model: str = None, max_tokens: int = None) -> str:
-    """Call Cerebras fast inference via httpx (OpenAI-compatible REST)."""
-    import httpx
+    """Call Cerebras fast inference via stdlib urllib (OpenAI-compatible REST).
+    WO-032b: switched from httpx to urllib — zero external dependencies."""
     api_key = os.environ.get("CEREBRAS_API_KEY", "")
     if not api_key:
         raise RuntimeError("CEREBRAS_API_KEY not set")
     model = model or os.environ.get("ELO_CEREBRAS_MODEL", "llama-3.3-70b")
-    resp = httpx.post(
+    result = _json_post(
         "https://api.cerebras.ai/v1/chat/completions",
-        json={
+        payload={
             "model":       model,
             "messages": [
                 {"role": "system", "content": system_prompt},
@@ -181,10 +191,8 @@ def _cerebras_call(system_prompt: str, user_input: str, model: str = None, max_t
         },
         headers={"Authorization": f"Bearer {api_key}",
                  "Content-Type":  "application/json"},
-        timeout=30.0,
     )
-    resp.raise_for_status()
-    return resp.json()["choices"][0]["message"]["content"].strip()
+    return result["choices"][0]["message"]["content"].strip()
 
 
 def _ollama_call(system_prompt: str, user_input: str) -> str:
@@ -220,13 +228,12 @@ def _token_budget(action: str) -> int:
 
 
 def _openai_call(system_prompt: str, user_input: str, max_tokens: int = None) -> str:
-    """Call OpenAI GPT-4o-mini."""
-    import httpx
+    """Call OpenAI GPT-4o-mini via stdlib urllib. WO-032b: switched from httpx."""
     api_key = os.environ.get("OPENAI_API_KEY", "")
     model   = os.environ.get("ELO_OPENAI_MODEL", "gpt-4o-mini")
-    resp = httpx.post(
+    result = _json_post(
         "https://api.openai.com/v1/chat/completions",
-        json={
+        payload={
             "model":    model,
             "messages": [
                 {"role": "system", "content": system_prompt},
@@ -237,10 +244,8 @@ def _openai_call(system_prompt: str, user_input: str, max_tokens: int = None) ->
         },
         headers={"Authorization": f"Bearer {api_key}",
                  "Content-Type":  "application/json"},
-        timeout=30.0,
     )
-    resp.raise_for_status()
-    return resp.json()["choices"][0]["message"]["content"].strip()
+    return result["choices"][0]["message"]["content"].strip()
 
 
 def _openai_stream(
@@ -334,19 +339,16 @@ def _gemini_available() -> bool:
 
 
 def _gemini_call(system_prompt: str, user_input: str) -> str:
-    """Call Google Gemini Flash via AI Studio REST API (no SDK — httpx only)."""
-    import httpx
+    """Call Google Gemini Flash via AI Studio REST API via stdlib urllib. WO-032b: switched from httpx."""
     api_key = os.environ.get("GOOGLE_API_KEY", "")
     model   = os.environ.get("ELO_GEMINI_MODEL", "gemini-2.0-flash")
-    url     = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-    payload = {
+    url     = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    result = _json_post(url, payload={
         "systemInstruction": {"parts": [{"text": system_prompt}]},
         "contents": [{"parts": [{"text": user_input}]}],
         "generationConfig": {"maxOutputTokens": 512, "temperature": 0.7},
-    }
-    resp = httpx.post(url, json=payload, params={"key": api_key}, timeout=30.0)
-    resp.raise_for_status()
-    return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+    }, headers={"Content-Type": "application/json"})
+    return result["candidates"][0]["content"]["parts"][0]["text"].strip()
 
 
 def _claude_available() -> bool:
@@ -488,10 +490,11 @@ def route(
     if mode == "groq":
         # WO-032: pinned Groq mode — voice-consistent, no Claude/OpenAI drift.
         # Falls through to Cerebras → Mock only; never touches OpenAI, Gemini, or Claude.
-        # WO-032 fix: lore drift falls to Cerebras (not mock directly); 429 sets quota flag.
-        global _groq_quota_exceeded
+        # WO-032b: _groq_quota_cooldown_until replaces the session-permanent bool — clears after 60 s.
+        global _groq_quota_cooldown_until
         _groq_fell_through = False
-        if _groq_available() and not _groq_quota_exceeded:
+        _in_cooldown = _groq_quota_cooldown_until and time.monotonic() < _groq_quota_cooldown_until
+        if _groq_available() and not _in_cooldown:
             try:
                 raw = _groq_call(system_prompt, user_input, max_tokens=_budget)
                 if _has_lore_drift(raw, user_input):
@@ -505,14 +508,16 @@ def route(
                         if stripped:
                             normalised = stripped
                     _last_responses[action] = normalised
+                    _groq_quota_cooldown_until = 0.0  # clear any stale cooldown on success
                     return normalised, "groq"
-            except Exception as e:
-                import httpx as _hx
-                if isinstance(e, _hx.HTTPStatusError) and e.response.status_code == 429:
-                    _groq_quota_exceeded = True
-                    _logger.warning("Groq 429 — skipping for this session, routing to Cerebras")
+            except _urllib_err.HTTPError as e:
+                if e.code == 429:
+                    _groq_quota_cooldown_until = time.monotonic() + 60.0
+                    _logger.warning("Groq 429 — 60 s cooldown, routing to Cerebras")
                 else:
-                    _logger.warning("Groq failed in pinned mode: %s", e)
+                    _logger.warning("Groq HTTP %s in pinned mode: %s", e.code, e)
+            except Exception as e:
+                _logger.warning("Groq failed in pinned mode: %s", e)
         if _cerebras_available():
             try:
                 raw = _cerebras_call(system_prompt, user_input, max_tokens=_budget)
@@ -544,15 +549,16 @@ def route(
                 if not _is_duplicate(normalised, _last_responses.get(action, "")):
                     _last_responses[action] = normalised
                     return normalised, "openai"
-        except Exception as e:
+        except _urllib_err.HTTPError as e:
             # WO-032: 429 = quota exceeded — flag it so we don't retry every turn
-            import httpx as _httpx_mod
-            if isinstance(e, _httpx_mod.HTTPStatusError) and e.response.status_code == 429:
+            if e.code == 429:
                 _openai_quota_exceeded = True
                 _fh_degraded("reasoning", "OpenAI quota exceeded")  # WO-042
                 _logger.warning("OpenAI quota exceeded — skipping for this session, routing to Groq")
             else:
-                _logger.warning("OpenAI failed, trying Gemini: %s", e)
+                _logger.warning("OpenAI HTTP %s, trying Gemini: %s", e.code, e)
+        except Exception as e:
+            _logger.warning("OpenAI failed, trying Gemini: %s", e)
 
     if _gemini_available():
         try:
