@@ -616,9 +616,14 @@ def _is_file_confirm(text: str) -> bool:
     return t in _FILE_CONFIRM_WORDS
 
 
+_FILE_CANCEL_NO_RE = _re.compile(r"^(no|nope)[!.?,\s]*$")
+
 def _is_file_cancel(text: str) -> bool:
+    # WO-039-F2: "no"/"nope" must be standalone — "No but..." must NOT cancel.
     t = text.lower().strip()
-    return any(k in t for k in ("cancel", "don't", "dont", "stop", "no", "nope",
+    if _FILE_CANCEL_NO_RE.match(t):
+        return True
+    return any(k in t for k in ("cancel", "don't", "dont", "stop",
                                  "nevermind", "never mind", "forget it", "abort"))
 
 
