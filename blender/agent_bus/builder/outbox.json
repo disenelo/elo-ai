@@ -58,6 +58,12 @@
       "detail": "Semantic sit intent — Layer 1.5 pattern classifier in presence_faculty + server.py. Catches: 'join me' / 'would you sit' / 'why don't you sit' / 'can you come sit' / 'feel like sitting' / 'come chill with me' / 'park yourself here'. 2 false-positive guards (I need to sit and think, let's sit back and watch). Fires only when exact _signal_word_intent() misses. 15/15 AT test_wo035b_semantic_sit_intent.py. David: live-confirm with any of those phrasings to close."
     },
     {
+      "wo": "WO-020",
+      "status": "in_review",
+      "commit": "a2d1b79",
+      "detail": "Tool routing re-verified. Root found: draft_agent/web_agent/grocery_agent all did bare 'import httpx' → dropped the entire try-block → _HAS_LLM_FILE=False → every tool silently disabled. Fix: wrapped each import in try/except with lazy _httpx=None guard + RuntimeError at call-time. _HAS_LLM_FILE=True confirmed. 6/6 AT test_wo020_tool_routing.py + 6/6 test_wo020_routing_drift.py. David: no action needed — tools now import clean."
+    },
+    {
       "wo": "WO-022+WO-037",
       "status": "in_review",
       "commit": "65ec35f",

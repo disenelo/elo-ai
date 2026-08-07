@@ -920,6 +920,8 @@ _(added: test_ea2_1_company_state.py — 6/6; frozen kernel 20/20)_
 **Test suite total: 69/69 passed across 11 test files (2026-07-31)**
 _(added: test_wo020_routing_drift.py — 6/6; frozen kernel 20/20)_
 
+**✅ WO-020 TOOL-LAYER RE-VERIFIED DONE IN_REVIEW — commit `a2d1b79`, 6/6 AT `test_wo020_tool_routing.py` (2026-08-07).** Root found during verification: `draft_agent.py`, `web_agent.py`, `grocery_agent.py` all did bare `import httpx` which dropped the entire tool import try-block → `_HAS_LLM_FILE=False` → every tool (spotify, file-reader, reminders, web, grocery) silently disabled. Fix: wrapped each `import httpx` in try/except; lazy `_httpx=None` guard; RuntimeError raised at call-time if httpx missing. `test_wo020_tool_routing.py` now confirms: is_search_play_intent/is_playlist_intent correct + `_HAS_LLM_FILE=True` verified. test_wo020_routing_drift.py still 6/6.
+
 ---
 
 ### WO-022 — Memory recall wired — DONE ✅ (Builder, 2026-07-31)
