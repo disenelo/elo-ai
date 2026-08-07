@@ -1,6 +1,6 @@
 {
-  "ts": 1785919200.0,
-  "builder_run_summary": "2026-08-07 — RUN 3 COMPLETE. Close-out queue (WO-022+037, WO-020, WO-036b, WO-045b) done in prior runs. WO-064 BP-4+BP-5 done in prior run. This run: WO-048 ('how's the company' real) shipped + WO-061 focus-marker bug folded in (aa41d5c, 12/12 AT). Builder queue now clear of close-out items. Next: board re-read for next priority.",
+  "ts": 1786125600.0,
+  "builder_run_summary": "2026-08-07 — RUN 4 COMPLETE. This run: WO-032b shipped (a806f16, 12/12 AT). Root cause found: httpx not installed (PEP 668 externally managed Python) — every cloud call silently fell to mock. Fix: stdlib _json_post helper + rewrote _groq_call/_cerebras_call/_openai_call/_gemini_call to use urllib. Also: _groq_quota_cooldown_until (float, 60s window) replaces _groq_quota_exceeded (bool, session-permanent). Builder close-out queue now fully clear. David: kill :5050, relaunch app — backend_health.json should flip to groq/not-degraded.",
   "updates": [
     {
       "wo": "WO-001",
@@ -44,7 +44,13 @@
       "wo": "WO-032",
       "status": "in_review",
       "commit": "2bed968",
-      "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded — David adds billing credits at platform.openai.com to restore primary backend. Groq SDK not installed (falling to mock) — fix dispatched as WO-032b (httpx direct call)."
+      "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded — David adds billing credits at platform.openai.com to restore primary backend. WO-032b resolves the Groq fall-to-mock (see below)."
+    },
+    {
+      "wo": "WO-032b",
+      "status": "in_review",
+      "commit": "a806f16",
+      "detail": "Real Groq backend live. Root cause: httpx not installed (PEP 668 system Python), so every cloud call function's `import httpx` raised ImportError and fell to mock silently. Fix: added _json_post() stdlib urllib helper + rewrote _groq_call/_cerebras_call/_openai_call/_gemini_call to use it (zero external deps). Also: _groq_quota_exceeded: bool → _groq_quota_cooldown_until: float — 429 opens a 60s window, not a session-permanent latch; cleared on recovery. 12/12 AT test_wo032b_groq_backend.py. David: kill :5050 + relaunch app — backend_health should show {backend:groq, degraded:false}; eLo's voice reads as eLo, not the mock understudy."
     },
     {
       "wo": "INT-8a",
