@@ -1,6 +1,6 @@
 {
-  "ts": 1785832800.0,
-  "builder_run_summary": "2026-08-07 — CLOSE-OUT QUEUE COMPLETE. Shipped: WO-022+037 bare-recall fix (65ec35f, 9/9 AT) · WO-020 tool-layer re-verify / httpx guard (a2d1b79, 6/6+6/6 AT) · WO-036b mirror-scrub tail guard fix (1e8407b, 10/10 AT) · WO-045b exit-gate ordering fix (1da3481, 7/7 AT). BP-1 conversing already done (65ec35f). BP-2 move words already in WO-060. BP-3 take-five done (1da3481). Remaining: BP-4 expression.micro + BP-5 sit_ended consume — both need new implementation. Next Builder run: read board for BP-4/BP-5 + any new Architect-authored WOs.",
+  "ts": 1785919200.0,
+  "builder_run_summary": "2026-08-07 — RUN 3 COMPLETE. Close-out queue (WO-022+037, WO-020, WO-036b, WO-045b) done in prior runs. WO-064 BP-4+BP-5 done in prior run. This run: WO-048 ('how's the company' real) shipped + WO-061 focus-marker bug folded in (aa41d5c, 12/12 AT). Builder queue now clear of close-out items. Next: board re-read for next priority.",
   "updates": [
     {
       "wo": "WO-001",
@@ -87,6 +87,12 @@
       "status": "in_review",
       "commit": "a2d1b79",
       "detail": "Tool routing re-verified. Root found: draft_agent/web_agent/grocery_agent all did bare 'import httpx' → dropped the entire try-block → _HAS_LLM_FILE=False → every tool silently disabled. Fix: wrapped each import in try/except with lazy _httpx=None guard + RuntimeError at call-time. _HAS_LLM_FILE=True confirmed. 6/6 AT test_wo020_tool_routing.py + 6/6 test_wo020_routing_drift.py. David: no action needed — tools now import clean."
+    },
+    {
+      "wo": "WO-048",
+      "status": "in_review",
+      "commit": "aa41d5c",
+      "detail": "'How's the company' made real + WO-061 focus-marker folded in. Fixes: (1) _parse_company_focus searched only first 10000 chars — COMPANY_FOCUS marker is at char 29556 → was never found → company_focus always empty. Fixed to scan full board. (2) 40+ phrasings + contraction normalisation in is_company_intent (what is → what's). (3) _build_briefing: real DISENELO identity · active milestone · in-flight items · recommendation · board link — API-free, varies with state. (4) _build_board_reply: focus items not ready backlog. (5) _strip_md: cleans markdown from voice output. 12/12 AT test_wo048_company_real.py. David: ask 'how's the company' or 'what should I work on' — answer should name DISENELO + Presentable v1 + current focus items + recommendation."
     },
     {
       "wo": "WO-022+WO-037",
