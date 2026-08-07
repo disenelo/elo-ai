@@ -3360,6 +3360,9 @@ def _process_turn(raw: str) -> dict:
                 "you've been", "you're offering", "you seem to be", "you seem ",
                 "it seems you", "it sounds like you", "it feels like you",
                 "i can see you", "i can feel you",
+                # WO-039-F6: typo-commenting and "you said X" mirroring forms
+                "you said ", "you typed ", "you wrote ",
+                "your typo", "i noticed your typo", "i noticed a typo",
             )
             _resp_stripped = response.lstrip()
             _resp_lower    = _resp_stripped.lower()
