@@ -42,7 +42,10 @@ def _extract_repo(query: str) -> str:
 def get_status(repo: str) -> str:
     """Return a one-line status for the repo."""
     if not repo:
-        return "GITHUB: no repo set — add GITHUB_REPO=owner/repo to .env"
+        # WO-039-F3: return "" so tool_router skips context injection (no leak into LLM).
+        # An error string here becomes [CONTEXT: GITHUB_REPO not set...] which the LLM
+        # paraphrases directly into the reply — dev-context leak.
+        return ""
 
     # commits
     commits = _get(f"/repos/{repo}/commits?per_page=1")
