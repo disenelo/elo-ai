@@ -131,12 +131,13 @@ def _build_graph(rows: list[dict]) -> dict:
 
 
 def _parse_company_focus(board_text: str) -> dict | None:
-    """Extract the COMPANY_FOCUS HTML comment from the board top.
+    """Extract the COMPANY_FOCUS HTML comment from the board.
     Format: <!-- COMPANY_FOCUS: <milestone> | items: <csv> | note: <note> -->
     Returns {"milestone": str, "items": [str], "note": str} or None.
+    Searches full board_text — the marker may appear well past 10 000 chars.
     """
     m = re.search(r"COMPANY_FOCUS:\s*([^|]+)\|\s*items:\s*([^|]+)(?:\|\s*note:\s*(.+?))?(?:\s*-->)",
-                  board_text[:10000])
+                  board_text)
     if not m:
         return None
     return {
@@ -591,15 +592,34 @@ def watch_actions(
 
 _COMPANY_INTENTS: dict[str, tuple[str, ...]] = {
     "company.briefing": (
+        # identity / general state
         "how's the company", "how is the company", "company status", "company update",
         "company briefing", "company overview", "what's going on with the company",
         "what's the company situation", "company check", "company check-in",
         "how we doing as a company", "company health",
+        "how are things", "how are we doing", "how we doing",
+        "what's happening at the company", "what's happening with the company",
+        "what's disenelo doing", "what's disenelo up to", "what is disenelo doing",
+        "what's the company doing", "tell me about the company",
+        # focus / priority
+        "what's the focus", "what's our focus", "what are we focused on",
+        "what's the plan", "what's the priority", "what are the priorities",
+        "what's important right now", "what's most important",
+        "what should i work on", "what do i work on", "what should we work on",
+        "what's next", "what's best to work on", "what to work on",
+        # progress / milestone
+        "how's the build going", "what's the milestone", "what are we building toward",
+        "give me an update", "give me a briefing", "give me the company update",
+        "company progress", "what's the progress", "any updates",
+        "how's the elo project going", "how's elo os going",
     ),
     "company.board": (
         "company board", "show the board", "show me the board", "what's on the board",
         "what are we building", "company kanban", "work orders overview",
         "what's ready to pick up", "what's in progress",
+        "what are we working on", "what's in the pipeline", "board update",
+        "board status", "work order status", "what are the work orders",
+        "what's in the queue", "the board", "read the board",
     ),
     "company.approvals": (
         "what needs approval", "what needs approving", "pending approvals",
@@ -616,6 +636,9 @@ _MOVE_RE    = re.compile(r"\bmove\s+([\w][\w\-]+)\s+to\s+(\w+)", re.IGNORECASE)
 def is_company_intent(raw: str) -> str | None:
     """Return the matched company.* intent key, or None if no match."""
     low = raw.lower().strip()
+    # Normalise contractions so "what is / how is / it is" match "what's / how's / it's" patterns.
+    low = (low.replace("what is ", "what's ").replace("how is ", "how's ")
+              .replace("it is ", "it's "))
     for intent, patterns in _COMPANY_INTENTS.items():
         if any(p in low for p in patterns):
             return intent
@@ -626,6 +649,144 @@ def is_company_intent(raw: str) -> str | None:
     return None
 
 
+def _strip_md(text: str) -> str:
+    """Strip markdown bold/italic markers and leading symbols from a title string."""
+    return re.sub(r"\*+", "", text).strip(" ↩▲⚠✅⛔▶").strip()
+
+
+def _load_fresh_state(state_path: str = _STATE_PATH) -> dict:
+    """Load company_state.json, republishing from the board first if stale."""
+    state: dict = {}
+    try:
+        with open(state_path, encoding="utf-8") as f:
+            state = json.load(f)
+    except Exception:
+        pass
+    # If company_focus is empty the board marker may have been missed — re-publish.
+    if not state.get("company_focus"):
+        try:
+            publish(state_path=state_path)
+            with open(state_path, encoding="utf-8") as f:
+                state = json.load(f)
+        except Exception:
+            pass
+    return state
+
+
+def _recommend(state: dict) -> str:
+    """Return the single highest-priority unblocked focus WO as a recommendation string."""
+    focus = state.get("company_focus", {})
+    focus_items = focus.get("items", [])
+
+    # Build set of WO IDs mentioned in the focus items list
+    focus_ids: set[str] = set()
+    for fi in focus_items:
+        for m in re.finditer(r"WO-\d+[A-Z]?", fi):
+            focus_ids.add(m.group(0))
+
+    board = state.get("board", [])
+
+    def _score(row: dict) -> int:
+        p = row.get("pri", "P3")
+        return {"P0": 0, "P1": 1, "P2": 2, "P3": 3}.get(p, 9)
+
+    candidates = []
+    for row in board:
+        if row.get("status") in ("DONE", "BLOCKED"):
+            continue
+        wo_id = row.get("id", "")
+        # Prefer focus WOs; also accept any open P0/P1 Builder WO as fallback
+        if wo_id in focus_ids or (row.get("pri") in ("P0", "P1") and "Builder" in row.get("seat", "")):
+            candidates.append(row)
+
+    if not candidates:
+        return ""
+    candidates.sort(key=_score)
+    best = candidates[0]
+    title = _strip_md(best.get("title", "").split("—")[0])[:50]
+    return f"{best.get('id')} — {title} ({best.get('pri')})"
+
+
+def _build_briefing(state: dict) -> str:
+    """
+    WO-048: rich, varied, real briefing reply. API-free — reads company_state.json only.
+    Content changes whenever the state changes (varied by design).
+    """
+    focus = state.get("company_focus", {})
+    milestone = focus.get("milestone", "")
+    today = state.get("today_priorities", [])
+    roadmap = state.get("roadmap", [])
+    in_prog = [r for r in state.get("board", []) if r.get("status") == "WORKING"]
+    waiting_david = [w for w in state.get("waiting_for_approval", []) if w.get("needs_david")]
+    eng = state.get("engineering", {})
+
+    parts: list[str] = []
+
+    # Company identity — always present
+    parts.append("DISENELO is building eLo — the character, the world, and the presence —"
+                 " across desktop, game, robot, and book.")
+
+    # Active milestone
+    if milestone:
+        parts.append(f"Current milestone: {milestone}.")
+
+    # What's in flight (focus items)
+    if today:
+        names = [_strip_md(r.get("text", "?"))[:45] for r in today[:3]]
+        parts.append(f"In flight: {'; '.join(names)}.")
+    elif in_prog:
+        ids = ", ".join(r.get("id", "?") for r in in_prog[:4])
+        parts.append(f"In progress: {ids}.")
+
+    # Top recommendation
+    rec = _recommend(state)
+    if rec:
+        parts.append(f"Best to pick up next: {rec}.")
+
+    # Waiting on David
+    if waiting_david:
+        items = ", ".join(
+            f"{w.get('wo','?')} ({_strip_md(w.get('text','?'))[:30]})"
+            for w in waiting_david[:3]
+        )
+        suffix = f" and {len(waiting_david) - 3} more" if len(waiting_david) > 3 else ""
+        parts.append(f"Waiting on you: {items}{suffix}.")
+
+    # Engineering headline
+    if eng.get("open"):
+        parts.append(f"{eng['open']} work orders open, {eng.get('in_review', 0)} in review.")
+
+    # Board link (required by WO-048 spec)
+    parts.append("Board: engineering/work_orders/DISPATCH_BOARD.md.")
+
+    return " ".join(parts)
+
+
+def _build_board_reply(state: dict) -> str:
+    """WO-048: board intent → surface FOCUS items, not the ready backlog."""
+    focus = state.get("company_focus", {})
+    milestone = focus.get("milestone", "")
+    today = state.get("today_priorities", [])
+    in_prog = [r for r in state.get("board", []) if r.get("status") == "WORKING"]
+
+    parts: list[str] = []
+    if milestone:
+        parts.append(f"Milestone: {milestone}.")
+
+    if today:
+        ids = "; ".join(_strip_md(r.get("text", "?"))[:40] for r in today[:4])
+        parts.append(f"Focus items: {ids}.")
+    if in_prog:
+        ids = ", ".join(r.get("id", "?") for r in in_prog[:5])
+        parts.append(f"In progress: {ids}.")
+
+    if not parts:
+        return state.get("voiced_briefing", "No board data yet.")
+
+    parts.append("Full board: engineering/work_orders/DISPATCH_BOARD.md.")
+    return " ".join(parts)
+
+
 def handle_company_voice_intent(
     raw: str,
     state_path: str   = _STATE_PATH,
@@ -634,33 +795,20 @@ def handle_company_voice_intent(
     """
     Handle a company.* voice intent. Returns the spoken reply string.
     For approve/move: also writes to company_actions.json (Presence + watch_actions picks it up).
+    WO-048: briefing + board intents now return rich, real, varied answers (no more canned string).
     """
     intent = is_company_intent(raw)
 
-    # Load state
-    state: dict = {}
-    try:
-        with open(state_path, encoding="utf-8") as f:
-            state = json.load(f)
-    except Exception:
-        pass
+    # WO-048: reload fresh state (re-publishes if company_focus was missed)
+    state = _load_fresh_state(state_path)
 
     voiced = state.get("voiced_briefing", "no data yet")
 
-    if intent == "company.briefing" or not intent:
-        return voiced
+    if intent in ("company.briefing", None):
+        return _build_briefing(state)
 
     if intent == "company.board":
-        today = state.get("today_priorities", [])
-        in_prog = [r for r in state.get("board", []) if r.get("kanban") == "WORKING"]
-        parts = []
-        if today:
-            ids = ", ".join(r.get("text", "?")[:40] for r in today[:4])
-            parts.append(f"{len(today)} ready: {ids}")
-        if in_prog:
-            ids = ", ".join(r.get("id", "?") for r in in_prog[:4])
-            parts.append(f"{len(in_prog)} in progress: {ids}")
-        return " · ".join(parts) if parts else voiced
+        return _build_board_reply(state)
 
     if intent == "company.approvals":
         waiting = [w for w in state.get("waiting_for_approval", []) if w.get("needs_david")]
