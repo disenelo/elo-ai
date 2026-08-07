@@ -2552,6 +2552,22 @@ def _process_turn(raw: str) -> dict:
                 )
                 g_ctx = f"{g_ctx}\n{_move_fail}" if g_ctx else _move_fail
 
+        # WO-045 ordering fix: detect step_out THIS turn so the gate fires before the LLM.
+        # _mv_intent is resolved later (line ~3088); detect early here via signal words.
+        _STEP_OUT_PHRASES = frozenset({
+            "take 5", "take five", "give me a minute", "give me a moment",
+            "some privacy", "step away", "leave me to it", "go away for a bit", "pop off",
+            "good night", "goodnight", "done for today", "signing off", "heading out",
+            "taking a break", "need a break", "brb",
+        })
+        _raw_lower_exit = raw.lower().strip()
+        if (not _PENDING_EXIT["active"]
+                and any(_raw_lower_exit == p or _raw_lower_exit.startswith(p + " ")
+                        or _raw_lower_exit.endswith(" " + p) or (" " + p + " ") in _raw_lower_exit
+                        for p in _STEP_OUT_PHRASES)):
+            _PENDING_EXIT["active"] = True
+            _PENDING_EXIT["since"]  = _wo41_time.time()
+
         # Exit verify-before-speak (WO-045/ADR-Exec-001): gate "stepping away" on exit_complete.
         # eLo NEVER says "I've stepped away" until Unity confirms the body is gone.
         if _PENDING_EXIT["active"]:
