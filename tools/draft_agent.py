@@ -23,8 +23,11 @@ Modes detected from query:
 from __future__ import annotations
 import os
 import re
-import httpx
 import logging
+try:
+    import httpx as _httpx
+except ImportError:
+    _httpx = None  # httpx not installed; agent() will raise at call-time
 
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
@@ -94,9 +97,11 @@ def _extract_topic(query: str, mode: str) -> str:
 def _call_llm(system: str, user: str, max_tokens: int = 600) -> str:
     """Call OpenAI or Gemini directly for content generation."""
 
+    if _httpx is None:
+        raise RuntimeError("draft_agent requires httpx — pip install httpx")
     # OpenAI
     if _OPENAI_KEY:
-        resp = httpx.post(
+        resp = _httpx.post(
             "https://api.openai.com/v1/chat/completions",
             headers={"Authorization": f"Bearer {_OPENAI_KEY}", "Content-Type": "application/json"},
             json={
@@ -120,7 +125,7 @@ def _call_llm(system: str, user: str, max_tokens: int = 600) -> str:
             "contents": [{"parts": [{"text": f"{system}\n\n{user}"}]}],
             "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.75},
         }
-        resp = httpx.post(url, json=payload, params={"key": _GOOGLE_KEY}, timeout=20.0)
+        resp = _httpx.post(url, json=payload, params={"key": _GOOGLE_KEY}, timeout=20.0)
         if resp.status_code == 200:
             return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
 
