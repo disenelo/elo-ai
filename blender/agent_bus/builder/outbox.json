@@ -56,6 +56,12 @@
       "status": "in_review",
       "commit": "49323a8",
       "detail": "Semantic sit intent — Layer 1.5 pattern classifier in presence_faculty + server.py. Catches: 'join me' / 'would you sit' / 'why don't you sit' / 'can you come sit' / 'feel like sitting' / 'come chill with me' / 'park yourself here'. 2 false-positive guards (I need to sit and think, let's sit back and watch). Fires only when exact _signal_word_intent() misses. 15/15 AT test_wo035b_semantic_sit_intent.py. David: live-confirm with any of those phrasings to close."
+    },
+    {
+      "wo": "WO-022+WO-037",
+      "status": "in_review",
+      "commit": "65ec35f",
+      "detail": "Bare-recall quality fix + conversing field. (1) Bare recall ('what do you remember?') was routing to retrieve('disenelo recent') which scored prior recall queries as the top hits. Now _is_bare_recall flag switches to retrieve_by_project('elo_core', top_k=5) — returns actual recent turns sorted by timestamp, filtered for len >= 10. Topical recall ('what do you remember about the robot') stays on retrieve(topic_words). (2) conversing: true published to blender_state.json on every turn — Designer handoff, Unity sit-linger reads brain engagement truth. 9/9 AT test_wo022_037_memory_recall_e2e.py. David: live-confirm by asking 'what do you remember?' to close."
     }
   ]
 }
