@@ -3307,7 +3307,7 @@ def _process_turn(raw: str) -> dict:
                         -1,
                     )
                     _tail = _resp_stripped[_end + 1:].lstrip(" —,\n") if _end > 0 else ""
-                    if len(_tail) > 12:
+                    if len(_tail) >= 8:
                         response = _tail
                     break
         except Exception:
