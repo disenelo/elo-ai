@@ -1,6 +1,6 @@
 {
-  "ts": 1786125600.0,
-  "builder_run_summary": "2026-08-07 — RUN 4 COMPLETE. This run: WO-032b shipped (a806f16, 12/12 AT). Root cause found: httpx not installed (PEP 668 externally managed Python) — every cloud call silently fell to mock. Fix: stdlib _json_post helper + rewrote _groq_call/_cerebras_call/_openai_call/_gemini_call to use urllib. Also: _groq_quota_cooldown_until (float, 60s window) replaces _groq_quota_exceeded (bool, session-permanent). Builder close-out queue now fully clear. David: kill :5050, relaunch app — backend_health.json should flip to groq/not-degraded.",
+  "ts": 1786147200.0,
+  "builder_run_summary": "2026-08-07 — RUN 5 COMPLETE. This run: WO-039-F2 shipped (95d674e, 10/10 AT). Fix: _is_file_cancel() 'no'/'nope' anchored to standalone regex ^(no|nope)[!.?,\s]*$ — 'No but it takes time to build you' no longer triggers 'Ok, cancelled.' (F2 live phrase). 'cancel'/'abort'/'forget it' etc. still match as substring. test_wo039_f2_cancel.py 10/10 green. Board F2 marked FIXED.",
   "updates": [
     {
       "wo": "WO-001",
@@ -45,6 +45,12 @@
       "status": "in_review",
       "commit": "2bed968",
       "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded — David adds billing credits at platform.openai.com to restore primary backend. WO-032b resolves the Groq fall-to-mock (see below)."
+    },
+    {
+      "wo": "WO-039-F2",
+      "status": "in_review",
+      "commit": "95d674e",
+      "detail": "F2 cancel false-positive fixed. _is_file_cancel() 'no'/'nope' now require standalone match via ^(no|nope)[!.?,\s]*$ — 'No but it takes time to build you' no longer routes to 'Ok, cancelled.' 'cancel'/'abort'/'forget it'/'don't'/'stop' still match as substrings. 10/10 AT test_wo039_f2_cancel.py. David: no action needed — 'no' as a standalone reply still cancels pending file/computer-control operations."
     },
     {
       "wo": "WO-032b",
