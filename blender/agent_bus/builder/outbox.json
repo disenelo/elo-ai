@@ -1,6 +1,6 @@
 {
-  "ts": 1786154400.0,
-  "builder_run_summary": "2026-08-07 — RUN 7 COMPLETE. This run: F1 (228f021), F2 (95d674e), F6 (1366516) — all three live-session intent/mirror findings fixed. F1: 'press on with...' no longer parsed as keyboard shortcut (12/12 AT). F2: 'No but...' no longer triggers cancel (10/10 AT). F6: 'You said X' / 'Your typo' openers now caught by mirror scrub (9/9 AT, WO-036b 10/10 still clean). F3 (GitHub env leak) + F4 (cross-session recall) remain. David: no action needed.",
+  "ts": 1786158000.0,
+  "builder_run_summary": "2026-08-07 — RUN 8 COMPLETE. F1/F2/F3/F6 all fixed this run. F3 (eb8492e, 6/6 AT): github_agent.get_status('') now returns '' — GITHUB env-var error no longer injected into LLM context. F6 (1366516, 9/9 AT): mirror scrub extended to 'You said X'/'Your typo' openers. F1 (228f021, 12/12 AT): 'press on with...' no longer parsed as keyboard shortcut. F2 (95d674e, 10/10 AT): 'No but...' no longer triggers cancel. Remaining: F4 (cross-session recall). David: no action needed.",
   "updates": [
     {
       "wo": "WO-001",
@@ -45,6 +45,12 @@
       "status": "in_review",
       "commit": "2bed968",
       "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded — David adds billing credits at platform.openai.com to restore primary backend. WO-032b resolves the Groq fall-to-mock (see below)."
+    },
+    {
+      "wo": "WO-039-F3",
+      "status": "in_review",
+      "commit": "eb8492e",
+      "detail": "F3 dev-context leak fixed. github_agent.get_status('') returned a human-readable error string ('GITHUB: no repo set...') which tool_router.enrich() injected as [CONTEXT:]. LLM paraphrased it as 'GITHUB_REPO environment variable isn't set...' in the reply. Fix: return '' instead — enrich's `if not data` guard short-circuits. Real github queries (github status, last commit, open PRs) still route and enrich normally. 6/6 AT test_wo039_f3_github_leak.py. David: no action."
     },
     {
       "wo": "WO-039-F6",
