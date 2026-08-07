@@ -2836,11 +2836,18 @@ def _process_turn(raw: str) -> dict:
                         # the vault query is focused. Fall back to broad lookup if empty.
                         try:
                             from memory.vault_layer import lookup as _vlookup
+                            # WO-039-F4: expanded skip set removes filler words that dilute
+                            # topic scoring. "our weather conversation" → "weather" (1/1
+                            # overlap) beats "our weather conversation" (1/3 overlap), so
+                            # prior-session records rank higher in retrieve().
                             _recall_skip = frozenset({
                                 "what", "you", "remember", "tell", "from", "your", "my",
                                 "do", "did", "that", "the", "something", "anything", "have",
                                 "has", "me", "about", "how", "much", "know", "last", "time",
                                 "pull", "share", "recall", "memory", "stored", "kept", "elo",
+                                "our", "conversation", "conversations", "and", "can", "its",
+                                "are", "was", "for", "with", "this", "when", "there", "again",
+                                "talked", "talk", "said", "say", "get", "got", "had",
                             })
                             _topic_words = [
                                 w for w in _re.sub(r'[^a-z0-9 ]', '', _raw_l).split()
@@ -2877,7 +2884,9 @@ def _process_turn(raw: str) -> dict:
                                     # drop trivially short user turns (bare questions < 10 chars)
                                     _raw_hits = [r for r in _raw_hits if len(r.get("user", "")) >= 10]
                                 else:
-                                    _raw_hits = _mem_retrieve(_recall_q, top_k=3)
+                                    # WO-039-F4: top_k=7 so prior-session records (rank 5-7)
+                                    # are included even when same-day records dominate top 4.
+                                    _raw_hits = _mem_retrieve(_recall_q, top_k=7)
                                 if _raw_hits:
                                     _raw_lines = [
                                         f"- [{r.get('timestamp','')[:10]}] David: {r.get('user','')[:120]!r}"
