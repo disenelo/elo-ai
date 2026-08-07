@@ -2515,6 +2515,23 @@ def _process_turn(raw: str) -> dict:
                 )
                 g_ctx = f"{g_ctx}\n{_timeout_note}" if g_ctx else _timeout_note
 
+        # BP-5 (WO-064): consume sit_ended → self-model pose = standing.
+        # Designer emits sit_ended when the sit linger ends (reason: "released"/"lapsed").
+        # _ts-guarded (within 120s) + file-cleared after consume so it fires exactly once.
+        try:
+            with open(_UNITY_EVENTS_PATH, encoding="utf-8") as _bsse:
+                _se_ev = json.load(_bsse)
+            _se_ts = float(_se_ev.get("_ts", 0))
+            if (_se_ev.get("type") == "sit_ended"
+                    and _se_ts > _wo41_time.time() - 120.0):
+                _elo_self.pose = "standing"
+                _elo_self.available_actions = ["move", "jump", "wave", "gesture", "explore"]
+                _self_save(_elo_self)
+                with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bsse2:
+                    json.dump({}, _bsse2)
+        except Exception:
+            pass
+
         # Move verify-before-speak (IO contract — same loop as sit, every move verb)
         if _PENDING_MOVE["active"]:
             _move_age = _wo41_time.time() - _PENDING_MOVE["since"]
