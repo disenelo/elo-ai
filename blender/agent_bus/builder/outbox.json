@@ -1,6 +1,6 @@
 {
-  "ts": 1786158000.0,
-  "builder_run_summary": "2026-08-07 — RUN 8 COMPLETE. F1/F2/F3/F6 all fixed this run. F3 (eb8492e, 6/6 AT): github_agent.get_status('') now returns '' — GITHUB env-var error no longer injected into LLM context. F6 (1366516, 9/9 AT): mirror scrub extended to 'You said X'/'Your typo' openers. F1 (228f021, 12/12 AT): 'press on with...' no longer parsed as keyboard shortcut. F2 (95d674e, 10/10 AT): 'No but...' no longer triggers cancel. Remaining: F4 (cross-session recall). David: no action needed.",
+  "ts": 1786161600.0,
+  "builder_run_summary": "2026-08-07 — RUN 9 COMPLETE. ALL F-findings fixed this run: F1/F2/F3/F4/F6 — all five live-session bugs from David's real-backend test now resolved. F4 (baec21b, 8/8 AT): cross-session recall — _recall_skip filler words + top_k=3→7 so prior-session clothing/weather records surface. Previous runs: F3 (eb8492e), F6 (1366516), F1 (228f021), F2 (95d674e). F5 (backend degraded) was fixed by WO-032b earlier. All F-findings now FIXED. David: no action needed — eLo should now recall the weather→clothing recommendation from Aug 6 when asked.",
   "updates": [
     {
       "wo": "WO-001",
@@ -45,6 +45,12 @@
       "status": "in_review",
       "commit": "2bed968",
       "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded — David adds billing credits at platform.openai.com to restore primary backend. WO-032b resolves the Groq fall-to-mock (see below)."
+    },
+    {
+      "wo": "WO-039-F4",
+      "status": "in_review",
+      "commit": "baec21b",
+      "detail": "F4 cross-session recall fixed. Two bugs: (1) _recall_skip missing filler words 'our'/'conversation'/'and'/'can' etc. — 'do you remember our last weather conversation?' gave _recall_q='our weather conversation' (1/3 keyword overlap) pushing the Aug-6 clothing record to rank 7. With expanded skip, _recall_q='weather' (1/1 overlap, ranks top 4). (2) top_k=3→top_k=7 so prior-session records at ranks 4-7 surface in LLM context. 'vest and tshirt can you remember?' now maps to _recall_q='vest tshirt' and directly finds the vest+tshirt record. 8/8 AT test_wo039_f4_cross_session_recall.py + WO-022/037 9/9 still clean. David: no action — eLo should now recall Aug-6 layers recommendation when asked."
     },
     {
       "wo": "WO-039-F3",
