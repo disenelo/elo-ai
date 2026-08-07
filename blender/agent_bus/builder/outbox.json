@@ -1,6 +1,6 @@
 {
-  "ts": 1786150800.0,
-  "builder_run_summary": "2026-08-07 — RUN 6 COMPLETE. This run: WO-039-F2 (95d674e, 10/10 AT — cancel false-positive 'no' anchored) + WO-039-F1 (228f021, 12/12 AT — 'press on with...' no longer parsed as keyboard shortcut). Both F1 and F2 live findings fixed and marked on board. David: no action needed.",
+  "ts": 1786154400.0,
+  "builder_run_summary": "2026-08-07 — RUN 7 COMPLETE. This run: F1 (228f021), F2 (95d674e), F6 (1366516) — all three live-session intent/mirror findings fixed. F1: 'press on with...' no longer parsed as keyboard shortcut (12/12 AT). F2: 'No but...' no longer triggers cancel (10/10 AT). F6: 'You said X' / 'Your typo' openers now caught by mirror scrub (9/9 AT, WO-036b 10/10 still clean). F3 (GitHub env leak) + F4 (cross-session recall) remain. David: no action needed.",
   "updates": [
     {
       "wo": "WO-001",
@@ -45,6 +45,12 @@
       "status": "in_review",
       "commit": "2bed968",
       "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded — David adds billing credits at platform.openai.com to restore primary backend. WO-032b resolves the Groq fall-to-mock (see below)."
+    },
+    {
+      "wo": "WO-039-F6",
+      "status": "in_review",
+      "commit": "1366516",
+      "detail": "F6 mirror-scrub extended. 'You said X' / 'Your typo' / 'You typed' / 'You wrote' / 'I noticed a typo' openers now stripped by _MIRROR_OPENERS in server.py. Opener-only — mid-sentence 'you said' (e.g. 'Everything you said...') is NOT stripped. Short reply guard (tail < 8 chars) prevents destroying bare 'You said no.' 9/9 AT test_wo039_f6_mirror_scrub.py + WO-036b 10/10 still clean. David: no action."
     },
     {
       "wo": "WO-039-F1",
