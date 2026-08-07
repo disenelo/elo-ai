@@ -636,9 +636,10 @@ _MOVE_RE    = re.compile(r"\bmove\s+([\w][\w\-]+)\s+to\s+(\w+)", re.IGNORECASE)
 def is_company_intent(raw: str) -> str | None:
     """Return the matched company.* intent key, or None if no match."""
     low = raw.lower().strip()
-    # Normalise contractions so "what is / how is / it is" match "what's / how's / it's" patterns.
+    # Normalise contractions and missing apostrophes so all forms match the pattern list.
     low = (low.replace("what is ", "what's ").replace("how is ", "how's ")
-              .replace("it is ", "it's "))
+              .replace("it is ", "it's ")
+              .replace("hows ", "how's ").replace("whats ", "what's "))
     for intent, patterns in _COMPANY_INTENTS.items():
         if any(p in low for p in patterns):
             return intent
