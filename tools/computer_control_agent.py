@@ -130,6 +130,25 @@ def _normalise_keys(raw: str) -> list[str]:
     return [_ALIASES.get(p, p) for p in parts if p]
 
 
+# Valid key tokens after normalisation — prevents "press on with that" being parsed as a key combo.
+# F1 — F1: "press on with that? needs my attention" triggered this (WO-039-F1).
+_VALID_KEY_OUTPUTS = frozenset([
+    "cmd", "ctrl", "opt", "shift", "fn",
+    "esc", "return", "space", "tab", "del",
+    "up", "down", "left", "right",
+    "home", "end", "pageup", "pagedown",
+])
+_VALID_KEY_TOKEN_RE = re.compile(r'^([a-z0-9]|f\d{1,2})$')
+
+
+def _is_valid_key_combo(keys: list[str]) -> bool:
+    """Return True only when every token looks like an actual keyboard key."""
+    return bool(keys) and all(
+        k in _VALID_KEY_OUTPUTS or bool(_VALID_KEY_TOKEN_RE.match(k))
+        for k in keys
+    )
+
+
 def parse_intent(text: str) -> Optional[dict]:
     """
     Parse natural-language text into an action dict. Returns None if not recognised.
@@ -157,7 +176,7 @@ def parse_intent(text: str) -> Optional[dict]:
     m = _KEY_RE.search(text)
     if m:
         keys = _normalise_keys(m.group(1))
-        if keys:
+        if _is_valid_key_combo(keys):
             return {"type": "key", "keys": keys}
 
     m = _SCROLL_RE.search(text)
