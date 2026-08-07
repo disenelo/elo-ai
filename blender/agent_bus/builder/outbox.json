@@ -1,7 +1,13 @@
 {
-  "ts": 1786161600.0,
-  "builder_run_summary": "2026-08-07 — RUN 9 COMPLETE. ALL F-findings fixed this run: F1/F2/F3/F4/F6 — all five live-session bugs from David's real-backend test now resolved. F4 (baec21b, 8/8 AT): cross-session recall — _recall_skip filler words + top_k=3→7 so prior-session clothing/weather records surface. Previous runs: F3 (eb8492e), F6 (1366516), F1 (228f021), F2 (95d674e). F5 (backend degraded) was fixed by WO-032b earlier. All F-findings now FIXED. David: no action needed — eLo should now recall the weather→clothing recommendation from Aug 6 when asked.",
+  "ts": 1786204800.0,
+  "builder_run_summary": "2026-08-07 — RUN 10 COMPLETE. WO-066 (2c7e6be, 7/7 AT): ambient engine callback registration — register_ambient_callback was missing from ambient_engine.py public API; server.py import raised ImportError; ambient engine skipped; idle utterances never fired. Fixed: _ambient_cb var + register_ambient_callback() added; idle utterance timer calls brain-backed ambient_thought() when registered. David: relaunch app — eLo should now speak idle utterances. All F-findings from previous runs remain fixed.",
   "updates": [
+    {
+      "wo": "WO-066",
+      "status": "in_review",
+      "commit": "2c7e6be",
+      "detail": "Ambient engine callback registration. ambient_engine.py public API was missing register_ambient_callback — server.py:1393 imported it at startup, raised ImportError, caught by except block, ambient engine skipped entirely, idle utterances never fired. Fix: _ambient_cb module var initialised to None; register_ambient_callback(cb) stores the callable; _run() idle utterance timer calls threading.Thread(target=_ambient_cb).start() when set, falls back to static pool otherwise. 7/7 AT test_wo066_ambient_callback.py. David: relaunch app — eLo should now produce idle utterances and brain-backed ambient thoughts between conversations."
+    },
     {
       "wo": "WO-001",
       "status": "done",
