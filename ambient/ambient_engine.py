@@ -135,6 +135,7 @@ _last_emotion = 0.0
 _last_anim    = 0.0
 _stop_ev      = threading.Event()
 _greeted      = False
+_ambient_cb   = None  # WO-066: brain-backed callback registered by server.py
 
 _STATE_PATH    = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                "blender", "blender_state.json")
@@ -325,17 +326,21 @@ def _run(unity_present: bool) -> None:
         if not _is_away():
             if _last_ambient > 0:
                 if now - _last_ambient >= random.uniform(_AMBIENT_MIN, _AMBIENT_MAX) and not _is_speaking():
-                    # 30% chance: draw from quirk bank if it has content
-                    line = None
-                    if random.random() < 0.30:
-                        try:
-                            from memory.quirk_bank import draw as _quirk_draw
-                            drawn = _quirk_draw(1)
-                            if drawn:
-                                line = drawn[0]
-                        except Exception:
-                            pass
-                    _speak(line or random.choice(_AMBIENT_LINES))
+                    # WO-066: prefer brain-backed callback; fall back to static pool.
+                    if _ambient_cb is not None:
+                        threading.Thread(target=_ambient_cb, daemon=True).start()
+                    else:
+                        # 30% chance: draw from quirk bank if it has content
+                        line = None
+                        if random.random() < 0.30:
+                            try:
+                                from memory.quirk_bank import draw as _quirk_draw
+                                drawn = _quirk_draw(1)
+                                if drawn:
+                                    line = drawn[0]
+                            except Exception:
+                                pass
+                        _speak(line or random.choice(_AMBIENT_LINES))
                     _last_ambient = now
             elif _greeted:
                 _last_ambient = now
@@ -385,6 +390,17 @@ def start(unity_present: bool = True) -> None:
     _stop_ev = threading.Event()
     t = threading.Thread(target=_run, args=(unity_present,), daemon=True)
     t.start()
+
+
+def register_ambient_callback(cb) -> None:
+    """
+    WO-066: Register the brain-backed ambient callable.
+    When set, the idle utterance timer calls cb() in a daemon thread instead
+    of drawing from the static pool. cb() is non-blocking and self-contained
+    (handles speak/emotion/motion). Falls back to static pool if not set.
+    """
+    global _ambient_cb
+    _ambient_cb = cb
 
 
 def stop() -> None:
