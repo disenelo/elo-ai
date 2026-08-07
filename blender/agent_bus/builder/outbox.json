@@ -58,6 +58,12 @@
       "detail": "Semantic sit intent — Layer 1.5 pattern classifier in presence_faculty + server.py. Catches: 'join me' / 'would you sit' / 'why don't you sit' / 'can you come sit' / 'feel like sitting' / 'come chill with me' / 'park yourself here'. 2 false-positive guards (I need to sit and think, let's sit back and watch). Fires only when exact _signal_word_intent() misses. 15/15 AT test_wo035b_semantic_sit_intent.py. David: live-confirm with any of those phrasings to close."
     },
     {
+      "wo": "WO-045b",
+      "status": "in_review",
+      "commit": "1da3481",
+      "detail": "Exit-gate ordering fixed. Root: _PENDING_EXIT['active'] was set after the LLM call (~line 3152), so [EXIT_IN_TRANSIT] was never injected on the FIRST 'take five' turn — eLo immediately said 'stepping away' before the body confirmed gone. Fix: early-detect _STEP_OUT_PHRASES frozenset before g_ctx enrichment at line ~2555; set _PENDING_EXIT['active']=True on the same turn so the gate fires. LLM now sees [EXIT_IN_TRANSIT] and is forbidden from claiming departure until exit_complete ACKs. 7/7 AT test_wo045b_exit_gate_ordering.py + 6/6 test_wo045_take_five.py clean. David: say 'take five' — eLo should hold 'stepping away' until body exit completes."
+    },
+    {
       "wo": "WO-036b",
       "status": "in_review",
       "commit": "1e8407b",
