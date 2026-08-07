@@ -3254,6 +3254,31 @@ def _process_turn(raw: str) -> dict:
             # Unity uses this to hold the commanded sit while conversing;
             # falls back to its own 30s timer when no new turn arrives.
             _bs_conversing = True
+
+            # BP-4 (WO-064): Self-Model emits expression.micro from real cognitive state.
+            # Designer reads expression.micro + micro_ts (edge-triggered → FlashMicro).
+            # Command-only, no ACK. Neutral/calm → no emission (don't spam micro-flashes).
+            _MICRO_MAP: dict = {
+                "joy":        "joy",
+                "curiosity":  "curious",
+                "curious":    "curious",
+                "challenge":  "worried",
+                "distress":   "worried",
+                "worried":    "worried",
+                "confident":  "confident",
+                "disgust":    "disgust",
+                "sad":        "sad",
+                "excited":    "joy",
+                "playful":    "joy",
+                "alert":      "curious",
+                "satisfied":  "satisfied",
+            }
+            _micro_emotion = _MICRO_MAP.get(_bs_emo.lower(), "")
+            _micro_patch: dict = {}
+            if _micro_emotion and _bs_intens >= 0.4:
+                import time as _micro_time
+                _micro_patch = {"expression": {"micro": _micro_emotion, "micro_ts": round(_micro_time.time(), 3)}}
+
             _bs_patch({
                 "state": {
                     "memory":            _mem_word,
@@ -3264,6 +3289,7 @@ def _process_turn(raw: str) -> dict:
                 "show_one_brain": True,
                 "intent":         _bs_intent,
                 "conversing":     _bs_conversing,
+                **_micro_patch,
             })
         except Exception:
             pass
