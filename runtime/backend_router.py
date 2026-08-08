@@ -319,13 +319,17 @@ _SENTENCE_END_RE = __import__("re").compile(r"(?<=[.!?…])\s")
 
 
 def _ollama_available() -> bool:
+    """True only when Ollama is up AND at least one model is installed (WO-073)."""
     try:
         import requests
-        r = requests.get(
-            os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/") + "/api/tags",
-            timeout=2
-        )
-        return r.status_code == 200
+        host  = os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
+        model = os.environ.get("ELO_OLLAMA_MODEL", "mistral")
+        r = requests.get(f"{host}/api/tags", timeout=2)
+        if r.status_code != 200:
+            return False
+        models = [m.get("name", "") for m in r.json().get("models", [])]
+        # Accept if the configured model is present, or any model at all as fallback
+        return any(model in m for m in models) or len(models) > 0
     except Exception:
         return False
 
