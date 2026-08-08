@@ -525,6 +525,14 @@ def route(
                 return normalised, "cerebras"
             except Exception as e:
                 _logger.warning("Cerebras failed in pinned mode: %s", e)
+        # WO-073: Ollama local floor — never drop to mute mock while a local brain is running
+        if _ollama_available():
+            try:
+                raw = _ollama_call(system_prompt, user_input)
+                normalised = normalise(raw, max_sentences)
+                return normalised, "ollama"
+            except Exception as e:
+                _logger.warning("Ollama failed in pinned mode: %s", e)
         return _mock_fallback(user_input), "mock"
 
     # auto mode: OpenAI → Gemini → Claude → Groq → Cerebras → Ollama → Mock
@@ -723,7 +731,8 @@ def active_backend() -> str:
     if mode == "local":  return "ollama" if _ollama_available() else "mock"
     if mode == "groq":
         if _groq_available():      return "groq"
-        return "cerebras" if _cerebras_available() else "mock"
+        if _cerebras_available():  return "cerebras"
+        return "ollama" if _ollama_available() else "mock"  # WO-073
     if mode == "cloud":
         if _openai_available():    return "openai"
         if _gemini_available():    return "gemini"
