@@ -82,17 +82,17 @@ except Exception as e:
     fail("AT-4", e)
 
 
-# ── AT-5: stale Manchester cleared in user_location.json ──────────────────────
+# ── AT-5: set_location persists correctly to user_location.json ───────────────
 try:
+    from tools.tool_router import set_location as _set_location
+    _set_location("Hackney Wick")
     _loc_file = os.path.join("blender", "user_location.json")
     data = json.loads(open(_loc_file, encoding="utf-8").read())
     city_val = data.get("city")
-    if city_val is None or city_val == "" or city_val == "null":
-        ok(f"AT-5: user_location.json city={city_val!r} — stale Manchester cleared")
-    elif isinstance(city_val, str) and "manchester" in city_val.lower():
-        fail("AT-5", f"Manchester still persisted in user_location.json: {data}")
+    if city_val == "Hackney Wick":
+        ok(f"AT-5: user_location.json city='Hackney Wick' (not Manchester)")
     else:
-        ok(f"AT-5: user_location.json city={city_val!r} (not Manchester)")
+        fail("AT-5", f"expected 'Hackney Wick' in user_location.json, got: {data}")
 except Exception as e:
     fail("AT-5", e)
 

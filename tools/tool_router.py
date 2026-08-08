@@ -468,8 +468,6 @@ def _agent_calculator(query: str) -> str:
 
 
 def _agent_weather(query: str) -> str:
-    import httpx
-
     # Location priority:
     #   1. Explicit city in this query ("weather in London")
     #   2. Session location set by user ("I'm in London")
@@ -520,6 +518,7 @@ def _agent_weather(query: str) -> str:
 
     # ── wttr.in (fallback) ────────────────────────────────────────────────────
     # city is always set at this point (explicit > session > env > London default)
+    import httpx
     target = city.replace(" ", "+")
     using_auto = False
 

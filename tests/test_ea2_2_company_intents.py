@@ -29,6 +29,12 @@ from company_runtime.company_state_writer import (
 
 _FAKE_STATE = {
     "voiced_briefing": "3 items ready · 2 waiting on David · FH-1 in progress",
+    # company_focus must be non-empty so _load_fresh_state does not re-publish
+    # from the real DISPATCH_BOARD and overwrite this injected state.
+    "company_focus": {
+        "milestone": "Presentable v1",
+        "items": ["WO-015 Builder P1", "EA2-2 Company Brain"],
+    },
     "today_priorities": [
         {"text": "WO-015 Builder P1", "wo": "WO-015"},
         {"text": "EA2-2 Company Brain", "wo": "EA2-2"},
@@ -143,9 +149,12 @@ def test_at7_briefing_returns_voiced_briefing():
         reply = handle_company_voice_intent("how's the company",
                                             state_path=state_path,
                                             actions_path=actions_path)
-        assert _FAKE_STATE["voiced_briefing"] in reply, \
-            f"AT-7 FAIL: voiced_briefing not in reply: {reply!r}"
-        print("AT-7 PASS — briefing returns voiced_briefing")
+        # WO-048: _build_briefing() returns a rich constructed reply, not the raw
+        # voiced_briefing field.  "DISENELO" is always the first word of the briefing,
+        # and the fake state's today_priorities / waiting items appear in the output.
+        assert "DISENELO" in reply and any(w in reply for w in ["WO-015", "EA2-2", "INT-3"]), \
+            f"AT-7 FAIL: briefing missing DISENELO identity or fake-state items: {reply!r}"
+        print("AT-7 PASS — briefing returns DISENELO identity + state items")
     finally:
         os.unlink(state_path)
 
