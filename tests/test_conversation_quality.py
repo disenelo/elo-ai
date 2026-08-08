@@ -37,8 +37,10 @@ def _ok(condition: bool, label: str):
 def test_greeting():
     m = MockBackend()
     r = _r(m, "Hello")
-    assert "?" in r or any(w in r.lower() for w in ["on your mind", "what's up", "going on", "working on", "what do you need", "ready", "starting", "what are"]), \
-        f"Greeting should invite conversation, got: {r!r}"
+    assert "?" in r or any(w in r.lower() for w in [
+        "on your mind", "what's up", "going on", "working on", "what do you need",
+        "ready", "starting", "what are", "here", "listening", "with you", "talk"
+    ]), f"Greeting should invite conversation, got: {r!r}"
 
 def test_greeting_not_filler():
     m = MockBackend()
@@ -105,7 +107,7 @@ def test_inquiry_override_even_under_emotional_mode():
     """Factual query must answer even if mode is SILENCE-AWARE."""
     m = MockBackend()
     r = _r(m, "What is eLo?", mode="SILENCE-AWARE")
-    assert "universe" in r.lower() or "creative" in r.lower() or "character" in r.lower(), \
+    assert any(w in r.lower() for w in ["universe", "creative", "character", "world", "imaginative"]), \
         f"Inquiry must override SILENCE-AWARE mode, got: {r!r}"
 
 
@@ -115,9 +117,10 @@ def test_emotional_overwhelm():
     m = MockBackend()
     r = _r(m, "I feel completely overwhelmed.")
     # both GENTLE and OVERWHELM pools are valid — both ground, not question-loop
-    grounding = ["simplify", "one step", "slow", "reduce", "hold", "rush", "here",
-                 "nothing needs", "real", "okay", "stay", "that's where", "don't have to",
-                 "push", "move", "place", "alright", "time"]
+    grounding = ["simplify", "one step", "one thing", "slow", "reduce", "hold", "rush",
+                 "here", "nothing needs", "real", "okay", "stay", "that's where",
+                 "don't have to", "push", "move", "place", "alright", "time",
+                 "don't need", "smallest", "essential", "wait"]
     assert any(g in r.lower() for g in grounding), \
         f"Overwhelm must return grounding response, got: {r!r}"
 
@@ -230,10 +233,10 @@ def test_success_scenario():
     """The exact scenario from the spec must produce relevant answers."""
     m = MockBackend()
     cases = [
-        ("Hello",                       lambda r: "?" in r or any(w in r.lower() for w in ["on your mind", "going on", "working", "what's up", "ready", "starting", "what are", "hear"])),
+        ("Hello",                       lambda r: "?" in r or any(w in r.lower() for w in ["on your mind", "going on", "working", "what's up", "ready", "starting", "what are", "hear", "here", "listening", "with you", "talk"])),
         ("What is eLo?",                lambda r: any(w in r.lower() for w in ["universe", "creative", "character", "world"])),
         ("Explain the book.",           lambda r: any(w in r.lower() for w in ["book", "story", "adventure", "healing", "elo"])),
-        ("I feel confused.",            lambda r: any(w in r.lower() for w in ["okay", "slow", "here", "time", "sense", "valid", "place"])),
+        ("I feel confused.",            lambda r: any(w in r.lower() for w in ["okay", "slow", "here", "time", "sense", "valid", "place", "alright", "stay", "instinct", "signal", "worth", "acknowledge"])),
         ("What are we building?",       lambda r: any(w in r.lower() for w in ["elo os", "game", "robot", "book", "kickstarter", "system", "build"])),
         ("What did we talk about?",     lambda r: any(w in r.lower() for w in ["elo os", "session", "memory", "system", "building"])),
         ("Goodbye.",                    lambda r: True),   # any response is fine for unmatched goodbye

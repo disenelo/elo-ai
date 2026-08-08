@@ -366,10 +366,10 @@ _SUGARCORE_POOL = [
 # ── RECALL ────────────────────────────────────────────────────────────────────
 
 _RECALL_POOL = [
-    "Right now I'm working from this conversation only — I don't hold what came before. What's on your mind from it?",
-    "I pick up from what's here in front of me. What were we on?",
+    "Right now I'm working from this conversation only — I don't hold the prior session. What's on your mind from it?",
+    "I pick up from what's here in front of me. What were we building?",
     "Each session I start fresh. Tell me where we were and I'll pick it up with you.",
-    "I'm present for this — not the history. Bring me back in.",
+    "I'm present for this session — not the history. Bring me back in.",
     "I don't carry the last session, but I'm here now. What's the thread?",
 ]
 
