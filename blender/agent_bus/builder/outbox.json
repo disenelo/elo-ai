@@ -1,7 +1,13 @@
 {
-  "ts": 1786378361.25194,
-  "builder_run_summary": "2026-08-10 \u2014 RUN 14. WO-CANON-VIII: MemoryFaculty single logical writer + reinforce-on-recall, 17/17 AT, commit cece510. XV (a742cdc) + XII (9bd4f37) previously done.",
+  "ts": 1786381200.0,
+  "builder_run_summary": "2026-08-10 \u2014 RUN 15. WO-CANON-VI: Working Memory + Attention wired into spine, 24/24 AT, commit 06845b6. VIII (cece510) + XV (a742cdc) + XII (9bd4f37) previously done.",
   "updates": [
+    {
+      "wo": "WO-CANON-VI",
+      "status": "in_review",
+      "commit": "06845b6",
+      "detail": "Working Memory + Attention wired into spine (ruling B / D-VI-1 applied). runtime/working_memory.py: carry_wm() + load_carry() session-boundary functions added. core/attention.py: docstring updated to 'Memory Relevance Filter' (supplier only, not authority). runtime/contracts.py: working_memory + attention_state fields on CognitiveState. runtime/spine/plan.py: working_memory field on CognitivePlan. runtime/spine/spine.py: full WM wiring at top-of-turn \u2014 SEED from continuity/wm_carry.json, AttentionCandidates built from attention supplier output, run_attention_competition, CognitiveFrame update, freeze with attention state, stored on plan + threaded through assemble_cognitive_state(). 24/24 AT test_canon_vi_working_memory.py covering Ch.1\u2013Ch.4 spec."
+    },
     {
       "wo": "WO-CANON-VIII",
       "status": "in_review",
