@@ -1,19 +1,18 @@
 """
-core/attention.py — eLo OS v2 Attention Layer.
+core/attention.py — Memory Relevance Filter (WO-CANON-VI, ruling B / D-VI-1 applied).
 
-Computes BEFORE every response. Determines what is relevant RIGHT NOW.
-Filters memory through intent and relevance scoring before prompt assembly.
+Supplies relevance-scored candidates and emotional/urgency signals to the WM attention
+competition (runtime/working_memory.py::run_attention_competition). NOT a second
+attention authority — the WM competition is the single attention driver.
 
-eLo does NOT respond based on full memory.
-eLo responds based on: WHAT IS RELEVANT RIGHT NOW.
-
-Output (AttentionModel dict):
+Output (AttentionModel dict — supplier format, unchanged):
     {
         "intent":                 str,   one of 7 intents
-        "high_priority_memory":   list,  score >= 8
-        "medium_priority_memory": list,  score 4–7
-        "low_priority_memory":    list,  score < 4  (excluded from prompt)
+        "high_priority_memory":   list,  score >= 8  ← candidate pool for WM competition
+        "medium_priority_memory": list,  score 4–7   ← candidate pool for WM competition
+        "low_priority_memory":    list,  score < 4   (excluded from prompt)
         "emotional_context":      dict,  energy / tension / closure / inferred_state
+                                        ← urgency + distress signal for WM competition
     }
 """
 

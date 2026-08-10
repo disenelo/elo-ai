@@ -156,6 +156,10 @@ class CognitiveState:
     # ── World Faculty (WO-CANON-XV) ──────────────────────────────────────────
     world_state:          object = None       # LiveWorldState | None — frozen, assembled top-of-turn
 
+    # ── Working Memory Faculty (WO-CANON-VI) ─────────────────────────────────
+    working_memory:       object = None       # WorkingMemory | None — frozen, updated top-of-turn
+    attention_state:      object = None       # AttentionState | None — competition result
+
     # ── Assembly Confidence ───────────────────────────────────────────────────
     assembly_confidence:  float = 1.0         # 0.0 if faculties partially failed
 

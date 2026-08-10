@@ -367,6 +367,56 @@ def run(
     except Exception as _world_err:
         _log.debug("assemble_world_state: %s", _world_err)
 
+    # ── WO-CANON-VI: Working Memory + Attention — top-of-turn, before faculties ─
+    # core/attention.py = candidate/signal supplier. WM competition = sole driver.
+    _wm = None
+    try:
+        import time as _wm_time
+        from runtime.working_memory import (
+            seed_working_memory as _wm_seed,
+            update_working_memory as _wm_update,
+            run_attention_competition as _wm_attn,
+            CognitiveFrame as _CogFrame,
+            AttentionCandidate as _AttnCand,
+            WorkingMemory as _WM,
+            load_carry as _wm_load_carry,
+        )
+        _carry = _wm_load_carry()
+        _wm = _wm_seed(
+            current_task=_carry.get("current_task", ""),
+            continuity_summary=_carry.get("rolling_summary", ""),
+            open_threads=_carry.get("open_threads", []),
+        )
+        # Build candidates from core/attention supplier output
+        _wm_candidates = []
+        if raw:
+            _wm_candidates.append(_AttnCand(item=raw[:80], novelty=0.5, importance=0.5, urgency=0.4))
+        for _m in (attention or {}).get("high_priority_memory", [])[:4]:
+            if _m:
+                _wm_candidates.append(_AttnCand(item=str(_m)[:80], novelty=0.2, importance=0.7, urgency=0.2))
+        _distress = (attention or {}).get("emotional_context", {}).get("inferred_state") == "distress"
+        _attn_state = _wm_attn(_wm_candidates, budget=0.5, distress=_distress)
+        # Append current frame then freeze with new attention state
+        _frame = _CogFrame(
+            frame_id=f"t{int(_wm_time.time() * 1000) % 1_000_000}",
+            content=raw[:200] if raw else "",
+            turn=0, significance=0.5,
+        )
+        _wm_updated = _wm_update(_wm, _frame)
+        _wm = _WM(
+            current_task=_wm_updated.current_task,
+            active_goals=_wm_updated.active_goals,
+            interruptions=_wm_updated.interruptions,
+            open_threads=_wm_updated.open_threads,
+            frames=_wm_updated.frames,
+            pinned=_wm_updated.pinned,
+            rolling_summary=_wm_updated.rolling_summary,
+            attention=_attn_state,
+            capacity=_wm_updated.capacity,
+        )
+    except Exception as _wm_err:
+        _log.debug("working_memory: %s", _wm_err)
+
     # ── WO-052: CognitiveSnapshot — assembled BEFORE any faculty decides ──────
     _snapshot = None
     try:
@@ -399,6 +449,8 @@ def run(
     plan.snapshot = _snapshot
     # ── WO-CANON-XV/XII: Store frozen world + perception on plan ──────────────
     plan.world = _world
+    # ── WO-CANON-VI: Store frozen WorkingMemory on plan ───────────────────────
+    plan.working_memory = _wm
 
     # ── v1.5 Executive Faculty enrichment (relationship + emotional vector) ───
     try:
@@ -428,7 +480,7 @@ def run(
         lang_with_register = {**language, "register": plan.register}
         plan.cognitive_state = assemble_cognitive_state(
             lang_with_register, memory_pack, attention, capabilities, None, state,
-            world_state=_world,
+            world_state=_world, working_memory=_wm,
         )
     except Exception as e:
         _log.debug("assemble_cognitive_state: %s", e)
@@ -478,13 +530,14 @@ _LED_FROM_EMOTIONAL_STATE = {
 
 
 def assemble_cognitive_state(
-    language:     dict,
+    language:       dict,
     memory_result,
-    attention:    dict,
-    capabilities: list,
+    attention:      dict,
+    capabilities:   list,
     vault_result,
     prior_state,
     world_state=None,
+    working_memory=None,
 ):
     """
     Assemble CognitiveState from all faculty outputs.
@@ -506,6 +559,8 @@ def assemble_cognitive_state(
         for c in (capabilities or [])
     )
 
+    _attn_state = getattr(working_memory, "attention", None) if working_memory else None
+
     return CognitiveState(
         raw_input=language.get("original", ""),
         intent_signal=language.get("intent", "conversation"),
@@ -516,6 +571,8 @@ def assemble_cognitive_state(
         assembly_confidence=conf,
         capability_candidates=cap_candidates,
         world_state=world_state,
+        working_memory=working_memory,
+        attention_state=_attn_state,
     )
 
 

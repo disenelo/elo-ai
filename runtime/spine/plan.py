@@ -82,6 +82,8 @@ class CognitivePlan:
     snapshot:             object = None    # CognitiveSnapshot | None
     # ── WO-CANON-XV: LiveWorldState assembled at top of turn, before faculties ─
     world:                object = None    # LiveWorldState | None
+    # ── WO-CANON-VI: WorkingMemory assembled at top of turn, before faculties ──
+    working_memory:       object = None    # WorkingMemory | None — frozen, single attention driver
     # ── Assembled AFTER decision (S3/S6 — post-plan contracts) ───────────────
     cognitive_state:      object = None    # CognitiveState | None
     embodiment_state:     object = None    # EmbodimentState | None
