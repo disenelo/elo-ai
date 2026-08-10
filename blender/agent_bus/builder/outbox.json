@@ -1,7 +1,13 @@
 {
-  "ts": 1786392000.0,
-  "builder_run_summary": "2026-08-10 \u2014 RUN 18. WO-030b/058b: weather publish \u2014 _PRESERVE_KEYS guard, 7/7 AT, commit 419c293 \u00b7 continuation 76/76 (WO-032b AT-4 stale assertion also fixed). RUN 17: WO-CANON-XXV (e562401). RUN 16: WO-CANON-XX (468849f). RUN 15: WO-CANON-VI (06845b6).",
+  "ts": 1786392000.1,
+  "builder_run_summary": "2026-08-10 \u2014 RUN 19. WO-077: own-speech return loop \u2014 [RECENT DIALOGUE] injected every turn, 6/6 AT, commit da2c562 \u00b7 continuation 77/77. RUN 18: WO-030b/058b weather publish 419c293. RUN 17: WO-CANON-XXV e562401.",
   "updates": [
+    {
+      "wo": "WO-077",
+      "status": "in_review",
+      "commit": "da2c562",
+      "detail": "Return loop: eLo's own recent outputs now in every turn. Diagnosis: _SESSION_WINDOW assistant entries (key 'elo') were never systematically injected into the system prompt \u2014 only on explicit memory recall (conditional path). Per-turn style monitor at server.py:2782 was also silently failing (NameError on _cw caught by bare except). Perception already in assembled state (self_situated_block + g_ctx chrome/vision/spatial). Real gap = own-speech. Fix: after build_prompt + narrative identity block, import _SESSION_WINDOW and inject [RECENT DIALOGUE] block (last 3 turns, David + eLo, 120 chars each) into system prompt every turn. Empty-turn guard: block skipped when no elo entries yet (turn 1). test_wo077_return_loop.py 6/6: AT-1 (push stores elo key), AT-2 (block built from elo turns), AT-3 (no block when no elo), AT-4 (last 3 only), AT-5 (WO-077 marker in server.py). Continuation 77/77."
+    },
     {
       "wo": "WO-CANON-XXV",
       "status": "in_review",
