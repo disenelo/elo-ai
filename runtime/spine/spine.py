@@ -350,11 +350,20 @@ def run(
     if attention is None:
         attention = {}
 
+    # ── WO-CANON-XII: perceive() first — sensation caches → frozen PerceptionResult ─
+    _perception = None
+    try:
+        from faculties.perception.perception_faculty import perceive_from_live_state as _perceive
+        _perception = _perceive()
+    except Exception as _perc_err:
+        _log.debug("perceive_from_live_state: %s", _perc_err)
+
     # ── WO-CANON-XV: LiveWorldState — assembled FIRST, frozen, read by all faculties ─
+    # Copies PerceptionResult fields into domain slices (Ch.3 §3.2 copy step).
     _world = None
     try:
         from world.live_world_state import assemble_world_state as _assemble_world
-        _world = _assemble_world(turn_id=raw[:32] if raw else "")
+        _world = _assemble_world(turn_id=raw[:32] if raw else "", perception=_perception)
     except Exception as _world_err:
         _log.debug("assemble_world_state: %s", _world_err)
 
@@ -388,7 +397,7 @@ def run(
 
     # ── WO-052: Store snapshot on plan (assembled before; now pinned to it) ───
     plan.snapshot = _snapshot
-    # ── WO-CANON-XV: Store frozen world state on plan ─────────────────────────
+    # ── WO-CANON-XV/XII: Store frozen world + perception on plan ──────────────
     plan.world = _world
 
     # ── v1.5 Executive Faculty enrichment (relationship + emotional vector) ───

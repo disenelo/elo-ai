@@ -153,11 +153,13 @@ class LiveWorldState:
 
 # ── Assembly ──────────────────────────────────────────────────────────────────
 
-def assemble_world_state(turn_id: str = "") -> LiveWorldState:
+def assemble_world_state(turn_id: str = "", perception=None) -> LiveWorldState:
     """
     Assemble one frozen LiveWorldState from all available sensors.
     Called ONCE per turn, at the top of the turn, before faculties reason.
 
+    perception: PerceptionResult | None — if provided, its fields are copied verbatim
+    into the matching domain slices (Ch.3 §3.2 copy step). Confidence carried verbatim.
     Each domain is independently degradable. A domain that fails returns
     a neutral default with status='absent' — never blocks the turn.
     """
@@ -287,6 +289,69 @@ def assemble_world_state(turn_id: str = "") -> LiveWorldState:
     # ── Remaining domains — absent by default (sensors not yet integrated) ────
     for domain in ("browser", "files", "internet", "calendar", "weather"):
         _health(domain, "absent", "absent", 0.0)
+
+    # ── Ch.3 §3.2: copy PerceptionResult into domain slices (verbatim, no re-interpret) ──
+    # Overrides direct-sensor reads only where perception provides richer data.
+    # Confidence carried verbatim — never inflated.
+    if perception is not None:
+        try:
+            pconf = getattr(perception, "confidence", 0.0)
+            psurface = getattr(perception, "active_surface", "unknown")
+            pactivity = getattr(perception, "user_activity", "unknown")
+            pscene = getattr(perception, "scene", "")
+            phealth = getattr(perception, "source_health", {})
+            pwindow_app = (perception.modality_reads.get("window", "")
+                           if hasattr(perception, "modality_reads") else "")
+            pwindow_parts = pwindow_app.split(": ", 1)
+            papp = pwindow_parts[0] if pwindow_parts else ""
+            ptitle = pwindow_parts[1] if len(pwindow_parts) > 1 else pscene
+
+            # Desktop — overwrite with perception surface + confidence from PerceptionFaculty
+            if psurface != "unknown" or papp:
+                desktop = DesktopState(
+                    active_app=papp or desktop.active_app,
+                    active_window=ptitle or desktop.active_window,
+                    surface=psurface if psurface != "unknown" else desktop.surface,
+                )
+                p_desk_status = phealth.get("window", {}).get("status", "absent")
+                domain_health["desktop"] = {
+                    "fresh_ts":   assembled_ts,
+                    "confidence": pconf,     # verbatim from PerceptionFaculty
+                    "source":     "PerceptionFaculty",
+                    "status":     p_desk_status if p_desk_status in ("live", "cached") else
+                                  domain_health.get("desktop", {}).get("status", "absent"),
+                }
+
+            # User — update focus_state from perceived activity
+            if pactivity != "unknown":
+                user = UserState(
+                    present=user.present,
+                    register=user.register,
+                    focus_state=pactivity,
+                    attention_target=papp or user.attention_target,
+                )
+                domain_health["user"] = {
+                    "fresh_ts":   assembled_ts,
+                    "confidence": max(0.5, pconf),
+                    "source":     "PerceptionFaculty",
+                    "status":     "live",
+                }
+
+            # Environment — vision_active from perception source_health
+            pvision_status = phealth.get("vision", {}).get("status", "absent")
+            environment = EnvironmentState(
+                os_name=environment.os_name,
+                screen_record=environment.screen_record,
+                vision_active=(pvision_status == "live"),
+            )
+            domain_health["environment"] = {
+                "fresh_ts":   assembled_ts,
+                "confidence": 0.9 if pvision_status == "live" else 0.5,
+                "source":     "PerceptionFaculty",
+                "status":     "live",
+            }
+        except Exception:
+            pass  # degraded perception never blocks world state
 
     return LiveWorldState(
         desktop=desktop,

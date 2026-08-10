@@ -1408,7 +1408,7 @@ _Updated 2026-08-10 (reconcile #26) — **DESIGN MOVEMENT (seat-reported, UNVERI
 ### CANON BUILD — WO ROWS (2026-08-10 · all 16 volume build-WOs authored · QUEUED behind Presentable v1 · not dispatched)
 | WO | What | Agent | Pri | Status | Notes |
 |----|------|-------|-----|--------|-------|
-| WO-CANON-XV | Build Volume XV World Model (LiveWorldState, read-once) | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | Priority#2 · spec WO-CANON-XV.md |
+| WO-CANON-XV | Build Volume XV World Model (LiveWorldState, read-once) | Builder (eLo OS) | P2 | **DONE ✅ auto-verified (test_canon_xv_world_state.py 14/14) → IN_REVIEW** commit `a742cdc`. assemble_world_state() wired into spine.run() top-of-turn; plan.world + CognitiveState.world_state carry the frozen LiveWorldState through. | Priority#2 · spec WO-CANON-XV.md |
 | WO-CANON-XII | Perception→World-State copy + fidelity flags | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | spec WO-CANON-XII.md |
 | WO-CANON-VI | Wire Working Memory + attention into the turn | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | needs ruling B · WO-CANON-VI.md |
 | WO-CANON-VIII | Memory: single logical writer + reinforce-on-recall | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | WO-CANON-VIII.md |

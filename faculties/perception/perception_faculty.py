@@ -160,6 +160,7 @@ class PerceptionResult:
     Feeds LiveWorldState (Vol XV) and CognitiveState.
 
     FT-2: produced once per turn; frozen.
+    Ch.4 §4.3: partial=True when confidence < 0.7 or a primary modality is absent.
     """
     modality_reads:  dict              = field(default_factory=dict)   # {vision, window, voice, files} → raw text
     scene:           str               = ""         # one-line context ("focused coding session in VS Code")
@@ -169,6 +170,7 @@ class PerceptionResult:
     confidence:      float             = 1.0        # 0.0–1.0; lower when modalities missing
     source_health:   dict              = field(default_factory=dict)   # {source: {status, ts}}
     spatial_frame:   "SpatialFrame | None" = None  # WO-025: Vol XV §2 spatial domain; None when ELO_SPATIAL_SENSOR not set
+    partial:         bool              = False      # Ch.4 §4.3: True when confidence < 0.7 or primary modality absent
 
 
 # ── Interpret helpers ─────────────────────────────────────────────────────────
@@ -298,15 +300,24 @@ def perceive(
     if surface == "unknown":
         confidence = max(0.0, confidence - 0.1)
 
+    _confidence_final = round(confidence, 3)
+    # Ch.4 §4.3: partial when primary modalities (window, vision) are absent or confidence low
+    _partial = (
+        _confidence_final < 0.7
+        or source_health.get("window", {}).get("status") == "absent"
+        or (not vision_permitted and source_health.get("vision", {}).get("status") == "absent")
+    )
+
     return PerceptionResult(
         modality_reads=modality_reads,
         scene=scene,
         active_surface=surface,
         salient_objects=tuple(salient),
         user_activity=activity,
-        confidence=round(confidence, 3),
+        confidence=_confidence_final,
         source_health=source_health,
         spatial_frame=spatial_data,
+        partial=_partial,
     )
 
 
