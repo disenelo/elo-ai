@@ -2808,6 +2808,18 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             _facts_prefix = ""
         _combined_vault = (_facts_prefix + _vault_ctx + "\n\n" + _project_ctx).strip() if _project_ctx else (_facts_prefix + _vault_ctx).strip()
+        # INT-8: inject any pending file-drop results as context so eLo can reference them
+        try:
+            from desktop.file_drop_handler import pop_pending_drops as _pop_drops
+            _drops = _pop_drops()
+            if _drops:
+                _drop_lines = "\n".join(
+                    f"  [{d['file']}] {d['summary']}" for d in _drops
+                )
+                _drop_block = f"[FILE DROP — David just dropped these files on eLo]\n{_drop_lines}"
+                _combined_vault = (_combined_vault + "\n\n" + _drop_block).strip()
+        except Exception:
+            pass
         system = build_prompt(raw, vault_context=_combined_vault,
                               state_context=state_manager.as_context_string(_state),
                               attention=attention_model, exec_decision=exec_decision,
