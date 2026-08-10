@@ -1,6 +1,6 @@
 {
-  "ts": 1786388400.0,
-  "builder_run_summary": "2026-08-10 \u2014 RUN 17. WO-CANON-XXV: Temporal Cognition Faculty, 19/19 AT, commit e562401. XX (468849f) + VI (06845b6) + VIII (cece510) + XV (a742cdc) + XII (9bd4f37) previously done.",
+  "ts": 1786392000.0,
+  "builder_run_summary": "2026-08-10 \u2014 RUN 18. WO-030b/058b: weather publish \u2014 _PRESERVE_KEYS guard, 7/7 AT, commit 419c293 \u00b7 continuation 76/76 (WO-032b AT-4 stale assertion also fixed). RUN 17: WO-CANON-XXV (e562401). RUN 16: WO-CANON-XX (468849f). RUN 15: WO-CANON-VI (06845b6).",
   "updates": [
     {
       "wo": "WO-CANON-XXV",
@@ -40,9 +40,9 @@
     },
     {
       "wo": "WO-030b/058b",
-      "status": "done",
-      "commit": "f133fee",
-      "detail": "Weather PUBLISH confirmed done. blender_state.json top-level \"weather\" field was already shipping every turn via _bs_patch() in server.py:3555 (committed in f133fee alongside BP-1). get_last_weather_condition() from tools/tool_router.py cached and published. blender_state.json live field = \"mostly cloudy\". 8/8 AT test_bp1_wo058_blender_fields.py. Unity read-side already shipped per Designer. No code change needed \u2014 confirmed and marked done."
+      "status": "in_review",
+      "commit": "419c293",
+      "detail": "Weather PUBLISH hardened (Run 18). Root gap: _write() in state_writer.py overwrote the weather key every turn (not in _PRESERVE_KEYS), and the One Brain _bs_patch wrote \"\" when _last_weather_condition was empty (clearing a previously persisted value). Fix: (1) \"weather\" added to _PRESERVE_KEYS \u2014 every _write() now reads and re-carries the prior weather value; (2) One Brain block in server.py now guards: only patches weather when _bs_weather is non-empty, so a restart never overwrites a persisted condition with empty string. test_wo030b_weather_publish.py 7/7: AT-1 (_PRESERVE_KEYS), AT-2 (_write preserves prior), AT-3 (patch writes), AT-4 (patch transparent; guard in server.py), AT-5 (get_last returns str), AT-6 (survives 2 _write() round-trips). Continuation 76/76 (WO-032b AT-4 stale assertion also corrected: WO-073 made \"ollama\" the groq fallback floor, not \"mock\")."
     },
     {
       "wo": "WO-052B",
