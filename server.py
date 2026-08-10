@@ -398,6 +398,18 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "leave me to it": "step_out",
     "go away for a bit": "step_out",
     "pop off":        "step_out",
+    # WO-078 — UK slang + give-me-space phrasings
+    "give me a mo":   "step_out",
+    "give me some space": "step_out",
+    "give me some room":  "step_out",
+    "give us a minute":   "step_out",
+    "give us a sec":      "step_out",
+    "leave me be":        "step_out",
+    "let me be":          "step_out",
+    "need a breather":    "step_out",
+    "make yourself scarce": "step_out",
+    "i need a minute":    "step_out",
+    "i need some space":  "step_out",
     # WO-045 — return from step-out
     "come back":      "return_elo",
     "you there":      "return_elo",
@@ -731,7 +743,15 @@ def ambient_thought() -> None:
         # Synthesis observer — check for cross-signal connections to surface proactively
         _synthesis_ctx = ""
         try:
-            from faculties.synthesis.observer import observe as _syn_observe
+            from faculties.synthesis.observer import (
+                observe as _syn_observe,
+                record_decline as _syn_decline,
+                _DECLINE_PHRASES as _SYN_DECLINE_PHRASES,
+            )
+            # WO-085: if user is declining/dismissing → record it before observing
+            _raw_lower = (raw or "").lower()
+            if any(phrase in _raw_lower for phrase in _SYN_DECLINE_PHRASES):
+                _syn_decline()
             _recent_conv = ""
             try:
                 from runtime.router.conversation_matrix import _SESSION_WINDOW as _sw_amb
@@ -742,7 +762,7 @@ def ambient_thought() -> None:
             except Exception:
                 pass
             _syn_hit = _syn_observe(_recent_conv)
-            if _syn_hit and _syn_hit.confidence > 0.5:
+            if _syn_hit and _syn_hit.confidence > 0.65:  # WO-085: raised from 0.5
                 _synthesis_ctx = (
                     f"\nSYNTHESIS SIGNAL: {_syn_hit.offer} "
                     f"(topic: '{_syn_hit.topic}', confidence: {_syn_hit.confidence:.0%}). "
@@ -1347,6 +1367,73 @@ def _detect_language_query(text: str):
                     return _LANGUAGE_GREETINGS[key]
             # unknown language — pick random
             return random.choice(list(_LANGUAGE_GREETINGS.values()))
+    return None
+
+
+# ── Multilingual "how are you" (WO-069) ───────────────────────────────────────
+# phrase (lowercase, no trailing punctuation) → language code
+_MULTILINGUAL_HOW_ARE_YOU_PHRASES = {
+    # Spanish
+    "como estas":           "spanish",
+    "como estás":           "spanish",
+    "qué tal":              "spanish",
+    "que tal":              "spanish",
+    # French
+    "ça va":                "french",
+    "ca va":                "french",
+    "comment vas-tu":       "french",
+    "comment tu vas":       "french",
+    "comment allez-vous":   "french",
+    # Italian
+    "come stai":            "italian",
+    "come va":              "italian",
+    # German
+    "wie geht's":           "german",
+    "wie gehts":            "german",
+    "wie geht es dir":      "german",
+    # Portuguese
+    "tudo bem":             "portuguese",
+    "como vai":             "portuguese",
+    "como voce esta":       "portuguese",
+    "como você está":       "portuguese",
+    # Russian (transliterated)
+    "kak dela":             "russian",
+    "kak ti":               "russian",
+    # Hungarian
+    "hogy vagy":            "hungarian",
+    # Dutch
+    "hoe gaat het":         "dutch",
+    # Japanese (transliterated)
+    "o genki desu ka":      "japanese",
+    "genki desu ka":        "japanese",
+}
+
+# per-language warm direct replies (answer IN that language, never meta-narrate)
+_HOW_ARE_YOU_BY_LANG = {
+    "spanish":    ["Bien, aquí contigo — ¿y tú?", "Bien. ¿Y tú?", "Todo bien — ¿y tú?"],
+    "french":     ["Bien, merci — et toi?", "Ça va bien. Et toi?", "Bien. Et toi?"],
+    "italian":    ["Bene, grazie — e tu?", "Tutto bene. E tu?", "Bene. E tu?"],
+    "german":     ["Gut, danke — und dir?", "Gut. Und du?", "Ganz gut. Und dir?"],
+    "portuguese": ["Bem, obrigado — e você?", "Tudo bem. E você?", "Bem. E você?"],
+    "russian":    ["Horosho — a ty?", "Horosho. A ty?"],
+    "hungarian":  ["Jól vagyok — és te?", "Jól. Te?"],
+    "dutch":      ["Goed, dankjewel — en jij?", "Goed. En jij?"],
+    "japanese":   ["Genki desu — anata wa?", "Genki. Anata wa?"],
+}
+
+
+def _detect_multilingual_how_are_you(text: str):
+    """
+    Return (language, reply) if text is a multilingual 'how are you', else None.
+    Strips trailing punctuation before matching.
+    """
+    t = text.lower().strip().rstrip("?!., ")
+    for phrase, lang in _MULTILINGUAL_HOW_ARE_YOU_PHRASES.items():
+        if t == phrase or t.endswith(phrase):
+            replies = _HOW_ARE_YOU_BY_LANG.get(lang)
+            if replies:
+                return lang, random.choice(replies)
+            return lang, random.choice(_HOW_ARE_YOU_POOL)
     return None
 
 
@@ -2196,7 +2283,7 @@ def _process_turn(raw: str) -> dict:
             from faculties.cultural_facts import is_fact_trigger, draw as _fact_draw
             if is_fact_trigger(raw):
                 _fact = _fact_draw()
-                _fact_reply = _fact.delivery if _fact else "Give me a second — pulling from the vault."
+                _fact_reply = _fact.delivery if _fact else "Give me a second — checking my memory."
                 try:
                     if not _is_user_away():
                         _voice_speak(_fact_reply)
@@ -2377,25 +2464,39 @@ def _process_turn(raw: str) -> dict:
         # Chrome observation — open tabs + bookmarks matching current conversation topic
         # WO-038: label source clearly (live tab vs history vs no-match-but-open) so eLo
         # doesn't flip between "Chrome isn't open" and "here's your history" for the same data.
+        # WO-076: flag truncated titles as [PARTIAL]; inject anti-fabrication rail.
         try:
             from desktop.chrome_reader import observe as _chrome_observe
             _chrome_snap = _chrome_observe(query=raw[:80])
             _chrome_lines: list[str] = []
             _chr_tab_count = _chrome_snap.get("tab_count", 0)
+
+            def _wo76_tag(title: str) -> str:
+                t = title.strip()
+                if t.endswith("…") or t.endswith("...") or t.endswith("–"):
+                    return f"[PARTIAL: {t}]"
+                return t
+
             if _chrome_snap.get("open_tabs"):
-                _tl = "; ".join(t["title"] for t in _chrome_snap["open_tabs"][:5])
+                _tl = "; ".join(_wo76_tag(t["title"]) for t in _chrome_snap["open_tabs"][:5])
                 _chrome_lines.append(f"[CHROME_LIVE_TABS: {_tl}]")
             elif _chr_tab_count > 0:
                 # Chrome IS open but no tabs matched this query — don't say "Chrome isn't open"
                 _chrome_lines.append(f"[CHROME_OPEN: {_chr_tab_count} tab(s) open — none matched this topic]")
             if _chrome_snap.get("bookmarks"):
-                _bl = "; ".join(b["title"] for b in _chrome_snap["bookmarks"][:3])
+                _bl = "; ".join(_wo76_tag(b["title"]) for b in _chrome_snap["bookmarks"][:3])
                 _chrome_lines.append(f"[BOOKMARKS_MATCHED: {_bl}]")
             if _chrome_snap.get("history"):
-                _hl = "; ".join(h["title"] for h in _chrome_snap["history"][:3])
+                _hl = "; ".join(_wo76_tag(h["title"]) for h in _chrome_snap["history"][:3])
                 _chrome_lines.append(f"[BROWSER_HISTORY (not a live tab): {_hl}]")
             if _chrome_lines:
                 _chrome_ctx = "\n".join(_chrome_lines)
+                _chrome_ctx += (
+                    "\n[PERCEPTION RAIL] Each item above is an INDEPENDENT observation. "
+                    "Do NOT assert that any two items are linked, connected, or related unless "
+                    "the data explicitly shows a link. If a title is marked [PARTIAL], do NOT "
+                    "present the fragment as a complete observation — say you only caught part of it."
+                )
                 g_ctx = f"{g_ctx}\n{_chrome_ctx}" if g_ctx else _chrome_ctx
         except Exception:
             pass
@@ -2537,6 +2638,23 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # WO-065 (io_contract_note): consume sit_held → self-model pose = sitting.
+        # Designer emits sit_held every 4s while eLo is in the sit pose.
+        # Timestamp-guarded (30s) so stale heartbeats don't persist after a crash/restart.
+        try:
+            with open(_UNITY_EVENTS_PATH, encoding="utf-8") as _bssh:
+                _sh_ev = json.load(_bssh)
+            _sh_ts = float(_sh_ev.get("_ts", 0))
+            if (_sh_ev.get("type") == "sit_held"
+                    and _sh_ts > _wo41_time.time() - 30.0):
+                _elo_self.pose = "sitting"
+                _elo_self.available_actions = ["stand", "look", "wave", "gesture"]
+                _self_save(_elo_self)
+                with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bssh2:
+                    json.dump({}, _bssh2)
+        except Exception:
+            pass
+
         # Move verify-before-speak (IO contract — same loop as sit, every move verb)
         if _PENDING_MOVE["active"]:
             _move_age = _wo41_time.time() - _PENDING_MOVE["since"]
@@ -2576,14 +2694,31 @@ def _process_turn(raw: str) -> dict:
 
         # WO-045 ordering fix: detect step_out THIS turn so the gate fires before the LLM.
         # _mv_intent is resolved later (line ~3088); detect early here via signal words.
+        # WO-078: expanded with UK slang + give-space phrasings; false-positive guard added.
         _STEP_OUT_PHRASES = frozenset({
             "take 5", "take five", "give me a minute", "give me a moment",
             "some privacy", "step away", "leave me to it", "go away for a bit", "pop off",
             "good night", "goodnight", "done for today", "signing off", "heading out",
             "taking a break", "need a break", "brb",
+            # WO-078 additions
+            "give me a mo", "give me some space", "give me some room",
+            "give us a minute", "give us a sec",
+            "leave me be", "let me be", "need a breather",
+            "make yourself scarce", "i need a minute", "i need some space",
+        })
+        _STEP_OUT_FALSE_POSITIVES = frozenset({
+            "don't leave", "dont leave", "do not leave",
+            "don't go", "dont go", "do not go",
+            "don't step away", "dont step away",
+            "give me a second to think", "give me a second to work",
+            "stay here", "stay put", "wait here", "stay with me",
         })
         _raw_lower_exit = raw.lower().strip()
+        _is_false_positive_exit = any(
+            fp in _raw_lower_exit for fp in _STEP_OUT_FALSE_POSITIVES
+        )
         if (not _PENDING_EXIT["active"]
+                and not _is_false_positive_exit
                 and any(_raw_lower_exit == p or _raw_lower_exit.startswith(p + " ")
                         or _raw_lower_exit.endswith(" " + p) or (" " + p + " ") in _raw_lower_exit
                         for p in _STEP_OUT_PHRASES)):
@@ -2704,9 +2839,51 @@ def _process_turn(raw: str) -> dict:
         # on signal-word or spine-direct turns where no backend was ever called.
         _llm_turn = False
 
-        # ── Multilingual greeting (highest priority, checked before spine pools) ──
+        # ── WO-068: Capture · Prepare · Hold the Thread ───────────────────────────
+        # Actions that DO something verifiable — no LLM needed.
+        try:
+            from faculties.thread_keeper import (
+                is_capture_intent as _is_capture,
+                is_prepare_intent as _is_prepare,
+                is_hold_recall_intent as _is_hold,
+                capture as _tk_capture,
+                prepare_invoice as _tk_prepare,
+                recall_thread as _tk_recall,
+            )
+            _tk_routed = False
+            if _is_hold(raw):
+                # "where did we leave off on X" — extract topic hint from the query
+                _tk_topic = _re.sub(
+                    r".*(?:left off on|working on|were we on|get to on)\s+", "", raw, flags=_re.I,
+                ).strip().rstrip("?.")
+                response     = _tk_recall(_tk_topic)
+                backend_used = "direct"
+                _tk_routed   = True
+            elif _is_capture(raw):
+                response     = _tk_capture(raw)
+                backend_used = "direct"
+                _tk_routed   = True
+            elif _is_prepare(raw):
+                response     = _tk_prepare(raw)
+                backend_used = "direct"
+                _tk_routed   = True
+        except Exception as _tk_err:
+            _tk_routed = False
+            import sys as _sys_tk; print(f"[thread_keeper] {_tk_err}", file=_sys_tk.stderr)
+
+        # ── Multilingual "how are you" (WO-069 — before greeting check) ─────────
+        _ml_hau    = _detect_multilingual_how_are_you(_raw_lower)
         _lang_query = _detect_language_query(_raw_lower)
-        if _lang_query:
+        if _tk_routed:
+            pass  # already handled above
+
+        elif _ml_hau:
+            _, response  = _ml_hau
+            backend_used = "direct"
+            _signal_greeting_event("how are you")
+
+        # ── Multilingual greeting ──────────────────────────────────────────────
+        elif _lang_query:
             _phrase, _beat = _lang_query
             response     = f"{_phrase} — {_beat}"
             backend_used = "direct"
@@ -2739,6 +2916,8 @@ def _process_turn(raw: str) -> dict:
                 # every window change → update elo_self_state → inject situated_block.
                 # eLo answers "where are you / can you sit / what's your pose" ONLY from
                 # this structured block. Never invents a location.
+                # WO-079: epistemic tiers added; the_moment.json written for cross-process reading.
+                _wo79_perch_fresh = False
                 try:
                     _perch_file = os.path.join(
                         os.path.dirname(os.path.abspath(__file__)), "blender", "perch_state.json"
@@ -2753,9 +2932,18 @@ def _process_turn(raw: str) -> dict:
                             location=_perch_app,
                             surface=f"{_perch_edge} edge of {_perch_app}" if _perch_edge else _perch_app,
                         )
+                        _wo79_perch_fresh = True
                 except Exception:
                     pass
-                system = system + "\n\n" + _self_situated_block(_elo_self)
+                try:
+                    from runtime.the_moment import (
+                        write as _tm_write,
+                        situated_with_epistemic as _tm_situated,
+                    )
+                    _tm_write(_elo_self, perch_fresh=_wo79_perch_fresh)
+                    system = system + "\n\n" + _tm_situated(_elo_self, perch_fresh=_wo79_perch_fresh)
+                except Exception:
+                    system = system + "\n\n" + _self_situated_block(_elo_self)
 
                 # Capability self-awareness — inject a live capability summary so eLo
                 # can answer "what can you do" / "be more aware of yourself" accurately
@@ -2787,6 +2975,16 @@ def _process_turn(raw: str) -> dict:
                             f"and all open Chrome tabs at all times."
                             + _health_line
                         )
+                except Exception:
+                    pass
+
+                # WO-071: real-time correction frame — past slips + L3 overrides as hints.
+                # Throttled ingestion (60s); bounded frame (≤600 chars); no filler if empty.
+                try:
+                    from self_improvement.correction_store import build_correction_frame as _build_cf
+                    _cf = _build_cf(raw)
+                    if _cf:
+                        system = system + "\n\n" + _cf
                 except Exception:
                     pass
 
@@ -2926,7 +3124,22 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
 
-                _enriched, _agent = _tool_enrich(raw)
+                # WO-072: gatekeeper — prevent false-fire commands on conversational input.
+                # Rules-only (use_llm=False) keeps this zero-latency on the hot path.
+                # If gatekeeper is confident this is conversation, skip tool enrichment.
+                try:
+                    from faculties.intent_gatekeeper import classify as _gk_classify
+                    _gk = _gk_classify(raw, use_llm=False)
+                    _gk_force_conversation = (
+                        _gk["intent"] == "conversation" and _gk["confidence"] >= 0.85
+                    )
+                except Exception:
+                    _gk_force_conversation = False
+
+                if _gk_force_conversation:
+                    _enriched, _agent = raw, "direct"
+                else:
+                    _enriched, _agent = _tool_enrich(raw)
 
                 # WO-027 Seam A — inject relevant past corrections as few-shot ICL examples
                 try:
@@ -3012,6 +3225,19 @@ def _process_turn(raw: str) -> dict:
                                 "Give me a sec and try again.")
             except Exception:
                 pass
+
+        # ── WO-070: shadow capture — passive turn logging (non-blocking) ─────────
+        try:
+            from runtime.shadow_capture import record_turn as _sc_record
+            _sc_record(
+                raw_input=raw,
+                elo_raw_gen=response,   # pre-scrub not tracked separately yet
+                elo_final=response,
+                backend_used=backend_used,
+                executed_action=_agent or "",
+            )
+        except Exception:
+            pass  # shadow capture failure MUST NOT affect the response
 
         # ── Update spine session continuity ───────────────────────────────────
         try:
@@ -3263,11 +3489,19 @@ def _process_turn(raw: str) -> dict:
                 _mem_word = "calm"
             else:
                 _mem_word = ""
-            # Designer handoff: brain's engagement truth for sit-linger.
-            # True = user just sent input this turn (idle_sec ≈ 0).
-            # Unity uses this to hold the commanded sit while conversing;
-            # falls back to its own 30s timer when no new turn arrives.
-            _bs_conversing = True
+            # BP-1: brain's engagement truth for Designer sit-linger.
+            # True when user was active within ~30s (every normal turn qualifies;
+            # False only if last_user_ts is stale, e.g. background state writes).
+            _bs_conversing = (
+                _time_mod.time() - (_state or {}).get("last_user_ts", _time_mod.time())
+            ) < 30.0
+            # WO-058: last fetched weather condition for Designer VFX (rain/snow/clear…).
+            # Empty string → Designer falls back to mood. Never blocks the turn.
+            try:
+                from tools.tool_router import get_last_weather_condition as _get_wx
+                _bs_weather = _get_wx()
+            except Exception:
+                _bs_weather = ""
 
             # BP-4 (WO-064): Self-Model emits expression.micro from real cognitive state.
             # Designer reads expression.micro + micro_ts (edge-triggered → FlashMicro).
@@ -3303,6 +3537,7 @@ def _process_turn(raw: str) -> dict:
                 "show_one_brain": True,
                 "intent":         _bs_intent,
                 "conversing":     _bs_conversing,
+                "weather":        _bs_weather,
                 **_micro_patch,
             })
         except Exception:
