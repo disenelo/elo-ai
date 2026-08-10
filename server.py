@@ -2828,6 +2828,25 @@ def _process_turn(raw: str) -> dict:
         # WO-052B: narrative identity — eLo's autobiography across embodiments
         system = system + "\n\n" + _self_narrative_block(_elo_self)
 
+        # WO-077: own-speech return loop — last 3 turns injected every turn so eLo
+        # knows what it just said and can reference or continue the thread.
+        try:
+            from runtime.router.conversation_matrix import _SESSION_WINDOW as _cw_077
+            _077_turns = [t for t in _cw_077[-3:] if t.get("elo")]
+            if _077_turns:
+                _077_lines = []
+                for _077_t in _077_turns:
+                    if _077_t.get("user"):
+                        _077_lines.append(f"David: {_077_t['user'][:120]}")
+                    _077_lines.append(f"eLo:   {_077_t['elo'][:120]}")
+                system = system + (
+                    "\n\n[RECENT DIALOGUE — last 3 turns, oldest first]\n"
+                    + "\n".join(_077_lines)
+                    + "\nThis is what you just said. Reference or continue it when relevant — never fabricate links."
+                )
+        except Exception:
+            pass
+
         backend_used = active_backend()
 
         # ── THE COGNITIVE SPINE ───────────────────────────────────────────────
