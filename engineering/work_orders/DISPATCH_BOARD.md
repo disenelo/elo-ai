@@ -1415,7 +1415,7 @@ _Updated 2026-08-10 (reconcile #26) — **DESIGN MOVEMENT (seat-reported, UNVERI
 | WO-CANON-XVI | Assemble-before-decide + bus priority | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | needs ruling C · WO-CANON-XVI.md |
 | WO-CANON-X | Personality drift gate + one trait model | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | needs ruling D · David L3 identity · WO-CANON-X.md |
 | WO-CANON-XXIV | Knowledge: confidence+evidence+ranked retrieval | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | needs ruling A · WO-CANON-XXIV.md |
-| WO-CANON-XX | Cognitive-tier selector + value-gated escalation | Builder (eLo OS) | P3 | ▶ RELEASED 2026-08-10 — buildable now | WO-CANON-XX.md |
+| WO-CANON-XX | Cognitive-tier selector + value-gated escalation | Builder (eLo OS) | P3 | **DONE ✅ auto-verified (test_canon_xx_economy.py 16/16) → IN_REVIEW** commit `468849f`. Tier constants (0–3) + cost classes + provider order + action priority. _token_budget() tier-aware. route()/route_streaming() accept tier param. Escalation logged (escalated=true). Mock-honesty gate: factual → honest limitation. Gated-out: cost telemetry (David L3), escalation-gate home (CA) — RATIFICATION only. | WO-CANON-XX.md |
 | WO-CANON-XXV | Temporal Cognition faculty | Builder (eLo OS) | P3 | ▶ RELEASED 2026-08-10 — buildable now | WO-CANON-XXV.md |
 | WO-CANON-XXI | Narrative Identity: autobiography journal + guard | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | David L3 identity · WO-CANON-XXI.md |
 | WO-CANON-XXII | Faculty Genome descriptor + registry | Builder (eLo OS) | P3 | ▶ RELEASED 2026-08-10 — buildable now | WO-CANON-XXII.md |

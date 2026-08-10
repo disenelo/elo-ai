@@ -1,7 +1,13 @@
 {
-  "ts": 1786381200.0,
-  "builder_run_summary": "2026-08-10 \u2014 RUN 15. WO-CANON-VI: Working Memory + Attention wired into spine, 24/24 AT, commit 06845b6. VIII (cece510) + XV (a742cdc) + XII (9bd4f37) previously done.",
+  "ts": 1786384800.0,
+  "builder_run_summary": "2026-08-10 \u2014 RUN 16. WO-CANON-XX: Cognitive Economy tier layer + escalation gate + mock-honesty, 16/16 AT, commit 468849f. VI (06845b6) + VIII (cece510) + XV (a742cdc) + XII (9bd4f37) previously done.",
   "updates": [
+    {
+      "wo": "WO-CANON-XX",
+      "status": "in_review",
+      "commit": "468849f",
+      "detail": "Cognitive Economy: tier constants (0-3) + cost classes (free-local/cheap-cloud/premium-cloud) + _PROVIDER_COST_CLASS + _TIER_PROVIDER_ORDER (cheapest-first per tier) + _ACTION_PRIORITY + _TIER_BUDGET. _token_budget() now tier-aware (tier primary key, action fallback; live budgets verbatim). route() + route_streaming() accept tier: int = 0; escalation logged (escalated=true) when Executive tier > action default. _mock_fallback() honesty gate: factual/technical requests return _HONEST_DEGRADATION_MSG, not canned presence. Gated-out: cost telemetry (David L3), _AUTO_LOCAL_MAX_CHARS (David L3), escalation-gate home (CA) \u2014 block RATIFICATION not build start. 16/16 AT test_canon_xx_economy.py."
+    },
     {
       "wo": "WO-CANON-VI",
       "status": "in_review",
