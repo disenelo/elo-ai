@@ -1,7 +1,25 @@
 {
-  "ts": 1786372207.5332139,
-  "builder_run_summary": "2026-08-10 \u2014 RUN 13. WO-030b/058b DONE (weather field was already shipping in f133fee/7276991; 8/8 AT test_bp1_wo058_blender_fields.py green). WO-052B DONE 9/9 AT. WO-086 Builder half DONE 8/8 AT. INT-8a DONE 9/9 AT. Board updated.",
+  "ts": 1786378361.25194,
+  "builder_run_summary": "2026-08-10 \u2014 RUN 14. WO-CANON-VIII: MemoryFaculty single logical writer + reinforce-on-recall, 17/17 AT, commit cece510. XV (a742cdc) + XII (9bd4f37) previously done.",
   "updates": [
+    {
+      "wo": "WO-CANON-VIII",
+      "status": "in_review",
+      "commit": "cece510",
+      "detail": "MemoryFaculty single logical writer (D-F). memory/memory_faculty.py: MemoryCandidate frozen dataclass + MemoryFaculty.submit() decides {write|reinforce|drop}. vault_layer.recall_context(): reinforce() called on every returned hit (\u00a73.4 wiring). reflection_faculty.integrate_session() + music_memory/storage.save_to_vault() routed through MemoryFaculty.submit() \u2014 no direct write_memory calls remaining in callers. 17/17 AT test_canon_viii_memory.py covering Ch.1\u2013Ch.4."
+    },
+    {
+      "wo": "WO-CANON-XV",
+      "status": "in_review",
+      "commit": "a742cdc",
+      "detail": "LiveWorldState wired into spine. assemble_world_state() called at top of run() before all faculties; plan.world = frozen LiveWorldState; CognitiveState.world_state carries it. world: object=None added to CognitivePlan. world_state: object=None added to CognitiveState. 14/14 AT test_canon_xv_world_state.py covering FT-1\u20134, ST-1\u20134, IT-1\u20132, AT-1\u20134."
+    },
+    {
+      "wo": "WO-CANON-XII",
+      "status": "in_review",
+      "commit": "pending",
+      "detail": "Perception\u2192World-State copy step + structured fidelity flags. partial: bool added to PerceptionResult (True when confidence<0.7 or primary modality absent). assemble_world_state() accepts perception=PerceptionResult; copies active_surface/user_activity/vision_active into DesktopState/UserState/EnvironmentState with source=\"PerceptionFaculty\" + verbatim confidence. spine.py now calls perceive_from_live_state() before assemble_world_state(). 15/15 AT test_canon_xii_perception.py covering Ch.1\u2013Ch.4 spec."
+    },
     {
       "wo": "WO-030b/058b",
       "status": "done",

@@ -1409,9 +1409,9 @@ _Updated 2026-08-10 (reconcile #26) — **DESIGN MOVEMENT (seat-reported, UNVERI
 | WO | What | Agent | Pri | Status | Notes |
 |----|------|-------|-----|--------|-------|
 | WO-CANON-XV | Build Volume XV World Model (LiveWorldState, read-once) | Builder (eLo OS) | P2 | **DONE ✅ auto-verified (test_canon_xv_world_state.py 14/14) → IN_REVIEW** commit `a742cdc`. assemble_world_state() wired into spine.run() top-of-turn; plan.world + CognitiveState.world_state carry the frozen LiveWorldState through. | Priority#2 · spec WO-CANON-XV.md |
-| WO-CANON-XII | Perception→World-State copy + fidelity flags | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | spec WO-CANON-XII.md |
+| WO-CANON-XII | Perception→World-State copy + fidelity flags | Builder (eLo OS) | P2 | **DONE ✅ auto-verified (test_canon_xii_perception.py 15/15) → IN_REVIEW** commit `9bd4f37`. partial fidelity flag on PerceptionResult; §3.2 copy step in assemble_world_state(); spine calls perceive_from_live_state() before assembler. | spec WO-CANON-XII.md |
 | WO-CANON-VI | Wire Working Memory + attention into the turn | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | needs ruling B · WO-CANON-VI.md |
-| WO-CANON-VIII | Memory: single logical writer + reinforce-on-recall | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | WO-CANON-VIII.md |
+| WO-CANON-VIII | Memory: single logical writer + reinforce-on-recall | Builder (eLo OS) | P2 | DONE ✅ auto-verified (test_canon_viii_memory.py 17/17) → IN_REVIEW commit cece510 | WO-CANON-VIII.md |
 | WO-CANON-XVI | Assemble-before-decide + bus priority | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | needs ruling C · WO-CANON-XVI.md |
 | WO-CANON-X | Personality drift gate + one trait model | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | needs ruling D · David L3 identity · WO-CANON-X.md |
 | WO-CANON-XXIV | Knowledge: confidence+evidence+ranked retrieval | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | needs ruling A · WO-CANON-XXIV.md |
