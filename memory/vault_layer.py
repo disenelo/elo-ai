@@ -352,6 +352,17 @@ def recall_context(query: str, max_results: int = 5) -> dict:
         }
     try:
         results = lookup(query, max_results=max_results)
+        # ── WO-CANON-VIII §3.4: reinforce-on-use ─────────────────────────────
+        # Each record the caller retrieves counts as a use event → strengthen it.
+        # Failure here never blocks retrieval.
+        try:
+            from memory.consolidation_faculty import reinforce as _reinforce
+            for _hit in results:
+                _spot = _hit.get("spot", "")
+                if _spot:
+                    _reinforce(_spot)
+        except Exception:
+            pass
         return {
             "status":  "live" if results else "absent",
             "results": results,
