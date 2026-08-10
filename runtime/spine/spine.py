@@ -350,6 +350,14 @@ def run(
     if attention is None:
         attention = {}
 
+    # ── WO-CANON-XV: LiveWorldState — assembled FIRST, frozen, read by all faculties ─
+    _world = None
+    try:
+        from world.live_world_state import assemble_world_state as _assemble_world
+        _world = _assemble_world(turn_id=raw[:32] if raw else "")
+    except Exception as _world_err:
+        _log.debug("assemble_world_state: %s", _world_err)
+
     # ── WO-052: CognitiveSnapshot — assembled BEFORE any faculty decides ──────
     _snapshot = None
     try:
@@ -380,6 +388,8 @@ def run(
 
     # ── WO-052: Store snapshot on plan (assembled before; now pinned to it) ───
     plan.snapshot = _snapshot
+    # ── WO-CANON-XV: Store frozen world state on plan ─────────────────────────
+    plan.world = _world
 
     # ── v1.5 Executive Faculty enrichment (relationship + emotional vector) ───
     try:
@@ -395,11 +405,21 @@ def run(
     except Exception as e:
         _log.debug("light_engine/translate: %s", e)
 
+    # ── Presence Faculty — movement intent + triggers (after Light Engine) ───────
+    try:
+        from runtime.spine.presence_faculty import compute as _pf_compute
+        _vision      = state.get("vision") if isinstance(state, dict) else None
+        _session_min = 0   # conservative default (session_min used for 20-min calm gate only)
+        plan = _pf_compute(plan, attention, vision=_vision, session_min=_session_min)
+    except Exception as e:
+        _log.debug("presence_faculty: %s", e)
+
     # ── S3: Assemble CognitiveState — after all plan mutations are complete ────
     try:
         lang_with_register = {**language, "register": plan.register}
         plan.cognitive_state = assemble_cognitive_state(
-            lang_with_register, memory_pack, attention, capabilities, None, state
+            lang_with_register, memory_pack, attention, capabilities, None, state,
+            world_state=_world,
         )
     except Exception as e:
         _log.debug("assemble_cognitive_state: %s", e)
@@ -455,6 +475,7 @@ def assemble_cognitive_state(
     capabilities: list,
     vault_result,
     prior_state,
+    world_state=None,
 ):
     """
     Assemble CognitiveState from all faculty outputs.
@@ -485,6 +506,7 @@ def assemble_cognitive_state(
         valence=(attention or {}).get("valence", "neutral"),
         assembly_confidence=conf,
         capability_candidates=cap_candidates,
+        world_state=world_state,
     )
 
 

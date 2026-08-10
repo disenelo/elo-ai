@@ -80,6 +80,8 @@ class CognitivePlan:
 
     # ── WO-052: Assembled BEFORE Executive decision (push, not pull) ──────────
     snapshot:             object = None    # CognitiveSnapshot | None
+    # ── WO-CANON-XV: LiveWorldState assembled at top of turn, before faculties ─
+    world:                object = None    # LiveWorldState | None
     # ── Assembled AFTER decision (S3/S6 — post-plan contracts) ───────────────
     cognitive_state:      object = None    # CognitiveState | None
     embodiment_state:     object = None    # EmbodimentState | None

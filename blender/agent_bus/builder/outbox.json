@@ -1,24 +1,48 @@
 {
-  "ts": 1754611200.0,
-  "builder_run_summary": "2026-08-08 — RUN 12 COMPLETE. 83/83 suite green (was 79/83). Fixed: EA2-2 AT-7/AT-8 (_FAKE_STATE missing company_focus → _load_fresh_state re-published from real board overwriting injected state; AT-7 assertion updated for WO-048 _build_briefing output), test_wo030_weather_location_v2 AT-1 (bare import httpx before no-location guard — moved import to wttr.in section), test_wo030_weather_location_v2 AT-5 (cross-test file state dependency on Manchester — made self-contained). Also fixed outbox.json invalid JSON escape. commit: 5ec17b9.",
+  "ts": 1786372207.5332139,
+  "builder_run_summary": "2026-08-10 \u2014 RUN 13. WO-030b/058b DONE (weather field was already shipping in f133fee/7276991; 8/8 AT test_bp1_wo058_blender_fields.py green). WO-052B DONE 9/9 AT. WO-086 Builder half DONE 8/8 AT. INT-8a DONE 9/9 AT. Board updated.",
   "updates": [
+    {
+      "wo": "WO-030b/058b",
+      "status": "done",
+      "commit": "f133fee",
+      "detail": "Weather PUBLISH confirmed done. blender_state.json top-level \"weather\" field was already shipping every turn via _bs_patch() in server.py:3555 (committed in f133fee alongside BP-1). get_last_weather_condition() from tools/tool_router.py cached and published. blender_state.json live field = \"mostly cloudy\". 8/8 AT test_bp1_wo058_blender_fields.py. Unity read-side already shipped per Designer. No code change needed \u2014 confirmed and marked done."
+    },
+    {
+      "wo": "WO-052B",
+      "status": "in_review",
+      "commit": "f133fee",
+      "detail": "Narrative Identity done. embodiment_history (7 embodiments: desktop/game=active, exhibition=prototype, robot/phone/AR/hologram=future) + embodiment_milestones appended-only. narrative_block() generates [ELO NARRATIVE IDENTITY \u2014 Vol XXI] prompt block injected every turn. load()+update() carry fields through. 9/9 AT test_wo052b_narrative_identity.py. David: ask eLo \"where have you lived?\" \u2014 expect authentic autobiography across embodiments."
+    },
+    {
+      "wo": "WO-086-Builder",
+      "status": "in_review",
+      "commit": "f133fee",
+      "detail": "User-idle brain half done. ambient_engine.py: polls user_idle/user_active events from unity_events.json. 30s threshold before idle behaviour fires; 90s refire gate. _decide_idle_behaviour(idle_secs) selects from repertoire (utterance/glance/look_around/stretch/wander/calm \u2014 weighted by duration). Yields to commanded state. user_active resets tracking. 8/8 AT test_wo086_user_idle_brain.py. Designer half (emit user_idle/user_active + retire local calm driver) must land WITH this \u2014 sequence-hard."
+    },
+    {
+      "wo": "INT-8a",
+      "status": "done",
+      "commit": "7276991",
+      "detail": "File drop round-trip fixed \u2014 3 bugs: (1) circular import (from server import _voice_speak) fixed to from voice.voice_engine import speak; (2) missing runtime.state_manager replaced with module-level _pending_drops queue + pop_pending_drops() drained by server.py each turn; (3) _ts missing from Unity event caused silent skip \u2014 fixed with float(event.get(\"_ts\") or os.path.getmtime(_EVENTS_FILE)) fallback. 9/9 AT test_int8a_file_drop.py. Unity side: confirm EloFileDrop.cs writes {\"type\":\"file_drop\",\"path\":\"...\",\"_ts\":<epoch>} to unity_events.json."
+    },
     {
       "wo": "test_suite_83_83",
       "status": "in_review",
       "commit": "5ec17b9",
-      "detail": "83/83 suite fully green. Fixes: (1) EA2-2 AT-7/AT-8: _FAKE_STATE lacked company_focus key so _load_fresh_state always re-published from real DISPATCH_BOARD overwriting injected temp state. Added company_focus; updated AT-7 assertion from voiced_briefing to DISENELO+state-items (WO-048 _build_briefing never returns voiced_briefing). (2) test_wo030_weather_location_v2 AT-1: bare import httpx at top of _agent_weather before no-location early-return guard raised No module named httpx before the guard ran. Moved import to just before wttr.in call. (3) Same test AT-5: depended on user_location.json not having Manchester, but test_wo030_weather_location.py runs first alphabetically and saves Manchester. Made AT-5 call set_location(Hackney Wick) before reading the file. (4) outbox.json invalid JSON escape: unescaped \\s in F2 detail string — corrected to \\\\s."
+      "detail": "83/83 suite fully green. Fixes: (1) EA2-2 AT-7/AT-8: _FAKE_STATE lacked company_focus key so _load_fresh_state always re-published from real DISPATCH_BOARD overwriting injected temp state. Added company_focus; updated AT-7 assertion from voiced_briefing to DISENELO+state-items (WO-048 _build_briefing never returns voiced_briefing). (2) test_wo030_weather_location_v2 AT-1: bare import httpx at top of _agent_weather before no-location early-return guard raised No module named httpx before the guard ran. Moved import to just before wttr.in call. (3) Same test AT-5: depended on user_location.json not having Manchester, but test_wo030_weather_location.py runs first alphabetically and saves Manchester. Made AT-5 call set_location(Hackney Wick) before reading the file. (4) outbox.json invalid JSON escape: unescaped \\s in F2 detail string \u2014 corrected to \\\\s."
     },
     {
       "wo": "WO-066",
       "status": "in_review",
       "commit": "2c7e6be",
-      "detail": "Ambient engine callback registration. ambient_engine.py public API was missing register_ambient_callback — server.py:1393 imported it at startup, raised ImportError, caught by except block, ambient engine skipped entirely, idle utterances never fired. Fix: _ambient_cb module var initialised to None; register_ambient_callback(cb) stores the callable; _run() idle utterance timer calls threading.Thread(target=_ambient_cb).start() when set, falls back to static pool otherwise. 7/7 AT test_wo066_ambient_callback.py. David: relaunch app — eLo should now produce idle utterances and brain-backed ambient thoughts between conversations."
+      "detail": "Ambient engine callback registration. ambient_engine.py public API was missing register_ambient_callback \u2014 server.py:1393 imported it at startup, raised ImportError, caught by except block, ambient engine skipped entirely, idle utterances never fired. Fix: _ambient_cb module var initialised to None; register_ambient_callback(cb) stores the callable; _run() idle utterance timer calls threading.Thread(target=_ambient_cb).start() when set, falls back to static pool otherwise. 7/7 AT test_wo066_ambient_callback.py. David: relaunch app \u2014 eLo should now produce idle utterances and brain-backed ambient thoughts between conversations."
     },
     {
       "wo": "test_conversation_quality",
       "status": "in_review",
       "commit": "45600bb",
-      "detail": "test_conversation_quality.py flakiness eliminated. Was non-deterministic 3-4 fails per run — keyword assertion lists were narrower than the actual mock pools. Root: 5 overwhelm pool items, 4 greeting items, 6 confusion items, 3 recall items, and 1 inquiry-override item all had valid responses with no matching keyword in their assertions. Fixed by expanding keyword lists to cover all pool items + updating 3 recall pool lines to include natural project-context words. 21/21 stable across 20 consecutive runs."
+      "detail": "test_conversation_quality.py flakiness eliminated. Was non-deterministic 3-4 fails per run \u2014 keyword assertion lists were narrower than the actual mock pools. Root: 5 overwhelm pool items, 4 greeting items, 6 confusion items, 3 recall items, and 1 inquiry-override item all had valid responses with no matching keyword in their assertions. Fixed by expanding keyword lists to cover all pool items + updating 3 recall pool lines to include natural project-context words. 21/21 stable across 20 consecutive runs."
     },
     {
       "wo": "WO-001",
@@ -62,43 +86,43 @@
       "wo": "WO-032",
       "status": "in_review",
       "commit": "2bed968",
-      "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded — David adds billing credits at platform.openai.com to restore primary backend. WO-032b resolves the Groq fall-to-mock (see below)."
+      "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded \u2014 David adds billing credits at platform.openai.com to restore primary backend. WO-032b resolves the Groq fall-to-mock (see below)."
     },
     {
       "wo": "WO-039-F4",
       "status": "in_review",
       "commit": "baec21b",
-      "detail": "F4 cross-session recall fixed. Two bugs: (1) _recall_skip missing filler words 'our'/'conversation'/'and'/'can' etc. — 'do you remember our last weather conversation?' gave _recall_q='our weather conversation' (1/3 keyword overlap) pushing the Aug-6 clothing record to rank 7. With expanded skip, _recall_q='weather' (1/1 overlap, ranks top 4). (2) top_k=3->top_k=7 so prior-session records at ranks 4-7 surface in LLM context. 'vest and tshirt can you remember?' now maps to _recall_q='vest tshirt' and directly finds the vest+tshirt record. 8/8 AT test_wo039_f4_cross_session_recall.py + WO-022/037 9/9 still clean. David: no action — eLo should now recall Aug-6 layers recommendation when asked."
+      "detail": "F4 cross-session recall fixed. Two bugs: (1) _recall_skip missing filler words 'our'/'conversation'/'and'/'can' etc. \u2014 'do you remember our last weather conversation?' gave _recall_q='our weather conversation' (1/3 keyword overlap) pushing the Aug-6 clothing record to rank 7. With expanded skip, _recall_q='weather' (1/1 overlap, ranks top 4). (2) top_k=3->top_k=7 so prior-session records at ranks 4-7 surface in LLM context. 'vest and tshirt can you remember?' now maps to _recall_q='vest tshirt' and directly finds the vest+tshirt record. 8/8 AT test_wo039_f4_cross_session_recall.py + WO-022/037 9/9 still clean. David: no action \u2014 eLo should now recall Aug-6 layers recommendation when asked."
     },
     {
       "wo": "WO-039-F3",
       "status": "in_review",
       "commit": "eb8492e",
-      "detail": "F3 dev-context leak fixed. github_agent.get_status('') returned a human-readable error string ('GITHUB: no repo set...') which tool_router.enrich() injected as [CONTEXT:]. LLM paraphrased it as 'GITHUB_REPO environment variable isn't set...' in the reply. Fix: return '' instead — enrich's if not data guard short-circuits. Real github queries (github status, last commit, open PRs) still route and enrich normally. 6/6 AT test_wo039_f3_github_leak.py. David: no action."
+      "detail": "F3 dev-context leak fixed. github_agent.get_status('') returned a human-readable error string ('GITHUB: no repo set...') which tool_router.enrich() injected as [CONTEXT:]. LLM paraphrased it as 'GITHUB_REPO environment variable isn't set...' in the reply. Fix: return '' instead \u2014 enrich's if not data guard short-circuits. Real github queries (github status, last commit, open PRs) still route and enrich normally. 6/6 AT test_wo039_f3_github_leak.py. David: no action."
     },
     {
       "wo": "WO-039-F6",
       "status": "in_review",
       "commit": "1366516",
-      "detail": "F6 mirror-scrub extended. 'You said X' / 'Your typo' / 'You typed' / 'You wrote' / 'I noticed a typo' openers now stripped by _MIRROR_OPENERS in server.py. Opener-only — mid-sentence 'you said' (e.g. 'Everything you said...') is NOT stripped. Short reply guard (tail < 8 chars) prevents destroying bare 'You said no.' 9/9 AT test_wo039_f6_mirror_scrub.py + WO-036b 10/10 still clean. David: no action."
+      "detail": "F6 mirror-scrub extended. 'You said X' / 'Your typo' / 'You typed' / 'You wrote' / 'I noticed a typo' openers now stripped by _MIRROR_OPENERS in server.py. Opener-only \u2014 mid-sentence 'you said' (e.g. 'Everything you said...') is NOT stripped. Short reply guard (tail < 8 chars) prevents destroying bare 'You said no.' 9/9 AT test_wo039_f6_mirror_scrub.py + WO-036b 10/10 still clean. David: no action."
     },
     {
       "wo": "WO-039-F1",
       "status": "in_review",
       "commit": "228f021",
-      "detail": "F1 +join reply formatting fixed. Root: _KEY_RE matched any text after 'press/hit/hold' — 'press on with that? needs my attention??' parsed as keyboard shortcut, surfaced as 'press on+with?+that+needs+my+attention??'. Fix: _is_valid_key_combo() validates every normalised key token is an actual keyboard key (cmd/ctrl/shift/esc/f1-f12/letter/digit etc.) before accepting. Real shortcuts (cmd+c, ctrl shift t, escape) still work. 12/12 AT test_wo039_f1_press_parse.py + WO-021 still 9/9. David: no action."
+      "detail": "F1 +join reply formatting fixed. Root: _KEY_RE matched any text after 'press/hit/hold' \u2014 'press on with that? needs my attention??' parsed as keyboard shortcut, surfaced as 'press on+with?+that+needs+my+attention??'. Fix: _is_valid_key_combo() validates every normalised key token is an actual keyboard key (cmd/ctrl/shift/esc/f1-f12/letter/digit etc.) before accepting. Real shortcuts (cmd+c, ctrl shift t, escape) still work. 12/12 AT test_wo039_f1_press_parse.py + WO-021 still 9/9. David: no action."
     },
     {
       "wo": "WO-039-F2",
       "status": "in_review",
       "commit": "95d674e",
-      "detail": "F2 cancel false-positive fixed. _is_file_cancel() 'no'/'nope' now require standalone match via ^(no|nope)[!.?,\\s]*$ — 'No but it takes time to build you' no longer routes to 'Ok, cancelled.' 'cancel'/'abort'/'forget it'/'don't'/'stop' still match as substrings. 10/10 AT test_wo039_f2_cancel.py. David: no action needed — 'no' as a standalone reply still cancels pending file/computer-control operations."
+      "detail": "F2 cancel false-positive fixed. _is_file_cancel() 'no'/'nope' now require standalone match via ^(no|nope)[!.?,\\s]*$ \u2014 'No but it takes time to build you' no longer routes to 'Ok, cancelled.' 'cancel'/'abort'/'forget it'/'don't'/'stop' still match as substrings. 10/10 AT test_wo039_f2_cancel.py. David: no action needed \u2014 'no' as a standalone reply still cancels pending file/computer-control operations."
     },
     {
       "wo": "WO-032b",
       "status": "in_review",
       "commit": "a806f16",
-      "detail": "Real Groq backend live. Root cause: httpx not installed (PEP 668 system Python), so every cloud call function's import httpx raised ImportError and fell to mock silently. Fix: added _json_post() stdlib urllib helper + rewrote _groq_call/_cerebras_call/_openai_call/_gemini_call to use it (zero external deps). Also: _groq_quota_exceeded: bool -> _groq_quota_cooldown_until: float — 429 opens a 60s window, not a session-permanent latch; cleared on recovery. 12/12 AT test_wo032b_groq_backend.py. David: kill :5050 + relaunch app — backend_health should show {backend:groq, degraded:false}; eLo's voice reads as eLo, not the mock understudy."
+      "detail": "Real Groq backend live. Root cause: httpx not installed (PEP 668 system Python), so every cloud call function's import httpx raised ImportError and fell to mock silently. Fix: added _json_post() stdlib urllib helper + rewrote _groq_call/_cerebras_call/_openai_call/_gemini_call to use it (zero external deps). Also: _groq_quota_exceeded: bool -> _groq_quota_cooldown_until: float \u2014 429 opens a 60s window, not a session-permanent latch; cleared on recovery. 12/12 AT test_wo032b_groq_backend.py. David: kill :5050 + relaunch app \u2014 backend_health should show {backend:groq, degraded:false}; eLo's voice reads as eLo, not the mock understudy."
     },
     {
       "wo": "INT-8a",
@@ -110,7 +134,7 @@
       "wo": "WO-035b",
       "status": "in_review",
       "commit": "49323a8",
-      "detail": "Semantic sit intent — Layer 1.5 pattern classifier in presence_faculty + server.py. Catches: 'join me' / 'would you sit' / 'why don't you sit' / 'can you come sit' / 'feel like sitting' / 'come chill with me' / 'park yourself here'. 2 false-positive guards (I need to sit and think, let's sit back and watch). Fires only when exact _signal_word_intent() misses. 15/15 AT test_wo035b_semantic_sit_intent.py. David: live-confirm with any of those phrasings to close."
+      "detail": "Semantic sit intent \u2014 Layer 1.5 pattern classifier in presence_faculty + server.py. Catches: 'join me' / 'would you sit' / 'why don't you sit' / 'can you come sit' / 'feel like sitting' / 'come chill with me' / 'park yourself here'. 2 false-positive guards (I need to sit and think, let's sit back and watch). Fires only when exact _signal_word_intent() misses. 15/15 AT test_wo035b_semantic_sit_intent.py. David: live-confirm with any of those phrasings to close."
     },
     {
       "wo": "WO-064-BP5",
@@ -128,7 +152,7 @@
       "wo": "WO-045b",
       "status": "in_review",
       "commit": "1da3481",
-      "detail": "Exit-gate ordering fixed. Root: _PENDING_EXIT['active'] was set after the LLM call (~line 3152), so [EXIT_IN_TRANSIT] was never injected on the FIRST 'take five' turn — eLo immediately said 'stepping away' before the body confirmed gone. Fix: early-detect _STEP_OUT_PHRASES frozenset before g_ctx enrichment at line ~2555; set _PENDING_EXIT['active']=True on the same turn so the gate fires. LLM now sees [EXIT_IN_TRANSIT] and is forbidden from claiming departure until exit_complete ACKs. 7/7 AT test_wo045b_exit_gate_ordering.py + 6/6 test_wo045_take_five.py clean. David: say 'take five' — eLo should hold 'stepping away' until body exit completes."
+      "detail": "Exit-gate ordering fixed. Root: _PENDING_EXIT['active'] was set after the LLM call (~line 3152), so [EXIT_IN_TRANSIT] was never injected on the FIRST 'take five' turn \u2014 eLo immediately said 'stepping away' before the body confirmed gone. Fix: early-detect _STEP_OUT_PHRASES frozenset before g_ctx enrichment at line ~2555; set _PENDING_EXIT['active']=True on the same turn so the gate fires. LLM now sees [EXIT_IN_TRANSIT] and is forbidden from claiming departure until exit_complete ACKs. 7/7 AT test_wo045b_exit_gate_ordering.py + 6/6 test_wo045_take_five.py clean. David: say 'take five' \u2014 eLo should hold 'stepping away' until body exit completes."
     },
     {
       "wo": "WO-036b",
@@ -140,19 +164,19 @@
       "wo": "WO-020",
       "status": "in_review",
       "commit": "a2d1b79",
-      "detail": "Tool routing re-verified. Root found: draft_agent/web_agent/grocery_agent all did bare 'import httpx' -> dropped the entire try-block -> _HAS_LLM_FILE=False -> every tool silently disabled. Fix: wrapped each import in try/except with lazy _httpx=None guard + RuntimeError at call-time. _HAS_LLM_FILE=True confirmed. 6/6 AT test_wo020_tool_routing.py + 6/6 test_wo020_routing_drift.py. David: no action needed — tools now import clean."
+      "detail": "Tool routing re-verified. Root found: draft_agent/web_agent/grocery_agent all did bare 'import httpx' -> dropped the entire try-block -> _HAS_LLM_FILE=False -> every tool silently disabled. Fix: wrapped each import in try/except with lazy _httpx=None guard + RuntimeError at call-time. _HAS_LLM_FILE=True confirmed. 6/6 AT test_wo020_tool_routing.py + 6/6 test_wo020_routing_drift.py. David: no action needed \u2014 tools now import clean."
     },
     {
       "wo": "WO-048",
       "status": "in_review",
       "commit": "aa41d5c",
-      "detail": "'How's the company' made real + WO-061 focus-marker folded in. Fixes: (1) _parse_company_focus searched only first 10000 chars — COMPANY_FOCUS marker is at char 29556 -> was never found -> company_focus always empty. Fixed to scan full board. (2) 40+ phrasings + contraction normalisation in is_company_intent (what is -> what's). (3) _build_briefing: real DISENELO identity + active milestone + in-flight items + recommendation + board link — API-free, varies with state. (4) _build_board_reply: focus items not ready backlog. (5) _strip_md: cleans markdown from voice output. 12/12 AT test_wo048_company_real.py. David: ask 'how's the company' or 'what should I work on' — answer should name DISENELO + Presentable v1 + current focus items + recommendation."
+      "detail": "'How's the company' made real + WO-061 focus-marker folded in. Fixes: (1) _parse_company_focus searched only first 10000 chars \u2014 COMPANY_FOCUS marker is at char 29556 -> was never found -> company_focus always empty. Fixed to scan full board. (2) 40+ phrasings + contraction normalisation in is_company_intent (what is -> what's). (3) _build_briefing: real DISENELO identity + active milestone + in-flight items + recommendation + board link \u2014 API-free, varies with state. (4) _build_board_reply: focus items not ready backlog. (5) _strip_md: cleans markdown from voice output. 12/12 AT test_wo048_company_real.py. David: ask 'how's the company' or 'what should I work on' \u2014 answer should name DISENELO + Presentable v1 + current focus items + recommendation."
     },
     {
       "wo": "WO-022+WO-037",
       "status": "in_review",
       "commit": "65ec35f",
-      "detail": "Bare-recall quality fix + conversing field. (1) Bare recall ('what do you remember?') was routing to retrieve('disenelo recent') which scored prior recall queries as the top hits. Now _is_bare_recall flag switches to retrieve_by_project('elo_core', top_k=5) — returns actual recent turns sorted by timestamp, filtered for len >= 10. Topical recall ('what do you remember about the robot') stays on retrieve(topic_words). (2) conversing: true published to blender_state.json on every turn — Designer handoff, Unity sit-linger reads brain engagement truth. 9/9 AT test_wo022_037_memory_recall_e2e.py. David: live-confirm by asking 'what do you remember?' to close."
+      "detail": "Bare-recall quality fix + conversing field. (1) Bare recall ('what do you remember?') was routing to retrieve('disenelo recent') which scored prior recall queries as the top hits. Now _is_bare_recall flag switches to retrieve_by_project('elo_core', top_k=5) \u2014 returns actual recent turns sorted by timestamp, filtered for len >= 10. Topical recall ('what do you remember about the robot') stays on retrieve(topic_words). (2) conversing: true published to blender_state.json on every turn \u2014 Designer handoff, Unity sit-linger reads brain engagement truth. 9/9 AT test_wo022_037_memory_recall_e2e.py. David: live-confirm by asking 'what do you remember?' to close."
     }
   ]
 }
