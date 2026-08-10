@@ -1107,6 +1107,19 @@ _MAPS_GAP_POOL = [
     "Can't check distance or opening hours without maps access — Google Maps will sort it.",
 ]
 
+# WO-082: Decision trace readback — "why did you do that?" routes to journal, not LLM.
+_WHY_TRACE_TRIGGERS = (
+    "why did you do that",
+    "why did you decide",
+    "why did you choose",
+    "what made you do",
+    "explain your last",
+    "why that action",
+    "what was your reasoning",
+    "why did you respond",
+    "why did you answer that",
+)
+
 # Behavior correction — user flagging something eLo said that wasn't right
 _BEHAVIOR_CORRECTION_TRIGGERS = (
     "why did you say", "why did you mention", "why are you saying",
@@ -2295,6 +2308,16 @@ def _process_turn(raw: str) -> dict:
             import sys as _cf_sys
             print(f"[cultural_facts] routing error: {_cf_err}", file=_cf_sys.stderr)
 
+        # WO-082: "why did you do that?" — read real decision trace, no LLM fabrication.
+        _raw_l_why = raw.strip().lower()
+        if len(_raw_l_why) < 80 and any(_raw_l_why.startswith(t) for t in _WHY_TRACE_TRIGGERS):
+            try:
+                from self.decision_journal import explain_last as _dj_explain
+                _why_resp = _dj_explain()
+                return {"response": _why_resp, "mode": "direct", "backend": "decision_journal"}
+            except Exception:
+                pass
+
         attention_model = attn.compute(raw, _memory_pack, _state, loop_detected=False)
         exec_decision   = exec_decide(attention_model, loop_detected=False, user_input=raw)
 
@@ -2935,6 +2958,12 @@ def _process_turn(raw: str) -> dict:
                 except Exception as _sys_err:
                     import sys as _sys_mod; print(f"[system] action failed: {_sys_err}", file=_sys_mod.stderr)
                     response = "Couldn't get there — something on the system side blocked it."
+                    # WO-082: record failure so reliability drops and "why" readback is honest.
+                    try:
+                        from self.decision_journal import record_failure as _dj_fail
+                        _dj_fail(_action, f"system_action={getattr(_plan, 'system_action', '?')} failed: {_sys_err}")
+                    except Exception:
+                        pass
             if "greeting" in (_plan.cal_reason or ""):
                 _signal_greeting_event("direct")
 
@@ -3721,6 +3750,19 @@ def _process_turn(raw: str) -> dict:
                 "user_input": raw,
                 "topics":     [],
             })
+        except Exception:
+            pass
+
+        # WO-082: Decision journal — append every executive action for "why" readback.
+        try:
+            from self.decision_journal import record as _dj_record
+            _dj_record(
+                turn=raw[:120],
+                action=_action,
+                exec_decision=exec_decision if exec_decision else {},
+                backend=backend_used,
+                outcome="success",
+            )
         except Exception:
             pass
 

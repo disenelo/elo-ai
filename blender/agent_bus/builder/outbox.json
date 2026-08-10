@@ -1,7 +1,13 @@
 {
-  "ts": 1786392000.1,
-  "builder_run_summary": "2026-08-10 \u2014 RUN 19. WO-077: own-speech return loop \u2014 [RECENT DIALOGUE] injected every turn, 6/6 AT, commit da2c562 \u00b7 continuation 77/77. RUN 18: WO-030b/058b weather publish 419c293. RUN 17: WO-CANON-XXV e562401.",
+  "ts": 1786392000.2,
+  "builder_run_summary": "2026-08-10 \u2014 RUN 20. WO-082: Decision Journal \u2014 self/decision_journal.py (record/last_n/record_failure/get_reliability/explain_last), server.py _WHY_TRACE_TRIGGERS + short-circuit + journal write, 7/7 AT, continuation 78/78. RUN 19: WO-077 da2c562. RUN 18: WO-030b/058b 419c293.",
   "updates": [
+    {
+      "wo": "WO-082",
+      "status": "in_review",
+      "commit": "pending",
+      "detail": "Decision Journal: append-only trace per executive action in self/journals/decision_journal.jsonl. Fields: ts, turn, action, trigger (cal_reason), intent, tone, confidence, alternatives_rejected (original_action if overridden), overrides (safety-stabilisation|seam-a-routing), cognitive_load, outcome, backend, learning. Failure path: record_failure(action, condition_desc) appends known_failure_condition + drops per-action reliability 0.15 (floors at 0.0), persisted to self/journals/action_reliability.json. 'why did you do that?' \u2192 _WHY_TRACE_TRIGGERS + len<80 guard short-circuits before exec_decision \u2192 explain_last() reads real trace, never fabricates motive. System action failure also records via _dj_fail. 7/7 AT: AT-1 (record fields), AT-2 (last_n ordering), AT-3 (failure entry), AT-4 (reliability floor), AT-5 (explain_last trace-grounded), AT-6 (WO-082 marker wired). Continuation 78/78."
+    },
     {
       "wo": "WO-077",
       "status": "in_review",
