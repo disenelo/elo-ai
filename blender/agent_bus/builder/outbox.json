@@ -1,7 +1,13 @@
 {
-  "ts": 1786384800.0,
-  "builder_run_summary": "2026-08-10 \u2014 RUN 16. WO-CANON-XX: Cognitive Economy tier layer + escalation gate + mock-honesty, 16/16 AT, commit 468849f. VI (06845b6) + VIII (cece510) + XV (a742cdc) + XII (9bd4f37) previously done.",
+  "ts": 1786388400.0,
+  "builder_run_summary": "2026-08-10 \u2014 RUN 17. WO-CANON-XXV: Temporal Cognition Faculty, 19/19 AT, commit e562401. XX (468849f) + VI (06845b6) + VIII (cece510) + XV (a742cdc) + XII (9bd4f37) previously done.",
   "updates": [
+    {
+      "wo": "WO-CANON-XXV",
+      "status": "in_review",
+      "commit": "e562401",
+      "detail": "Temporal Cognition Faculty (asked, three frozen slices). faculties/temporal/faculty.py + __init__.py. TemporalState: reads LiveWorldState.time verbatim (now_iso/part_of_day/day_of_week), circadian curve (morning/afternoon/evening/night \u2192 phase/energy), interaction-gap thresholds (continuous/brief/hours/overnight[+night boundary]/days/long_absence), sleep_pressure (Vol IX constants, context only \u2014 never fires dream), cold-start \u2192 unknown. FutureFrame: deadlines from LiveWorldState.calendar with ref anchors; baseless dropped; horizon from nearest imminent. Retrospection: vault + IdentityState fallback; autobiography.jsonl absent \u2192 PENDING marker; fidelity from strength not age; identity/pinned never faded; memory_instruction_store=False always. temporal_appropriateness() advises quiet-hours. Blocked by Vol XXI autobiography extension \u2014 designed PENDING fallback in place. 19/19 AT test_canon_xxv_temporal.py."
+    },
     {
       "wo": "WO-CANON-XX",
       "status": "in_review",
