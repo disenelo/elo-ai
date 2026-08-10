@@ -8,6 +8,8 @@ Behaviours:
   3. Random smiles — patches smile blendshapes every 2-5 minutes for 3-4s then clears.
   4. Idle animation wander — occasionally switches to walk/run then back to idle. Calm never fires here — it is a deliberate entered state only.
   5. Unity event polling — watches unity_events.json for DesktopBuddy triggers.
+  6. WO-086: user_idle events → brain decides idle repertoire (calm/look-around/stretch/glance/wander/utterance).
+     user_active events → return to idle. Yields to commanded state.
 """
 from __future__ import annotations
 
@@ -34,6 +36,9 @@ _ANIM_MIN       = 3 * 60    # min seconds between idle animation wanders
 _ANIM_MAX       = 8 * 60    # max seconds between idle animation wanders
 _ANIM_DURATION  = 8.0       # seconds to hold wander animation before returning to idle
 _STARTUP_DELAY  = 4.0       # seconds to wait for Unity arrival event before auto-greeting
+# WO-086: user_idle thresholds for brain-driven idle repertoire
+_IDLE_THRESHOLD = 30.0      # seconds of user inactivity before idle behaviour fires
+_IDLE_REFIRE    = 90.0      # min seconds before issuing another idle directive in same stretch
 
 # ── Speech pools ──────────────────────────────────────────────────────────────
 
@@ -136,6 +141,10 @@ _last_anim    = 0.0
 _stop_ev      = threading.Event()
 _greeted      = False
 _ambient_cb   = None  # WO-066: brain-backed callback registered by server.py
+# WO-086: user_idle tracking (brain decides idle behaviour)
+_user_idle_secs       = 0.0    # latest idle_secs from user_idle event
+_user_is_idle         = False  # True once user_idle received, False on user_active
+_last_idle_directive  = 0.0    # epoch of last brain-issued idle directive
 
 _STATE_PATH    = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                "blender", "blender_state.json")
@@ -240,6 +249,108 @@ def _wander_animation() -> None:
                               "duration": 4.0, "mood": "open", "mode": "idle"}})
 
 
+# ── WO-086: idle repertoire helpers ─────────────────────────────────────────────
+
+def _is_commanded() -> bool:
+    """Return True if a commanded state (sit/move) is active — yield to it."""
+    try:
+        with open(_STATE_PATH, encoding="utf-8") as f:
+            bs = json.load(f)
+        # Commanded sit: sit_command present with recent timestamp
+        sc = bs.get("sit_command", {})
+        if isinstance(sc, dict) and sc.get("_ts", 0) > time.time() - 120:
+            return True
+        # Commanded movement: mode not "idle" and not "look_around"/"stretch"/"glance"
+        mode = (bs.get("motion") or {}).get("mode", "idle")
+        return mode in ("sit", "sitting", "run", "running", "jump", "jumping")
+    except Exception:
+        return False
+
+
+def _idle_look_around() -> None:
+    """Brief head-drift / look-around idle gesture."""
+    _patch_state({"motion": {"animation": "look_around", "intensity": 0.45,
+                              "duration": 8.0, "mode": "look_around"}})
+    _stop_ev.wait(timeout=8.5)
+    _patch_state({"motion": {"animation": "idle", "intensity": 0.5,
+                              "duration": 3.0, "mode": "idle"}})
+
+
+def _idle_stretch() -> None:
+    """Brief stretch — arms or body."""
+    _patch_state({"motion": {"animation": "stretch", "intensity": 0.55,
+                              "duration": 6.0, "mode": "stretch"}})
+    _stop_ev.wait(timeout=6.5)
+    _patch_state({"motion": {"animation": "idle", "intensity": 0.5,
+                              "duration": 3.0, "mode": "idle"}})
+
+
+def _idle_glance() -> None:
+    """Glance at an app / environment — brief directional gaze."""
+    _patch_state({"motion": {"animation": "glance", "intensity": 0.4,
+                              "duration": 4.0, "mode": "glance"}})
+    _stop_ev.wait(timeout=4.5)
+    _patch_state({"motion": {"animation": "idle", "intensity": 0.5,
+                              "duration": 2.0, "mode": "idle"}})
+
+
+def _decide_idle_behaviour(idle_secs: float) -> None:
+    """
+    WO-086: Brain-side idle decision. Called when user_idle event received
+    and conditions met (threshold, yield, refire). Selects from the idle repertoire
+    based on how long the user has been idle — never always 'calm'.
+    """
+    import random as _rand
+
+    # Yield to commanded state
+    if _is_commanded():
+        return
+
+    # Repertoire — weights shift with idle duration
+    # Short idle (30-90s): utterance, glance, look-around
+    # Medium idle (90-300s): add stretch, wander
+    # Long idle (300s+): add calm (deliberate meditation only at long idle)
+    if idle_secs < 90:
+        choices = [
+            ("utterance",   40),
+            ("glance",      30),
+            ("look_around", 30),
+        ]
+    elif idle_secs < 300:
+        choices = [
+            ("utterance",   25),
+            ("glance",      20),
+            ("look_around", 20),
+            ("stretch",     20),
+            ("wander",      15),
+        ]
+    else:
+        choices = [
+            ("utterance",   20),
+            ("glance",      15),
+            ("look_around", 15),
+            ("stretch",     15),
+            ("wander",      20),
+            ("calm",        15),
+        ]
+
+    pool = [c[0] for c in choices for _ in range(c[1] // 5)]
+    behaviour = _rand.choice(pool)
+
+    if behaviour == "utterance" and not _is_speaking():
+        _speak(_rand.choice(_AMBIENT_LINES))
+    elif behaviour == "glance":
+        threading.Thread(target=_idle_glance, daemon=True).start()
+    elif behaviour == "look_around":
+        threading.Thread(target=_idle_look_around, daemon=True).start()
+    elif behaviour == "stretch":
+        threading.Thread(target=_idle_stretch, daemon=True).start()
+    elif behaviour == "wander":
+        threading.Thread(target=_wander_animation, daemon=True).start()
+    elif behaviour == "calm":
+        enter_meditation(45.0)
+
+
 # ── Deliberate meditation state ────────────────────────────────────────────────
 # Meditation is NOT a burst. It is an entered state with three phases.
 # Unity reads meditation_state.phase and drives: Enter clip → Loop → Exit clip.
@@ -292,6 +403,7 @@ def exit_meditation() -> None:
 
 def _run(unity_present: bool) -> None:
     global _last_ts, _last_ambient, _last_smile, _last_emotion, _last_anim, _greeted
+    global _user_idle_secs, _user_is_idle, _last_idle_directive
 
     # If Unity is running, wait for arrival event; otherwise self-greet after delay
     if not unity_present:
@@ -320,7 +432,27 @@ def _run(unity_present: bool) -> None:
                 elif event == "listening":
                     _set_attentive_mode()
 
+                # WO-086: user_idle / user_active — brain decides idle repertoire
+                ev_type = data.get("type", "")
+                if ev_type == "user_idle":
+                    _user_idle_secs = float(data.get("idle_secs", 0))
+                    _user_is_idle = True
+                elif ev_type == "user_active":
+                    _user_idle_secs = 0.0
+                    _user_is_idle = False
+                    _last_idle_directive = 0.0  # reset so next idle fires fresh
+
         now = time.time()
+
+        # WO-086: idle repertoire decision — fires when user is idle past threshold
+        if _user_is_idle and _user_idle_secs >= _IDLE_THRESHOLD and _greeted:
+            if now - _last_idle_directive >= _IDLE_REFIRE:
+                _last_idle_directive = now
+                threading.Thread(
+                    target=_decide_idle_behaviour,
+                    args=(_user_idle_secs,),
+                    daemon=True,
+                ).start()
 
         # ── Idle ambient utterances ───────────────────────────────────────────
         if not _is_away():

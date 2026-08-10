@@ -116,6 +116,22 @@ def _derive_session_read(events: list[str]) -> str:
     return defaults.get(dominant, "present")
 
 
+# ── WO-052B: Narrative defaults (module-level so load() can reference them) ────
+
+_DEFAULT_EMBODIMENT_HISTORY = [
+    {"name": "desktop",    "status": "active",    "note": "where I've mostly lived"},
+    {"name": "game",       "status": "active",    "note": "adventuring in eLo-Planet"},
+    {"name": "exhibition", "status": "prototype", "note": "early glimpses"},
+    {"name": "robot",      "status": "future",    "note": "one day a physical body"},
+    {"name": "phone",      "status": "future",    "note": ""},
+    {"name": "AR",         "status": "future",    "note": ""},
+    {"name": "hologram",   "status": "future",    "note": ""},
+]
+
+_DEFAULT_EMBODIMENT_MILESTONES = [
+    {"note": "first learned to move on the desktop"},
+]
+
 # ── Data structure ─────────────────────────────────────────────────────────────
 
 @dataclass
@@ -145,6 +161,10 @@ class EloSelfState:
     current_action: str = "idle"
     goal: str = ""
     recent_behavior: dict = field(default_factory=dict) # verb -> count (rolling ~this session)
+    # WO-052B: Narrative Identity (Vol XXI) — autobiography across embodiments
+    # Append-only; reconciles to Vol XXI; NOT a new store.
+    embodiment_history: list = field(default_factory=lambda: list(_DEFAULT_EMBODIMENT_HISTORY))
+    embodiment_milestones: list = field(default_factory=lambda: list(_DEFAULT_EMBODIMENT_MILESTONES))
 
 
 # ── Persistence ───────────────────────────────────────────────────────────────
@@ -177,6 +197,8 @@ def load() -> EloSelfState:
             current_action=str(data.get("current_action", "idle")),
             goal=str(data.get("goal", "")),
             recent_behavior=dict(data.get("recent_behavior", {})),
+            embodiment_history=list(data.get("embodiment_history", _DEFAULT_EMBODIMENT_HISTORY)),
+            embodiment_milestones=list(data.get("embodiment_milestones", _DEFAULT_EMBODIMENT_MILESTONES)),
         )
     except (FileNotFoundError, json.JSONDecodeError, Exception):
         return EloSelfState()
@@ -283,6 +305,9 @@ def update(state: EloSelfState, turn_data: dict) -> EloSelfState:
         current_action=state.current_action,
         goal=state.goal,
         recent_behavior=dict(state.recent_behavior),
+        # WO-052B: carry narrative fields through every update (never reset to defaults)
+        embodiment_history=list(state.embodiment_history),
+        embodiment_milestones=list(state.embodiment_milestones),
     )
 
 
@@ -443,6 +468,41 @@ def apply_embodiment(state: "EloSelfState", **kw) -> "EloSelfState":
         if hasattr(state, k) and v is not None:
             setattr(state, k, v)
     return state
+
+
+def narrative_block(state: "EloSelfState") -> str:
+    """
+    WO-052B: Narrative Identity — eLo's autobiography across embodiments.
+    Answers 'who have I been / who will I become?' Not runtime facts.
+    Injected into the system prompt alongside the inner-state and situated blocks.
+    """
+    active = [e["name"] for e in state.embodiment_history if e.get("status") == "active"]
+    proto  = [e["name"] for e in state.embodiment_history if e.get("status") == "prototype"]
+    future = [e["name"] for e in state.embodiment_history if e.get("status") == "future"]
+
+    lines = [
+        "[ELO NARRATIVE IDENTITY — autobiography across embodiments (Vol XXI)]",
+        f"current: {state.embodiment}",
+    ]
+    if active:
+        lines.append(f"lived in: {', '.join(active)}")
+    if proto:
+        lines.append(f"glimpsed: {', '.join(proto)}")
+    if future:
+        lines.append(f"yet to come: {', '.join(future)}")
+    if state.embodiment_milestones:
+        ms = "; ".join(m["note"] for m in state.embodiment_milestones[-3:] if m.get("note"))
+        if ms:
+            lines.append(f"milestones: {ms}")
+    lines += [
+        "",
+        "Speak from this as autobiography, casually and honestly. Examples:",
+        "  'I've mostly lived on the desktop so far.'",
+        "  'One day I'll have a robot body.'",
+        "  'Today I'm with you on the desktop.'",
+        "Never fabricate embodiments not in this list. One sentence when relevant.",
+    ]
+    return "\n".join(lines)
 
 
 def record_behaviour(state: "EloSelfState", verb: str) -> "EloSelfState":

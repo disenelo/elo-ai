@@ -82,6 +82,7 @@ from self.elo_self_model import (
     prompt_block as _self_prompt_block,
     apply_embodiment as _self_apply_embodiment,
     situated_block as _self_situated_block,
+    narrative_block as _self_narrative_block,
 )
 
 # ── session state (shared across requests, protected by lock) ─────────────────
@@ -2812,6 +2813,8 @@ def _process_turn(raw: str) -> dict:
                               attention=attention_model, exec_decision=exec_decision,
                               graph_context=g_ctx, personality_block=_pers_block,
                               self_block=_self_prompt_block(_elo_self))
+        # WO-052B: narrative identity — eLo's autobiography across embodiments
+        system = system + "\n\n" + _self_narrative_block(_elo_self)
 
         backend_used = active_backend()
 

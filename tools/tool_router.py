@@ -86,6 +86,7 @@ _logger.propagate = False
 
 _last_agent:   Optional[str] = None   # e.g. "weather", "wikipedia"
 _last_arg:     Optional[str] = None   # e.g. "London", "black holes"
+_last_weather_condition: str = ""    # WO-058: last fetched condition, published to blender_state.json
 
 # Persistent location store — blender/user_location.json
 # set_location() writes here; any tool can read it.
@@ -467,6 +468,20 @@ def _agent_calculator(query: str) -> str:
     return f"{expr.replace('**', '^')} = {result}"
 
 
+def _cache_weather_condition(result_str: str) -> None:
+    """WO-058: parse a condition word from any provider's result string and cache it."""
+    global _last_weather_condition
+    import re as _re
+    m = _re.search(r":\s*([^,\d]+?)(?:,|\d)", result_str)
+    if m:
+        _last_weather_condition = m.group(1).strip().lower()
+
+
+def get_last_weather_condition() -> str:
+    """Return the last successfully fetched weather condition (lowercase). Empty if never fetched."""
+    return _last_weather_condition
+
+
 def _agent_weather(query: str) -> str:
     # Location priority:
     #   1. Explicit city in this query ("weather in London")
@@ -492,6 +507,7 @@ def _agent_weather(query: str) -> str:
         if _accu_ok():
             result = _accu_agent(query, city=city)
             if result:
+                _cache_weather_condition(result)
                 return result
     except Exception as _ae:
         _logger.warning("AccuWeather failed (%s), trying Google Weather", _ae)
@@ -502,6 +518,7 @@ def _agent_weather(query: str) -> str:
         if _gw_ok():
             result = _gw_agent(query, city=city)
             if result:
+                _cache_weather_condition(result)
                 return result
     except Exception as _gwe:
         _logger.warning("Google Weather failed (%s), trying XWeather", _gwe)
@@ -512,6 +529,7 @@ def _agent_weather(query: str) -> str:
         if _xw_ok():
             result = _xw_agent(query, city=city)
             if result:
+                _cache_weather_condition(result)
                 return result
     except Exception as _xwe:
         _logger.warning("XWeather failed (%s), falling back to wttr.in", _xwe)
@@ -541,6 +559,8 @@ def _agent_weather(query: str) -> str:
     result = f"Weather in {city}: {desc}, {temp_c}°C, feels like {feels}°C, humidity {humid}%."
     if using_auto:
         result += f" (Detected as {loc} — say 'I'm in [city]' to set a default.)"
+    global _last_weather_condition
+    _last_weather_condition = desc.lower()  # WO-058: cache for blender_state.json publish
     return result
 
 
