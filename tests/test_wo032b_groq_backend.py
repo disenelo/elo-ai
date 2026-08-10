@@ -111,15 +111,18 @@ except Exception as e:
     fail("AT-3", e)
 
 
-# ── AT-4: active_backend() = 'mock' when key absent ──────────────────────────
+# ── AT-4: active_backend() = 'ollama'|'mock' when groq/cerebras key absent ────
+# WO-073 added ollama as a local floor in the groq fallback chain.
+# Expected: "ollama" when Ollama is running, "mock" when it's not.
 try:
     env_no_key = {k: v for k, v in os.environ.items()
                   if k not in ("GROQ_API_KEY", "CEREBRAS_API_KEY", "ELO_BACKEND")}
     env_no_key["ELO_BACKEND"] = "groq"
     with mock.patch.dict(os.environ, env_no_key, clear=True):
         backend = br.active_backend()
-    assert backend == "mock", f"expected 'mock', got {backend!r}"
-    ok("AT-4: active_backend() = 'mock' when key absent")
+    assert backend in ("ollama", "mock"), \
+        f"expected 'ollama' or 'mock' when key absent; got {backend!r}"
+    ok(f"AT-4: active_backend() = {backend!r} when groq key absent (WO-073: ollama floor)")
 except AssertionError as e:
     fail("AT-4", e)
 except Exception as e:

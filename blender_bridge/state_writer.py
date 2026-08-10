@@ -240,7 +240,7 @@ def write_with_presence(
 
 # Keys written by tool_router (nav, exit events) — must survive a state write
 # so Unity can poll them on its own cadence without them being overwritten mid-turn.
-_PRESERVE_KEYS = {"user_nav_event", "exit_event", "spotify", "vision", "intent", "trigger", "gesture"}
+_PRESERVE_KEYS = {"user_nav_event", "exit_event", "spotify", "vision", "intent", "trigger", "gesture", "weather"}
 
 _VISION_DEFAULT = {"active": False, "attention": 0.0, "focus": {"x": 0.5, "y": 0.5}, "app": ""}
 

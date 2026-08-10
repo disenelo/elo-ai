@@ -3542,7 +3542,7 @@ def _process_turn(raw: str) -> dict:
                 import time as _micro_time
                 _micro_patch = {"expression": {"micro": _micro_emotion, "micro_ts": round(_micro_time.time(), 3)}}
 
-            _bs_patch({
+            _bs_one_brain: dict = {
                 "state": {
                     "memory":            _mem_word,
                     "self_mood":         round(_bs_self_mood, 3),
@@ -3552,9 +3552,11 @@ def _process_turn(raw: str) -> dict:
                 "show_one_brain": True,
                 "intent":         _bs_intent,
                 "conversing":     _bs_conversing,
-                "weather":        _bs_weather,
                 **_micro_patch,
-            })
+            }
+            if _bs_weather:
+                _bs_one_brain["weather"] = _bs_weather
+            _bs_patch(_bs_one_brain)
         except Exception:
             pass
 
