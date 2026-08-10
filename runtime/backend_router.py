@@ -47,6 +47,87 @@ def _json_post(url: str, payload: dict, headers: dict, timeout: float = 30.0) ->
 # ── routing thresholds ─────────────────────────────────────────────────────────
 _AUTO_LOCAL_MAX_CHARS = 80   # inputs under this → Ollama (fast local)
                               # inputs over this  → Groq (deeper reasoning)
+                              # David L3: retire-or-wire decision pending (WO-CANON-XX OQ)
+
+# ── Cognitive tier constants (Vol XX — WO-CANON-XX) ───────────────────────────
+_TIER_REFLEX         = 0   # handled before router — Tier 0 must never reach route()
+_TIER_CONVERSATIONAL = 1   # cheapest capable (social, ambient, short answers)
+_TIER_REASONING      = 2   # capable cloud (build, plan, challenge, reflect)
+_TIER_DEEP           = 3   # premium (diagnose, deep, long analysis)
+
+# Provider cost classes — used for escalation comparison
+_COST_FREE_LOCAL    = "free-local"
+_COST_CHEAP_CLOUD   = "cheap-cloud"
+_COST_PREMIUM_CLOUD = "premium-cloud"
+
+_PROVIDER_COST_CLASS: dict[str, str] = {
+    "ollama":   _COST_FREE_LOCAL,
+    "mock":     _COST_FREE_LOCAL,
+    "groq":     _COST_CHEAP_CLOUD,
+    "cerebras": _COST_CHEAP_CLOUD,
+    "gemini":   _COST_CHEAP_CLOUD,
+    "openai":   _COST_PREMIUM_CLOUD,
+    "claude":   _COST_PREMIUM_CLOUD,
+}
+
+# Tier→cheapest-first provider order (absent a tier Executive always provides, route
+# falls back to the live auto mode chain — the escalation-gate HOME is a CA open question)
+_TIER_PROVIDER_ORDER: dict[int, list[str]] = {
+    _TIER_CONVERSATIONAL: ["ollama", "groq", "cerebras", "gemini", "openai", "claude"],
+    _TIER_REASONING:      ["groq", "cerebras", "openai", "gemini", "claude", "ollama"],
+    _TIER_DEEP:           ["openai", "claude", "gemini", "groq", "cerebras", "ollama"],
+}
+
+# Tier→token budget (Vol XX M-3 — tier is primary key, action secondary)
+_TIER_BUDGET: dict[int, int] = {
+    _TIER_CONVERSATIONAL: 180,
+    _TIER_REASONING:      400,
+    _TIER_DEEP:           600,
+}
+
+# Priority order under scarcity (Vol XX §1.3)
+# 0 = highest priority (never yields); 9 = yields first
+_ACTION_PRIORITY: dict[str, int] = {
+    "safety":     0,
+    "answer":     1,
+    "celebrate":  1,
+    "connect":    1,
+    "build":      2,
+    "plan":       2,
+    "challenge":  2,
+    "reflect":    3,
+    "ground":     3,
+    "witness":    4,
+    "navigate":   4,
+    "silence":    4,
+    "deep":       5,
+    "diagnose":   5,
+    "dream":      9,
+    "optimise":   9,
+}
+
+# Tier each action defaults to when no Executive tier is provided
+_ACTION_DEFAULT_TIER: dict[str, int] = {
+    "build":     _TIER_REASONING,
+    "challenge": _TIER_REASONING,
+    "reflect":   _TIER_REASONING,
+    "plan":      _TIER_REASONING,
+    "deep":      _TIER_DEEP,
+    "diagnose":  _TIER_DEEP,
+}
+
+# Factual request patterns — mock MUST NOT fabricate for these (Vol XX Ch.3 G-1)
+_FACTUAL_PATTERNS = [
+    r"\bwhat time\b", r"\bwhat date\b", r"\bwhat is\b", r"\bwhat are\b",
+    r"\bhow do\b", r"\bhow does\b", r"\bwhy does\b", r"\bexplain\b",
+    r"\bcan you check\b", r"\bcalculate\b", r"\bconvert\b",
+    r"\bremind\b", r"\bschedule\b",
+]
+
+# Honest limitation message — degraded tier never fabricates factual content (G-1/G-4)
+_HONEST_DEGRADATION_MSG = (
+    "I can't reason through that right now — I'm running offline."
+)
 
 
 # ── response normaliser ────────────────────────────────────────────────────────
@@ -96,6 +177,24 @@ def _is_duplicate(new: str, prev: str, threshold: float = 0.75) -> bool:
 
 # per-action last-response tracker (session-scoped, in-process)
 _last_responses: dict[str, str] = {}
+
+
+# ── Vol XX helpers (WO-CANON-XX) ──────────────────────────────────────────────
+
+def _action_priority(action: str) -> int:
+    """Priority under scarcity (0=highest/never-yields, 9=yields-first)."""
+    return _ACTION_PRIORITY.get(action, 5)
+
+
+def _is_factual_request(user_input: str) -> bool:
+    """True when the request is factual/technical/action — mock must not fabricate."""
+    t = user_input.lower()
+    return any(re.search(p, t) for p in _FACTUAL_PATTERNS)
+
+
+def _action_default_tier(action: str) -> int:
+    """Return the lowest sufficient tier for this action."""
+    return _ACTION_DEFAULT_TIER.get(action, _TIER_CONVERSATIONAL)
 
 # WO-032b: time-boxed Groq 429 cooldown — clears automatically after 60 s so one transient
 # rate-limit doesn't pin the entire session to mock.  0.0 = not in cooldown.
@@ -196,11 +295,11 @@ def _cerebras_call(system_prompt: str, user_input: str, model: str = None, max_t
 
 
 def _ollama_call(system_prompt: str, user_input: str) -> str:
-    """Call local Ollama instance."""
-    import requests
+    """Call local Ollama instance via stdlib urllib."""
+    import urllib.request as _ureq, json as _json
     host  = os.environ.get("ELO_OLLAMA_HOST",  "http://localhost:11434").rstrip("/")
     model = os.environ.get("ELO_OLLAMA_MODEL", "mistral")
-    payload = {
+    payload = _json.dumps({
         "model":    model,
         "messages": [
             {"role": "system", "content": system_prompt},
@@ -208,22 +307,29 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
         ],
         "stream":  False,
         "options": {"temperature": 0.7, "num_predict": 256},
-    }
-    r = requests.post(f"{host}/api/chat", json=payload, timeout=60)
-    r.raise_for_status()
-    return r.json().get("message", {}).get("content", "").strip()
+    }).encode()
+    req = _ureq.Request(
+        f"{host}/api/chat",
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with _ureq.urlopen(req, timeout=60) as _r:
+        return _json.loads(_r.read()).get("message", {}).get("content", "").strip()
 
 
 def _openai_available() -> bool:
     return bool(os.environ.get("OPENAI_API_KEY", ""))
 
 
-def _token_budget(action: str) -> int:
-    """Return max_tokens for the given CAL action. Shorter = faster for casual turns."""
+def _token_budget(action: str, tier: int = 0) -> int:
+    """Return max_tokens for the given action. Tier is primary key (Vol XX M-3); action fallback."""
+    if tier and tier in _TIER_BUDGET:
+        return _TIER_BUDGET[tier]
+    # action-based fallback (verbatim live budgets)
     if action in ("build", "challenge", "reflect", "plan", "deep", "diagnose"):
         return 600
     # celebrate, connect, ground, navigate, witness, silence, answer, ""
-    # answer kept short — factual one-liners dominate; LLM rarely needs >280 for factual Q&A
     return 280
 
 
@@ -321,13 +427,13 @@ _SENTENCE_END_RE = __import__("re").compile(r"(?<=[.!?…])\s")
 def _ollama_available() -> bool:
     """True only when Ollama is up AND at least one model is installed (WO-073)."""
     try:
-        import requests
+        import urllib.request as _ureq, json as _json
         host  = os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
         model = os.environ.get("ELO_OLLAMA_MODEL", "mistral")
-        r = requests.get(f"{host}/api/tags", timeout=2)
-        if r.status_code != 200:
-            return False
-        models = [m.get("name", "") for m in r.json().get("models", [])]
+        with _ureq.urlopen(f"{host}/api/tags", timeout=2) as _r:
+            if _r.status != 200:
+                return False
+            models = [m.get("name", "") for m in _json.loads(_r.read()).get("models", [])]
         # Accept if the configured model is present, or any model at all as fallback
         return any(model in m for m in models) or len(models) > 0
     except Exception:
@@ -402,6 +508,7 @@ def route(
     mode:          str = None,
     max_sentences: int = 4,
     action:        str = "",
+    tier:          int = 0,
 ) -> tuple[str, str]:
     """
     Route a request to the appropriate backend.
@@ -411,11 +518,21 @@ def route(
         user_input:    Raw user message.
         mode:          'auto' | 'local' | 'cloud' | 'mock' | None (reads ELO_BACKEND).
         max_sentences: Max sentences for response normaliser.
+        tier:          Cognitive tier supplied by the Executive (Vol XX M-2).
+                       0 = absent (use live auto mode); 1-3 = explicit tier.
+                       Escalations above the action's default tier are logged.
 
     Returns:
         (response_text, backend_name)
     """
-    _budget = _token_budget(action)
+    # Vol XX M-2: escalation logging — record when Executive tier > action's cheapest default
+    _default_tier = _action_default_tier(action)
+    if tier and tier > _default_tier:
+        _logger.info(
+            "router: escalated tier %d→%d action=%s escalated=true",
+            _default_tier, tier, action,
+        )
+    _budget = _token_budget(action, tier=tier)
     _env_mode = os.environ.get("ELO_BACKEND", "")
     _any_cloud = _openai_available() or _gemini_available() or _groq_available() or _claude_available() or _cerebras_available()
     if not _env_mode and not _any_cloud:
@@ -662,6 +779,7 @@ def route_streaming(
     max_sentences: int = 4,
     action:        str = "",
     on_first_sentence=None,
+    tier:          int = 0,
 ) -> tuple[str, str, float]:
     """
     Like route() but streams OpenAI tokens when available.
@@ -673,7 +791,7 @@ def route_streaming(
     Falls back to route() with 0.0 latency if streaming fails or OpenAI unavailable.
     """
     import time as _t
-    _budget = _token_budget(action)
+    _budget = _token_budget(action, tier=tier)
     _env_mode = os.environ.get("ELO_BACKEND", "")
     _env_mode = _env_mode or "auto"
     mode = mode or _env_mode
@@ -681,7 +799,7 @@ def route_streaming(
     if mode not in ("auto", "cloud") or not _openai_available():
         # Non-streaming path — latency not measured
         text, backend = route(system_prompt, user_input, mode=mode,
-                              max_sentences=max_sentences, action=action)
+                              max_sentences=max_sentences, action=action, tier=tier)
         return text, backend, 0.0
 
     try:
@@ -705,11 +823,16 @@ def route_streaming(
     except Exception as _se:
         _logger.warning("Streaming failed (%s), falling back to route()", _se)
         text, backend = route(system_prompt, user_input, mode=mode,
-                              max_sentences=max_sentences, action=action)
+                              max_sentences=max_sentences, action=action, tier=tier)
         return text, backend, 0.0
 
 
 def _mock_fallback(user_input: str, action: str = "") -> str:
+    # Vol XX Ch.3 G-1: factual/technical/action requests must not fabricate.
+    # Social/ambient turns may use a canned presence line.
+    _social_actions = frozenset({"celebrate", "connect", "ground", "silence", "witness"})
+    if _is_factual_request(user_input) and action not in _social_actions:
+        return _HONEST_DEGRADATION_MSG
     global _mock_backend_instance
     from backends.mock_backend import MockBackend
     from core.attention import compute
