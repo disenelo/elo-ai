@@ -4001,16 +4001,13 @@ def _shutdown_cleanly(server: ThreadingHTTPServer) -> None:
             _export_skeleton(_gen_skeleton(_obs_store))
     except Exception:
         pass
-    # personality drift — update slow drift from this session's emotional history
+    # personality drift — WO-CANON-X: produce proposal, never self-apply (Ruling D)
     try:
         if _state:
-            _ps = _personality_drift.load()
-            _ps = _personality_drift.update(
-                _ps,
+            _personality_drift.propose(
                 _state.get("emotional_history", []),
                 _state.get("session_summaries", []),
             )
-            _personality_drift.save(_ps)
     except Exception:
         pass
     server.shutdown()
