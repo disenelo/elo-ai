@@ -1,7 +1,13 @@
 {
-  "ts": 1786392000.3,
-  "builder_run_summary": "2026-08-11 \u2014 RUN 21. WO-CANON-XVI: assemble-before-decide + UnifiedCognitiveState alias + bus priority, 941d839, 4/4 AT. RUN 20: WO-082 decision journal 7/7 AT. RUN 19: WO-077 da2c562.",
+  "ts": 1786392000.4,
+  "builder_run_summary": "2026-08-11 \u2014 RUN 22. WO-CANON-X: drift gate bfdb94e 7/7 AT. WO-CANON-XVI: 941d839 4/4 AT. RUN 20: WO-082 7/7 AT.",
   "updates": [
+    {
+      "wo": "WO-CANON-X",
+      "status": "done",
+      "commit": "bfdb94e",
+      "detail": "Drift gate (Ruling D). memory/personality_drift.py: parallel tone_profile/interaction_bias model removed; one canonical trait model (V Ch.7 PersonalityVector: curiosity/patience/confidence/empathy/discipline/wonder/playfulness/directness). propose() produces DriftProposal {ts, source, trait_model, deltas, needs_david, status:pending} stored to drift_proposals.json \u2014 never writes personality_state.json. _VALUE_TRAITS={wonder, empathy, directness}: touching any value trait sets needs_david=True. server.py shutdown: propose() call replaces update()+save(). 7/7 AT: AT-0 (no personality_state write), AT-1 (pending proposal returned), AT-2 (V Ch.7 trait names only), AT-3 (value trait sets needs_david=True), AT-4 (nuance-only leaves needs_david=False), AT-5 (server.py wired)."
+    },
     {
       "wo": "WO-CANON-XVI",
       "status": "done",
