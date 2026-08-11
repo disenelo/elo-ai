@@ -2850,6 +2850,12 @@ def _process_turn(raw: str) -> dict:
                               self_block=_self_prompt_block(_elo_self))
         # WO-052B: narrative identity — eLo's autobiography across embodiments
         system = system + "\n\n" + _self_narrative_block(_elo_self)
+        # WO-083: identity & meaning — who I'm becoming (convergence layer)
+        try:
+            from self.identity_meaning import identity_block as _im_identity_block
+            system = system + "\n\n" + _im_identity_block(_elo_self)
+        except Exception:
+            pass
 
         # WO-077: own-speech return loop — last 3 turns injected every turn so eLo
         # knows what it just said and can reference or continue the thread.
