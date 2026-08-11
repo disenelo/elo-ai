@@ -1,7 +1,13 @@
 {
-  "ts": 1786392000.2,
-  "builder_run_summary": "2026-08-10 \u2014 RUN 20. WO-082: Decision Journal \u2014 self/decision_journal.py (record/last_n/record_failure/get_reliability/explain_last), server.py _WHY_TRACE_TRIGGERS + short-circuit + journal write, 7/7 AT, continuation 78/78. RUN 19: WO-077 da2c562. RUN 18: WO-030b/058b 419c293.",
+  "ts": 1786392000.3,
+  "builder_run_summary": "2026-08-11 \u2014 RUN 21. WO-CANON-XVI: assemble-before-decide + UnifiedCognitiveState alias + bus priority, 941d839, 4/4 AT. RUN 20: WO-082 decision journal 7/7 AT. RUN 19: WO-077 da2c562.",
   "updates": [
+    {
+      "wo": "WO-CANON-XVI",
+      "status": "done",
+      "commit": "941d839",
+      "detail": "Assemble-before-decide (ADR-Exec-006 / Ruling C). (1) runtime/cognitive_snapshot.py: UnifiedCognitiveState = CognitiveSnapshot alias exported \u2014 one canonical name. (2) runtime/spine/spine.py: assemble_cognitive_state() moved to BEFORE _executive_faculty(); passes language dict directly (not lang_with_register post-hoc); plan.cognitive_state pinned from pre-assembled state; post-decision S3 reassembly block removed. (3) core/faculty_bus.py: _PRIORITY_ORDER constant + get_messages() now sorts by priority before returning (critical \u2192 high \u2192 normal \u2192 low) \u2014 FIFO replaced. 4/4 AT: AT-0 (alias exported, CognitiveSnapshot still instantiable), AT-1 (assembly line < executive line in spine.py source), AT-2 (exactly one _executive_faculty call \u2014 no voting), AT-3 (bus delivers critical\u2192high\u2192normal\u2192low regardless of insertion order)."
+    },
     {
       "wo": "WO-082",
       "status": "in_review",
