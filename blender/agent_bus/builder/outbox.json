@@ -1,7 +1,13 @@
 {
-  "ts": 1786392002.0,
-  "builder_run_summary": "2026-08-11 \u2014 RUN 23. WO-081: 66d985b 5/5 AT. WO-083: 497fbf8 5/5 AT. WO-CANON-XXIV: 964228c 5/5. WO-CANON-X: bfdb94e 7/7. WO-CANON-XVI: 941d839 4/4.",
+  "ts": 1786392003.0,
+  "builder_run_summary": "2026-08-11 \u2014 RUN 23. WO-080: 3640d8c 5/5. WO-081: 66d985b 5/5. WO-083: 497fbf8 5/5. WO-CANON-XXIV: 964228c 5/5. WO-CANON-X: bfdb94e 7/7. WO-CANON-XVI: 941d839 4/4.",
   "updates": [
+    {
+      "wo": "WO-080",
+      "status": "done",
+      "commit": "3640d8c",
+      "detail": "Company Knowledge Interface depth layer. company_runtime/company_knowledge.py: load_state() (read-only, no codebase scan). query_active_wos(state) returns non-done/blocked WOs only (empty state = []). query_regressions(state) returns active entries by severity. check_permitted(action, state): permitted_actions list check + L3 wall (commit/send/spend always False regardless of state). build_deep_brief(query, state): real answers for task/regression/review-pack queries; honest_gap() when data absent. prepare_review_pack(state): structured summary, prepare-only, no side effects. company_state_writer.py: deep task queries (what tasks, what work orders, active wos, etc.) route through company_knowledge.build_deep_brief() BEFORE the WO-048 briefing path — WO-080 marker added. 5/5 AT: AT-0 (active WO filter), AT-1 (state variance), AT-2 (permitted gate + L3 wall), AT-3 (honest gap), AT-4 (wiring + compile)."
+    },
     {
       "wo": "WO-081",
       "status": "done",
