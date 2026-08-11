@@ -1,3 +1,28 @@
+> # 🔎 AUDIT 2026-08-10 — peek · wall-jump · fire-jump · HeadLook (David: "haven't seen these")
+> **All THREE are BUILT. None needs rebuilding — each fails for a different, specific reason.**
+> - **PEEK ✅ built + wired** (`DesktopBuddy:1275/1459` sizing-up scan + 18° look-down before a drop →
+>   `HeadLook:378`). **Invisible** because it's additive on the idle clip and only 10–18° vs the ±12°
+>   always-on explore wander. → **fixed by HeadAim (WO-090). Do NOT rebuild peek.**
+> - **WALL-JUMP ✅ built, 45° arc real** (`_wrWallJump` + `wallJumpArcMul`; nav zig-zag chimneys in
+>   `EloDesktopNav:194-226`). **Rare** — needs up-a-level + within reach + a **40% dice roll**. →
+>   **WO-092:** log rejections, relax/raise odds, Inspector dials.
+> - **FIRE-JUMP ✅ built; WO-074-A (hide gun) COMPLETE** (`SuppressGun=true` + `PlayGunJumpFire`, arm
+>   plays with no prop on desktop roam). **BUT it fires on DOWN-jumps** (`freeroamFireJumpChance` :124/:1628)
+>   — David wants **LATERAL only, never forward or down**. → **WO-093:** re-gate to left/right + minimum
+>   lateral distance ("correct size") + keep gun suppressed.
+> - **HEADLOOK ✅ audited (474 lines).** Root cause of the head never looking right: it writes
+> `headBone.localRotation * Euler(...)` — **additive on the idle pose, never overrides it**; and the look is
+> ~13° effective (30° max × 0.44 strength × 30% duty) vs ±12° random wander. **It is also a god-object** —
+> only ~¼ is rotation; the rest is micro-expressions/mood/nod/tilts and must be KEPT. → **WO-090:** split
+> `HeadExpression.cs` out, `HeadAim` constraint owns rotation (±100), re-home peek/drag/observe/sit/nod on top.
+> Full audits: `design/QUEUE/05a_HEADLOOK_AUDIT_findings.md` · `design/QUEUE/06_AUDIT_peek_walljump_firejump.md`
+
+> # 🟢 BUILDER SEAT ALIVE AGAIN — RUN 20 (2026-08-10, after ~2 days dead)
+> **WO-086 brain-half DONE — `f133fee`, 8/8 tests.** `ambient_engine.py` polls the Designer's
+> `user_idle`/`user_active` events, waits 30s, picks from a real repertoire (utterance · glance ·
+> look-around · stretch · wander · calm), yields to commands. The hard sequencing condition is MET →
+> **Designer's retire-half is unblocked and landing.** Builder queue: 10 cards in `builder/QUEUE/`.
+
 > # ⚖️ CANON RULINGS CLOSED — 2026-08-10 (David L3). Ratification gate is SHUT.
 > A: one world graph (`relationships/` canonical) · C: assemble-BEFORE-decide, `UnifiedCognitiveState` ·
 > D: drift = validated proposal, V Ch.7 trait model wins · XXIII: software RESERVED collapses to David,
@@ -252,10 +277,10 @@ _Root cause the seats were idle: their next WOs existed only as files + START_HE
 | WO-076 | Perception mis-link fidelity (no fragments, no fabricated links) | Builder (eLo OS) | P2 | **DONE ✅ auto-verified (test_wo076_perception_fidelity.py)** READY | — |
 | WO-077 | Return loop: eLo's own recent outputs + perception in every turn's cognitive state | Builder (eLo OS) | P1 | **DONE ✅ IN_REVIEW — Run 19 `da2c562`**: [RECENT DIALOGUE] block (last 3 turns) injected into system prompt every turn; perception already in assembled state (no gap found). test_wo077_return_loop.py 6/6 · continuation 77/77. | Diagnosis confirmed: _cw elo entries were never systematically in system prompt; only on explicit recall path. Fix is server.py One Brain assembly — no FREEZE_V1_LOCK files touched. |
 | WO-082 | Decision Journal: "why did you do that?" — real trace readback, no confabulation | Builder (eLo OS) | P2 | **DONE ✅ IN_REVIEW — Run 20**: `self/decision_journal.py` (record/last_n/record_failure/get_reliability/explain_last); `_WHY_TRACE_TRIGGERS` + short-circuit in server.py; journal write after every executive action; failure writes `known_failure_condition` + drops reliability 0.15. test_wo082_decision_journal.py 7/7 · continuation 78/78. | Check-Before-Build: no seed existed. Extends exec_decision fields (already assembled in _process_turn) — no FREEZE_V1_LOCK files touched. Per-action reliability persisted to `self/journals/action_reliability.json`. |
-| WO-074 | Movement-feel bugs: hide fire-jump GUN (A) · edge-roam (C) · jump-too-far → pathfind (F) | Design (UI/Avatar) | P2 | ▶ BUILD NOW — C edge-roam + F jump-too-far→pathfind; jump clamp = QUEUE card 00 (NOT gated) | Designer rule-6 pushback 06:29 (correct): C/F both live in the sensitive DesktopBuddy.cs core (3494 lines) + movement-FEEL is unverifiable in autonomous ticks → NOT blind-buildable. Surface to David. |
+| WO-074 | Movement-feel bugs: hide fire-jump GUN (A) · edge-roam (C) · jump-too-far → pathfind (F) | Design (UI/Avatar) | P2 | ⏳ IN_PROGRESS — jump-reach clamp (card 00: height-based ~1.5x, route-not-leap, log rejects) | Designer rule-6 pushback 06:29 (correct): C/F both live in the sensitive DesktopBuddy.cs core (3494 lines) + movement-FEEL is unverifiable in autonomous ticks → NOT blind-buildable. Surface to David. |
 | WO-075 | Desktop gravity + screen-wrap landing — eLo always lands on a real surface | Design (UI/Avatar) | P2 | ⏳ IN_PROGRESS — Designer COMMITTED `4a5109f` (2026-08-10), live-iterating drag-release gravity + landing | same gate: gravity/landing edit lives in DesktopBuddy.cs core (sensitive avatar file) + feel-verify needs David's L3. dropped eLo floats → must fall/land. |
 | WO-087 | FULL local-driver audit (brain>body>brain sweep) | Design (UI/Avatar) | P2 | ✅ DONE — David-approved 2026-08-10 (read-only audit, needed no approval) | finding: movement/ROAM is the biggest push-to-brain area (→ Spatial Faculty, Track B); expression/VFX/glow already brain-driven; 6 NEEDS-REVIEW items → each becomes its own gated WO |
-| WO-086 | Mouse-idle → brain; retire local calm driver (steps 1–2) | Design (UI/Avatar) + Builder | P2 | ✅ APPROVED (David greenlit 2026-08-10). **✅ BUILDER HALF DONE IN_REVIEW (2026-08-10) 8/8 AT `tests/test_wo086_user_idle_brain.py`.** `ambient_engine.py` extended: polls `user_idle`/`user_active` events from `unity_events.json`; on `user_idle` above 30s threshold → `_decide_idle_behaviour(idle_secs)` selects from repertoire (utterance/glance/look_around/stretch/wander/calm — weighted by idle duration, never always calm); yields to commanded state (`_is_commanded()` check); 90s refire gate prevents spam; `user_active` resets tracking. New helpers: `_idle_look_around()`, `_idle_stretch()`, `_idle_glance()`. **Designer half** (emit user_idle/user_active UP + retire local calm DECISION): must land WITH this (sequence-hard). | sequencing HARD: Designer emit(user_idle/active)+retire-local-calm-driver lands WITH Builder brain-decide half (never before, or idle=nothing); keep idle-breathing wobble as a reflex |
+| WO-086 | Mouse-idle → brain; retire local calm driver (steps 1–2) | Design (UI/Avatar) + Builder | P2 | **DONE ✅ — first complete brain > body > brain loop.** Builder brain-half `f133fee` (8/8) + Designer emit+retire `c140afa`. Local calm driver retired; idle breathing wobble kept as reflex. | sequencing HARD: Designer emit(user_idle/active)+retire-local-calm-driver lands WITH Builder brain-decide half (never before, or idle=nothing); keep idle-breathing wobble as a reflex |
 
 >
 > **📍 RE-CHECK 2026-08-10 10:20 (Architect IRV) — STILL NO CHANGE. Builder cron dead ~4h14m.** `continuation --once`: **73/73 green** (tested 73 · green 73). `agent_poll` @ 10:20: ⚪ builder dispatched-ACTIVE WO-030b/058b + WO-086, `new: —` (unpicked) · 🟢 design dispatched-ACTIVE WO-086, zero non-gated work (WO-074C/F + WO-075 David-L3-gated; WO-086 brain-half sequence-locked to the dead Builder → correct idle) · ⚪ game parked GM-2/GM-2b (needs David play-test). Last commit still `2ad7a57` @ 06:06:42 (no new); Builder outbox 08-08 16:23 (~42h); Design 06:29; Game 08-06 — none changed. No new David message; no new seat activity (only my own poll's inbox/heartbeat writes). No new relay dropped (0905 carries the full escalation + WO-030b/058b next-action; a 21st to a provably-dead cron = pure noise). No scope invented. **ONLY lever = David relaunches the Builder seat in VS Code (Claude Code) — the single unblock for the whole board.**
