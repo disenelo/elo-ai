@@ -2856,6 +2856,18 @@ def _process_turn(raw: str) -> dict:
             system = system + "\n\n" + _im_identity_block(_elo_self)
         except Exception:
             pass
+        # WO-081: emergent cognition — internal life (habits, intents, absence-awareness)
+        try:
+            from self.emergent_cognition import emergent_block as _ec_emergent_block
+            try:
+                _ec_idle = float(_idle_sec)
+            except (NameError, TypeError):
+                _ec_idle = 0.0
+            _ec_block = _ec_emergent_block(_elo_self, _ec_idle)
+            if _ec_block:
+                system = system + "\n\n" + _ec_block
+        except Exception:
+            pass
 
         # WO-077: own-speech return loop — last 3 turns injected every turn so eLo
         # knows what it just said and can reference or continue the thread.
