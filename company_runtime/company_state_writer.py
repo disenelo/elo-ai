@@ -805,6 +805,14 @@ def handle_company_voice_intent(
 
     voiced = state.get("voiced_briefing", "no data yet")
 
+    # WO-080: deep task/WO queries route through company_knowledge depth layer
+    try:
+        from company_runtime.company_knowledge import is_deep_company_query, build_deep_brief
+        if is_deep_company_query(raw):
+            return build_deep_brief(raw, state)
+    except Exception:
+        pass
+
     if intent in ("company.briefing", None):
         return _build_briefing(state)
 
