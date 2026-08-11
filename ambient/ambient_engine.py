@@ -294,6 +294,42 @@ def _idle_glance() -> None:
                               "duration": 2.0, "mode": "idle"}})
 
 
+def _handle_window_event(data: dict, user_is_idle: bool) -> None:
+    """
+    WO-094: Window event handler — brain side.
+    Consumes a single window event, decides action via window_event_faculty,
+    and routes through the standard outbox.  Never touches identity/personality.
+    """
+    if _is_commanded():
+        return
+    try:
+        from faculties.window_event_faculty import decide_window_event
+        from self.elo_self_model import _elo_self_state  # module-level shared state
+        state = _elo_self_state
+    except Exception:
+        return
+
+    user_active = not user_is_idle
+    decision = decide_window_event(data, state, user_active=user_active)
+    if decision is None:
+        return
+
+    # Route decision as a low-priority action intent to the outbox
+    try:
+        _outbox_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                    "blender", "agent_bus", "builder", "outbox.json")
+        try:
+            with open(_outbox_path, encoding="utf-8") as _f:
+                _ob = json.load(_f)
+        except Exception:
+            _ob = {}
+        _ob.setdefault("pending_intents", []).append(decision)
+        with open(_outbox_path, "w", encoding="utf-8") as _f:
+            json.dump(_ob, _f, indent=2)
+    except Exception:
+        pass
+
+
 def _decide_idle_behaviour(idle_secs: float) -> None:
     """
     WO-086: Brain-side idle decision. Called when user_idle event received
@@ -433,6 +469,7 @@ def _run(unity_present: bool) -> None:
                     _set_attentive_mode()
 
                 # WO-086: user_idle / user_active — brain decides idle repertoire
+                # WO-094: window_closed / window_opened / window_moved — brain notices and chooses
                 ev_type = data.get("type", "")
                 if ev_type == "user_idle":
                     _user_idle_secs = float(data.get("idle_secs", 0))
@@ -441,6 +478,12 @@ def _run(unity_present: bool) -> None:
                     _user_idle_secs = 0.0
                     _user_is_idle = False
                     _last_idle_directive = 0.0  # reset so next idle fires fresh
+                elif ev_type in ("window_closed", "window_opened", "window_moved"):
+                    threading.Thread(
+                        target=_handle_window_event,
+                        args=(data, _user_is_idle),
+                        daemon=True,
+                    ).start()
 
         now = time.time()
 
