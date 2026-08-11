@@ -6,7 +6,12 @@
       "type": "character",
       "description": "Curious explorer of the eLo universe. No eyes — expresses everything through body, posture, and presence. Moves through emotional worlds by understanding them, not defeating them.",
       "significance": "The central presence. Represents growth through exploration, healing through curiosity, and calm as the primary action.",
-      "keywords": ["elo", "main character", "explorer", "presence"]
+      "keywords": [
+        "elo",
+        "main character",
+        "explorer",
+        "presence"
+      ]
     },
     {
       "id": "chunk",
@@ -14,7 +19,13 @@
       "type": "companion",
       "description": "A modular companion whose body is made of pieces. Doesn't restore broken things — transforms them. The form always follows what the moment needs.",
       "significance": "Embodies the principle that broken things don't return to their original shape — they become something new. Represents reconstruction and integration.",
-      "keywords": ["chunk", "modular", "companion", "rebuild", "pieces"]
+      "keywords": [
+        "chunk",
+        "modular",
+        "companion",
+        "rebuild",
+        "pieces"
+      ]
     },
     {
       "id": "k7",
@@ -22,7 +33,15 @@
       "type": "companion",
       "description": "A shapeshifting companion with seven distinct forms. Each form corresponds to a different emotional or perceptual mode. Loyalty expressed through behaviour, not words.",
       "significance": "The emotional signal layer. When eLo needs a different lens, K-7 becomes it. Represents the idea that perspective is not fixed — you can shift how you see.",
-      "keywords": ["k-7", "k7", "seven", "spirit", "shifting", "forms", "companion"]
+      "keywords": [
+        "k-7",
+        "k7",
+        "seven",
+        "spirit",
+        "shifting",
+        "forms",
+        "companion"
+      ]
     },
     {
       "id": "sugarcore",
@@ -30,7 +49,13 @@
       "type": "state",
       "description": "The distortion state of the eLo universe — system overload, signal fragmentation. The world's aesthetic register made unstable. Not a villain — a state.",
       "significance": "Represents emotional overload and internal instability. The Sugarcore zones are where the world becomes most volatile. Also the visual language of the whole world: soft edges, strong colours, emotional warmth.",
-      "keywords": ["sugarcore", "distortion", "overload", "fragmentation", "aesthetic"]
+      "keywords": [
+        "sugarcore",
+        "distortion",
+        "overload",
+        "fragmentation",
+        "aesthetic"
+      ]
     },
     {
       "id": "orb",
@@ -38,7 +63,14 @@
       "type": "mechanic",
       "description": "Tracks emotional momentum across zones. Not points, not health — energy states. The visible layer of the underlying state engine. When enemies are corrected, orbs shift.",
       "significance": "The world's way of remembering how you moved through it. Connects to memory, retrieval, and transformation. Orbs are the bridge between internal state and world state.",
-      "keywords": ["orb", "orbs", "energy", "tracking", "momentum", "state"]
+      "keywords": [
+        "orb",
+        "orbs",
+        "energy",
+        "tracking",
+        "momentum",
+        "state"
+      ]
     },
     {
       "id": "cyber_garden",
@@ -46,7 +78,13 @@
       "type": "world_stage",
       "description": "A lush, digitally alive world stage where technology and nature interweave. Curious and generative — ideas grow here.",
       "significance": "Represents the creative phase — the generative, expanding energy before structure arrives.",
-      "keywords": ["cyber garden", "cyber", "garden", "stage", "zone"]
+      "keywords": [
+        "cyber garden",
+        "cyber",
+        "garden",
+        "stage",
+        "zone"
+      ]
     },
     {
       "id": "jellydrop_ocean",
@@ -54,7 +92,13 @@
       "type": "world_stage",
       "description": "A fluid, transformative stage. Everything is in motion, nothing is fixed. Sugarcore instability is most visible here — the world transforms under its influence.",
       "significance": "Represents fluidity and the discomfort of constant change. The emotional register is uncertainty and adaptation.",
-      "keywords": ["jellydrop", "ocean", "fluid", "stage", "zone"]
+      "keywords": [
+        "jellydrop",
+        "ocean",
+        "fluid",
+        "stage",
+        "zone"
+      ]
     },
     {
       "id": "dessert_desert",
@@ -62,7 +106,13 @@
       "type": "world_stage",
       "description": "A vast, quiet stage where things feel empty and too large. The emotional register is isolation and searching.",
       "significance": "Represents the feeling of being lost in too much space — the loneliness of wide-open uncertainty before clarity arrives.",
-      "keywords": ["dessert desert", "desert", "stage", "zone", "vast"]
+      "keywords": [
+        "dessert desert",
+        "desert",
+        "stage",
+        "zone",
+        "vast"
+      ]
     },
     {
       "id": "ice_cream_mountains",
@@ -70,7 +120,12 @@
       "type": "world_stage",
       "description": "Cold peaks with sweet surfaces — beauty that requires effort to reach. The emotional register is aspiration and the effort behind beauty.",
       "significance": "Represents the gap between what something looks like from afar and what it takes to actually get there.",
-      "keywords": ["ice cream", "mountains", "stage", "zone"]
+      "keywords": [
+        "ice cream",
+        "mountains",
+        "stage",
+        "zone"
+      ]
     },
     {
       "id": "chocolate_mountains",
@@ -78,7 +133,12 @@
       "type": "world_stage",
       "description": "Dense, rich terrain. Slow-moving and substantial. The emotional register is heaviness, depth, and warmth.",
       "significance": "Represents the weight of things that matter — feelings, projects, relationships that are rich but slow to move through.",
-      "keywords": ["chocolate", "mountains", "stage", "zone"]
+      "keywords": [
+        "chocolate",
+        "mountains",
+        "stage",
+        "zone"
+      ]
     },
     {
       "id": "gummy_lands",
@@ -86,7 +146,14 @@
       "type": "world_stage",
       "description": "Bright, elastic, playful. Things stretch and spring back. The emotional register is resilience and playfulness.",
       "significance": "Represents the elasticity of creativity and childhood — the ability to stretch, compress, and return without losing shape.",
-      "keywords": ["gummy", "lands", "gummy lands", "stage", "zone", "elastic"]
+      "keywords": [
+        "gummy",
+        "lands",
+        "gummy lands",
+        "stage",
+        "zone",
+        "elastic"
+      ]
     },
     {
       "id": "disenelo",
@@ -94,7 +161,12 @@
       "type": "brand",
       "description": "The creative brand behind eLo and all related projects. Built to make professional-quality free tools for makers.",
       "significance": "The container for everything — eLo, the OS, the game, the robot, the book, the addons. Not a company — a creative mission.",
-      "keywords": ["disenelo", "brand", "creator", "who made"]
+      "keywords": [
+        "disenelo",
+        "brand",
+        "creator",
+        "who made"
+      ]
     },
     {
       "id": "elo_os",
@@ -102,7 +174,13 @@
       "type": "system",
       "description": "A persistent cognitive terminal system. Carries memory, attention, voice, and identity continuity across sessions. The digital expression of eLo's presence.",
       "significance": "The system that makes eLo feel continuous — not a new conversation each time but the same presence returning.",
-      "keywords": ["elo os", "os", "system", "terminal", "cognitive"]
+      "keywords": [
+        "elo os",
+        "os",
+        "system",
+        "terminal",
+        "cognitive"
+      ]
     },
     {
       "id": "elo_book",
@@ -110,7 +188,13 @@
       "type": "project",
       "description": "A 4-act narrative following eLo through imaginative adventures. Healing through curiosity and connection, not combat. Enemies are overcharged — not evil.",
       "significance": "The narrative vessel for everything the eLo universe means. Same world as the game — different experience of it.",
-      "keywords": ["elo book", "book", "story", "narrative", "four acts"]
+      "keywords": [
+        "elo book",
+        "book",
+        "story",
+        "narrative",
+        "four acts"
+      ]
     },
     {
       "id": "elo_game",
@@ -118,7 +202,13 @@
       "type": "project",
       "description": "A 2D world-traversal game built in Unity. Each stage is an emotional territory — scattered, overwhelmed, curious, clear. Calm is the action mechanic.",
       "significance": "The interactive expression of the eLo universe. You move through emotional states by engaging, not defeating.",
-      "keywords": ["elo game", "game", "unity", "2d", "stages"]
+      "keywords": [
+        "elo game",
+        "game",
+        "unity",
+        "2d",
+        "stages"
+      ]
     },
     {
       "id": "elo_robot",
@@ -126,7 +216,13 @@
       "type": "project",
       "description": "A physical animatronic version of eLo — inflated TPU shell, servo skeleton, NeoPixel glow, Raspberry Pi brain. AI-driven, comfort-focused.",
       "significance": "The physical presence of eLo. The point where the book, the game, the AI, and the universe all meet in the real world.",
-      "keywords": ["elo robot", "robot", "animatronic", "physical", "embodiment"]
+      "keywords": [
+        "elo robot",
+        "robot",
+        "animatronic",
+        "physical",
+        "embodiment"
+      ]
     },
     {
       "id": "elo_ai",
@@ -134,7 +230,13 @@
       "type": "system",
       "description": "The AI layer powering eLo OS — Groq, Claude, or Ollama backends with attention filtering, memory persistence, and voice selection.",
       "significance": "What makes eLo feel alive in conversation — the cognitive layer underneath the presence.",
-      "keywords": ["elo ai", "ai", "artificial intelligence", "backend", "intelligence"]
+      "keywords": [
+        "elo ai",
+        "ai",
+        "artificial intelligence",
+        "backend",
+        "intelligence"
+      ]
     }
   ],
   "relationships": [
@@ -257,6 +359,22 @@
       "strength": 0.75,
       "meaning": "The Dessert Desert tests eLo's ability to maintain presence and direction without external landmarks. The vast, quiet space challenges the core principle: stay present even when there's nothing to react to.",
       "connection": "The Desert is where eLo's stillness is tested most directly. Calm without stimulus is harder than calm under pressure."
+    },
+    {
+      "from": "elo_book",
+      "to": "elo_game",
+      "type": "narrative_foundation",
+      "strength": 0.9,
+      "meaning": "The book is the narrative foundation for the game world — the same symbolic vocabulary, the same character, the same emotional logic expressed across two different media.",
+      "connection": "The eLo Book gives the eLo-Planet game world its narrative grounding. The game is not a separate universe — it is the book made traversable."
+    },
+    {
+      "from": "chunk",
+      "to": "elo_game",
+      "type": "vehicle_layer",
+      "strength": 0.85,
+      "meaning": "Chunk is eLo's modular transport in the game — the companion whose body becomes the vehicle for crossing different terrain types. Movement is collaborative.",
+      "connection": "In eLo-Planet, Chunk is how eLo moves through the world's different zones. eLo doesn't move alone — Chunk is the vehicle layer."
     }
   ]
 }

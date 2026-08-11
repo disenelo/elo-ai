@@ -24,7 +24,7 @@ from typing import Optional
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-_WORLD_GRAPH_PATH  = os.path.join(_ROOT, "identity", "world_graph.json")
+_WORLD_GRAPH_PATH  = os.path.join(_ROOT, "relationships", "world_graph.json")  # WO-CANON-XXIV: canonical path
 _VIEWPOINTS_PATH   = os.path.join(_ROOT, "identity", "viewpoints.json")
 _IDENTITY_MAP_PATH = os.path.join(_ROOT, "identity", "identity_map.json")
 
@@ -70,16 +70,18 @@ _VIEWPOINT_TRIGGERS: dict[str, str] = {
 }
 
 _ENTITY_TRIGGERS: dict[str, str] = {
-    "chunk":    "Chunk",
-    "robot":    "robot",
-    "elo-os":   "eLo-OS",
-    "elo os":   "eLo-OS",
-    "elo-planet": "eLo-Planet",
-    "game":     "eLo-Planet",
-    "book":     "book",
-    "k-7":      "K-7",
-    "k7":       "K-7",
-    "disenelo": "DISENELO",
+    # WO-CANON-XXIV: canonical IDs from relationships/world_graph.json
+    "chunk":      "chunk",
+    "robot":      "elo_robot",
+    "elo-os":     "elo_os",
+    "elo os":     "elo_os",
+    "elo-planet": "elo_game",
+    "game":       "elo_game",
+    "book":       "elo_book",
+    "k-7":        "k7",
+    "k7":         "k7",
+    "disenelo":   "disenelo",
+    "elo":        "elo",
 }
 
 
@@ -94,14 +96,17 @@ def get_viewpoint(question: str) -> Optional[str]:
 
 
 def get_entity_why(question: str) -> Optional[str]:
-    """Answer 'why does X matter?' from world_graph entities."""
+    """Answer 'why does X matter?' from canonical world_graph entities."""
     _load()
     t = question.lower()
+    entities = _world_graph.get("entities", [])
+    # relationships/world_graph.json uses list-of-dicts with id + description
+    entity_index = {e["id"]: e for e in entities} if isinstance(entities, list) else entities
     for trigger, entity_key in _ENTITY_TRIGGERS.items():
         if trigger in t:
-            entities = _world_graph.get("entities", {})
-            entity   = entities.get(entity_key, {})
-            why      = entity.get("why")
+            entity = entity_index.get(entity_key, {})
+            # canonical graph uses description + significance; fall back gracefully
+            why = entity.get("significance") or entity.get("description")
             if why:
                 return why
     return None

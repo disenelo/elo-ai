@@ -1,16 +1,18 @@
 """
 knowledge/graph_loader.py — eLo OS Connection Engine.
 
+WO-CANON-XXIV (Ruling A): one canonical graph (relationships/world_graph.json).
+Retrieval contract: results carry confidence + kind + evidence[] + score.
+Ranked by score DESC. Unknown facts return empty list — never backfilled from LLM.
+
 Reads world_graph.json, concepts.json, and viewpoints.json.
 Before each response, finds:
-  1. Entities mentioned in user input
+  1. Entities mentioned in user input (ranked by keyword match count)
   2. Relationships between those entities
   3. Relevant viewpoint
   4. Relevant concept
 
 Returns a compact context string for injection into the system prompt.
-This enriches the prompt with relationship understanding and eLo's perspective —
-without touching memory, routing, or architecture.
 """
 
 from __future__ import annotations
@@ -45,13 +47,16 @@ def _load_all():
 # ── entity matching ────────────────────────────────────────────────────────────
 
 def _find_entities(text: str) -> list[dict]:
-    """Return entities whose keywords appear in the lowercased input."""
+    """Return entities whose keywords appear in the lowercased input, with match count."""
     _load_all()
     t = text.lower()
-    return [
-        e for e in _graph.get("entities", [])
-        if any(k in t for k in e.get("keywords", []))
-    ]
+    matched = []
+    for e in _graph.get("entities", []):
+        score = sum(1 for k in e.get("keywords", []) if k in t)
+        if score > 0:
+            matched.append((score, e))
+    matched.sort(key=lambda x: x[0], reverse=True)
+    return [e for _, e in matched]
 
 
 def _find_relationships(entity_ids: list[str]) -> list[dict]:
@@ -86,6 +91,63 @@ def _find_viewpoint(text: str) -> dict | None:
         if any(k in t for k in vp.get("keywords", [])):
             return vp
     return None
+
+
+# ── ranked structured retrieval ────────────────────────────────────────────────
+
+def retrieve(user_input: str, top_k: int = 3) -> list[dict]:
+    """
+    Return up to top_k ranked knowledge items for user_input.
+
+    Each result dict carries:
+      label:      display label (entity name or relationship pair)
+      content:    description / connection text
+      confidence: epistemic confidence 0.0–1.0 (graph field or default 1.0)
+      kind:       entity type or "relationship"
+      evidence:   list of source strings (graph field or [])
+      score:      keyword match count (salience rank)
+
+    Returns [] when no graph knowledge matches — never backfills from LLM.
+    """
+    _load_all()
+    if not _graph:
+        return []
+
+    text     = user_input.strip().lower()
+    entities = _find_entities(text)
+    results: list[dict] = []
+
+    # entity hits
+    for e in entities:
+        kw_score = sum(1 for k in e.get("keywords", []) if k in text)
+        results.append({
+            "label":      e.get("name", e.get("id", "")),
+            "content":    e.get("description", ""),
+            "confidence": float(e.get("confidence", 1.0)),
+            "kind":       e.get("type", "entity"),
+            "evidence":   list(e.get("evidence", [])),
+            "score":      kw_score,
+        })
+
+    # relationship hits (from/to entity in matched set)
+    if entities:
+        entity_ids = {e["id"] for e in entities}
+        for r in _graph.get("relationships", []):
+            if r.get("from") in entity_ids or r.get("to") in entity_ids:
+                from_name = next((e["name"] for e in _graph["entities"] if e["id"] == r["from"]), r["from"])
+                to_name   = next((e["name"] for e in _graph["entities"] if e["id"] == r["to"]),   r["to"])
+                results.append({
+                    "label":      f"{from_name} → {to_name}",
+                    "content":    r.get("connection", r.get("meaning", "")),
+                    "confidence": float(r.get("confidence", 1.0)),
+                    "kind":       "relationship",
+                    "evidence":   list(r.get("evidence", [])),
+                    "score":      float(r.get("strength", 0.5)),
+                })
+
+    # rank: entity match count DESC, then confidence DESC
+    results.sort(key=lambda x: (x["score"], x["confidence"]), reverse=True)
+    return results[:top_k]
 
 
 # ── context assembly ───────────────────────────────────────────────────────────
