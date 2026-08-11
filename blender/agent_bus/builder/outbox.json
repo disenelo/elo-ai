@@ -1,7 +1,13 @@
 {
-  "ts": 1786392000.4,
-  "builder_run_summary": "2026-08-11 \u2014 RUN 22. WO-CANON-X: drift gate bfdb94e 7/7 AT. WO-CANON-XVI: 941d839 4/4 AT. RUN 20: WO-082 7/7 AT.",
+  "ts": 1786392000.5,
+  "builder_run_summary": "2026-08-11 \u2014 RUN 23. WO-CANON-XXIV: 964228c 5/5 AT. WO-CANON-X: bfdb94e 7/7. WO-CANON-XVI: 941d839 4/4.",
   "updates": [
+    {
+      "wo": "WO-CANON-XXIV",
+      "status": "done",
+      "commit": "964228c",
+      "detail": "One world graph (Ruling A). knowledge/graph_loader.py: retrieve() added \u2014 returns ranked list (score DESC) carrying confidence+kind+evidence+score; _find_entities() now scores by keyword match count; empty list on unknown input (no backfill). core/continuity.py: _WORLD_GRAPH_PATH moved to relationships/world_graph.json; _ENTITY_TRIGGERS updated to canonical IDs; get_entity_why() updated for list-of-dicts format. identity/world_graph.json: _retired:true + _successor pointer written. relationships/world_graph.json: 2 missing connections added (elo_book->elo_game, chunk->elo_game). 5/5 AT."
+    },
     {
       "wo": "WO-CANON-X",
       "status": "done",
