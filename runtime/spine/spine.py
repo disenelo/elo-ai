@@ -442,11 +442,23 @@ def run(
     # ── System Faculty ────────────────────────────────────────────────────────
     system_det = _system_faculty(language["meaning"])
 
+    # ── WO-CANON-XVI / ADR-Exec-006: Assemble unified cognitive state BEFORE Executive ──
+    _cognitive_state = None
+    try:
+        _cognitive_state = assemble_cognitive_state(
+            language, memory_pack, attention, capabilities, None, state,
+            world_state=_world, working_memory=_wm,
+        )
+    except Exception as _cs_err:
+        _log.debug("assemble_cognitive_state: %s", _cs_err)
+
     # ── Executive Faculty — ONE DECISION ─────────────────────────────────────
     plan = _executive_faculty(raw, language, attention, capabilities, system_det)
 
     # ── WO-052: Store snapshot on plan (assembled before; now pinned to it) ───
     plan.snapshot = _snapshot
+    # ── WO-CANON-XVI: Pin pre-assembled cognitive state to plan ──────────────
+    plan.cognitive_state = _cognitive_state
     # ── WO-CANON-XV/XII: Store frozen world + perception on plan ──────────────
     plan.world = _world
     # ── WO-CANON-VI: Store frozen WorkingMemory on plan ───────────────────────
@@ -474,17 +486,6 @@ def run(
         plan = _pf_compute(plan, attention, vision=_vision, session_min=_session_min)
     except Exception as e:
         _log.debug("presence_faculty: %s", e)
-
-    # ── S3: Assemble CognitiveState — after all plan mutations are complete ────
-    try:
-        lang_with_register = {**language, "register": plan.register}
-        plan.cognitive_state = assemble_cognitive_state(
-            lang_with_register, memory_pack, attention, capabilities, None, state,
-            world_state=_world, working_memory=_wm,
-        )
-    except Exception as e:
-        _log.debug("assemble_cognitive_state: %s", e)
-        plan.cognitive_state = None
 
     # ── S6: Build EmbodimentState ─────────────────────────────────────────────
     try:

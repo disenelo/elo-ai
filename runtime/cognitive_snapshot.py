@@ -89,6 +89,11 @@ class CognitiveSnapshot:
     confidence: float = 1.0          # degrades when components fail; never blocks the turn
 
 
+# WO-CANON-XVI / Ruling C: canonical name. CognitiveSnapshot is the implementation class;
+# UnifiedCognitiveState is the name the architecture uses (ADR-Exec-006).
+UnifiedCognitiveState = CognitiveSnapshot
+
+
 # ── Assembly ──────────────────────────────────────────────────────────────────
 
 def build_snapshot(
