@@ -1,7 +1,13 @@
 {
-  "ts": 1786392001.0,
-  "builder_run_summary": "2026-08-11 \u2014 RUN 23. WO-083: 497fbf8 5/5 AT. WO-CANON-XXIV: 964228c 5/5 AT. WO-CANON-X: bfdb94e 7/7. WO-CANON-XVI: 941d839 4/4.",
+  "ts": 1786392002.0,
+  "builder_run_summary": "2026-08-11 \u2014 RUN 23. WO-081: 66d985b 5/5 AT. WO-083: 497fbf8 5/5 AT. WO-CANON-XXIV: 964228c 5/5. WO-CANON-X: bfdb94e 7/7. WO-CANON-XVI: 941d839 4/4.",
   "updates": [
+    {
+      "wo": "WO-081",
+      "status": "done",
+      "commit": "66d985b",
+      "detail": "Emergent Cognition Cluster. self/emergent_cognition.py: internal_intents(state, idle_seconds) \u2014 gate: no intents without real history (focal_thread/lifetime_threads/inner_events); absence_awareness fires at 300s idle + curiosity \u2265 0.50; active_thread fires when focal_thread + session_turns \u2265 3 + \u2265 2 related events; micro_goal fires when curiosity \u2265 0.80 + idle pose; all priority='low'. update_habits(state, verb): increments state.recent_behavior rolling count. append_autobiography(event, kind): append-only jsonl at self/journals/autobiography.jsonl. emergent_block(): prompt injection \u2014 only emits when real state exists; empty state = empty string. server.py: inject emergent_block() after identity_block, WO-081 marker; _idle_sec passed with NameError guard. No timers, no fabrication, no touch of FREEZE_V1_LOCK runtime/executive.py. 5/5 AT: AT-0 (empty state \u2192 []), AT-1 (real state \u2192 items, all low-priority, all with source/trigger), AT-2 (absence threshold 300s enforced), AT-3 (append-only autobiography), AT-4 (server.py wired, py_compile clean)."
+    },
     {
       "wo": "WO-083",
       "status": "done",
