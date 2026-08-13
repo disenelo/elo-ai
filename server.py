@@ -2356,6 +2356,8 @@ def _process_turn(raw: str) -> dict:
                 "mode":          _plan.mode,
                 "register":      _plan.register,
                 "intent":        _plan.intent,
+                # WO-112: confidence threaded from exec_out via plan (was null in journal)
+                "confidence":    _plan.confidence,
             }
             # WO-105: collect last-turn spine domain health for /health endpoint
             global _spine_degraded

@@ -309,6 +309,7 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
             "action":            "ground",
             "valence":           valence,
             "momentum":          momentum,
+            "confidence":        1.0,   # WO-112: loop override is certain
         }
 
     # response goal from action
@@ -371,4 +372,5 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
         "cal_reason":     cal.get("reason", ""),
         "valence":        valence,
         "momentum":       momentum,
+        "confidence":     cal.get("confidence", 0.7),  # WO-112: thread from _conversation_action
     }

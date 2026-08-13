@@ -210,6 +210,9 @@ def _executive_faculty(
         plan.valence             = exec_out.get("valence",       "neutral")
         plan.momentum            = exec_out.get("momentum",      "stable")
         plan.mode                = exec_out.get("mode",          "")
+        # WO-112: thread confidence from exec_out into plan (was lost, journalled as null)
+        if "confidence" in exec_out:
+            plan.confidence = float(exec_out["confidence"])
         if not plan.register:
             plan.register = exec_out.get("register", "")
     except Exception as e:
