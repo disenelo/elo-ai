@@ -24,6 +24,7 @@ class CognitivePlan:
     raw:                  str   = ""         # unchanged user input
     meaning:              str   = ""         # normalised + repaired
     intent:               str   = "conversation"
+    intent_source:        str   = "david"    # WO-099b fix5: "david" | "self" | "reflex"
     register:             str   = ""         # SOUTH_LDN_MODE | PATOIS_MODE | ...
     social:               str   = ""         # greeting | affirmation | farewell | ""
 

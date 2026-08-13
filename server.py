@@ -2933,7 +2933,7 @@ def _process_turn(raw: str) -> dict:
             pass
         # WO-081: emergent cognition — internal life (habits, intents, absence-awareness)
         try:
-            from self.emergent_cognition import emergent_block as _ec_emergent_block
+            from self.emergent_cognition import emergent_block as _ec_emergent_block, internal_intents as _ec_intents
             try:
                 _ec_idle = float(_idle_sec)
             except (NameError, TypeError):
@@ -2941,6 +2941,10 @@ def _process_turn(raw: str) -> dict:
             _ec_block = _ec_emergent_block(_elo_self, _ec_idle)
             if _ec_block:
                 system = system + "\n\n" + _ec_block
+            # WO-099b fix5 (INTEND): if an internal intent fired, mark plan.intent_source="self"
+            _ec_raw = _ec_intents(_elo_self, _ec_idle)
+            if _ec_raw and _plan is not None:
+                _plan.intent_source = "self"
         except Exception:
             pass
 
@@ -3075,6 +3079,7 @@ def _process_turn(raw: str) -> dict:
                             _elo_self,
                             location=_perch_app,
                             surface=f"{_perch_edge} edge of {_perch_app}" if _perch_edge else _perch_app,
+                            embodiment="desktop",    # WO-099b fix3 (BODY): real body, not absent
                         )
                         _wo79_perch_fresh = True
                 except Exception:
@@ -3199,6 +3204,16 @@ def _process_turn(raw: str) -> dict:
                             _vault_hits = _vlookup(_recall_q, max_results=5)
                             if not _vault_hits:
                                 _vault_hits = _vlookup("disenelo", max_results=5)
+                            # WO-099b fix2 (REMEMBER): reinforce every recalled memory so used memories
+                            # don't decay. Mirrors recall_context() which had zero non-test callers.
+                            try:
+                                from memory.consolidation_faculty import reinforce as _reinforce_hit
+                                for _rh in (_vault_hits or []):
+                                    _rspot = _rh.get("spot", "")
+                                    if _rspot:
+                                        _reinforce_hit(_rspot)
+                            except Exception:
+                                pass
                             if _vault_hits:
                                 _vlines = [
                                     f"- {h['summary']} [{h['date']}]"
@@ -3824,13 +3839,27 @@ def _process_turn(raw: str) -> dict:
 
         # ── Self-model update — eLo's own inner state ─────────────────────────
         try:
+            # WO-099b fix4 (SELF-OBSERVE): extract real topics from current turn
+            _so_skip = frozenset({
+                "i", "me", "my", "you", "your", "the", "a", "an", "is", "are", "was",
+                "and", "or", "but", "to", "of", "in", "on", "it", "this", "that", "be",
+                "elo", "hi", "hey", "ok", "okay", "yeah", "yes", "no", "not", "with",
+            })
+            _so_words = [
+                w.lower() for w in (raw or "").split()
+                if len(w) >= 4 and w.lower().strip("?!.,;:") not in _so_skip
+            ]
+            _so_topics = list(dict.fromkeys(w.strip("?!.,;:'\"") for w in _so_words))[:5]
             _elo_self = _self_update(_elo_self, {
                 "action":     _action,
                 "tone":       exec_decision.get("tone", "CHILDLIKE-WISE") if exec_decision else "CHILDLIKE-WISE",
                 "response":   response,
                 "user_input": raw,
-                "topics":     [],
+                "topics":     _so_topics,
             })
+            # WO-099b fix4: record the executed action in the behavioural store
+            from self.elo_self_model import record_behaviour as _rb
+            _elo_self = _rb(_elo_self, _action)
         except Exception:
             pass
 

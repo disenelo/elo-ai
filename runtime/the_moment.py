@@ -64,7 +64,7 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
     moment = {
         "ts":               now,
         "embodiment":       state.embodiment,
-        "embodiment_tier":  "verified",          # set at startup from OS context
+        "embodiment_tier":  "verified" if state.embodiment else "absent",  # WO-099b fix3
         "pose":             state.pose,
         "pose_tier":        "verified" if pose_acked else "last-known",
         "surface":          state.surface or state.location or "",
