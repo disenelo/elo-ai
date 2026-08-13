@@ -1,5 +1,25 @@
 {
   "ts": 1786653200.0,
+  "wave5_plus_row25_2026-08-13": {
+    "session": "PATH TO 26 — Wave 5 complete + Row 25 SELF-INTERPRET VERIFIED",
+    "rows_verified": [1, 5, 11, 14, 17, 19, 21, 23, 25],
+    "row_evidence": {
+      "14_ROUTE": "self/route_memory.py recent_routes(n) added. the_moment.compile() includes route_history (last 5 records). Executive can consult route history. Commit a174cd5.",
+      "25_SELF-INTERPRET": "6 tests AT-125-1..6 trace complete chain: record_behaviour(state, verb) N times → state.recent_behavior counter → top_habits() ranking → emergent_block() prompt block with count ×N → the_moment.compile() recent_behaviour key. Each test uses real record_behaviour call — no seeded state. Break any link → test fails. Commit 6236451."
+    },
+    "row26_MEANING_design_question": "RAISED FOR ARCHITECT. significance_engine.evaluate() computes profile (presence/creation/system_change/reward) per turn but result is consumed by journal_router for routing only — profile NOT persisted where the_moment or Executive can read it. For Row 26 proof ('He says why something mattered, with the significance score and the outcome behind it'), the score must reach the Executive. Options: (A) last_significance dict added to the_moment (additive — card 0008 INPUT lane, permitted if logic is Architect's); (B) significance_engine writes to a journal file that the_moment reads. This is a logic decision about cross-turn data flow. Not freelanced.",
+    "hashes": {
+      "WO-107_IDENTITY_UNKNOWN": "5d1f232",
+      "WO-115_REFLECT_HISTORY": "6f67100",
+      "WO-113_GAP": "77c8f5b",
+      "WO-108_LOOK": "a69cd9b",
+      "WO-114_SELF-CHOOSE": "77d5645",
+      "WO-118_ROUTE_recent_routes": "a174cd5",
+      "WO-125_SELF-INTERPRET": "6236451"
+    },
+    "wave1_status": "BLOCKED — rows 4 SEE, 6 ATTEND, 16 AFFORD await Architect ruling.",
+    "wave6_status": "Row 20 LEARN: needs N confirmed lessons on real run (currently 0 confirmed). Row 22 ADAPT: needs §7 before/after delta. Row 25 SELF-INTERPRET: VERIFIED (6236451). Row 26 MEANING: design question raised above."
+  },
   "wave5_complete_2026-08-13": {
     "session": "PATH TO 26 \u2014 Wave 5 complete",
     "rows_verified": [1, 5, 11, 17, 19, 21, 23],
