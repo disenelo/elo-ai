@@ -29,6 +29,7 @@ from typing import Literal
 
 _ROOT               = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _BLENDER_STATE_PATH = os.path.join(_ROOT, "blender", "blender_state.json")
+_SPATIAL_PATH       = os.path.join(_ROOT, "blender", "elo_spatial.json")
 _DOMAIN_STATUS      = Literal["live", "cached", "stale", "absent"]
 
 
@@ -124,13 +125,24 @@ class WeatherState:
     location:   str   = ""
 
 
+@dataclass(frozen=True)
+class GazeState:
+    """WO-099: eLo's gaze awareness UP — read from elo_spatial.json (Unity writes this)."""
+    x:         float = 0.5     # normalised screen X gaze aims at
+    y:         float = 0.5     # normalised screen Y
+    win_id:    int   = 0       # window ID under gaze (0 = none)
+    window:    str   = ""      # window name under gaze
+    on_window: bool  = False   # True when gaze lands on a known window
+    issued_by: str   = ""      # "brain" | "reflex" | ""
+
+
 # ── LiveWorldState ────────────────────────────────────────────────────────────
 
 @dataclass(frozen=True)
 class LiveWorldState:
     """
     One world per turn. Frozen after assembly.
-    Eleven typed domain slices + per-domain health metadata.
+    Twelve typed domain slices + per-domain health metadata.
 
     Faculties read this from CognitiveState. No faculty re-queries sensors mid-turn.
     """
@@ -145,6 +157,7 @@ class LiveWorldState:
     environment: EnvironmentState = field(default_factory=EnvironmentState)
     time:        TimeState        = field(default_factory=TimeState)
     weather:     WeatherState     = field(default_factory=WeatherState)
+    gaze:        "GazeState | None" = None   # WO-099: what eLo is looking at (UP channel)
 
     assembled_ts:  float  = 0.0
     turn_id:       str    = ""
@@ -296,6 +309,27 @@ def assemble_world_state(turn_id: str = "", perception=None) -> LiveWorldState:
     for domain in ("browser", "files", "internet", "calendar", "weather"):
         _health(domain, "absent", "absent", 0.0)
 
+    # ── Gaze (WO-099 UP channel — from elo_spatial.json, written by Unity) ────
+    gaze_state: "GazeState | None" = None
+    try:
+        with open(_SPATIAL_PATH, encoding="utf-8") as _sf:
+            _sd = json.load(_sf)
+        _gd = _sd.get("gaze")
+        if isinstance(_gd, dict):
+            gaze_state = GazeState(
+                x=float(_gd.get("x", 0.5)),
+                y=float(_gd.get("y", 0.5)),
+                win_id=int(_gd.get("win_id", 0)),
+                window=str(_gd.get("window", "")),
+                on_window=bool(_gd.get("on_window", False)),
+                issued_by=str(_gd.get("issued_by", "")),
+            )
+            _health("gaze", "live", "elo_spatial.json", 0.95)
+        else:
+            _health("gaze", "absent", "absent", 0.0)
+    except Exception:
+        _health("gaze", "absent", "absent", 0.0)
+
     # ── Ch.3 §3.2: copy PerceptionResult into domain slices (verbatim, no re-interpret) ──
     # Overrides direct-sensor reads only where perception provides richer data.
     # Confidence carried verbatim — never inflated.
@@ -371,6 +405,7 @@ def assemble_world_state(turn_id: str = "", perception=None) -> LiveWorldState:
         environment=environment,
         time=time_state,
         weather=WeatherState(),
+        gaze=gaze_state,
         assembled_ts=assembled_ts,
         turn_id=turn_id,
         domain_health=domain_health,

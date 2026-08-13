@@ -33,6 +33,9 @@ _WINDOW_EVENT_TYPES: frozenset[str] = frozenset({
     "window_closed", "window_opened", "window_moved",
 })
 
+# WO-099: gaze event type (discrete noticing — debounced by Unity before emit)
+_GAZE_EVENT_TYPE: str = "gaze_target_changed"
+
 # Behaviour weights per event type (0=never, 1=always)
 _ACTION_WEIGHTS: dict[str, dict[str, float]] = {
     "window_opened": {"relocate": 0.4, "observe": 0.3, "glance": 0.2, "ignore": 0.1},
@@ -59,6 +62,41 @@ def consume_window_events(events_path: str | None = None) -> list[dict]:
         return []
     except Exception:
         return []
+
+
+def consume_gaze_events(events_path: str | None = None) -> list[dict]:
+    """
+    WO-099: Read gaze_target_changed events from unity_events.json.
+    Unity debounces before emitting — each event is a settled new gaze target.
+    Returns [] if no gaze event or file absent.
+    """
+    try:
+        path = events_path or _EVENTS_PATH
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        if data.get("type") == _GAZE_EVENT_TYPE:
+            return [data]
+        return []
+    except Exception:
+        return []
+
+
+def describe_gaze(event: dict) -> str:
+    """
+    WO-099: Produce a short verified-speech string from a gaze_target_changed event.
+    Only says what the event proves — never fabricates (ADR-Exec-001).
+    Returns "" when the event carries no useful info.
+    """
+    if not event or event.get("type") != _GAZE_EVENT_TYPE:
+        return ""
+    gaze = event.get("gaze", {})
+    on_window = event.get("on_window", False)
+    window = event.get("window", "")
+    issued_by = event.get("issued_by", "")
+    if on_window and window:
+        src = f" ({issued_by})" if issued_by and issued_by != "brain" else ""
+        return f"eLo noticed '{window}'{src}"
+    return ""
 
 
 # ── Decision engine ───────────────────────────────────────────────────────────

@@ -61,13 +61,26 @@ class WindowBounds:
 
 
 @dataclass
+class GazeSpatial:
+    """eLo's current gaze direction — written to elo_spatial.json by Unity (WO-099 UP channel)."""
+    x:         float = 0.5    # normalised screen X gaze aims at
+    y:         float = 0.5    # normalised screen Y
+    win_id:    int   = 0      # window ID under gaze (0 = none)
+    window:    str   = ""     # window name under gaze
+    on_window: bool  = False  # True when gaze lands on a known window
+    issued_by: str   = ""     # "brain" | "reflex" | ""
+
+
+@dataclass
 class EloSpatial:
-    pos_x:     float = 0.5     # normalised screen X
-    pos_y:     float = 0.1     # normalised screen Y
-    height_px: int   = 120     # pixel height
+    pos_x:     float = 0.5     # normalised screen X (Unity key: "x")
+    pos_y:     float = 0.1     # normalised screen Y (Unity key: "y")
+    height_px: int   = 120     # pixel height (Unity key: "height")
     window:    str   = ""      # window eLo is on
+    edge:      str   = ""      # "bottom" | "top" | "left" | "right" | ""
     screen_w:  int   = 2560
     screen_h:  int   = 1440
+    gaze:      "GazeSpatial | None" = None   # WO-099: gaze awareness UP
 
     @property
     def pixel_x(self) -> int:
@@ -88,19 +101,33 @@ def get_elo_spatial() -> EloSpatial:
     """
     Read eLo's current position from elo_spatial.json (Unity writes this).
     Falls back to presence_state.json for window attachment if spatial file absent.
+    Unity keys: x/y/height (not pos_x/pos_y/height_px).
     """
     spatial = EloSpatial()
 
-    # Try full spatial file first (Unity writes this when implemented)
+    # Try full spatial file first (Unity writes this)
     try:
         with open(_SPATIAL_PATH, encoding="utf-8") as f:
             d = json.load(f)
-        spatial.pos_x     = float(d.get("pos_x", 0.5))
-        spatial.pos_y     = float(d.get("pos_y", 0.1))
-        spatial.height_px = int(d.get("height_px", 120))
+        # WO-099: Unity writes x/y/height — not pos_x/pos_y/height_px
+        spatial.pos_x     = float(d.get("x", d.get("pos_x", 0.5)))
+        spatial.pos_y     = float(d.get("y", d.get("pos_y", 0.1)))
+        spatial.height_px = int(d.get("height", d.get("height_px", 120)))
         spatial.window    = d.get("window", "")
+        spatial.edge      = d.get("edge", "")
         spatial.screen_w  = int(d.get("screen_w", 2560))
         spatial.screen_h  = int(d.get("screen_h", 1440))
+        # WO-099: read gaze UP — "eLo KNOWS what he's looking at"
+        _g = d.get("gaze")
+        if isinstance(_g, dict):
+            spatial.gaze = GazeSpatial(
+                x=float(_g.get("x", 0.5)),
+                y=float(_g.get("y", 0.5)),
+                win_id=int(_g.get("win_id", 0)),
+                window=str(_g.get("window", "")),
+                on_window=bool(_g.get("on_window", False)),
+                issued_by=str(_g.get("issued_by", "")),
+            )
         return spatial
     except Exception:
         pass
@@ -189,7 +216,7 @@ def spatial_summary(elo: EloSpatial, windows: list[WindowBounds]) -> str:
     parts: list[str] = []
 
     if elo.window:
-        parts.append(f"eLo is on '{elo.window}'")
+        parts.append(f"eLo is on '{elo.window}'" + (f" ({elo.edge} edge)" if elo.edge else ""))
     else:
         parts.append("eLo's window attachment unknown")
 
@@ -202,5 +229,12 @@ def spatial_summary(elo: EloSpatial, windows: list[WindowBounds]) -> str:
     if chrome:
         dist = elo.distance_to(chrome)
         parts.append(f"browser is {int(dist)}px away")
+
+    # WO-099: gaze awareness UP — only say he's looking if the state says so (ADR-Exec-001)
+    if elo.gaze and elo.gaze.on_window and elo.gaze.window:
+        src = f" (by {elo.gaze.issued_by})" if elo.gaze.issued_by else ""
+        parts.append(f"gaze on '{elo.gaze.window}'{src}")
+    elif elo.gaze and not elo.gaze.on_window:
+        parts.append("gaze on open desktop (no window)")
 
     return "[SPATIAL] " + ". ".join(parts) + "."
