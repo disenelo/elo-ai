@@ -296,6 +296,25 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
         cal = _conversation_action(user_input, intent, valence, momentum)
     action = cal["action"]
 
+    # WO-106: Rows 4 SEE · 6 ATTEND · 16 AFFORD — consult world state + WM winner.
+    # Inputs only — overrides stay within the existing nine CAL actions.
+    _wm_winner = attention_model.get("wm_winner", "")
+    _world     = attention_model.get("world_state", {})
+
+    # Row 4 SEE / 16 AFFORD: user unavailable (focused elsewhere) → quieter presence.
+    # Conversational build/connect/celebrate would interrupt — witness instead.
+    if not _world.get("available", True):
+        if action in ("build", "connect", "celebrate"):
+            action = "witness"
+            cal = {"action": "witness", "confidence": 0.7,
+                   "reason": "world_state.available=False — quieter presence"}
+
+    # Row 6 ATTEND: WM competition foregrounded a creative/build thread → lean in.
+    if _wm_winner in ("creation", "build") and action == "reflect":
+        action = "build"
+        cal = {"action": "build", "confidence": 0.7,
+               "reason": f"wm_winner={_wm_winner} foregrounded — active thread"}
+
     # loop protection always wins
     if loop_detected or intent == "stabilise":
         return {
