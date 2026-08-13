@@ -1401,3 +1401,64 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
     except Exception as e:
         _logger.debug("Agent %s failed: %s", intent, e)
         return user_input, None
+
+
+def enrich_from_plan(
+    user_input: str,
+    plan_capabilities: list,
+) -> Tuple[str, Optional[str]]:
+    """
+    WO-118 Row 14 ROUTE: use the Executive's capability choice from CognitivePlan
+    instead of re-running keyword matching.
+
+    plan_capabilities is CognitivePlan.capabilities: [(agent_name, query), ...]
+    Each entry was chosen by the spine's capability faculty — trust it.
+
+    Applies the same capability registry gate (WO-018) as enrich().
+    Falls back to enrich() if no plan capabilities fire successfully.
+    """
+    if not plan_capabilities:
+        return enrich(user_input)
+
+    try:
+        from runtime.capabilities.registry import all_enabled as _reg_all_enabled
+        _enabled_cap_ids: set | None = {c.id for c in _reg_all_enabled()}
+    except Exception:
+        _enabled_cap_ids = None
+
+    context_parts = []
+    last_used: Optional[str] = None
+
+    for entry in plan_capabilities[:2]:
+        if isinstance(entry, (list, tuple)) and len(entry) >= 2:
+            ag_name, ag_query = entry[0], entry[1]
+        elif isinstance(entry, dict):
+            ag_name  = entry.get("agent", "")
+            ag_query = entry.get("query", user_input)
+        else:
+            continue
+
+        # WO-018: registry gate — same check as enrich() pipeline path
+        if _enabled_cap_ids is not None:
+            _cap_id = _ROUTER_TO_CAP_ID.get(ag_name)
+            if _cap_id and _cap_id not in _enabled_cap_ids:
+                continue
+
+        ag_fn = _AGENTS.get(ag_name)
+        if ag_fn is None:
+            continue
+
+        try:
+            data = ag_fn(ag_query or user_input)
+            if data:
+                context_parts.append(data)
+                last_used = ag_name
+        except Exception as _e:
+            _logger.debug("plan capability %s failed: %s", ag_name, _e)
+
+    if context_parts:
+        combined = " | ".join(context_parts)
+        return f"[CONTEXT: {combined}]\n\n{user_input}", last_used
+
+    # No plan agent fired — fall back to keyword-based routing
+    return enrich(user_input)

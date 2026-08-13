@@ -56,7 +56,7 @@ from runtime.executive import decide as exec_decide
 from runtime import state_machine as sm
 from runtime.prompt_builder import build as build_prompt
 from runtime.backend_router import route as router_route, route_streaming as _route_streaming, active_backend, normalise
-from tools.tool_router import enrich as _tool_enrich
+from tools.tool_router import enrich as _tool_enrich, enrich_from_plan as _tool_enrich_from_plan
 from tools.keyword_motion import scan as _keyword_motion_scan
 from memory.quirk_bank import maybe_generate as _quirk_observe
 from elo_personality_engine.skeleton_generator import ObservationStore as _ObsStore, generate_skeleton as _gen_skeleton, export_skeleton as _export_skeleton
@@ -3384,7 +3384,11 @@ def _process_turn(raw: str) -> dict:
                 if _gk_force_conversation:
                     _enriched, _agent = raw, "direct"
                 else:
-                    _enriched, _agent = _tool_enrich(raw)
+                    # WO-118 Row 14 ROUTE: use Executive's capability choice when available.
+                    # plan.capabilities = [(agent_name, query)] chosen by spine's capability
+                    # faculty. Trust that over re-running keyword matching on the same raw input.
+                    _plan_caps = (list(_plan.capabilities) if _plan and _plan.capabilities else [])
+                    _enriched, _agent = _tool_enrich_from_plan(raw, _plan_caps)
 
                 # WO-027 Seam A — inject relevant past corrections as few-shot ICL examples
                 try:
