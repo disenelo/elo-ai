@@ -2661,6 +2661,12 @@ def _process_turn(raw: str) -> dict:
                         _elo_self.surface = str(json.load(_bsf2).get("surface_type", ""))
                 except Exception:
                     pass
+                # WO-116 SELF-OBSERVE: record ACKed physical action
+                try:
+                    from self.elo_self_model import record_behaviour as _rb_sit
+                    _elo_self = _rb_sit(_elo_self, "sit")
+                except Exception:
+                    pass
                 _self_save(_elo_self)
                 # WO-095/096B: emit verified OutcomeRecord for learning loop
                 # ensure_lesson guarantees the row exists before record_outcome is called
@@ -2773,6 +2779,12 @@ def _process_turn(raw: str) -> dict:
                 pass
             if _move_acked:
                 _PENDING_MOVE["active"] = False
+                # WO-116 SELF-OBSERVE: record ACKed physical action
+                try:
+                    from self.elo_self_model import record_behaviour as _rb_mv
+                    _elo_self = _rb_mv(_elo_self, "move")
+                except Exception:
+                    pass
                 try:
                     with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bsmf2:
                         json.dump({}, _bsmf2)
@@ -2845,6 +2857,12 @@ def _process_turn(raw: str) -> dict:
             if _exit_acked:
                 _PENDING_EXIT["active"] = False
                 _self_apply_embodiment(_elo_self, pose="hidden", current_action="hidden")
+                # WO-116 SELF-OBSERVE: record ACKed physical action
+                try:
+                    from self.elo_self_model import record_behaviour as _rb_ex
+                    _elo_self = _rb_ex(_elo_self, "exit")
+                except Exception:
+                    pass
                 _self_save(_elo_self)
                 try:
                     with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bsef2:
@@ -3081,11 +3099,17 @@ def _process_turn(raw: str) -> dict:
                     _perch_app  = _perch.get("app", "")
                     _perch_edge = _perch.get("edge", "")
                     if _perch_app:
+                        # WO-107 BODY: read the first active embodiment from self-model history
+                        _active_body = next(
+                            (e["name"] for e in _elo_self.embodiment_history
+                             if e.get("status") == "active"),
+                            "desktop",
+                        )
                         _self_apply_embodiment(
                             _elo_self,
                             location=_perch_app,
                             surface=f"{_perch_edge} edge of {_perch_app}" if _perch_edge else _perch_app,
-                            embodiment="desktop",    # WO-099b fix3 (BODY): real body, not absent
+                            embodiment=_active_body,
                         )
                         _wo79_perch_fresh = True
                 except Exception:
