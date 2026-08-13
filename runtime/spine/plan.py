@@ -25,6 +25,8 @@ class CognitivePlan:
     meaning:              str   = ""         # normalised + repaired
     intent:               str   = "conversation"
     intent_source:        str   = "david"    # WO-099b fix5: "david" | "self" | "reflex"
+    # WO-114: full internal intent when source == "self" (kind, source, trigger, priority)
+    internal_intent:      dict  = field(default_factory=dict)
     register:             str   = ""         # SOUTH_LDN_MODE | PATOIS_MODE | ...
     social:               str   = ""         # greeting | affirmation | farewell | ""
 

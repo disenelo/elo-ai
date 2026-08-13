@@ -2986,10 +2986,12 @@ def _process_turn(raw: str) -> dict:
             _ec_block = _ec_emergent_block(_elo_self, _ec_idle)
             if _ec_block:
                 system = system + "\n\n" + _ec_block
-            # WO-099b fix5 (INTEND): if an internal intent fired, mark plan.intent_source="self"
+            # WO-099b fix5 / WO-114: if an internal intent fired, mark plan.intent_source="self"
+            # and populate plan.internal_intent with full intent (kind, source, trigger, priority)
             _ec_raw = _ec_intents(_elo_self, _ec_idle)
             if _ec_raw and _plan is not None:
                 _plan.intent_source = "self"
+                _plan.internal_intent = _ec_raw[0]  # highest-priority emergent intent
         except Exception:
             pass
 
