@@ -126,6 +126,29 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
     except Exception:
         pass
 
+    # WO-113: Gap assessment — 7-state vocabulary with real numbers
+    _gap_results: list[dict] = []
+    try:
+        import json as _json
+        import os as _os
+        _sp_path = _os.path.join(_ROOT, "blender", "elo_spatial.json")
+        _spatial: dict = {}
+        with open(_sp_path, encoding="utf-8") as _spf:
+            _spatial = _json.load(_spf)
+    except Exception:
+        _spatial = {}
+    try:
+        from runtime.gap_assessment import assess as _gap_assess
+        _gap_results = [
+            r.to_dict() for r in _gap_assess(
+                list(state.available_actions or []),
+                spatial=_spatial,
+                locomotion_health=str(getattr(state, "locomotion_faculty_health", "OK")),
+            )
+        ]
+    except Exception:
+        pass
+
     moment = {
         "ts":               now,
         "embodiment":       state.embodiment,
@@ -160,6 +183,8 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
         # WO-115: autobiography — chronological verified event log (last 5)
         "autobiography":        _autobiography,
         "autobiography_tier":   "observed" if _autobiography else "unknown",
+        # WO-113: gap assessment — one GapResult per jump-class action
+        "gap_assessment":       _gap_results,
     }
     return moment
 
