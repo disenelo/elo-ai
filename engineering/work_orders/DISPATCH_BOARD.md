@@ -3,34 +3,59 @@
 **Where things live:** the **card in `<seat>/QUEUE/`** is the dispatch (it's what the seat reads).
 **This table is the tracker.** Full state · cause · code: `docs/architecture/CAPABILITY_1-26_STATE_CAUSE_WO_CODE.md`
 
-| # | Capability | State | WO | Card (dispatch) | Seat | OUTSTANDING — the one thing |
-|---|---|---|---|---|---|---|
-| 1 | IDENTITY | PARTIAL | WO-107 | `builder/QUEUE/05h` | Builder | No identity field in `EloSelfState` — it's prompt text only |
-| 2 | WHERE | PARTIAL | WO-100 | `builder/QUEUE/000b` fix 1 · `01b` | Builder | Reads `pos_x`, Unity writes `x` → fabricates coordinates |
-| 3 | BODY | PARTIAL | WO-107 | `builder/QUEUE/000b` fix 3 | Builder | `embodiment` field has no live-path writer |
-| 4 | SEE | PARTIAL | **WO-106** | `builder/QUEUE/00a` | Builder | `plan.world` assembled, zero readers |
-| 5 | LOOK | FORWARD | WO-108 | `builder/QUEUE/05f` | Builder + Design | No observation record exists — a look ≠ a head turn |
-| 6 | ATTEND | PARTIAL | **WO-106** | `builder/QUEUE/00a` | Builder | WM competition winner discarded |
-| 7 | REMEMBER | PARTIAL | WO-109 | `builder/QUEUE/000b` fix 2 | Builder | `reinforce()` never called on live retrieval |
-| 8 | RECALL | PARTIAL | WO-109 | `builder/QUEUE/000b` · `05c` | Builder | No `experience_id`/`source`/`confidence` returned |
-| 9 | KNOW | PARTIAL | WO-110 | `builder/QUEUE/05c` | Builder | Epistemic tiers cover body only |
-| 10 | INFER | PARTIAL | WO-110 | `builder/QUEUE/05c` | Builder | `the_moment.py:85` — "inferred" is a constant, not a check |
-| 11 | UNKNOWN | PARTIAL | WO-110 | `builder/QUEUE/05c` | Builder | No representation of the unobserved |
-| **12** | **ACT** | ✅ **VERIFIED** | — | — | — | **Done. Full chain.** |
-| 13 | VERIFY (ACK) | PARTIAL | WO-111 | `builder/QUEUE/05a` | Builder | ACK on 3 actions only; everything else claims success |
-| 14 | ROUTE | FORWARD | **Ruling E** | `design/QUEUE/00` | **Design** | Navigator: 573 lines, zero file writes |
-| 15 | CHOOSE | PARTIAL | WO-112 | `builder/QUEUE/05b` | Builder | Executive early-returns one action — no candidate set |
-| 16 | AFFORD | PARTIAL | WO-113 | `builder/QUEUE/05e` | Builder | Computed live, thrown away; no body-capability join |
-| 17 | GAP | FORWARD | WO-113 | `builder/QUEUE/05e` | Builder | 7-state vocabulary absent; needs 14 for `reliable_range` |
-| 18 | INTEND | PARTIAL | WO-114 | `builder/QUEUE/000b` fix 5 | Builder | `plan.intent` has no `source` field |
-| 19 | SELF-CHOOSE | FORWARD | WO-114 | `builder/QUEUE/000b` fix 5 · `05g` | Builder | Emergent intents run live → prompt text only |
-| 20 | LEARN | PARTIAL | WO-096B · WO-104 | `builder/QUEUE/00` · `0000` · `00b` | Builder | `episode_ref=""` keeps the gate shut · scope mismatch |
-| 21 | REFLECT | PARTIAL | WO-115 | `builder/QUEUE/05d` | Builder | Reflection never reaches the self-model |
-| 22 | ADAPT | BLOCKED | WO-116 | `builder/QUEUE/05g` | Builder | Blocked on 20 + 24 — both carded, no decision needed |
-| 23 | HISTORY | PARTIAL | WO-115 | `builder/QUEUE/05d` | Builder | `append_autobiography` zero callers; file doesn't exist |
-| 24 | SELF-OBSERVE | PARTIAL | WO-116 | `builder/QUEUE/000b` fix 4 · `05g` | Builder | `record_behaviour` zero callers → store empty |
-| 25 | SELF-INTERPRET | BLOCKED | WO-117 | `builder/QUEUE/05g` | Builder | Blocked on 21 · 23 · 24 |
-| 26 | MEANING | BLOCKED | WO-101 · WO-115 | `builder/QUEUE/03c` · `05d` | Builder | **Two omitted keyword args** — `outcome=` at 2 call sites |
+### FAILURE MODES — the answer to "why"
+**🔌 BUILT, NEVER WIRED** = the component is correct and has **zero callers**
+**📖 MISREAD** = reads the wrong key, gets nothing, doesn't notice
+**🔇 NEVER FIRES** = the field/path exists, nothing ever writes or runs it
+**📢 NEVER TALKS BACK** = it acts but never reports the result
+**🧊 HARDCODED** = a constant pretending to be a computed value
+**🚫 NOT BUILT** = genuinely does not exist
+**⛓ BLOCKED** = waiting on another row (all carded, no decision needed)
+
+| # | Capability | State | **WHY — failure mode** | The exact cause | WO | Card (dispatch) | Seat |
+|---|---|---|---|---|---|---|---|
+| 1 | IDENTITY | PARTIAL | 🚫 **NOT BUILT** + 📢 | No identity field in `EloSelfState:139-167`. Prompt text only — Executive can't read it | WO-107 | `builder/05h` | Builder |
+| 2 | WHERE | PARTIAL | 📖 **MISREAD** | Reads `pos_x/pos_y/height_px`; Unity writes `x/y/height`. Defaults to `0.5,0.1` — **fabricates position**, `except: pass` hides it | WO-100 | `builder/000b`·`01b` | Builder |
+| 3 | BODY | PARTIAL | 🔇 **NEVER FIRES** | `embodiment` field exists, **no live-path writer** — grep = load/save only | WO-107 | `builder/000b` | Builder |
+| 4 | SEE | PARTIAL | 🔌 **BUILT, NEVER WIRED** | `plan.world` assembled every turn, **zero readers**; server re-queries sensors | **WO-106** | `builder/00a` | Builder |
+| 5 | LOOK | FORWARD | 🚫 **NOT BUILT** | No observation record exists. A head turn is not a look | WO-108 | `builder/05f` | Builder+Design |
+| 6 | ATTEND | PARTIAL | 🔌 **BUILT, NEVER WIRED** | WM competition runs, **winner discarded** — Ruling B's driver has never steered | **WO-106** | `builder/00a` | Builder |
+| 7 | REMEMBER | PARTIAL | 🔌 **BUILT, NEVER WIRED** | `reinforce()` only inside `recall_context()` — **zero non-test callers**. Memories decay when used | WO-109 | `builder/000b` | Builder |
+| 8 | RECALL | PARTIAL | 📢 **INCOMPLETE OUTPUT** | Returns text, no `experience_id`/`source`/`confidence` — indistinguishable from a guess | WO-109 | `builder/000b`·`05c` | Builder |
+| 9 | KNOW | PARTIAL | 📢 **PARTIAL SCOPE** | Tiers cover **body only** — nothing tiers memory, vault, facts about David, tool results | WO-110 | `builder/05c` | Builder |
+| 10 | INFER | PARTIAL | 🧊 **HARDCODED** | `the_moment.py:85` always emits `"inferred"`; `:67` always `"verified"`. Constants, not checks | WO-110 | `builder/05c` | Builder |
+| 11 | UNKNOWN | PARTIAL | 🚫 **NOT BUILT** | No representation of the unobserved outside body state | WO-110 | `builder/05c` | Builder |
+| **12** | **ACT** | ✅ **VERIFIED** | — | Registry → executor → dispatch, full chain live | — | — | — |
+| 13 | VERIFY (ACK) | PARTIAL | 📢 **NEVER TALKS BACK** | ACK for **3 actions**. `anim_trigger:34` returns True **on file write**. Tools/scale/image_gen: no signal — **eLo asserts success blind** | WO-111 | `builder/05a` | Builder |
+| 14 | ROUTE | PARTIAL | 🔌 **BUILT, NEVER WIRED** *(new, 19:30)* | Designer **now emits** `last_move{legs,arrived,fell,cost,issued_by}` ✅ — **zero Python readers**. `route_memory.py` correct, **zero importers** | WO-118 | `builder/0002` | Builder |
+| 15 | CHOOSE | PARTIAL | 🔇 **NEVER FORMS** | `executive.py:156-235` early-returns one action — no candidate set ever exists. **All 35 entries: `confidence:null`, `alternatives:[]`** | WO-112 | `builder/05b` | Builder |
+| 16 | AFFORD | PARTIAL | 🔌 **BUILT, NEVER WIRED** | Computed live, **thrown away** — `prompt_block` zero non-test callers | WO-113 | `builder/05e` | Builder |
+| 17 | GAP | FORWARD | 🚫 **NOT BUILT** | 7-state vocabulary absent; `reliable_range` needs row 14 consumed | WO-113 | `builder/05e` | Builder |
+| 18 | INTEND | PARTIAL | 🚫 **MISSING FIELD** | `plan.intent` has no `source` — every intent is user-derived by construction | WO-114 | `builder/000b` | Builder |
+| 19 | SELF-CHOOSE | FORWARD | 🔌 **BUILT, NEVER WIRED** | `emergent_cognition` **runs live**, emits `source:curiosity_peak` → **prompt text only**, never on plan | WO-114 | `builder/000b`·`05g` | Builder |
+| 20 | LEARN | PARTIAL | ⚙️ **PRODUCER/CONSUMER DISAGREE** | `episode_ref=""` ⇒ gate needs 3 distinct, gets 0. Writer emits `capability`, gate wants `preference`. **Ledger: 1 candidate, 0 confirmed** | WO-096B·104 | `builder/00`·`0000`·`00b` | Builder |
+| 21 | REFLECT | PARTIAL | 📢 **NEVER WRITES BACK** | Reflects, writes journals, **never reaches `EloSelfState`** — eLo reflects and is unchanged | WO-115 | `builder/05d` | Builder |
+| 22 | ADAPT | ⛓ BLOCKED | ⛓ on 20 + 24 | No before/after delta exists to measure | WO-116 | `builder/05g` | Builder |
+| 23 | HISTORY | PARTIAL | 🔌 **BUILT, NEVER WIRED** | `append_autobiography` **zero callers**; `autobiography.jsonl` **doesn't exist** | WO-115 | `builder/05d` | Builder |
+| 24 | SELF-OBSERVE | PARTIAL | 🔌 **BUILT, NEVER WIRED** | `derive_tendencies` runs live; `record_behaviour`+`update_habits` **zero callers** ⇒ inputs permanently empty | WO-116 | `builder/000b`·`05g` | Builder |
+| 25 | SELF-INTERPRET | ⛓ BLOCKED | ⛓ on 21·23·24 | — | WO-117 | `builder/05g` | Builder |
+| 26 | MEANING | ⛓ BLOCKED | ⚙️ **ARGUMENT OMITTED** | `evaluate()` accepts `outcome=` and scores it. **Both callers omit it** — 2 keyword args | WO-101·115 | `builder/03c`·`05d` | Builder |
+
+### 🔴 THE TALLY — this is the real finding
+| Failure mode | Rows | Count |
+|---|---|---|
+| 🔌 **BUILT, NEVER WIRED** | 4 · 6 · 7 · 14 · 16 · 19 · 23 · 24 | **8** |
+| 🚫 NOT BUILT | 1 · 5 · 11 · 17 · 18 | 5 |
+| 📢 NEVER TALKS BACK / incomplete | 8 · 9 · 13 · 21 | 4 |
+| ⚙️ Producer/consumer disagree · argument omitted | 20 · 26 | 2 |
+| 🔇 NEVER FIRES | 3 · 15 | 2 |
+| 📖 MISREAD | 2 | 1 |
+| 🧊 HARDCODED | 10 | 1 |
+| ⛓ BLOCKED on the above | 22 · 25 | 2 |
+| ✅ VERIFIED | 12 | **1** |
+
+**20 of the 25 failures are wiring — not missing design.** The components exist, are correct, and are
+tested. **Nothing calls them.** Only 5 rows need something genuinely built.
 
 **Every row has a WO. Every WO has a card in a seat's queue. Nothing is parked. Nothing waits on David.**
 
@@ -161,7 +186,7 @@
 >
 > | Was gated | Why it's cleared | Now |
 > |---|---|---|
-> | **WO-CANON-I** `prompts/` freeze | **David granted the unlock 2026-07-31 (D-K).** Never written to `FREEZE_V1_LOCK.md`, so it read as ungranted for 2 weeks. Backfilled UL-001/UL-002. | ▶ **BUILD + COMMIT** |
+> | **WO-CANON-I** `prompts/` freeze | **David granted the unlock 2026-07-31 (D-K).** Never written to `FREEZE_V1_LOCK.md`, so it read as ungranted for 2 weeks. Backfilled UL-001/UL-002. | ✅ **DONE `c0e1841` 2026-08-13** — READY FOR DAVID'S LIVE VOICE TEST |
 > | **WO-015** | Not blocked on anything — its 4 behaviour rules are already in the spec (lines 364-405, 961-973). | ✅ **CLOSED** |
 > | **WO-074 (C/F) · WO-075 · WO-086 steps 1-2** | "David L3 movement session" is **superseded by the no-holds rule.** Feel is verified at his end-of-day live test — **after**, not before. Sensitive file ≠ blocked; it means *branch, keep the diff tight, list what must not regress.* | ▶ **BUILD NOW**, revert-safe branch |
 > | **D-L** (debug-mode scope → WO-017) | Technical scope definition = **Architect's call** (WORKING_STANDARD Rule 5). Ruled below. | ▶ **RELEASED** |
@@ -1755,7 +1780,7 @@ _Updated 2026-08-10 (reconcile #26) — **DESIGN MOVEMENT (seat-reported, UNVERI
 | WO-CANON-XIV | **Build Volume XIV — Plugin Architecture.** Reconcile the TWO capability registries (`plugins/registry.py` vs `runtime/capabilities/registry.py`) — a plugin declaring `hardware_output` currently bypasses XXIII's gates | Builder (eLo OS) | P2 | ▶ RELEASED — ADR-XIV-001 written 2026-08-13 (XXIII=policy · XIV=mechanism; declaration ≠ grant) | real security gap: `plugins/hardware/robot_body.py` already exists |
 | WO-CANON-XVII | **Build Volume XVII — Reflection Engine.** Growth metrics + improvement cycle (0% implemented); the lesson read-side beyond WO-095 | Builder (eLo OS) | P2 | ▶ RELEASED — volume written | sits on WO-095's `lesson_store` |
 | WO-CANON-XVIII | **Build Volume XVIII — Self-Evolution.** Capability/faculty versioning; ADR-Exec-005 + Ruling F boundary enforced (never self-modify identity) | Builder (eLo OS) | P3 | ▶ RELEASED — volume written | ties Vol XXII genome |
-| WO-CANON-I | **Build Volume I — Identity.** eLo KNOWS the person is David; addresses him in the **2nd person** — never names him back, never 3rd person in direct address | Builder (eLo OS) | P1 | **DISPATCHED — NO GATE** 2026-08-13 (`builder/QUEUE/01_…`). **Ruling G** (David, 08-13). Freeze unlock **already granted by David 2026-07-31 (D-K)** — was never written to `FREEZE_V1_LOCK.md`, now backfilled as UL-001/UL-002. Build + commit, revert-safe branch, David reviews the result at his end-of-day live test. | Do NOT replace "the user"→"you" ("you"=eLo in-prompt). Fix `living_presence_spec.txt` + `_PERSONA` (`prompt_builder.py:25`) in ONE commit + divergence test. David live-voice-tests after. |
+| WO-CANON-I | **Build Volume I — Identity.** eLo KNOWS the person is David; addresses him in the **2nd person** — never names him back, never 3rd person in direct address | Builder (eLo OS) | P1 | ✅ **DONE `c0e1841` 2026-08-13** — both personas named, ADDRESS RULE (WHO YOU ARE WITH) in both, divergence test AT-CI-3 guarding. 7/7 AT. **READY FOR DAVID'S LIVE VOICE TEST.** UL-002 / D-K. | Do NOT replace "the user"→"you" ("you"=eLo in-prompt). Fix `living_presence_spec.txt` + `_PERSONA` (`prompt_builder.py:25`) in ONE commit + divergence test. David live-voice-tests after. |
 | WO-CANON-II | **Build Volume II — Cognitive Principles.** Epistemic tiers as reasoning discipline; enforcement lives in Vol VII Ch.3 | Builder (eLo OS) | P3 | ▶ RELEASED — volume written | — |
 | RD-5 | **Robot actuation architecture** — per-joint POSABLE vs ACTUATED classification (a sphere joint canNOT be servo-driven: 3 DOF vs 1 → gimbal under a cosmetic shell); serial-bus smart servos with feedback (PWM servos structurally CANNOT satisfy Ruling E's report duty); Pi integration + power budget incl. worst-case stall; shoulder pistons vs linear actuators vs RD-4 inflated TPU **with noise figures** (calm presence = silence at rest); **HANDS: 3-finger anthropomorphic (David decided) — research tendon-underactuated vs per-joint, DOF budget, grip force + pinch points for LG-2** | R&D (Gemini) | P2 | ▶ DISPATCHED 2026-08-13 — **RESEARCH ONLY** | **RESERVED · keeps LG-2.** No purchase, no assembly, NO POWER under this WO. **HARD GATE: force-limiter/soft-stop does not exist in `avatar/safety_controller.py` — must be DONE + LG-2 reviewed before anything is powered near David.** Source verbatim `_intake/SOURCE_2026-08-13_robot_joints_servos_pistons.md` |
 
