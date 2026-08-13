@@ -20,19 +20,59 @@ _log = logging.getLogger(__name__)
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _MOMENT_PATH = os.path.join(_ROOT, "self", "state", "the_moment.json")
 
-# Epistemic tier vocabulary (CA-proposed, WO-079)
-# verified   — hardware/OS fact retrieved this turn
-# inferred   — probabilistic, based on recent observation
-# last-known — from persistent state, may be stale
-# live       — checked against a live registry this turn
-# unknown    — no data available
+# Epistemic tier vocabulary (CA-proposed, WO-079; extended WO-110 beyond body)
+# OBSERVED   — directly sensed this turn (hardware/OS/tool result)
+# INFERRED   — probabilistic, derived from recent observation
+# REMEMBERED — from persistent memory/vault (may be stale, source declared)
+# LAST-KNOWN — from state file, age unknown
+# LIVE       — checked against live registry this turn
+# UNKNOWN    — no data available; absence itself is a statable fact
 _TIER = {
-    "verified":   "[verified]",
+    "observed":   "[observed]",
+    "verified":   "[verified]",    # alias for observed (body legacy)
     "inferred":   "[inferred]",
+    "remembered": "[remembered]",
     "last-known": "[last-known]",
     "live":       "[live]",
     "unknown":    "[unknown]",
+    "absent":     "[absent]",
 }
+
+# Recency threshold for demoting "observed" to "last-known" (90 seconds)
+_FRESH_THRESHOLD_S = 90.0
+
+
+def tier_fact(
+    value,
+    *,
+    source: str = "unknown",
+    age_s: float | None = None,
+    confirmed: bool = False,
+) -> str:
+    """
+    WO-110: Compute an epistemic tier for ANY fact, not just body state.
+
+    Args:
+        value     — the fact value (None / empty = UNKNOWN)
+        source    — where it came from: "sensor", "vault", "lesson", "inferred",
+                    "tool", "user_statement", "unknown"
+        age_s     — seconds since the fact was acquired (None = unknown age)
+        confirmed — True if the fact was directly confirmed this turn
+
+    Returns one of the _TIER keys.
+    """
+    if value is None or value == "" or value == [] or value == {}:
+        return "unknown"
+    if source in ("sensor", "tool") or confirmed:
+        if age_s is not None and age_s > _FRESH_THRESHOLD_S:
+            return "last-known"
+        return "observed"
+    if source in ("vault", "lesson", "memory"):
+        return "remembered"
+    if source == "inferred":
+        return "inferred"
+    # Default: if we have a value but uncertain provenance, treat as last-known
+    return "last-known"
 
 
 def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
@@ -61,14 +101,31 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
     except Exception:
         pass
 
+    # Nearby surfaces — inferred if data present, unknown if absent
+    _nearby = list(state.nearby_surfaces or [])
+    _nearby_tier = tier_fact(_nearby, source="inferred") if _nearby else "unknown"
+
+    # Recent behaviour — observed this session (from record_behaviour calls)
+    _recent_bhv = dict(getattr(state, "recent_behavior", {}) or {})
+    _bhv_tier = tier_fact(_recent_bhv, source="sensor", confirmed=True) if _recent_bhv else "unknown"
+
+    # Lessons — from lesson store (remembered, not live)
+    _lessons: list[dict] = []
+    try:
+        from self.lesson_store import recall as _ls_recall
+        _lessons = _ls_recall()[:3]
+    except Exception:
+        pass
+    _lessons_tier = tier_fact(_lessons, source="lesson") if _lessons else "unknown"
+
     moment = {
         "ts":               now,
         "embodiment":       state.embodiment,
-        "embodiment_tier":  "verified" if state.embodiment else "absent",  # WO-099b fix3
+        "embodiment_tier":  tier_fact(state.embodiment, source="sensor", confirmed=True),
         "pose":             state.pose,
-        "pose_tier":        "verified" if pose_acked else "last-known",
+        "pose_tier":        "observed" if pose_acked else "last-known",
         "surface":          state.surface or state.location or "",
-        "surface_tier":     "verified" if perch_fresh else "last-known",
+        "surface_tier":     "observed" if perch_fresh else "last-known",
         "balance":          state.balance,
         "size_cm": {
             "height": state.size.get("height_cm"),
@@ -81,12 +138,17 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
         "locomotion_tier":      "live",
         "capabilities":         caps_live,
         "capabilities_tier":    "live" if caps_live else "unknown",
-        "nearby_surfaces":      list(state.nearby_surfaces or []),
-        "nearby_tier":          "inferred",
+        "nearby_surfaces":      _nearby,
+        "nearby_tier":          _nearby_tier,
         "mood":                 round(getattr(state, "mood", 0.5), 3),
         "curiosity":            round(getattr(state, "curiosity", 0.5), 3),
         "goal":                 getattr(state, "goal", ""),
         "last_self_update":     getattr(state, "last_updated", 0.0),
+        # WO-110: non-body epistemic facts
+        "recent_behaviour":     _recent_bhv,
+        "recent_behaviour_tier": _bhv_tier,
+        "lessons":              _lessons,
+        "lessons_tier":         _lessons_tier,
     }
     return moment
 

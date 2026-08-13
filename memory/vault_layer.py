@@ -273,18 +273,23 @@ def lookup(query: str, max_results: int = 5) -> list[dict]:
             base = fname[:-3]
             seen_summaries.add(base)
             _w = int(meta.get("weight", 5))
+            _spot_id = meta.get("spot", base)
             results.append({
-                "spot":       meta.get("spot", base),
-                "bits":       meta.get("bits", ""),
-                "summary":    summary_text,
-                "date":       meta.get("date", ""),
-                "weight":     _w,
-                "deep_link":  f"09 Memory/deep/{base}-deep",
+                "spot":          _spot_id,
+                "bits":          meta.get("bits", ""),
+                "summary":       summary_text,
+                "date":          meta.get("date", ""),
+                "weight":        _w,
+                "deep_link":     f"09 Memory/deep/{base}-deep",
                 # WO-053: confidence+source+timestamp (LiveWorldState pattern)
-                "memory":     summary_text,
-                "confidence": round(_w / 9.0, 3),
-                "timestamp":  meta.get("date", ""),
-                "source":     "vault_summary",
+                "memory":        summary_text,
+                "confidence":    round(_w / 9.0, 3),
+                "timestamp":     meta.get("date", ""),
+                "source":        "vault_summary",
+                # WO-109 Row 8: provenance set — experience_id, event, outcome
+                "experience_id": _spot_id,
+                "event":         summary_text,
+                "outcome":       meta.get("outcome", None),
             })
 
     # ── 2. SPOT_CODES.md index rows (flat conversation log — high recall) ────
@@ -308,17 +313,21 @@ def lookup(query: str, max_results: int = 5) -> list[dict]:
                     if base in seen_summaries:
                         continue
                     results.append({
-                        "spot":       spot,
-                        "bits":       bits,
-                        "summary":    summary[:200],
-                        "date":       date,
-                        "weight":     3,
-                        "deep_link":  f"09 Memory/deep/{base}-deep",
+                        "spot":          spot,
+                        "bits":          bits,
+                        "summary":       summary[:200],
+                        "date":          date,
+                        "weight":        3,
+                        "deep_link":     f"09 Memory/deep/{base}-deep",
                         # WO-053: confidence+source+timestamp
-                        "memory":     summary[:200],
-                        "confidence": 0.333,
-                        "timestamp":  date,
-                        "source":     "spot_index",
+                        "memory":        summary[:200],
+                        "confidence":    0.333,
+                        "timestamp":     date,
+                        "source":        "spot_index",
+                        # WO-109 Row 8: provenance set
+                        "experience_id": spot,
+                        "event":         summary[:200],
+                        "outcome":       None,
                     })
         except Exception:
             pass
