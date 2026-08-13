@@ -7,16 +7,18 @@ Ruling: Option A — `last_significance: dict` on the_moment. Conditions:
   1. Name is `last_significance` (not `significance`) — it is the PREVIOUS turn's score.
   2. No score (file absent) → empty dict. eLo must not claim significance without it.
   3. The profile carries the outcome that produced it (outcome= is threaded, WO-101).
+  4. Staleness: score older than 1800s (30 min) drops to {} — no fabricated inner-life claims.
 
 The test does NOT prove eLo says the right sentence — that is a live-run check.
 It proves the SCORE reaches the Executive assembly: journal_router writes it,
-the_moment reads it, compile() exposes it.
+the_moment reads it, compile() exposes it, and drops it when stale.
 
 AT-126-1: journal_router.route() writes last_significance.json with profile + ts + action
 AT-126-2: the_moment.compile() exposes last_significance from that file
 AT-126-3: when file is absent, last_significance is empty dict (no false claim)
 AT-126-4: profile carries overall + reward when outcome= is threaded (WO-101 join)
 AT-126-5: last_significance is previous turn's score — the file from turn N is read at turn N+1
+AT-126-6: stale score (age > 1800s) drops to empty dict — never presented as "last thing that mattered"
 """
 from __future__ import annotations
 
@@ -193,4 +195,37 @@ def test_last_significance_is_previous_turn(tmp_path):
     assert read_ts is not None, "last_significance must be present in Turn N+1's moment"
     assert read_ts == written_ts, (
         "The score visible at speak time (Turn N+1) must be Turn N's score — not current"
+    )
+
+
+# ── AT-126-6: stale score drops to empty dict ─────────────────────────────────
+
+def test_stale_significance_drops_to_empty(tmp_path):
+    """
+    A score written hours ago must not be presented as 'the last thing that mattered'.
+    If ts is older than 1800s, last_significance must be {} — no fabricated inner-life claim.
+    """
+    from self.elo_self_model import EloSelfState
+    from runtime import the_moment
+
+    state_dir = tmp_path / "self" / "state"
+    state_dir.mkdir(parents=True)
+    sig_file = state_dir / "last_significance.json"
+
+    # Write a score with ts from 2 hours ago
+    stale_ts = time.time() - 7200.0
+    sig_file.write_text(json.dumps({
+        "ts": stale_ts,
+        "action": "build",
+        "profile": {"overall": 0.82, "creation": 0.91},
+    }))
+
+    import unittest.mock as mock
+    with mock.patch.object(the_moment, "_ROOT", str(tmp_path)):
+        moment = the_moment.compile(EloSelfState())
+
+    sig = moment.get("last_significance")
+    assert sig == {}, (
+        f"Score older than 1800s must drop to empty dict — got {sig}. "
+        "A stale score is a fabrication about eLo's inner life."
     )

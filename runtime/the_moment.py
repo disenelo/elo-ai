@@ -138,11 +138,17 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
     # evaluate() runs AFTER the response is sent, so this is the PREVIOUS turn's score.
     # eLo must never attribute this score to the sentence he is currently producing.
     # No file → empty dict (no score → no claim).
+    # Staleness: a score written hours ago is not "the last thing that mattered" — drop it.
+    _SIGNIFICANCE_MAX_AGE_S = 1800.0  # 30 minutes — beyond this the session has moved on
     _last_significance: dict = {}
     try:
         _sig_path = os.path.join(_ROOT, "self", "state", "last_significance.json")
         with open(_sig_path, encoding="utf-8") as _sigf:
-            _last_significance = json.load(_sigf)
+            _sig_record = json.load(_sigf)
+        _sig_age = now - _sig_record.get("ts", 0.0)
+        if _sig_age <= _SIGNIFICANCE_MAX_AGE_S:
+            _last_significance = _sig_record
+        # else: score is stale — leave _last_significance as {} so eLo makes no claim
     except Exception:
         pass
 
