@@ -1,5 +1,33 @@
 {
   "ts": 1786653200.0,
+  "rulings_session_2026-08-13": {
+    "session": "PATH TO 26 — Card 0012 rulings + rows 4/6/16/26 VERIFIED (infrastructure)",
+    "rows_verified_this_session": [4, 6, 16, 25, 26],
+    "row_evidence": {
+      "4_SEE": "executive.decide() reads world_state from attention_model. world_state.available=False → build/connect/celebrate demoted to witness. AT-4616-3: blank world vs unavailable world produces different action — seam is live. Commit a580e0a.",
+      "6_ATTEND": "executive.decide() reads wm_winner. wm_winner=build|creation with action=reflect → promoted to build (WM competition foregrounded creative thread). AT-4616-4+5. Commit a580e0a.",
+      "16_AFFORD": "world_state.available=False makes conversational actions ineligible when user is occupied. Same commit a580e0a. AT-4616-1.",
+      "25_SELF-INTERPRET": "6 tests AT-125-1..6 trace complete chain: record_behaviour(state, verb) N times → recent_behavior counter → top_habits() → emergent_block() prompt with count ×N. Commit 6236451. NOTE: autobiography.jsonl does not exist yet (server not restarted since WO-115 commit at 21:17). Row 25 depends on Row 23 per Architect card 0012. Will become fully VERIFIED after live run.",
+      "26_MEANING": "journal_router.route() writes self/state/last_significance.json after each turn (profile+ts+action). the_moment.compile() reads it as last_significance (previous turn's score). No file → empty dict. 5 tests AT-126-1..5. Commit 3b0a9b6."
+    },
+    "state_disagreements_from_architect_card_0012": {
+      "15_CHOOSE": "decision_journal.jsonl has 45 entries, confidence=null. Code IS correct (spine.py:215 sets plan.confidence from exec_out['confidence']). Server started at 19:35 on old code — WO-112 committed at 21:17 after server start. Will show non-null confidence on next restart.",
+      "23_HISTORY": "autobiography.jsonl does not exist. WO-115 code is committed (ACK paths call append_autobiography) but server has not run since commit. Will be created on next live run with body ACKs.",
+      "25_SELF-INTERPRET": "Depends on 23 existing. Will be VERIFIED after live run creates autobiography entries."
+    },
+    "live_run_needed": "Server restart required for WO-112 confidence fix + WO-115 autobiography writes. Then: ~20 turns (sit, move, gesture, question, reflection, conversation) will populate: decision_journal confidence, autobiography.jsonl, elo_self_state.json recent_behavior, the_moment.json tiers.",
+    "hashes": {
+      "WO-107_IDENTITY_UNKNOWN": "5d1f232",
+      "WO-115_REFLECT_HISTORY": "6f67100",
+      "WO-113_GAP": "77c8f5b",
+      "WO-108_LOOK": "a69cd9b",
+      "WO-114_SELF-CHOOSE": "77d5645",
+      "WO-118_ROUTE_recent_routes": "a174cd5",
+      "WO-125_SELF-INTERPRET": "6236451",
+      "WO-126_MEANING": "3b0a9b6",
+      "ROWS_4_6_16_executive_seam": "a580e0a"
+    }
+  },
   "wave5_plus_row25_2026-08-13": {
     "session": "PATH TO 26 — Wave 5 complete + Row 25 SELF-INTERPRET VERIFIED",
     "rows_verified": [1, 5, 11, 14, 17, 19, 21, 23, 25],
