@@ -131,6 +131,23 @@ def route(
         "profile":      profile,
     }
 
+    # WO-126: persist this turn's significance so the_moment exposes it next turn.
+    # eLo reads the PREVIOUS turn's score — evaluate() runs after the response, so
+    # whatever is in last_significance.json at speak time is one turn old. That is
+    # the score he may reference; he must never attribute it to the current sentence.
+    _sig_path = os.path.join(_ROOT, "self", "state", "last_significance.json")
+    try:
+        import time as _sig_t
+        os.makedirs(os.path.dirname(_sig_path), exist_ok=True)
+        with open(_sig_path, "w", encoding="utf-8") as _sf:
+            json.dump(
+                {"ts": _sig_t.time(), "action": action, "profile": profile},
+                _sf,
+                ensure_ascii=False,
+            )
+    except Exception:
+        pass
+
     # Runtime is always written — no action needed here (state_manager handles it)
 
     # Trust signal: deep relationship or creative moments accelerate rapport

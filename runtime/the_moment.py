@@ -134,6 +134,18 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
     except Exception:
         pass
 
+    # WO-126 Row 26 MEANING: last turn's significance profile.
+    # evaluate() runs AFTER the response is sent, so this is the PREVIOUS turn's score.
+    # eLo must never attribute this score to the sentence he is currently producing.
+    # No file → empty dict (no score → no claim).
+    _last_significance: dict = {}
+    try:
+        _sig_path = os.path.join(_ROOT, "self", "state", "last_significance.json")
+        with open(_sig_path, encoding="utf-8") as _sigf:
+            _last_significance = json.load(_sigf)
+    except Exception:
+        pass
+
     # WO-108: Last directed-look observation record
     _last_obs: dict = {}
     try:
@@ -206,6 +218,9 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
         "gap_assessment":       _gap_results,
         # WO-108: last directed-look observation record (for Executive verified-speech gate)
         "last_observation":     _last_obs,
+        # WO-126 Row 26 MEANING: previous turn's significance profile.
+        # Empty dict when no prior turn exists — eLo must not claim significance without it.
+        "last_significance":    _last_significance,
     }
     return moment
 
