@@ -471,6 +471,17 @@ def run(
     except Exception as e:
         _log.debug("executive_faculty/enrich: %s", e)
 
+    # AC-5: sync register into CognitiveState after enrich may have supplemented it.
+    # Language faculty runs before exec, so cognitive_state is assembled with whatever
+    # language detected; enrich (relationship) may later set plan.register to something
+    # richer. Keep them consistent via dataclasses.replace on the frozen snapshot.
+    if plan.cognitive_state is not None and plan.register and not plan.cognitive_state.register:
+        try:
+            from dataclasses import replace as _dc_replace
+            plan.cognitive_state = _dc_replace(plan.cognitive_state, register=plan.register)
+        except Exception:
+            pass
+
     # ── v1.8 Emotional Light Engine → Presence Plan ───────────────────────────
     try:
         from runtime.light_engine.light_engine import translate
