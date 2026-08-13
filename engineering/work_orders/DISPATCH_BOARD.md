@@ -1,3 +1,42 @@
+# 📋 CAPABILITY 1–26 → WO TRACKER — **THE OUTSTANDING LIST. Check this first.**
+### 2026-08-13 19:15 · **VERIFIED: 1 of 26.** PARTIAL counts as ZERO.
+**Where things live:** the **card in `<seat>/QUEUE/`** is the dispatch (it's what the seat reads).
+**This table is the tracker.** Full state · cause · code: `docs/architecture/CAPABILITY_1-26_STATE_CAUSE_WO_CODE.md`
+
+| # | Capability | State | WO | Card (dispatch) | Seat | OUTSTANDING — the one thing |
+|---|---|---|---|---|---|---|
+| 1 | IDENTITY | PARTIAL | WO-107 | `builder/QUEUE/05h` | Builder | No identity field in `EloSelfState` — it's prompt text only |
+| 2 | WHERE | PARTIAL | WO-100 | `builder/QUEUE/000b` fix 1 · `01b` | Builder | Reads `pos_x`, Unity writes `x` → fabricates coordinates |
+| 3 | BODY | PARTIAL | WO-107 | `builder/QUEUE/000b` fix 3 | Builder | `embodiment` field has no live-path writer |
+| 4 | SEE | PARTIAL | **WO-106** | `builder/QUEUE/00a` | Builder | `plan.world` assembled, zero readers |
+| 5 | LOOK | FORWARD | WO-108 | `builder/QUEUE/05f` | Builder + Design | No observation record exists — a look ≠ a head turn |
+| 6 | ATTEND | PARTIAL | **WO-106** | `builder/QUEUE/00a` | Builder | WM competition winner discarded |
+| 7 | REMEMBER | PARTIAL | WO-109 | `builder/QUEUE/000b` fix 2 | Builder | `reinforce()` never called on live retrieval |
+| 8 | RECALL | PARTIAL | WO-109 | `builder/QUEUE/000b` · `05c` | Builder | No `experience_id`/`source`/`confidence` returned |
+| 9 | KNOW | PARTIAL | WO-110 | `builder/QUEUE/05c` | Builder | Epistemic tiers cover body only |
+| 10 | INFER | PARTIAL | WO-110 | `builder/QUEUE/05c` | Builder | `the_moment.py:85` — "inferred" is a constant, not a check |
+| 11 | UNKNOWN | PARTIAL | WO-110 | `builder/QUEUE/05c` | Builder | No representation of the unobserved |
+| **12** | **ACT** | ✅ **VERIFIED** | — | — | — | **Done. Full chain.** |
+| 13 | VERIFY (ACK) | PARTIAL | WO-111 | `builder/QUEUE/05a` | Builder | ACK on 3 actions only; everything else claims success |
+| 14 | ROUTE | FORWARD | **Ruling E** | `design/QUEUE/00` | **Design** | Navigator: 573 lines, zero file writes |
+| 15 | CHOOSE | PARTIAL | WO-112 | `builder/QUEUE/05b` | Builder | Executive early-returns one action — no candidate set |
+| 16 | AFFORD | PARTIAL | WO-113 | `builder/QUEUE/05e` | Builder | Computed live, thrown away; no body-capability join |
+| 17 | GAP | FORWARD | WO-113 | `builder/QUEUE/05e` | Builder | 7-state vocabulary absent; needs 14 for `reliable_range` |
+| 18 | INTEND | PARTIAL | WO-114 | `builder/QUEUE/000b` fix 5 | Builder | `plan.intent` has no `source` field |
+| 19 | SELF-CHOOSE | FORWARD | WO-114 | `builder/QUEUE/000b` fix 5 · `05g` | Builder | Emergent intents run live → prompt text only |
+| 20 | LEARN | PARTIAL | WO-096B · WO-104 | `builder/QUEUE/00` · `0000` · `00b` | Builder | `episode_ref=""` keeps the gate shut · scope mismatch |
+| 21 | REFLECT | PARTIAL | WO-115 | `builder/QUEUE/05d` | Builder | Reflection never reaches the self-model |
+| 22 | ADAPT | BLOCKED | WO-116 | `builder/QUEUE/05g` | Builder | Blocked on 20 + 24 — both carded, no decision needed |
+| 23 | HISTORY | PARTIAL | WO-115 | `builder/QUEUE/05d` | Builder | `append_autobiography` zero callers; file doesn't exist |
+| 24 | SELF-OBSERVE | PARTIAL | WO-116 | `builder/QUEUE/000b` fix 4 · `05g` | Builder | `record_behaviour` zero callers → store empty |
+| 25 | SELF-INTERPRET | BLOCKED | WO-117 | `builder/QUEUE/05g` | Builder | Blocked on 21 · 23 · 24 |
+| 26 | MEANING | BLOCKED | WO-101 · WO-115 | `builder/QUEUE/03c` · `05d` | Builder | **Two omitted keyword args** — `outcome=` at 2 call sites |
+
+**Every row has a WO. Every WO has a card in a seat's queue. Nothing is parked. Nothing waits on David.**
+
+**Fastest movers if the seam lands:** 4 · 6 · 16 (state already correct — needs consultation only), plus
+2 · 7 · 26 · 18 · 24 · 3 which are minutes each.
+
 > # 🧭 CAPABILITY TRUTH MATRIX — the board now reports THIS (Ruling H, 2026-08-13)
 > **Control layer ratified in full, unmodified.** Source, verbatim:
 > `docs/architecture/_intake/SOURCE_2026-08-13_capability_truth_matrix.md`
@@ -1721,6 +1760,6 @@ _Updated 2026-08-10 (reconcile #26) — **DESIGN MOVEMENT (seat-reported, UNVERI
 | RD-5 | **Robot actuation architecture** — per-joint POSABLE vs ACTUATED classification (a sphere joint canNOT be servo-driven: 3 DOF vs 1 → gimbal under a cosmetic shell); serial-bus smart servos with feedback (PWM servos structurally CANNOT satisfy Ruling E's report duty); Pi integration + power budget incl. worst-case stall; shoulder pistons vs linear actuators vs RD-4 inflated TPU **with noise figures** (calm presence = silence at rest); **HANDS: 3-finger anthropomorphic (David decided) — research tendon-underactuated vs per-joint, DOF budget, grip force + pinch points for LG-2** | R&D (Gemini) | P2 | ▶ DISPATCHED 2026-08-13 — **RESEARCH ONLY** | **RESERVED · keeps LG-2.** No purchase, no assembly, NO POWER under this WO. **HARD GATE: force-limiter/soft-stop does not exist in `avatar/safety_controller.py` — must be DONE + LG-2 reviewed before anything is powered near David.** Source verbatim `_intake/SOURCE_2026-08-13_robot_joints_servos_pistons.md` |
 
 | WO-099a | **🔴 P0 — RESTORE BRAIN CONTROL OF THE HEAD** (David: *"fix what they broke and re-trigger it back through the brain"*). HeadAim works (`5180b0f`) but cursor-follow was made primary, so the brain can no longer drive the head. Replace the binary `HeadCueActive` with a WEIGHTED gaze intent; **hard guard: brain silent/stale → fall back to cursor reflex, never freeze** | Design (UI/Avatar) | **P0** | ▶ DISPATCHED — card `03` | a weight can't freeze the head the way a boolean did — structural fix, not a patch |
-| WO-099b | **Brain must actually EMIT the gaze cue** — ⚠ **[VERIFIED in code]** Unity has ALWAYS been ready: `EloOSAvatarReceiver.cs:419-427` reads a `gaze` object (`yaw`/`pitch`/`active`, degrees) and `HeadLook.cs:405-423` consumes it. **But grep of the entire Python side finds NOTHING emitting it.** Unity has been listening to a channel nobody talks on — that's why the cue sat stale/stuck | **Builder (eLo OS)** | **P0** | ▶ DISPATCHED — card `04b` | **This was never a Designer bug. The brain simply never spoke.** |
-| WO-099c | **Gaze awareness UP** — body reports what he's looking at: continuous `gaze` STATE in `elo_spatial.json` (viewport point + window under gaze + `issued_by: brain\|reflex`) and a DEBOUNCED `gaze_target_changed` EVENT (~250–400ms dwell) on `unity_events.json`. Brain consumes → attention + perception | Design + Builder | P1 | ▶ QUEUED — design `04`, builder `04b` | Architect channel ruling: continuous=state, noticing=event. Debounce is a CHARACTER requirement — without it a cursor sweep makes him twitchy |
+| WO-099b | **Brain must actually EMIT the gaze cue** — ⚠ **[VERIFIED in code]** Unity has ALWAYS been ready: `EloOSAvatarReceiver.cs:419-427` reads a `gaze` object (`yaw`/`pitch`/`active`, degrees) and `HeadLook.cs:405-423` consumes it. **But grep of the entire Python side finds NOTHING emitting it.** Unity has been listening to a channel nobody talks on — that's why the cue sat stale/stuck | **Builder (eLo OS)** | **P0** | ✅ **DONE `f2deba0`** — Python was already emitting `{yaw, pitch, active}` via server.py:3478 + state_writer. WO-099c (gaze UP) closed simultaneously. gaze_look capability: PARTIAL→PARTIAL (UP path now live; WO-100 preserve_keys still strips gaze between turns). | **This was never a Designer bug. The brain simply never spoke.** |
+| WO-099c | **Gaze awareness UP** — body reports what he's looking at: continuous `gaze` STATE in `elo_spatial.json` (viewport point + window under gaze + `issued_by: brain\|reflex`) and a DEBOUNCED `gaze_target_changed` EVENT (~250–400ms dwell) on `unity_events.json`. Brain consumes → attention + perception | Design + Builder | P1 | ✅ **DONE `f2deba0`** — `GazeSpatial` parses gaze from elo_spatial.json; `GazeState` added to `LiveWorldState`; `spatial_summary()` injects verified gaze window into system prompt; `consume_gaze_events()` + `describe_gaze()` handle `gaze_target_changed` events. Key names bug fixed (x/y/height). 7/7 AT. | Design half already live (elo_spatial.json has gaze field, unity_events.json has gaze_target_changed). Debounce by Unity. |
 | WO-090 | **HeadAim / ChestAim** — cursor head-aim, decoupled L/R+U/D, chest trails, tracks seated + after getup | Design (UI/Avatar) | P2 | ✅ **DONE — `5180b0f`, David-confirmed live** | root cause found: `HeadCueActive` stuck ON, head obeying a ~0 brain cue instead of the mouse |

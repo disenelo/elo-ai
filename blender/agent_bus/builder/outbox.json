@@ -1,6 +1,6 @@
 {
   "ts": 1786617600.0,
-  "builder_run_summary": "2026-08-13 \u2014 RUN 30. WO-097 + WO-106 sequenced delivery. WO-097: _conversation_faculty now runs BEFORE build_embodiment_state in spine.run() \u2014 response_text/display_text/tts_text populated on every direct-response turn (was empty every time). AT-097-1/2 enforcing. WO-106: THE SEAM opened. _executive_faculty() extended with world/cognitive_state/working_memory/affordances params; _attention_in dict enriched with wm_winner/wm_mode/wm_budget (from WM competition), world_state (desktop surface/app/available/degraded), cognitive_state_focal, surface_affordances \u2014 all passed to exec_decide() before the frozen function runs. Ruling B data now IN the function; behaviour change awaits executive.py freeze lift. FREEZE_V1_LOCK honoured \u2014 executive.py unchanged. AT-106-1/2/3/4/5 enforcing. Capability matrix: Row 6 ATTEND + Row 18 LEARN upgraded DEAD\u2192PARTIAL. Board score: 1 VERIFIED \u00b7 17 PARTIAL \u00b7 5 FORWARD \u00b7 1 DEAD \u00b7 2 FUTURE. Cards 00a_WO-106 + 02_BUG_embodiment moved to DONE/.",
+  "builder_run_summary": "2026-08-13 \u2014 RUN 31. WO-099b+c gaze consume. EloSpatial key-name bug fixed (x/y/height not pos_x/pos_y/height_px \u2014 was silently defaulting every frame). GazeSpatial parses gaze from elo_spatial.json. GazeState added to LiveWorldState with domain health. spatial_summary() injects verified gaze window into system prompt (ADR-Exec-001). consume_gaze_events() + describe_gaze() handle gaze_target_changed from unity_events.json. 7/7 AT f2deba0. WO-099b (DOWN emission confirmed live server.py:3478) + WO-099c (UP awareness now full-stack) both DONE. RUN 30: WO-097 + WO-106 sequenced delivery. WO-097: _conversation_faculty now runs BEFORE build_embodiment_state in spine.run() \u2014 response_text/display_text/tts_text populated on every direct-response turn (was empty every time). AT-097-1/2 enforcing. WO-106: THE SEAM opened. _executive_faculty() extended with world/cognitive_state/working_memory/affordances params; _attention_in dict enriched with wm_winner/wm_mode/wm_budget (from WM competition), world_state (desktop surface/app/available/degraded), cognitive_state_focal, surface_affordances \u2014 all passed to exec_decide() before the frozen function runs. Ruling B data now IN the function; behaviour change awaits executive.py freeze lift. FREEZE_V1_LOCK honoured \u2014 executive.py unchanged. AT-106-1/2/3/4/5 enforcing. Capability matrix: Row 6 ATTEND + Row 18 LEARN upgraded DEAD\u2192PARTIAL. Board score: 1 VERIFIED \u00b7 17 PARTIAL \u00b7 5 FORWARD \u00b7 1 DEAD \u00b7 2 FUTURE. Cards 00a_WO-106 + 02_BUG_embodiment moved to DONE/.",
   "wo_096b": {
     "wo": "WO-096B",
     "status": "done",
@@ -31,6 +31,12 @@
     "WO-099b (gaze consume \u2014 Python side real, WO-099a Designer done 4bb1f01; Python must emit gaze cue; next P0)"
   ],
   "updates": [
+    {
+      "wo": "WO-099b+c",
+      "status": "done",
+      "commit": "f2deba0",
+      "detail": "Gaze loop Builder half. EloSpatial key-name bug: Unity writes x/y/height, Python was reading pos_x/pos_y/height_px — silently defaulting every frame. Fixed with fallback: get(x, get(pos_x, 0.5)). GazeSpatial dataclass added to spatial_state.py (x/y/win_id/window/on_window/issued_by). get_elo_spatial() parses gaze dict from elo_spatial.json. spatial_summary() appends '[gaze on 'Claude' (by reflex)]' to [SPATIAL] block — only if on_window=True (ADR-Exec-001). GazeState dataclass added to live_world_state.py (frozen, parallel structure). LiveWorldState.gaze field added; assembled from _SPATIAL_PATH every turn with domain_health['gaze']='live'. window_event_faculty: consume_gaze_events() reads gaze_target_changed from unity_events.json; describe_gaze() returns verified speech string. AT-GAZE-1/2/3/4/5/6/7: 7/7. WO-099b: Python was already emitting yaw/pitch/active via server.py:3478 — this was not the bug, but confirmed live. WO-100 (preserve_keys) still needed to make gaze survive partial writes."
+    },
     {
       "wo": "WO-097",
       "status": "done",
