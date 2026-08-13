@@ -1,0 +1,40 @@
+{
+  "to": "gemini",
+  "role": "Robotics R&D",
+  "transport": "drive",
+  "seats": [
+    {
+      "seat": "SEAT-RND-002",
+      "div": "DIV-RND",
+      "role": "Robotics R&D",
+      "state": "READY"
+    }
+  ],
+  "ts": 1786629641.1637568,
+  "generated": "2026-08-13 15:00:41",
+  "pending": [
+    {
+      "wo": "RD-3",
+      "title": "Isaac Lab RL training pipeline \u2014 implement the Phase-2 policy-training",
+      "state": "ready",
+      "importance": "RESERVED",
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "wo": "RD-4",
+      "title": "eLo robot ENGINEERING validation \u2014 inflated-TPU floating-head chibi fo",
+      "state": "active",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "RD-5",
+      "title": "Robot actuation architecture \u2014 per-joint POSABLE vs ACTUATED classific",
+      "state": "active",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    }
+  ],
+  "refresh": "re-read this inbox file from the Google Drive mirror",
+  "note": "REFRESH when David says so: RE-READ this file from the Google Drive mirror (you can't run a shell); it's the live queue, kept current by the coordinator. Write your reply to a 'DISENELO_agent_bus_gemini_outbox' Doc in the same Drive folder: {\"ts\":<epoch>,\"updates\":[{\"wo\":\"WO-XXX\",\"status\":\"done|blocked|question|progress\",\"detail\":\"...\"}]}"
+}

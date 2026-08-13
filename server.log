@@ -1,0 +1,15 @@
+[runtime.backend_router] WARNING: OpenAI failed, trying Gemini: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+[runtime.backend_router] WARNING: Gemini failed, trying Claude: Client error '429 Too Many Requests' for url 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDR7w-d0HeMm9zteQo_Wd14lEoxgE1BDqU'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+[runtime.backend_router] WARNING: Groq failed, trying Ollama: Error code: 413 - {'error': {'message': 'Request too large for model `llama-3.1-8b-instant` in organization `org_01kts19mt0fn9vgptzpe10b4s1` service tier `on_demand` on tokens per minute (TPM): Limit 6000, Requested 11977, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+[eLo server] session 359 started
+[eLo server] ambient engine started
+[eLo vision loop] started
+[eLo server] listening on http://localhost:5050
+[eLo server] POST /chat  {"text": "hello"}
+[eLo server] GET  /ping  →  {"ok": true}
+
+[eLo voice] ElevenLabs TTS error 400: {"detail":{"type":"validation_error","code":"invalid_parameters","message":"Model 'eleven_turbo_v2_5' does not support l
+[truth-sync] compressed turn 0 → GN·CV·2607·5
+[eLo] backend=mock action=connect

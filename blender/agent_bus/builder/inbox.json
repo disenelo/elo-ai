@@ -1,0 +1,243 @@
+{
+  "to": "builder",
+  "role": "Builder (Python/runtime)",
+  "transport": "repo",
+  "seats": [
+    {
+      "seat": "SEAT-ENG-001",
+      "div": "DIV-ENG",
+      "role": "Python Builder",
+      "state": "READY"
+    }
+  ],
+  "ts": 1786629641.1605973,
+  "generated": "2026-08-13 15:00:41",
+  "pending": [
+    {
+      "wo": "\u2605 MILESTONE: eLo Presentable v1 \u2014 BUILD-READY DEFAULTS (David 2026-08-03)",
+      "title": "THE gate before CAD + reinforcement learning. Defaults first \u2014 RL/phys",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "\u2605 EPIC: The Moment \u2014 Embodied Cognition assembly (GREENLIT, David 2026-08-05)",
+      "title": "Assemble ONE continuously-updated cognitive state (self\u00b7body\u00b7world\u00b7aff",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT-1",
+      "title": "Plushies \u2192 Robot: shared character-model export (soft form \u2192 TPU shell",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-024",
+      "title": "Desktop-as-world \u2014 eLo walks BEHIND windows (z-order occlusion; window",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-032",
+      "title": "\u21a9 REOPENED (David live 2026-08-03) \u2014 Part C complete (Builder 2026-08-",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-034",
+      "title": "App doesn't fire the reply \u2014 CLI works, app doesn't (eLo OS \u2194 UI were ",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "EPIC: Executive Authority \u2014 RATIFIED (ADR-Exec-001 Verified Authority + ADR-Exec-002 Single Cognitive Truth = One Brain at runtime) \u00b7 \u25b6 DISPATCHED \u2192 Builder 2026-08-03 (WO-041/042/043 P0, WO-044 P1)",
+      "title": "Canon: the Executive reports VERIFIED reality, never intent. Order: Ob",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT7-HEAT",
+      "title": "One Brain \u2014 live cognitive heat-map / observability layer (David spec ",
+      "state": "in_review",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "INT-8",
+      "title": "Drag-drop files onto the eLo avatar \u2192 eLo reads/reviews",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-062",
+      "title": "Expressiveness layer \u2014 micro-expressions + squash-and-stretch (David 2",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-049 (EPIC)",
+      "title": "eLo SPATIAL EMBODIMENT \u2014 the desktop as a world eLo inhabits (CA-refra",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "049-B1",
+      "title": "Spatial Faculty v1 (world model: window graph \u00b7 affordances \u00b7 body-fit",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "049-B2",
+      "title": "Continuity wiring (Memory+Emotion+Attention+Temporal \u2192 movement: favou",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "049-B3",
+      "title": "Imagination + inner life (Creative-Imagination overlay \u00b7 home/worlds-w",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "RD-CAD",
+      "title": "eLo Robot head/neck safety-aware CAD contract (2-DOF Bowden, base serv",
+      "state": "ready",
+      "importance": "RESERVED",
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "wo": "WO-CANON-XX",
+      "title": "Cognitive-tier selector + value-gated escalation",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XXI",
+      "title": "Narrative Identity: autobiography journal + guard",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XXII",
+      "title": "Faculty Genome descriptor + registry",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XXIII",
+      "title": "Security & Trust: gates + define LG-2",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XXVI",
+      "title": "Creative Intelligence: domain generators",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XXVIII",
+      "title": "Adaptive Learning / RL Faculty (ADR-Exec-005)",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-VII",
+      "title": "Build Volume VII Executive Cortex \u2014 close Ruling C (move the `decide()",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XIII",
+      "title": "Build Volume XIII Spatial Faculty \u2014 `faculties/spatial/` owns reachabi",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XI",
+      "title": "Build Volume XI Motor Cortex \u2014 formalise the DOWN command / UP ACK con",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-097",
+      "title": "LIVE BUG: EmbodimentState publishes EMPTY \u2014 `build_embodiment_state`:5",
+      "state": "active",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-IV",
+      "title": "Build Volume IV \u2014 the Cognitive Spine. Canonised turn order becomes en",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-III",
+      "title": "Build Volume III \u2014 System Architecture. Formalise the four runtime con",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XIV",
+      "title": "Build Volume XIV \u2014 Plugin Architecture. Reconcile the TWO capability r",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XVII",
+      "title": "Build Volume XVII \u2014 Reflection Engine. Growth metrics + improvement cy",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XVIII",
+      "title": "Build Volume XVIII \u2014 Self-Evolution. Capability/faculty versioning; AD",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-I",
+      "title": "Build Volume I \u2014 Philosophy. Retire \"the user\" framing; eLo's person i",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-II",
+      "title": "Build Volume II \u2014 Cognitive Principles. Epistemic tiers as reasoning d",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    }
+  ],
+  "refresh": "python3 -m company_runtime.agent_refresh builder",
+  "note": "REFRESH when David says so: run  python3 -m company_runtime.agent_refresh builder  \u2014 it re-pulls the live board + shows what changed since you last looked. Then reply into outbox.json: {\"ts\":<epoch>,\"updates\":[{\"wo\":\"WO-XXX\",\"status\":\"done|blocked|question|progress\",\"detail\":\"...\"}]}"
+}

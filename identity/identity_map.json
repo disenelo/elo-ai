@@ -1,11 +1,104 @@
 {
   "version": 1,
-  "pattern_log": [],
-  "sessions_since_update": 0,
+  "pattern_log": [
+    {
+      "topic": "avatar",
+      "tone": "neutral",
+      "turn": 0
+    },
+    {
+      "topic": "avatar",
+      "tone": "neutral",
+      "turn": 1
+    },
+    {
+      "topic": "concept",
+      "tone": "tight",
+      "turn": 0
+    },
+    {
+      "topic": "concept",
+      "tone": "neutral",
+      "turn": 0
+    },
+    {
+      "topic": "narrative",
+      "tone": "neutral",
+      "turn": 1
+    },
+    {
+      "topic": "narrative",
+      "tone": "neutral",
+      "turn": 2
+    },
+    {
+      "topic": "narrative",
+      "tone": "neutral",
+      "turn": 3
+    },
+    {
+      "topic": "narrative",
+      "tone": "neutral",
+      "turn": 4
+    },
+    {
+      "topic": "avatar",
+      "tone": "neutral",
+      "turn": 5
+    },
+    {
+      "topic": "avatar",
+      "tone": "neutral",
+      "turn": 0
+    },
+    {
+      "topic": "systems",
+      "tone": "neutral",
+      "turn": 1
+    },
+    {
+      "topic": "narrative",
+      "tone": "neutral",
+      "turn": 0
+    },
+    {
+      "topic": "avatar",
+      "tone": "neutral",
+      "turn": 0
+    },
+    {
+      "topic": "concept",
+      "tone": "neutral",
+      "turn": 1
+    },
+    {
+      "topic": "narrative",
+      "tone": "neutral",
+      "turn": 0
+    },
+    {
+      "topic": "systems",
+      "tone": "neutral",
+      "turn": 0
+    },
+    {
+      "topic": "narrative",
+      "tone": "neutral",
+      "turn": 1
+    }
+  ],
+  "sessions_since_update": 8,
   "about_user": {
     "opens_up_on": [],
-    "tightens_on": [],
-    "keeps_returning_to": [],
+    "tightens_on": [
+      "concept"
+    ],
+    "keeps_returning_to": [
+      "concept",
+      "narrative",
+      "avatar",
+      "systems"
+    ],
     "current_phase": "building"
   }
 }

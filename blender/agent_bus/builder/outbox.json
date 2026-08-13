@@ -1,7 +1,13 @@
 {
   "ts": 1786589950.637814,
-  "builder_run_summary": "2026-08-13 \u2014 RUN 25. WO-094 (Builder half): 38676e8 5/5. WO-095: 0a202f0 10/10. WO-APPROVAL-MEMORY: c157d36 5/5. Approved WOs now close and never resurface.",
+  "builder_run_summary": "2026-08-13 \u2014 RUN 26. WO-096: 08edd9d 5/5. Desktop perception fixed \u2014 eLo now sees the screen or says he can't.",
   "updates": [
+    {
+      "wo": "WO-096",
+      "status": "done",
+      "commit": "08edd9d",
+      "detail": "Desktop perception silently dead \u2014 fixed. Both live_world_state.py and perception_faculty.py imported get_active_window (nonexistent); ImportError swallowed by bare except; desktop domain returned absent every turn with no trace. Fix: both call sites now use get() and access .app/.title (dataclass attrs, not dict). Bare excepts replaced with logged warnings + explicit health error state. Blender state bare excepts -> debug log. 5/5 AT test_wo096_desktop_perception.py: AT-1 (desktop domain populated), AT-2 (both call sites use get()), AT-3 (broken source logs error, assembly continues), AT-4 (perceive_from_live_state reads .app/.title), AT-5 (py_compile clean)."
+    },
     {
       "wo": "WO-APPROVAL-MEMORY",
       "status": "done",

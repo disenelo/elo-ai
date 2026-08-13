@@ -1,0 +1,10 @@
+{
+  "ts": 1786038531.0442939,
+  "updates": [
+    {
+      "wo": "GM-2b",
+      "status": "progress",
+      "detail": "ROOT CAUSE FOUND + FIX LANDED (code, no bridge). Proof chain: Walk's only outgoing transitions = →Jump (needs jump) + →Run (IsSprinting==true, HasExitTime=0, unmuted, no competitor) → transition is provably clean → therefore Animator IsSprinting was FALSE when stuck in Walk (b). Drive bug: PlayerController:276 `IsSprinting = running && moveX != 0f` counts ONLY horizontal (A/D); moving at run speed in DEPTH (W/S, moveX==0) left IsSprinting false → Walk cycle while gliding fast = exactly (b). FIX: `IsSprinting = running && (moveX != 0f || moveY != 0f)` — sprint on any-direction movement. TEST: focus Unity (recompile) → Play → run (esp. W/S) → Run should now fire. If David runs A/D and it STILL fails, next lever = the IsSprinting dual-write (OnSprint:847 vs :276) — 1 more line."
+    }
+  ]
+}

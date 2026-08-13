@@ -1,0 +1,110 @@
+{
+  "to": "game",
+  "role": "Game (Unity)",
+  "transport": "repo",
+  "seats": [
+    {
+      "seat": "SEAT-ENG-005",
+      "div": "DIV-ENG",
+      "role": "Game",
+      "state": "WORKING"
+    }
+  ],
+  "ts": 1786629641.163099,
+  "generated": "2026-08-13 15:00:41",
+  "pending": [
+    {
+      "wo": "INT-9",
+      "title": "3D file viewer \u2014 enable GLB/GLTF runtime loader (drop a 3D model \u2192 eLo",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WAVE\u2192GAME",
+      "title": "Reuse the wave gesture in eLo-Planet (David 2026-08-03) \u2014 `ArmWave.cs`",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-049 (EPIC)",
+      "title": "eLo SPATIAL EMBODIMENT \u2014 the desktop as a world eLo inhabits (CA-refra",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "049-A",
+      "title": "Spatial Embodiment \u2014 Nav foundation + moveset (Track A)",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "GM-2",
+      "title": "eLo_v2 rig + arms/animations \u2014 the transition's core; broken into the ",
+      "state": "active",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "GM-2a",
+      "title": "Swim-lean + head in eLo_v2 \u2014 carry the swim-lean animation across; the",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "GM-2b",
+      "title": "Run \u2192 gun-fire blend \u2014 blend the hands + run animations into the gun-f",
+      "state": "active",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "GM-2c",
+      "title": "Arm + gun positioning \u2014 place/align the arms and weapons (sockets, hol",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "GM-2d",
+      "title": "Backpack \u2014 model/attach a backpack accessory on eLo_v2",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "GM-A8",
+      "title": "Duplication sweep \u2014 verify Vehicles/Weapons/Pickups/Cameras reference ",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "GM-3",
+      "title": "First playable invasion stage \u2014 *assemble* from existing parts (6-weap",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "GM-4",
+      "title": "FPS-style aim \u2014 arms follow cursor during 2.5D traversal (IK vs proced",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "GM-punch",
+      "title": "\u26a0\ufe0f polish/test punch-list (banana-grenade test \u00b7 water VFX/buoyancy tu",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    }
+  ],
+  "refresh": "python3 -m company_runtime.agent_refresh game",
+  "note": "REFRESH when David says so: run  python3 -m company_runtime.agent_refresh game  \u2014 it re-pulls the live board + shows what changed since you last looked. Then reply into outbox.json: {\"ts\":<epoch>,\"updates\":[{\"wo\":\"WO-XXX\",\"status\":\"done|blocked|question|progress\",\"detail\":\"...\"}]}"
+}

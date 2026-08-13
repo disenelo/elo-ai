@@ -79,7 +79,10 @@ except Exception as e:
 # message; the guard on the message itself is "if _bh_degraded".
 try:
     _src = open("server.py", encoding="utf-8").read()
-    _idx = _src.find("Can't reach my thinking")
+    # Use "right now" suffix — unique to the code line; the guard comment above uses the
+    # shorter form "Can't reach my thinking" without "right now", so find() was hitting
+    # the comment (line 2703) instead of the guarded code (line 3011).
+    _idx = _src.find("Can't reach my thinking right now")
     if _idx >= 0:
         _window = _src[max(0, _idx - 600):_idx + 100]
         if "_bh_degraded" in _window and "backend_used" in _window:

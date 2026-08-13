@@ -1,0 +1,98 @@
+{
+  "chatgpt": {
+    "role": "Chief Architect / Creative / Biz\u00b7Legal\u00b7Marketing (Codex)",
+    "transport": "local",
+    "match": [
+      "chatgpt",
+      "business ops",
+      "finance",
+      "legal",
+      "marketing",
+      "product safety",
+      "creative"
+    ],
+    "seats": [
+      {
+        "seat": "SEAT-EXE-003",
+        "div": "DIV-ARCH",
+        "role": "Chief Architect",
+        "state": "REVIEW"
+      },
+      {
+        "seat": "SEAT-CRE-001",
+        "div": "DIV-CRE",
+        "role": "Creative Partner",
+        "state": "READY"
+      },
+      {
+        "seat": "SEAT-MKT-002",
+        "div": "DIV-MKT",
+        "role": "Social Studio",
+        "state": "READY"
+      }
+    ]
+  },
+  "builder": {
+    "role": "Builder (Python/runtime)",
+    "transport": "repo",
+    "match": [
+      "builder"
+    ],
+    "seats": [
+      {
+        "seat": "SEAT-ENG-001",
+        "div": "DIV-ENG",
+        "role": "Python Builder",
+        "state": "READY"
+      }
+    ]
+  },
+  "design": {
+    "role": "UI/Avatar \u00b7 One Brain (Unity)",
+    "transport": "repo",
+    "match": [
+      "ui/avatar",
+      "design",
+      "designer"
+    ],
+    "seats": [
+      {
+        "seat": "SEAT-ENG-004",
+        "div": "DIV-ENG",
+        "role": "Unity / Avatar",
+        "state": "WORKING"
+      }
+    ]
+  },
+  "game": {
+    "role": "Game (Unity)",
+    "transport": "repo",
+    "match": [
+      "game"
+    ],
+    "seats": [
+      {
+        "seat": "SEAT-ENG-005",
+        "div": "DIV-ENG",
+        "role": "Game",
+        "state": "WORKING"
+      }
+    ]
+  },
+  "gemini": {
+    "role": "Robotics R&D",
+    "transport": "drive",
+    "match": [
+      "gemini",
+      "r&d"
+    ],
+    "seats": [
+      {
+        "seat": "SEAT-RND-002",
+        "div": "DIV-RND",
+        "role": "Robotics R&D",
+        "state": "READY"
+      }
+    ]
+  }
+}

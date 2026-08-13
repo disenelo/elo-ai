@@ -1,0 +1,124 @@
+{
+  "ts": 1785765438.8860228,
+  "pending": [
+    {
+      "wo": "INT-1",
+      "title": "Plushies \u2192 Robot: shared character-model export (soft form \u2192 TPU shell",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT-4",
+      "title": "CompositionDesigner \u2192 Marketing: social/Kickstarter/exhibition export ",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT-5",
+      "title": "Sketchbook/CompositionDesigner \u2192 Book: art-to-page pipeline",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT-6b",
+      "title": "Retargeter/Bridge \u2192 DesktopBuddy: material sync",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-024",
+      "title": "Desktop-as-world \u2014 eLo walks BEHIND windows (z-order occlusion; window",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "INT7-M6-TUNE",
+      "title": "One Brain \u2014 M6 tuning: strengthen the inward tighten (asymmetric \u2014 con",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT7-HEAT",
+      "title": "One Brain \u2014 live cognitive heat-map / observability layer (David spec ",
+      "state": "in_review",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT-8",
+      "title": "Drag-drop files onto the eLo avatar \u2192 eLo reads/reviews",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-028",
+      "title": "eLo Presence avatar \u2014 fix the wave gesture + arm rotation (blocks avat",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-2",
+      "title": "Lock signature silhouette system",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-3",
+      "title": "3\u20135 fashion prototypes",
+      "state": "blocked",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-4",
+      "title": "First footwear prototype (upper pattern + last/sole 3D)",
+      "state": "blocked",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-5",
+      "title": "First jewellery drop (sculpt \u2192 print \u2192 cast)",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-6",
+      "title": "Tee mockups (fast win)",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-7",
+      "title": "Mini collection + lookbook",
+      "state": "blocked",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "RD-CAD",
+      "title": "eLo Robot head/neck safety-aware CAD contract (2-DOF Bowden, base serv",
+      "state": "ready",
+      "importance": "RESERVED",
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "wo": "EA2-2B",
+      "title": "Company Brain \u2014 author the Figma frames (One Brain look) \u2192 David revie",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "conversation_action": "reflect",
+  "tts_text": "I've mostly lived on the desktop so far, but it's nice to sit with you too.",
+  "sentence_count": 1,
+  "backend_used": "ollama",
+  "tts_max_chars": 400,
+  "bubble_count": 1,
+  "_ts": 1786607926.385001
+}

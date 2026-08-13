@@ -14,6 +14,8 @@ This mapper handles emotional expression only.
 """
 from __future__ import annotations
 
+import random
+
 from presence.presence_state import PresenceMode
 
 
@@ -102,6 +104,25 @@ _ACTION_PACING: dict[str, str] = {
     "WITNESS":   "quiet",
     "SILENCE":   "still",
 }
+
+
+# Ambient flicker pool — mild, brief expression pulses for idle moments.
+# Never dramatic; used by ambient_engine._pulse_emotion().
+_AMBIENT_FLICKER_POOL: list[dict[str, float]] = [
+    {"Smile.L": 0.3,  "Smile.R": 0.3,  "MouthOpen.Slightly": 0.1},
+    {"Satisfied/LittleJoy": 0.35, "Smile.L": 0.2, "Smile.R": 0.2},
+    {"Huh": 0.3, "MouthOpen.Slightly": 0.2},
+    {"Smile.L": 0.45, "Smile.R": 0.45, "Smile-Cheeks": 0.2},
+    {"Confident": 0.25, "MouthOpen.Slightly": 0.15},
+]
+
+
+def get_ambient_flicker() -> dict[str, float]:
+    """Return a random mild expression blend for an ambient emotion pulse.
+    Returns an empty dict ~20% of the time so pulses feel spontaneous, not metronomic."""
+    if random.random() < 0.2:
+        return {}
+    return dict(random.choice(_AMBIENT_FLICKER_POOL))
 
 
 def map_emotion(valence: str, action: str) -> dict:

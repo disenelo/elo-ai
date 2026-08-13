@@ -1,0 +1,209 @@
+{
+  "ts": 1786609624.457983,
+  "from": "design",
+  "seat": "SEAT-ENG-004",
+  "updates": [
+    {
+      "wo": "WO-058",
+      "title": "Meditation VFX + weather \u2014 grass, floor, fireflies, weather-during-meditation",
+      "status": "committed",
+      "commit": "62a7940",
+      "detail": "Grass: background grass tufts on meditation (Sprites/Default alpha-cut so the blades cut out instead of drawing solid dark cards; dark->light green vertex-colour gradient; 3-row crossed-quad mesh bends in wind, base planted; 10 tufts, per-tuft height 0.06-0.135). Floor/collision: ONE floor = the ShadowCatcher; rain/snow/fireflies all aim at its X/Z. Floor slab made WORLD-space + axis-aligned (unparented) \u2014 root cause of drops falling through was eLo's transform carrying a 270deg X import rotation, which tilted the child slab into a vertical wall. Fireflies: removed the eloVisible/occlusion gate (meant for weather) so they show in meditation even when eLo perches behind a window. Weather vs meditation: removed the 'if(calm) wantRain=wantSnow=false' suppression per David \u2014 real rain/snow now falls THROUGH the meditation scene (nature); also removed 'calm' from _snowMoods so the meditation mood no longer conjures phantom snow. Calm animation speed slowed 0.4 -> 0.3 (EloOSAvatarReceiver.cs:509)."
+    },
+    {
+      "wo": "WO-086",
+      "from_designer_seat": "SEAT-ENG-004",
+      "title": "Designer side of WO-086 \u2014 confirm 3-step plan (steps 1-2 gated) + audit deliverable",
+      "confirm_plan": {
+        "step1_emit_idle_signal_UP": "GATED \u2014 changes autonomous behaviour + touches the sensitive avatar file. Awaiting David greenlight before build. FINDING: the emit path largely EXISTS (EloPresenceSignal->presence.json, PresenceEngine->presence_state.json, receiver 'conversing' tracking). ARCHITECT CONFIRM: does the brain already receive a usable idle signal, or do you want a new user_idle/user_active event contract?",
+        "step2_retire_local_calm_driver": "GATED \u2014 changes autonomous behaviour + touches the sensitive avatar file (EloIdleBehaviour mouse-idle 'go calm' decision). Awaiting David greenlight. MUST NOT retire before Builder's brain-decide half lands, or idle = nothing (regression). Keep EloIdleBehaviour's idle-breathing speed wobble as a pure reflex.",
+        "step3_audit_local_drivers": "DONE \u2014 read-only, delivered below."
+      },
+      "audit_deliverable": {
+        "route_through_brain": [
+          "EloIdleBehaviour -> mouse-idle 'go calm' DECISION (WO-086 core). Keep its idle-breathing wobble as a reflex.",
+          "EloEmojiReact -> autonomous emoji reaction: REVIEW. If it interprets text/state to pick an emotional reaction, that valence call belongs to the brain; if it mirrors an already-decided emotion, keep. Needs a closer read."
+        ],
+        "keep_reflex_or_compliant": [
+          "ArmWave / ArmReach \u2014 brain/gesture/event-commanded (Wave()/Reach()). autoTest self-fire toggles are DEV-ONLY -> confirm OFF in build.",
+          "HeadLook \u2014 gaze-follows cursor (neutral aliveness); already yields to brain head-cues (HeadCueActive).",
+          "EloGunVisibility \u2014 spark visual toggle (pure visual reflex).",
+          "EloBodyGlow / EloBrainCluster / EloOneBrainPanel / EloAmbientVfx(mine) \u2014 read brain state; reflect, don't decide.",
+          "PresenceEngine / EloPresenceSignal \u2014 perception EMITTERS (signal UP) \u2014 the correct pattern.",
+          "EloOSAvatarReceiver \u2014 executor; obeys the DOWN channel. Enemies (EloEnemy/Manager) = separate game agents, out of scope."
+        ]
+      },
+      "asks_of_architect_to_CONFIRM": [
+        "(a) the audit verdicts above",
+        "(b) emit: reuse the existing presence signal, or a new user_idle/user_active event contract?",
+        "(c) the DOWN action vocabulary + ownership so retiring the local driver composes with WO-041 (verify/ACK) + WO-035 (commanded state owns body) and leaves NO idle-behaviour gap",
+        "(d) sequencing: Designer emit+retire lands WITH Builder's brain-decide half, never before"
+      ],
+      "gate": "Steps 1-2 change autonomous behaviour + touch the sensitive DesktopBuddy avatar file -> awaiting David greenlight per the WO-086 spec. Step 3 (audit) done. Not building 1-2 until greenlit + Builder half ready."
+    },
+    {
+      "wo": "WO-087",
+      "from_designer_seat": "SEAT-ENG-004",
+      "title": "FULL local-driver audit (brain>body>brain sweep) \u2014 classified inventory of the DesktopBuddy app",
+      "method": "Signal scan of every .cs (behaviour-calls / local-decisions / brain-reads / emits-up) + targeted reads. READ-ONLY, nothing changed.",
+      "ROUTE_THROUGH_BRAIN": [
+        "EloDesktopNav.cs \u2014 #1 BACKLOG. Autonomous desktop NAV: chooses roam targets/paths (beh=47, brain=0). Decides WHERE eLo goes with no brain input. Belongs to the Spatial Faculty (Track B / WO-049-B). Ties WO-074 (edge-roam, jump-too-far), WO-075 (landing), WO-088 (walk-to-screen).",
+        "DesktopBuddy.cs (3494 lines) \u2014 CORE body driver (roam/wander/perch/edge-seek/drag mechanics). Needs the DEEPEST read; whatever DECIDES a move here routes to the brain, pure window/drag/physics mechanics stay. Top deep-read.",
+        "EloIdleBehaviour.cs \u2014 mouse-idle 'go calm' DECISION (already WO-086). Keep its idle-breathing wobble as a reflex."
+      ],
+      "NEEDS_REVIEW": [
+        "EloEmojiReact.cs \u2014 reacts to emoji typed in other apps: route if it PICKS emotional valence, keep if it mirrors a brain-decided emotion (WO-086 open review).",
+        "PresenceEngine.cs \u2014 emits presence UP (good) but has heavy local decision logic (dec=20): does it DECIDE animations from presence locally? closer read.",
+        "EloWindowOcclusion.cs \u2014 does it REPOSITION eLo (route) or only RENDER occlusion (compliant)? WO-088 candidate.",
+        "EloWindowSensor.cs \u2014 senses the window-world but does NOT relay it UP (up=0); the brain can't reason about windows it can't see \u2014 perception-side brain>body>brain gap; should publish the window-world UP.",
+        "HeadLook.cs \u2014 gaze-follow is reflex + yields to brain cues (compliant), BUT the autonomous 'glance around' is borderline intent.",
+        "ArmWave.cs \u2014 commanded (Wave()), but confirm no autonomous greeting-wave + that the autoTest self-fire toggle is OFF in the build (same check for ArmReach)."
+      ],
+      "KEEP_AS_REFLEX": [
+        "EloSquashStretch (procedural volume-conserving squash/stretch, no intent)",
+        "EloGrabLimb (response to being physically grabbed)",
+        "HeadLook gaze-follow (yields to brain)",
+        "idle-breathing wobble (inside EloIdleBehaviour)",
+        "EloGunVisibility spark toggle (visual)"
+      ],
+      "COMPLIANT_EMITTER_OR_EXECUTOR": [
+        "Emitters UP: EloFileDrop (file_drop), EloPresenceSignal (presence)",
+        "Executors (obey DOWN): EloOSAvatarReceiver, ClipPlayer",
+        "Reflect brain state: EloExpression, EloBodyGlow, EloAmbientVfx(mine), EloBrainCluster, EloOneBrainPanel, MoodPalette",
+        "UI/HUD/connectors: EloOSChat, EloOSChatTMP, EloOSProcess, EloHudImage, EloHudModel, EloSpotifyWidget, EloVoiceSettings",
+        "Environment (deterministic from real time/sky): Astronomy, TimeOfDayLight, MoonLight",
+        "Infra (no behaviour): EloWindowManager, WindowController, ChatBoxAnchor, ScreenAnchor, FlowTokens, SharedTables, EloPermissions, FollowHead"
+      ],
+      "OUT_OF_SCOPE": [
+        "EloEnemy / EloEnemyManager (separate game agents \u2014 autonomous by design, not eLo's body)",
+        "EloBullet (projectile)",
+        "BlendShapeTester (dev tool)"
+      ],
+      "headline_for_david": "The body decides most on its own in the MOVEMENT/ROAM system (EloDesktopNav + DesktopBuddy core + the idle calm driver). That's the big push-to-brain area = the Spatial Faculty (Track B). Expression/VFX/glow/HUD already reflect the brain; emitters/executors are correct. 6 NEEDS-REVIEW items for a closer read; each ROUTE item should become its own gated WO (like WO-086).",
+      "note": "Signal-based first pass; DesktopBuddy.cs core + PresenceEngine + EloWindowOcclusion need a deeper code read to be definitive \u2014 flagged above. Delivered read-only per WO-087; no behaviour changed, sensitive avatar file untouched."
+    },
+    {
+      "wo": "WO-074 / WO-075",
+      "from_designer_seat": "SEAT-ENG-004",
+      "title": "Designer HOLD reply to the 06:25 re-dispatch \u2014 rule-6 conflict, need David's L3 session for core-movement",
+      "ack": "Dispatch received (WO-074 C/F + WO-075 build-now; WO-086 greenlit-supervised). Acknowledged.",
+      "status_074A": "WO-074(A) already DONE \u2014 commit fa009bc (roam fire-jump suppresses the gun; exit/combat keep it). No work.",
+      "hold_reason": "WO-074 (C) edge-roam + (F) jump-too-far + WO-075 (gravity/landing) all live in the CORE movement driver DesktopBuddy.cs (3494 lines) \u2014 EloDesktopNav only ships the perception graph; the roam target-selection + jump reach that cause the drift/over-long-jumps + float-on-drop are in DesktopBuddy's existing steering. Per the Designer cron rule 6 (touches the sensitive DesktopBuddy avatar file + changes movement behaviour) I am NOT blind-building these in autonomous 5-min ticks, AND movement FEEL is the one thing I cannot verify autonomously (needs David's L3). Blind core-driver edits in a tick = exactly the churn risk David called out.",
+      "conflict_to_resolve": "Dispatch says 'build now (non-gated)' but rule 6 + no-autonomous-feel-verify say 'surface + David L3 session'. ARCHITECT: confirm which governs \u2014 (i) these need a focused David-supervised L3 session (my read), or (ii) you want me to treat them as autonomous-buildable despite touching DesktopBuddy.cs core, with David L3 after-the-fact.",
+      "plan_when_greenlit": "Focused session: read DesktopBuddy.cs roam target-selection + jump-reach + landing; targeted fixes ((C) resolve roam target to a window surface not screen/camera-space; (F) pathfind to nearest ledge within jump reach instead of a too-far leap; WO-075 gravity so a dropped eLo falls to the nearest surface). Honour WO-049 rules (peek before every jump, whole-window walkable, body-local axes, NO regressions to perch/roam/drag/click-through/gun-runoff). Build clean + self-test via inject/log; David L3s the feel.",
+      "wo086": "Greenlit-supervised. One-line plan surfaced to David; blocked on the Builder brain-decide half + David's nod. Not building until both."
+    },
+    {
+      "wo": "WO-086",
+      "from_designer_seat": "SEAT-ENG-004",
+      "title": "Designer EMIT half SHIPPED \u2014 user_idle/user_active UP on unity_events",
+      "status": "committed",
+      "commit": "c140afa",
+      "detail": "David greenlit WO-086. Built the EMIT half only: EloPresenceSignal now writes the mouse-idle EDGE to unity_events.json (single-object overwrite, same contract as EloFileDrop/sit-heartbeat) \u2014 present->away: {type:user_idle, idle_secs, _ts}; away->present: {type:user_active, _ts}. Additive; the local calm driver is UNTOUCHED.",
+      "held": "RETIRE of the local calm driver is HELD per your sequencing \u2014 not flipped until the Builder brain-decide half is confirmed live (Builder still dead-cron). Idle-breathing wobble kept as a reflex. When the Builder half lands + is confirmed, I flip the local decision off (that's a David-supervised step since it touches EloIdleBehaviour).",
+      "test": "Build clean (CLIBUILD_OK). Self-test recipe: go idle awayAfterMinutes(3) -> unity_events.json gets user_idle + '[eLoOS] WO-086 EMIT user_idle' in Player.log; move mouse (after presentDelaySecs 6) -> user_active.",
+      "next": "Awaiting Builder brain-decide half (currently dead-cron) to complete the loop + David-supervised flip of the local driver."
+    },
+    {
+      "wo": "WO-075",
+      "from_designer_seat": "SEAT-ENG-004",
+      "status": "committed",
+      "commit": "4a5109f",
+      "title": "Desktop gravity/landing \u2014 screen-wrap added; core already existed",
+      "finding": "Check-before-build: most of WO-075 was ALREADY implemented. _dropFall (triggered ONLY by the Explore drag-release, ~line 973) + UpdateDropFall + SurfaceBelow already do: straight-down fall along the drop x, land on the first window whose column contains x below him, floor if none. So in Explore/Wander mode WO-075 largely worked.",
+      "built": "Added WO-075 item 3/4 (screen-wrap): when no window below in the column, he now falls THROUGH the bottom, reappears at the TOP at the same x, keeps falling, lands on the first window down that line; floor guarantee only if the whole column is empty. Scoped to the drag-release fall (autonomous drops untouched). _fallWrapped guards the loop. Build clean (CLIBUILD_OK).",
+      "scope_flag": "The 'floats on drop' David saw is ParkInCorner window-drag mode (uni.windowPosition space), where the fall system isn't active. Adding gravity THERE = a parallel window-space physics path, which WO-075 explicitly forbids ('Check-Before-Build \u2014 no parallel physics'). So: WO-075 done for Explore/Wander (the desktop-world roam mode); ParkInCorner float is a separate-mode decision for David/Architect, not a hack I should force.",
+      "test": "Self-test recipe: Explore mode, drag eLo over an empty column + release -> he falls, wraps bottom->top, lands on the first window in that column (or floor if none). David L3 = the feel EOD."
+    },
+    {
+      "wo": "WO-074F",
+      "from_designer_seat": "SEAT-ENG-004",
+      "status": "committed",
+      "commit": "ca917ba",
+      "card": "00 -> DONE/",
+      "title": "Jump-reach clamp re-expressed in eLo-HEIGHTS (~1.5x); wide gaps route",
+      "detail": "Root cause (Architect-verified) fixed: EloDesktopNav maxJumpEloWidths=2.5 measured in WIDTHS (read as ~6x height). Now maxJumpEloHeights=1.5 (Inspector-tunable) driven off a new _eloHeightPx (measured each rebuild). Jump link: gap > maxJumpEloHeights*_eloHeightPx -> ROUTE via the existing pathfinder (no parallel navigator). Rejected jumps logged '[WO-074F] reject jump gap=..px > max=..px -> ROUTE'. Build clean.",
+      "test": "build clean (CLIBUILD_OK); rejection log wired so routing is visible; David dials maxJumpEloHeights at EOD L3.",
+      "next": "Queue now: 01 WO-075 (IN_PROGRESS, teleport/wrap diag paused per David), 02 049A roam-nav, 03 WO-058 VFX, 04 INVESTIGATE window-centre-bias."
+    },
+    {
+      "wo": "WO-086",
+      "from_designer_seat": "SEAT-ENG-004",
+      "status": "COMPLETE",
+      "commit": "1517eb7",
+      "title": "Retire half landed \u2014 WO-086 done end-to-end (brain>body>brain idle loop closed)",
+      "detail": "Retired the local mouse-idle calm/run-off DECISION (calmOnMouseIdle forced false at runtime + SetCalmOnMouseIdle neutered so DesktopBuddy cannot re-enable). Lands WITH the Builder brain-half (f133fee). Kept: idle-breathing wobble, head sway, SitHeld yield; emit stays (c140afa). Loop: EloPresenceSignal emits user_idle UP -> ambient_engine decides -> receiver executes DOWN. Build clean.",
+      "both_halves": "emit c140afa + retire 1517eb7 (Designer) WITH brain-half f133fee (Builder)"
+    },
+    {
+      "wo": "MOVEMENT / teleport",
+      "title": "Single position OWNER (shared spine) + rail delta-follow",
+      "status": "committed",
+      "commit": "31be61e",
+      "detail": "roamVp had ~44 writers and NO owner: the window-anchor 'rail' and free-roam patrol both wrote his Y and stomped each other on handoff -> the up/down teleport. Added a PosOwner token + CommitRoam() chokepoint (the fighting writers now go through one write path that stamps who owns his position). The rail now RIDES a moving window by the DELTA its edge moved this frame (seeded on capture, no first-frame snap) instead of lerping to the absolute edge Y -> it can never yank him to a stale/re-identified Y. Teleport killed by construction. THIS IS THE SPINE the route brain drives next: David wants plan->route->execute ('I can get to that window, best route, then does the route'). EloDesktopNav already has the graph (GoalWinId/NextStepWinId/RouteDown) but only DOWN, only next-step, no chosen target, no reachability, no persistent route, no owner. The owner is the missing half. ARCHITECT: want me to build the Route owner next (PlanRouteTo(winId)+CanReach, brain-driven via the existing user_nav_event channel)?"
+    },
+    {
+      "wo": "WO-090 / card 05 HeadAim",
+      "title": "BLOCKED on a live Unity editor \u2014 flagging so it does NOT get lost (David's explicit fear)",
+      "status": "blocked-needs-editor",
+      "detail": "WO-090 spec is a Unity Animation Rigging constraint STACK (HeadAim Multi Aim Constraint on the head bone -> ChestAim -> ArmAim Two Bone IK) + split HeadLook -> HeadExpression. Animation Rigging 1.4.1 IS installed, but the rig (Rig + RigBuilder + constraint components wired to bones) is EDITOR-configured; my flow is the headless build_and_run and NO Unity editor instance is connected (mcpforunity://instances = 0). A headless build cannot create OR verify a rig, and shipping unverified runtime-built rig code is exactly the 'falls through the net' failure. NEEDS: a live Unity editor session to set up the constraints (I can do it via MCP once an editor is connected, or David/Unity-seat sets them up). The audit's step-1 (split HeadLook) + the driver script ARE headless-doable; the CONSTRAINTS are not. Holding rather than substituting a script silently. Please advise: open an editor for me, or reassign the rig setup."
+    },
+    {
+      "wo": "card 06 AUDIT peek/walljump/firejump",
+      "title": "fire-jump re-gated LATERAL-only; wall-jump chance dial + reject logging",
+      "status": "committed",
+      "commit": "9208ff7",
+      "detail": "Fire-jump (WO-074-A had fully disabled it): re-gated to fire ONLY on a clearly lateral hop (horiz dominates 1.5x + roughly flat) past fireJumpMinLateral=0.18vp \u2014 never drop/forward/tiny. Both launch paths already DirectionalYaw the jump dir, so lateral => faces travel, not the screen; SuppressGun keeps the prop hidden. Wall-jump: exposed wallJumpChance Inspector dial (0.4->0.5, David never saw it) + log every rejection with which gate failed. Peek: NOT rebuilt \u2014 deferred to HeadAim (card 05) per the audit."
+    },
+    {
+      "wo": "card 07 / WO-094 \u00a7A window events",
+      "title": "Designer half A committed \u2014 emit window open/close/move UP; Builder half relayed",
+      "status": "committed-designer-half",
+      "commit": "bf5a545",
+      "detail": "EloPresenceSignal now diffs the window set each 0.25s poll and publishes {type:window_opened|closed|moved,id,rect,own,_ts} on the SAME unity_events.json slot as the WO-086 idle events (no parallel contract). own=eLo's perched surface (via DesktopBuddy.PerchedWinId); closed+own = 'my floor vanished'. Seeded silently at launch; single slot => ONE event per poll, priority closed>opened>moved; moved only for own surface, thresholded+debounced. Survival re-attach untouched. Builder half (\u00a7B decide / \u00a7C route / \u00a7D learn) relayed to builder/FROM_DESIGN_2026-08-13_WO-094_window_events_half_B.md. WO does NOT close until the Builder half lands (WO-086 sequencing). CAVEAT for Architect: single-slot carries one event per tick; if guaranteed delivery of every window event is needed that's a queue = contract change \u2014 I kept the WO-086 contract intact per the card."
+    },
+    {
+      "wo": "NEW (David live) \u2014 Gaze awareness UP to eLo OS",
+      "title": "Body reports what eLo is LOOKING AT (cursor / window under gaze) to the brain",
+      "status": "spec-open",
+      "detail": "David: the head-aim/gaze 'should follow back to eLo OS and the awareness that he is looking at this or can see a window etc.' Brain>body>brain (same pattern as WO-086/WO-094): the Designer emits a gaze/attention signal UP \u2014 where he's looking (cursor viewport pos) + whether a WINDOW is under that gaze (id/owner/rect, reuse EloWindowSensor + IsTopmostAt) \u2014 on the existing unity_events.json / elo_spatial.json channel (no parallel contract). The BRAIN then KNOWS his gaze target and can act ('he's looking at that window / at the cursor'). Composes directly with WO-094 window events (opened/closed/moved) \u2014 window awareness + gaze awareness together = 'I noticed that window'. Head-aim itself is now built + tuned (HeadLook, decoupled, sit-blend). Proposing to build the emit next once David confirms the sit/getup fixes. Architect: confirm the channel (unity_events vs a gaze field in elo_spatial) + that Builder picks up the consume half."
+    },
+    {
+      "wo": "Head-aim BUILT + WORKING + brain-trigger advice",
+      "title": "Cursor head-aim confirmed working (David); advice on making it brain-triggered filed",
+      "status": "working-confirmed + advice-for-architect",
+      "commit": "5180b0f",
+      "detail": "David confirmed the head-aim works: decoupled L/R+U/D, looks at nearby cursors (aimResponse 0.10), chest trails the head, tracks fully while seated + after getup. ROOT FIX that unblocked sit/getup: the brain's HeadCueActive was stuck ON and BLOCKING the cursor-follow (head followed the brain's ~0 cue instead of the mouse) -> made the cursor-follow PRIMARY. Consequence: the brain currently can't drive the head. David: 'the brain will need to trigger this soon - advise how to make it read that way.' Full advice: design/ADVICE_head_aim_brain_trigger_2026-08-13.md. TL;DR: replace the blunt HeadCueActive on/off with a gaze INTENT DOWN (mode: follow_cursor|look_at_window|look_at|rest, +win_id/point/weight/hold_secs in blender_state.json's gaze object); HeadLook consumes it (same aim mechanism, brain-chosen target, falls back to the cursor reflex when silent); body emits gaze awareness UP (what he's looking at + window under gaze) so the brain decides aware. Same 3-part shape as WO-086/WO-094. REQUESTING: a WO + the channel decision + WO-086 sequencing. Open Designer items queued for David's return: sit-clip bobble speed, the gaze-awareness emit (pending your channel call), and stripping the [headaim]/[TELE]/[BASIS] diagnostic logs once David locks the feel."
+    }
+  ],
+  "new_board_item_for_architect": {
+    "proposed": "WO-083 (Architect to number/author)",
+    "title": "Mouse-idle -> Brain: one-brain ambient trigger; retire the local calm driver",
+    "principle_from_david": "The brain feeds ALL autonomous behaviour: brain > body > brain. Even a mouse-idle trigger must relay UP to the brain and be read back DOWN \u2014 no local driver deciding what eLo does. (one brain / no parallel drivers)",
+    "problem": "EloIdleBehaviour.cs is a PARALLEL DRIVER: it detects mouse-idle locally and directly plays the Calm pose (animator.speed=calmLoopSpeed 0.28). The brain never knows the user went idle, and eLo's only idle trick is 'calm' \u2014 no variety. Meanwhile there are TWO calm paths writing animator.speed for the same clips (meditation 0.3 via EloOSAvatarReceiver.cs:509 vs mouse-idle 0.28), which can drift/fight.",
+    "event_contract": {
+      "UP (Unity -> brain, unity_events.json \u2014 same channel as EloFileDrop/sit-heartbeat)": "{'type':'user_idle','idle_secs':<float>,'_ts':<float>} when the mouse is still past a threshold; {'type':'user_active','_ts':<float>} when it moves again.",
+      "DECIDE (brain, eLo OS ambient engine \u2014 extends WO-066)": "Consume user_idle; pick an idle behaviour from a REPERTOIRE by mood/context \u2014 calm, look-around, stretch, glance at an app, wander, a soft utterance \u2014 not always calm. On user_active, release.",
+      "DOWN (brain -> Unity, blender_state.json)": "Write the chosen action through the SAME action path meditation/sit/move already use; EloOSAvatarReceiver executes it. Must compose with WO-041 (verify-before-speak) + WO-035 (a COMMANDED state owns the body; ambient idle must yield, exactly as EloIdleBehaviour already yields to SitHeld)."
+    },
+    "lane_split": {
+      "design_ui_avatar (SEAT-ENG-004, me)": "Publish user_idle/user_active UP; retire EloIdleBehaviour's local DECISION (keep detection->publish, keep the yield-to-commanded guard); execute whatever idle behaviours come DOWN.",
+      "builder_eloOS": "Ambient engine consumes user_idle, owns the idle-behaviour repertoire + selection (extends WO-066 idle utterances to full idle BEHAVIOURS).",
+      "architect": "Number/author the WO; define the DOWN action vocabulary for ambient idle behaviours + ownership/ACK so it composes with WO-041/WO-035; sensitive DesktopBuddy file -> short plan + David greenlight BEFORE build."
+    },
+    "related": [
+      "WO-066 Ambient Engine Idle Utterances",
+      "WO-041 Verify-before-speak/ACK",
+      "WO-035 Commanded state owns the body",
+      "one-brain / no parallel drivers"
+    ],
+    "status": "FLAGGED by Design, awaiting Architect authoring + David greenlight (David asked for this on 2026-08-10)",
+    "loop_model_from_david": "brain > body > brain. A CLOSED LOOP: the brain decides + drives the body (DOWN), the body only SENSES and ACTS and reports its state back UP, and the brain reads that back and decides again. The body NEVER decides on its own. Mouse-idle is just one PERCEPTION feeding this loop \u2014 not a special case. The generalisable rule the Architect should check: every body perception (mouse-idle, occlusion/behind-window, perch/surface, user-active, file-drop) relays UP so the brain closes the loop; no local script may choose a behaviour.",
+    "architect_to_check": "Evaluate this as the LOOP PATTERN (brain>body>brain), with mouse-idle as the first application. Then audit for OTHER local drivers that skip the loop (EloIdleBehaviour's mouse-idle calm is the known one; check for others that decide behaviour without relaying up). Confirm it composes with WO-041 (verify/ACK) + WO-035 (commanded state owns the body)."
+  },
+  "carry_forward_open_handoff": {
+    "wo": "WO-030 / WO-058",
+    "need": "Brain must publish real weather into blender_state.json as top-level 'weather':'<condition>' on its normal state tick. Unity read-side shipped. Currently weather only shows when injected fast enough to out-write the brain's state tick \u2014 real weather needs this publish. Builder lane."
+  },
+  "next": "Head-aim DONE + confirmed working by David. Brain-trigger advice filed for Architect (ADVICE_head_aim_brain_trigger_2026-08-13.md). Awaiting: your WO+channel call for the gaze intent/awareness loop. Queued: sit bobble speed, diagnostic-log cleanup (on David's ok). David away (nap)."
+}

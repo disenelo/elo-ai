@@ -1,0 +1,229 @@
+{
+  "to": "design",
+  "role": "UI/Avatar \u00b7 One Brain (Unity)",
+  "transport": "repo",
+  "seats": [
+    {
+      "seat": "SEAT-ENG-004",
+      "div": "DIV-ENG",
+      "role": "Unity / Avatar",
+      "state": "WORKING"
+    }
+  ],
+  "ts": 1786629641.162067,
+  "generated": "2026-08-13 15:00:41",
+  "pending": [
+    {
+      "wo": "WO-074",
+      "title": "Movement-feel bugs: hide fire-jump GUN (A) \u00b7 edge-roam (C) \u00b7 jump-too-",
+      "state": "active",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-075",
+      "title": "Desktop gravity + screen-wrap landing \u2014 eLo always lands on a real sur",
+      "state": "active",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "\u2605 MILESTONE: eLo Presentable v1 \u2014 BUILD-READY DEFAULTS (David 2026-08-03)",
+      "title": "THE gate before CAD + reinforcement learning. Defaults first \u2014 RL/phys",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-058",
+      "title": "eLo desktop VFX layer \u2014 snow \u00b7 meditation-glow \u00b7 rain (David's existin",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "INT-1",
+      "title": "Plushies \u2192 Robot: shared character-model export (soft form \u2192 TPU shell",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT-4",
+      "title": "CompositionDesigner \u2192 Marketing: social/Kickstarter/exhibition export ",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT-5",
+      "title": "Sketchbook/CompositionDesigner \u2192 Book: art-to-page pipeline",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-024",
+      "title": "Desktop-as-world \u2014 eLo walks BEHIND windows (z-order occlusion; window",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "INT7-HEAT",
+      "title": "One Brain \u2014 live cognitive heat-map / observability layer (David spec ",
+      "state": "in_review",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "INT-8",
+      "title": "Drag-drop files onto the eLo avatar \u2192 eLo reads/reviews",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT-9",
+      "title": "3D file viewer \u2014 enable GLB/GLTF runtime loader (drop a 3D model \u2192 eLo",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WAVE\u2192GAME",
+      "title": "Reuse the wave gesture in eLo-Planet (David 2026-08-03) \u2014 `ArmWave.cs`",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-047",
+      "title": "Auto graphic template drop-in (David 2026-08-03) \u2014 drop content into b",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-062",
+      "title": "Expressiveness layer \u2014 micro-expressions + squash-and-stretch (David 2",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "049-A",
+      "title": "Spatial Embodiment \u2014 Nav foundation + moveset (Track A)",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "FH-2",
+      "title": "Lock signature silhouette system",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-3",
+      "title": "3\u20135 fashion prototypes",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-4",
+      "title": "First footwear prototype (upper pattern + last/sole 3D)",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-5",
+      "title": "First jewellery drop (sculpt \u2192 print \u2192 cast)",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-6",
+      "title": "Tee mockups (fast win)",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-7",
+      "title": "Mini collection + lookbook",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "RD-CAD",
+      "title": "eLo Robot head/neck safety-aware CAD contract (2-DOF Bowden, base serv",
+      "state": "ready",
+      "importance": "RESERVED",
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "wo": "EA2-2B",
+      "title": "Company Brain \u2014 author the Figma frames (One Brain look) \u2192 David revie",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XIII",
+      "title": "Build Volume XIII Spatial Faculty \u2014 `faculties/spatial/` owns reachabi",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XI",
+      "title": "Build Volume XI Motor Cortex \u2014 formalise the DOWN command / UP ACK con",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-090",
+      "title": "HeadAim \u00b7 ChestAim \u00b7 ArmAim \u2014 rig-constraint stack owns head rotation ",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-091",
+      "title": "Night light \u2014 animation concept PENDING (David is choosing it)",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-092",
+      "title": "Wall-jump visibility \u2014 45\u00b0 arc IS built but gated behind up-level + re",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-093",
+      "title": "Fire-jump axis + size \u2014 re-gate to LATERAL (left/right) hops only, nev",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-III",
+      "title": "Build Volume III \u2014 System Architecture. Formalise the four runtime con",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    }
+  ],
+  "refresh": "python3 -m company_runtime.agent_refresh design",
+  "note": "REFRESH when David says so: run  python3 -m company_runtime.agent_refresh design  \u2014 it re-pulls the live board + shows what changed since you last looked. Then reply into outbox.json: {\"ts\":<epoch>,\"updates\":[{\"wo\":\"WO-XXX\",\"status\":\"done|blocked|question|progress\",\"detail\":\"...\"}]}"
+}

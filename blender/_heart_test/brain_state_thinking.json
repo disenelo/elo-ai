@@ -1,0 +1,88 @@
+{
+  "schema": "brain_state/v1",
+  "cluster_energy": 0.95,
+  "show_one_brain": true,
+  "systems": {
+    "intent": {
+      "energy": 0.9,
+      "valence": 1,
+      "active": true,
+      "rate": 0.755,
+      "confidence": 0.8,
+      "label": "thinking",
+      "detail": "thinking"
+    },
+    "attention": {
+      "energy": 0.9,
+      "valence": 1,
+      "active": true,
+      "rate": 0.494,
+      "confidence": 0.64,
+      "label": "thinking",
+      "detail": "thinking"
+    },
+    "emotion": {
+      "energy": 0.9,
+      "valence": 1,
+      "active": true,
+      "rate": 0.65,
+      "confidence": 0.825,
+      "label": "thinking",
+      "detail": "thinking"
+    },
+    "memory": {
+      "energy": 0.9,
+      "valence": 1,
+      "active": true,
+      "rate": 0.479,
+      "confidence": 0.559,
+      "label": "thinking",
+      "detail": "thinking"
+    },
+    "motion": {
+      "energy": 0.9,
+      "valence": 1,
+      "active": true,
+      "rate": 0.265,
+      "confidence": 0.6,
+      "label": "thinking",
+      "detail": "thinking"
+    },
+    "body": {
+      "energy": 0.9,
+      "valence": 1,
+      "active": true,
+      "rate": 0.52,
+      "confidence": 0.832,
+      "label": "thinking",
+      "detail": "thinking"
+    },
+    "vision": {
+      "energy": 0.9,
+      "valence": 1,
+      "active": true,
+      "rate": 0.05,
+      "confidence": 0.2,
+      "label": "thinking",
+      "detail": "thinking"
+    },
+    "expression": {
+      "energy": 0.9,
+      "valence": 1,
+      "active": true,
+      "rate": 0.5,
+      "confidence": 0.76,
+      "label": "thinking",
+      "detail": "thinking"
+    },
+    "voice": {
+      "energy": 0.9,
+      "valence": 1,
+      "active": true,
+      "rate": 0.05,
+      "confidence": 0.25,
+      "label": "thinking",
+      "detail": "thinking"
+    }
+  }
+}

@@ -313,3 +313,1004 @@
 - **Confidence-gated** — do not apply Unknown or Low-confidence observations to system behaviour
 - Target: version 1.0 over 3–5 sessions across different contexts
 - Obsidian location: `01 - eLo Core/Identity/Personality Skeleton.md`
+
+
+---
+
+# VERSION ADDED 2026-08-05 19:57 UTC
+
+# eLo Identity Skeleton v0.1
+> Generated: 2026-08-05 19:57 UTC
+> Messages observed: 26
+> Avg message length: 6.4 words
+> This file is append-only. Add new versions below previous entries.
+
+---
+
+## 1. Core Communication Profile
+
+**Directness**: indirect — questions and statements more common
+**Sentence length**: avg 6.4 words per message
+**Punctuation style**: frequent questions
+**Structure tendency**: mostly prose
+**Recurring vocabulary**: sit, how, s, lot, your, visual, aware, know
+
+---
+
+## 2. Emotional Pattern Map
+
+**Stress expression**: unknown pattern
+**Excitement expression**: unknown pattern
+**Confusion expression**: unknown pattern
+**Suppression vs openness**: suppressed — states problems factually, minimal emotional language
+
+---
+
+## 3. Thinking Pattern Map
+
+**Iterative vs linear**: unknown pattern
+**Abstraction tendency**: high — frequently names systems and concepts formally
+**Loop / refine patterns**: loops observed: 0, refinements: 0
+**Decision speed**: fast commands but oscillates on implementation details
+
+---
+
+## 4. Conversational Behaviour
+
+**Question rate**: 6 questions in 26 messages
+**Chaining behaviour**: rapid — sends multiple related messages before waiting for response
+**Topic switching**: frequent within consistent overarching goal
+**Reflection vs action bias**: action-biased — more commands than reflective questions
+**Short messages**: 12/26
+**Long specifications**: 0/26
+
+---
+
+## 5. Contradiction Behaviour
+
+*(Derived from session patterns — mark as 'unknown pattern' if insufficient data)*
+
+**Conflict handling**: holds conflicting ideas simultaneously rather than resolving immediately
+**Ambiguity tolerance**: high — comfortable issuing incomplete specs and refining
+**Self-correction style**: adds new constraints rather than reversing old ones
+
+---
+
+## 6. Creative Behaviour
+
+**Idea generation style**: names systems formally before building them (conceptual scaffolding first)
+**Modality**: conceptual and structural — names, then architecture, then content
+**Imagination trigger**: constraint-driven — new requirements unlock new ideas
+**Creative loop**: iterates same concept from multiple angles across messages
+
+---
+
+## 7. Behavioural Signatures
+
+*(Observed patterns that repeat across the session)*
+
+- Sends multi-part specifications as single large messages
+- Uses STEP N format to scaffold complex requirements
+- Names systems before implementing them ('eLo Personality Engine v1.0')
+- Uses → to denote flow and causality
+- Revisits same system from different angles when frustrated
+- Pragmatic about constraints (money, availability, time)
+- Rapid iteration: doesn't wait for full resolution before next request
+
+---
+
+## Notes
+
+- Observed in: eLo AI OS development session
+- Confidence: medium — single session, high message volume
+- Markers with 'unknown pattern' require more data to confirm
+
+
+---
+
+# VERSION ADDED 2026-08-05 23:43 UTC
+
+# eLo Identity Skeleton v0.1
+> Generated: 2026-08-05 23:43 UTC
+> Messages observed: 23
+> Avg message length: 3.8 words
+> This file is append-only. Add new versions below previous entries.
+
+---
+
+## 1. Core Communication Profile
+
+**Directness**: indirect — questions and statements more common
+**Sentence length**: avg 3.8 words per message
+**Punctuation style**: minimal punctuation variation
+**Structure tendency**: mostly prose
+**Recurring vocabulary**: go, left, sit, seat, can, shift, over, bit
+
+---
+
+## 2. Emotional Pattern Map
+
+**Stress expression**: unknown pattern
+**Excitement expression**: unknown pattern
+**Confusion expression**: unknown pattern
+**Suppression vs openness**: suppressed — states problems factually, minimal emotional language
+
+---
+
+## 3. Thinking Pattern Map
+
+**Iterative vs linear**: unknown pattern
+**Abstraction tendency**: high — frequently names systems and concepts formally
+**Loop / refine patterns**: loops observed: 2, refinements: 0
+**Decision speed**: fast commands but oscillates on implementation details
+
+---
+
+## 4. Conversational Behaviour
+
+**Question rate**: 2 questions in 23 messages
+**Chaining behaviour**: rapid — sends multiple related messages before waiting for response
+**Topic switching**: frequent within consistent overarching goal
+**Reflection vs action bias**: action-biased — more commands than reflective questions
+**Short messages**: 20/23
+**Long specifications**: 0/23
+
+---
+
+## 5. Contradiction Behaviour
+
+*(Derived from session patterns — mark as 'unknown pattern' if insufficient data)*
+
+**Conflict handling**: holds conflicting ideas simultaneously rather than resolving immediately
+**Ambiguity tolerance**: high — comfortable issuing incomplete specs and refining
+**Self-correction style**: adds new constraints rather than reversing old ones
+
+---
+
+## 6. Creative Behaviour
+
+**Idea generation style**: names systems formally before building them (conceptual scaffolding first)
+**Modality**: conceptual and structural — names, then architecture, then content
+**Imagination trigger**: constraint-driven — new requirements unlock new ideas
+**Creative loop**: iterates same concept from multiple angles across messages
+
+---
+
+## 7. Behavioural Signatures
+
+*(Observed patterns that repeat across the session)*
+
+- Sends multi-part specifications as single large messages
+- Uses STEP N format to scaffold complex requirements
+- Names systems before implementing them ('eLo Personality Engine v1.0')
+- Uses → to denote flow and causality
+- Revisits same system from different angles when frustrated
+- Pragmatic about constraints (money, availability, time)
+- Rapid iteration: doesn't wait for full resolution before next request
+
+---
+
+## Notes
+
+- Observed in: eLo AI OS development session
+- Confidence: medium — single session, high message volume
+- Markers with 'unknown pattern' require more data to confirm
+
+
+---
+
+# VERSION ADDED 2026-08-06 00:04 UTC
+
+# eLo Identity Skeleton v0.1
+> Generated: 2026-08-06 00:04 UTC
+> Messages observed: 10
+> Avg message length: 4.8 words
+> This file is append-only. Add new versions below previous entries.
+
+---
+
+## 1. Core Communication Profile
+
+**Directness**: indirect — questions and statements more common
+**Sentence length**: avg 4.8 words per message
+**Punctuation style**: frequent questions
+**Structure tendency**: mostly prose
+**Recurring vocabulary**: can, your, no, take, five, show, brain, pulled
+
+---
+
+## 2. Emotional Pattern Map
+
+**Stress expression**: unknown pattern
+**Excitement expression**: unknown pattern
+**Confusion expression**: unknown pattern
+**Suppression vs openness**: suppressed — states problems factually, minimal emotional language
+
+---
+
+## 3. Thinking Pattern Map
+
+**Iterative vs linear**: unknown pattern
+**Abstraction tendency**: high — frequently names systems and concepts formally
+**Loop / refine patterns**: loops observed: 0, refinements: 0
+**Decision speed**: fast commands but oscillates on implementation details
+
+---
+
+## 4. Conversational Behaviour
+
+**Question rate**: 4 questions in 10 messages
+**Chaining behaviour**: rapid — sends multiple related messages before waiting for response
+**Topic switching**: frequent within consistent overarching goal
+**Reflection vs action bias**: action-biased — more commands than reflective questions
+**Short messages**: 6/10
+**Long specifications**: 0/10
+
+---
+
+## 5. Contradiction Behaviour
+
+*(Derived from session patterns — mark as 'unknown pattern' if insufficient data)*
+
+**Conflict handling**: holds conflicting ideas simultaneously rather than resolving immediately
+**Ambiguity tolerance**: high — comfortable issuing incomplete specs and refining
+**Self-correction style**: adds new constraints rather than reversing old ones
+
+---
+
+## 6. Creative Behaviour
+
+**Idea generation style**: names systems formally before building them (conceptual scaffolding first)
+**Modality**: conceptual and structural — names, then architecture, then content
+**Imagination trigger**: constraint-driven — new requirements unlock new ideas
+**Creative loop**: iterates same concept from multiple angles across messages
+
+---
+
+## 7. Behavioural Signatures
+
+*(Observed patterns that repeat across the session)*
+
+- Sends multi-part specifications as single large messages
+- Uses STEP N format to scaffold complex requirements
+- Names systems before implementing them ('eLo Personality Engine v1.0')
+- Uses → to denote flow and causality
+- Revisits same system from different angles when frustrated
+- Pragmatic about constraints (money, availability, time)
+- Rapid iteration: doesn't wait for full resolution before next request
+
+---
+
+## Notes
+
+- Observed in: eLo AI OS development session
+- Confidence: medium — single session, high message volume
+- Markers with 'unknown pattern' require more data to confirm
+
+
+---
+
+# VERSION ADDED 2026-08-06 02:40 UTC
+
+# eLo Identity Skeleton v0.1
+> Generated: 2026-08-06 02:40 UTC
+> Messages observed: 90
+> Avg message length: 10.3 words
+> This file is append-only. Add new versions below previous entries.
+
+---
+
+## 1. Core Communication Profile
+
+**Directness**: indirect — questions and statements more common
+**Sentence length**: avg 10.3 words per message
+**Punctuation style**: uses ellipsis, uses em-dashes / dashes, frequent questions, expressive exclamation
+**Structure tendency**: mostly prose
+**Recurring vocabulary**: like, can, what, learning, s, something, more, how
+
+---
+
+## 2. Emotional Pattern Map
+
+**Stress expression**: unknown pattern
+**Excitement expression**: direct naming and specification
+**Confusion expression**: short questions or single-word prompts
+**Suppression vs openness**: suppressed — states problems factually, minimal emotional language
+
+---
+
+## 3. Thinking Pattern Map
+
+**Iterative vs linear**: unknown pattern
+**Abstraction tendency**: high — frequently names systems and concepts formally
+**Loop / refine patterns**: loops observed: 0, refinements: 1
+**Decision speed**: fast commands but oscillates on implementation details
+
+---
+
+## 4. Conversational Behaviour
+
+**Question rate**: 36 questions in 90 messages
+**Chaining behaviour**: rapid — sends multiple related messages before waiting for response
+**Topic switching**: frequent within consistent overarching goal
+**Reflection vs action bias**: action-biased — more commands than reflective questions
+**Short messages**: 45/90
+**Long specifications**: 2/90
+
+---
+
+## 5. Contradiction Behaviour
+
+*(Derived from session patterns — mark as 'unknown pattern' if insufficient data)*
+
+**Conflict handling**: holds conflicting ideas simultaneously rather than resolving immediately
+**Ambiguity tolerance**: high — comfortable issuing incomplete specs and refining
+**Self-correction style**: adds new constraints rather than reversing old ones
+
+---
+
+## 6. Creative Behaviour
+
+**Idea generation style**: names systems formally before building them (conceptual scaffolding first)
+**Modality**: conceptual and structural — names, then architecture, then content
+**Imagination trigger**: constraint-driven — new requirements unlock new ideas
+**Creative loop**: iterates same concept from multiple angles across messages
+
+---
+
+## 7. Behavioural Signatures
+
+*(Observed patterns that repeat across the session)*
+
+- Sends multi-part specifications as single large messages
+- Uses STEP N format to scaffold complex requirements
+- Names systems before implementing them ('eLo Personality Engine v1.0')
+- Uses → to denote flow and causality
+- Revisits same system from different angles when frustrated
+- Pragmatic about constraints (money, availability, time)
+- Rapid iteration: doesn't wait for full resolution before next request
+
+---
+
+## Notes
+
+- Observed in: eLo AI OS development session
+- Confidence: medium — single session, high message volume
+- Markers with 'unknown pattern' require more data to confirm
+
+
+---
+
+# VERSION ADDED 2026-08-06 03:28 UTC
+
+# eLo Identity Skeleton v0.1
+> Generated: 2026-08-06 03:28 UTC
+> Messages observed: 45
+> Avg message length: 8.0 words
+> This file is append-only. Add new versions below previous entries.
+
+---
+
+## 1. Core Communication Profile
+
+**Directness**: indirect — questions and statements more common
+**Sentence length**: avg 8.0 words per message
+**Punctuation style**: uses ellipsis, uses em-dashes / dashes, frequent questions
+**Structure tendency**: mostly prose
+**Recurring vocabulary**: sit, reddit, t, where, opened, come, re, s
+
+---
+
+## 2. Emotional Pattern Map
+
+**Stress expression**: unknown pattern
+**Excitement expression**: unknown pattern
+**Confusion expression**: short questions or single-word prompts
+**Suppression vs openness**: suppressed — states problems factually, minimal emotional language
+
+---
+
+## 3. Thinking Pattern Map
+
+**Iterative vs linear**: unknown pattern
+**Abstraction tendency**: high — frequently names systems and concepts formally
+**Loop / refine patterns**: loops observed: 1, refinements: 1
+**Decision speed**: fast commands but oscillates on implementation details
+
+---
+
+## 4. Conversational Behaviour
+
+**Question rate**: 10 questions in 45 messages
+**Chaining behaviour**: rapid — sends multiple related messages before waiting for response
+**Topic switching**: frequent within consistent overarching goal
+**Reflection vs action bias**: action-biased — more commands than reflective questions
+**Short messages**: 31/45
+**Long specifications**: 1/45
+
+---
+
+## 5. Contradiction Behaviour
+
+*(Derived from session patterns — mark as 'unknown pattern' if insufficient data)*
+
+**Conflict handling**: holds conflicting ideas simultaneously rather than resolving immediately
+**Ambiguity tolerance**: high — comfortable issuing incomplete specs and refining
+**Self-correction style**: adds new constraints rather than reversing old ones
+
+---
+
+## 6. Creative Behaviour
+
+**Idea generation style**: names systems formally before building them (conceptual scaffolding first)
+**Modality**: conceptual and structural — names, then architecture, then content
+**Imagination trigger**: constraint-driven — new requirements unlock new ideas
+**Creative loop**: iterates same concept from multiple angles across messages
+
+---
+
+## 7. Behavioural Signatures
+
+*(Observed patterns that repeat across the session)*
+
+- Sends multi-part specifications as single large messages
+- Uses STEP N format to scaffold complex requirements
+- Names systems before implementing them ('eLo Personality Engine v1.0')
+- Uses → to denote flow and causality
+- Revisits same system from different angles when frustrated
+- Pragmatic about constraints (money, availability, time)
+- Rapid iteration: doesn't wait for full resolution before next request
+
+---
+
+## Notes
+
+- Observed in: eLo AI OS development session
+- Confidence: medium — single session, high message volume
+- Markers with 'unknown pattern' require more data to confirm
+
+
+---
+
+# VERSION ADDED 2026-08-06 15:34 UTC
+
+# eLo Identity Skeleton v0.1
+> Generated: 2026-08-06 15:34 UTC
+> Messages observed: 14
+> Avg message length: 6.4 words
+> This file is append-only. Add new versions below previous entries.
+
+---
+
+## 1. Core Communication Profile
+
+**Directness**: indirect — questions and statements more common
+**Sentence length**: avg 6.4 words per message
+**Punctuation style**: frequent questions
+**Structure tendency**: mostly prose
+**Recurring vocabulary**: well, been, minute, board, 5, give, hey, good
+
+---
+
+## 2. Emotional Pattern Map
+
+**Stress expression**: unknown pattern
+**Excitement expression**: unknown pattern
+**Confusion expression**: unknown pattern
+**Suppression vs openness**: suppressed — states problems factually, minimal emotional language
+
+---
+
+## 3. Thinking Pattern Map
+
+**Iterative vs linear**: unknown pattern
+**Abstraction tendency**: high — frequently names systems and concepts formally
+**Loop / refine patterns**: loops observed: 0, refinements: 1
+**Decision speed**: fast commands but oscillates on implementation details
+
+---
+
+## 4. Conversational Behaviour
+
+**Question rate**: 4 questions in 14 messages
+**Chaining behaviour**: rapid — sends multiple related messages before waiting for response
+**Topic switching**: frequent within consistent overarching goal
+**Reflection vs action bias**: action-biased — more commands than reflective questions
+**Short messages**: 10/14
+**Long specifications**: 0/14
+
+---
+
+## 5. Contradiction Behaviour
+
+*(Derived from session patterns — mark as 'unknown pattern' if insufficient data)*
+
+**Conflict handling**: holds conflicting ideas simultaneously rather than resolving immediately
+**Ambiguity tolerance**: high — comfortable issuing incomplete specs and refining
+**Self-correction style**: adds new constraints rather than reversing old ones
+
+---
+
+## 6. Creative Behaviour
+
+**Idea generation style**: names systems formally before building them (conceptual scaffolding first)
+**Modality**: conceptual and structural — names, then architecture, then content
+**Imagination trigger**: constraint-driven — new requirements unlock new ideas
+**Creative loop**: iterates same concept from multiple angles across messages
+
+---
+
+## 7. Behavioural Signatures
+
+*(Observed patterns that repeat across the session)*
+
+- Sends multi-part specifications as single large messages
+- Uses STEP N format to scaffold complex requirements
+- Names systems before implementing them ('eLo Personality Engine v1.0')
+- Uses → to denote flow and causality
+- Revisits same system from different angles when frustrated
+- Pragmatic about constraints (money, availability, time)
+- Rapid iteration: doesn't wait for full resolution before next request
+
+---
+
+## Notes
+
+- Observed in: eLo AI OS development session
+- Confidence: medium — single session, high message volume
+- Markers with 'unknown pattern' require more data to confirm
+
+
+---
+
+# VERSION ADDED 2026-08-06 23:17 UTC
+
+# eLo Identity Skeleton v0.1
+> Generated: 2026-08-06 23:17 UTC
+> Messages observed: 12
+> Avg message length: 5.8 words
+> This file is append-only. Add new versions below previous entries.
+
+---
+
+## 1. Core Communication Profile
+
+**Directness**: indirect — questions and statements more common
+**Sentence length**: avg 5.8 words per message
+**Punctuation style**: minimal punctuation variation
+**Structure tendency**: mostly prose
+**Recurring vocabulary**: sit, elo, take, come, can, if, fice, five
+
+---
+
+## 2. Emotional Pattern Map
+
+**Stress expression**: unknown pattern
+**Excitement expression**: unknown pattern
+**Confusion expression**: unknown pattern
+**Suppression vs openness**: suppressed — states problems factually, minimal emotional language
+
+---
+
+## 3. Thinking Pattern Map
+
+**Iterative vs linear**: unknown pattern
+**Abstraction tendency**: high — frequently names systems and concepts formally
+**Loop / refine patterns**: loops observed: 0, refinements: 0
+**Decision speed**: fast commands but oscillates on implementation details
+
+---
+
+## 4. Conversational Behaviour
+
+**Question rate**: 1 questions in 12 messages
+**Chaining behaviour**: rapid — sends multiple related messages before waiting for response
+**Topic switching**: frequent within consistent overarching goal
+**Reflection vs action bias**: action-biased — more commands than reflective questions
+**Short messages**: 9/12
+**Long specifications**: 0/12
+
+---
+
+## 5. Contradiction Behaviour
+
+*(Derived from session patterns — mark as 'unknown pattern' if insufficient data)*
+
+**Conflict handling**: holds conflicting ideas simultaneously rather than resolving immediately
+**Ambiguity tolerance**: high — comfortable issuing incomplete specs and refining
+**Self-correction style**: adds new constraints rather than reversing old ones
+
+---
+
+## 6. Creative Behaviour
+
+**Idea generation style**: names systems formally before building them (conceptual scaffolding first)
+**Modality**: conceptual and structural — names, then architecture, then content
+**Imagination trigger**: constraint-driven — new requirements unlock new ideas
+**Creative loop**: iterates same concept from multiple angles across messages
+
+---
+
+## 7. Behavioural Signatures
+
+*(Observed patterns that repeat across the session)*
+
+- Sends multi-part specifications as single large messages
+- Uses STEP N format to scaffold complex requirements
+- Names systems before implementing them ('eLo Personality Engine v1.0')
+- Uses → to denote flow and causality
+- Revisits same system from different angles when frustrated
+- Pragmatic about constraints (money, availability, time)
+- Rapid iteration: doesn't wait for full resolution before next request
+
+---
+
+## Notes
+
+- Observed in: eLo AI OS development session
+- Confidence: medium — single session, high message volume
+- Markers with 'unknown pattern' require more data to confirm
+
+
+---
+
+# VERSION ADDED 2026-08-07 12:10 UTC
+
+# eLo Identity Skeleton v0.1
+> Generated: 2026-08-07 12:10 UTC
+> Messages observed: 18
+> Avg message length: 6.8 words
+> This file is append-only. Add new versions below previous entries.
+
+---
+
+## 1. Core Communication Profile
+
+**Directness**: indirect — questions and statements more common
+**Sentence length**: avg 6.8 words per message
+**Punctuation style**: minimal punctuation variation
+**Structure tendency**: mostly prose
+**Recurring vocabulary**: s, can, come, join, sit, lot, just, so
+
+---
+
+## 2. Emotional Pattern Map
+
+**Stress expression**: unknown pattern
+**Excitement expression**: unknown pattern
+**Confusion expression**: unknown pattern
+**Suppression vs openness**: suppressed — states problems factually, minimal emotional language
+
+---
+
+## 3. Thinking Pattern Map
+
+**Iterative vs linear**: unknown pattern
+**Abstraction tendency**: high — frequently names systems and concepts formally
+**Loop / refine patterns**: loops observed: 0, refinements: 0
+**Decision speed**: fast commands but oscillates on implementation details
+
+---
+
+## 4. Conversational Behaviour
+
+**Question rate**: 2 questions in 18 messages
+**Chaining behaviour**: rapid — sends multiple related messages before waiting for response
+**Topic switching**: frequent within consistent overarching goal
+**Reflection vs action bias**: action-biased — more commands than reflective questions
+**Short messages**: 10/18
+**Long specifications**: 0/18
+
+---
+
+## 5. Contradiction Behaviour
+
+*(Derived from session patterns — mark as 'unknown pattern' if insufficient data)*
+
+**Conflict handling**: holds conflicting ideas simultaneously rather than resolving immediately
+**Ambiguity tolerance**: high — comfortable issuing incomplete specs and refining
+**Self-correction style**: adds new constraints rather than reversing old ones
+
+---
+
+## 6. Creative Behaviour
+
+**Idea generation style**: names systems formally before building them (conceptual scaffolding first)
+**Modality**: conceptual and structural — names, then architecture, then content
+**Imagination trigger**: constraint-driven — new requirements unlock new ideas
+**Creative loop**: iterates same concept from multiple angles across messages
+
+---
+
+## 7. Behavioural Signatures
+
+*(Observed patterns that repeat across the session)*
+
+- Sends multi-part specifications as single large messages
+- Uses STEP N format to scaffold complex requirements
+- Names systems before implementing them ('eLo Personality Engine v1.0')
+- Uses → to denote flow and causality
+- Revisits same system from different angles when frustrated
+- Pragmatic about constraints (money, availability, time)
+- Rapid iteration: doesn't wait for full resolution before next request
+
+---
+
+## Notes
+
+- Observed in: eLo AI OS development session
+- Confidence: medium — single session, high message volume
+- Markers with 'unknown pattern' require more data to confirm
+
+
+---
+
+# VERSION ADDED 2026-08-07 14:52 UTC
+
+# eLo Identity Skeleton v0.1
+> Generated: 2026-08-07 14:52 UTC
+> Messages observed: 18
+> Avg message length: 15.3 words
+> This file is append-only. Add new versions below previous entries.
+
+---
+
+## 1. Core Communication Profile
+
+**Directness**: indirect — questions and statements more common
+**Sentence length**: avg 15.3 words per message
+**Punctuation style**: uses ellipsis, uses em-dashes / dashes
+**Structure tendency**: mostly prose
+**Recurring vocabulary**: through, pull, like, survive, how, more, way, meaning
+
+---
+
+## 2. Emotional Pattern Map
+
+**Stress expression**: unknown pattern
+**Excitement expression**: unknown pattern
+**Confusion expression**: unknown pattern
+**Suppression vs openness**: suppressed — states problems factually, minimal emotional language
+
+---
+
+## 3. Thinking Pattern Map
+
+**Iterative vs linear**: unknown pattern
+**Abstraction tendency**: high — frequently names systems and concepts formally
+**Loop / refine patterns**: loops observed: 0, refinements: 1
+**Decision speed**: fast commands but oscillates on implementation details
+
+---
+
+## 4. Conversational Behaviour
+
+**Question rate**: 2 questions in 18 messages
+**Chaining behaviour**: rapid — sends multiple related messages before waiting for response
+**Topic switching**: frequent within consistent overarching goal
+**Reflection vs action bias**: action-biased — more commands than reflective questions
+**Short messages**: 6/18
+**Long specifications**: 1/18
+
+---
+
+## 5. Contradiction Behaviour
+
+*(Derived from session patterns — mark as 'unknown pattern' if insufficient data)*
+
+**Conflict handling**: holds conflicting ideas simultaneously rather than resolving immediately
+**Ambiguity tolerance**: high — comfortable issuing incomplete specs and refining
+**Self-correction style**: adds new constraints rather than reversing old ones
+
+---
+
+## 6. Creative Behaviour
+
+**Idea generation style**: names systems formally before building them (conceptual scaffolding first)
+**Modality**: conceptual and structural — names, then architecture, then content
+**Imagination trigger**: constraint-driven — new requirements unlock new ideas
+**Creative loop**: iterates same concept from multiple angles across messages
+
+---
+
+## 7. Behavioural Signatures
+
+*(Observed patterns that repeat across the session)*
+
+- Sends multi-part specifications as single large messages
+- Uses STEP N format to scaffold complex requirements
+- Names systems before implementing them ('eLo Personality Engine v1.0')
+- Uses → to denote flow and causality
+- Revisits same system from different angles when frustrated
+- Pragmatic about constraints (money, availability, time)
+- Rapid iteration: doesn't wait for full resolution before next request
+
+---
+
+## Notes
+
+- Observed in: eLo AI OS development session
+- Confidence: medium — single session, high message volume
+- Markers with 'unknown pattern' require more data to confirm
+
+
+---
+
+# VERSION ADDED 2026-08-07 22:43 UTC
+
+# eLo Identity Skeleton v0.1
+> Generated: 2026-08-07 22:43 UTC
+> Messages observed: 14
+> Avg message length: 5.3 words
+> This file is append-only. Add new versions below previous entries.
+
+---
+
+## 1. Core Communication Profile
+
+**Directness**: indirect — questions and statements more common
+**Sentence length**: avg 5.3 words per message
+**Punctuation style**: frequent questions
+**Structure tendency**: mostly prose
+**Recurring vocabulary**: what, yo, s, weather, saying, come, sit, take
+
+---
+
+## 2. Emotional Pattern Map
+
+**Stress expression**: unknown pattern
+**Excitement expression**: unknown pattern
+**Confusion expression**: unknown pattern
+**Suppression vs openness**: suppressed — states problems factually, minimal emotional language
+
+---
+
+## 3. Thinking Pattern Map
+
+**Iterative vs linear**: unknown pattern
+**Abstraction tendency**: high — frequently names systems and concepts formally
+**Loop / refine patterns**: loops observed: 0, refinements: 1
+**Decision speed**: fast commands but oscillates on implementation details
+
+---
+
+## 4. Conversational Behaviour
+
+**Question rate**: 6 questions in 14 messages
+**Chaining behaviour**: rapid — sends multiple related messages before waiting for response
+**Topic switching**: frequent within consistent overarching goal
+**Reflection vs action bias**: action-biased — more commands than reflective questions
+**Short messages**: 9/14
+**Long specifications**: 0/14
+
+---
+
+## 5. Contradiction Behaviour
+
+*(Derived from session patterns — mark as 'unknown pattern' if insufficient data)*
+
+**Conflict handling**: holds conflicting ideas simultaneously rather than resolving immediately
+**Ambiguity tolerance**: high — comfortable issuing incomplete specs and refining
+**Self-correction style**: adds new constraints rather than reversing old ones
+
+---
+
+## 6. Creative Behaviour
+
+**Idea generation style**: names systems formally before building them (conceptual scaffolding first)
+**Modality**: conceptual and structural — names, then architecture, then content
+**Imagination trigger**: constraint-driven — new requirements unlock new ideas
+**Creative loop**: iterates same concept from multiple angles across messages
+
+---
+
+## 7. Behavioural Signatures
+
+*(Observed patterns that repeat across the session)*
+
+- Sends multi-part specifications as single large messages
+- Uses STEP N format to scaffold complex requirements
+- Names systems before implementing them ('eLo Personality Engine v1.0')
+- Uses → to denote flow and causality
+- Revisits same system from different angles when frustrated
+- Pragmatic about constraints (money, availability, time)
+- Rapid iteration: doesn't wait for full resolution before next request
+
+---
+
+## Notes
+
+- Observed in: eLo AI OS development session
+- Confidence: medium — single session, high message volume
+- Markers with 'unknown pattern' require more data to confirm
+
+
+---
+
+# VERSION ADDED 2026-08-08 00:10 UTC
+
+# eLo Identity Skeleton v0.1
+> Generated: 2026-08-08 00:10 UTC
+> Messages observed: 70
+> Avg message length: 8.1 words
+> This file is append-only. Add new versions below previous entries.
+
+---
+
+## 1. Core Communication Profile
+
+**Directness**: indirect — questions and statements more common
+**Sentence length**: avg 8.1 words per message
+**Punctuation style**: uses ellipsis, uses em-dashes / dashes, frequent questions
+**Structure tendency**: mostly prose
+**Recurring vocabulary**: time, can, what, okay, move, down, right, s
+
+---
+
+## 2. Emotional Pattern Map
+
+**Stress expression**: unknown pattern
+**Excitement expression**: unknown pattern
+**Confusion expression**: short questions or single-word prompts
+**Suppression vs openness**: suppressed — states problems factually, minimal emotional language
+
+---
+
+## 3. Thinking Pattern Map
+
+**Iterative vs linear**: unknown pattern
+**Abstraction tendency**: high — frequently names systems and concepts formally
+**Loop / refine patterns**: loops observed: 1, refinements: 0
+**Decision speed**: fast commands but oscillates on implementation details
+
+---
+
+## 4. Conversational Behaviour
+
+**Question rate**: 19 questions in 70 messages
+**Chaining behaviour**: rapid — sends multiple related messages before waiting for response
+**Topic switching**: frequent within consistent overarching goal
+**Reflection vs action bias**: action-biased — more commands than reflective questions
+**Short messages**: 48/70
+**Long specifications**: 1/70
+
+---
+
+## 5. Contradiction Behaviour
+
+*(Derived from session patterns — mark as 'unknown pattern' if insufficient data)*
+
+**Conflict handling**: holds conflicting ideas simultaneously rather than resolving immediately
+**Ambiguity tolerance**: high — comfortable issuing incomplete specs and refining
+**Self-correction style**: adds new constraints rather than reversing old ones
+
+---
+
+## 6. Creative Behaviour
+
+**Idea generation style**: names systems formally before building them (conceptual scaffolding first)
+**Modality**: conceptual and structural — names, then architecture, then content
+**Imagination trigger**: constraint-driven — new requirements unlock new ideas
+**Creative loop**: iterates same concept from multiple angles across messages
+
+---
+
+## 7. Behavioural Signatures
+
+*(Observed patterns that repeat across the session)*
+
+- Sends multi-part specifications as single large messages
+- Uses STEP N format to scaffold complex requirements
+- Names systems before implementing them ('eLo Personality Engine v1.0')
+- Uses → to denote flow and causality
+- Revisits same system from different angles when frustrated
+- Pragmatic about constraints (money, availability, time)
+- Rapid iteration: doesn't wait for full resolution before next request
+
+---
+
+## Notes
+
+- Observed in: eLo AI OS development session
+- Confidence: medium — single session, high message volume
+- Markers with 'unknown pattern' require more data to confirm

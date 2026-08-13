@@ -1,13 +1,13 @@
 {
-  "mood": 0.266,
+  "mood": 0.184,
   "curiosity": 1.0,
-  "satisfaction": 0.312,
+  "satisfaction": 0.141,
   "inner_events": [
-    "creative_spark",
     "drawn_in",
     "drawn_in",
-    "quiet",
-    "quiet",
+    "connection",
+    "connection",
+    "drawn_in",
     "drawn_in",
     "drawn_in",
     "drawn_in"
@@ -15,14 +15,70 @@
   "focal_thread": "",
   "session_read": "deepening",
   "session_turns": 0,
-  "last_updated": 1786030258.304529,
+  "last_updated": 1786606707.064668,
   "lifetime_threads": [],
   "pose": "standing",
   "available_actions": [
     "stand",
-    "run",
-    "jump"
+    "look",
+    "wave",
+    "gesture"
   ],
   "locomotion_faculty_health": "OK",
-  "surface": ""
+  "surface": "bottom edge of Code",
+  "embodiment": "desktop",
+  "location": "Code",
+  "size": {
+    "height_cm": 18,
+    "reach_cm": 30,
+    "jump_cm": 30
+  },
+  "balance": "steady",
+  "nearby_surfaces": [],
+  "reachable_areas": [],
+  "current_action": "idle",
+  "goal": "",
+  "recent_behavior": {},
+  "embodiment_history": [
+    {
+      "name": "desktop",
+      "status": "active",
+      "note": "where I've mostly lived"
+    },
+    {
+      "name": "game",
+      "status": "active",
+      "note": "adventuring in eLo-Planet"
+    },
+    {
+      "name": "exhibition",
+      "status": "prototype",
+      "note": "early glimpses"
+    },
+    {
+      "name": "robot",
+      "status": "future",
+      "note": "one day a physical body"
+    },
+    {
+      "name": "phone",
+      "status": "future",
+      "note": ""
+    },
+    {
+      "name": "AR",
+      "status": "future",
+      "note": ""
+    },
+    {
+      "name": "hologram",
+      "status": "future",
+      "note": ""
+    }
+  ],
+  "embodiment_milestones": [
+    {
+      "note": "first learned to move on the desktop"
+    }
+  ]
 }

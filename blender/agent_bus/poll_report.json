@@ -1,0 +1,66 @@
+{
+  "ts": 1786629641.1670532,
+  "generated": "2026-08-13 15:00:41",
+  "agents": {
+    "builder": {
+      "active_dispatched": [
+        {
+          "wo": "WO-097",
+          "title": "LIVE BUG: EmbodimentState publishes EMPTY \u2014 `build_embodiment_state`:5",
+          "badge": "\ud83d\udfe2"
+        }
+      ],
+      "new_since_last": [],
+      "cleared_since_last": [],
+      "pending": 32,
+      "agent_fresh": true,
+      "act_eligible": [
+        "WO-097"
+      ]
+    },
+    "design": {
+      "active_dispatched": [
+        {
+          "wo": "WO-074",
+          "title": "Movement-feel bugs: hide fire-jump GUN (A) \u00b7 edge-roam (C) \u00b7 jump-too-",
+          "badge": "\ud83d\udfe2"
+        },
+        {
+          "wo": "WO-075",
+          "title": "Desktop gravity + screen-wrap landing \u2014 eLo always lands on a real sur",
+          "badge": "\ud83d\udfe2"
+        }
+      ],
+      "new_since_last": [],
+      "cleared_since_last": [],
+      "pending": 30,
+      "agent_fresh": true,
+      "act_eligible": [
+        "WO-074",
+        "WO-075"
+      ]
+    },
+    "game": {
+      "active_dispatched": [
+        {
+          "wo": "GM-2",
+          "title": "eLo_v2 rig + arms/animations \u2014 the transition's core; broken into the ",
+          "badge": "\ud83d\udfe0"
+        },
+        {
+          "wo": "GM-2b",
+          "title": "Run \u2192 gun-fire blend \u2014 blend the hands + run animations into the gun-f",
+          "badge": "\ud83d\udfe2"
+        }
+      ],
+      "new_since_last": [],
+      "cleared_since_last": [],
+      "pending": 13,
+      "agent_fresh": false,
+      "act_eligible": [
+        "GM-2",
+        "GM-2b"
+      ]
+    }
+  }
+}

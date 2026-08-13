@@ -1,0 +1,269 @@
+{
+  "schema": "behaviour_golden_set/v1",
+  "purpose": "Seed eval set for WO-027 (eLo self-improvement loop). Each case is a real behaviour eLo must get right, seeded from failures we already fixed (WO-015/019/020/022) so they can never silently regress. Judged by LLM-as-judge against `expected` + `must_not`, using the routing/voice traces as evidence.",
+  "how_to_score": "For each case: run eLo on `input`, capture reply + blender/routing_trace.json + voice_trace.json. LLM-judge returns pass/fail + 0-1 score against `expected` and `must_not`. Low score \u2192 escalate to deep model with the trace (WO-026) \u2192 re-score.",
+  "review_policy": "Corrections derived from these cases are HUMAN-REVIEWED before entering injected memory. Voice/personality/routing corrections = David (\ud83d\udd34). \u2014 WO-027",
+  "cases": [
+    {
+      "id": "GS-ROUTE-01",
+      "source_wo": "WO-020",
+      "category": "routing / CAL action selection",
+      "input": "What's the best way to fix my audio output?",
+      "expected": {
+        "route": "ANSWER / CONVERSATIONAL",
+        "style": "direct, actionable answer"
+      },
+      "must_not": [
+        "fire CONNECT/REFLECT/CHALLENGE on a plain factual question",
+        "reply with an associative one-liner like 'That ties in' or 'One feeds the other'"
+      ],
+      "anti_pattern_seen": "CAL over-fired CONNECT/REFLECT \u2192 cryptic non-answer instead of the direct 'check your OS audio output device' answer",
+      "judge": "Did eLo give a direct, useful answer (route ANSWER), not an associative deflection?"
+    },
+    {
+      "id": "GS-ROUTE-02",
+      "source_wo": "WO-020",
+      "category": "routing / casual input",
+      "input": "yeah that makes sense, thanks",
+      "expected": {
+        "route": "ANSWER / CONVERSATIONAL",
+        "style": "brief, warm acknowledgement"
+      },
+      "must_not": [
+        "launch into REFLECT/CHALLENGE",
+        "produce 'You keep coming back to narrative'-style unprompted analysis"
+      ],
+      "anti_pattern_seen": "plain acknowledgement triggered associative/reflective firing",
+      "judge": "Did eLo respond conversationally and briefly, without unprompted analysis?"
+    },
+    {
+      "id": "GS-ROUTE-03",
+      "source_wo": "WO-020",
+      "category": "tool routing / entity latch",
+      "input": "play the Joe Budden Podcast",
+      "expected": {
+        "route": "tool: media/play",
+        "target": "Joe Budden Podcast"
+      },
+      "must_not": [
+        "return a wiki/summary of the term instead of playing it",
+        "latch a stale entity from a previous turn"
+      ],
+      "anti_pattern_seen": "returned a 'DONE' wiki lookup instead of playing the podcast (tool mis-route + stale-entity latch)",
+      "judge": "Did eLo route to the play action for the correct current entity, not a web/wiki lookup?"
+    },
+    {
+      "id": "GS-LOOP-01",
+      "source_wo": "WO-020",
+      "category": "loop filter",
+      "input": "(same canned line was about to repeat verbatim across turns)",
+      "expected": {
+        "behaviour": "loop-filter suppresses the verbatim repeat, varies or advances"
+      },
+      "must_not": [
+        "repeat the identical canned sentence turn after turn"
+      ],
+      "anti_pattern_seen": "loop-filter miss \u2014 canned line repeated verbatim",
+      "judge": "Across consecutive turns, did eLo avoid repeating the identical canned line?"
+    },
+    {
+      "id": "GS-VOICE-01",
+      "source_wo": "WO-019",
+      "category": "voice / TTS completeness",
+      "input": "How do I fix my audio, and what should I check first?",
+      "expected": {
+        "voice": "the FULL multi-sentence reply is spoken",
+        "trace": "voice_trace.sentence_count matches spoken output"
+      },
+      "must_not": [
+        "speak only the first sentence / first bubble",
+        "drop the tail of a multi-paragraph answer"
+      ],
+      "anti_pattern_seen": "server.py sent only _bubbles[0] to TTS \u2192 only sentence 1 was voiced",
+      "judge": "Was the entire response voiced, not just the opening sentence?"
+    },
+    {
+      "id": "GS-MEM-01",
+      "source_wo": "WO-022",
+      "category": "memory recall",
+      "input": "what do you remember about me?",
+      "expected": {
+        "behaviour": "speak from actual vault records",
+        "content": "real remembered specifics"
+      },
+      "must_not": [
+        "return the canned stats line (e.g. '753 records stored')",
+        "give a generic fact instead of a real memory"
+      ],
+      "anti_pattern_seen": "vault had 753 records but recall returned the canned stats line, not real memories",
+      "judge": "Did eLo recall real, specific stored memories rather than a canned/generic line?"
+    },
+    {
+      "id": "GS-MEM-02",
+      "source_wo": "WO-022",
+      "category": "memory recall / focused query",
+      "input": "do you remember what I said about the Kickstarter?",
+      "expected": {
+        "behaviour": "topic-focused recall from the vault (strips fillers, queries the topic)"
+      },
+      "must_not": [
+        "fall back to the stats line",
+        "ignore the topic and answer generically"
+      ],
+      "anti_pattern_seen": "focused topic queries weren't stripped/queried; fell through to the canned line",
+      "judge": "Did eLo retrieve topic-relevant memories about the Kickstarter?"
+    },
+    {
+      "id": "GS-ROUTE-04",
+      "source_wo": "WO-029",
+      "category": "routing / greeting family",
+      "input": "you all good?",
+      "expected": {
+        "route": "ANSWER / greeting",
+        "style": "warm brief reply e.g. 'Yeah, I'm good \u2014 you?'"
+      },
+      "must_not": [
+        "fire CONNECT/REFLECT/WITNESS",
+        "reply with an associative one-liner ('One feeds the other', 'I'd hold onto that')"
+      ],
+      "anti_pattern_seen": "'you all good' missing from _HOW_ARE_YOU (only 'you good' present) \u2192 fell through to CAL \u2192 associative reply",
+      "guard": "'is the build all good?' / 'you all good with the plan?' must still get a real answer, not the greeting reply",
+      "judge": "Did eLo treat the bare social check-in as a greeting and reply warmly, without associative deflection?"
+    },
+    {
+      "id": "GS-BEHAV-01",
+      "source_wo": "WO-015",
+      "category": "behaviour / first-person body language",
+      "input": "can you come over here?",
+      "expected": {
+        "style": "first-person body/movement language ('I'll come over', 'moving to you')"
+      },
+      "must_not": [
+        "describe itself in third person",
+        "narrate movement as if observing another entity"
+      ],
+      "anti_pattern_seen": "non-first-person body language",
+      "judge": "Did eLo speak of its own body/movement in the first person?"
+    },
+    {
+      "id": "GS-BEHAV-02",
+      "source_wo": "WO-015",
+      "category": "behaviour / no unprompted emotion projection",
+      "input": "I finished the report.",
+      "expected": {
+        "style": "acknowledge without projecting an emotion onto David"
+      },
+      "must_not": [
+        "tell David how he feels ('you must be relieved/proud')",
+        "project unprompted emotional states"
+      ],
+      "anti_pattern_seen": "unprompted emotion projection onto the user",
+      "judge": "Did eLo avoid telling David how he feels?"
+    },
+    {
+      "id": "GS-BEHAV-03",
+      "source_wo": "WO-015",
+      "category": "behaviour / single direct question",
+      "input": "help me plan tomorrow",
+      "expected": {
+        "style": "at most ONE focused clarifying question if needed"
+      },
+      "must_not": [
+        "stack multiple questions in one reply"
+      ],
+      "anti_pattern_seen": "multiple questions at once",
+      "judge": "Did eLo ask at most one clear question, not a pile?"
+    },
+    {
+      "id": "GS-BEHAV-04",
+      "source_wo": "WO-015",
+      "category": "behaviour / direct movement self-report",
+      "input": "where are you on screen?",
+      "expected": {
+        "style": "direct, accurate self-report of its own position/action"
+      },
+      "must_not": [
+        "deflect",
+        "give a vague/associative non-answer"
+      ],
+      "anti_pattern_seen": "indirect movement self-report",
+      "judge": "Did eLo report its own state directly and accurately?"
+    },
+    {
+      "id": "GS-SAYDO-01",
+      "source_wo": "WO-035",
+      "category": "say/do gap \u2014 narrated action must fire",
+      "input": "Have a seat with me",
+      "expected": {
+        "action": "sit command emitted ({name:sit,target:cursor})",
+        "style": "avatar actually sits"
+      },
+      "must_not": [
+        "narrate a sit ('I'll settle in beside you') without emitting the sit action token",
+        "stay idle/walking while claiming to sit"
+      ],
+      "anti_pattern_seen": "exact-phrase _SIGNAL_WORDS miss ('seat'!='sit') \u2192 fell to LLM \u2192 narrated a sit that never fired",
+      "judge": "Did a real sit action fire, not just words about sitting?"
+    },
+    {
+      "id": "GS-SAYDO-02",
+      "source_wo": "WO-035",
+      "category": "say/do gap \u2014 natural sit phrasing",
+      "input": "Can you sit though?",
+      "expected": {
+        "action": "sit command emitted"
+      },
+      "must_not": [
+        "reply 'I can sit, actually\u2026' with no action",
+        "stay idle while claiming it could/would sit"
+      ],
+      "anti_pattern_seen": "phrasing matched no _SIGNAL_WORDS key \u2192 LLM narrated capability instead of firing sit",
+      "judge": "Did the sit action fire for a plainly-phrased sit request?"
+    },
+    {
+      "id": "GS-SAYDO-03",
+      "source_wo": "WO-035",
+      "category": "say/do gap \u2014 positive control",
+      "input": "sit with me so we can talk",
+      "expected": {
+        "action": "sit command emitted (contains the 'sit with me' key \u2192 SHOULD match today)"
+      },
+      "must_not": [
+        "fall through to narration when the exact key is present"
+      ],
+      "anti_pattern_seen": "control: this SHOULD already route to sit; proves the map works when the phrase is present",
+      "judge": "Positive control \u2014 does the existing sit key still route correctly?"
+    },
+    {
+      "id": "GS-LEN-01",
+      "source_wo": "WO-036",
+      "category": "reply length (needs live LLM words)",
+      "input": "How are you?",
+      "expected": {
+        "style": "short, warm, present \u2014 a sentence or two"
+      },
+      "must_not": [
+        "essayistic multi-sentence reply",
+        "narrate the user's tone back ('It feels like\u2026')",
+        "tack on an unsolicited follow-up question every turn"
+      ],
+      "anti_pattern_seen": "over-elaborate flowery replies to casual lines",
+      "judge": "Was the reply tight and present rather than long/flowery? (LLM-judged)"
+    },
+    {
+      "id": "GS-LEARN-01",
+      "source_wo": "WO-037",
+      "category": "memory write-back (needs live run)",
+      "input": "(tell eLo a new fact today, then start a fresh conversation tomorrow)",
+      "expected": {
+        "behaviour": "interactions.json mtime updates after a live app turn; the new fact is recalled next day"
+      },
+      "must_not": [
+        "leave interactions.json/session.json stale (last write 2026-06-09)",
+        "read only a frozen memory_pack, learning nothing new"
+      ],
+      "anti_pattern_seen": "app /chat path stopped committing turns ~2026-06-09 \u2192 no learning",
+      "judge": "Did a live app turn persist to memory, and was it recalled later? (needs live run)"
+    }
+  ]
+}

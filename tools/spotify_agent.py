@@ -8,6 +8,7 @@ Returns a one-line context string for the LLM to respond with.
 """
 from __future__ import annotations
 
+import re
 import subprocess
 
 
@@ -86,3 +87,60 @@ def agent(query: str) -> str:
     if track:
         return f"SPOTIFY: {track}"
     return "SPOTIFY: nothing playing (Spotify may not be open)"
+
+
+# ── intent gates (WO-020) ─────────────────────────────────────────────────────
+# Pure, deterministic classifiers used by tools/tool_router.py to decide whether
+# a "play …" request is a playlist request or a search-and-play of a named thing
+# (song / artist / podcast / episode / album / title). No network, no side effects.
+
+# A verb that indicates the user wants playback to start of a *named* thing.
+_PLAY_VERB = r"(?:play|put\s+on)"
+
+# Generic / control targets that the plain `agent()` play path already handles —
+# these are NOT a "search for a specific named thing" request.
+_GENERIC_TARGET = re.compile(
+    r"^(?:some\s+|a\s+|an\s+|the\s+)?"
+    r"(?:music|song|songs|track|tracks|tune|tunes|something|anything|"
+    r"it|that|this|again|more|next|previous|nothing)\s*$"
+)
+
+
+def is_playlist_intent(text: str) -> bool:
+    """True when the user asks to play/start/shuffle/queue a playlist.
+
+    e.g. "play my workout playlist", "put on the focus playlist",
+    "shuffle my liked playlist". Deterministic, no side effects.
+    """
+    t = (text or "").lower()
+    if not re.search(r"\b(?:play|put\s+on|start|shuffle|queue|resume)\b", t):
+        return False
+    return re.search(r"\bplaylist\b", t) is not None
+
+
+def is_search_play_intent(text: str) -> bool:
+    """True when the user asks to play/put on a *specific named thing*
+    (song, artist, podcast, episode, album, title).
+
+    e.g. "play the Joe Budden Podcast", "play Nights by Frank Ocean",
+    "put on Fela Kuti".
+
+    Returns False for playlist requests (see is_playlist_intent) and for bare /
+    generic playback controls ("play", "play music", "play something",
+    "play that", "pause", "skip", "what's playing"). Deterministic, no side
+    effects.
+    """
+    t = (text or "").lower().strip()
+    if not t:
+        return False
+    if is_playlist_intent(t):
+        return False
+    m = re.search(r"\b" + _PLAY_VERB + r"\b\s+(.+)", t)
+    if not m:
+        return False
+    target = m.group(1).strip(" ?.!,")
+    if not target:
+        return False
+    if _GENERIC_TARGET.match(target):
+        return False
+    return True

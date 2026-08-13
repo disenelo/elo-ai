@@ -1,0 +1,117 @@
+{
+  "ts": 1785691999.42257,
+  "pending": [
+    {
+      "wo": "INT-1",
+      "title": "Plushies \u2192 Robot: shared character-model export (soft form \u2192 TPU shell",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT-3",
+      "title": "5D \u2192 Robot movement: pointcloud \u2192 World Model spatial nodes",
+      "state": "blocked",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-015",
+      "title": "eLo behaviour fixes \u00d74 (1st-person body language \u00b7 no unprompted emoti",
+      "state": "in_review",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-023",
+      "title": "eLo screen-position \u2014 top-bias; stop drifting over the app I'm using /",
+      "state": "in_review",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-024",
+      "title": "Desktop-as-world \u2014 eLo walks BEHIND windows (z-order occlusion; window",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-025",
+      "title": "Perception spatial sensor stub \u2014 pointcloud/depth domain in Perception",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-021",
+      "title": "Enable + verify Computer Control (reminders / app control)",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT-7",
+      "title": "One Brain visualiser \u21c4 `brain_state.json` feed",
+      "state": "active",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT7-HEAT",
+      "title": "One Brain \u2014 live cognitive heat-map / observability layer (David spec ",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT-8",
+      "title": "Drag-drop files onto the eLo avatar \u2192 eLo reads/reviews",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-1",
+      "title": "Pattern\u2192plotter pipeline (Plushies unwrap \u2192 cut-file export \u2192 test cut",
+      "state": "in_review",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "RD-CAD",
+      "title": "eLo Robot head/neck safety-aware CAD contract (2-DOF Bowden, base serv",
+      "state": "ready",
+      "importance": "RESERVED",
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "wo": "EA2-4",
+      "title": "Scheduling Faculty (move/reorder WOs)",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "EA2-5",
+      "title": "Approval Faculty (L3 gate as a faculty \u2014 net-new)",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "EA2-6",
+      "title": "Orchestration Faculty (multi-seat chains \u2014 net-new)",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "EA2-7",
+      "title": "Company Memory store (via unified Memory)",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    }
+  ]
+}

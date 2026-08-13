@@ -1,0 +1,122 @@
+{
+  "to": "chatgpt",
+  "role": "Chief Architect / Creative / Biz\u00b7Legal\u00b7Marketing (Codex)",
+  "transport": "local",
+  "seats": [
+    {
+      "seat": "SEAT-EXE-003",
+      "div": "DIV-ARCH",
+      "role": "Chief Architect",
+      "state": "REVIEW"
+    },
+    {
+      "seat": "SEAT-CRE-001",
+      "div": "DIV-CRE",
+      "role": "Creative Partner",
+      "state": "READY"
+    },
+    {
+      "seat": "SEAT-MKT-002",
+      "div": "DIV-MKT",
+      "role": "Social Studio",
+      "state": "READY"
+    }
+  ],
+  "ts": 1786629641.159105,
+  "generated": "2026-08-13 15:00:41",
+  "pending": [
+    {
+      "wo": "WO-046",
+      "title": "Social media auto-posting (David 2026-08-03) \u2014 scheduled auto-posts ac",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-047",
+      "title": "Auto graphic template drop-in (David 2026-08-03) \u2014 drop content into b",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "CR-1",
+      "title": "Kickstarter hero concept + moodboard (Weavy/Figma)",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "CR-2",
+      "title": "eLo animated teaser (Higgsfield motion)",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "CR-3",
+      "title": "Market-stall visual world + signage system",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-2",
+      "title": "Lock signature silhouette system",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-6",
+      "title": "Tee mockups (fast win)",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "FH-7",
+      "title": "Mini collection + lookbook",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "MK-1",
+      "title": "Kickstarter campaign plan (audience \u00b7 message \u00b7 channels \u00b7 KPIs)",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "MK-2",
+      "title": "Content calendar + audience-growth engine (pre-launch \u2192 live \u2192 fulfilm",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "BO-2",
+      "title": "Kickstarter cost + funding model (COGS + fees + fulfilment \u2192 goal + ti",
+      "state": "ready",
+      "importance": "RESERVED",
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "wo": "LG-1",
+      "title": "Pre-Kickstarter legal + safety checklist (IP \u00b7 toy/robot compliance \u00b7 ",
+      "state": "ready",
+      "importance": "RESERVED",
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "wo": "LG-2",
+      "title": "Product-Safety scope \u2014 force limiters / soft-stop (current-sensing/clu",
+      "state": "ready",
+      "importance": "RESERVED",
+      "badge": "\ud83d\udd34"
+    }
+  ],
+  "refresh": "python3 -m company_runtime.agent_refresh chatgpt",
+  "note": "REFRESH when David says so: run  python3 -m company_runtime.agent_refresh chatgpt  \u2014 it re-pulls the live board + shows what changed since you last looked. Then reply into outbox.json: {\"ts\":<epoch>,\"updates\":[{\"wo\":\"WO-XXX\",\"status\":\"done|blocked|question|progress\",\"detail\":\"...\"}]}"
+}

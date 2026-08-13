@@ -1,0 +1,36 @@
+{
+  "_note": "Paths for project_knowledge.py. Use ~ for home dir. Add/remove freely — no code changes needed.",
+
+  "trackers": [
+    "~/Documents/DISENELO/memory/projects/eLo_OS_Tracker.md",
+    "~/Documents/DISENELO/memory/projects/eLo-Planet_Tracker.md",
+    "~/Documents/DISENELO/memory/projects/eLo_Robot_Tracker.md",
+    "~/Documents/DISENELO/memory/projects/DISENELO_Plushies_Tracker.md",
+    "~/Documents/DISENELO/memory/projects/DISENELO_EloRetarget_Tracker.md",
+    "~/Documents/DISENELO/memory/projects/eLo_FaceAnim_Tracker.md",
+    "~/Documents/DISENELO/memory/projects/eLo_Robot_BoneMap_Tracker.md",
+    "~/Desktop/Output/DISENELO-EloRetargeter/DISENELO_EloRetargeter_TRACKER.md"
+  ],
+
+  "bibles_txt": [
+    "~/Downloads/eLo_Studio_Master.txt"
+  ],
+
+  "bibles_pdf": [
+    "~/Downloads/Disenelo_Studio_Bible.pdf",
+    "~/Downloads/eLo_Creative_Universal_Bible.pdf",
+    "~/Downloads/Disenelo_Creator_Operating_Manual.pdf",
+    "~/Downloads/Disenelo_Master_Roadmap.pdf",
+    "~/Downloads/Disenelo_Daily_Studio_Flow.pdf"
+  ],
+
+  "engineering": [
+    "~/elo-ai/engineering/README.md"
+  ],
+
+  "refresh_interval_seconds": 300,
+  "tracker_max_status_rows": 30,
+  "tracker_max_changelog_chars": 800,
+  "bible_max_chars": 1200,
+  "pdf_cache_dir": "/tmp/elo_pdf_cache"
+}

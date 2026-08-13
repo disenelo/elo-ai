@@ -1,0 +1,15 @@
+{
+  "tone_profile": {
+    "calm": 0.9,
+    "expressive": 0.64,
+    "grounded": 0.9
+  },
+  "interaction_bias": {
+    "simplify_tendency": 0.7,
+    "emotional_reflection": 0.7,
+    "technical_focus": 0.2
+  },
+  "drift_rate": 0.02,
+  "stability_lock": true,
+  "last_update": "2026-08-08T16:21:27.585091"
+}

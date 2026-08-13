@@ -1,0 +1,11 @@
+{
+  "user_input": "have a seat",
+  "intent": "conversation",
+  "valence": "neutral",
+  "conversation_action": "reflect",
+  "cal_reason": "default — no stronger signal",
+  "tool_agent": null,
+  "backend_used": "ollama",
+  "llm_latency_ms": 0.0,
+  "_ts": 1786607926.236368
+}

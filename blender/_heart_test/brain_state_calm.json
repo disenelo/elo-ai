@@ -1,0 +1,88 @@
+{
+  "schema": "brain_state/v1",
+  "cluster_energy": 0.1,
+  "show_one_brain": true,
+  "systems": {
+    "intent": {
+      "energy": 0.08,
+      "valence": 1,
+      "active": false,
+      "rate": 0.755,
+      "confidence": 0.8,
+      "label": "calm",
+      "detail": "calm"
+    },
+    "attention": {
+      "energy": 0.08,
+      "valence": 1,
+      "active": false,
+      "rate": 0.494,
+      "confidence": 0.64,
+      "label": "calm",
+      "detail": "calm"
+    },
+    "emotion": {
+      "energy": 0.08,
+      "valence": 1,
+      "active": false,
+      "rate": 0.65,
+      "confidence": 0.825,
+      "label": "calm",
+      "detail": "calm"
+    },
+    "memory": {
+      "energy": 0.08,
+      "valence": 1,
+      "active": false,
+      "rate": 0.479,
+      "confidence": 0.559,
+      "label": "calm",
+      "detail": "calm"
+    },
+    "motion": {
+      "energy": 0.08,
+      "valence": 1,
+      "active": false,
+      "rate": 0.265,
+      "confidence": 0.6,
+      "label": "calm",
+      "detail": "calm"
+    },
+    "body": {
+      "energy": 0.08,
+      "valence": 1,
+      "active": false,
+      "rate": 0.52,
+      "confidence": 0.832,
+      "label": "calm",
+      "detail": "calm"
+    },
+    "vision": {
+      "energy": 0.08,
+      "valence": 1,
+      "active": false,
+      "rate": 0.05,
+      "confidence": 0.2,
+      "label": "calm",
+      "detail": "calm"
+    },
+    "expression": {
+      "energy": 0.08,
+      "valence": 1,
+      "active": false,
+      "rate": 0.5,
+      "confidence": 0.76,
+      "label": "calm",
+      "detail": "calm"
+    },
+    "voice": {
+      "energy": 0.08,
+      "valence": 1,
+      "active": false,
+      "rate": 0.05,
+      "confidence": 0.25,
+      "label": "calm",
+      "detail": "calm"
+    }
+  }
+}

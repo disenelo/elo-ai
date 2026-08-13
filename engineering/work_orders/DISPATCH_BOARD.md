@@ -1,3 +1,56 @@
+> # 🎯 THE GOAL — what eLo can do, and what's between him and the rest
+> **Read the board THIS way from now on.** Not WO numbers — capabilities. David 2026-08-13: *"I need to know
+> how this board is moving towards the goal."*
+>
+> **THE GOAL:** eLo is David's companion. He thinks, knows what's around him, remembers, looks at what matters,
+> moves like he's reasoning about space, and gets better with use. Later: the same mind in a robot body.
+>
+> | Capability | Now | What closes it |
+> |---|---|---|
+> | **TALKS like one self** | ✅ **LIVE** — David-verified: one voice, finishes sentences, honest, no false alarms | done |
+> | **KNOWS the company** | ✅ **LIVE** — real, varied, linked answers | done |
+> | **SITS / MOVES on command** | ✅ **LIVE** — sit holds, moves work | done |
+> | **LEAVES + RETURNS ("take five")** | ✅ **LIVE** | done |
+> | **REMEMBERS across sessions** | 🟡 **partial** — recall works, but memories decay even when USED | `reinforce()` on retrieval (Builder 07) |
+> | **SEES the screen truthfully** | 🟡 **partial** — WO-096 fixed the dead channel; faculties still read sensors directly | perception→world-state wiring (Builder 06) |
+> | **SHOWS what he's saying** | 🔴 **broken** — response/display/tts publish EMPTY on direct turns | ordering fix (Builder 02) |
+> | **CHOOSES as one self** | 🔴 **not yet** — he decides BEFORE he assembles himself; the self is a post-hoc description | Ruling C closure (Builder 04) |
+> | **ATTENDS to things** | 🔴 **not yet** — the attention that competes is built but imported nowhere | wire it (Builder 05) |
+> | **LOOKS at what matters** | 🔴 **not yet** — head aim is swamped by idle animation; ~13° of intent vs ±12° of random drift | HeadAim stack (Designer 05) |
+> | **MOVES like he reasons** | 🟡 **partial** — routing + peek + gravity real; wall-jump never fires, fire-jump on wrong axis | Designer 06 · 07 |
+> | **LEARNS from what he does** | 🔴 **not yet** — read-side built (WO-095), but the body never reports what it did | Ruling E report channel (Designer 08) ⭐ |
+> | **Can't silently break again** | 🔴 **not yet** — every defect found this week was SILENT | ordering tests (Builder 08) |
+>
+> **The two that unlock the most:** *choosing as one self* (Builder 04) makes him a self that decides rather
+> than narrates. *The report channel* (Designer 08) is the precondition for ALL learning — he cannot get
+> better at anything he was never told he did.
+>
+> **ROBOT:** spec captured + filed (`builder/ROBOT_SPEC/`). Reference only. Not the priority.
+
+> # ✅ STATE — 2026-08-13 05:58 (Architect reconcile)
+> **84 tests · 84 green · "still need David" = 0** (was 17). The **approval-memory fix landed** (`e368207`)
+> — approved WOs no longer resurface. **WO-096 FIXED** (`08edd9d`): the swallowed ImportError that left
+> eLo's desktop perception silently dead on every turn.
+> **Builder** 🟢 active on **WO-097** (EmbodimentState publishes empty — spine ordering) · queue: WO-097,
+> WO-098 robot Pi-bridge (design-only, RESERVED). **Designer** 🟢 active on **WO-074 + WO-075**.
+> **Game** ⚪ parked (GM-2b needs a David play-test).
+> **Robot lane:** full RD-5 spec captured verbatim (4 docs, 577 lines) + delivered to `builder/ROBOT_SPEC/`.
+> Shopping list exists but **every price is [ESTIMATE], unverified — do not order from it.**
+> **Canon:** all volumes I–XXVIII written; Rulings A–F closed; ADRs are real documents in `docs/architecture/adr/`.
+
+> # ⚖️ RULINGS E + F (David L3, 2026-08-10) + ALL VOLUMES WRITTEN
+> **Ruling E — SHARED OWNERSHIP OF MOVEMENT + MANDATORY COMMUNICATION.** *"the body does the movement, all of
+> it is connected... it needs to communicate."* Body owns movement/execution; brain owns intent; ONE connected
+> system, not master/servant. **The body MUST report what it did (goal · route · legs · arrived/fell · cost) —
+> movement not reported did not happen.** **SUPERSEDES the proposed D-XIII-1 demotion: Unity's route selection
+> is NOT retired, the staged shadow/switch/retire is CANCELLED.** Communication is what makes it one brain.
+> **Ruling F — eLo LEARNS, BUT KNOWS WHAT HE IS FROM THE SPINE.** Identity is asserted by the spine/brain every
+> turn, NEVER sourced from learned weights — which is exactly what makes self-learning safe. Style/phrasing
+> learning ALLOWED; **verification is NOT learnable** (train only on `delta_cause: style`). WO-071 confirmed compliant.
+> **ALL VOLUMES I–XXVIII now written** (I·II·III·IV·XIV completed; VII·XI·XIII·XVII·XVIII earlier today).
+> **🐞 SECOND LIVE DEFECT → WO-097 (P0):** `build_embodiment_state`:503 runs BEFORE `_conversation_faculty`:509,
+> so `response_text`/`display_text`/`tts_text` publish **EMPTY on every direct-response turn.** Silent.
+
 > # 🐞 LIVE BUG FOUND IN AUDIT — 2026-08-10: eLo's DESKTOP PERCEPTION IS SILENTLY DEAD
 > `world/live_world_state.py:194` imports `get_active_window` from `desktop/window_state.py` — **that
 > module only defines `get()`.** The ImportError is swallowed by a **bare `except`**, so the desktop
@@ -1489,5 +1542,24 @@ _Updated 2026-08-10 (reconcile #26) — **DESIGN MOVEMENT (seat-reported, UNVERI
 
 | WO-095 | **Learning loop — close the READ side** (P0, David's headline ask): ledger is write-only (376 lessons, all `candidate`, nothing reads them); build `self/lesson_store.py` record/promote/recall, wire recall into the snapshot, reward from VERIFIED ACK outcomes not text | Builder (eLo OS) | **P0** | **DONE ✅ — Run 24 `0a202f0` · 10/10 AT**: `self/lesson_store.py` — record_outcome() (sha1 dedupe, ACK-gated), promote_pass() (§3.4 thresholds: 3 verified eps / 2 sessions / strength≥0.70, sole status writer), recall() (confirmed only, ≤3/≤240-char), stats() (GrowthMetrics 4-slice), migrate_pre_v1() (archives 374 template rows). `memory/significance_engine.py` — outcome kwarg (back-compat), embodiment/efficiency/safety dims from ACK only, reward=0.70*outcome+0.30*sig, verified==False→outcome_terms=0. `runtime/cognitive_snapshot.py` — lessons field, build_snapshot() calls recall(). `runtime/prompt_builder.py` — [LEARNED HEURISTICS] bounded block. `runtime/reflection_faculty.py` — lesson_key sha1, SPOT episode_ref, ledger dedup-on-append. `server.py` — OutcomeRecord at sit_complete ACK + 15s timeout. | card 00; ADR-Exec-005 write-allow list enforced; identity/exec/prompts untouched |
 | WO-CANON-VII | **Build Volume VII Executive Cortex** — close Ruling C (move the `decide()` call site so assembly precedes decision), enforce epistemic tiers, dual-intent queue, brain>body>brain UP-relay | Builder (eLo OS) | P1 | ▶ RELEASED — volume now written | `Volume_VII/` 6 chapters; IRV found Ruling C still open at `server.py:2322` |
-| WO-CANON-XIII | **Build Volume XIII Spatial Faculty** — `faculties/spatial/` owns reachability + routing; `EloDesktopNav` demoted to executor; window-event perception; route memory | Builder + Design | P1 | ⏳ PROPOSED RULING D-XIII-1 — needs David L3 (retires live Unity behaviour) | `Volume_XIII/` 5 chapters; sequencing: ship additive `route`/`issued_by`, prove parity, THEN remove local selection |
+| WO-CANON-XIII | **Build Volume XIII Spatial Faculty** — `faculties/spatial/` owns reachability + routing; `EloDesktopNav` demoted to executor; window-event perception; route memory | Builder + Design | P1 | ▶ RELEASED — Ruling E CANCELLED D-XIII-1; Unity keeps route selection, body adds the REPORT. Not blocked. | `Volume_XIII/` 5 chapters; sequencing: ship additive `route`/`issued_by`, prove parity, THEN remove local selection |
 | WO-CANON-XI | **Build Volume XI Motor Cortex** — formalise the DOWN command / UP ACK contract + movement grammar parity | Design + Builder | P2 | ▶ RELEASED — volume now written | `Volume_XI/` 2 chapters |
+
+
+### AUDIT-DERIVED WOs — real table rows (2026-08-10). Previously these existed only as banner text, which the poll cannot parse.
+| WO | What | Agent | Pri | Status | Notes |
+|----|------|-------|-----|--------|-------|
+| WO-096 | **LIVE BUG: desktop perception silently DEAD** — `live_world_state.py:194` imports `get_active_window` which doesn't exist; ImportError swallowed by bare `except`; desktop domain returns `absent` EVERY turn. Same at `perception_faculty.py:337` | Builder (eLo OS) | **P0** | **DONE ✅ auto-verified (test_wo096_desktop_perception.py)** ▶ DISPATCHED — card `01` | kill the bare except; failures must surface, never silently absent |
+| WO-097 | **LIVE BUG: EmbodimentState publishes EMPTY** — `build_embodiment_state`:503 runs BEFORE `_conversation_faculty`:509 sets the response, so `response_text`/`display_text`/`tts_text` are empty on every direct-response turn | Builder (eLo OS) | **P0** | ▶ DISPATCHED — card `02` | + ordering test per Vol IV Ch.2 invariant I-6 |
+| WO-090 | **HeadAim · ChestAim · ArmAim** — rig-constraint stack owns head rotation (±100, mouse + active-object follow); split `HeadExpression.cs` out of HeadLook; chest follows at a fraction; Two Bone IK arm | Design (UI/Avatar) | P2 | ▶ QUEUED — cards `05` · `05a` | David verbatim `_intake/SOURCE_2026-08-10_headaim_mouse_follow.md`; retires HeadLook's ROTATION half only |
+| WO-091 | **Night light** — animation concept PENDING (David is choosing it) | Design (UI/Avatar) | P3 | ⏸ IDEA PENDING — do NOT build | held open deliberately; David gives the concept |
+| WO-092 | **Wall-jump visibility** — 45° arc IS built but gated behind up-level + reach + 40% dice roll; log rejections, relax odds, Inspector dials | Design (UI/Avatar) | P2 | ▶ QUEUED — card `06` | pairs with WO-074-F clamp |
+| WO-093 | **Fire-jump axis + size** — re-gate to LATERAL (left/right) hops only, never forward/down; minimum lateral distance; keep `SuppressGun` | Design (UI/Avatar) | P2 | ▶ QUEUED — card `06` | currently fires on DOWN-jumps — opposite of David's intent |
+| WO-CANON-IV | **Build Volume IV — the Cognitive Spine.** Canonised turn order becomes enforced: ordering tests for all invariants; close Ruling C (`exec_decide()` at `server.py:2322` runs before `spine.run()`) | Builder (eLo OS) | **P1** | ▶ RELEASED — volume written | most load-bearing; 2 invariants currently VIOLATED (I-3, I-6) |
+| WO-CANON-III | **Build Volume III — System Architecture.** Formalise the four runtime contracts + the DOWN/UP boundary; encode Ruling E (shared ownership + mandatory reporting) | Builder + Design | P2 | ▶ RELEASED — volume written | Ruling E's report channel is the missing piece |
+| WO-CANON-XIV | **Build Volume XIV — Plugin Architecture.** Reconcile the TWO capability registries (`plugins/registry.py` vs `runtime/capabilities/registry.py`) — a plugin declaring `hardware_output` currently bypasses XXIII's gates | Builder (eLo OS) | P2 | ▶ RELEASED — ADR-XIV-001 written 2026-08-13 (XXIII=policy · XIV=mechanism; declaration ≠ grant) | real security gap: `plugins/hardware/robot_body.py` already exists |
+| WO-CANON-XVII | **Build Volume XVII — Reflection Engine.** Growth metrics + improvement cycle (0% implemented); the lesson read-side beyond WO-095 | Builder (eLo OS) | P2 | ▶ RELEASED — volume written | sits on WO-095's `lesson_store` |
+| WO-CANON-XVIII | **Build Volume XVIII — Self-Evolution.** Capability/faculty versioning; ADR-Exec-005 + Ruling F boundary enforced (never self-modify identity) | Builder (eLo OS) | P3 | ▶ RELEASED — volume written | ties Vol XXII genome |
+| WO-CANON-I | **Build Volume I — Philosophy.** Retire "the user" framing; eLo's person is David Charles, named | Builder (eLo OS) | P2 | ⏳ needs David L3 (identity/voice) + FREEZE_V1_LOCK unlock for `prompts/` | `living_presence_spec.txt` + duplicate `_PERSONA` in `runtime/prompt_builder.py` must change together or they drift |
+| WO-CANON-II | **Build Volume II — Cognitive Principles.** Epistemic tiers as reasoning discipline; enforcement lives in Vol VII Ch.3 | Builder (eLo OS) | P3 | ▶ RELEASED — volume written | — |
+| RD-5 | **Robot actuation architecture** — per-joint POSABLE vs ACTUATED classification (a sphere joint canNOT be servo-driven: 3 DOF vs 1 → gimbal under a cosmetic shell); serial-bus smart servos with feedback (PWM servos structurally CANNOT satisfy Ruling E's report duty); Pi integration + power budget incl. worst-case stall; shoulder pistons vs linear actuators vs RD-4 inflated TPU **with noise figures** (calm presence = silence at rest); **HANDS: 3-finger anthropomorphic (David decided) — research tendon-underactuated vs per-joint, DOF budget, grip force + pinch points for LG-2** | R&D (Gemini) | P2 | ▶ DISPATCHED 2026-08-13 — **RESEARCH ONLY** | **RESERVED · keeps LG-2.** No purchase, no assembly, NO POWER under this WO. **HARD GATE: force-limiter/soft-stop does not exist in `avatar/safety_controller.py` — must be DONE + LG-2 reviewed before anything is powered near David.** Source verbatim `_intake/SOURCE_2026-08-13_robot_joints_servos_pistons.md` |

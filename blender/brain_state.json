@@ -1,0 +1,89 @@
+{
+  "schema": "brain_state/v1",
+  "_ts": 1786607926.382,
+  "cluster_energy": 0.424,
+  "show_one_brain": true,
+  "systems": {
+    "intent": {
+      "energy": 0.36,
+      "valence": 1,
+      "active": true,
+      "rate": 0.44,
+      "confidence": 0.8,
+      "label": "conversation",
+      "detail": "conversation"
+    },
+    "attention": {
+      "energy": 0.64,
+      "valence": 1,
+      "active": true,
+      "rate": 0.56,
+      "confidence": 0.8,
+      "label": "present",
+      "detail": "curious, searching"
+    },
+    "emotion": {
+      "energy": 0.265,
+      "valence": 1,
+      "active": true,
+      "rate": 0.2,
+      "confidence": 0.6,
+      "label": "neutral",
+      "detail": "quietly neutral"
+    },
+    "memory": {
+      "energy": 0.44,
+      "valence": 1,
+      "active": true,
+      "rate": 0.8,
+      "confidence": 0.608,
+      "label": "recalling",
+      "detail": "holding context"
+    },
+    "motion": {
+      "energy": 0.265,
+      "valence": 1,
+      "active": true,
+      "rate": 0.265,
+      "confidence": 0.6,
+      "label": "thinking",
+      "detail": "thinking"
+    },
+    "body": {
+      "energy": 0.4,
+      "valence": 1,
+      "active": true,
+      "rate": 0.16,
+      "confidence": 0.598,
+      "label": "present",
+      "detail": "settled"
+    },
+    "vision": {
+      "energy": 0.0,
+      "valence": 1,
+      "active": false,
+      "rate": 0.05,
+      "confidence": 0.2,
+      "label": "idle",
+      "detail": "not looking"
+    },
+    "expression": {
+      "energy": 0.6,
+      "valence": 1,
+      "active": true,
+      "rate": 0.3,
+      "confidence": 0.76,
+      "label": "slow",
+      "detail": "slow"
+    },
+    "voice": {
+      "energy": 0.0,
+      "valence": 1,
+      "active": false,
+      "rate": 0.05,
+      "confidence": 0.25,
+      "label": "silent",
+      "detail": "listening"
+    }
+  }
+}

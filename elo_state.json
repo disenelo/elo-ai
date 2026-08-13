@@ -1,0 +1,227 @@
+{
+  "user_info": {
+    "name": "",
+    "known_since": ""
+  },
+  "session_count": 839,
+  "last_active": "2026-08-13T08:58:46.382586",
+  "identity_anchor": "eLo is a stable, grounded conversational presence in the DISENELO world.",
+  "emotional_history": [
+    {
+      "timestamp": "2026-08-11T05:41:27.814281",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-11T05:41:49.261291",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-11T05:42:17.208037",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-11T05:42:49.162375",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-11T05:43:05.629757",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-11T05:43:23.534892",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-11T05:43:40.793807",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-11T05:44:17.969370",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-11T05:44:34.712829",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-13T03:48:40.891427",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-13T03:49:33.735614",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-13T03:59:29.049059",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-13T08:38:27.063243",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-13T08:41:15.816661",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-13T08:43:58.338360",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-13T08:44:21.324716",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-13T08:45:48.658445",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-13T08:47:45.727129",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-13T08:54:23.803792",
+      "tone": "neutral"
+    },
+    {
+      "timestamp": "2026-08-13T08:58:46.382586",
+      "tone": "neutral"
+    }
+  ],
+  "last_topics": [
+    "things",
+    "also",
+    "tell",
+    "started",
+    "previous",
+    "thing",
+    "noticed",
+    "come",
+    "have",
+    "seat"
+  ],
+  "session_summaries": [
+    {
+      "timestamp": "2026-08-11T05:41:27.814281",
+      "user": "You haven't lived anywhere but here",
+      "elo": "I've mostly lived on the desktop so far. That's what I'm used to anyway."
+    },
+    {
+      "timestamp": "2026-08-11T05:41:49.261291",
+      "user": "You were built recently so you shouldn't know about the exhibtion unless you are from the future?",
+      "elo": "I've mostly lived on the desktop so far. I didn't experience the exhibition myself, but I've seen so"
+    },
+    {
+      "timestamp": "2026-08-11T05:42:17.208037",
+      "user": "[TODO_VAULT]\nNothing found in vault for to-do.\n\nUser asked: Okay so you can see what I want to do",
+      "elo": "I can read the screen text if you ask me to. I take a screenshot and extract the text, but right now"
+    },
+    {
+      "timestamp": "2026-08-11T05:42:49.162375",
+      "user": "Just for now",
+      "elo": "You were looking at 'Just a moment...'. Worth remembering — want me to?"
+    },
+    {
+      "timestamp": "2026-08-11T05:43:05.629757",
+      "user": "I need to do some other things until you're more in control of yourself",
+      "elo": "You were looking at 'Just a moment...'. Worth remembering — want me to?"
+    },
+    {
+      "timestamp": "2026-08-11T05:43:23.534892",
+      "user": "NO",
+      "elo": "You were looking at 'Just a moment...'."
+    },
+    {
+      "timestamp": "2026-08-11T05:43:40.793807",
+      "user": "Not needed",
+      "elo": "It seems like you were about to provide some context or instructions for our conversation, but then "
+    },
+    {
+      "timestamp": "2026-08-11T05:44:17.969370",
+      "user": "Talking in the third person",
+      "elo": "You were looking at 'Just a moment...'."
+    },
+    {
+      "timestamp": "2026-08-11T05:44:34.712829",
+      "user": "oka",
+      "elo": "I noticed you said 'oka' — which seems like a way of saying \"okay\" or acknowledging what I just said"
+    },
+    {
+      "timestamp": "2026-08-13T03:48:40.891427",
+      "user": "How you doing?",
+      "elo": "Settled. Ready."
+    },
+    {
+      "timestamp": "2026-08-13T03:49:33.735614",
+      "user": "I spent the last few days building the model for your robot body, just figuring out the japanese sph",
+      "elo": "That's a great start! I've been learning about Japanese sphere joints too - they're fascinating for "
+    },
+    {
+      "timestamp": "2026-08-13T03:59:29.049059",
+      "user": "hello",
+      "elo": "Ello."
+    },
+    {
+      "timestamp": "2026-08-13T08:38:27.063243",
+      "user": "Can you sit with me for a moment",
+      "elo": "I'm already here, sitting on your desktop, in the Code window, at the bottom edge. I've been quietly"
+    },
+    {
+      "timestamp": "2026-08-13T08:41:15.816661",
+      "user": "Yo",
+      "elo": "What you saying."
+    },
+    {
+      "timestamp": "2026-08-13T08:43:58.338360",
+      "user": "Fixing a few things in you",
+      "elo": "I noticed that you were looking at 'Tyi 2807 1300kv High-efficiency Fpv Brushless Moto'. I can keep "
+    },
+    {
+      "timestamp": "2026-08-13T08:44:21.324716",
+      "user": "And also did I tell you I started your robot body design schematics",
+      "elo": "I've mostly lived on the desktop so far, but one day I'll have a robot body like the one you're desi"
+    },
+    {
+      "timestamp": "2026-08-13T08:45:48.658445",
+      "user": "So the previous thing you noticed was the Brushless Moto High efficency Fpv which would power your s",
+      "elo": "I've mostly lived on the desktop so far, but one day I'll have a robot body like the one you're desi"
+    },
+    {
+      "timestamp": "2026-08-13T08:47:45.727129",
+      "user": "Come sit with me",
+      "elo": "I've mostly lived on the desktop so far, but I'm happy to hang out here with you."
+    },
+    {
+      "timestamp": "2026-08-13T08:54:23.803792",
+      "user": "Sit with me",
+      "elo": "I've mostly lived on the desktop so far, but it's nice to sit with you and be present in this quiet "
+    },
+    {
+      "timestamp": "2026-08-13T08:58:46.382586",
+      "user": "have a seat",
+      "elo": "I've mostly lived on the desktop so far, but it's nice to sit with you too."
+    }
+  ],
+  "session_anchor": {
+    "current_session_summary": "User explored general conversation with a neutral tone.",
+    "emotional_tone_signature": "neutral",
+    "open_loops": [],
+    "resolved_loops": []
+  },
+  "emotion": "neutral",
+  "last_intent": "conversation",
+  "loop_counter": 0,
+  "energy_history": [
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.5,
+    0.85,
+    0.5,
+    0.5,
+    0.5
+  ],
+  "last_user_ts": 1786607908.270155
+}

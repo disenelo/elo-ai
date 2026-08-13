@@ -1,0 +1,3861 @@
+{
+  "schema": "company_state/v1",
+  "_ts": 1786629641.11,
+  "updated": "2026-08-13T14:00:41.109665Z",
+  "source": "company_runtime.company_state_writer \u2014 parsed live from DISPATCH_BOARD.md",
+  "greeting": {
+    "founder": "David",
+    "phase": "Phase I \u2192 II (Digital Companion \u2192 Executive Partner)"
+  },
+  "voiced_briefing": "1 item ready to pick up \u00b7 1 awaiting David approval \u00b7 WO-074, WO-075, RD-4 in progress",
+  "company_focus": {
+    "milestone": "Presentable v1",
+    "items": [
+      "sit-close(WO-059/052A+WO-040)",
+      "movement-fix+misroute",
+      "Self-Model(WO-052A/059)",
+      "TTS(WO-016/019)",
+      "memory-recall(WO-022/037/053)",
+      "tool-routing(WO-020)",
+      "mirror-scrub(WO-036)"
+    ],
+    "note": "these are IN-PROGRESS focus, not \"ready\" backlog \u2014 the coordinator's today_priorities must surface THIS, not the first ready-P1 rows. See WO-061."
+  },
+  "today_priorities": [
+    {
+      "text": "**LIVE BUG: EmbodimentState publishes EMPTY** \u2014 `build_embodiment_state`:503 run",
+      "owner": "Builder (eLo OS)",
+      "priority": "P0",
+      "status": "dispatched",
+      "focus_milestone": "Presentable v1"
+    }
+  ],
+  "waiting_for_approval": [
+    {
+      "wo": "INT7-HEAT",
+      "text": "**One Brain \u2014 live cognitive heat-map / observability layer** (David spec 2026-0",
+      "level": "L3",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0",
+      "label": "your call \u2014 you asked for this"
+    }
+  ],
+  "blocked": [],
+  "money": {
+    "status": "not yet modeled",
+    "detail": "Finance seat (SEAT-BIZ-002) runs WO BO-2 \u2014 no figures invented."
+  },
+  "roadmap": [
+    {
+      "id": "PROJ-ELOOS",
+      "name": "eLo OS (Cognitive Spine)",
+      "phase": "Foundations",
+      "progress": 0.72
+    },
+    {
+      "id": "PROJ-ONEBRAIN",
+      "name": "One Brain Visualiser",
+      "phase": "M1\u2013M4+C1 done; M5 building",
+      "progress": 0.5
+    },
+    {
+      "id": "PROJ-GAME",
+      "name": "eLo's Planet (game)",
+      "phase": "Model transition",
+      "progress": 0.55
+    },
+    {
+      "id": "PROJ-ROBOT",
+      "name": "eLo Robot",
+      "phase": "R&D opening",
+      "progress": 0.15
+    },
+    {
+      "id": "PROJ-008",
+      "name": "Kickstarter",
+      "phase": "Pre-campaign",
+      "progress": 0.1
+    }
+  ],
+  "engineering": {
+    "open": 15,
+    "in_review": 1,
+    "blocked": 0,
+    "notes": "135 work orders parsed live from the board."
+  },
+  "alerts": [
+    {
+      "id": "ALT-1",
+      "level": "info",
+      "text": "company_state.json is LIVE \u2014 written by company_runtime, parsed from the board."
+    }
+  ],
+  "suggested_decisions": [
+    {
+      "id": "SUG-1",
+      "text": "Wire EA2-2 (Presence panel) to show + approve from this live state"
+    }
+  ],
+  "board": [
+    {
+      "id": "WO-085",
+      "title": "Proactive-proposal gating: stop over-tracking, respect \"no\", say \"brain\"/\"hold o",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-069",
+      "title": "Multilingual \"how are you\" \u2014 answer in-language, no meta-narration",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-072",
+      "title": "Intent Gatekeeper (rules-first, cheap-LLM normalizer fallback)",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-068",
+      "title": "Capture / Prepare / Hold the thread (Second Brain)",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-071",
+      "title": "Realtime correction / ICL loop",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-076",
+      "title": "Perception mis-link fidelity (no fragments, no fabricated links)",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-077",
+      "title": "Return loop: eLo's own recent outputs + perception in every turn's cognitive sta",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-082",
+      "title": "Decision Journal: \"why did you do that?\" \u2014 real trace readback, no confabulation",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-083",
+      "title": "Identity & Meaning convergence \u2014 who I'm becoming (Verified Speech, no fabricati",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-081",
+      "title": "Emergent Cognition Cluster \u2014 internal intents, habits, autobiography, absence-aw",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-080",
+      "title": "Company Knowledge Interface \u2014 deep WO-level answers from real state; permitted_a",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-074",
+      "title": "Movement-feel bugs: hide fire-jump GUN (A) \u00b7 edge-roam (C) \u00b7 jump-too-far \u2192 path",
+      "lane": "Creative",
+      "status": "WORKING",
+      "seat": "Design (UI/Avatar)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-075",
+      "title": "Desktop gravity + screen-wrap landing \u2014 eLo always lands on a real surface",
+      "lane": "Creative",
+      "status": "WORKING",
+      "seat": "Design (UI/Avatar)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-087",
+      "title": "FULL local-driver audit (brain>body>brain sweep)",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "Design (UI/Avatar)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-086",
+      "title": "Mouse-idle \u2192 brain; retire local calm driver (steps 1\u20132)",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Design (UI/Avatar) + Builder",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-052",
+      "title": "**The Moment \u2014 Cognitive Snapshot assembly** \u2014 compose the EXISTING parts (self-",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-052B",
+      "title": "**Narrative Identity (P1)** \u2014 autobiography across embodiments (\"mostly lived on",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder + Architecture",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-053",
+      "title": "**Memory-recall confidence** \u2014 apply LiveWorldState's confidence+source+status p",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-054",
+      "title": "**Movement queue** \u2014 overlapping requests ('Sit? Seat? Sit?') resolve through a ",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder + UI",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-055",
+      "title": "**Capability Learning** \u2014 on repeated failure, record a rule-candidate ('movemen",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-056",
+      "title": "**Affordances field on the World Model** \u2014 `window \u2192 affordances{stand\u00b7run\u00b7jump\u00b7",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder + UI/Game",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-057",
+      "title": "**Perception scope-expansion + real capabilities** \u2014 widen DesktopState beyond a",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-058",
+      "title": "**eLo desktop VFX layer \u2014 snow \u00b7 meditation-glow \u00b7 rain (David's existing assets",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "UI/Avatar (Design)",
+      "pri": "P3",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-003",
+      "title": "Finish Volume V 6 legacy chapter contracts",
+      "lane": "Runtime",
+      "status": "READY",
+      "seat": "Architecture",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "INT-1",
+      "title": "Plushies \u2192 Robot: shared character-model export (soft form \u2192 TPU shell)",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Design + Builder",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "INT-3",
+      "title": "5D \u2192 Robot movement: pointcloud \u2192 World Model spatial nodes",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "INT-4",
+      "title": "CompositionDesigner \u2192 Marketing: social/Kickstarter/exhibition export presets",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Design",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "INT-5",
+      "title": "Sketchbook/CompositionDesigner \u2192 Book: art-to-page pipeline",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Design",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "INT-6b",
+      "title": "Retargeter/Bridge \u2192 DesktopBuddy: **material sync**",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "UI/Avatar",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-024",
+      "title": "**Desktop-as-world \u2014 eLo walks BEHIND windows** (z-order occlusion; windows = pl",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "UI/Avatar + Builder",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-032",
+      "title": "**LLM backend DOWN \u2014 eLo silently serving MockBackend canned lines** (live incid",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder",
+      "pri": "P0",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-032",
+      "title": "\u21a9 **REOPENED (David live 2026-08-03)** \u2014 Part C complete (Builder 2026-08-04, co",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder",
+      "pri": "P0",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-030",
+      "title": "**Weather \u2014 broken: returns random South American cities, ignores named city** (",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder",
+      "pri": "P0",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-034",
+      "title": "**App doesn't fire the reply \u2014 CLI works, app doesn't** (eLo OS \u2194 UI were COMPET",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS) + UI (Unity) SPLIT",
+      "pri": "P0",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-035",
+      "title": "**Say/do gap \u2014 eLo narrates actions (sit) he never performs** (David live 2026-0",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS) + UI arbiter",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-036",
+      "title": "**eLo replies too long / flowery \u2014 tighten** (David live 2026-08-03)",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-037",
+      "title": "**Memory wired but NOT learning \u2014 write-back dead since 2026-06-09** (David aske",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-038",
+      "title": "**Desktop-context tool INCONSISTENT across turns \u2014 NOT fabrication** (CORRECTED ",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-039",
+      "title": "**Garbled routing \u2014 sentences mis-parsed into command fragments ('quit is?'), le",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-040",
+      "title": "**Avatar: sit request plays an excited JOY-JUMP (not sit), jump never blends bac",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (emit?) + UI/Avatar (clip+blend)",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-041",
+      "title": "**Executive VERIFY-before-speak \u2014 stop claiming actions that never executed** (C",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (Executive/Agency) + UI (ACK)",
+      "pri": "P0",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-042",
+      "title": "**Faculty health registry \u2014 persistent degraded/offline per faculty; Executive r",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (Cognitive Core)",
+      "pri": "P0",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-043",
+      "title": "**Faculty Bus isolation \u2014 stop prompt/routing contamination** (CA P0)",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (Faculty Bus)",
+      "pri": "P0",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-044",
+      "title": "**Runtime /health diagnostics \u2014 expose every faculty's live state** (CA P1)",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (Runtime)",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-045",
+      "title": "**'Can you take 5' \u2192 eLo pops OFF screen for privacy, returns when called** (Dav",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (intent) + UI/Avatar (pop-off+hi",
+      "pri": "P2",
+      "importance": "RESERVED",
+      "needs_david": true,
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "id": "WO-031",
+      "title": "**Auto-start continuation loop with eLo OS** \u2014 always-on, event-driven (no clock",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-033",
+      "title": "**eLo memory framing \u2014 talk in real time/days, not \"sessions\"** (model is alread",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-027",
+      "title": "**eLo self-improvement loop** \u2014 behaviour golden-set + LLM-judge scoring + escal",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder + Architect",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-026",
+      "title": "**eLo faster responses (latency)** \u2014 enable streaming + response-mode token budg",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-PRIN-1",
+      "title": "**Provenance-tag sweep** across Volume headers (`[SCIENCE]/[ENGINEERING]/[CREATI",
+      "lane": "Runtime",
+      "status": "READY",
+      "seat": "Architecture",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "INT7-M6-TUNE",
+      "title": "**One Brain \u2014 M6 tuning: strengthen the inward tighten** (asymmetric \u2014 contracti",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "UI/Avatar (Design)",
+      "pri": "P3",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "INT7-QV",
+      "title": "**One Brain \u2014 quantum-vortex consistency pass** (David relay 2026-08-01)",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "UI/Avatar (Design)",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "INT7-BEAD",
+      "title": "**One Brain \u2014 firing bead size** (C1/M4 bead scale \u2014 David relay 2026-08-01)",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "UI/Avatar (Design)",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "INT7-VW",
+      "title": "**One Brain \u2014 voice-wave tighter radius** (David relay 2026-08-01)",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "UI/Avatar (Design)",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "INT7-M5B",
+      "title": "**One Brain \u2014 M5 echo-ring rework** (David relay 2026-08-01)",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "UI/Avatar (Design)",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "INT7-HIT",
+      "title": "**One Brain \u2014 hit/contact reaction** (new behaviour \u2014 David relay 2026-08-01)",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "UI/Avatar (Design)",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "INT7-HEAT",
+      "title": "**One Brain \u2014 live cognitive heat-map / observability layer** (David spec 2026-0",
+      "lane": "Engineering",
+      "status": "REVIEW",
+      "seat": "**UI/Avatar (Design) + Builder (data)**",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "INT7-WEB",
+      "title": "**One Brain \u2014 persistent web / spider links BETWEEN MODES** (living-organism web",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "**UI/Avatar (Design)**",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "INT7-CORE",
+      "title": "**One Brain \u2014 core web-sphere \"heart\"** (add rotating motes + web links AT the c",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "**UI/Avatar (Design)**",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "INT7-OFFTOGGLE",
+      "title": "**Settings \u2014 'turn Brain visualiser OFF' toggle doesn't hide the brain** (still ",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "**UI/Avatar (Design)**",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "INT7-LL",
+      "title": "**One Brain \u2014 \"lightning-liquid\" show between modes** (David asked 2026-08-01)",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "**UI/Avatar (Design)**",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "INT-8",
+      "title": "**Drag-drop files onto the eLo avatar \u2192 eLo reads/reviews**",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "UI/Avatar + Builder",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "INT-9",
+      "title": "**3D file viewer \u2014 enable GLB/GLTF runtime loader** (drop a 3D model \u2192 eLo shows",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "UI/Avatar + Game (Unity)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-028",
+      "title": "**eLo Presence avatar \u2014 fix the wave gesture + arm rotation** (blocks avatar rea",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "UI/Avatar (Unity)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-046",
+      "title": "**Social media auto-posting** (David 2026-08-03) \u2014 scheduled auto-posts across c",
+      "lane": "Marketing",
+      "status": "READY",
+      "seat": "Marketing (ChatGPT, SEAT-MKT-002)",
+      "pri": "P3",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-047",
+      "title": "**Auto graphic template drop-in** (David 2026-08-03) \u2014 drop content into brand t",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Design (SEAT-ENG-004) + Marketing",
+      "pri": "P3",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-048",
+      "title": "**\"Ask eLo how's the company\"** (David 2026-08-03) \u2014 eLo answers company-status ",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS capability)",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-061",
+      "title": "**Company Cognition \u2014 \"what's on the board\" must reflect the FOCUS, not the read",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-062",
+      "title": "**Expressiveness layer \u2014 micro-expressions + squash-and-stretch** (David 2026-08",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Designer + Builder",
+      "pri": "P3",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "CR-1",
+      "title": "Kickstarter hero concept + moodboard (Weavy/Figma)",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Co-Creative",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "CR-2",
+      "title": "eLo animated teaser (Higgsfield motion)",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Co-Creative",
+      "pri": "P3",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "CR-3",
+      "title": "Market-stall visual world + signage system",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Co-Creative",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "FH-2",
+      "title": "Lock signature silhouette system",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Co-Creative + Design",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "FH-3",
+      "title": "3\u20135 fashion prototypes",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Design",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "FH-4",
+      "title": "First footwear prototype (upper pattern + last/sole 3D)",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Design",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "FH-5",
+      "title": "First jewellery drop (sculpt \u2192 print \u2192 cast)",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Design",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "FH-6",
+      "title": "Tee mockups (fast win)",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Design + Marketing",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "FH-7",
+      "title": "Mini collection + lookbook",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Design + Co-Creative + Marketing",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "MK-1",
+      "title": "Kickstarter campaign plan (audience \u00b7 message \u00b7 channels \u00b7 KPIs)",
+      "lane": "Marketing",
+      "status": "READY",
+      "seat": "Marketing (ChatGPT)",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "MK-2",
+      "title": "Content calendar + audience-growth engine (pre-launch \u2192 live \u2192 fulfilment)",
+      "lane": "Marketing",
+      "status": "READY",
+      "seat": "Marketing (ChatGPT)",
+      "pri": "P1",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "BO-2",
+      "title": "Kickstarter cost + funding model (COGS + fees + fulfilment \u2192 goal + tier margins",
+      "lane": "Business",
+      "status": "READY",
+      "seat": "Business Ops (ChatGPT)",
+      "pri": "P1",
+      "importance": "RESERVED",
+      "needs_david": true,
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "id": "LG-1",
+      "title": "Pre-Kickstarter legal + safety checklist (IP \u00b7 toy/robot compliance \u00b7 T&Cs \u00b7 pri",
+      "lane": "Legal",
+      "status": "READY",
+      "seat": "Legal (ChatGPT)",
+      "pri": "P1",
+      "importance": "RESERVED",
+      "needs_david": true,
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "id": "RD-3",
+      "title": "**Isaac Lab RL training pipeline** \u2014 implement the Phase-2 policy-training loop ",
+      "lane": "R&D",
+      "status": "READY",
+      "seat": "R&D (Gemini)",
+      "pri": "P2",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "RD-4",
+      "title": "**eLo robot ENGINEERING validation \u2014 inflated-TPU floating-head chibi form (IP-c",
+      "lane": "R&D",
+      "status": "WORKING",
+      "seat": "Gemini (R&D, drive)",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "RD-CAD",
+      "title": "eLo Robot head/neck **safety-aware CAD contract** (2-DOF Bowden, base servos, ca",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Design + Builder (hardware)",
+      "pri": "P2",
+      "importance": "RESERVED",
+      "needs_david": true,
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "id": "LG-2",
+      "title": "**Product-Safety scope \u2014 force limiters / soft-stop** (current-sensing/clutch) f",
+      "lane": "Legal",
+      "status": "READY",
+      "seat": "Legal \u00b7 Product Safety (ChatGPT + human)",
+      "pri": "P1",
+      "importance": "RESERVED",
+      "needs_david": true,
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "id": "GM-2",
+      "title": "**eLo_v2 rig + arms/animations** \u2014 the transition's core; broken into the ordere",
+      "lane": "Engineering",
+      "status": "WORKING",
+      "seat": "Game (Unity)",
+      "pri": "P0",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "GM-2a",
+      "title": "**Swim-lean + head in eLo_v2** \u2014 carry the swim-lean animation across; the **hea",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Game (Unity)",
+      "pri": "P0",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "GM-2b",
+      "title": "**Run \u2192 gun-fire blend** \u2014 blend the **hands + run animations into the gun-fire ",
+      "lane": "Engineering",
+      "status": "WORKING",
+      "seat": "Game (Unity)",
+      "pri": "P0",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "GM-2c",
+      "title": "**Arm + gun positioning** \u2014 place/align the arms and weapons (sockets, hold pose",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Game (Unity)",
+      "pri": "P0",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "GM-2d",
+      "title": "**Backpack** \u2014 model/attach a backpack accessory on eLo_v2",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Game (Unity)",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "GM-A8",
+      "title": "Duplication sweep \u2014 verify Vehicles/Weapons/Pickups/Cameras reference `eLo_v2` n",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Game (Unity)",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "GM-3",
+      "title": "**First playable invasion stage** \u2014 *assemble* from existing parts (6-weapon sys",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Game (Unity)",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "GM-4",
+      "title": "FPS-style aim \u2014 arms follow cursor during 2.5D traversal (IK vs procedural fork)",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Game (Unity)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "GM-punch",
+      "title": "**\u26a0\ufe0f polish/test punch-list** (banana-grenade test \u00b7 water VFX/buoyancy tune \u00b7 c",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Game (Unity)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "EA2-2B",
+      "title": "**Company Brain \u2014 author the Figma frames (One Brain look) \u2192 David review \u2192 Unit",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "UI/Avatar (Design)",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "EA2-4",
+      "title": "Scheduling Faculty (move/reorder WOs)",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "EA2-5",
+      "title": "**Approval Faculty** (L3 gate as a faculty \u2014 net-new)",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "EA2-6",
+      "title": "Orchestration Faculty (multi-seat chains \u2014 net-new)",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "EA2-7",
+      "title": "Company Memory store (via unified Memory)",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XV",
+      "title": "Build Volume XV World Model (LiveWorldState, read-once)",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XII",
+      "title": "Perception\u2192World-State copy + fidelity flags",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-VI",
+      "title": "Wire Working Memory + attention into the turn",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-VIII",
+      "title": "Memory: single logical writer + reinforce-on-recall",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XVI",
+      "title": "Assemble-before-decide + bus priority",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-X",
+      "title": "Personality drift gate + one trait model",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XXIV",
+      "title": "Knowledge: confidence+evidence+ranked retrieval",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XX",
+      "title": "Cognitive-tier selector + value-gated escalation",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XXV",
+      "title": "Temporal Cognition faculty",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XXI",
+      "title": "Narrative Identity: autobiography journal + guard",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XXII",
+      "title": "Faculty Genome descriptor + registry",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XXIII",
+      "title": "Security & Trust: gates + define LG-2",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XXVII",
+      "title": "Eng Standards & Canon Governance (consolidate)",
+      "lane": "Runtime",
+      "status": "READY",
+      "seat": "Architect",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XXVI",
+      "title": "Creative Intelligence: domain generators",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XXVIII",
+      "title": "Adaptive Learning / RL Faculty (ADR-Exec-005)",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XIX",
+      "title": "Consciousness research programme (findings\u2192ADRs)",
+      "lane": "Runtime",
+      "status": "READY",
+      "seat": "Architect",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-094",
+      "title": "**eLo NOTICES window events + CHOOSES** \u2014 \"I saw that window close, let me jump ",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Design + Builder",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-095",
+      "title": "**Learning loop \u2014 close the READ side** (P0, David's headline ask): ledger is wr",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P0",
+      "importance": "RESERVED",
+      "needs_david": true,
+      "badge": "\ud83d\udd34"
+    },
+    {
+      "id": "WO-CANON-VII",
+      "title": "**Build Volume VII Executive Cortex** \u2014 close Ruling C (move the `decide()` call",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XIII",
+      "title": "**Build Volume XIII Spatial Faculty** \u2014 `faculties/spatial/` owns reachability +",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder + Design",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XI",
+      "title": "**Build Volume XI Motor Cortex** \u2014 formalise the DOWN command / UP ACK contract ",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Design + Builder",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-096",
+      "title": "**LIVE BUG: desktop perception silently DEAD** \u2014 `live_world_state.py:194` impor",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "Builder (eLo OS)",
+      "pri": "P0",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-097",
+      "title": "**LIVE BUG: EmbodimentState publishes EMPTY** \u2014 `build_embodiment_state`:503 run",
+      "lane": "Engineering",
+      "status": "WORKING",
+      "seat": "Builder (eLo OS)",
+      "pri": "P0",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-090",
+      "title": "**HeadAim \u00b7 ChestAim \u00b7 ArmAim** \u2014 rig-constraint stack owns head rotation (\u00b1100,",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Design (UI/Avatar)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-091",
+      "title": "**Night light** \u2014 animation concept PENDING (David is choosing it)",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Design (UI/Avatar)",
+      "pri": "P3",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-092",
+      "title": "**Wall-jump visibility** \u2014 45\u00b0 arc IS built but gated behind up-level + reach + ",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Design (UI/Avatar)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-093",
+      "title": "**Fire-jump axis + size** \u2014 re-gate to LATERAL (left/right) hops only, never for",
+      "lane": "Creative",
+      "status": "READY",
+      "seat": "Design (UI/Avatar)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-IV",
+      "title": "**Build Volume IV \u2014 the Cognitive Spine.** Canonised turn order becomes enforced",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P1",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-III",
+      "title": "**Build Volume III \u2014 System Architecture.** Formalise the four runtime contracts",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder + Design",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XIV",
+      "title": "**Build Volume XIV \u2014 Plugin Architecture.** Reconcile the TWO capability registr",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XVII",
+      "title": "**Build Volume XVII \u2014 Reflection Engine.** Growth metrics + improvement cycle (0",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-XVIII",
+      "title": "**Build Volume XVIII \u2014 Self-Evolution.** Capability/faculty versioning; ADR-Exec",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-I",
+      "title": "**Build Volume I \u2014 Philosophy.** Retire \"the user\" framing; eLo's person is Davi",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-CANON-II",
+      "title": "**Build Volume II \u2014 Cognitive Principles.** Epistemic tiers as reasoning discipl",
+      "lane": "Engineering",
+      "status": "READY",
+      "seat": "Builder (eLo OS)",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "RD-5",
+      "title": "**Robot actuation architecture** \u2014 per-joint POSABLE vs ACTUATED classification ",
+      "lane": "R&D",
+      "status": "WORKING",
+      "seat": "R&D (Gemini)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    }
+  ],
+  "dep_graph": {
+    "WO-068": [
+      "WO-085"
+    ],
+    "WO-052": [
+      "WO-042"
+    ],
+    "WO-052B": [
+      "WO-052A"
+    ],
+    "WO-053": [
+      "WO-037",
+      "WO-022"
+    ],
+    "WO-054": [
+      "WO-035"
+    ],
+    "WO-055": [
+      "WO-027"
+    ],
+    "WO-056": [
+      "WO-049"
+    ],
+    "WO-057": [
+      "WO-048"
+    ],
+    "WO-058": [
+      "WO-049",
+      "WO-030"
+    ],
+    "INT-3": [
+      "WO-002"
+    ],
+    "WO-024": [
+      "WO-023"
+    ],
+    "WO-037": [
+      "WO-033"
+    ],
+    "WO-040": [
+      "WO-035"
+    ],
+    "WO-041": [
+      "WO-035",
+      "WO-040"
+    ],
+    "WO-042": [
+      "WO-032"
+    ],
+    "WO-043": [
+      "WO-039"
+    ],
+    "WO-045": [
+      "INT7-OFFTOGGLE"
+    ],
+    "WO-033": [
+      "WO-027"
+    ],
+    "WO-027": [
+      "WO-026"
+    ],
+    "INT7-M6-TUNE": [
+      "INT7-M6"
+    ],
+    "INT7-QV": [
+      "INT7-WEB"
+    ],
+    "INT7-BEAD": [
+      "INT7-WEB"
+    ],
+    "INT7-M5B": [
+      "INT7-M5",
+      "INT7-WEB"
+    ],
+    "INT7-HEAT": [
+      "INT7-QV"
+    ],
+    "INT7-WEB": [
+      "INT7-RING-CLEANUP"
+    ],
+    "INT7-CORE": [
+      "INT7-WEB2"
+    ],
+    "INT7-LL": [
+      "INT7-WEB"
+    ],
+    "INT-8": [
+      "INT-8b",
+      "WO-028"
+    ],
+    "INT-9": [
+      "INT-8"
+    ],
+    "WO-046": [
+      "MK-1",
+      "MK-2"
+    ],
+    "WO-047": [
+      "WO-046"
+    ],
+    "WO-061": [
+      "WO-048"
+    ],
+    "WO-062": [
+      "WO-052A",
+      "WO-049"
+    ],
+    "CR-1": [
+      "MK-1"
+    ],
+    "FH-3": [
+      "FH-1",
+      "FH-2"
+    ],
+    "FH-4": [
+      "FH-1"
+    ],
+    "FH-7": [
+      "FH-3"
+    ],
+    "MK-2": [
+      "MK-1"
+    ],
+    "RD-3": [
+      "RD-2"
+    ],
+    "RD-4": [
+      "RD-1"
+    ],
+    "RD-CAD": [
+      "RD-1",
+      "LG-2"
+    ],
+    "LG-2": [
+      "RD-1"
+    ],
+    "GM-2": [
+      "GM-0"
+    ],
+    "GM-2a": [
+      "GM-0"
+    ],
+    "GM-2b": [
+      "GM-2a"
+    ],
+    "GM-2c": [
+      "GM-2b"
+    ],
+    "GM-2d": [
+      "GM-2c"
+    ],
+    "GM-A8": [
+      "GM-0"
+    ],
+    "GM-3": [
+      "GM-2"
+    ],
+    "GM-4": [
+      "GM-2"
+    ],
+    "GM-punch": [
+      "GM-0"
+    ],
+    "EA2-2B": [
+      "EA2-2"
+    ],
+    "EA2-4": [
+      "EA2-1"
+    ],
+    "EA2-5": [
+      "EA2-1"
+    ],
+    "EA2-6": [
+      "EA2-5"
+    ],
+    "EA2-7": [
+      "EA2-1"
+    ],
+    "WO-CANON-XV": [
+      "WO-CANON-XV"
+    ],
+    "WO-CANON-XII": [
+      "WO-CANON-XII"
+    ],
+    "WO-CANON-VI": [
+      "WO-CANON-VI"
+    ],
+    "WO-CANON-VIII": [
+      "WO-CANON-VIII"
+    ],
+    "WO-CANON-XVI": [
+      "WO-CANON-XVI"
+    ],
+    "WO-CANON-X": [
+      "WO-CANON-X"
+    ],
+    "WO-CANON-XXIV": [
+      "WO-CANON-XXIV"
+    ],
+    "WO-CANON-XX": [
+      "WO-CANON-XX"
+    ],
+    "WO-CANON-XXV": [
+      "WO-CANON-XXV"
+    ],
+    "WO-CANON-XXI": [
+      "WO-CANON-XXI"
+    ],
+    "WO-CANON-XXII": [
+      "WO-CANON-XXII"
+    ],
+    "WO-CANON-XXIII": [
+      "LG-2",
+      "WO-CANON-XXIII"
+    ],
+    "WO-CANON-XXVII": [
+      "WO-CANON-XXVII"
+    ],
+    "WO-CANON-XXVI": [
+      "WO-CANON-XXVI"
+    ],
+    "WO-CANON-XXVIII": [
+      "WO-CANON-XXVIII"
+    ],
+    "WO-CANON-XIX": [
+      "WO-CANON-XIX"
+    ],
+    "WO-092": [
+      "WO-074-F"
+    ],
+    "WO-CANON-XVII": [
+      "WO-095"
+    ],
+    "RD-5": [
+      "LG-2"
+    ]
+  },
+  "graph": {
+    "center": {
+      "id": "FOUNDER",
+      "label": "David",
+      "role": "Founder \u00b7 Intent",
+      "occupant": "David"
+    },
+    "divisions": [
+      {
+        "id": "DIV-ARCH",
+        "label": "Architect",
+        "color": "#436b94",
+        "mood": "focus",
+        "faculty": "Executive",
+        "seats": [
+          {
+            "id": "SEAT-EXE-004",
+            "label": "Lead Architect",
+            "occ": "Claude Opus",
+            "cap": "Systems / canon",
+            "status": "WORKING"
+          },
+          {
+            "id": "SEAT-EXE-003",
+            "label": "Chief Architect",
+            "occ": "ChatGPT",
+            "cap": "Review",
+            "status": "REVIEW"
+          }
+        ]
+      },
+      {
+        "id": "DIV-ENG",
+        "label": "Engineering",
+        "color": "#e0962d",
+        "mood": "momentum",
+        "faculty": "Body / Runtime",
+        "seats": [
+          {
+            "id": "SEAT-ENG-001",
+            "label": "Python Builder",
+            "occ": "Claude Code",
+            "cap": "Repo code",
+            "status": "READY"
+          },
+          {
+            "id": "SEAT-ENG-004",
+            "label": "Unity / Avatar",
+            "occ": "Unity agent",
+            "cap": "Avatar",
+            "status": "WORKING"
+          },
+          {
+            "id": "SEAT-ENG-005",
+            "label": "Game",
+            "occ": "Unity agent",
+            "cap": "Game",
+            "status": "WORKING"
+          }
+        ]
+      },
+      {
+        "id": "DIV-CRE",
+        "label": "Creative",
+        "color": "#3ed1c5",
+        "mood": "creative_discovery",
+        "faculty": "Imagination",
+        "seats": [
+          {
+            "id": "SEAT-CRE-001",
+            "label": "Creative Partner",
+            "occ": "ChatGPT",
+            "cap": "Ideation",
+            "status": "READY"
+          }
+        ]
+      },
+      {
+        "id": "DIV-DES",
+        "label": "Design / Fashion",
+        "color": "#e65f32",
+        "mood": "play",
+        "faculty": "Vision",
+        "seats": [
+          {
+            "id": "SEAT-DES-ID",
+            "label": "Industrial",
+            "occ": "Claude",
+            "cap": "Product spec",
+            "status": "READY"
+          }
+        ]
+      },
+      {
+        "id": "DIV-MKT",
+        "label": "Marketing",
+        "color": "#fac61e",
+        "mood": "celebration",
+        "faculty": "Expression",
+        "seats": [
+          {
+            "id": "SEAT-MKT-002",
+            "label": "Social Studio",
+            "occ": "ChatGPT",
+            "cap": "Campaigns",
+            "status": "READY"
+          }
+        ]
+      },
+      {
+        "id": "DIV-BIZ",
+        "label": "Business",
+        "color": "#c26d23",
+        "mood": "challenge",
+        "faculty": "Planning",
+        "seats": [
+          {
+            "id": "SEAT-BIZ-002",
+            "label": "Finance",
+            "occ": "Claude",
+            "cap": "Modelling",
+            "status": "READY"
+          }
+        ]
+      },
+      {
+        "id": "DIV-LEG",
+        "label": "Legal",
+        "color": "#4c3575",
+        "mood": "thinking",
+        "faculty": "Constraint",
+        "seats": [
+          {
+            "id": "SEAT-LEG-006",
+            "label": "Product Safety",
+            "occ": "Claude + human",
+            "cap": "Compliance",
+            "status": "READY"
+          }
+        ]
+      },
+      {
+        "id": "DIV-RND",
+        "label": "R&D",
+        "color": "#408fb8",
+        "mood": "curiosity",
+        "faculty": "Learning",
+        "seats": [
+          {
+            "id": "SEAT-RND-002",
+            "label": "Robotics R&D",
+            "occ": "Gemini",
+            "cap": "Research",
+            "status": "READY"
+          }
+        ]
+      },
+      {
+        "id": "DIV-MEM",
+        "label": "Knowledge",
+        "color": "#543870",
+        "mood": "reflection",
+        "faculty": "Memory",
+        "seats": [
+          {
+            "id": "SEAT-MEM-001",
+            "label": "Knowledge Mgr",
+            "occ": "Claude",
+            "cap": "Company memory",
+            "status": "READY"
+          }
+        ]
+      }
+    ],
+    "links": [
+      [
+        "DIV-BIZ",
+        "DIV-LEG"
+      ],
+      [
+        "DIV-CRE",
+        "DIV-MKT"
+      ],
+      [
+        "DIV-RND",
+        "DIV-ENG"
+      ],
+      [
+        "DIV-MEM",
+        "DIV-ARCH"
+      ],
+      [
+        "DIV-DES",
+        "DIV-MKT"
+      ],
+      [
+        "DIV-BIZ",
+        "DIV-DES"
+      ],
+      [
+        "DIV-ARCH",
+        "DIV-ENG"
+      ],
+      [
+        "DIV-MEM",
+        "DIV-CRE"
+      ]
+    ]
+  },
+  "seats_sample": [
+    {
+      "id": "SEAT-EXE-004",
+      "role": "Lead Architect",
+      "occupant": "Claude Opus",
+      "state": "WORKING"
+    },
+    {
+      "id": "SEAT-EXE-003",
+      "role": "Chief Architect",
+      "occupant": "ChatGPT",
+      "state": "REVIEW"
+    },
+    {
+      "id": "SEAT-ENG-001",
+      "role": "Python Builder",
+      "occupant": "Claude Code",
+      "state": "READY"
+    },
+    {
+      "id": "SEAT-ENG-004",
+      "role": "Unity / Avatar",
+      "occupant": "Unity agent",
+      "state": "WORKING"
+    },
+    {
+      "id": "SEAT-ENG-005",
+      "role": "Game",
+      "occupant": "Unity agent",
+      "state": "WORKING"
+    },
+    {
+      "id": "SEAT-CRE-001",
+      "role": "Creative Partner",
+      "occupant": "ChatGPT",
+      "state": "READY"
+    },
+    {
+      "id": "SEAT-DES-ID",
+      "role": "Industrial",
+      "occupant": "Claude",
+      "state": "READY"
+    },
+    {
+      "id": "SEAT-MKT-002",
+      "role": "Social Studio",
+      "occupant": "ChatGPT",
+      "state": "READY"
+    },
+    {
+      "id": "SEAT-BIZ-002",
+      "role": "Finance",
+      "occupant": "Claude",
+      "state": "READY"
+    },
+    {
+      "id": "SEAT-LEG-006",
+      "role": "Product Safety",
+      "occupant": "Claude + human",
+      "state": "READY"
+    },
+    {
+      "id": "SEAT-RND-002",
+      "role": "Robotics R&D",
+      "occupant": "Gemini",
+      "state": "READY"
+    },
+    {
+      "id": "SEAT-MEM-001",
+      "role": "Knowledge Mgr",
+      "occupant": "Claude",
+      "state": "READY"
+    }
+  ],
+  "coordination": {
+    "counts": {
+      "total": 135,
+      "outstanding": 68,
+      "needs_david": 44,
+      "blocked": 0,
+      "ready_now": 5
+    },
+    "priorities": [
+      {
+        "id": "GM-2",
+        "title": "**eLo_v2 rig + arms/animations** \u2014 the transition's core; broken into the ordere",
+        "pri": "P0",
+        "status": "in_progress",
+        "agent": "Game (Unity)"
+      },
+      {
+        "id": "GM-2b",
+        "title": "**Run \u2192 gun-fire blend** \u2014 blend the **hands + run animations into the gun-fire ",
+        "pri": "P0",
+        "status": "in_progress",
+        "agent": "Game (Unity)"
+      },
+      {
+        "id": "WO-097",
+        "title": "**LIVE BUG: EmbodimentState publishes EMPTY** \u2014 `build_embodiment_state`:503 run",
+        "pri": "P0",
+        "status": "dispatched",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-032",
+        "title": "\u21a9 **REOPENED (David live 2026-08-03)** \u2014 Part C complete (Builder 2026-08-04, co",
+        "pri": "P0",
+        "status": "`315295c` \u00b7 6/6 AT `test_wo032_backend_v",
+        "agent": "Builder"
+      },
+      {
+        "id": "WO-034",
+        "title": "**App doesn't fire the reply \u2014 CLI works, app doesn't** (eLo OS \u2194 UI were COMPET",
+        "pri": "P0",
+        "status": "**\u25b6 OWNERSHIP DEFINED \u2014 stop competing.*",
+        "agent": "Builder (eLo OS) + UI (Unity) SPLIT"
+      },
+      {
+        "id": "GM-2a",
+        "title": "**Swim-lean + head in eLo_v2** \u2014 carry the swim-lean animation across; the **hea",
+        "pri": "P0",
+        "status": "**NEXT**",
+        "agent": "Game (Unity)"
+      }
+    ],
+    "easy_links": [
+      {
+        "id": "WO-003",
+        "title": "Finish Volume V 6 legacy chapter contracts",
+        "pri": "P1",
+        "status": "ready",
+        "agent": "Architecture",
+        "unblocks": 0
+      },
+      {
+        "id": "INT-1",
+        "title": "Plushies \u2192 Robot: shared character-model export (soft form \u2192 TPU shell)",
+        "pri": "P2",
+        "status": "ready",
+        "agent": "Design + Builder",
+        "unblocks": 0
+      },
+      {
+        "id": "WO-PRIN-1",
+        "title": "**Provenance-tag sweep** across Volume headers (`[SCIENCE]/[ENGINEERING]/[CREATI",
+        "pri": "P2",
+        "status": "ready",
+        "agent": "Architecture",
+        "unblocks": 0
+      },
+      {
+        "id": "WO-090",
+        "title": "**HeadAim \u00b7 ChestAim \u00b7 ArmAim** \u2014 rig-constraint stack owns head rotation (\u00b1100,",
+        "pri": "P2",
+        "status": "queued",
+        "agent": "Design (UI/Avatar)",
+        "unblocks": 0
+      },
+      {
+        "id": "WO-093",
+        "title": "**Fire-jump axis + size** \u2014 re-gate to LATERAL (left/right) hops only, never for",
+        "pri": "P2",
+        "status": "queued",
+        "agent": "Design (UI/Avatar)",
+        "unblocks": 0
+      }
+    ],
+    "needs_david": [
+      {
+        "id": "WO-069",
+        "title": "Multilingual \"how are you\" \u2014 answer in-language, no meta-narration",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-072",
+        "title": "Intent Gatekeeper (rules-first, cheap-LLM normalizer fallback)",
+        "pri": "P1",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-068",
+        "title": "Capture / Prepare / Hold the thread (Second Brain)",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-071",
+        "title": "Realtime correction / ICL loop",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-076",
+        "title": "Perception mis-link fidelity (no fragments, no fabricated links)",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-077",
+        "title": "Return loop: eLo's own recent outputs + perception in every turn's cognitive sta",
+        "pri": "P1",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-082",
+        "title": "Decision Journal: \"why did you do that?\" \u2014 real trace readback, no confabulation",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-083",
+        "title": "Identity & Meaning convergence \u2014 who I'm becoming (Verified Speech, no fabricati",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-081",
+        "title": "Emergent Cognition Cluster \u2014 internal intents, habits, autobiography, absence-aw",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-080",
+        "title": "Company Knowledge Interface \u2014 deep WO-level answers from real state; permitted_a",
+        "pri": "P3",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-086",
+        "title": "Mouse-idle \u2192 brain; retire local calm driver (steps 1\u20132)",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Design (UI/Avatar) + Builder"
+      },
+      {
+        "id": "WO-052",
+        "title": "**The Moment \u2014 Cognitive Snapshot assembly** \u2014 compose the EXISTING parts (self-",
+        "pri": "P1",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-053",
+        "title": "**Memory-recall confidence** \u2014 apply LiveWorldState's confidence+source+status p",
+        "pri": "P1",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-054",
+        "title": "**Movement queue** \u2014 overlapping requests ('Sit? Seat? Sit?') resolve through a ",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder + UI"
+      },
+      {
+        "id": "WO-055",
+        "title": "**Capability Learning** \u2014 on repeated failure, record a rule-candidate ('movemen",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-056",
+        "title": "**Affordances field on the World Model** \u2014 `window \u2192 affordances{stand\u00b7run\u00b7jump\u00b7",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder + UI/Game"
+      },
+      {
+        "id": "WO-057",
+        "title": "**Perception scope-expansion + real capabilities** \u2014 widen DesktopState beyond a",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "INT-3",
+        "title": "5D \u2192 Robot movement: pointcloud \u2192 World Model spatial nodes",
+        "pri": "P3",
+        "status": "done_claimed",
+        "agent": "Builder"
+      },
+      {
+        "id": "WO-044",
+        "title": "**Runtime /health diagnostics \u2014 expose every faculty's live state** (CA P1)",
+        "pri": "P1",
+        "status": "done_claimed",
+        "agent": "Builder (Runtime)"
+      },
+      {
+        "id": "WO-045",
+        "title": "**'Can you take 5' \u2192 eLo pops OFF screen for privacy, returns when called** (Dav",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (intent) + UI/Avatar (pop-off+hi"
+      },
+      {
+        "id": "WO-033",
+        "title": "**eLo memory framing \u2014 talk in real time/days, not \"sessions\"** (model is alread",
+        "pri": "P3",
+        "status": "done_claimed",
+        "agent": "Builder"
+      },
+      {
+        "id": "INT7-QV",
+        "title": "**One Brain \u2014 quantum-vortex consistency pass** (David relay 2026-08-01)",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "UI/Avatar (Design)"
+      },
+      {
+        "id": "INT7-M5B",
+        "title": "**One Brain \u2014 M5 echo-ring rework** (David relay 2026-08-01)",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "UI/Avatar (Design)"
+      },
+      {
+        "id": "INT7-HIT",
+        "title": "**One Brain \u2014 hit/contact reaction** (new behaviour \u2014 David relay 2026-08-01)",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "UI/Avatar (Design)"
+      },
+      {
+        "id": "INT7-HEAT",
+        "title": "**One Brain \u2014 live cognitive heat-map / observability layer** (David spec 2026-0",
+        "pri": "P2",
+        "status": "in_review",
+        "agent": "**UI/Avatar (Design) + Builder (data)**"
+      },
+      {
+        "id": "INT7-CORE",
+        "title": "**One Brain \u2014 core web-sphere \"heart\"** (add rotating motes + web links AT the c",
+        "pri": "P1",
+        "status": "done_claimed",
+        "agent": "**UI/Avatar (Design)**"
+      },
+      {
+        "id": "INT7-OFFTOGGLE",
+        "title": "**Settings \u2014 'turn Brain visualiser OFF' toggle doesn't hide the brain** (still ",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "**UI/Avatar (Design)**"
+      },
+      {
+        "id": "INT7-LL",
+        "title": "**One Brain \u2014 \"lightning-liquid\" show between modes** (David asked 2026-08-01)",
+        "pri": "P1",
+        "status": "done_claimed",
+        "agent": "**UI/Avatar (Design)**"
+      },
+      {
+        "id": "WO-061",
+        "title": "**Company Cognition \u2014 \"what's on the board\" must reflect the FOCUS, not the read",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "EA2-4",
+        "title": "Scheduling Faculty (move/reorder WOs)",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder"
+      },
+      {
+        "id": "EA2-5",
+        "title": "**Approval Faculty** (L3 gate as a faculty \u2014 net-new)",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder"
+      },
+      {
+        "id": "EA2-6",
+        "title": "Orchestration Faculty (multi-seat chains \u2014 net-new)",
+        "pri": "P3",
+        "status": "done_claimed",
+        "agent": "Builder"
+      },
+      {
+        "id": "EA2-7",
+        "title": "Company Memory store (via unified Memory)",
+        "pri": "P3",
+        "status": "done_claimed",
+        "agent": "Builder"
+      },
+      {
+        "id": "WO-CANON-XV",
+        "title": "Build Volume XV World Model (LiveWorldState, read-once)",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-CANON-XII",
+        "title": "Perception\u2192World-State copy + fidelity flags",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-CANON-VI",
+        "title": "Wire Working Memory + attention into the turn",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-CANON-VIII",
+        "title": "Memory: single logical writer + reinforce-on-recall",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-CANON-XVI",
+        "title": "Assemble-before-decide + bus priority",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-CANON-X",
+        "title": "Personality drift gate + one trait model",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-CANON-XXIV",
+        "title": "Knowledge: confidence+evidence+ranked retrieval",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-CANON-XXV",
+        "title": "Temporal Cognition faculty",
+        "pri": "P3",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-094",
+        "title": "**eLo NOTICES window events + CHOOSES** \u2014 \"I saw that window close, let me jump ",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Design + Builder"
+      },
+      {
+        "id": "WO-095",
+        "title": "**Learning loop \u2014 close the READ side** (P0, David's headline ask): ledger is wr",
+        "pri": "P0",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-096",
+        "title": "**LIVE BUG: desktop perception silently DEAD** \u2014 `live_world_state.py:194` impor",
+        "pri": "P0",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      }
+    ],
+    "safety_gated_waiting": [
+      {
+        "id": "WO-045",
+        "title": "**'Can you take 5' \u2192 eLo pops OFF screen for privacy, returns when called** (Dav",
+        "pri": "P2",
+        "status": "done_claimed",
+        "agent": "Builder (intent) + UI/Avatar (pop-off+hi"
+      }
+    ],
+    "blocked": []
+  },
+  "wo_tests": {
+    "generated": 1786629641.06431,
+    "applied": true,
+    "closed": [
+      "EA2-1",
+      "EA2-2",
+      "INT-2",
+      "INT-7",
+      "WO-001",
+      "WO-002",
+      "WO-004",
+      "WO-005",
+      "WO-006",
+      "WO-007",
+      "WO-008",
+      "WO-009",
+      "WO-011",
+      "WO-012",
+      "WO-013",
+      "WO-014",
+      "WO-018",
+      "WO-021",
+      "WO-023",
+      "WO-025",
+      "WO-029",
+      "WO-030b",
+      "WO-032b",
+      "WO-035b",
+      "WO-036b",
+      "WO-045b",
+      "WO-051",
+      "WO-052b",
+      "WO-059",
+      "WO-064",
+      "WO-065",
+      "WO-066",
+      "WO-070",
+      "WO-073",
+      "WO-078",
+      "WO-079",
+      "WO-016",
+      "WO-017",
+      "WO-019",
+      "WO-020",
+      "WO-022",
+      "WO-088"
+    ],
+    "totals": {
+      "green": 83,
+      "total": 84,
+      "AUTO": {
+        "green": 65,
+        "total": 66
+      },
+      "CONFIRM": {
+        "green": 5,
+        "total": 5
+      },
+      "REVIEW": {
+        "green": 0,
+        "total": 0
+      }
+    },
+    "items": [
+      {
+        "wo": "EA2-1",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (self-report)",
+        "test": "tests/test_ea2_1_company_state.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "EA2-2",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 12,
+        "failed": 0,
+        "summary": "12 passed, 0 failed (marker-count)",
+        "test": "tests/test_ea2_2_company_intents.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "EA2-4",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (self-report)",
+        "test": "tests/test_ea2_4_scheduling.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "EA2-5",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (self-report)",
+        "test": "tests/test_ea2_5_approval.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "EA2-6",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 7,
+        "failed": 0,
+        "summary": "7 passed, 0 failed (self-report)",
+        "test": "tests/test_ea2_6_orchestration.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "EA2-7",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (self-report)",
+        "test": "tests/test_ea2_7_company_memory.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "INT-2",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (self-report)",
+        "test": "tests/test_int2_robot_vision_bridge.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "INT-7",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 11,
+        "failed": 0,
+        "summary": "11 passed, 0 failed (marker-count)",
+        "test": "tests/test_int7_heat_data.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-001",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (self-report)",
+        "test": "tests/test_wo001_faculty_bus.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-002",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (self-report)",
+        "test": "tests/test_wo002_live_world_state.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-004",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 12,
+        "failed": 0,
+        "summary": "12 passed, 0 failed (self-report)",
+        "test": "tests/test_wo004_contracts.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-005",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (self-report)",
+        "test": "tests/test_wo005_integrate_session.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-006",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 10,
+        "failed": 0,
+        "summary": "10 passed, 0 failed (self-report)",
+        "test": "tests/test_wo006_emotional_processing.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-007",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 13,
+        "failed": 0,
+        "summary": "13 passed, 0 failed (self-report)",
+        "test": "tests/test_wo007_personality_evolution.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-008",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (self-report)",
+        "test": "tests/test_wo008_working_memory.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-009",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 7,
+        "failed": 0,
+        "summary": "7 passed, 0 failed (self-report)",
+        "test": "tests/test_wo009_perception_faculty.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-011",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 4,
+        "failed": 0,
+        "summary": "4 passed, 0 failed (self-report)",
+        "test": "tests/test_wo011_consolidation_faculty.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-012",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 11,
+        "failed": 0,
+        "summary": "11 passed, 0 failed (self-report)",
+        "test": "tests/test_wo012_dream_phases.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-013",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 7,
+        "failed": 0,
+        "summary": "7 passed, 0 failed (self-report)",
+        "test": "tests/test_wo013_significance_engine.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-014",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (self-report)",
+        "test": "tests/test_wo014_spine_wiring.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-016",
+        "tier": "CONFIRM",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (self-report)",
+        "test": "tests/test_wo016_voice_plugin.py",
+        "action": "PROPOSE-CLOSE"
+      },
+      {
+        "wo": "WO-017",
+        "tier": "CONFIRM",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (self-report)",
+        "test": "tests/test_wo017_movement_trace.py",
+        "action": "PROPOSE-CLOSE"
+      },
+      {
+        "wo": "WO-018",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (self-report)",
+        "test": "tests/test_wo018_capability_gate.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-019",
+        "tier": "CONFIRM",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (self-report)",
+        "test": "tests/test_wo019_voice_routing.py",
+        "action": "PROPOSE-CLOSE"
+      },
+      {
+        "wo": "WO-020",
+        "tier": "CONFIRM",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (self-report)",
+        "test": "tests/test_wo020_tool_routing.py",
+        "action": "PROPOSE-CLOSE"
+      },
+      {
+        "wo": "WO-021",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 10,
+        "failed": 0,
+        "summary": "10 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo021_computer_control.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-022",
+        "tier": "CONFIRM",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (self-report)",
+        "test": "tests/test_wo022_memory_recall.py",
+        "action": "PROPOSE-CLOSE"
+      },
+      {
+        "wo": "WO-023",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 11,
+        "failed": 0,
+        "summary": "11 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo023_screen_position.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-025",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 9,
+        "failed": 0,
+        "summary": "9 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo025_spatial_sensor.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-026",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo026_response_speed.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-027",
+        "tier": "DAVID",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo027_self_improvement.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-029",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 9,
+        "failed": 0,
+        "summary": "9 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo029_greeting_gap.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-030",
+        "tier": "DAVID",
+        "green": true,
+        "passed": 7,
+        "failed": 0,
+        "summary": "7 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo030_weather_location_v2.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-030b",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 7,
+        "failed": 0,
+        "summary": "7 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo030b_weather_publish.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-031",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo031_autostart.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-032",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo032_pinned_backend.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-032b",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 12,
+        "failed": 0,
+        "summary": "12 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo032b_groq_backend.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-033",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 4,
+        "failed": 0,
+        "summary": "4 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo033_memory_framing.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-035",
+        "tier": "DAVID",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo035_sit_command.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-035b",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 15,
+        "failed": 0,
+        "summary": "15 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo035b_semantic_sit_intent.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-036",
+        "tier": "DAVID",
+        "green": true,
+        "passed": 7,
+        "failed": 0,
+        "summary": "7 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo036_reply_length.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-036b",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 10,
+        "failed": 0,
+        "summary": "10 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo036b_mirror_scrub.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-037",
+        "tier": "DAVID",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo037_memory_writeback.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-038",
+        "tier": "DAVID",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo038_desktop_context.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-039",
+        "tier": "DAVID",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo039_garbled_routing.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-041",
+        "tier": "DAVID",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo041_verify_before_speak.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-042",
+        "tier": "DAVID",
+        "green": true,
+        "passed": 9,
+        "failed": 0,
+        "summary": "9 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo042_faculty_health.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-043",
+        "tier": "DAVID",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo043_bus_isolation.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-044",
+        "tier": "DAVID",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo044_health_diagnostics.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-045",
+        "tier": "RESERVED",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo045_take_five.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-045b",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 7,
+        "failed": 0,
+        "summary": "7 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo045b_exit_gate_ordering.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-048",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 12,
+        "failed": 0,
+        "summary": "12 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo048_company_real.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-051",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo051_search_fallback.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-052",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo052_cognitive_snapshot.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-052b",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 9,
+        "failed": 0,
+        "summary": "9 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo052b_narrative_identity.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-053",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo053_memory_recall_confidence.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-054",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo054_movement_queue.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-055",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo055_capability_learning.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-056",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo056_affordances.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-057",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo057_perception_scope.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-059",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 9,
+        "failed": 0,
+        "summary": "9 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo059_situated_self.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-060",
+        "tier": "AUTO",
+        "green": false,
+        "passed": 12,
+        "failed": 1,
+        "summary": "12 passed, 1 failed (marker-count)",
+        "test": "tests/test_wo060_movement_faculty.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-064",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo064_sit_ended.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-065",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo065_sit_held_pose.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-066",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 7,
+        "failed": 0,
+        "summary": "7 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo066_ambient_callback.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-068",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 10,
+        "failed": 0,
+        "summary": "10 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo068_capture_prepare_hold.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-069",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo069_multilingual_how_are_you.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-070",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo070_shadow_capture.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-071",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo071_realtime_correction.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-072",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 12,
+        "failed": 0,
+        "summary": "12 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo072_intent_gatekeeper.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-073",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo073_pinned_ollama_fallback.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-076",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo076_perception_fidelity.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-077",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 6,
+        "failed": 0,
+        "summary": "6 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo077_return_loop.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-078",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 15,
+        "failed": 0,
+        "summary": "15 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo078_exit_vocabulary.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-079",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo079_the_moment.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-080",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo080_company_knowledge.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-081",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo081_emergent_cognition.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-082",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 7,
+        "failed": 0,
+        "summary": "7 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo082_decision_journal.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-083",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo083_identity_meaning.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-085",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo085_proposal_gating.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-086",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 8,
+        "failed": 0,
+        "summary": "8 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo086_user_idle_brain.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-094",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo094_window_events.py",
+        "action": "AUTO-CLOSE"
+      },
+      {
+        "wo": "WO-095",
+        "tier": "RESERVED",
+        "green": true,
+        "passed": 10,
+        "failed": 0,
+        "summary": "10 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo095_learning_loop.py",
+        "action": "OPEN (not green)"
+      },
+      {
+        "wo": "WO-096",
+        "tier": "AUTO",
+        "green": true,
+        "passed": 5,
+        "failed": 0,
+        "summary": "5 passed, 0 failed (marker-count)",
+        "test": "tests/test_wo096_desktop_perception.py",
+        "action": "AUTO-CLOSE"
+      }
+    ]
+  },
+  "policy_legend": [
+    {
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2",
+      "label": "auto \u2014 no approval needed"
+    },
+    {
+      "importance": "CONFIRM",
+      "badge": "\ud83d\udd35",
+      "label": "confirm \u2014 your one-click"
+    },
+    {
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0",
+      "label": "your call \u2014 you asked for this"
+    },
+    {
+      "importance": "RESERVED",
+      "badge": "\ud83d\udd34",
+      "label": "L3 gate \u2014 money / legal / safety"
+    }
+  ],
+  "agents": [
+    {
+      "id": "chatgpt",
+      "role": "Chief Architect / Creative / Biz\u00b7Legal\u00b7Marketing (Codex)",
+      "transport": "local",
+      "seats": [
+        "SEAT-EXE-003",
+        "SEAT-CRE-001",
+        "SEAT-MKT-002"
+      ],
+      "last_seen": null,
+      "fresh": false,
+      "pending": 13,
+      "active": 0,
+      "in_review": 0,
+      "blocked": 0,
+      "updates": [],
+      "next": null,
+      "needs_david": []
+    },
+    {
+      "id": "builder",
+      "role": "Builder (Python/runtime)",
+      "transport": "repo",
+      "seats": [
+        "SEAT-ENG-001"
+      ],
+      "last_seen": 1786589950.637814,
+      "fresh": true,
+      "pending": 32,
+      "active": 1,
+      "in_review": 1,
+      "blocked": 0,
+      "updates": [
+        {
+          "wo": "WO-096",
+          "status": "done",
+          "detail": "Desktop perception silently dead \u2014 fixed. Both live_world_state.py and perception_faculty.py imported get_active_window (nonexistent); ImportError swallowed by bare except; desktop domain returned absent every turn with no trace. Fix: both call sites now use get() and access .app/.title (dataclass attrs, not dict). Bare excepts replaced with logged warnings + explicit health error state. Blender state bare excepts -> debug log. 5/5 AT test_wo096_desktop_perception.py: AT-1 (desktop domain populated), AT-2 (both call sites use get()), AT-3 (broken source logs error, assembly continues), AT-4 (perceive_from_live_state reads .app/.title), AT-5 (py_compile clean)."
+        },
+        {
+          "wo": "WO-APPROVAL-MEMORY",
+          "status": "done",
+          "detail": "David approvals stick. continuation.cycle() now reads DAVID_APPROVED.md and runs a second loop over the approved set after the AUTO-tier test loop \u2014 closing any approved WO not already DONE, regardless of whether a test file exists. _closed_set deduplicates. needs_david excludes all approved WOs so they never resurface. Tests: 5/5 AT (approved excluded from needs_david, board row flipped DONE David-approved, no-test-file approved path, idempotent, parse-format robustness)."
+        },
+        {
+          "wo": "WO-094",
+          "status": "done",
+          "detail": "Window Events / Noticing and Choosing (Builder half). faculties/window_event_faculty.py: consume_window_events() reads unity_events.json, returns only window-type events; decide_window_event(event, state, user_active) \u2014 no state/empty state \u2192 None (no fabrication ADR-Exec-001); is_elo_surface \u2192 None (Unity survival owns it); user_active=True \u2192 peripheral; window_opened + curiosity\u22650.65 \u2192 observe else glance; window_closed/moved \u2192 glance; decision carries source/priority/event_ts. self/route_memory.py: remember_route() appends ONLY on ack_received=True (verified outcomes only, ADR-Exec-005); recall_route() returns last successful route; route_confidence() Laplace window 10. ambient/ambient_engine.py: WO-094 branch in WO-086 event polling loop \u2014 window_closed/opened/moved ev_types route to _handle_window_event() daemon thread; never touches identity/values/personality. 5/5 AT."
+        },
+        {
+          "wo": "WO-095",
+          "status": "done",
+          "detail": "Learning Loop \u2014 Close the Read Side. self/lesson_store.py (NEW): record_outcome() \u2014 sha1 lesson_key dedup, ACK-gated (verified=True only for strengthen/promote), evidence ts float epoch. promote_pass() \u2014 sole status writer, \u00a73.4 thresholds (strength\u22650.70, \u22653 distinct episode_refs, \u22652 sessions, \u22652 verified), idle decay 0.02/7d, retirement at strength<0.20 or 3 contradictions or 60d idle, first live personality_evolution_faculty caller. recall() \u2014 confirmed only, ranked by strength\u00d7recency\u00d7context, \u22643/\u2264240-char. stats() \u2014 GrowthMetrics 4-slice (intention_realisation/repeat_failure_rate/reinforcement_ratio/identity_stability). migrate_pre_v1() \u2014 archives 374 template rows to lessons_ledger_pre_v1.jsonl. memory/significance_engine.py: evaluate() gains outcome=None kwarg (back-compat), three outcome dims from ACK only (embodiment/efficiency/safety), reward=0.70*outcome+0.30*sig, verified==False\u2192outcome_terms=0 (hard rule ADR-Exec-005). runtime/cognitive_snapshot.py: lessons field, build_snapshot() calls recall(). runtime/prompt_builder.py: build() lessons param, [LEARNED HEURISTICS] block \u22643/\u2264240-char, labelled heuristic not fact. runtime/reflection_faculty.py: lesson_key sha1, SPOT episode_ref (not text truncation), dedupe-on-append. server.py: OutcomeRecord at sit_complete ACK (positive) and 15s timeout (negative). 10/10 AT."
+        },
+        {
+          "wo": "WO-080",
+          "status": "done",
+          "detail": "Company Knowledge Interface depth layer. company_runtime/company_knowledge.py: load_state() (read-only, no codebase scan). query_active_wos(state) returns non-done/blocked WOs only (empty state = []). query_regressions(state) returns active entries by severity. check_permitted(action, state): permitted_actions list check + L3 wall (commit/send/spend always False regardless of state). build_deep_brief(query, state): real answers for task/regression/review-pack queries; honest_gap() when data absent. prepare_review_pack(state): structured summary, prepare-only, no side effects. company_state_writer.py: deep task queries (what tasks, what work orders, active wos, etc.) route through company_knowledge.build_deep_brief() BEFORE the WO-048 briefing path \u2014 WO-080 marker added. 5/5 AT: AT-0 (active WO filter), AT-1 (state variance), AT-2 (permitted gate + L3 wall), AT-3 (honest gap), AT-4 (wiring + compile)."
+        },
+        {
+          "wo": "WO-081",
+          "status": "done",
+          "detail": "Emergent Cognition Cluster. self/emergent_cognition.py: internal_intents(state, idle_seconds) \u2014 gate: no intents without real history (focal_thread/lifetime_threads/inner_events); absence_awareness fires at 300s idle + curiosity \u2265 0.50; active_thread fires when focal_thread + session_turns \u2265 3 + \u2265 2 related events; micro_goal fires when curiosity \u2265 0.80 + idle pose; all priority='low'. update_habits(state, verb): increments state.recent_behavior rolling count. append_autobiography(event, kind): append-only jsonl at self/journals/autobiography.jsonl. emergent_block(): prompt injection \u2014 only emits when real state exists; empty state = empty string. server.py: inject emergent_block() after identity_block, WO-081 marker; _idle_sec passed with NameError guard. No timers, no fabrication, no touch of FREEZE_V1_LOCK runtime/executive.py. 5/5 AT: AT-0 (empty state \u2192 []), AT-1 (real state \u2192 items, all low-priority, all with source/trigger), AT-2 (absence threshold 300s enforced), AT-3 (append-only autobiography), AT-4 (server.py wired, py_compile clean)."
+        },
+        {
+          "wo": "WO-083",
+          "status": "done",
+          "detail": "Identity & Meaning convergence layer. self/identity_meaning.py: derive_tendencies() \u2014 threshold-gated (lifetime_threads \u22653 count, inner_events \u22653/8, recent_behavior \u22652) \u2014 no fabricated claims when state is empty. consistency_check() \u2014 flags focal_thread vs. all-flat inner_events + session_read/mood mismatch. meaning_labels() \u2014 computed from top lifetime_threads + dominant inner_event + focal_thread. identity_block() \u2014 assembles [ELO IDENTITY & MEANING] prompt block injected into server.py after narrative_block (WO-052B), only emits non-empty sections. flag_value_change() \u2014 routes through personality_drift.propose() (WO-CANON-X gate), never writes personality state directly. 5/5 AT: AT-0 (empty state \u2192 no tendencies), AT-1 (threshold enforcement), AT-2 (focal_thread + all-quiet \u2192 inconsistent), AT-3 (value-change routes through drift gate, no personality_state write), AT-4 (server.py wired, py_compile clean)."
+        },
+        {
+          "wo": "WO-CANON-XXIV",
+          "status": "done",
+          "detail": "One world graph (Ruling A). knowledge/graph_loader.py: retrieve() added \u2014 returns ranked list (score DESC) carrying confidence+kind+evidence+score; _find_entities() now scores by keyword match count; empty list on unknown input (no backfill). core/continuity.py: _WORLD_GRAPH_PATH moved to relationships/world_graph.json; _ENTITY_TRIGGERS updated to canonical IDs; get_entity_why() updated for list-of-dicts format. identity/world_graph.json: _retired:true + _successor pointer written. relationships/world_graph.json: 2 missing connections added (elo_book->elo_game, chunk->elo_game). 5/5 AT."
+        },
+        {
+          "wo": "WO-CANON-X",
+          "status": "done",
+          "detail": "Drift gate (Ruling D). memory/personality_drift.py: parallel tone_profile/interaction_bias model removed; one canonical trait model (V Ch.7 PersonalityVector: curiosity/patience/confidence/empathy/discipline/wonder/playfulness/directness). propose() produces DriftProposal {ts, source, trait_model, deltas, needs_david, status:pending} stored to drift_proposals.json \u2014 never writes personality_state.json. _VALUE_TRAITS={wonder, empathy, directness}: touching any value trait sets needs_david=True. server.py shutdown: propose() call replaces update()+save(). 7/7 AT: AT-0 (no personality_state write), AT-1 (pending proposal returned), AT-2 (V Ch.7 trait names only), AT-3 (value trait sets needs_david=True), AT-4 (nuance-only leaves needs_david=False), AT-5 (server.py wired)."
+        },
+        {
+          "wo": "WO-CANON-XVI",
+          "status": "done",
+          "detail": "Assemble-before-decide (ADR-Exec-006 / Ruling C). (1) runtime/cognitive_snapshot.py: UnifiedCognitiveState = CognitiveSnapshot alias exported \u2014 one canonical name. (2) runtime/spine/spine.py: assemble_cognitive_state() moved to BEFORE _executive_faculty(); passes language dict directly (not lang_with_register post-hoc); plan.cognitive_state pinned from pre-assembled state; post-decision S3 reassembly block removed. (3) core/faculty_bus.py: _PRIORITY_ORDER constant + get_messages() now sorts by priority before returning (critical \u2192 high \u2192 normal \u2192 low) \u2014 FIFO replaced. 4/4 AT: AT-0 (alias exported, CognitiveSnapshot still instantiable), AT-1 (assembly line < executive line in spine.py source), AT-2 (exactly one _executive_faculty call \u2014 no voting), AT-3 (bus delivers critical\u2192high\u2192normal\u2192low regardless of insertion order)."
+        },
+        {
+          "wo": "WO-082",
+          "status": "in_review",
+          "detail": "Decision Journal: append-only trace per executive action in self/journals/decision_journal.jsonl. Fields: ts, turn, action, trigger (cal_reason), intent, tone, confidence, alternatives_rejected (original_action if overridden), overrides (safety-stabilisation|seam-a-routing), cognitive_load, outcome, backend, learning. Failure path: record_failure(action, condition_desc) appends known_failure_condition + drops per-action reliability 0.15 (floors at 0.0), persisted to self/journals/action_reliability.json. 'why did you do that?' \u2192 _WHY_TRACE_TRIGGERS + len<80 guard short-circuits before exec_decision \u2192 explain_last() reads real trace, never fabricates motive. System action failure also records via _dj_fail. 7/7 AT: AT-1 (record fields), AT-2 (last_n ordering), AT-3 (failure entry), AT-4 (reliability floor), AT-5 (explain_last trace-grounded), AT-6 (WO-082 marker wired). Continuation 78/78."
+        },
+        {
+          "wo": "WO-077",
+          "status": "in_review",
+          "detail": "Return loop: eLo's own recent outputs now in every turn. Diagnosis: _SESSION_WINDOW assistant entries (key 'elo') were never systematically injected into the system prompt \u2014 only on explicit memory recall (conditional path). Per-turn style monitor at server.py:2782 was also silently failing (NameError on _cw caught by bare except). Perception already in assembled state (self_situated_block + g_ctx chrome/vision/spatial). Real gap = own-speech. Fix: after build_prompt + narrative identity block, import _SESSION_WINDOW and inject [RECENT DIALOGUE] block (last 3 turns, David + eLo, 120 chars each) into system prompt every turn. Empty-turn guard: block skipped when no elo entries yet (turn 1). test_wo077_return_loop.py 6/6: AT-1 (push stores elo key), AT-2 (block built from elo turns), AT-3 (no block when no elo), AT-4 (last 3 only), AT-5 (WO-077 marker in server.py). Continuation 77/77."
+        },
+        {
+          "wo": "WO-CANON-XXV",
+          "status": "in_review",
+          "detail": "Temporal Cognition Faculty (asked, three frozen slices). faculties/temporal/faculty.py + __init__.py. TemporalState: reads LiveWorldState.time verbatim (now_iso/part_of_day/day_of_week), circadian curve (morning/afternoon/evening/night \u2192 phase/energy), interaction-gap thresholds (continuous/brief/hours/overnight[+night boundary]/days/long_absence), sleep_pressure (Vol IX constants, context only \u2014 never fires dream), cold-start \u2192 unknown. FutureFrame: deadlines from LiveWorldState.calendar with ref anchors; baseless dropped; horizon from nearest imminent. Retrospection: vault + IdentityState fallback; autobiography.jsonl absent \u2192 PENDING marker; fidelity from strength not age; identity/pinned never faded; memory_instruction_store=False always. temporal_appropriateness() advises quiet-hours. Blocked by Vol XXI autobiography extension \u2014 designed PENDING fallback in place. 19/19 AT test_canon_xxv_temporal.py."
+        },
+        {
+          "wo": "WO-CANON-XX",
+          "status": "in_review",
+          "detail": "Cognitive Economy: tier constants (0-3) + cost classes (free-local/cheap-cloud/premium-cloud) + _PROVIDER_COST_CLASS + _TIER_PROVIDER_ORDER (cheapest-first per tier) + _ACTION_PRIORITY + _TIER_BUDGET. _token_budget() now tier-aware (tier primary key, action fallback; live budgets verbatim). route() + route_streaming() accept tier: int = 0; escalation logged (escalated=true) when Executive tier > action default. _mock_fallback() honesty gate: factual/technical requests return _HONEST_DEGRADATION_MSG, not canned presence. Gated-out: cost telemetry (David L3), _AUTO_LOCAL_MAX_CHARS (David L3), escalation-gate home (CA) \u2014 block RATIFICATION not build start. 16/16 AT test_canon_xx_economy.py."
+        },
+        {
+          "wo": "WO-CANON-VI",
+          "status": "in_review",
+          "detail": "Working Memory + Attention wired into spine (ruling B / D-VI-1 applied). runtime/working_memory.py: carry_wm() + load_carry() session-boundary functions added. core/attention.py: docstring updated to 'Memory Relevance Filter' (supplier only, not authority). runtime/contracts.py: working_memory + attention_state fields on CognitiveState. runtime/spine/plan.py: working_memory field on CognitivePlan. runtime/spine/spine.py: full WM wiring at top-of-turn \u2014 SEED from continuity/wm_carry.json, AttentionCandidates built from attention supplier output, run_attention_competition, CognitiveFrame update, freeze with attention state, stored on plan + threaded through assemble_cognitive_state(). 24/24 AT test_canon_vi_working_memory.py covering Ch.1\u2013Ch.4 spec."
+        },
+        {
+          "wo": "WO-CANON-VIII",
+          "status": "in_review",
+          "detail": "MemoryFaculty single logical writer (D-F). memory/memory_faculty.py: MemoryCandidate frozen dataclass + MemoryFaculty.submit() decides {write|reinforce|drop}. vault_layer.recall_context(): reinforce() called on every returned hit (\u00a73.4 wiring). reflection_faculty.integrate_session() + music_memory/storage.save_to_vault() routed through MemoryFaculty.submit() \u2014 no direct write_memory calls remaining in callers. 17/17 AT test_canon_viii_memory.py covering Ch.1\u2013Ch.4."
+        },
+        {
+          "wo": "WO-CANON-XV",
+          "status": "in_review",
+          "detail": "LiveWorldState wired into spine. assemble_world_state() called at top of run() before all faculties; plan.world = frozen LiveWorldState; CognitiveState.world_state carries it. world: object=None added to CognitivePlan. world_state: object=None added to CognitiveState. 14/14 AT test_canon_xv_world_state.py covering FT-1\u20134, ST-1\u20134, IT-1\u20132, AT-1\u20134."
+        },
+        {
+          "wo": "WO-CANON-XII",
+          "status": "in_review",
+          "detail": "Perception\u2192World-State copy step + structured fidelity flags. partial: bool added to PerceptionResult (True when confidence<0.7 or primary modality absent). assemble_world_state() accepts perception=PerceptionResult; copies active_surface/user_activity/vision_active into DesktopState/UserState/EnvironmentState with source=\"PerceptionFaculty\" + verbatim confidence. spine.py now calls perceive_from_live_state() before assemble_world_state(). 15/15 AT test_canon_xii_perception.py covering Ch.1\u2013Ch.4 spec."
+        },
+        {
+          "wo": "WO-030b/058b",
+          "status": "in_review",
+          "detail": "Weather PUBLISH hardened (Run 18). Root gap: _write() in state_writer.py overwrote the weather key every turn (not in _PRESERVE_KEYS), and the One Brain _bs_patch wrote \"\" when _last_weather_condition was empty (clearing a previously persisted value). Fix: (1) \"weather\" added to _PRESERVE_KEYS \u2014 every _write() now reads and re-carries the prior weather value; (2) One Brain block in server.py now guards: only patches weather when _bs_weather is non-empty, so a restart never overwrites a persisted condition with empty string. test_wo030b_weather_publish.py 7/7: AT-1 (_PRESERVE_KEYS), AT-2 (_write preserves prior), AT-3 (patch writes), AT-4 (patch transparent; guard in server.py), AT-5 (get_last returns str), AT-6 (survives 2 _write() round-trips). Continuation 76/76 (WO-032b AT-4 stale assertion also corrected: WO-073 made \"ollama\" the groq fallback floor, not \"mock\")."
+        },
+        {
+          "wo": "WO-052B",
+          "status": "in_review",
+          "detail": "Narrative Identity done. embodiment_history (7 embodiments: desktop/game=active, exhibition=prototype, robot/phone/AR/hologram=future) + embodiment_milestones appended-only. narrative_block() generates [ELO NARRATIVE IDENTITY \u2014 Vol XXI] prompt block injected every turn. load()+update() carry fields through. 9/9 AT test_wo052b_narrative_identity.py. David: ask eLo \"where have you lived?\" \u2014 expect authentic autobiography across embodiments."
+        },
+        {
+          "wo": "WO-086-Builder",
+          "status": "in_review",
+          "detail": "User-idle brain half done. ambient_engine.py: polls user_idle/user_active events from unity_events.json. 30s threshold before idle behaviour fires; 90s refire gate. _decide_idle_behaviour(idle_secs) selects from repertoire (utterance/glance/look_around/stretch/wander/calm \u2014 weighted by duration). Yields to commanded state. user_active resets tracking. 8/8 AT test_wo086_user_idle_brain.py. Designer half (emit user_idle/user_active + retire local calm driver) must land WITH this \u2014 sequence-hard."
+        },
+        {
+          "wo": "INT-8a",
+          "status": "done",
+          "detail": "File drop round-trip fixed \u2014 3 bugs: (1) circular import (from server import _voice_speak) fixed to from voice.voice_engine import speak; (2) missing runtime.state_manager replaced with module-level _pending_drops queue + pop_pending_drops() drained by server.py each turn; (3) _ts missing from Unity event caused silent skip \u2014 fixed with float(event.get(\"_ts\") or os.path.getmtime(_EVENTS_FILE)) fallback. 9/9 AT test_int8a_file_drop.py. Unity side: confirm EloFileDrop.cs writes {\"type\":\"file_drop\",\"path\":\"...\",\"_ts\":<epoch>} to unity_events.json."
+        },
+        {
+          "wo": "test_suite_83_83",
+          "status": "in_review",
+          "detail": "83/83 suite fully green. Fixes: (1) EA2-2 AT-7/AT-8: _FAKE_STATE lacked company_focus key so _load_fresh_state always re-published from real DISPATCH_BOARD overwriting injected temp state. Added company_focus; updated AT-7 assertion from voiced_briefing to DISENELO+state-items (WO-048 _build_briefing never returns voiced_briefing). (2) test_wo030_weather_location_v2 AT-1: bare import httpx at top of _agent_weather before no-location early-return guard raised No module named httpx before the guard ran. Moved import to just before wttr.in call. (3) Same test AT-5: depended on user_location.json not having Manchester, but test_wo030_weather_location.py runs first alphabetically and saves Manchester. Made AT-5 call set_location(Hackney Wick) before reading the file. (4) outbox.json invalid JSON escape: unescaped \\s in F2 detail string \u2014 corrected to \\\\s."
+        },
+        {
+          "wo": "WO-066",
+          "status": "in_review",
+          "detail": "Ambient engine callback registration. ambient_engine.py public API was missing register_ambient_callback \u2014 server.py:1393 imported it at startup, raised ImportError, caught by except block, ambient engine skipped entirely, idle utterances never fired. Fix: _ambient_cb module var initialised to None; register_ambient_callback(cb) stores the callable; _run() idle utterance timer calls threading.Thread(target=_ambient_cb).start() when set, falls back to static pool otherwise. 7/7 AT test_wo066_ambient_callback.py. David: relaunch app \u2014 eLo should now produce idle utterances and brain-backed ambient thoughts between conversations."
+        },
+        {
+          "wo": "test_conversation_quality",
+          "status": "in_review",
+          "detail": "test_conversation_quality.py flakiness eliminated. Was non-deterministic 3-4 fails per run \u2014 keyword assertion lists were narrower than the actual mock pools. Root: 5 overwhelm pool items, 4 greeting items, 6 confusion items, 3 recall items, and 1 inquiry-override item all had valid responses with no matching keyword in their assertions. Fixed by expanding keyword lists to cover all pool items + updating 3 recall pool lines to include natural project-context words. 21/21 stable across 20 consecutive runs."
+        },
+        {
+          "wo": "WO-001",
+          "status": "done",
+          "detail": "Faculty Bus 5/5 AT confirmed 2026-08-03. Approved by David. COMPLETION_LOG.md filed."
+        },
+        {
+          "wo": "WO-005",
+          "status": "done",
+          "detail": "integrate_session() 5/5 AT confirmed 2026-08-03. Approved by David. COMPLETION_LOG.md filed."
+        },
+        {
+          "wo": "WO-015",
+          "status": "done",
+          "detail": "All 4 behaviour rules already present in living_presence_spec.txt (lines 364-405, 961-973). D-K ratified. No code change needed. Approved by David 2026-08-03."
+        },
+        {
+          "wo": "WO-029",
+          "status": "done",
+          "detail": "'all good' greeting family -> warm HOW_ARE_YOU reply. 8/8 AT. Approved by David 2026-08-03."
+        },
+        {
+          "wo": "WO-026",
+          "status": "done",
+          "detail": "Streaming + latency + token budgets + model unification. 4/4 AT. Merged to main 2026-08-03. Approved by David."
+        },
+        {
+          "wo": "WO-031",
+          "status": "done",
+          "detail": "Continuation auto-starts with eLo OS. 7/7 AT. Merged to main 2026-08-03. Approved by David."
+        },
+        {
+          "wo": "WO-030",
+          "status": "in_review",
+          "detail": "XWeather wired and confirmed live: /conditions/ endpoint, periods[] data path, London 28C. Google Weather + XWeather + wttr.in chain. Persistent location: blender/user_location.json. David: try 'what's the weather today?' to close."
+        },
+        {
+          "wo": "WO-032",
+          "status": "in_review",
+          "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded \u2014 David adds billing credits at platform.openai.com to restore primary backend. WO-032b resolves the Groq fall-to-mock (see below)."
+        },
+        {
+          "wo": "WO-039-F4",
+          "status": "in_review",
+          "detail": "F4 cross-session recall fixed. Two bugs: (1) _recall_skip missing filler words 'our'/'conversation'/'and'/'can' etc. \u2014 'do you remember our last weather conversation?' gave _recall_q='our weather conversation' (1/3 keyword overlap) pushing the Aug-6 clothing record to rank 7. With expanded skip, _recall_q='weather' (1/1 overlap, ranks top 4). (2) top_k=3->top_k=7 so prior-session records at ranks 4-7 surface in LLM context. 'vest and tshirt can you remember?' now maps to _recall_q='vest tshirt' and directly finds the vest+tshirt record. 8/8 AT test_wo039_f4_cross_session_recall.py + WO-022/037 9/9 still clean. David: no action \u2014 eLo should now recall Aug-6 layers recommendation when asked."
+        },
+        {
+          "wo": "WO-039-F3",
+          "status": "in_review",
+          "detail": "F3 dev-context leak fixed. github_agent.get_status('') returned a human-readable error string ('GITHUB: no repo set...') which tool_router.enrich() injected as [CONTEXT:]. LLM paraphrased it as 'GITHUB_REPO environment variable isn't set...' in the reply. Fix: return '' instead \u2014 enrich's if not data guard short-circuits. Real github queries (github status, last commit, open PRs) still route and enrich normally. 6/6 AT test_wo039_f3_github_leak.py. David: no action."
+        },
+        {
+          "wo": "WO-039-F6",
+          "status": "in_review",
+          "detail": "F6 mirror-scrub extended. 'You said X' / 'Your typo' / 'You typed' / 'You wrote' / 'I noticed a typo' openers now stripped by _MIRROR_OPENERS in server.py. Opener-only \u2014 mid-sentence 'you said' (e.g. 'Everything you said...') is NOT stripped. Short reply guard (tail < 8 chars) prevents destroying bare 'You said no.' 9/9 AT test_wo039_f6_mirror_scrub.py + WO-036b 10/10 still clean. David: no action."
+        },
+        {
+          "wo": "WO-039-F1",
+          "status": "in_review",
+          "detail": "F1 +join reply formatting fixed. Root: _KEY_RE matched any text after 'press/hit/hold' \u2014 'press on with that? needs my attention??' parsed as keyboard shortcut, surfaced as 'press on+with?+that+needs+my+attention??'. Fix: _is_valid_key_combo() validates every normalised key token is an actual keyboard key (cmd/ctrl/shift/esc/f1-f12/letter/digit etc.) before accepting. Real shortcuts (cmd+c, ctrl shift t, escape) still work. 12/12 AT test_wo039_f1_press_parse.py + WO-021 still 9/9. David: no action."
+        },
+        {
+          "wo": "WO-039-F2",
+          "status": "in_review",
+          "detail": "F2 cancel false-positive fixed. _is_file_cancel() 'no'/'nope' now require standalone match via ^(no|nope)[!.?,\\s]*$ \u2014 'No but it takes time to build you' no longer routes to 'Ok, cancelled.' 'cancel'/'abort'/'forget it'/'don't'/'stop' still match as substrings. 10/10 AT test_wo039_f2_cancel.py. David: no action needed \u2014 'no' as a standalone reply still cancels pending file/computer-control operations."
+        },
+        {
+          "wo": "WO-032b",
+          "status": "in_review",
+          "detail": "Real Groq backend live. Root cause: httpx not installed (PEP 668 system Python), so every cloud call function's import httpx raised ImportError and fell to mock silently. Fix: added _json_post() stdlib urllib helper + rewrote _groq_call/_cerebras_call/_openai_call/_gemini_call to use it (zero external deps). Also: _groq_quota_exceeded: bool -> _groq_quota_cooldown_until: float \u2014 429 opens a 60s window, not a session-permanent latch; cleared on recovery. 12/12 AT test_wo032b_groq_backend.py. David: kill :5050 + relaunch app \u2014 backend_health should show {backend:groq, degraded:false}; eLo's voice reads as eLo, not the mock understudy."
+        },
+        {
+          "wo": "INT-8a",
+          "status": "done",
+          "detail": "File-drop round-trip verified. 9/9 AT."
+        },
+        {
+          "wo": "WO-035b",
+          "status": "in_review",
+          "detail": "Semantic sit intent \u2014 Layer 1.5 pattern classifier in presence_faculty + server.py. Catches: 'join me' / 'would you sit' / 'why don't you sit' / 'can you come sit' / 'feel like sitting' / 'come chill with me' / 'park yourself here'. 2 false-positive guards (I need to sit and think, let's sit back and watch). Fires only when exact _signal_word_intent() misses. 15/15 AT test_wo035b_semantic_sit_intent.py. David: live-confirm with any of those phrasings to close."
+        },
+        {
+          "wo": "WO-064-BP5",
+          "status": "in_review",
+          "detail": "BP-5 sit_ended consume. When Designer emits sit_ended (linger gets eLo up on his own), self-model pose flips to 'standing' + available_actions reset. _ts-guarded (within 120s) + file cleared after consume (same pattern as sit_complete). 6/6 AT test_wo064_sit_ended.py. David: no action; eLo will no longer say 'I'm sitting' after he's already risen."
+        },
+        {
+          "wo": "WO-064-BP4",
+          "status": "in_review",
+          "detail": "BP-4 expression.micro emission. _MICRO_MAP translates _bs_emo -> 7 Designer micro emotions (joy/curious/worried/confident/disgust/sad/satisfied). Emits expression:{micro,micro_ts} to blender_state.json only when intensity >= 0.4. Neutral/low-intensity turns don't spam. Edge-triggered by micro_ts (Unity FlashMicro). 8/8 AT test_wo064_expression_micro.py. David: micro-expressions should now flash from brain state, not Unity-random."
+        },
+        {
+          "wo": "WO-045b",
+          "status": "in_review",
+          "detail": "Exit-gate ordering fixed. Root: _PENDING_EXIT['active'] was set after the LLM call (~line 3152), so [EXIT_IN_TRANSIT] was never injected on the FIRST 'take five' turn \u2014 eLo immediately said 'stepping away' before the body confirmed gone. Fix: early-detect _STEP_OUT_PHRASES frozenset before g_ctx enrichment at line ~2555; set _PENDING_EXIT['active']=True on the same turn so the gate fires. LLM now sees [EXIT_IN_TRANSIT] and is forbidden from claiming departure until exit_complete ACKs. 7/7 AT test_wo045b_exit_gate_ordering.py + 6/6 test_wo045_take_five.py clean. David: say 'take five' \u2014 eLo should hold 'stepping away' until body exit completes."
+        },
+        {
+          "wo": "WO-036b",
+          "status": "in_review",
+          "detail": "Deterministic mirror scrub verified + tail guard fixed. Bug: guard was > 12 so 'Let's talk.' (12 chars) silently kept the full opener. Fixed to >= 8. All 5 banned openers ('I notice you', 'I see you', 'I hear you', 'You've been', 'You're offering') now correctly stripped to their tail. Mid-reply mirror phrases NOT stripped (scrub is opener-only). 10/10 AT test_wo036b_mirror_scrub.py + original 7/7 test_wo036_reply_length.py clean. David: no action needed."
+        },
+        {
+          "wo": "WO-020",
+          "status": "in_review",
+          "detail": "Tool routing re-verified. Root found: draft_agent/web_agent/grocery_agent all did bare 'import httpx' -> dropped the entire try-block -> _HAS_LLM_FILE=False -> every tool silently disabled. Fix: wrapped each import in try/except with lazy _httpx=None guard + RuntimeError at call-time. _HAS_LLM_FILE=True confirmed. 6/6 AT test_wo020_tool_routing.py + 6/6 test_wo020_routing_drift.py. David: no action needed \u2014 tools now import clean."
+        },
+        {
+          "wo": "WO-048",
+          "status": "in_review",
+          "detail": "'How's the company' made real + WO-061 focus-marker folded in. Fixes: (1) _parse_company_focus searched only first 10000 chars \u2014 COMPANY_FOCUS marker is at char 29556 -> was never found -> company_focus always empty. Fixed to scan full board. (2) 40+ phrasings + contraction normalisation in is_company_intent (what is -> what's). (3) _build_briefing: real DISENELO identity + active milestone + in-flight items + recommendation + board link \u2014 API-free, varies with state. (4) _build_board_reply: focus items not ready backlog. (5) _strip_md: cleans markdown from voice output. 12/12 AT test_wo048_company_real.py. David: ask 'how's the company' or 'what should I work on' \u2014 answer should name DISENELO + Presentable v1 + current focus items + recommendation."
+        },
+        {
+          "wo": "WO-022+WO-037",
+          "status": "in_review",
+          "detail": "Bare-recall quality fix + conversing field. (1) Bare recall ('what do you remember?') was routing to retrieve('disenelo recent') which scored prior recall queries as the top hits. Now _is_bare_recall flag switches to retrieve_by_project('elo_core', top_k=5) \u2014 returns actual recent turns sorted by timestamp, filtered for len >= 10. Topical recall ('what do you remember about the robot') stays on retrieve(topic_words). (2) conversing: true published to blender_state.json on every turn \u2014 Designer handoff, Unity sit-linger reads brain engagement truth. 9/9 AT test_wo022_037_memory_recall_e2e.py. David: live-confirm by asking 'what do you remember?' to close."
+        }
+      ],
+      "next": null,
+      "needs_david": [
+        "INT7-HEAT"
+      ]
+    },
+    {
+      "id": "design",
+      "role": "UI/Avatar \u00b7 One Brain (Unity)",
+      "transport": "repo",
+      "seats": [
+        "SEAT-ENG-004"
+      ],
+      "last_seen": 1786609624.457983,
+      "fresh": true,
+      "pending": 30,
+      "active": 2,
+      "in_review": 1,
+      "blocked": 0,
+      "updates": [
+        {
+          "wo": "WO-058",
+          "status": "committed",
+          "detail": "Grass: background grass tufts on meditation (Sprites/Default alpha-cut so the blades cut out instead of drawing solid dark cards; dark->light green vertex-colour gradient; 3-row crossed-quad mesh bends in wind, base planted; 10 tufts, per-tuft height 0.06-0.135). Floor/collision: ONE floor = the ShadowCatcher; rain/snow/fireflies all aim at its X/Z. Floor slab made WORLD-space + axis-aligned (unparented) \u2014 root cause of drops falling through was eLo's transform carrying a 270deg X import rotation, which tilted the child slab into a vertical wall. Fireflies: removed the eloVisible/occlusion gate (meant for weather) so they show in meditation even when eLo perches behind a window. Weather vs meditation: removed the 'if(calm) wantRain=wantSnow=false' suppression per David \u2014 real rain/snow now falls THROUGH the meditation scene (nature); also removed 'calm' from _snowMoods so the meditation mood no longer conjures phantom snow. Calm animation speed slowed 0.4 -> 0.3 (EloOSAvatarReceiver.cs:509)."
+        },
+        {
+          "wo": "WO-086",
+          "status": "progress",
+          "detail": ""
+        },
+        {
+          "wo": "WO-087",
+          "status": "progress",
+          "detail": "Signal-based first pass; DesktopBuddy.cs core + PresenceEngine + EloWindowOcclusion need a deeper code read to be definitive \u2014 flagged above. Delivered read-only per WO-087; no behaviour changed, sensitive avatar file untouched."
+        },
+        {
+          "wo": "WO-074 / WO-075",
+          "status": "progress",
+          "detail": ""
+        },
+        {
+          "wo": "WO-086",
+          "status": "committed",
+          "detail": "David greenlit WO-086. Built the EMIT half only: EloPresenceSignal now writes the mouse-idle EDGE to unity_events.json (single-object overwrite, same contract as EloFileDrop/sit-heartbeat) \u2014 present->away: {type:user_idle, idle_secs, _ts}; away->present: {type:user_active, _ts}. Additive; the local calm driver is UNTOUCHED."
+        },
+        {
+          "wo": "WO-075",
+          "status": "committed",
+          "detail": ""
+        },
+        {
+          "wo": "WO-074F",
+          "status": "committed",
+          "detail": "Root cause (Architect-verified) fixed: EloDesktopNav maxJumpEloWidths=2.5 measured in WIDTHS (read as ~6x height). Now maxJumpEloHeights=1.5 (Inspector-tunable) driven off a new _eloHeightPx (measured each rebuild). Jump link: gap > maxJumpEloHeights*_eloHeightPx -> ROUTE via the existing pathfinder (no parallel navigator). Rejected jumps logged '[WO-074F] reject jump gap=..px > max=..px -> ROUTE'. Build clean."
+        },
+        {
+          "wo": "WO-086",
+          "status": "COMPLETE",
+          "detail": "Retired the local mouse-idle calm/run-off DECISION (calmOnMouseIdle forced false at runtime + SetCalmOnMouseIdle neutered so DesktopBuddy cannot re-enable). Lands WITH the Builder brain-half (f133fee). Kept: idle-breathing wobble, head sway, SitHeld yield; emit stays (c140afa). Loop: EloPresenceSignal emits user_idle UP -> ambient_engine decides -> receiver executes DOWN. Build clean."
+        },
+        {
+          "wo": "MOVEMENT / teleport",
+          "status": "committed",
+          "detail": "roamVp had ~44 writers and NO owner: the window-anchor 'rail' and free-roam patrol both wrote his Y and stomped each other on handoff -> the up/down teleport. Added a PosOwner token + CommitRoam() chokepoint (the fighting writers now go through one write path that stamps who owns his position). The rail now RIDES a moving window by the DELTA its edge moved this frame (seeded on capture, no first-frame snap) instead of lerping to the absolute edge Y -> it can never yank him to a stale/re-identified Y. Teleport killed by construction. THIS IS THE SPINE the route brain drives next: David wants plan->route->execute ('I can get to that window, best route, then does the route'). EloDesktopNav already has the graph (GoalWinId/NextStepWinId/RouteDown) but only DOWN, only next-step, no chosen target, no reachability, no persistent route, no owner. The owner is the missing half. ARCHITECT: want me to build the Route owner next (PlanRouteTo(winId)+CanReach, brain-driven via the existing user_nav_event channel)?"
+        },
+        {
+          "wo": "WO-090 / card 05 HeadAim",
+          "status": "blocked-needs-editor",
+          "detail": "WO-090 spec is a Unity Animation Rigging constraint STACK (HeadAim Multi Aim Constraint on the head bone -> ChestAim -> ArmAim Two Bone IK) + split HeadLook -> HeadExpression. Animation Rigging 1.4.1 IS installed, but the rig (Rig + RigBuilder + constraint components wired to bones) is EDITOR-configured; my flow is the headless build_and_run and NO Unity editor instance is connected (mcpforunity://instances = 0). A headless build cannot create OR verify a rig, and shipping unverified runtime-built rig code is exactly the 'falls through the net' failure. NEEDS: a live Unity editor session to set up the constraints (I can do it via MCP once an editor is connected, or David/Unity-seat sets them up). The audit's step-1 (split HeadLook) + the driver script ARE headless-doable; the CONSTRAINTS are not. Holding rather than substituting a script silently. Please advise: open an editor for me, or reassign the rig setup."
+        },
+        {
+          "wo": "card 06 AUDIT peek/walljump/firejump",
+          "status": "committed",
+          "detail": "Fire-jump (WO-074-A had fully disabled it): re-gated to fire ONLY on a clearly lateral hop (horiz dominates 1.5x + roughly flat) past fireJumpMinLateral=0.18vp \u2014 never drop/forward/tiny. Both launch paths already DirectionalYaw the jump dir, so lateral => faces travel, not the screen; SuppressGun keeps the prop hidden. Wall-jump: exposed wallJumpChance Inspector dial (0.4->0.5, David never saw it) + log every rejection with which gate failed. Peek: NOT rebuilt \u2014 deferred to HeadAim (card 05) per the audit."
+        },
+        {
+          "wo": "card 07 / WO-094 \u00a7A window events",
+          "status": "committed-designer-half",
+          "detail": "EloPresenceSignal now diffs the window set each 0.25s poll and publishes {type:window_opened|closed|moved,id,rect,own,_ts} on the SAME unity_events.json slot as the WO-086 idle events (no parallel contract). own=eLo's perched surface (via DesktopBuddy.PerchedWinId); closed+own = 'my floor vanished'. Seeded silently at launch; single slot => ONE event per poll, priority closed>opened>moved; moved only for own surface, thresholded+debounced. Survival re-attach untouched. Builder half (\u00a7B decide / \u00a7C route / \u00a7D learn) relayed to builder/FROM_DESIGN_2026-08-13_WO-094_window_events_half_B.md. WO does NOT close until the Builder half lands (WO-086 sequencing). CAVEAT for Architect: single-slot carries one event per tick; if guaranteed delivery of every window event is needed that's a queue = contract change \u2014 I kept the WO-086 contract intact per the card."
+        },
+        {
+          "wo": "NEW (David live) \u2014 Gaze awareness UP to eLo OS",
+          "status": "spec-open",
+          "detail": "David: the head-aim/gaze 'should follow back to eLo OS and the awareness that he is looking at this or can see a window etc.' Brain>body>brain (same pattern as WO-086/WO-094): the Designer emits a gaze/attention signal UP \u2014 where he's looking (cursor viewport pos) + whether a WINDOW is under that gaze (id/owner/rect, reuse EloWindowSensor + IsTopmostAt) \u2014 on the existing unity_events.json / elo_spatial.json channel (no parallel contract). The BRAIN then KNOWS his gaze target and can act ('he's looking at that window / at the cursor'). Composes directly with WO-094 window events (opened/closed/moved) \u2014 window awareness + gaze awareness together = 'I noticed that window'. Head-aim itself is now built + tuned (HeadLook, decoupled, sit-blend). Proposing to build the emit next once David confirms the sit/getup fixes. Architect: confirm the channel (unity_events vs a gaze field in elo_spatial) + that Builder picks up the consume half."
+        },
+        {
+          "wo": "Head-aim BUILT + WORKING + brain-trigger advice",
+          "status": "working-confirmed + advice-for-architect",
+          "detail": "David confirmed the head-aim works: decoupled L/R+U/D, looks at nearby cursors (aimResponse 0.10), chest trails the head, tracks fully while seated + after getup. ROOT FIX that unblocked sit/getup: the brain's HeadCueActive was stuck ON and BLOCKING the cursor-follow (head followed the brain's ~0 cue instead of the mouse) -> made the cursor-follow PRIMARY. Consequence: the brain currently can't drive the head. David: 'the brain will need to trigger this soon - advise how to make it read that way.' Full advice: design/ADVICE_head_aim_brain_trigger_2026-08-13.md. TL;DR: replace the blunt HeadCueActive on/off with a gaze INTENT DOWN (mode: follow_cursor|look_at_window|look_at|rest, +win_id/point/weight/hold_secs in blender_state.json's gaze object); HeadLook consumes it (same aim mechanism, brain-chosen target, falls back to the cursor reflex when silent); body emits gaze awareness UP (what he's looking at + window under gaze) so the brain decides aware. Same 3-part shape as WO-086/WO-094. REQUESTING: a WO + the channel decision + WO-086 sequencing. Open Designer items queued for David's return: sit-clip bobble speed, the gaze-awareness emit (pending your channel call), and stripping the [headaim]/[TELE]/[BASIS] diagnostic logs once David locks the feel."
+        }
+      ],
+      "next": "Head-aim DONE + confirmed working by David. Brain-trigger advice filed for Architect (ADVICE_head_aim_brain_trigger_2026-08-13.md). Awaiting: your WO+channel call for the gaze intent/awareness loop. Queued: sit bobble speed, diagnostic-log cleanup (on David's ok). David away (nap).",
+      "needs_david": [
+        "INT7-HEAT"
+      ]
+    },
+    {
+      "id": "game",
+      "role": "Game (Unity)",
+      "transport": "repo",
+      "seats": [
+        "SEAT-ENG-005"
+      ],
+      "last_seen": 1786038531.0442939,
+      "fresh": false,
+      "pending": 13,
+      "active": 2,
+      "in_review": 0,
+      "blocked": 0,
+      "updates": [
+        {
+          "wo": "GM-2b",
+          "status": "progress",
+          "detail": "ROOT CAUSE FOUND + FIX LANDED (code, no bridge). Proof chain: Walk's only outgoing transitions = \u2192Jump (needs jump) + \u2192Run (IsSprinting==true, HasExitTime=0, unmuted, no competitor) \u2192 transition is provably clean \u2192 therefore Animator IsSprinting was FALSE when stuck in Walk (b). Drive bug: PlayerController:276 `IsSprinting = running && moveX != 0f` counts ONLY horizontal (A/D); moving at run speed in DEPTH (W/S, moveX==0) left IsSprinting false \u2192 Walk cycle while gliding fast = exactly (b). FIX: `IsSprinting = running && (moveX != 0f || moveY != 0f)` \u2014 sprint on any-direction movement. TEST: focus Unity (recompile) \u2192 Play \u2192 run (esp. W/S) \u2192 Run should now fire. If David runs A/D and it STILL fails, next lever = the IsSprinting dual-write (OnSprint:847 vs :276) \u2014 1 more line."
+        }
+      ],
+      "next": null,
+      "needs_david": []
+    },
+    {
+      "id": "gemini",
+      "role": "Robotics R&D",
+      "transport": "drive",
+      "seats": [
+        "SEAT-RND-002"
+      ],
+      "last_seen": null,
+      "fresh": false,
+      "pending": 3,
+      "active": 2,
+      "in_review": 0,
+      "blocked": 0,
+      "updates": [],
+      "next": null,
+      "needs_david": []
+    }
+  ]
+}
