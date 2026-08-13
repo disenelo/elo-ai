@@ -142,6 +142,12 @@ def _executive_faculty(
     attention:    dict,
     capabilities: list[dict],
     system_det:   tuple | None,
+    # WO-106: assembled plan state — opens the seam so the Executive decides from
+    # real world/working-memory/cognitive context, not just raw attention_model.
+    world          = None,   # LiveWorldState from assemble_world_state()
+    cognitive_state = None,  # CognitiveState from assemble_cognitive_state()
+    working_memory  = None,  # WorkingMemory (competition result) from WM faculty
+    affordances     = None,  # surface_affordances from CognitiveSnapshot
 ) -> CognitivePlan:
     """
     The Executive is the only entity permitted to make decisions.
@@ -157,14 +163,45 @@ def _executive_faculty(
     )
 
     # ── Ruling C (WO-CANON-VII): exec_decide called HERE, after assembly ────────
-    # _executive_faculty() runs at spine.py:456, AFTER assemble_cognitive_state()
-    # at spine.py:448. This closes Ruling C's ordering half: the decision is now
-    # taken inside the spine, after the self is assembled, not at server.py:2322
-    # before any assembly runs. runtime/executive.py is FROZEN — only the call
-    # site moves. server.py derives its exec_decision dict from the plan.
+    # ── WO-106: open the seam — merge assembled plan state into attention_model ─
+    # executive.py is FROZEN — we open the seam by enriching the dict it reads,
+    # not by changing the function. When the freeze is lifted, exec_decide will
+    # be able to use these fields directly.
+    _attention_in = dict(attention) if attention else {}
+
+    # Ruling B: working memory competition winner drives attention (not raw model)
+    if working_memory is not None:
+        _attn_state = getattr(working_memory, "attention", None)
+        if _attn_state is not None:
+            _attention_in["wm_winner"] = getattr(_attn_state, "winner", "")
+            _attention_in["wm_mode"]   = getattr(_attn_state, "mode",   "reactive")
+            _attention_in["wm_budget"] = getattr(_attn_state, "budget",  0.5)
+
+    # World state — where eLo is, what the user is doing
+    if world is not None:
+        _desktop = getattr(world, "desktop", None)
+        _attention_in["world_state"] = {
+            "surface":    getattr(_desktop, "surface",    "") if _desktop else "",
+            "active_app": getattr(_desktop, "active_app", "") if _desktop else "",
+            "available":  getattr(_desktop, "available",   True) if _desktop else False,
+            "degraded":   list(getattr(world, "degraded", [])),
+        }
+    else:
+        _log.warning("executive_faculty: plan.world absent — deciding without world context")
+
+    # Focal thread from cognitive state
+    if cognitive_state is not None:
+        _attention_in["cognitive_state_focal"] = getattr(cognitive_state, "focal_thread", "")
+
+    # Surface affordances — what actions are available in the current context
+    if affordances:
+        _attention_in["surface_affordances"] = (
+            list(affordances) if not isinstance(affordances, list) else affordances
+        )
+
     try:
         from runtime.executive import decide as _exec_decide_fn
-        exec_out = _exec_decide_fn(attention, loop_detected=False, user_input=raw)
+        exec_out = _exec_decide_fn(_attention_in, loop_detected=False, user_input=raw)
         plan.conversation_action = exec_out.get("action",        "celebrate")
         plan.cal_reason          = exec_out.get("cal_reason",    "")
         plan.tone                = exec_out.get("tone",          "DIRECT")
@@ -176,7 +213,7 @@ def _executive_faculty(
         if not plan.register:
             plan.register = exec_out.get("register", "")
     except Exception as e:
-        _log.debug("executive_faculty/exec_decide: %s", e)
+        _log.warning("executive_faculty/exec_decide FAILED: %s", e)
 
     # ── System action decision ────────────────────────────────────────────────
     if system_det:
@@ -190,7 +227,7 @@ def _executive_faculty(
             plan.system_pending   = not g["execute"]
             plan.system_desc      = g.get("confirmation", "")
         except Exception as e:
-            _log.debug("executive_faculty/gate: %s", e)
+            _log.warning("executive_faculty/gate FAILED: %s", e)
             plan.system_immediate = True
 
     # ── Capability selection ──────────────────────────────────────────────────
@@ -457,7 +494,14 @@ def run(
         _log.warning("assemble_cognitive_state FAILED: %s", _cs_err)
 
     # ── Executive Faculty — ONE DECISION ─────────────────────────────────────
-    plan = _executive_faculty(raw, language, attention, capabilities, system_det)
+    # WO-106: pass assembled state so the Executive decides from real context
+    plan = _executive_faculty(
+        raw, language, attention, capabilities, system_det,
+        world=_world,
+        cognitive_state=_cognitive_state,
+        working_memory=_wm,
+        affordances=getattr(_snapshot, "surface_affordances", None) if _snapshot else None,
+    )
 
     # ── WO-052: Store snapshot on plan (assembled before; now pinned to it) ───
     plan.snapshot = _snapshot
@@ -502,15 +546,26 @@ def run(
     except Exception as e:
         _log.warning("presence_faculty FAILED: %s", e)
 
+    # ── Conversation Faculty — direct response if applicable ──────────────────
+    # WO-097: conversation runs FIRST so direct_response is set before embodiment.
+    # build_embodiment_state previously ran before _conversation_faculty, publishing
+    # empty response_text / display_text / tts_text on every direct-response turn.
+    plan = _conversation_faculty(plan)
+
     # ── S6: Build EmbodimentState ─────────────────────────────────────────────
+    # WO-097: runs AFTER conversation so response_text / display_text / tts_text
+    # are populated when the body reads them.
     try:
         plan.embodiment_state = build_embodiment_state(plan)
+        if getattr(plan, "direct_response", None) and not getattr(
+            plan.embodiment_state, "response_text", None
+        ):
+            _log.warning(
+                "build_embodiment_state: response_text empty on direct-response turn"
+            )
     except Exception as e:
         _log.warning("build_embodiment_state FAILED: %s", e)
         plan.embodiment_state = None
-
-    # ── Conversation Faculty — direct response if applicable ──────────────────
-    plan = _conversation_faculty(plan)
 
     return plan
 

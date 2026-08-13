@@ -1,6 +1,6 @@
 {
   "ts": 1786617600.0,
-  "builder_run_summary": "2026-08-13 \u2014 RUN 29. WO-096B learning loop 6/6. All 4 defects fixed: (1) promote_pass wired every 10 turns via _maybe_run_promote_pass daemon thread; (2) preference scope + proposes added to reflection_faculty so PersonalityDelta gate can fire; (3) ensure_lesson() added \u2014 ACK hook now guarantees row exists before record_outcome; record_outcome logs WARNING on unknown key; (4) _append_metrics honours ledger_path so tests never pollute real journal. migrate_pre_v1 wired at startup. Card moved to DONE/. Note: growth_metrics.jsonl has 69 polluted test rows \u2014 manual truncate required: truncate -s 0 self/journals/growth_metrics.jsonl. Confirmed lessons on a real run: 0 confirmed today (ledger needs 3+ ACK events across 2+ sessions to promote first row \u2014 mechanism now live). WO-096B closed.",
+  "builder_run_summary": "2026-08-13 \u2014 RUN 30. WO-097 + WO-106 sequenced delivery. WO-097: _conversation_faculty now runs BEFORE build_embodiment_state in spine.run() \u2014 response_text/display_text/tts_text populated on every direct-response turn (was empty every time). AT-097-1/2 enforcing. WO-106: THE SEAM opened. _executive_faculty() extended with world/cognitive_state/working_memory/affordances params; _attention_in dict enriched with wm_winner/wm_mode/wm_budget (from WM competition), world_state (desktop surface/app/available/degraded), cognitive_state_focal, surface_affordances \u2014 all passed to exec_decide() before the frozen function runs. Ruling B data now IN the function; behaviour change awaits executive.py freeze lift. FREEZE_V1_LOCK honoured \u2014 executive.py unchanged. AT-106-1/2/3/4/5 enforcing. Capability matrix: Row 6 ATTEND + Row 18 LEARN upgraded DEAD\u2192PARTIAL. Board score: 1 VERIFIED \u00b7 17 PARTIAL \u00b7 5 FORWARD \u00b7 1 DEAD \u00b7 2 FUTURE. Cards 00a_WO-106 + 02_BUG_embodiment moved to DONE/.",
   "wo_096b": {
     "wo": "WO-096B",
     "status": "done",
@@ -23,15 +23,26 @@
     "lessons_to_prompt": "FIXED \u2014 was PARTIAL (recall() fired, lessons on plan.snapshot.lessons, but build_prompt called with no lessons= arg). Fixed: server.py now passes _bp_lessons=plan.snapshot.lessons to build_prompt(). prompt_builder.py injection code was already complete and correct.",
     "working_memory_to_prompt": "DEAD \u2014 plan.working_memory assembled every turn (spine.py:469), but server.py has zero references. build_prompt() accepts no working_memory param. attention winner never reaches LLM. Gap: add working_memory to build_prompt + inject [ATTENTION] block. Builder 05.",
     "gaze_look": "PARTIAL \u2014 Python emits gaze to blender_state.json every turn. Unity HeadLook.cs consume disabled pending WO-099a (Designer). Python side complete.",
-    "shows_what_saying": "BROKEN \u2014 WO-097 dispatched. embodiment publishes empty on direct turns."
+    "shows_what_saying": "FIXED \u2014 WO-097 done. _conversation_faculty runs first; response_text populated before embodiment build."
   },
   "claiming": [
     "Builder 05 (working memory to prompt \u2014 DEAD, needs build_prompt() wiring)",
     "Builder 06 (perception active_surface to prompt \u2014 PARTIAL, needs plan.world extraction in server.py)",
-    "WO-097 (shows what he says \u2014 ordering fix, dispatched)",
-    "WO-099b (gaze emit \u2014 Python side real, needs Builder confirmation Unity consume side)"
+    "WO-099b (gaze consume \u2014 Python side real, WO-099a Designer done 4bb1f01; Python must emit gaze cue; next P0)"
   ],
   "updates": [
+    {
+      "wo": "WO-097",
+      "status": "done",
+      "commit": "pending",
+      "detail": "EmbodimentState empty on direct turns — fixed. _conversation_faculty(plan) now executes BEFORE build_embodiment_state(plan) in spine.run(). WO-097 ordering comment + WARNING guard added (logs if response_text still empty after conversation faculty). AT-097-1 (static ordering check), AT-097-2 (regression guard via WO-097 comment). Sequenced with WO-106 in same delivery."
+    },
+    {
+      "wo": "WO-106",
+      "status": "done",
+      "commit": "pending",
+      "detail": "THE SEAM — executive reads the plan. _executive_faculty() signature extended: world (LiveWorldState), cognitive_state (CognitiveState), working_memory (WorkingMemory), affordances (surface_affordances). _attention_in dict built from raw attention then enriched: wm_winner/wm_mode/wm_budget from working_memory.attention (AttentionState); world_state dict (surface/active_app/available/degraded[]) from plan.world.desktop; cognitive_state_focal from cognitive_state.focal_thread; surface_affordances list. exec_decide() receives _attention_in instead of raw attention. FREEZE_V1_LOCK: executive.py NOT touched. exec_decide() ignores unknown keys until freeze lifts — data is there waiting. Capability matrix: Row 4 SEE, Row 6 ATTEND, Row 14 AFFORD all note seam opened. AT-106-1 (call site params), AT-106-2 (absent world → WARNING), AT-106-3 (world_state in dict), AT-106-4 (wm_winner/mode/budget in dict), AT-106-5 (signature accepts new params). 7/7 AT."
+    },
     {
       "wo": "WO-105",
       "status": "done",
