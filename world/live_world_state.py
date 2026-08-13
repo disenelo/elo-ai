@@ -185,22 +185,26 @@ def assemble_world_state(turn_id: str = "", perception=None) -> LiveWorldState:
     try:
         bstate = _read_blender_state()
         bstate_ts = assembled_ts
-    except Exception:
+    except Exception as _bstate_err:
+        import logging as _lg
+        _lg.getLogger(__name__).debug("blender_state unavailable: %s", _bstate_err)
         bstate = {}
 
     # ── Desktop ───────────────────────────────────────────────────────────────
     desktop = DesktopState()
     try:
-        from desktop.window_state import get_active_window
-        win = get_active_window()
+        from desktop.window_state import get as _ws_get
+        win = _ws_get()
         desktop = DesktopState(
-            active_app=win.get("app", ""),
-            active_window=win.get("title", ""),
+            active_app=win.app,
+            active_window=win.title,
             surface="mac",
         )
         _health("desktop", "live", "window_state", 1.0)
-    except Exception:
-        _health("desktop", "absent", "absent", 0.0)
+    except Exception as _desktop_err:
+        import logging as _lg
+        _lg.getLogger(__name__).warning("desktop domain unavailable: %s", _desktop_err)
+        _health("desktop", "error", str(_desktop_err)[:80], 0.0)
         _degrade("desktop")
 
     # ── Time ─────────────────────────────────────────────────────────────────

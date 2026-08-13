@@ -334,12 +334,13 @@ def perceive_from_live_state() -> PerceptionResult:
     vision_text: str | None = None
 
     try:
-        from desktop.window_state import get_active_window
-        win = get_active_window()
-        app = win.get("app") or None
-        title = win.get("title") or None
-    except Exception:
-        pass
+        from desktop.window_state import get as _ws_get
+        win = _ws_get()
+        app = win.app or None
+        title = win.title or None
+    except Exception as _win_err:
+        import logging as _lg
+        _lg.getLogger(__name__).warning("window_state unavailable: %s", _win_err)
 
     try:
         from blender_bridge.state_writer import read as _sr_read
@@ -347,8 +348,9 @@ def perceive_from_live_state() -> PerceptionResult:
         vision = bs.get("vision", {})
         if vision.get("active") and vision.get("description"):
             vision_text = vision["description"]
-    except Exception:
-        pass
+    except Exception as _vis_err:
+        import logging as _lg
+        _lg.getLogger(__name__).debug("vision cache unavailable: %s", _vis_err)
 
     # WO-025: spatial sensor stub — active only when ELO_SPATIAL_SENSOR=1
     spatial: SpatialFrame | None = None
