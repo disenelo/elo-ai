@@ -165,6 +165,17 @@ class EloSelfState:
     # Append-only; reconciles to Vol XXI; NOT a new store.
     embodiment_history: list = field(default_factory=lambda: list(_DEFAULT_EMBODIMENT_HISTORY))
     embodiment_milestones: list = field(default_factory=lambda: list(_DEFAULT_EMBODIMENT_MILESTONES))
+    # WO-107: Identity as first-class state — constitutional baseline, asserted every turn.
+    # Readable by the Executive. Drift guard compares live prompt against these fields.
+    identity_name: str = "eLo"
+    core_values: list = field(default_factory=lambda: [
+        "calm", "observant", "playful", "emotionally aware", "curious", "grounded",
+    ])
+    invariants: list = field(default_factory=lambda: [
+        "never preachy", "never dramatic", "never overly clinical", "never trapped in abstraction",
+        "identity constant across backend and session",
+    ])
+    who_i_am_with: str = "David"
 
 
 # ── Persistence ───────────────────────────────────────────────────────────────
@@ -199,6 +210,15 @@ def load() -> EloSelfState:
             recent_behavior=dict(data.get("recent_behavior", {})),
             embodiment_history=list(data.get("embodiment_history", _DEFAULT_EMBODIMENT_HISTORY)),
             embodiment_milestones=list(data.get("embodiment_milestones", _DEFAULT_EMBODIMENT_MILESTONES)),
+            identity_name=str(data.get("identity_name", "eLo")),
+            core_values=list(data.get("core_values", [
+                "calm", "observant", "playful", "emotionally aware", "curious", "grounded",
+            ])),
+            invariants=list(data.get("invariants", [
+                "never preachy", "never dramatic", "never overly clinical",
+                "never trapped in abstraction", "identity constant across backend and session",
+            ])),
+            who_i_am_with=str(data.get("who_i_am_with", "David")),
         )
     except (FileNotFoundError, json.JSONDecodeError, Exception):
         return EloSelfState()
@@ -212,6 +232,41 @@ def save(state: EloSelfState) -> None:
             json.dump(asdict(state), f, indent=2)
     except Exception as e:
         print(f"[eLo self] save error: {e}")
+
+
+def identity_block(state: EloSelfState) -> str:
+    """
+    WO-107: Render an [IDENTITY] block from EloSelfState fields.
+
+    This is the constitutional baseline — rendered FROM state, not from a separate
+    hardcoded string. Change a field, the block changes. One source.
+
+    Readable by the Executive via the assembled cognitive state.
+    """
+    values_str    = ", ".join(state.core_values)   if state.core_values   else "unknown"
+    invariants_str = "; ".join(state.invariants)   if state.invariants    else ""
+    lines = [
+        f"[IDENTITY — constitutional baseline, asserted from self-model every turn]",
+        f"name: {state.identity_name}",
+        f"with: {state.who_i_am_with}",
+        f"core traits: {values_str}",
+    ]
+    if invariants_str:
+        lines.append(f"invariants: {invariants_str}")
+    return "\n".join(lines)
+
+
+def check_identity_drift(state: EloSelfState, prompt_text: str) -> list[str]:
+    """
+    WO-107: Drift guard — verify the rendered prompt contains each core value.
+
+    Returns a list of missing values (empty list = no drift).
+    """
+    drifted = []
+    for v in state.core_values:
+        if v.lower() not in prompt_text.lower():
+            drifted.append(v)
+    return drifted
 
 
 # ── Update ────────────────────────────────────────────────────────────────────

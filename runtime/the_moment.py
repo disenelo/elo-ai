@@ -194,8 +194,11 @@ def situated_with_epistemic(state, *, perch_fresh: bool = False, pose_acked: boo
         f"capabilities: {caps} {e_caps}",
         f"locomotion: {m['locomotion_health']} {_TIER['live']}",
     ]
+    # WO-110 Row 11: UNKNOWN must be statable — always show nearby, even when absent
     if m["nearby_surfaces"]:
         lines.append(f"nearby: {', '.join(map(str, m['nearby_surfaces']))} {e_near}")
+    else:
+        lines.append(f"nearby: [unknown] — no surfaces perceived")
     if m["current_action"] and m["current_action"] != "idle":
         lines.append(f"currently: {m['current_action']}")
     return "\n".join(lines)
