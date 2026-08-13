@@ -1,3 +1,14 @@
+> # 🐞 LIVE BUG FOUND IN AUDIT — 2026-08-10: eLo's DESKTOP PERCEPTION IS SILENTLY DEAD
+> `world/live_world_state.py:194` imports `get_active_window` from `desktop/window_state.py` — **that
+> module only defines `get()`.** The ImportError is swallowed by a **bare `except`**, so the desktop
+> domain returns `absent` **on every turn** and nobody was told. Same broken import duplicated at
+> `perception_faculty.py:337`. → **WO-096, Builder card `01`, P0.** Reproduced by running
+> `assemble_world_state()`. This is the failure class ADR-Exec-001 exists to prevent — believing you
+> perceived something when you perceived nothing.
+> **Also corrected:** WO-CANON-XXV's board `DONE ✅` was FALSE (temporal build is dead code, nothing
+> imports it) → REOPENED. And `world/live_world_state.py` EXISTS (379 lines, already wired at
+> `spine.py:361-368`) while `Volume_XV/00_Metadata` still says `implementation: PENDING`.
+
 > # 🛠 AUDIT FIXES LANDED — 2026-08-10 (David: "make all the missing things actually written")
 > **The 7 missing volumes/ADRs are now WRITTEN.** `docs/architecture/adr/` — ADR-Exec-001…006 + LAW-017 as REAL
 > documents (were 231 citations to table rows). **Volume VII (Executive Cortex)** — 6 chapters incl.
@@ -1466,7 +1477,7 @@ _Updated 2026-08-10 (reconcile #26) — **DESIGN MOVEMENT (seat-reported, UNVERI
 | WO-CANON-X | Personality drift gate + one trait model | Builder (eLo OS) | P2 | DONE ✅ — bfdb94e · 7/7 AT · propose() gate; V Ch.7 traits; value traits flag needs_david | WO-CANON-X.md |
 | WO-CANON-XXIV | Knowledge: confidence+evidence+ranked retrieval | Builder (eLo OS) | P2 | DONE ✅ — 964228c · 5/5 AT · ranked retrieve(); identity/ retired; canonical path wired | WO-CANON-XXIV.md |
 | WO-CANON-XX | Cognitive-tier selector + value-gated escalation | Builder (eLo OS) | P3 | ▶ BUILD NOW — no hold; David live-tests end of day (2026-08-10) | WO-CANON-XX.md |
-| WO-CANON-XXV | Temporal Cognition faculty | Builder (eLo OS) | P3 | **DONE ✅ auto-verified (test_canon_xxv_temporal.py 19/19) → IN_REVIEW** commit `e562401`. faculties/temporal/faculty.py: TemporalCognitionFaculty — 3 frozen slices (TemporalState/FutureFrame/Retrospection). Clock read verbatim from LiveWorldState.time. Interaction-gap thresholds. Circadian curve. sleep_pressure (Vol IX context). Deadlines anchored by ref. Fidelity from strength not age. autobiography.jsonl PENDING fallback. Never writes LTM. | WO-CANON-XXV.md |
+| WO-CANON-XXV | Temporal Cognition faculty | Builder (eLo OS) | P3 | ❌ REOPENED 2026-08-10 — board DONE was FALSE: shipped build is dead code (no Anticipation class, no envelope, `expires` a bool, NOTHING imports faculties.temporal) | WO-CANON-XXV.md |
 | WO-CANON-XXI | Narrative Identity: autobiography journal + guard | Builder (eLo OS) | P2 | ▶ RELEASED 2026-08-10 — buildable now | David L3 identity · WO-CANON-XXI.md |
 | WO-CANON-XXII | Faculty Genome descriptor + registry | Builder (eLo OS) | P3 | ▶ RELEASED 2026-08-10 — buildable now | WO-CANON-XXII.md |
 | WO-CANON-XXIII | Security & Trust: gates + define LG-2 | Builder (eLo OS) | P3 | ▶ RELEASED 2026-08-10 — buildable now | David L3 LG-2 · WO-CANON-XXIII.md |

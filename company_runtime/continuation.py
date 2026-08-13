@@ -93,7 +93,8 @@ def cycle(apply: bool = True) -> dict:
             "auto_closed": closed, "would_close": would,
             "needs_david": sorted({x["wo"] for x in report
                                    if x["tier"] in ("DAVID", "RESERVED", "CONFIRM")
-                                   and x["wo"] not in approved})}
+                                   and x["wo"] not in approved
+                                   and "DONE" not in bstat.get(x["wo"], "")})}
 
 
 def _light_refresh(log=print) -> None:
