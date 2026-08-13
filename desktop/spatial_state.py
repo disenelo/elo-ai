@@ -24,14 +24,20 @@ New intent: {"name": "jump_to_app", "app": "Google Chrome"}
 from __future__ import annotations
 
 import json
+import logging
 import os
 import subprocess
 from dataclasses import dataclass, field
 from typing import Optional
 
+_log = logging.getLogger(__name__)
+
 _ROOT              = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _PRESENCE_PATH     = os.path.join(_ROOT, "blender", "presence_state.json")
 _SPATIAL_PATH      = os.path.join(_ROOT, "blender", "elo_spatial.json")
+
+# WO-118: dedup — track last_move _ts values already fed to route_memory
+_seen_move_ts: set[float] = set()
 
 
 @dataclass
@@ -109,14 +115,36 @@ def get_elo_spatial() -> EloSpatial:
     try:
         with open(_SPATIAL_PATH, encoding="utf-8") as f:
             d = json.load(f)
-        # WO-099: Unity writes x/y/height — not pos_x/pos_y/height_px
-        spatial.pos_x     = float(d.get("x", d.get("pos_x", 0.5)))
-        spatial.pos_y     = float(d.get("y", d.get("pos_y", 0.1)))
-        spatial.height_px = int(d.get("height", d.get("height_px", 120)))
+        # WO-100: strict key reads — KeyError if Unity key absent, caught and logged below
+        spatial.pos_x     = float(d["x"])
+        spatial.pos_y     = float(d["y"])
+        spatial.height_px = int(d["height"])
         spatial.window    = d.get("window", "")
         spatial.edge      = d.get("edge", "")
         spatial.screen_w  = int(d.get("screen_w", 2560))
         spatial.screen_h  = int(d.get("screen_h", 1440))
+        # WO-118: feed completed moves into route_memory on first read per move
+        _lm = d.get("last_move")
+        if isinstance(_lm, dict):
+            _move_ts = float(_lm.get("_ts", 0.0))
+            if _move_ts and _move_ts not in _seen_move_ts:
+                _seen_move_ts.add(_move_ts)
+                try:
+                    from self.route_memory import remember_route as _rr
+                    _retries   = int(_lm.get("retries", 0))
+                    _smoothness = max(0.0, 1.0 - _retries * 0.2)
+                    _rr(
+                        goal_surface=str(_lm.get("goal", "")),
+                        legs=list(_lm.get("legs", [])),
+                        arrived=bool(_lm.get("arrived", False)),
+                        fell=bool(_lm.get("fell", False)),
+                        duration_s=float(_lm.get("cost_secs", 0.0)),
+                        smoothness=_smoothness,
+                        ack_id=str(_move_ts),
+                        ack_received=True,
+                    )
+                except Exception as _re:
+                    _log.warning("get_elo_spatial: route_memory write failed — %s", _re)
         # WO-099: read gaze UP — "eLo KNOWS what he's looking at"
         _g = d.get("gaze")
         if isinstance(_g, dict):
@@ -129,8 +157,8 @@ def get_elo_spatial() -> EloSpatial:
                 issued_by=str(_g.get("issued_by", "")),
             )
         return spatial
-    except Exception:
-        pass
+    except Exception as _e:
+        _log.warning("get_elo_spatial: elo_spatial.json key read failed — %s", _e)
 
     # Fallback: read window from presence_state.json
     try:

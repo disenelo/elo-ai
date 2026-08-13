@@ -104,6 +104,7 @@ def route(
     action:   str,
     plan=None,
     state:    dict | None = None,
+    outcome=None,
 ) -> dict:
     """
     Evaluate significance and route to journals accordingly.
@@ -118,7 +119,7 @@ def route(
 
     # Score
     from memory.significance_engine import evaluate, format_profile
-    profile  = evaluate(raw, response, action, plan=plan, state=state)
+    profile  = evaluate(raw, response, action, plan=plan, state=state, outcome=outcome)
     weight   = _memory_weight(profile)
 
     decision = {

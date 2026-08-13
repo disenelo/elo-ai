@@ -103,6 +103,7 @@ def score(
     emotional_tag=None,
     response:  str = "",
     state:     dict | None = None,
+    outcome=None,
 ) -> SignificanceResult:
     """
     Score the significance of this turn.
@@ -122,12 +123,12 @@ def score(
         SignificanceResult (frozen) — fail-closed: returns _NULL_RESULT on error.
     """
     try:
-        return _score_impl(cognitive_state, emotional_tag, response, state or {})
+        return _score_impl(cognitive_state, emotional_tag, response, state or {}, outcome=outcome)
     except Exception:
         return _NULL_RESULT
 
 
-def _score_impl(cognitive_state, emotional_tag, response: str, state: dict) -> SignificanceResult:
+def _score_impl(cognitive_state, emotional_tag, response: str, state: dict, outcome=None) -> SignificanceResult:
     """Inner scorer — raises on error so outer score() can catch and fail closed."""
 
     # ── Extract inputs from CognitiveState ───────────────────────────────────
@@ -141,7 +142,7 @@ def _score_impl(cognitive_state, emotional_tag, response: str, state: dict) -> S
 
     # ── Base score from the 9-dim engine ────────────────────────────────────
     from memory.significance_engine import evaluate as _base_evaluate
-    base_profile = _base_evaluate(raw, response, action, plan=plan_proxy, state=state)
+    base_profile = _base_evaluate(raw, response, action, plan=plan_proxy, state=state, outcome=outcome)
     base_score   = base_profile.get("overall", 0.0)
 
     # ── Emotion weight boost from WO-006 EmotionalTag ───────────────────────

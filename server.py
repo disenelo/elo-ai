@@ -2672,8 +2672,11 @@ def _process_turn(raw: str) -> dict:
                     _SIT_STMT = "Sitting with David confirmed by body ACK."
                     _sit_lkey = _ls_ensure("behaviour", _SIT_STMT, "met")
                     _ls_sit_rec(
-                        lkey=_sit_lkey, episode_ref="", verified=True,
-                        contradicting=False, session_id="sit",
+                        lkey=_sit_lkey,
+                        episode_ref=str(_sit_ack_event.get("_ts", time.time())),
+                        verified=True,
+                        contradicting=False,
+                        session_id=str(int(_PROCESS_START)),
                     )
                 except Exception:
                     pass
@@ -2712,8 +2715,11 @@ def _process_turn(raw: str) -> dict:
                     _SIT_STMT_T = "Sitting with David confirmed by body ACK."
                     _sto_lkey = _ls_sto_ensure("behaviour", _SIT_STMT_T, "met")
                     _ls_sto_rec(
-                        lkey=_sto_lkey, episode_ref="", verified=True,
-                        contradicting=True, session_id="sit_timeout",
+                        lkey=_sto_lkey,
+                        episode_ref=str(time.time()),
+                        verified=True,
+                        contradicting=True,
+                        session_id=str(int(_PROCESS_START)),
                     )
                 except Exception:
                     pass
