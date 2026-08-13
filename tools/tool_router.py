@@ -1418,6 +1418,8 @@ def enrich_from_plan(
     Falls back to enrich() if no plan capabilities fire successfully.
     """
     if not plan_capabilities:
+        _logger.warning("WO-118: plan_capabilities empty — falling back to keyword enrich(). "
+                        "Executive chose nothing or plan not assembled.")
         return enrich(user_input)
 
     try:

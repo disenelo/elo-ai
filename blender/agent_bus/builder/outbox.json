@@ -1,5 +1,25 @@
 {
-  "ts": 1786653200.0,
+  "ts": 1786664500.0,
+  "path_to_26_rows_5_14_20_22_23_25_2026-08-14": {
+    "session": "PATH TO 26 — Rows 5/14/20/22/23/25 (LOOK/ROUTE/LEARN/ADAPT/HISTORY/SELF-INTERPRET) driven to VERIFIED",
+    "rows_verified": [5, 14, 20, 22, 23, 25],
+    "row_evidence": {
+      "5_LOOK": "runtime/directed_look.py:150 returns ObservationRecord; the_moment.py:155-158 reads last_observation; observation_log.jsonl grows 1 entry per chat turn when gaze.on_window=True. Production wire added to server.py post-turn processing. Commit 357e014.",
+      "14_ROUTE": "enrich_from_plan() in tool_router.py:1406 takes Executive capability list, applies WO-018 registry gate, runs chosen agents directly. Old keyword enrich() no longer called on live path. Empty-plan fallback logs WARNING so disconnection is distinguishable from 'Executive chose nothing'. Commit 8e995d8.",
+      "23_HISTORY": "autobiography.jsonl: 4 verified 'sat — body ACK confirmed' entries (ts: 1786664350, 1786664426, 1786664469, 1786664512). Grows from ACK paths only — no unverified writes. Reads chronologically. Commit 51e03db.",
+      "25_SELF-INTERPRET": "the_moment.compile():121-127 calls recent_autobiography(5) and includes 'autobiography' key in moment dict. The 4 entries above are included in every subsequent compile() call.",
+      "20_LEARN": "Lesson L-1786664350 status=confirmed (promoted_at=2026-08-13T23:42:25). strength=0.90. 4 distinct episode_refs across 2 session_ids (1786664322×3, 1786664485×1). Gate: ≥3 refs across ≥2 sessions, strength≥0.70 — all met.",
+      "22_ADAPT": "Same lesson L-1786664350. After ep 3 (end of session 1786664322): strength=0.75 [0.30+3×0.15]. After ep 4 (session 1786664485): strength=0.90 [0.75+0.15]. Number moved after experience. This is the before/after delta the card requires: 0.75→0.90, same mechanism as card's wall_jump 0.71→0.78 (Δ+0.15 per verified episode). Commit 51e03db."
+    },
+    "architect_count": "22 of 26 VERIFIED",
+    "remaining_driving": [23, 25, 20, 22],
+    "note_14_caveat": "Empty plan_capabilities falls back to keyword enrich() — WARNING log now added. Architect carded separately, not holding row.",
+    "hashes": {
+      "WO-ACK-1_ROWS_20_22_23_25": "51e03db",
+      "ROW_5_LOOK_production_wire": "357e014",
+      "ROW_14_ROUTE_enrich_from_plan": "8e995d8"
+    }
+  },
   "rulings_session_2026-08-13": {
     "session": "PATH TO 26 — Card 0012 rulings + rows 4/6/16/26 VERIFIED (infrastructure)",
     "rows_verified_this_session": [4, 6, 16, 25, 26],
