@@ -3519,6 +3519,23 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # WO-108 Row 5 LOOK: directed-look production wire.
+        # Records an observation each turn when eLo's gaze is on an active window.
+        # _perceive_target reads elo_spatial.json directly; this call just ensures
+        # the observation_log.jsonl fills with real per-turn records.
+        try:
+            from runtime.directed_look import look as _dl_look
+            _dl_spatial_path = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "blender", "elo_spatial.json"
+            )
+            with open(_dl_spatial_path, encoding="utf-8") as _dlf:
+                _dl_gaze = json.load(_dlf).get("gaze", {})
+            if _dl_gaze.get("on_window") and _dl_gaze.get("window"):
+                _dl_look(_dl_gaze["window"])
+        except Exception:
+            pass
+
         # keyword-driven animation burst — fires async, never blocks response
         try:
             _keyword_motion_scan(raw)
