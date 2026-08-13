@@ -83,6 +83,9 @@ class CognitiveSnapshot:
     chrome_recent_domains: tuple = field(default_factory=tuple)  # top 5 domains
     gated_capabilities: tuple = field(default_factory=tuple)     # enabled cap IDs
 
+    # ── WO-095: Recalled lessons (confirmed only, ≤3, ≤240 chars total) ────────
+    lessons: tuple = field(default_factory=tuple)  # each: str (the lesson statement)
+
     # ── Assembly metadata ──────────────────────────────────────────────────────
     assembled_ts: float = 0.0
     turn_id: str = ""
@@ -217,6 +220,18 @@ def build_snapshot(
     except Exception:
         pass
 
+    # ── WO-095: Recalled confirmed lessons (≤3, ≤240 chars) ──────────────────
+    recalled_lessons: tuple = ()
+    try:
+        from self.lesson_store import recall as _ls_recall
+        _ls_rows = _ls_recall(
+            context={"focal_thread": self_focal_thread, "topic": att.get("intent", "")},
+            k=3,
+        )
+        recalled_lessons = tuple(r.get("statement", "") for r in _ls_rows if r.get("statement"))
+    except Exception:
+        confidence -= 0.01
+
     return CognitiveSnapshot(
         self_mood=round(self_mood, 3),
         self_curiosity=round(self_curiosity, 3),
@@ -240,6 +255,7 @@ def build_snapshot(
         chrome_active_url=chrome_active_url,
         chrome_recent_domains=chrome_recent_domains,
         gated_capabilities=gated_capabilities,
+        lessons=recalled_lessons,
         assembled_ts=assembled_ts,
         turn_id=turn_id,
         confidence=max(0.0, min(1.0, confidence)),

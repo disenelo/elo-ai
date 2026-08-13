@@ -271,6 +271,8 @@ def build(
     exec_decision:     dict = None,
     graph_context:     str = "",
     personality_block: str = "",
+    self_block:        str = "",
+    lessons:           tuple = (),
 ) -> str:
     """
     Assemble the system prompt.
@@ -290,6 +292,27 @@ def build(
 
     if personality_block.strip():
         sections.append(personality_block)
+
+    if self_block.strip():
+        sections.append(self_block)
+
+    # WO-095: confirmed learned heuristics — ≤3 lessons, ≤240 chars total
+    # Labelled as heuristics, never as facts (ADR-Exec-001)
+    if lessons:
+        total_chars = 0
+        lesson_lines = []
+        for stmt in lessons:
+            if total_chars + len(stmt) > 240:
+                break
+            lesson_lines.append(f"  • {stmt}")
+            total_chars += len(stmt)
+            if len(lesson_lines) >= 3:
+                break
+        if lesson_lines:
+            sections.append(
+                "[LEARNED HEURISTICS — patterns from verified past outcomes, not facts]\n"
+                + "\n".join(lesson_lines)
+            )
 
     if attention:
         # v2 path — attention-filtered memory only

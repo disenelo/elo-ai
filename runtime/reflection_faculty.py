@@ -18,6 +18,7 @@ FREEZE_V1_LOCK: does not touch runtime/executive.py or prompts/.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -89,15 +90,28 @@ def _form_lesson(
     if not statement:
         return None
 
+    # WO-095: sha1 identity key so repeats strengthen, never duplicate
+    cause = delta
+    norm_stmt = re.sub(r"\s+", " ", statement.strip().lower())
+    lkey = hashlib.sha1(f"{scope}|{norm_stmt}|{cause}".encode()).hexdigest()[:16]
+
     return {
-        "id":        f"L-{_ts_compact()}",
-        "statement": statement,
-        "evidence":  [session_summary[:120]],
-        "scope":     scope,
-        "strength":  0.3,         # candidate — strengthens with confirming evidence
-        "delta":     delta,
-        "status":    "candidate",
-        "ts":        _now_iso(),
+        "id":         f"L-{_ts_compact()}",
+        "lesson_key": lkey,
+        "statement":  statement,
+        "evidence":   [],     # filled by lesson_store.record_outcome() with SPOT codes
+        "scope":      scope,
+        "cause":      cause,
+        "strength":   0.3,
+        "delta":      delta,
+        "status":     "candidate",
+        "first_seen": _now_iso(),
+        "last_seen":  _now_iso(),
+        "promoted_at": None,
+        "retired_at":  None,
+        "reason":      None,
+        "proposes":    None,
+        "ts":          _now_iso(),
     }
 
 
@@ -149,9 +163,36 @@ def _write_journal_entry(
     journal_path = os.path.join(_JOURNAL_DIR, "growth_journal.jsonl")
     _append_jsonl(journal_path, entry)
 
-    # Lessons Ledger — confirmed + candidate lessons
+    # Lessons Ledger — dedupe by lesson_key (WO-095: repeats strengthen, never duplicate)
     if lesson:
-        _append_jsonl(_LESSON_LOG, lesson)
+        lkey = lesson.get("lesson_key")
+        if lkey:
+            try:
+                from self.lesson_store import record_outcome as _ls_record
+                _ls_record(
+                    lkey=lkey,
+                    episode_ref=spot or "",
+                    verified=bool(spot),  # SPOT code = verified episode (vault record exists)
+                    session_id=project,
+                    contradicting=(lesson.get("delta") in ("failed", "partial")),
+                )
+                # Only append to ledger if this lesson_key is new
+                _existing_keys: set = set()
+                try:
+                    with open(_LESSON_LOG, encoding="utf-8") as _lf:
+                        for _ll in _lf:
+                            _ll = _ll.strip()
+                            if _ll:
+                                import json as _j
+                                _existing_keys.add(_j.loads(_ll).get("lesson_key", ""))
+                except FileNotFoundError:
+                    pass
+                if lkey not in _existing_keys:
+                    _append_jsonl(_LESSON_LOG, lesson)
+            except Exception:
+                _append_jsonl(_LESSON_LOG, lesson)
+        else:
+            _append_jsonl(_LESSON_LOG, lesson)
 
     # Failure Log — partial/failed turns with cause tagging
     if completion_state in ("partial", "failed"):

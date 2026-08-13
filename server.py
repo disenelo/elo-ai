@@ -2619,6 +2619,16 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
                 _self_save(_elo_self)
+                # WO-095: emit verified OutcomeRecord for learning loop
+                try:
+                    from self.lesson_store import record_outcome as _ls_sit_rec, lesson_key as _ls_key
+                    _sit_lkey = _ls_key("behaviour", "Sitting with David confirmed by body ACK.", "met")
+                    _ls_sit_rec(
+                        lkey=_sit_lkey, episode_ref="", verified=True,
+                        contradicting=False, session_id="sit",
+                    )
+                except Exception:
+                    pass
                 # Consume the ACK so next sit starts fresh
                 try:
                     with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bsf3:
@@ -2644,6 +2654,16 @@ def _process_turn(raw: str) -> dict:
                     "Never claim you are sitting. Body truth only."
                 )
                 g_ctx = f"{g_ctx}\n{_timeout_note}" if g_ctx else _timeout_note
+                # WO-095: timeout is negative evidence — weakens the sit-success lesson
+                try:
+                    from self.lesson_store import record_outcome as _ls_sto_rec, lesson_key as _ls_sto_key
+                    _sto_lkey = _ls_sto_key("behaviour", "Sitting with David confirmed by body ACK.", "met")
+                    _ls_sto_rec(
+                        lkey=_sto_lkey, episode_ref="", verified=True,
+                        contradicting=True, session_id="sit_timeout",
+                    )
+                except Exception:
+                    pass
 
         # BP-5 (WO-064): consume sit_ended → self-model pose = standing.
         # Designer emits sit_ended when the sit linger ends (reason: "released"/"lapsed").
