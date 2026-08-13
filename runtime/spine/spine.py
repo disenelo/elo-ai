@@ -156,10 +156,15 @@ def _executive_faculty(
         confidence=language.get("confidence", 0.7),
     )
 
-    # ── Executive decision from existing executive.py ─────────────────────────
-    # executive.decide() is the identity/personality layer — do not replace it.
+    # ── Ruling C (WO-CANON-VII): exec_decide called HERE, after assembly ────────
+    # _executive_faculty() runs at spine.py:456, AFTER assemble_cognitive_state()
+    # at spine.py:448. This closes Ruling C's ordering half: the decision is now
+    # taken inside the spine, after the self is assembled, not at server.py:2322
+    # before any assembly runs. runtime/executive.py is FROZEN — only the call
+    # site moves. server.py derives its exec_decision dict from the plan.
     try:
-        exec_out = attention.get("_exec_decision", {})
+        from runtime.executive import decide as _exec_decide_fn
+        exec_out = _exec_decide_fn(attention, loop_detected=False, user_input=raw)
         plan.conversation_action = exec_out.get("action",        "celebrate")
         plan.cal_reason          = exec_out.get("cal_reason",    "")
         plan.tone                = exec_out.get("tone",          "DIRECT")
@@ -168,11 +173,10 @@ def _executive_faculty(
         plan.valence             = exec_out.get("valence",       "neutral")
         plan.momentum            = exec_out.get("momentum",      "stable")
         plan.mode                = exec_out.get("mode",          "")
-        # register from exec takes precedence if language didn't detect one
         if not plan.register:
             plan.register = exec_out.get("register", "")
     except Exception as e:
-        _log.debug("executive_faculty/exec_out: %s", e)
+        _log.debug("executive_faculty/exec_decide: %s", e)
 
     # ── System action decision ────────────────────────────────────────────────
     if system_det:

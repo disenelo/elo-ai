@@ -2319,7 +2319,34 @@ def _process_turn(raw: str) -> dict:
                 pass
 
         attention_model = attn.compute(raw, _memory_pack, _state, loop_detected=False)
-        exec_decision   = exec_decide(attention_model, loop_detected=False, user_input=raw)
+
+        # ── Ruling C (WO-CANON-VII): assemble THEN decide ────────────────────
+        # spine.run() assembles the cognitive state, THEN exec_decide runs inside
+        # _executive_faculty() — after assembly, not before. server.py no longer
+        # calls exec_decide directly. exec_decision dict is derived from the plan.
+        _plan = None
+        try:
+            from runtime.spine.spine import run as _spine_run
+            _plan = _spine_run(raw, state=_state, attention=attention_model,
+                               memory_pack=_vault_ctx)
+        except Exception as _spine_err:
+            import sys as _sys; print(f"[spine] FAILED: {_spine_err}", file=_sys.stderr)
+
+        if _plan is not None:
+            exec_decision = {
+                "action":        _plan.conversation_action,
+                "cal_reason":    _plan.cal_reason,
+                "tone":          _plan.tone,
+                "max_sentences": _plan.max_sentences,
+                "response_goal": _plan.response_goal,
+                "valence":       _plan.valence,
+                "momentum":      _plan.momentum,
+                "mode":          _plan.mode,
+                "register":      _plan.register,
+                "intent":        _plan.intent,
+            }
+        else:
+            exec_decision = exec_decide(attention_model, loop_detected=False, user_input=raw)
 
         # ── Energy history — track David's emotional energy across the session ──
         _energy_now = attention_model.get("emotional_context", {}).get("energy", 0.5)
@@ -2910,23 +2937,11 @@ def _process_turn(raw: str) -> dict:
 
         backend_used = active_backend()
 
-        # ── THE COGNITIVE SPINE ───────────────────────────────────────────────
-        # One call. One decision. Everything downstream reads from the plan.
-        # Attention + executive were already computed above — pass them in
-        # so the spine doesn't recompute. The spine's language + capability
-        # faculties run fresh; executive decision is reused from above.
-        _plan = None
-        try:
-            from runtime.spine.spine import run as _spine_run, update_session as _spine_update
-            _attention_with_exec = dict(attention_model)
-            # SPINE CONVENIENCE — _exec_decision injected for downstream spine access.
-            # Not an AttentionSnapshot field — a transport convenience only.
-            # See: engineering/proofs/04_attention_proof.md § V2
-            _attention_with_exec["_exec_decision"] = exec_decision
-            _plan = _spine_run(raw, state=_state, attention=_attention_with_exec,
-                               memory_pack=_vault_ctx)
-        except Exception as _spine_err:
-            import sys as _sys; print(f"[spine] FAILED: {_spine_err}", file=_sys.stderr)
+        # ── THE COGNITIVE SPINE (Ruling C — moved to top of turn) ────────────
+        # spine.run() was called at the top of the turn (after attention_model).
+        # Assembly precedes decision: exec_decide runs inside spine._executive_faculty()
+        # AFTER assemble_cognitive_state(). _plan is already set; exec_decision was
+        # derived from it. The _exec_decision injection into attention is retired.
 
         # WO-032: track whether this turn actually attempted an LLM call.
         # Direct/greeting/command turns never set this; only the LLM else-block does.
