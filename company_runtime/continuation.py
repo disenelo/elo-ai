@@ -47,25 +47,35 @@ def cycle(apply: bool = True) -> dict:
     bstat    = R.board_status()
     approved = load_david_approved()
     report, closed, would = [], [], []
+    _closed_set: set = set()   # dedup — a WO may qualify via both green+approved paths
+
     for wo, path in mapping.items():
         tier  = R.tier_for(wo, bstat.get(wo, ""))
         res   = R.run_test(path)
         green = R.GREEN(res)
         already = "DONE" in bstat.get(wo, "")
-        if green and not already:
-            if tier == "AUTO":
-                (closed if apply else would).append(wo)
-                if apply:
-                    R.auto_close(wo, os.path.basename(path))
-            elif wo in approved:
-                # David already approved this — close it so it never re-surfaces.
-                (closed if apply else would).append(wo)
-                if apply:
-                    R.auto_close(wo, "David-approved")
+        if green and not already and tier == "AUTO":
+            if apply:
+                R.auto_close(wo, os.path.basename(path))
+            (closed if apply else would).append(wo)
+            _closed_set.add(wo)
         report.append({"wo": wo, "tier": tier, "test": os.path.relpath(path, R.ROOT),
                         "green": green, "passed": res["passed"], "failed": res["failed"],
                         "errors": res["errors"], "rc": res["rc"],
                         "summary": res["summary"], "secs": res["secs"]})
+
+    # WO-APPROVAL-MEMORY: close ALL approved WOs regardless of test status.
+    # David's explicit sign-off is the gate — not test-green. An approved WO must
+    # NEVER re-surface as "still need David" regardless of whether its test file exists.
+    for wo in sorted(approved):
+        already = "DONE" in bstat.get(wo, "")
+        if already or wo in _closed_set:
+            continue
+        if apply:
+            R.auto_close(wo, "David-approved")
+        (closed if apply else would).append(wo)
+        _closed_set.add(wo)
+
     # write the machine report (dashboard reads this via the state writer)
     import json
     json.dump({"generated": time.time(), "apply": apply, "closed": closed, "items": report},
