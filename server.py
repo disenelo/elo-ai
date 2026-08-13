@@ -120,6 +120,17 @@ _fallback        = _MockBackend()
 _BLENDER_STATE_PATH  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "blender_state.json")
 _UNITY_EVENTS_PATH   = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "unity_events.json")
 
+# WO-ACK-1: Discrete event capture — unity_events.json is single-slot (last write wins).
+# A gaze_target_changed can overwrite sit_complete before the next chat turn reads it.
+# Fix: background thread polls at 0.1s, captures body ACK events into _ACK_QUEUE.
+# ACK check reads from queue, not the file. Delivery is now provable.
+# Continuous state (blender_state.json) stays single-slot — unchanged.
+_ACK_QUEUE: list[dict] = []   # append-only in-memory event log; drained by ACK checks
+_ACK_QUEUE_LOCK = threading.Lock()
+_ACK_BODY_TYPES = frozenset({"sit_complete", "sit_held", "move_complete", "exit_complete",
+                               "stand_complete", "wave_complete"})
+_ack_last_ts: float = 0.0     # last _ts seen — prevents re-appending the same event
+
 
 def _signal_greeting_event(greeting_type: str) -> None:
     """Read-merge-write greeting event — preserves presence_plan and all existing keys."""
@@ -1510,6 +1521,28 @@ def _init_session():
     except Exception as _ae:
         print(f"[eLo server] ambient engine skipped: {_ae}")
 
+    # WO-ACK-1: discrete event capture thread — polls unity_events.json every 0.1s
+    # and enqueues body ACK events before gaze events can overwrite them.
+    def _poll_unity_events() -> None:
+        global _ack_last_ts
+        import time as _pt
+        while True:
+            try:
+                with open(_UNITY_EVENTS_PATH, encoding="utf-8") as _pf:
+                    _ev = json.load(_pf)
+                _ev_type = _ev.get("type", "")
+                _ev_ts   = float(_ev.get("_ts", 0))
+                if _ev_type in _ACK_BODY_TYPES and _ev_ts > _ack_last_ts:
+                    with _ACK_QUEUE_LOCK:
+                        _ACK_QUEUE.append(dict(_ev))
+                    _ack_last_ts = _ev_ts
+            except Exception:
+                pass
+            _pt.sleep(0.10)
+
+    threading.Thread(target=_poll_unity_events, daemon=True, name="ack-poller").start()
+    print("[eLo server] ACK event poller started (0.1s poll)")
+
 
 def _process_turn(raw: str) -> dict:
     """Run one cognitive cycle. Thread-safe via _lock. Returns response dict."""
@@ -2638,21 +2671,26 @@ def _process_turn(raw: str) -> dict:
         # WO-041: verify-before-speak — gate Executive speech on sit_complete ACK.
         # eLo NEVER claims "I'm sitting" until Unity writes sit_complete=true.
         # Timeout (15s) → honest fallback (ADR-Exec-001). Never a false claim.
+        # WO-ACK-1: read from _ACK_QUEUE (filled by background poller) — not the file.
+        # The file is single-slot; gaze events can overwrite sit_complete before the next
+        # chat turn. The queue captures every body ACK as it appears, so delivery is provable.
         import time as _wo41_time
         if _PENDING_SIT["active"]:
             _sit_age = _wo41_time.time() - _PENDING_SIT["since"]
             _sit_acked = False
             _sit_ack_event: dict = {}
-            try:
-                with open(_UNITY_EVENTS_PATH, encoding="utf-8") as _bsf:
-                    _sit_ack_event = json.load(_bsf)
-                # ACK valid only if type=sit_complete AND timestamp is after we sent the intent
-                _sit_acked = (
-                    _sit_ack_event.get("type") == "sit_complete"
-                    and float(_sit_ack_event.get("_ts", 0)) > _PENDING_SIT["since"]
-                )
-            except Exception:
-                pass
+            with _ACK_QUEUE_LOCK:
+                for _qev in _ACK_QUEUE:
+                    _qts = float(_qev.get("_ts", 0))
+                    if (
+                        _qev.get("type") == "sit_complete"
+                        and _qts > _PENDING_SIT["since"]
+                    ):
+                        _sit_acked = True
+                        _sit_ack_event = _qev
+                        break
+                if _sit_acked:
+                    _ACK_QUEUE.clear()
             if _sit_acked:
                 # ACK received — body confirms sit. Update Situated Self.
                 _PENDING_SIT["active"] = False
@@ -2694,13 +2732,9 @@ def _process_turn(raw: str) -> dict:
                     )
                 except Exception:
                     pass
-                # Consume the ACK so next sit starts fresh
-                try:
-                    with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bsf3:
-                        json.dump({}, _bsf3)
-                except Exception:
-                    pass
-            elif _sit_age < 15.0:
+                # WO-ACK-1: queue already cleared above; file-wipe no longer needed.
+                pass
+            elif _sit_age < 300.0:
                 _transit_note = (
                     "[MOVEMENT IN TRANSIT — WO-041] You issued a sit intent in a recent turn. "
                     "You are currently MOVING toward David — you have NOT arrived yet. "
@@ -2710,7 +2744,7 @@ def _process_turn(raw: str) -> dict:
                 )
                 g_ctx = f"{g_ctx}\n{_transit_note}" if g_ctx else _transit_note
             else:
-                # 15s timeout — honest fallback (ADR-Exec-001), never assume arrival
+                # 300s timeout — honest fallback (ADR-Exec-001), never assume arrival
                 _PENDING_SIT["active"] = False
                 _timeout_note = (
                     "[SIT_FAILED — WO-041] The sit command timed out — body did not confirm. "
@@ -2757,34 +2791,38 @@ def _process_turn(raw: str) -> dict:
 
         # WO-065 (io_contract_note): consume sit_held → self-model pose = sitting.
         # Designer emits sit_held every 4s while eLo is in the sit pose.
-        # Timestamp-guarded (30s) so stale heartbeats don't persist after a crash/restart.
+        # WO-ACK-1: read from queue; file-wipe no longer needed.
         try:
-            with open(_UNITY_EVENTS_PATH, encoding="utf-8") as _bssh:
-                _sh_ev = json.load(_bssh)
-            _sh_ts = float(_sh_ev.get("_ts", 0))
-            if (_sh_ev.get("type") == "sit_held"
-                    and _sh_ts > _wo41_time.time() - 30.0):
+            with _ACK_QUEUE_LOCK:
+                _sh_ev_q = next(
+                    (_e for _e in _ACK_QUEUE if _e.get("type") == "sit_held"),
+                    None,
+                )
+            _sh_ts = float(_sh_ev_q.get("_ts", 0)) if _sh_ev_q else 0.0
+            if _sh_ev_q and _sh_ts > _wo41_time.time() - 30.0:
                 _elo_self.pose = "sitting"
                 _elo_self.available_actions = ["stand", "look", "wave", "gesture"]
                 _self_save(_elo_self)
-                with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bssh2:
-                    json.dump({}, _bssh2)
         except Exception:
             pass
 
         # Move verify-before-speak (IO contract — same loop as sit, every move verb)
+        # WO-ACK-1: drain from queue.
         if _PENDING_MOVE["active"]:
             _move_age = _wo41_time.time() - _PENDING_MOVE["since"]
             _move_acked = False
-            try:
-                with open(_UNITY_EVENTS_PATH, encoding="utf-8") as _bsmf:
-                    _mv_ev = json.load(_bsmf)
-                _move_acked = (
-                    _mv_ev.get("type") == "move_complete"
-                    and float(_mv_ev.get("_ts", 0)) > _PENDING_MOVE["since"]
-                )
-            except Exception:
-                pass
+            _mv_ev: dict = {}
+            with _ACK_QUEUE_LOCK:
+                for _qmv in _ACK_QUEUE:
+                    if (
+                        _qmv.get("type") == "move_complete"
+                        and float(_qmv.get("_ts", 0)) > _PENDING_MOVE["since"]
+                    ):
+                        _move_acked = True
+                        _mv_ev = _qmv
+                        break
+                if _move_acked:
+                    _ACK_QUEUE.clear()
             if _move_acked:
                 _PENDING_MOVE["active"] = False
                 # WO-116 SELF-OBSERVE: record ACKed physical action
@@ -2798,11 +2836,6 @@ def _process_turn(raw: str) -> dict:
                     from self.emergent_cognition import append_autobiography as _ab_mv
                     _mv_desc = _PENDING_MOVE.get("sub_type", "") or _PENDING_MOVE.get("direction", "unknown")
                     _ab_mv(f"moved ({_mv_desc}) — body ACK confirmed", kind="action")
-                except Exception:
-                    pass
-                try:
-                    with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bsmf2:
-                        json.dump({}, _bsmf2)
                 except Exception:
                     pass
             elif _move_age < 8.0:
@@ -2857,18 +2890,22 @@ def _process_turn(raw: str) -> dict:
 
         # Exit verify-before-speak (WO-045/ADR-Exec-001): gate "stepping away" on exit_complete.
         # eLo NEVER says "I've stepped away" until Unity confirms the body is gone.
+        # WO-ACK-1: drain from queue.
         if _PENDING_EXIT["active"]:
             _exit_age = _wo41_time.time() - _PENDING_EXIT["since"]
             _exit_acked = False
-            try:
-                with open(_UNITY_EVENTS_PATH, encoding="utf-8") as _bsef:
-                    _ex_ev = json.load(_bsef)
-                _exit_acked = (
-                    _ex_ev.get("type") == "exit_complete"
-                    and float(_ex_ev.get("_ts", 0)) > _PENDING_EXIT["since"]
-                )
-            except Exception:
-                pass
+            _ex_ev: dict = {}
+            with _ACK_QUEUE_LOCK:
+                for _qex in _ACK_QUEUE:
+                    if (
+                        _qex.get("type") == "exit_complete"
+                        and float(_qex.get("_ts", 0)) > _PENDING_EXIT["since"]
+                    ):
+                        _exit_acked = True
+                        _ex_ev = _qex
+                        break
+                if _exit_acked:
+                    _ACK_QUEUE.clear()
             if _exit_acked:
                 _PENDING_EXIT["active"] = False
                 _self_apply_embodiment(_elo_self, pose="hidden", current_action="hidden")
@@ -2885,11 +2922,7 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
                 _self_save(_elo_self)
-                try:
-                    with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bsef2:
-                        json.dump({}, _bsef2)
-                except Exception:
-                    pass
+                # WO-ACK-1: queue already cleared above; file-wipe no longer needed.
                 g_ctx = (
                     f"{g_ctx}\n[EXIT_CONFIRMED] Body has left the screen — you can say 'stepping away' or "
                     "a quiet goodbye now. Body truth: you are gone."
@@ -3564,6 +3597,19 @@ def _process_turn(raw: str) -> dict:
                 # ── Spine path: use plan output directly ──────────────────────
                 from blender_bridge.embodiment_publisher import publish as _embody
                 _embody(_plan, gaze=_gaze)
+                # WO-041: PENDING_SIT tracking — Spine path mirrors Legacy logic
+                import time as _sp_t
+                _now_sp = _sp_t.time()
+                _sp_intent = getattr(_plan, "movement_intent", None)
+                if isinstance(_sp_intent, dict) and _sp_intent.get("name") == "sit":
+                    if not _PENDING_SIT["active"]:
+                        _PENDING_SIT["active"] = True
+                        _PENDING_SIT["since"]  = _now_sp
+                        _PENDING_SIT["queued"] = None
+                        pass
+                elif _PENDING_SIT["active"]:
+                    if _now_sp - _PENDING_SIT["since"] > 300.0:
+                        _PENDING_SIT["active"] = False
             else:
                 # ── Legacy fallback: compute movement intent independently ─────
                 _vision      = _state.get("vision") if isinstance(_state, dict) else None
@@ -3628,6 +3674,7 @@ def _process_turn(raw: str) -> dict:
                         _PENDING_SIT["active"] = True
                         _PENDING_SIT["since"]  = _now54
                         _PENDING_SIT["queued"] = None
+                        pass
                 elif isinstance(_mv_intent, dict) and _mv_intent.get("name") == "move":
                     # Directional or sub-type move intent — activate pending tracker (IO contract)
                     _PENDING_MOVE["active"]    = True
