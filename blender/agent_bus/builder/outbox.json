@@ -1,7 +1,13 @@
 {
-  "ts": 1786560000.0,
-  "builder_run_summary": "2026-08-13 \u2014 RUN 24. WO-094 (Builder half): 38676e8 5/5. WO-095: 0a202f0 10/10. WO-080: 3640d8c 5/5. WO-081: 66d985b 5/5. WO-083: 497fbf8 5/5.",
+  "ts": 1786589950.637814,
+  "builder_run_summary": "2026-08-13 \u2014 RUN 25. WO-094 (Builder half): 38676e8 5/5. WO-095: 0a202f0 10/10. WO-APPROVAL-MEMORY: c157d36 5/5. Approved WOs now close and never resurface.",
   "updates": [
+    {
+      "wo": "WO-APPROVAL-MEMORY",
+      "status": "done",
+      "commit": "c157d36",
+      "detail": "David approvals stick. continuation.cycle() now reads DAVID_APPROVED.md and runs a second loop over the approved set after the AUTO-tier test loop \u2014 closing any approved WO not already DONE, regardless of whether a test file exists. _closed_set deduplicates. needs_david excludes all approved WOs so they never resurface. Tests: 5/5 AT (approved excluded from needs_david, board row flipped DONE David-approved, no-test-file approved path, idempotent, parse-format robustness)."
+    },
     {
       "wo": "WO-094",
       "status": "done",
@@ -18,7 +24,7 @@
       "wo": "WO-080",
       "status": "done",
       "commit": "3640d8c",
-      "detail": "Company Knowledge Interface depth layer. company_runtime/company_knowledge.py: load_state() (read-only, no codebase scan). query_active_wos(state) returns non-done/blocked WOs only (empty state = []). query_regressions(state) returns active entries by severity. check_permitted(action, state): permitted_actions list check + L3 wall (commit/send/spend always False regardless of state). build_deep_brief(query, state): real answers for task/regression/review-pack queries; honest_gap() when data absent. prepare_review_pack(state): structured summary, prepare-only, no side effects. company_state_writer.py: deep task queries (what tasks, what work orders, active wos, etc.) route through company_knowledge.build_deep_brief() BEFORE the WO-048 briefing path — WO-080 marker added. 5/5 AT: AT-0 (active WO filter), AT-1 (state variance), AT-2 (permitted gate + L3 wall), AT-3 (honest gap), AT-4 (wiring + compile)."
+      "detail": "Company Knowledge Interface depth layer. company_runtime/company_knowledge.py: load_state() (read-only, no codebase scan). query_active_wos(state) returns non-done/blocked WOs only (empty state = []). query_regressions(state) returns active entries by severity. check_permitted(action, state): permitted_actions list check + L3 wall (commit/send/spend always False regardless of state). build_deep_brief(query, state): real answers for task/regression/review-pack queries; honest_gap() when data absent. prepare_review_pack(state): structured summary, prepare-only, no side effects. company_state_writer.py: deep task queries (what tasks, what work orders, active wos, etc.) route through company_knowledge.build_deep_brief() BEFORE the WO-048 briefing path \u2014 WO-080 marker added. 5/5 AT: AT-0 (active WO filter), AT-1 (state variance), AT-2 (permitted gate + L3 wall), AT-3 (honest gap), AT-4 (wiring + compile)."
     },
     {
       "wo": "WO-081",
