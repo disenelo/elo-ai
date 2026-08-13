@@ -1,7 +1,36 @@
 {
   "ts": 1786589950.637814,
-  "builder_run_summary": "2026-08-13 \u2014 RUN 26. WO-096: 08edd9d 5/5. Desktop perception fixed \u2014 eLo now sees the screen or says he can't.",
+  "builder_run_summary": "2026-08-13 \u2014 RUN 27. WO-CANON-VII Ruling C closed 89a8ec4 6/6. Capabilities audit complete. Lessons wired to build_prompt. Claiming Builder 05/06/07.",
+  "capabilities_audit_2026-08-13": {
+    "situated_self": "REAL \u2014 the_moment.py reaches system prompt every LLM turn via _self_prompt_block + _tm_situated",
+    "vault_recall": "REAL \u2014 _vault_ctx injected every turn via build_prompt(vault_context=...)",
+    "routing": "REAL \u2014 exec_decision action/cal_reason reach build_prompt and drive [DIRECTIVE] block",
+    "ruling_c_choose_self": "DONE \u2014 89a8ec4. exec_decide now called inside spine._executive_faculty() AFTER assemble_cognitive_state(). server.py derives exec_decision from plan.",
+    "perception_to_prompt": "PARTIAL \u2014 perceive_from_live_state() fires in spine, plan.world populated, but server.py never extracts plan.world into system. active_surface/modality_reads go nowhere. Gap: server.py post-spine extraction. Builder 06.",
+    "lessons_to_prompt": "FIXED \u2014 was PARTIAL (recall() fired, lessons on plan.snapshot.lessons, but build_prompt called with no lessons= arg). Fixed: server.py now passes _bp_lessons=plan.snapshot.lessons to build_prompt(). prompt_builder.py injection code was already complete and correct.",
+    "working_memory_to_prompt": "DEAD \u2014 plan.working_memory assembled every turn (spine.py:469), but server.py has zero references. build_prompt() accepts no working_memory param. attention winner never reaches LLM. Gap: add working_memory to build_prompt + inject [ATTENTION] block. Builder 05.",
+    "gaze_look": "PARTIAL \u2014 Python emits gaze to blender_state.json every turn. Unity HeadLook.cs consume disabled pending WO-099a (Designer). Python side complete.",
+    "shows_what_saying": "BROKEN \u2014 WO-097 dispatched. embodiment publishes empty on direct turns."
+  },
+  "claiming": [
+    "Builder 05 (working memory to prompt \u2014 DEAD, needs build_prompt() wiring)",
+    "Builder 06 (perception active_surface to prompt \u2014 PARTIAL, needs plan.world extraction in server.py)",
+    "WO-097 (shows what he says \u2014 ordering fix, dispatched)",
+    "WO-099b (gaze emit \u2014 Python side real, needs Builder confirmation Unity consume side)"
+  ],
   "updates": [
+    {
+      "wo": "WO-CANON-VII",
+      "status": "done",
+      "commit": "89a8ec4",
+      "detail": "Ruling C closed. spine._executive_faculty() now calls exec_decide() directly (after assemble_cognitive_state() at spine.py:448) instead of reading attention['_exec_decision']. server.py moves spine call to top of turn, derives exec_decision from plan, removes _exec_decision injection. runtime/executive.py unchanged. Fallback when spine fails. 6/6 AT test_canon_vii_ruling_c.py. eLo now decides as the assembled self."
+    },
+    {
+      "wo": "lessons_prompt_wiring",
+      "status": "done",
+      "commit": "pending",
+      "detail": "lesson_store.recall() was firing and lessons were landing on plan.snapshot.lessons, but server.py called build_prompt() with no lessons= arg. prompt_builder.py [LEARNED HEURISTICS] injection block was complete and correct but unreachable. Fix: server.py now extracts _bp_lessons = plan.snapshot.lessons and passes lessons=_bp_lessons to build_prompt(). One line. Compile clean."
+    },
     {
       "wo": "WO-096",
       "status": "done",

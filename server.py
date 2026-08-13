@@ -2890,11 +2890,13 @@ def _process_turn(raw: str) -> dict:
                 _combined_vault = (_combined_vault + "\n\n" + _drop_block).strip()
         except Exception:
             pass
+        _bp_lessons = (_plan.snapshot.lessons if _plan and _plan.snapshot else ())
         system = build_prompt(raw, vault_context=_combined_vault,
                               state_context=state_manager.as_context_string(_state),
                               attention=attention_model, exec_decision=exec_decision,
                               graph_context=g_ctx, personality_block=_pers_block,
-                              self_block=_self_prompt_block(_elo_self))
+                              self_block=_self_prompt_block(_elo_self),
+                              lessons=_bp_lessons)
         # WO-052B: narrative identity — eLo's autobiography across embodiments
         system = system + "\n\n" + _self_narrative_block(_elo_self)
         # WO-083: identity & meaning — who I'm becoming (convergence layer)
