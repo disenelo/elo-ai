@@ -66,10 +66,18 @@ def fire(name: str, **extras) -> bool:
         with open(tmp, "w", encoding="utf-8") as f:
             json.dump(state, f)
         os.replace(tmp, _STATE_PATH)
-        return True
+        # WO-111: file written ≠ animation played. Unity polls independently.
+        # Return sentinel so callers know this is a fire-and-hope, not a confirmed ACK.
+        return ANIM_UNCONFIRMED  # type: ignore[return-value]
 
     except Exception:
         return False
+
+
+# WO-111: ACK status sentinel — anim triggers are one-shot file writes.
+# Unity polls the file and plays the clip; Python has no socket to know it happened.
+# Returning True claimed success with no evidence — replaced with this sentinel.
+ANIM_UNCONFIRMED = "unconfirmed"
 
 
 # ── Named helpers ─────────────────────────────────────────────────────────────

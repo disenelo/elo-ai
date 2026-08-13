@@ -48,6 +48,8 @@ class Capability:
     response_style:         str                 = "direct"  # direct | conversational | confirm
     future:                 bool                = False     # not yet implemented
     agent_module:           str                 = ""        # importable path for health check
+    # WO-111: ACK contract — physical actions require confirmation; utilities don't
+    ack_required:           bool                = False     # True = must ACK or report failure
 
     def is_available(self) -> bool:
         return self.enabled and not self.future and self.health_state in (ONLINE, UNKNOWN)
