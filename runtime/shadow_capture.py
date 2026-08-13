@@ -53,7 +53,7 @@ def _writer_loop() -> None:
         try:
             _flush(record)
         except Exception as e:
-            _log.warning("shadow_capture writer error (non-critical): %s", e)
+            _log.warning("shadow_capture writer error: %s", e)
         finally:
             _q.task_done()              # always decrements — flush failure cannot block join()
 
@@ -65,7 +65,7 @@ def _flush(record: dict) -> None:
         with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
     except Exception as e:
-        _log.warning("shadow_capture flush failed (non-critical): %s", e)
+        _log.warning("shadow_capture flush failed: %s", e)
 
 
 def _ensure_writer() -> None:
@@ -113,7 +113,7 @@ def record_turn(
     try:
         _q.put_nowait(record)
     except Exception as e:
-        _log.debug("shadow_capture enqueue failed (non-critical): %s", e)
+        _log.warning("shadow_capture enqueue failed: %s", e)
 
 
 def record_l3_rating(trace_id: str, rating: str) -> None:
@@ -131,7 +131,7 @@ def record_l3_rating(trace_id: str, rating: str) -> None:
     try:
         _q.put_nowait(record)
     except Exception as e:
-        _log.debug("shadow_capture l3 enqueue failed (non-critical): %s", e)
+        _log.warning("shadow_capture l3 enqueue failed: %s", e)
 
 
 def subscribe_to_bus() -> None:
@@ -148,7 +148,7 @@ def subscribe_to_bus() -> None:
             filter_fn=lambda e: e.payload.get("type") == "l3_rating",
         )
     except Exception as e:
-        _log.debug("shadow_capture bus subscribe failed (non-critical): %s", e)
+        _log.warning("shadow_capture bus subscribe failed: %s", e)
 
 
 def drain_bus_ratings() -> None:
@@ -165,7 +165,7 @@ def drain_bus_ratings() -> None:
             rating = body.get("rating", "unknown")
             record_l3_rating(tid, rating)
     except Exception as e:
-        _log.debug("shadow_capture drain_bus_ratings failed (non-critical): %s", e)
+        _log.warning("shadow_capture drain_bus_ratings failed: %s", e)
 
 
 def flush_sync(timeout: float = 2.0) -> None:

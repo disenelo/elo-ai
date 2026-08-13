@@ -46,9 +46,10 @@ class DomainHealth:
 
 @dataclass(frozen=True)
 class DesktopState:
-    active_app:    str = ""
-    active_window: str = ""
-    surface:       str = ""    # "mac" | "unity" | "unknown"
+    active_app:    str  = ""
+    active_window: str  = ""
+    surface:       str  = ""    # "mac" | "unity" | "unknown"
+    available:     bool = True  # False = lookup failed; distinguishable from "no window open"
 
 
 @dataclass(frozen=True)
@@ -206,6 +207,7 @@ def assemble_world_state(turn_id: str = "", perception=None) -> LiveWorldState:
         _lg.getLogger(__name__).warning("desktop domain unavailable: %s", _desktop_err)
         _health("desktop", "error", str(_desktop_err)[:80], 0.0)
         _degrade("desktop")
+        desktop = DesktopState(available=False)  # distinguishable from "no window open"
 
     # ── Time ─────────────────────────────────────────────────────────────────
     time_state = TimeState()

@@ -360,7 +360,7 @@ def run(
         from faculties.perception.perception_faculty import perceive_from_live_state as _perceive
         _perception = _perceive()
     except Exception as _perc_err:
-        _log.debug("perceive_from_live_state: %s", _perc_err)
+        _log.warning("perceive_from_live_state FAILED: %s", _perc_err)
 
     # ── WO-CANON-XV: LiveWorldState — assembled FIRST, frozen, read by all faculties ─
     # Copies PerceptionResult fields into domain slices (Ch.3 §3.2 copy step).
@@ -369,7 +369,7 @@ def run(
         from world.live_world_state import assemble_world_state as _assemble_world
         _world = _assemble_world(turn_id=raw[:32] if raw else "", perception=_perception)
     except Exception as _world_err:
-        _log.debug("assemble_world_state: %s", _world_err)
+        _log.warning("assemble_world_state FAILED: %s", _world_err)
 
     # ── WO-CANON-VI: Working Memory + Attention — top-of-turn, before faculties ─
     # core/attention.py = candidate/signal supplier. WM competition = sole driver.
@@ -419,7 +419,7 @@ def run(
             capacity=_wm_updated.capacity,
         )
     except Exception as _wm_err:
-        _log.debug("working_memory: %s", _wm_err)
+        _log.warning("working_memory FAILED: %s", _wm_err)
 
     # ── WO-052: CognitiveSnapshot — assembled BEFORE any faculty decides ──────
     _snapshot = None
@@ -427,7 +427,7 @@ def run(
         from runtime.cognitive_snapshot import build_snapshot as _build_snap
         _snapshot = _build_snap(attention=attention, pending_sit=pending_sit)
     except Exception as _snap_err:
-        _log.debug("build_snapshot: %s", _snap_err)
+        _log.warning("build_snapshot FAILED: %s", _snap_err)
 
     # ── v1.4 Language Faculty ─────────────────────────────────────────────────
     language = _language_faculty(raw)
@@ -438,7 +438,7 @@ def run(
         from runtime.spine.relationship_faculty import analyse as rel_analyse
         relationship = rel_analyse(raw, memory_pack)
     except Exception as e:
-        _log.debug("relationship_faculty: %s", e)
+        _log.warning("relationship_faculty FAILED: %s", e)
 
     # ── Capability Faculty ────────────────────────────────────────────────────
     capabilities = _capability_faculty(language["meaning"], language["intent"])
@@ -454,7 +454,7 @@ def run(
             world_state=_world, working_memory=_wm,
         )
     except Exception as _cs_err:
-        _log.debug("assemble_cognitive_state: %s", _cs_err)
+        _log.warning("assemble_cognitive_state FAILED: %s", _cs_err)
 
     # ── Executive Faculty — ONE DECISION ─────────────────────────────────────
     plan = _executive_faculty(raw, language, attention, capabilities, system_det)
@@ -473,7 +473,7 @@ def run(
         from runtime.spine.executive_faculty import enrich
         plan = enrich(plan, relationship, attention)
     except Exception as e:
-        _log.debug("executive_faculty/enrich: %s", e)
+        _log.warning("executive_faculty/enrich FAILED: %s", e)
 
     # AC-5: sync register into CognitiveState after enrich may have supplemented it.
     # Language faculty runs before exec, so cognitive_state is assembled with whatever
@@ -483,15 +483,15 @@ def run(
         try:
             from dataclasses import replace as _dc_replace
             plan.cognitive_state = _dc_replace(plan.cognitive_state, register=plan.register)
-        except Exception:
-            pass
+        except Exception as _e:
+            _log.warning("cognitive_state register sync FAILED: %s", _e)
 
     # ── v1.8 Emotional Light Engine → Presence Plan ───────────────────────────
     try:
         from runtime.light_engine.light_engine import translate
         plan = translate(plan)
     except Exception as e:
-        _log.debug("light_engine/translate: %s", e)
+        _log.warning("light_engine/translate FAILED: %s", e)
 
     # ── Presence Faculty — movement intent + triggers (after Light Engine) ───────
     try:
@@ -500,13 +500,13 @@ def run(
         _session_min = 0   # conservative default (session_min used for 20-min calm gate only)
         plan = _pf_compute(plan, attention, vision=_vision, session_min=_session_min)
     except Exception as e:
-        _log.debug("presence_faculty: %s", e)
+        _log.warning("presence_faculty FAILED: %s", e)
 
     # ── S6: Build EmbodimentState ─────────────────────────────────────────────
     try:
         plan.embodiment_state = build_embodiment_state(plan)
     except Exception as e:
-        _log.debug("build_embodiment_state: %s", e)
+        _log.warning("build_embodiment_state FAILED: %s", e)
         plan.embodiment_state = None
 
     # ── Conversation Faculty — direct response if applicable ──────────────────

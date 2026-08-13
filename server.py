@@ -95,6 +95,7 @@ _runtime_state   = None
 _memory_pack     = {}
 _vault_ctx       = ""
 _project_ctx     = ""   # active project names → injected into system prompt each turn
+_spine_degraded: list = []   # WO-105: last-turn spine domain failures; surfaced in /health
 _last_inputs     = []
 _last_avatar_cmd = None
 _last_pp         = None   # last known presence_plan — survives tool-call turns
@@ -2345,6 +2346,10 @@ def _process_turn(raw: str) -> dict:
                 "register":      _plan.register,
                 "intent":        _plan.intent,
             }
+            # WO-105: collect last-turn spine domain health for /health endpoint
+            global _spine_degraded
+            if getattr(_plan, "world", None) is not None:
+                _spine_degraded = list(_plan.world.degraded)
         else:
             exec_decision = exec_decide(attention_model, loop_detected=False, user_input=raw)
 
@@ -2493,15 +2498,15 @@ def _process_turn(raw: str) -> dict:
             _spat_ctx     = spatial_summary(_elo_pos_snap, _wins_snap)
             if _spat_ctx:
                 g_ctx = f"{g_ctx}\n{_spat_ctx}" if g_ctx else _spat_ctx
-        except Exception:
-            pass
+        except Exception as _e:
+            _logging.warning("g_ctx/spatial_state FAILED: %s", _e)
 
         # WO-023: emit top-bias + keep-out position hint for Unity
         try:
             from desktop.position_faculty import emit as _pos_emit
             _pos_emit(elo=_elo_pos_snap, windows=_wins_snap)
-        except Exception:
-            pass
+        except Exception as _e:
+            _logging.warning("g_ctx/pos_emit FAILED: %s", _e)
 
         # Synthesis observer — per-turn cross-signal check (low threshold, no cooldown)
         try:
@@ -2509,8 +2514,8 @@ def _process_turn(raw: str) -> dict:
             _syn_ctx = _syn_block(raw)
             if _syn_ctx:
                 g_ctx = f"{g_ctx}\n{_syn_ctx}" if g_ctx else _syn_ctx
-        except Exception:
-            pass
+        except Exception as _e:
+            _logging.warning("g_ctx/synthesis FAILED: %s", _e)
 
         # Chrome observation — open tabs + bookmarks matching current conversation topic
         # WO-038: label source clearly (live tab vs history vs no-match-but-open) so eLo
@@ -2549,8 +2554,8 @@ def _process_turn(raw: str) -> dict:
                     "present the fragment as a complete observation — say you only caught part of it."
                 )
                 g_ctx = f"{g_ctx}\n{_chrome_ctx}" if g_ctx else _chrome_ctx
-        except Exception:
-            pass
+        except Exception as _e:
+            _logging.warning("g_ctx/chrome FAILED: %s", _e)
 
         # Project knowledge — compact studio brief (phase status + active projects)
         try:
@@ -2601,8 +2606,8 @@ def _process_turn(raw: str) -> dict:
                     "Let this colour your tone naturally — no need to mention the music unless David does."
                 )
                 g_ctx = f"{g_ctx}\n{_music_ctx}" if g_ctx else _music_ctx
-        except Exception:
-            pass
+        except Exception as _e:
+            _logging.warning("g_ctx/music FAILED: %s", _e)
 
         # ── ATTENTION AUGMENTATION — Entity Injection ─────────────────────────
         # Why here and not inside attention.compute():
@@ -3867,12 +3872,13 @@ class _Handler(BaseHTTPRequestHandler):
             try:
                 from runtime.faculty_health import all_statuses as _fh_all, health_summary as _fh_sum
                 _statuses = _fh_all()
-                _ok = all(s == "CONNECTED" for s in _statuses.values())
+                _ok = all(s == "CONNECTED" for s in _statuses.values()) and not _spine_degraded
                 self._send_json(200, {
-                    "ok":       _ok,
-                    "faculties": _statuses,
-                    "summary":  _fh_sum(),
-                    "backend":  active_backend(),
+                    "ok":              _ok,
+                    "faculties":       _statuses,
+                    "summary":         _fh_sum(),
+                    "backend":         active_backend(),
+                    "spine_degraded":  _spine_degraded,
                 })
             except Exception as e:
                 self._send_json(500, {"error": str(e)})
@@ -4085,7 +4091,46 @@ def _watch_parent(parent_pid: int, server: ThreadingHTTPServer) -> None:
             pass   # process exists but we can't signal it — still alive
 
 
+def _startup_faculty_check() -> None:
+    """
+    WO-105: Assert each live-path faculty can be imported at boot.
+    Logs WARNING for any unexpected absence. faculties.temporal is expected
+    to be absent (WO-CANON-XXV dead code — its failure is the correct signal).
+    """
+    import importlib
+    _checks = [
+        ("perception",     "faculties.perception.perception_faculty", "perceive_from_live_state"),
+        ("world_state",    "world.live_world_state",                  "assemble_world_state"),
+        ("working_memory", "runtime.working_memory",                  "seed_working_memory"),
+        ("cognitive_snap", "runtime.cognitive_snapshot",              "build_snapshot"),
+        ("relationship",   "runtime.spine.relationship_faculty",      "analyse"),
+        ("capabilities",   "runtime.capabilities.registry",           "ALL_CAPABILITIES"),
+        ("executive",      "runtime.executive",                       "decide"),
+        ("enrich",         "runtime.spine.executive_faculty",         "enrich"),
+        ("light_engine",   "runtime.light_engine.light_engine",       "translate"),
+        ("presence",       "runtime.spine.presence_faculty",          "compute"),
+        ("lesson_store",   "self.lesson_store",                       "recall"),
+        ("temporal",       "faculties.temporal",                      None),   # expected MISSING
+    ]
+    print("[eLo faculty check]")
+    for name, mod_path, attr in _checks:
+        try:
+            mod = importlib.import_module(mod_path)
+            if attr and not hasattr(mod, attr):
+                _logging.warning("faculty PARTIAL at startup — %s: %s.%s not found", name, mod_path, attr)
+                print(f"  {name:<18} PARTIAL  ({mod_path}.{attr} missing)")
+            else:
+                print(f"  {name:<18} WIRED")
+        except Exception as _e:
+            if name == "temporal":
+                print(f"  {name:<18} EXPECTED-MISSING (WO-CANON-XXV): {_e}")
+            else:
+                _logging.warning("faculty MISSING at startup — %s: %s", name, _e)
+                print(f"  {name:<18} MISSING: {_e}")
+
+
 if __name__ == "__main__":
+    _startup_faculty_check()
     _init_session()
 
     # Warm the embedding cache at startup (non-blocking — runs in background)
