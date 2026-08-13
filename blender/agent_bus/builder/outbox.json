@@ -1,6 +1,6 @@
 {
-  "ts": 1786589950.637814,
-  "builder_run_summary": "2026-08-13 \u2014 RUN 27. WO-CANON-VII Ruling C closed 89a8ec4 6/6. Capabilities audit complete. Lessons wired to build_prompt. Claiming Builder 05/06/07.",
+  "ts": 1786617600.0,
+  "builder_run_summary": "2026-08-13 \u2014 RUN 28. WO-105 silent failures ea3e21e 10/10. 22 sites upgraded (9 spine.run + 2 discovered + 5 server.py + 6 shadow_capture + 1 live_world_state). Startup check, /health spine_degraded, AT-LINT. Suite 84/84 green. WO-CANON-VII and WO-105 cards moved to DONE/.",
   "capabilities_audit_2026-08-13": {
     "situated_self": "REAL \u2014 the_moment.py reaches system prompt every LLM turn via _self_prompt_block + _tm_situated",
     "vault_recall": "REAL \u2014 _vault_ctx injected every turn via build_prompt(vault_context=...)",
@@ -19,6 +19,15 @@
     "WO-099b (gaze emit \u2014 Python side real, needs Builder confirmation Unity consume side)"
   ],
   "updates": [
+    {
+      "wo": "WO-105",
+      "status": "done",
+      "commit": "ea3e21e",
+      "detail": "Kill the silent failures. 22 sites converted (20 listed + 2 found in run() during lint). spine.run() ×11 (_log.debug→WARNING for all cognition-path faculties including relationship_faculty and register sync bare pass). server.py g_ctx ×5 (bare except:pass→_logging.warning). shadow_capture.py ×6 (4 debug→WARNING + 2 '(non-critical)' label removed — these ARE critical, WO-104 depends on them). live_world_state.py ×1 (DesktopState.available=bool added; failure path now sets available=False, distinguishable from 'no window open'). Startup check: _startup_faculty_check() logs WIRED/MISSING for each live-path faculty on boot; faculties.temporal shows EXPECTED-MISSING as intended (WO-CANON-XXV). /health endpoint: spine_degraded field now populated from _plan.world.degraded after each turn; ok=False when spine domains are degraded. AT-LINT: test fails if spine.run() gains a new bare pass or _log.debug swallow. 10/10 AT. Suite 84/84 green. EXTRA BUG EXPOSED (not fixed here per card constraint): server.py ~2483 CS observer has an unlisted bare except:pass in the same g_ctx block — file as follow-up.",
+      "additional_bugs_exposed": [
+        "server.py:~2483 — connection_surface observer has bare except:pass (unlisted 6th site in g_ctx block — WO-105 listed only 5). Low risk (non-critical sensor), but should be fixed."
+      ]
+    },
     {
       "wo": "WO-CANON-VII",
       "status": "done",

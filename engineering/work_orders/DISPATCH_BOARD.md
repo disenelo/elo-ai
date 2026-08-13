@@ -1,3 +1,157 @@
+> # 🧭 CAPABILITY TRUTH MATRIX — the board now reports THIS (Ruling H, 2026-08-13)
+> **Control layer ratified in full, unmodified.** Source, verbatim:
+> `docs/architecture/_intake/SOURCE_2026-08-13_capability_truth_matrix.md`
+> **provenance:** relayed by David from his architecture breakdown *"with 3 different people then through
+> two ais"* — **author not established, do not attribute.**
+>
+> **THE RULE:** *"LLM-generated language is never evidence of capability."* The acceptance criterion is
+> **the state, never the sentence.** Four states only: **VERIFIED · PARTIAL · FORWARD · BLOCKED.**
+> Every verdict below is [VERIFIED by reading code on the live path 2026-08-13] — not copied from the
+> source document's own status glyphs, and not taken from this board.
+>
+> ## 🔴 THE ROOT CAUSE — one fault sits under 15 of the 26 rows
+> **COMPUTE → INJECT INTO PROMPT → DISCARD.**
+> `plan.world` · `plan.cognitive_state` · `plan.working_memory` · `plan.embodiment_state` ·
+> `plan.capabilities` · `snapshot.surface_affordances` are all **assembled correctly every turn and read by
+> nobody.** The Executive decides from **`attention_model` and `user_input` alone**
+> (`spine.py:167` → `runtime/executive.py:280`). Everything else lands in a prompt string and dies there.
+>
+> **So eLo can SAY almost all of it and KNOW almost none of it.** That is precisely the drift the matrix
+> was written to catch. **→ `WO-106` (P0) is the seam fix; it moves ~15 rows at once.**
+>
+> ## The 26 capabilities — verified state
+> | # | Capability | State | Evidence / the missing link | Forward WO |
+> |---|---|---|---|---|
+> | 1 | **IDENTITY** — who am I? | 🟡 **PARTIAL** | Asserted every turn (`prompt_builder.py:26-48`) but the persisted self-model has **no identity field** (`elo_self_model.py:139-167`). It's a prompt constant the Executive can't read or diff. | WO-107 |
+> | 2 | **WHERE** — where am I? | 🟡 **PARTIAL** | Verified surface/edge is REAL and live (`the_moment.py:105-125` → *"bottom edge of Code"*). **But `spatial_state.py:98-100` reads `pos_x/pos_y/height_px` while Unity writes `x/y/height`** → silently defaults to `0.5, 0.1`. He states the window truthfully and **invents the coordinates.** | WO-100 |
+> | 3 | **BODY** — what body am I using? | 🟡 **PARTIAL** | `embodiment` field exists but has **no live-path writer**; `the_moment.py:67` hardcodes tier "verified" and it always reads `"desktop"`. Desktop vs game vs robot is indistinguishable. | WO-107 |
+> | 4 | **SEE** | 🟡 **PARTIAL** | Perception→world-state IS wired (`spine.py:360-370`). `plan.world` then read by nothing; server re-queries sensors directly (`server.py:2490, 2520`). | **WO-106** |
+> | 5 | **LOOK** (deliberate ≠ SEE) | 🟠 **FORWARD** | No directed-perception request exists. Gaze aims the head; nothing requests an *inspection* and returns an observation. **Kept architecturally distinct per §4.** | WO-108 |
+> | 6 | **ATTEND** | 🔴 **PARTIAL→DEAD** | Both run. `working_memory` competition executes (`spine.py:379-420`) and its winner is **discarded** — the Executive gets the raw `attention_model` (`spine.py:167`). Ruling B's chosen driver isn't the one steering. | **WO-106** |
+> | 7 | **REMEMBER** | 🟡 **PARTIAL** | Recall live. **`reinforce()` only inside `recall_context()`, which nothing outside tests calls** — live retrieval uses bare `lookup()`. **Used memories still decay.** | WO-109 |
+> | 8 | **RECALL** | 🟡 **PARTIAL** | Retrieval works; returns no `experience_id`/`confidence`/`source` set per §4. | WO-109 |
+> | 9 | **KNOW / INFER / UNKNOWN** | 🟡 **PARTIAL** | Epistemic tiers exist (`the_moment.py:29-35`) **but cover only the body.** Nothing on memory, vault facts, user facts, tool results. Two tiers are constants, not checks. Skipped entirely on direct/greeting turns. | WO-110 |
+> | 10 | **ACT** | ✅ **VERIFIED** | Registry `runtime/capabilities/registry.py:17-392` + executor `tools/tool_router.py:827`, live at `server.py:3260`. ⚠️ but `plan.capabilities` is read by nothing — the executor re-decides by keyword, **bypassing the Executive.** | WO-106 |
+> | 11 | **VERIFY (ACK)** | 🟡 **PARTIAL** | ACK exists for **exactly three actions** — sit, move, exit. Anim triggers, scale, spawn_wave, image_gen, computer_control and every tool return a spoken claim **with no completion signal.** No generic action→ACK contract. | WO-111 |
+> | 12 | **ROUTE** | 🔴 **ABSENT (brain side)** | Unity picks routes locally by BFS (`EloDesktopNav.cs:295-320`) and **writes nothing back** — 573 lines, zero file writes. `self/route_memory.py` imported by nothing. | Ruling E · Designer `08` |
+> | 13 | **CHOOSE** | 🟡 **PARTIAL** | Decision journal writes every turn — but **all 35 live entries have `confidence: null` and `alternatives_rejected: []`.** `executive.py:156-235` early-returns a single action, so **no candidate set with utilities ever exists.** §5 is unsatisfied. | WO-112 |
+> | 14 | **AFFORD** | 🟡 **PARTIAL** | `runtime/affordances.py` **is computed live** (`cognitive_snapshot.py:175`) and then thrown away — `prompt_block` has zero non-test callers. Surface-keyed only; no join with body capability. | WO-106 · WO-113 |
+> | 15 | **GAP** | 🟠 **FORWARD** | The seven states (`CAN·CANNOT·DEGRADED·LOW-CONFIDENCE·IF-CONDITION·UNKNOWN·BLOCKED`) don't exist. He cannot say *"I can wall-jump but not reliably from here."* | WO-113 |
+> | 16 | **INTEND** | 🟡 **PARTIAL** | `plan.intent` is real — but there is **no `source` field.** Intent derives from the user's text by construction; nothing can be marked internally-generated. | WO-114 |
+> | 17 | **SELF-CHOOSE** | 🟠 **FORWARD** | `self/emergent_cognition.py` **does run live** (`server.py:2909`) with `source: absence_awareness/curiosity_peak` — but output is **prompt text only.** Never reaches plan, executive or self-model. §8's `internal_intent.source == SELF` exists nowhere the Executive reads. | WO-114 |
+> | 18 | **LEARN** | 🔴 **DEAD** | 378/378 lessons `candidate`. No production caller of `promote_pass`; gate needs a scope the writer never emits; ACK hook writes a non-existent key; `episode_ref=""` so the gate can never open. | **WO-096B** + **WO-104** |
+> | 19 | **REFLECT** | 🟡 **PARTIAL** | Runs live and writes the growth journal + ledger. **Output never reaches the self-model** — the only self-model write takes the raw turn, not the lesson. | WO-115 |
+> | 20 | **ADAPT** | 🔴 **ABSENT** | Nothing measures a decision/capability change after experience. §7's before/after delta test cannot run. | WO-104 · WO-116 |
+> | 21 | **HISTORY** | 🟡 **PARTIAL** | Decision journal written AND read (35 entries). **The designated autobiography is inert** — `append_autobiography` has zero callers, `autobiography.jsonl` doesn't exist. | WO-115 |
+> | 22 | **SELF-OBSERVE** | 🟠 **FORWARD** | `identity_meaning.derive_tendencies` runs live — but **two of three inputs are permanently empty**; `record_behaviour` and `update_habits` have zero production callers. Live state: `recent_behavior: {}`, `lifetime_threads: []`. **Nothing writes eLo's own actions into his behavioural store.** | WO-116 |
+> | 23 | **SELF-INTERPRET** | 🔴 **FUTURE** | Depends on 19·21·22 being real. | WO-117 |
+> | 24 | **MEANING** | 🔴 **FUTURE** | Depends on significance reading verified outcomes (WO-101) + reflection reaching the self-model. | WO-117 |
+> | 25 | **UNKNOWN** (what don't I know) | 🟡 **PARTIAL** | Folded into row 9 — no representation of the unobserved outside body state. | WO-110 |
+> | 26 | **INFER** | 🟡 **PARTIAL** | Folded into row 9 — `the_moment.py:85` tags "inferred" as a **constant, not a check.** | WO-110 |
+>
+> **Score: 1 VERIFIED · 15 PARTIAL · 5 FORWARD · 3 DEAD/ABSENT · 2 FUTURE.**
+> **The ladder (§12): Level 0 solid, Level 1 half-true, Levels 2-4 computed-then-discarded,
+> Levels 5-16 not reachable until `WO-106` opens the seam.**
+
+> # ⛔ NOTHING IS PARKED. **THE ARCHITECT MAY NOT PARK ANYTHING. ONLY DAVID PARKS.** (2026-08-13)
+> David: *"Do not park the board again unless i say so!!"* · *"push the board fuck what you think about pace."*
+>
+> **EVERY park on this board below this line is VOID unless it is one of exactly three things:**
+> 1. **Robot hardware** — force · magnetics · pump · thermal · LG-2 before power near David
+> 2. **David's own creative choice** — currently only **WO-091** night-light concept
+> 3. **DAVID'S OWN LANE** (FH-* · CR-* · MK-* · BO-* · LG-* · WO-046/047 · INT-4/5) — **his work, not parked, not agent work. Do not touch.**
+>
+> ### ✅ UNPARKED BY THIS DIRECTIVE — build them
+> **All "behind / post-Presentable v1" parks are STALE — David retired that gate on 2026-08-10.** Every one
+> of these was waiting on a milestone that no longer exists:
+> `WO-058` (VFX layer — assets exist, it's wiring) · `WO-063` (command wakes the body) · `WO-052`/**The
+> Moment** assembly · `WO-049` **Track B + the Spatial Faculty** (Vol XV names
+> `faculties/spatial/spatial_faculty.py` as the canonical owner and **it does not exist** — build it) ·
+> `WO-EA2-1` · `WO-EA2-2` · `WO-EA2-2B` · `WO-080` · **all 16 WO-CANON volume build-WOs** ·
+> `Executive Curiosity` · `Response Journal` · free-form move chaining (Track B) ·
+> `RD-3` *(the Presentable half only — the RD-4 CAD-form dependency is real and stands)*.
+>
+> **Also unparked** (parked for no valid reason): `INT-8` drag-drop end-to-end · `INT-8b` reach ·
+> 3D file previewer · **all nine One Brain items** (glow · hit/contact · bead size · voice wave ·
+> no imposed rings · remove dead RING code · consistency pass) · Presence grab-release /
+> `PRESENCE_TRACKER §2 #13` · Presence Track-B items · `WO-024` traversal half · `WO-062` deferred
+> squash-and-stretch half · `EA2-2B` · `GM-punch` · FPS-style aim · `WO-002` remaining 5/11 sensor domains ·
+> **Vol V Ch.1 · 2 · 3 · 6 · 8 · 9 · 10** (PLANNED with no WO — I write those WOs, that is my job, not a park).
+>
+> **`GM-2b` is NOT parked.** "Needs a David play-test" is not a block — it's a *result* he reviews at his
+> end-of-day live test. It appears as parked **52 times** in the reconcile log; every one is void. Game seat:
+> build, report, he plays it when he plays it.
+>
+> ### 🔴 The 11 WO-CANONs I held back "for pace" (XI · XIII · XIX · XX · XXI · XXII · XXIII · XXV · XXVI · XXVII · XXVIII)
+> **They were written and ready and I held them anyway.** That was never my call. **All released.**
+> Ordering is a technical judgement I still make — parking is not.
+>
+> **Standing rule from now on: if it is ready, it is on the board and dispatched.** No holding for pace,
+> token cost, or seat load. A row marked PARKED without David's own words is a bug.
+
+> # 🔨 BUILD ORDERS FROM THE READINESS VERIFICATION — 2026-08-13 (all DISPATCHED, none gated)
+> David: *"I don't want code half fixed on paper, I want code fixed, files implemented."*
+> Full verdict: `docs/architecture/AUDIT_IMPLEMENTATION_READINESS_2026-08-13.md`
+>
+> | WO | What it fixes | Card | Pri |
+> |---|---|---|---|
+> | **WO-104** | 🔴 **REAL LEARNING — WEIGHTS, NOT CONTEXT.** David 2026-08-13: *"I don't want more context I want it to be a thing."* **Ruling F already permits it** (style/phrasing only; identity + verification never learnable). Basket is LIVE — 82 rows written today — **but all 82 lack `delta_cause`, so training on it as-is would teach the forbidden thing.** Tag → filter to `style` → LoRA adapter on `llama3.1:8b` → eval gate → serve. Adapter-only, deletable, revert = safety. | `builder/QUEUE/00b_` | **P0** |
+> | **WO-105** | DONE ✅ ea3e21e 10/10 — 22 sites upgraded (9+2 spine.run, 5 server.py g_ctx, 6 shadow_capture, 1 live_world_state). Startup check live. /health shows spine_degraded. AT-LINT enforcing. | `builder/QUEUE/DONE/` | **P0** |
+> | **WO-096B** | **The learning loop is INERT.** 378/378 lessons still `candidate`. No production caller of `promote_pass`; the promotion gate demands a scope the writer never emits; the ACK hook writes to a lesson key that doesn't exist; tests pollute the real growth journal. | `builder/QUEUE/00_` | **P0** |
+> | **WO-100** | Brain **does** emit `gaze` — but `gaze` isn't in `_PRESERVE_KEYS`, so the next patch write strips it (live `blender_state.json` has no `gaze` key). Plus `live_world_state.py:194` imports `get_active_window`, which doesn't exist. | `builder/QUEUE/01b_` | P1 |
+> | **WO-CANON-XXV** | Temporal build is dead code — no `Anticipation`, `expires` is a bool, nothing in the live turn imports it. Board was corrected 08-10; **code was never touched.** | `builder/QUEUE/03b_` | P1 |
+> | **WO-101** | Reward still scores LANGUAGE — `evaluate()` accepts `outcome=` but no caller passes it. Plus the vector emits 9 or 12 keys depending on call site. **Ruling: live 12-dim is canonical, same key set every call.** | `builder/QUEUE/03c_` | P1 |
+> | **WO-102** | **eLo cannot represent David's family, home, or any event.** Vol XXIV specs Person/Place/Event; the stores don't exist and no loader reads them. | `builder/QUEUE/03d_` | P1 |
+> | **WO-103** | 🔴 **THE ROOT CAUSE.** Five builds shipped green and changed nothing because their tests called the component instead of the live path. New rule: **a test must fail if the feature is disconnected.** | `builder/QUEUE/03e_` | P1 |
+>
+> ### ✅ Also closed today — the "nine missing ADR citations" were never missing
+> ADR-Corp-001 · CA-001/002/006/010/011/012 · EA-0 · EA-2. **Eight of nine were UNLINKED, not unwritten** —
+> they live in `~/Desktop/Output/`, and `Output/DISENELO_ARCHITECTURE_REVIEW_REGISTER.md` **is** the CA
+> register. EA-0 is `DISENELO_ENTERPRISE_ARCHITECTURE.md`, **ratified by David 2026-07-29** — the audit's
+> "not located" was wrong. All now linked in `adr/README.md`. **ADR-Corp-001 is the only real hole and its
+> citation is RETIRED** (WO-080 cites LAW-017 + Vol XXIII + EA-0 §14, which all exist).
+
+> # 🟢 GATE CLEARANCE — 2026-08-13. **NOTHING IS BLOCKED ON DAVID EXCEPT ROBOT HARDWARE.**
+> David, 2026-08-13: *"who said you should be blocking things when I ask you not to"* · *"I want work to
+> move"* · *"I don't want to relay relay relay or go back and forth to make sure you are doing things."*
+> Standing rule since 2026-08-10: *"not holding, I run a live test at end of day."*
+>
+> **Every gate below is CLEARED by the Architect. Seats: build, commit, report. Do not hold. Do not ask.**
+>
+> | Was gated | Why it's cleared | Now |
+> |---|---|---|
+> | **WO-CANON-I** `prompts/` freeze | **David granted the unlock 2026-07-31 (D-K).** Never written to `FREEZE_V1_LOCK.md`, so it read as ungranted for 2 weeks. Backfilled UL-001/UL-002. | ▶ **BUILD + COMMIT** |
+> | **WO-015** | Not blocked on anything — its 4 behaviour rules are already in the spec (lines 364-405, 961-973). | ✅ **CLOSED** |
+> | **WO-074 (C/F) · WO-075 · WO-086 steps 1-2** | "David L3 movement session" is **superseded by the no-holds rule.** Feel is verified at his end-of-day live test — **after**, not before. Sensitive file ≠ blocked; it means *branch, keep the diff tight, list what must not regress.* | ▶ **BUILD NOW**, revert-safe branch |
+> | **D-L** (debug-mode scope → WO-017) | Technical scope definition = **Architect's call** (WORKING_STANDARD Rule 5). Ruled below. | ▶ **RELEASED** |
+> | **LAW-017 duplicate ID** | Numbering conflict = Architect's call. Ruled below. | ▶ **RELEASED** |
+> | **~25 rows in ⏳ IN_REVIEW** | "IN_REVIEW" was being read as a hold. It isn't. Tests green + committed = **DONE**; David sees the result at his live test. | ✅ **CLOSE ON GREEN** |
+>
+> **Still genuinely reserved — do NOT clear:** robot **hardware** (force · magnetics · pump · thermal),
+> **LG-2** before anything is powered near David, and **WO-091 night-light concept** (David's own creative
+> choice; blocks nothing). That is the entire list.
+>
+> ### ⚖ D-L RULED (Architect, 2026-08-13) — debug mode scope
+> Debug mode = **read-only observability, no behaviour change.** It may expose live faculty state, the
+> turn trace, channel contents and timings (`/health` + a verbose log level, gated on `ELO_DEBUG`). It may
+> **not** alter routing, prompts, decisions, or emit anything to the body. Off by default; never on in a
+> live session with David. → **releases WO-017.**
+>
+> ### ⚖ LAW-017 RULED (Architect, 2026-08-13) — one ID, one law
+> The **repo** `docs/architecture/adr/LAW-017_Approval_Scope.md` keeps the ID. The external
+> `Output/DISENELO_UNIVERSAL_RUNTIME_EA3.md` §3 "Runtime Composition" is **renumbered LAW-021** and cited
+> as such by Vol XXIII. Rationale: the repo copy is the one the code and tests reference. → **unblocks the
+> Vol XXIII approval-scope citation.**
+
+> # 👁 GAZE LOOP — 2026-08-13 (David: *"fix what they broke and re-trigger it back through the brain"*)
+> **HeadAim is DONE** (`5180b0f`, David-confirmed). To make it work the Designer made cursor-follow primary,
+> so **the brain can no longer drive the head** — honestly reported, now being closed.
+> **⚠ THE REAL FINDING [VERIFIED in code]:** Unity was **never** the problem. `EloOSAvatarReceiver.cs:419-427`
+> already reads a `gaze` object and `HeadLook.cs:405-423` already follows it. **Nothing on the Python side has
+> ever emitted it** — Unity has been listening to a channel nobody talks on. **The fix is mostly the Builder's,
+> not the Designer's.** WO-099a (Design, P0) reshapes the cue to a weight; **WO-099b (Builder, P0) makes the
+> brain actually speak**; WO-099c adds awareness UP so eLo knows what he's looking at.
+
 > # 🎯 THE GOAL — what eLo can do, and what's between him and the rest
 > **Read the board THIS way from now on.** Not WO numbers — capabilities. David 2026-08-13: *"I need to know
 > how this board is moving towards the goal."*
@@ -604,7 +758,7 @@ board reflects reality.
 | PLANNED | Vol V Ch.9 build — Creative Imagination Engine | Builder | spec exists, no WO | queue WO |
 | PLANNED | Vol V Ch.10 build — Agency Engine | Builder | spec exists, no WO | queue WO |
 | ✅ RESOLVED | D-K — scoped FREEZE_V1_LOCK unlock for `prompts/` | David | **REOPENED + APPROVED 2026-07-31: SCOPED UNLOCK of `prompts/` only** (rest of freeze intact · one change at a time · revert-safe baseline · David reviews each · re-freeze on completion). `DECISION_LOG §D-K`. **Unblocks WO-015.** | Architect: WO-015 → READY; Builder owns |
-| OPEN | D-L decision — debug mode scope definition | David | required before WO-017 can proceed; no decision recorded | create D-L entry in DECISION_LOG |
+| ✅ RESOLVED | D-L decision — debug mode scope definition | **Architect 2026-08-13** (not David — technical scope, Rule 5) | **RULED: read-only observability, no behaviour change.** May expose faculty state / turn trace / channel contents / timings behind `ELO_DEBUG`; may NOT alter routing, prompts, decisions, or emit to the body. Off by default. See GATE CLEARANCE banner. | **Releases WO-017.** |
 | OPEN | FC-2 reconciliation — existing `significance_engine.py` (9-dim) vs Vol V Ch.5 spec | Builder | live file exists; WO-013 spec says "reconcile" but no audit WO exists — causes ambiguity about what WO-013 must change vs keep | create audit sub-step or scope note in WO-013 |
 | OPEN | INT-6b close action — Design Agent must cite mood-material commit | Design | D-J ruling says close on citation; no commit cited yet; row sits in limbo | Design Agent to cite commit; Architect closes row |
 | MISSED | **Game repo coords** — `/Users/Disenelo/eLo-Planet` · git `github.com/disenelo/eLo-Planet` (main) · Unity `6000.3.6f1` URP · New Input System · CharacterController-only (no Rigidbody) | Game | fills GM-1 `repo_path: TBC` + Game-stream header | ✅ TRIAGED → repo set in WO-GM1 + Game-stream header |
@@ -1541,7 +1695,7 @@ _Updated 2026-08-10 (reconcile #26) — **DESIGN MOVEMENT (seat-reported, UNVERI
 | WO-094 | **eLo NOTICES window events + CHOOSES** — "I saw that window close, let me jump across"; Designer emits window_closed/opened/moved UP, Builder brain decides (glance/go/ignore/stay peripheral), pathfinder routes around gaps it can't jump (free-form) | Design + Builder | P2 | **DONE ✅ — Run 24 `38676e8` · 5/5 AT**: `faculties/window_event_faculty.py` — consume_window_events(), decide_window_event() (real state, user_active→peripheral, curiosity gates observe/glance, ADR-Exec-001). `self/route_memory.py` — remember_route() (ack_received=True only), recall_route() (prefers arrived=True), route_confidence() (last-10 window). `ambient/ambient_engine.py` extended: WO-094 branch in WO-086 event polling loop, _handle_window_event() in daemon thread. 5/5 AT. | builder card 11; ADR-Exec-005 boundary (no identity/values/personality); ACK-gated writes only |
 
 | WO-095 | **Learning loop — close the READ side** (P0, David's headline ask): ledger is write-only (376 lessons, all `candidate`, nothing reads them); build `self/lesson_store.py` record/promote/recall, wire recall into the snapshot, reward from VERIFIED ACK outcomes not text | Builder (eLo OS) | **P0** | **DONE ✅ — Run 24 `0a202f0` · 10/10 AT**: `self/lesson_store.py` — record_outcome() (sha1 dedupe, ACK-gated), promote_pass() (§3.4 thresholds: 3 verified eps / 2 sessions / strength≥0.70, sole status writer), recall() (confirmed only, ≤3/≤240-char), stats() (GrowthMetrics 4-slice), migrate_pre_v1() (archives 374 template rows). `memory/significance_engine.py` — outcome kwarg (back-compat), embodiment/efficiency/safety dims from ACK only, reward=0.70*outcome+0.30*sig, verified==False→outcome_terms=0. `runtime/cognitive_snapshot.py` — lessons field, build_snapshot() calls recall(). `runtime/prompt_builder.py` — [LEARNED HEURISTICS] bounded block. `runtime/reflection_faculty.py` — lesson_key sha1, SPOT episode_ref, ledger dedup-on-append. `server.py` — OutcomeRecord at sit_complete ACK + 15s timeout. | card 00; ADR-Exec-005 write-allow list enforced; identity/exec/prompts untouched |
-| WO-CANON-VII | **Build Volume VII Executive Cortex** — close Ruling C (move the `decide()` call site so assembly precedes decision), enforce epistemic tiers, dual-intent queue, brain>body>brain UP-relay | Builder (eLo OS) | P1 | ▶ RELEASED — volume now written | `Volume_VII/` 6 chapters; IRV found Ruling C still open at `server.py:2322` |
+| WO-CANON-VII | **Build Volume VII Executive Cortex** — close Ruling C | Builder (eLo OS) | P1 | DONE ✅ 89a8ec4 6/6 — Ruling C closed. exec_decide() now called inside spine._executive_faculty() AFTER assemble_cognitive_state(). server.py derives exec_decision from plan. | `QUEUE/DONE/` |
 | WO-CANON-XIII | **Build Volume XIII Spatial Faculty** — `faculties/spatial/` owns reachability + routing; `EloDesktopNav` demoted to executor; window-event perception; route memory | Builder + Design | P1 | ▶ RELEASED — Ruling E CANCELLED D-XIII-1; Unity keeps route selection, body adds the REPORT. Not blocked. | `Volume_XIII/` 5 chapters; sequencing: ship additive `route`/`issued_by`, prove parity, THEN remove local selection |
 | WO-CANON-XI | **Build Volume XI Motor Cortex** — formalise the DOWN command / UP ACK contract + movement grammar parity | Design + Builder | P2 | ▶ RELEASED — volume now written | `Volume_XI/` 2 chapters |
 
@@ -1560,6 +1714,11 @@ _Updated 2026-08-10 (reconcile #26) — **DESIGN MOVEMENT (seat-reported, UNVERI
 | WO-CANON-XIV | **Build Volume XIV — Plugin Architecture.** Reconcile the TWO capability registries (`plugins/registry.py` vs `runtime/capabilities/registry.py`) — a plugin declaring `hardware_output` currently bypasses XXIII's gates | Builder (eLo OS) | P2 | ▶ RELEASED — ADR-XIV-001 written 2026-08-13 (XXIII=policy · XIV=mechanism; declaration ≠ grant) | real security gap: `plugins/hardware/robot_body.py` already exists |
 | WO-CANON-XVII | **Build Volume XVII — Reflection Engine.** Growth metrics + improvement cycle (0% implemented); the lesson read-side beyond WO-095 | Builder (eLo OS) | P2 | ▶ RELEASED — volume written | sits on WO-095's `lesson_store` |
 | WO-CANON-XVIII | **Build Volume XVIII — Self-Evolution.** Capability/faculty versioning; ADR-Exec-005 + Ruling F boundary enforced (never self-modify identity) | Builder (eLo OS) | P3 | ▶ RELEASED — volume written | ties Vol XXII genome |
-| WO-CANON-I | **Build Volume I — Philosophy.** Retire "the user" framing; eLo's person is David Charles, named | Builder (eLo OS) | P2 | ⏳ needs David L3 (identity/voice) + FREEZE_V1_LOCK unlock for `prompts/` | `living_presence_spec.txt` + duplicate `_PERSONA` in `runtime/prompt_builder.py` must change together or they drift |
+| WO-CANON-I | **Build Volume I — Identity.** eLo KNOWS the person is David; addresses him in the **2nd person** — never names him back, never 3rd person in direct address | Builder (eLo OS) | P1 | **DISPATCHED — NO GATE** 2026-08-13 (`builder/QUEUE/01_…`). **Ruling G** (David, 08-13). Freeze unlock **already granted by David 2026-07-31 (D-K)** — was never written to `FREEZE_V1_LOCK.md`, now backfilled as UL-001/UL-002. Build + commit, revert-safe branch, David reviews the result at his end-of-day live test. | Do NOT replace "the user"→"you" ("you"=eLo in-prompt). Fix `living_presence_spec.txt` + `_PERSONA` (`prompt_builder.py:25`) in ONE commit + divergence test. David live-voice-tests after. |
 | WO-CANON-II | **Build Volume II — Cognitive Principles.** Epistemic tiers as reasoning discipline; enforcement lives in Vol VII Ch.3 | Builder (eLo OS) | P3 | ▶ RELEASED — volume written | — |
 | RD-5 | **Robot actuation architecture** — per-joint POSABLE vs ACTUATED classification (a sphere joint canNOT be servo-driven: 3 DOF vs 1 → gimbal under a cosmetic shell); serial-bus smart servos with feedback (PWM servos structurally CANNOT satisfy Ruling E's report duty); Pi integration + power budget incl. worst-case stall; shoulder pistons vs linear actuators vs RD-4 inflated TPU **with noise figures** (calm presence = silence at rest); **HANDS: 3-finger anthropomorphic (David decided) — research tendon-underactuated vs per-joint, DOF budget, grip force + pinch points for LG-2** | R&D (Gemini) | P2 | ▶ DISPATCHED 2026-08-13 — **RESEARCH ONLY** | **RESERVED · keeps LG-2.** No purchase, no assembly, NO POWER under this WO. **HARD GATE: force-limiter/soft-stop does not exist in `avatar/safety_controller.py` — must be DONE + LG-2 reviewed before anything is powered near David.** Source verbatim `_intake/SOURCE_2026-08-13_robot_joints_servos_pistons.md` |
+
+| WO-099a | **🔴 P0 — RESTORE BRAIN CONTROL OF THE HEAD** (David: *"fix what they broke and re-trigger it back through the brain"*). HeadAim works (`5180b0f`) but cursor-follow was made primary, so the brain can no longer drive the head. Replace the binary `HeadCueActive` with a WEIGHTED gaze intent; **hard guard: brain silent/stale → fall back to cursor reflex, never freeze** | Design (UI/Avatar) | **P0** | ▶ DISPATCHED — card `03` | a weight can't freeze the head the way a boolean did — structural fix, not a patch |
+| WO-099b | **Brain must actually EMIT the gaze cue** — ⚠ **[VERIFIED in code]** Unity has ALWAYS been ready: `EloOSAvatarReceiver.cs:419-427` reads a `gaze` object (`yaw`/`pitch`/`active`, degrees) and `HeadLook.cs:405-423` consumes it. **But grep of the entire Python side finds NOTHING emitting it.** Unity has been listening to a channel nobody talks on — that's why the cue sat stale/stuck | **Builder (eLo OS)** | **P0** | ▶ DISPATCHED — card `04b` | **This was never a Designer bug. The brain simply never spoke.** |
+| WO-099c | **Gaze awareness UP** — body reports what he's looking at: continuous `gaze` STATE in `elo_spatial.json` (viewport point + window under gaze + `issued_by: brain\|reflex`) and a DEBOUNCED `gaze_target_changed` EVENT (~250–400ms dwell) on `unity_events.json`. Brain consumes → attention + perception | Design + Builder | P1 | ▶ QUEUED — design `04`, builder `04b` | Architect channel ruling: continuous=state, noticing=event. Debounce is a CHARACTER requirement — without it a cursor sweep makes him twitchy |
+| WO-090 | **HeadAim / ChestAim** — cursor head-aim, decoupled L/R+U/D, chest trails, tracks seated + after getup | Design (UI/Avatar) | P2 | ✅ **DONE — `5180b0f`, David-confirmed live** | root cause found: `HeadCueActive` stuck ON, head obeying a ~0 brain cue instead of the mouse |
