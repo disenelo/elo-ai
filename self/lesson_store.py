@@ -22,9 +22,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import re
 import time
+
+_log = logging.getLogger(__name__)
 
 _ROOT        = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _LEDGER      = os.path.join(_ROOT, "self", "lessons_ledger.jsonl")
@@ -181,7 +184,52 @@ def record_outcome(
 
     if updated_row:
         _save_ledger(rows, ledger_path)
+    else:
+        _log.warning(
+            "record_outcome: lkey not found in ledger — evidence discarded (lkey=%s)", lkey
+        )
     return updated_row
+
+
+# ── ensure_lesson ─────────────────────────────────────────────────────────────
+
+def ensure_lesson(
+    scope: str,
+    statement: str,
+    cause: str = "",
+    ledger_path: str | None = None,
+) -> str:
+    """
+    Return the lesson_key for (scope, statement, cause), creating a minimal candidate
+    row if one is not yet in the ledger.  Used by out-of-band outcome recorders (e.g.
+    the sit-ACK hook) that must guarantee a row exists before calling record_outcome().
+    """
+    lkey = lesson_key(scope, statement, cause)
+    rows = _load_ledger(ledger_path)
+    if any(r.get("lesson_key") == lkey for r in rows):
+        return lkey
+    now = _now_iso()
+    row: dict = {
+        "id":          f"L-{int(time.time())}",
+        "lesson_key":  lkey,
+        "statement":   statement,
+        "evidence":    [],
+        "scope":       scope,
+        "cause":       cause or "met",
+        "strength":    0.3,
+        "delta":       cause or "met",
+        "status":      "candidate",
+        "first_seen":  now,
+        "last_seen":   now,
+        "promoted_at": None,
+        "retired_at":  None,
+        "reason":      None,
+        "proposes":    None,
+        "ts":          now,
+    }
+    _append_ledger(row, ledger_path)
+    _log.info("ensure_lesson: created candidate row (lkey=%s scope=%s)", lkey, scope)
+    return lkey
 
 
 # ── promote_pass ───────────────────────────────────────────────────────────────
@@ -269,7 +317,7 @@ def promote_pass(ledger_path: str | None = None, dry_run: bool = False) -> dict:
 
     if not dry_run:
         _save_ledger(rows, ledger_path)
-        _append_metrics(transitions)
+        _append_metrics(transitions, ledger_path)
 
     return transitions
 
@@ -493,9 +541,15 @@ def _compute_identity_stability() -> float:
         return 0.0
 
 
-def _append_metrics(transitions: dict) -> None:
-    os.makedirs(os.path.dirname(_METRICS), exist_ok=True)
-    with open(_METRICS, "a", encoding="utf-8") as f:
+def _append_metrics(transitions: dict, ledger_path: str | None = None) -> None:
+    # WO-096B: when a custom ledger_path is given (e.g. test runs) write metrics
+    # beside it, not into the real journal, so tests never pollute production data.
+    if ledger_path:
+        _m = os.path.join(os.path.dirname(ledger_path), "journals", "growth_metrics.jsonl")
+    else:
+        _m = _METRICS
+    os.makedirs(os.path.dirname(_m), exist_ok=True)
+    with open(_m, "a", encoding="utf-8") as f:
         f.write(json.dumps({
             "ts": time.time(),
             "promoted": len(transitions.get("promoted", [])),

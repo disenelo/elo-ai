@@ -1,6 +1,19 @@
 {
   "ts": 1786617600.0,
-  "builder_run_summary": "2026-08-13 \u2014 RUN 28. WO-105 silent failures ea3e21e 10/10. 22 sites upgraded (9 spine.run + 2 discovered + 5 server.py + 6 shadow_capture + 1 live_world_state). Startup check, /health spine_degraded, AT-LINT. Suite 84/84 green. WO-CANON-VII and WO-105 cards moved to DONE/.",
+  "builder_run_summary": "2026-08-13 \u2014 RUN 29. WO-096B learning loop 6/6. All 4 defects fixed: (1) promote_pass wired every 10 turns via _maybe_run_promote_pass daemon thread; (2) preference scope + proposes added to reflection_faculty so PersonalityDelta gate can fire; (3) ensure_lesson() added \u2014 ACK hook now guarantees row exists before record_outcome; record_outcome logs WARNING on unknown key; (4) _append_metrics honours ledger_path so tests never pollute real journal. migrate_pre_v1 wired at startup. Card moved to DONE/. Note: growth_metrics.jsonl has 69 polluted test rows \u2014 manual truncate required: truncate -s 0 self/journals/growth_metrics.jsonl. Confirmed lessons on a real run: 0 confirmed today (ledger needs 3+ ACK events across 2+ sessions to promote first row \u2014 mechanism now live). WO-096B closed.",
+  "wo_096b": {
+    "wo": "WO-096B",
+    "status": "done",
+    "test_result": "6/6",
+    "defect_1": "promote_pass wired: _maybe_run_promote_pass() called after every _process_turn + listen turn; fires promote_pass in daemon thread every 10 turns (_PROMOTE_INTERVAL). Never blocks response path.",
+    "defect_2": "preference scope added to reflection_faculty. New branch: action in (prefer/choose/enjoy/like) \u2192 scope=preference, proposes={trait, direction}. PersonalityDelta gate now reachable.",
+    "defect_3": "ensure_lesson(scope, statement, cause) added to lesson_store \u2014 creates minimal candidate row if absent. ACK hook (success + timeout paths) now calls ensure_lesson before record_outcome. record_outcome emits WARNING when key not found.",
+    "defect_4": "_append_metrics now accepts ledger_path; derives test-local metrics path beside the temp ledger. Real growth_metrics.jsonl untouched by test runs. AT-LIVE-5 confirms this.",
+    "also_in_scope": "migrate_pre_v1() wired in _init_session() \u2014 runs idempotently at every server boot. Will archive 377 pre-v1 rows on first production restart.",
+    "confirmed_lessons_today": 0,
+    "confirmed_lessons_note": "Mechanism is live. First confirmed lesson requires 3 verified ACK episodes across 2 distinct sessions. promote_pass runs every 10 turns.",
+    "manual_action_required": "Run: truncate -s 0 self/journals/growth_metrics.jsonl (69 rows are test artifacts, not production data)"
+  },
   "capabilities_audit_2026-08-13": {
     "situated_self": "REAL \u2014 the_moment.py reaches system prompt every LLM turn via _self_prompt_block + _tm_situated",
     "vault_recall": "REAL \u2014 _vault_ctx injected every turn via build_prompt(vault_context=...)",

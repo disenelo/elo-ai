@@ -96,6 +96,8 @@ _memory_pack     = {}
 _vault_ctx       = ""
 _project_ctx     = ""   # active project names → injected into system prompt each turn
 _spine_degraded: list = []   # WO-105: last-turn spine domain failures; surfaced in /health
+_PROMOTE_INTERVAL    = 10   # WO-096B: run promote_pass every N turns (background thread)
+_promote_turn_counter = 0   # WO-096B
 _last_inputs     = []
 _last_avatar_cmd = None
 _last_pp         = None   # last known presence_plan — survives tool-call turns
@@ -1489,6 +1491,15 @@ def _init_session():
     except Exception:
         _project_ctx = ""
 
+    # WO-096B: migrate pre-v1 ledger rows on every startup (idempotent)
+    try:
+        from self.lesson_store import migrate_pre_v1 as _migrate_pre_v1
+        _migrated = _migrate_pre_v1()
+        if _migrated:
+            print(f"[eLo server] ledger: migrated {_migrated} pre-v1 rows to archive")
+    except Exception as _mig_e:
+        _logging.warning("migrate_pre_v1 FAILED: %s", _mig_e)
+
     print(f"[eLo server] session {_state.get('session_count', 1)} started")
 
     try:
@@ -2651,10 +2662,15 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
                 _self_save(_elo_self)
-                # WO-095: emit verified OutcomeRecord for learning loop
+                # WO-095/096B: emit verified OutcomeRecord for learning loop
+                # ensure_lesson guarantees the row exists before record_outcome is called
                 try:
-                    from self.lesson_store import record_outcome as _ls_sit_rec, lesson_key as _ls_key
-                    _sit_lkey = _ls_key("behaviour", "Sitting with David confirmed by body ACK.", "met")
+                    from self.lesson_store import (
+                        record_outcome as _ls_sit_rec,
+                        ensure_lesson  as _ls_ensure,
+                    )
+                    _SIT_STMT = "Sitting with David confirmed by body ACK."
+                    _sit_lkey = _ls_ensure("behaviour", _SIT_STMT, "met")
                     _ls_sit_rec(
                         lkey=_sit_lkey, episode_ref="", verified=True,
                         contradicting=False, session_id="sit",
@@ -2686,10 +2702,15 @@ def _process_turn(raw: str) -> dict:
                     "Never claim you are sitting. Body truth only."
                 )
                 g_ctx = f"{g_ctx}\n{_timeout_note}" if g_ctx else _timeout_note
-                # WO-095: timeout is negative evidence — weakens the sit-success lesson
+                # WO-095/096B: timeout is negative evidence — weakens the sit-success lesson
+                # ensure_lesson guarantees the row exists before record_outcome is called
                 try:
-                    from self.lesson_store import record_outcome as _ls_sto_rec, lesson_key as _ls_sto_key
-                    _sto_lkey = _ls_sto_key("behaviour", "Sitting with David confirmed by body ACK.", "met")
+                    from self.lesson_store import (
+                        record_outcome as _ls_sto_rec,
+                        ensure_lesson  as _ls_sto_ensure,
+                    )
+                    _SIT_STMT_T = "Sitting with David confirmed by body ACK."
+                    _sto_lkey = _ls_sto_ensure("behaviour", _SIT_STMT_T, "met")
                     _ls_sto_rec(
                         lkey=_sto_lkey, episode_ref="", verified=True,
                         contradicting=True, session_id="sit_timeout",
@@ -4001,6 +4022,7 @@ class _Handler(BaseHTTPRequestHandler):
             try:
                 from voice_engine import listen_and_respond as _listen
                 result = _listen(_process_turn)
+                _maybe_run_promote_pass()   # WO-096B
                 self._send_json(200, result)
             except Exception as e:
                 self._send_json(500, {"error": str(e)})
@@ -4027,6 +4049,7 @@ class _Handler(BaseHTTPRequestHandler):
             return
 
         result = _process_turn(text)
+        _maybe_run_promote_pass()   # WO-096B
         self._send_json(200, result)
 
 
@@ -4089,6 +4112,32 @@ def _watch_parent(parent_pid: int, server: ThreadingHTTPServer) -> None:
             return
         except PermissionError:
             pass   # process exists but we can't signal it — still alive
+
+
+def _run_promote_pass_bg() -> None:
+    """WO-096B: background promote_pass — never blocks a response turn."""
+    try:
+        from self.lesson_store import promote_pass as _pp
+        _result = _pp()
+        _n_promoted = len(_result.get("promoted", []))
+        _n_demoted  = len(_result.get("demoted", []))
+        _n_retired  = len(_result.get("retired", []))
+        if _n_promoted or _n_demoted or _n_retired:
+            _logging.info(
+                "promote_pass: promoted=%d demoted=%d retired=%d",
+                _n_promoted, _n_demoted, _n_retired,
+            )
+    except Exception as _e:
+        _logging.warning("promote_pass background run FAILED: %s", _e)
+
+
+def _maybe_run_promote_pass() -> None:
+    """WO-096B: fire promote_pass in a daemon thread every _PROMOTE_INTERVAL turns."""
+    global _promote_turn_counter
+    _promote_turn_counter += 1
+    if _promote_turn_counter % _PROMOTE_INTERVAL != 0:
+        return
+    threading.Thread(target=_run_promote_pass_bg, daemon=True).start()
 
 
 def _startup_faculty_check() -> None:

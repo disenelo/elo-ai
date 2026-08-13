@@ -85,6 +85,8 @@ def _form_lesson(
         scope = "capability"
     elif action.lower() in ("connect", "remember"):
         scope = "relationship"
+    elif action.lower() in ("prefer", "choose", "enjoy", "like"):
+        scope = "preference"
 
     statement = _derive_statement(session_summary, action, delta, scope)
     if not statement:
@@ -94,6 +96,12 @@ def _form_lesson(
     cause = delta
     norm_stmt = re.sub(r"\s+", " ", statement.strip().lower())
     lkey = hashlib.sha1(f"{scope}|{norm_stmt}|{cause}".encode()).hexdigest()[:16]
+
+    # WO-096B: preference lessons carry a proposes dict so the PersonalityDelta gate
+    # (lesson_store.py:264 scope=="preference" AND proposes) can actually fire.
+    proposes: dict | None = None
+    if scope == "preference":
+        proposes = {"trait": action.lower(), "direction": 1 if delta == "met" else -1}
 
     return {
         "id":         f"L-{_ts_compact()}",
@@ -110,7 +118,7 @@ def _form_lesson(
         "promoted_at": None,
         "retired_at":  None,
         "reason":      None,
-        "proposes":    None,
+        "proposes":    proposes,
         "ts":          _now_iso(),
     }
 
