@@ -137,6 +137,19 @@ def compress_to_obsidian(
             print(f"[truth-sync] integrate_session vault error: {result['error']}")
         if spot:
             print(f"[truth-sync] integrated turn {_turn_count} → {spot}")
+
+        # WO-115: reflection reaches the self-model — lesson written to EloSelfState
+        if result.get("lesson"):
+            try:
+                from self.elo_self_model import (
+                    load as _sm_load, save as _sm_save, apply_lesson as _sm_apply,
+                )
+                _sm = _sm_load()
+                _sm = _sm_apply(_sm, result["lesson"])
+                _sm_save(_sm)
+            except Exception:
+                pass
+
         return spot
     except Exception as e:
         print(f"[truth-sync] compress_to_obsidian failed: {e}")

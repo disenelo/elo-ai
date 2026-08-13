@@ -118,6 +118,14 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
         pass
     _lessons_tier = tier_fact(_lessons, source="lesson") if _lessons else "unknown"
 
+    # WO-115: Autobiography — chronological record of ACK-verified events
+    _autobiography: list[dict] = []
+    try:
+        from self.emergent_cognition import recent_autobiography as _ra
+        _autobiography = _ra(5)
+    except Exception:
+        pass
+
     moment = {
         "ts":               now,
         "embodiment":       state.embodiment,
@@ -149,6 +157,9 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
         "recent_behaviour_tier": _bhv_tier,
         "lessons":              _lessons,
         "lessons_tier":         _lessons_tier,
+        # WO-115: autobiography — chronological verified event log (last 5)
+        "autobiography":        _autobiography,
+        "autobiography_tier":   "observed" if _autobiography else "unknown",
     }
     return moment
 

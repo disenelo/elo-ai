@@ -176,6 +176,8 @@ class EloSelfState:
         "identity constant across backend and session",
     ])
     who_i_am_with: str = "David"
+    # WO-115: last lesson formed from a real reflection cycle (integrate_session output)
+    last_reflection_lesson: str = ""
 
 
 # ── Persistence ───────────────────────────────────────────────────────────────
@@ -219,6 +221,7 @@ def load() -> EloSelfState:
                 "never trapped in abstraction", "identity constant across backend and session",
             ])),
             who_i_am_with=str(data.get("who_i_am_with", "David")),
+            last_reflection_lesson=str(data.get("last_reflection_lesson", "")),
         )
     except (FileNotFoundError, json.JSONDecodeError, Exception):
         return EloSelfState()
@@ -565,4 +568,15 @@ def record_behaviour(state: "EloSelfState", verb: str) -> "EloSelfState":
     v = (verb or "").lower().strip()
     if v:
         state.recent_behavior[v] = state.recent_behavior.get(v, 0) + 1
+    return state
+
+
+def apply_lesson(state: "EloSelfState", lesson: dict) -> "EloSelfState":
+    """
+    WO-115: Write a formed reflection lesson back into the self-model.
+    Updates last_reflection_lesson. Idempotent — same statement is a no-op.
+    """
+    stmt = (lesson or {}).get("statement", "")
+    if stmt and stmt != state.last_reflection_lesson:
+        state.last_reflection_lesson = stmt
     return state

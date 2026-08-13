@@ -2669,6 +2669,12 @@ def _process_turn(raw: str) -> dict:
                     _elo_self = _rb_sit(_elo_self, "sit")
                 except Exception:
                     pass
+                # WO-115: autobiography — verified events only (body ACK = confirmed)
+                try:
+                    from self.emergent_cognition import append_autobiography as _ab_sit
+                    _ab_sit("sat — body ACK confirmed", kind="action")
+                except Exception:
+                    pass
                 _self_save(_elo_self)
                 # WO-095/096B: emit verified OutcomeRecord for learning loop
                 # ensure_lesson guarantees the row exists before record_outcome is called
@@ -2787,6 +2793,13 @@ def _process_turn(raw: str) -> dict:
                     _elo_self = _rb_mv(_elo_self, "move")
                 except Exception:
                     pass
+                # WO-115: autobiography — verified events only (body ACK = confirmed)
+                try:
+                    from self.emergent_cognition import append_autobiography as _ab_mv
+                    _mv_desc = _PENDING_MOVE.get("sub_type", "") or _PENDING_MOVE.get("direction", "unknown")
+                    _ab_mv(f"moved ({_mv_desc}) — body ACK confirmed", kind="action")
+                except Exception:
+                    pass
                 try:
                     with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bsmf2:
                         json.dump({}, _bsmf2)
@@ -2863,6 +2876,12 @@ def _process_turn(raw: str) -> dict:
                 try:
                     from self.elo_self_model import record_behaviour as _rb_ex
                     _elo_self = _rb_ex(_elo_self, "exit")
+                except Exception:
+                    pass
+                # WO-115: autobiography — verified events only (body ACK = confirmed)
+                try:
+                    from self.emergent_cognition import append_autobiography as _ab_ex
+                    _ab_ex("exited surface — body ACK confirmed", kind="action")
                 except Exception:
                     pass
                 _self_save(_elo_self)
