@@ -137,3 +137,27 @@ def route_confidence(goal_surface: str, log_path: str | None = None) -> float:
     window = records[-_CONFIDENCE_WINDOW:]
     successes = sum(1 for r in window if r.get("arrived"))
     return round(successes / len(window), 3)
+
+
+def recent_routes(n: int = 5, log_path: str | None = None) -> list[dict]:
+    """
+    WO-118: Return the last n route records (any goal), newest last.
+    Makes route history readable by the Executive (Row 14 ROUTE proof).
+    """
+    path = log_path or _ROUTE_LOG
+    records: list[dict] = []
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    records.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+    except FileNotFoundError:
+        return []
+    except Exception:
+        return []
+    return records[-n:]

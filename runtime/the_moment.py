@@ -126,6 +126,14 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
     except Exception:
         pass
 
+    # WO-118 Row 14 ROUTE: recent route history — readable by Executive
+    _route_history: list[dict] = []
+    try:
+        from self.route_memory import recent_routes as _rr
+        _route_history = _rr(5)
+    except Exception:
+        pass
+
     # WO-108: Last directed-look observation record
     _last_obs: dict = {}
     try:
@@ -192,6 +200,8 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
         # WO-115: autobiography — chronological verified event log (last 5)
         "autobiography":        _autobiography,
         "autobiography_tier":   "observed" if _autobiography else "unknown",
+        # WO-118 Row 14 ROUTE: last 5 route records — Executive can consult history
+        "route_history":        _route_history,
         # WO-113: gap assessment — one GapResult per jump-class action
         "gap_assessment":       _gap_results,
         # WO-108: last directed-look observation record (for Executive verified-speech gate)
