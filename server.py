@@ -3913,6 +3913,8 @@ def _process_turn(raw: str) -> dict:
             # WO-099b fix4: record the executed action in the behavioural store
             from self.elo_self_model import record_behaviour as _rb
             _elo_self = _rb(_elo_self, _action)
+            # Row 24 SELF-OBSERVE: persist recent_behavior so it survives restart
+            _self_save(_elo_self)
         except Exception:
             pass
 
