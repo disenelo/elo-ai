@@ -126,6 +126,15 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
     except Exception:
         pass
 
+    # WO-108: Last directed-look observation record
+    _last_obs: dict = {}
+    try:
+        from runtime.directed_look import last_observation as _lo
+        _obs_list = _lo(1)
+        _last_obs = _obs_list[0].to_dict() if _obs_list else {}
+    except Exception:
+        pass
+
     # WO-113: Gap assessment — 7-state vocabulary with real numbers
     _gap_results: list[dict] = []
     try:
@@ -185,6 +194,8 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
         "autobiography_tier":   "observed" if _autobiography else "unknown",
         # WO-113: gap assessment — one GapResult per jump-class action
         "gap_assessment":       _gap_results,
+        # WO-108: last directed-look observation record (for Executive verified-speech gate)
+        "last_observation":     _last_obs,
     }
     return moment
 
