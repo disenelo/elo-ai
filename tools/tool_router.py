@@ -536,19 +536,16 @@ def _agent_weather(query: str) -> str:
 
     # ── wttr.in (fallback) ────────────────────────────────────────────────────
     # city is always set at this point (explicit > session > env > London default)
-    import httpx
+    import urllib.request as _urllib_req, json as _json_mod
     target = city.replace(" ", "+")
     using_auto = False
 
-    resp = httpx.get(
-        f"https://wttr.in/{target}",
-        params={"format": "j1"},
-        headers={"Accept": "application/json"},
-        timeout=8.0,
-        follow_redirects=True,
+    _wttr_req = _urllib_req.Request(
+        f"https://wttr.in/{target}?format=j1",
+        headers={"Accept": "application/json", "User-Agent": "eLo-OS/1.0"},
     )
-    resp.raise_for_status()
-    data = resp.json()
+    with _urllib_req.urlopen(_wttr_req, timeout=8) as _wr:
+        data = _json_mod.loads(_wr.read().decode())
     cur    = data["current_condition"][0]
     desc   = cur["weatherDesc"][0]["value"]
     temp_c = cur["temp_C"]
@@ -565,7 +562,7 @@ def _agent_weather(query: str) -> str:
 
 
 def _agent_wikipedia(query: str) -> str:
-    import httpx
+    import urllib.request as _urllib_req, urllib.parse as _urllib_parse, json as _json_mod
     topic = re.sub(
         r"^(?:what(?:'s| is)\s+(?:a\s+|an\s+|the\s+)?|who(?:'s| is)\s+|"
         r"tell me about\s+|explain\s+|define\s+|wiki\s+|search\s+(?:for\s+)?)",
@@ -573,15 +570,13 @@ def _agent_wikipedia(query: str) -> str:
     ).strip().rstrip("?")
     if not topic:
         raise ValueError("no topic extracted")
-    resp = httpx.get(
-        "https://en.wikipedia.org/api/rest_v1/page/summary/" + httpx.URL(topic).path,
-        timeout=8.0,
-        follow_redirects=True,
+    _wiki_req = _urllib_req.Request(
+        "https://en.wikipedia.org/api/rest_v1/page/summary/"
+        + _urllib_parse.quote(topic) + "?redirect=true",
         headers={"User-Agent": "eLo-OS/1.0"},
-        params={"redirect": "true"},
     )
-    resp.raise_for_status()
-    data = resp.json()
+    with _urllib_req.urlopen(_wiki_req, timeout=8) as _wr:
+        data = _json_mod.loads(_wr.read().decode())
     if data.get("type") == "disambiguation":
         raise ValueError("disambiguation page")
     extract = data.get("extract", "")
@@ -593,16 +588,14 @@ def _agent_wikipedia(query: str) -> str:
 
 def _agent_duckduckgo(query: str) -> str:
     """DuckDuckGo Instant Answers — free, no key. Best for entity lookups and quick facts."""
-    import httpx
-    resp = httpx.get(
-        "https://api.duckduckgo.com/",
-        params={"q": query, "format": "json", "no_html": "1", "skip_disambig": "1"},
-        timeout=8.0,
-        follow_redirects=True,
+    import urllib.request as _urllib_req, urllib.parse as _urllib_parse, json as _json_mod
+    _ddg_params = _urllib_parse.urlencode({"q": query, "format": "json", "no_html": "1", "skip_disambig": "1"})
+    _ddg_req = _urllib_req.Request(
+        f"https://api.duckduckgo.com/?{_ddg_params}",
         headers={"User-Agent": "eLo-OS/1.0"},
     )
-    resp.raise_for_status()
-    data = resp.json()
+    with _urllib_req.urlopen(_ddg_req, timeout=8) as _wr:
+        data = _json_mod.loads(_wr.read().decode())
     abstract = data.get("AbstractText", "").strip()
     if abstract:
         heading = data.get("Heading", "")
@@ -626,7 +619,7 @@ def _agent_search(query: str) -> str:
 
 def _agent_translate(query: str) -> str:
     """Extract text + target language, translate via Gemini then OpenAI."""
-    import httpx, os as _os
+    import urllib.request as _urllib_req, urllib.parse as _urllib_parse, json as _json_mod, os as _os
 
     # Pattern 1: "translate X to Spanish"
     m = re.search(r'translate\s+["\']?(.+?)["\']?\s+(?:to|into)\s+([\w\s]+?)(?:\?|$)', query, re.IGNORECASE)
@@ -653,30 +646,43 @@ def _agent_translate(query: str) -> str:
             "contents": [{"parts": [{"text": prompt_text}]}],
             "generationConfig": {"maxOutputTokens": 150, "temperature": 0.1},
         }
-        resp = httpx.post(url, json=payload, params={"key": api_key}, timeout=10.0)
-        if resp.status_code == 200:
-            translated = resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip().strip('"')
-            return f'"{text}" in {lang}: {translated}'
+        try:
+            _gem_full_url = f"{url}?{_urllib_parse.urlencode({'key': api_key})}"
+            _gem_req = _urllib_req.Request(
+                _gem_full_url,
+                data=_json_mod.dumps(payload).encode(),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with _urllib_req.urlopen(_gem_req, timeout=10) as _wr:
+                translated = _json_mod.loads(_wr.read().decode())["candidates"][0]["content"]["parts"][0]["text"].strip().strip('"')
+                return f'"{text}" in {lang}: {translated}'
+        except Exception:
+            pass
 
     # Fall back to OpenAI
     openai_key = _os.environ.get("OPENAI_API_KEY", "")
     if openai_key:
-        resp = httpx.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
-            json={
-                "model": "gpt-4o-mini",
-                "messages": [
-                    {"role": "system", "content": "You are a translator. Output ONLY the translation, no explanation."},
-                    {"role": "user",   "content": f'Translate "{text}" to {lang}'},
-                ],
-                "max_tokens": 150, "temperature": 0.1,
-            },
-            timeout=10.0,
-        )
-        if resp.status_code == 200:
-            translated = resp.json()["choices"][0]["message"]["content"].strip().strip('"')
-            return f'"{text}" in {lang}: {translated}'
+        _oai_body = _json_mod.dumps({
+            "model": "gpt-4o-mini",
+            "messages": [
+                {"role": "system", "content": "You are a translator. Output ONLY the translation, no explanation."},
+                {"role": "user",   "content": f'Translate "{text}" to {lang}'},
+            ],
+            "max_tokens": 150, "temperature": 0.1,
+        }).encode()
+        try:
+            _oai_req = _urllib_req.Request(
+                "https://api.openai.com/v1/chat/completions",
+                data=_oai_body,
+                headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
+                method="POST",
+            )
+            with _urllib_req.urlopen(_oai_req, timeout=10) as _wr:
+                translated = _json_mod.loads(_wr.read().decode())["choices"][0]["message"]["content"].strip().strip('"')
+                return f'"{text}" in {lang}: {translated}'
+        except Exception:
+            pass
 
     raise ValueError("no translation backend available")
 
@@ -690,7 +696,7 @@ _NEWS_NEGATION = re.compile(
 
 def _agent_news(query: str) -> str:
     """Pull headlines from RSS — BBC News, BBC Science, or Hacker News. No key needed."""
-    import httpx
+    import urllib.request as _urllib_req
 
     # Don't fire if the user is rejecting/negating news
     if _NEWS_NEGATION.search(query):
@@ -704,9 +710,9 @@ def _agent_news(query: str) -> str:
     else:
         url, source = "https://feeds.bbci.co.uk/news/rss.xml", "BBC News"
 
-    resp = httpx.get(url, timeout=8.0, follow_redirects=True, headers={"User-Agent": "eLo-OS/1.0"})
-    resp.raise_for_status()
-    xml = resp.text
+    _news_req = _urllib_req.Request(url, headers={"User-Agent": "eLo-OS/1.0"})
+    with _urllib_req.urlopen(_news_req, timeout=8) as _wr:
+        xml = _wr.read().decode(errors="replace")
 
     # Parse titles — handles CDATA and plain text
     raw_titles = re.findall(r'<title>(?:<!\[CDATA\[)?\s*(.*?)\s*(?:\]\]>)?</title>', xml, re.DOTALL)
