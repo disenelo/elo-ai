@@ -108,14 +108,28 @@ def top_habits(state: "EloSelfState", n: int = 3) -> list[tuple[str, int]]:
 
 # ── Autobiography ─────────────────────────────────────────────────────────────
 
-def append_autobiography(event: str, kind: str = "action") -> None:
+def append_autobiography(
+    event: str,
+    kind: str = "action",
+    *,
+    verified: bool = False,
+    source: str = "unknown",
+) -> None:
     """
     Append a single lived event to self/journals/autobiography.jsonl.
     Append-only — never overwrites existing entries.
+    verified: True only for entries that came from a confirmed body ACK.
+    source: where the event was confirmed from (e.g. "body_ack").
     """
     if not event:
         return
-    entry = {"ts": time.time(), "kind": kind, "event": event}
+    entry = {
+        "ts": time.time(),
+        "kind": kind,
+        "event": event,
+        "verified": verified,
+        "source": source,
+    }
     try:
         with open(_AUTOB, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")
