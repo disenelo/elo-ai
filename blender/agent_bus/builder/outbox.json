@@ -1,5 +1,28 @@
 {
   "ts": 1786664500.0,
+  "c2_a1_name_routing_2026-08-14": {
+    "session": "C2 + A1 + triggers — name routing fully closed",
+    "hash": "f5ec51f",
+    "c2": {
+      "file": "runtime/spine/spine.py:90",
+      "change": "Stopword-filtered content-word scoring replaces substring match. All-stopword verbs (e.g. 'what is') require near-exact match only.",
+      "proof": "'what is your name?' produces 0 capability candidates. 'what is 2 plus 2?' routes to calculator via 'plus'. 'translate hello to spanish' routes to translate. All verified against live registry."
+    },
+    "a1": {
+      "file": "runtime/capabilities/capability.py:46 + spine.py:240",
+      "change": "health_state default UNKNOWN->ONLINE (all capabilities are online; no producer exists). Gate updated to fail-closed: only ONLINE passes. is_available() drops UNKNOWN from pass list."
+    },
+    "identity_triggers": {
+      "file": "server.py:1333",
+      "added": ["your name", "what's your name", "what are you called", "tell me your name", "what do i call you"],
+      "pool": "_identity_response() renders from _elo_self.identity_name — not hardcoded strings. spine.py calls _srv._identity_response() instead of random.choice(_srv._IDENTITY_POOL)."
+    },
+    "num_ctx": {
+      "file": "runtime/backend_router.py:309",
+      "change": "num_ctx:8192 added to _ollama_call options. Ollama default is 2048 — with Groq down, all turns on Ollama; prompt is ~4.5k tokens plus 8 appended blocks, so identity block was likely truncated."
+    },
+    "acceptance_test": "Ask 'What is your name?' -> identity trigger fires -> _identity_response() -> 'eLo' (from state). Ask 5x, get 'eLo' 5x. Change identity_name field -> answer changes."
+  },
   "p0_x_y_identity_world_2026-08-14": {
     "session": "P0-X (name from state) + P0-Y (world graph gate) — both closed",
     "hashes": {
