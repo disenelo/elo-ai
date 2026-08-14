@@ -501,6 +501,70 @@ except py_compile.PyCompileError as e:
     fail("AT-7", e)
 
 
+# ── AT-8: whole-repo durable-write scan (0025 P0-1) ──────────────────────────
+# Vol VIII §4.113-117: no module outside the whitelist may open its own
+# permanent-memory store. Scan every .py file for direct writes to
+# interactions.json or calls to store_interaction (memory_engine API).
+# This test EXPECTS to fail until memory_engine is retired/absorbed.
+try:
+    import glob
+
+    # Files allowed to write permanent memory store.
+    # vault_layer is the sole canonical bytes writer; consolidation goes through it.
+    _ALLOWED_WRITERS = {
+        os.path.normpath("memory/vault_layer.py"),
+        os.path.normpath("memory/consolidation_faculty.py"),
+        os.path.normpath("core/memory_engine.py"),   # the known violator — listed so we track it
+    }
+
+    # Signatures that indicate a durable write to the interactions store specifically:
+    # 1) calling store_interaction — the memory_engine public write API (bypasses vault_layer)
+    # 2) defining or calling _save_store — the internal write helper in memory_engine
+    # We require the signature on a live (non-comment, non-docstring) code line.
+    _VIOLATION_SIGNATURES = (
+        'store_interaction(',   # calling the memory_engine write API
+        '_save_store(',         # calling or defining the internal write helper
+    )
+
+    def _has_live_violation(src):
+        for line in src.splitlines():
+            stripped = line.lstrip()
+            if stripped.startswith("#") or stripped.startswith('"""') or stripped.startswith("'''"):
+                continue
+            if any(sig in line for sig in _VIOLATION_SIGNATURES):
+                return True
+        return False
+
+    violations = []
+    for pyfile in sorted(glob.glob("**/*.py", recursive=True)):
+        norm = os.path.normpath(pyfile)
+        if "test_" in norm or "__pycache__" in norm or norm in _ALLOWED_WRITERS:
+            continue
+        try:
+            with open(pyfile, encoding="utf-8", errors="replace") as _fh:
+                src = _fh.read()
+        except OSError:
+            continue
+        if _has_live_violation(src):
+            violations.append(norm)
+
+    if violations:
+        # Report as a named failure — this is a known L3 decision item.
+        # The test MUST fail so the violation stays visible. Once P0-1 is resolved
+        # (RETIRE/ABSORB/SPLIT per card 0025) this list will be empty and the test will pass.
+        fail(
+            "AT-8 — whole-repo durable-write scan",
+            f"Vol VIII §4 Runtime Invariant 7 violated — {len(violations)} unauthorised "
+            f"permanent-store writer(s) found:\n    "
+            + "\n    ".join(violations)
+            + "\n    Awaiting David L3 decision: RETIRE / ABSORB / SPLIT (card 0025)"
+        )
+    else:
+        ok("AT-8: whole-repo durable-write scan — no unauthorised permanent-store writers")
+except Exception as e:
+    fail("AT-8", repr(e))
+
+
 print()
 print("=" * 62)
 print(f"WO-CANON-VIII memory   {PASS} passed   {FAIL} failed")
