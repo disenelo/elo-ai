@@ -21,6 +21,7 @@ CAPABILITY > AFFORDANCE > internal. The Executive weighs; this module proposes.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
 from typing import TYPE_CHECKING
@@ -28,8 +29,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from self.elo_self_model import EloSelfState
 
-_ROOT    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_AUTOB   = os.path.join(_ROOT, "self", "journals", "autobiography.jsonl")
+_log  = logging.getLogger(__name__)
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_AUTOB_DEFAULT = os.path.join(_ROOT, "self", "journals", "autobiography.jsonl")
 
 # ── Thresholds ────────────────────────────────────────────────────────────────
 _ABSENT_THRESHOLD    = 300.0  # seconds idle before absence-awareness fires
@@ -114,12 +116,13 @@ def append_autobiography(
     *,
     verified: bool = False,
     source: str = "unknown",
+    _path: str | None = None,
 ) -> None:
     """
-    Append a single lived event to self/journals/autobiography.jsonl.
-    Append-only — never overwrites existing entries.
-    verified: True only for entries that came from a confirmed body ACK.
-    source: where the event was confirmed from (e.g. "body_ack").
+    Append a single lived event to the autobiography log.
+    verified: True only for entries confirmed by a body ACK.
+    source: provenance of the confirmation (e.g. "body_ack").
+    _path: override the file path (for tests — keeps the real file clean).
     """
     if not event:
         return
@@ -130,19 +133,27 @@ def append_autobiography(
         "verified": verified,
         "source": source,
     }
+    target = _path or _AUTOB_DEFAULT
     try:
-        with open(_AUTOB, "a", encoding="utf-8") as f:
+        with open(target, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")
-    except Exception:
-        pass
+    except Exception as _e:
+        _log.warning("append_autobiography: write failed — eLo's history may be incomplete: %s", _e)
 
 
-def recent_autobiography(n: int = 10) -> list[dict]:
-    """Return the last n autobiography entries, newest last."""
+def recent_autobiography(n: int = 10, *, _path: str | None = None) -> list[dict]:
+    """Return the last n verified autobiography entries, newest last.
+
+    Only entries with verified=True are returned — unverified entries
+    do not reach the Executive.
+    """
+    target = _path or _AUTOB_DEFAULT
     try:
-        with open(_AUTOB, encoding="utf-8") as f:
+        with open(target, encoding="utf-8") as f:
             lines = [l.strip() for l in f if l.strip()]
-        return [json.loads(l) for l in lines[-n:]]
+        all_entries = [json.loads(l) for l in lines]
+        verified = [e for e in all_entries if e.get("verified") is True]
+        return verified[-n:]
     except Exception:
         return []
 
