@@ -84,6 +84,7 @@ from self.elo_self_model import (
     apply_embodiment as _self_apply_embodiment,
     situated_block as _self_situated_block,
     narrative_block as _self_narrative_block,
+    identity_block as _self_identity_block,
 )
 
 # ── session state (shared across requests, protected by lock) ─────────────────
@@ -3007,6 +3008,8 @@ def _process_turn(raw: str) -> dict:
                               graph_context=g_ctx, personality_block=_pers_block,
                               self_block=_self_prompt_block(_elo_self),
                               lessons=_bp_lessons)
+        # P0-X: constitutional identity — name / with / core_values / invariants from state
+        system = system + "\n\n" + _self_identity_block(_elo_self)
         # WO-052B: narrative identity — eLo's autobiography across embodiments
         system = system + "\n\n" + _self_narrative_block(_elo_self)
         # WO-083: identity & meaning — who I'm becoming (convergence layer)
