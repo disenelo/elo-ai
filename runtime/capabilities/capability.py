@@ -43,7 +43,7 @@ class Capability:
     requires_authentication:bool                = False
     online:                 bool                = True
     enabled:                bool                = True
-    health_state:           str                 = UNKNOWN
+    health_state:           str                 = ONLINE
     execution_priority:     int                 = 5         # 1 = highest
     response_style:         str                 = "direct"  # direct | conversational | confirm
     future:                 bool                = False     # not yet implemented
@@ -52,7 +52,7 @@ class Capability:
     ack_required:           bool                = False     # True = must ACK or report failure
 
     def is_available(self) -> bool:
-        return self.enabled and not self.future and self.health_state in (ONLINE, UNKNOWN)
+        return self.enabled and not self.future and self.health_state in (ONLINE,)
 
     def unavailable_reason(self) -> str:
         if self.future:

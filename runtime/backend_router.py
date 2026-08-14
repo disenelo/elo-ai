@@ -306,7 +306,7 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
             {"role": "user",   "content": user_input},
         ],
         "stream":  False,
-        "options": {"temperature": 0.7, "num_predict": 256},
+        "options": {"temperature": 0.7, "num_predict": 256, "num_ctx": 8192},
     }).encode()
     req = _ureq.Request(
         f"{host}/api/chat",

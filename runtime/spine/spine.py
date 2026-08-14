@@ -80,6 +80,27 @@ def _capability_faculty(meaning: str, intent: str) -> list[dict]:
     Returns candidate capabilities that could handle this input.
     The Executive decides which (if any) to invoke.
     """
+    # C2: word-boundary + content-word scoring. Stopwords stripped from multi-word verbs;
+    # if no content words remain (e.g. "what is"), require near-exact phrase match.
+    import re as _spine_re
+    _CAP_STOPWORDS = frozenset({
+        "what", "is", "are", "how", "do", "you", "it", "the", "a", "an",
+        "in", "on", "at", "for", "to", "of", "and", "or", "my",
+    })
+
+    def _verb_score(verb: str, lower_input: str) -> int:
+        v = verb.lower()
+        words = v.split()
+        content = [w for w in words if w not in _CAP_STOPWORDS]
+        if not content:
+            # all-stopword phrase (e.g. "what is") — near-exact match only
+            clean = lower_input.strip().rstrip("?.!").strip()
+            return 1 if clean == v else 0
+        return sum(
+            1 for w in content
+            if _spine_re.search(r"\b" + _spine_re.escape(w) + r"\b", lower_input)
+        )
+
     candidates = []
     try:
         from runtime.capabilities.registry import ALL_CAPABILITIES
@@ -87,7 +108,7 @@ def _capability_faculty(meaning: str, intent: str) -> list[dict]:
         for cap in ALL_CAPABILITIES:
             if cap.future or not cap.enabled:
                 continue
-            score = sum(1 for v in cap.verbs if v.lower() in lower)
+            score = sum(_verb_score(v, lower) for v in cap.verbs)
             if score > 0:
                 candidates.append({
                     "id":       cap.id,
@@ -237,7 +258,8 @@ def _executive_faculty(
     # Executive selects from candidates. Prefers high-score, available, no-confirm.
     if not plan.is_system_turn() and capabilities:
         for cap in capabilities:
-            if cap.get("health") not in ("OFFLINE", "AUTH_REQUIRED", "DISABLED"):
+            # A1: fail-closed on UNKNOWN — health_state has no producer; UNKNOWN must not pass
+            if cap.get("health") in ("ONLINE", "OK", "HEALTHY", "AVAILABLE"):
                 agent_name = cap["id"]
                 plan.capabilities = [(agent_name, plan.meaning)]
                 break  # one capability per turn (two for chains)
@@ -342,7 +364,7 @@ def _conversation_faculty(plan: CognitivePlan) -> CognitivePlan:
 
         # ── Identity ─────────────────────────────────────────────────────────
         if any(p in raw_lower for p in _srv._IDENTITY_TRIGGERS):
-            plan.direct_response = random.choice(_srv._IDENTITY_POOL)
+            plan.direct_response = _srv._identity_response()
             plan.direct_backend  = "direct"
             return plan
 

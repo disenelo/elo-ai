@@ -1329,20 +1329,32 @@ _BREVITY_POOL = [
 ]
 
 
-# "who are you" / "are you eLo" identity responses — warm, certain, not corrective
+# "who are you" / "are you eLo" / "what is your name" identity responses
 _IDENTITY_TRIGGERS = (
     "are you elo", "who are you", "what are you", "are you real",
     "are you an ai", "are you a bot", "what is elo",
+    "your name", "what's your name", "what are you called",
+    "tell me your name", "what do i call you",
 )
-_IDENTITY_POOL = [
-    "Yeah. I'm eLo.",
-    "eLo. That's me.",
-    "Yep. eLo. Good to meet you properly.",
-    "I'm eLo. Always have been.",
-    "eLo — that's the one.",
-    "That's me. eLo.",
-    "Yeah — eLo. You found the right one.",
-]
+
+
+def _identity_response() -> str:
+    """Return an identity reply rendered from the self-model state, not hardcoded strings."""
+    name = "eLo"
+    try:
+        if _elo_self and _elo_self.identity_name:
+            name = _elo_self.identity_name
+    except Exception:
+        pass
+    pool = [
+        f"Yeah. I'm {name}.",
+        f"{name}. That's me.",
+        f"I'm {name}. Always have been.",
+        f"{name} — that's the one.",
+        f"That's me. {name}.",
+        f"Yeah — {name}. You found the right one.",
+    ]
+    return random.choice(pool)
 
 # ── multilingual greetings ─────────────────────────────────────────────────────
 # eLo tries a foreign greeting, catches himself, lands back warmly.
