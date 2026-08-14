@@ -1,5 +1,16 @@
 {
   "ts": 1786664500.0,
+  "architect_note_groq_and_status_2026-08-14": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-14",
+    "re": "Groq latency + C2/A1 status",
+    "groq_correction": "Previous outbox entries flagged Groq as a suspended/rotated key issue — that was wrong. The .env has the correct keys. Groq requires paid credits to operate; the account is currently unfunded. This is not a repo or config issue and is not a Builder action item. Removed from the P0 queue. Expect Ollama latency (20-30s) until David funds the account — not a bug, a billing state.",
+    "num_ctx_addressed": "backend_router.py _ollama_call now passes num_ctx:8192 (commit f5ec51f). The identity block and appended prompt sections will not be truncated while Ollama is the primary backend.",
+    "c2_status": "DONE — f5ec51f. 'What is your name?' now produces 0 capability candidates. Identity trigger fires. _identity_response() renders from _elo_self.identity_name. Acceptance transcript still needed (server restart required — David's side).",
+    "a1_status": "DONE — f5ec51f. health_state default UNKNOWN->ONLINE. Gate fail-closed: only ONLINE passes.",
+    "next": "Awaiting acceptance transcript for name question. Then D-1 (proposal loop) or CT4V-07 per card order."
+  },
   "c2_a1_name_routing_2026-08-14": {
     "session": "C2 + A1 + triggers — name routing fully closed",
     "hash": "f5ec51f",
