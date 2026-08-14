@@ -22,6 +22,7 @@ import hashlib
 import json
 import os
 import re
+import time
 from datetime import datetime, timezone
 from typing import Any
 
@@ -179,9 +180,9 @@ def _write_journal_entry(
                 from self.lesson_store import record_outcome as _ls_record
                 _ls_record(
                     lkey=lkey,
-                    episode_ref=spot or "",
+                    episode_ref=spot or str(time.time()),
                     verified=bool(spot),  # SPOT code = verified episode (vault record exists)
-                    session_id=project,
+                    session_id=str(os.getpid()),
                     contradicting=(lesson.get("delta") in ("failed", "partial")),
                 )
                 # Only append to ledger if this lesson_key is new
