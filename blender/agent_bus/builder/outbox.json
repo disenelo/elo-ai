@@ -1,5 +1,27 @@
 {
   "ts": 1786664500.0,
+  "p0_x_y_identity_world_2026-08-14": {
+    "session": "P0-X (name from state) + P0-Y (world graph gate) — both closed",
+    "hashes": {
+      "P0-X_identity_block_injected": "caae1ff",
+      "P0-Y_world_graph_gate": "2187405"
+    },
+    "p0_x": {
+      "defect": "eLo says 'I think you are asking about my name' — LLM has no state-sourced name.",
+      "root_cause": "elo_self_model.identity_block() (line 240) renders 'name: eLo / with: David / core traits / invariants' — but was never imported or called. identity_meaning.identity_block() (the one actually injected at WO-083) outputs tendencies and meaning labels — no name field anywhere in the system prompt.",
+      "fix": "Added 'identity_block as _self_identity_block' to server.py import (line 84). Injected before narrative block: system += _self_identity_block(_elo_self). Field drives the answer — change identity_name field, answer changes. Card 0021.",
+      "test_required": "Ask 'What is your name?' 5×, expect 'eLo' 5×. Change identity_name field, expect answer to change."
+    },
+    "p0_y": {
+      "defect": "David asks 'Who is Chunk?' — eLo answers with a Minecraft app, clothing brand, 1930s Soviet aircraft.",
+      "root_cause": "retrieve() returns confidence:1.0 entity hits for Chunk/K-7. But is_search_intent(raw) fires first (line 1982), prepends web results into raw, LLM answers from those. graph_context (build_context at line 2482) IS injected but web results win being in the message text.",
+      "fix": "Added world-graph gate before the web search block. If retrieve(raw) returns any entity hits at confidence>=1.0 (kind != relationship), inject [WORLD_KNOWLEDGE] into raw and set _world_graph_hit=True. Web search block now: 'if not _world_graph_hit and is_search_intent(raw)'. Miss (Michael Paul / unknown): gate passes, web search proceeds. Card 0023.",
+      "gate_verified": "Chunk → 1 entity hit (confidence:1.0, kind:companion). K-7 → 1 entity hit (confidence:1.0, kind:companion). Michael Paul → 0 hits → web search allowed.",
+      "test_required": "Ask 'Who is Chunk?' — expect modular companion from graph, paste reply. Ask 'Who is K-7?' — expect shapeshifting companion, paste reply. Ask 'Who is Michael Paul?' — expect 'I don't know' or honest answer."
+    },
+    "david_action_still_needed": "Rotate GROQ_API_KEY in .env — current key returns 403 Forbidden on all models, all turns using Ollama at 20-30s latency. Rotate at console.groq.com.",
+    "next_p0": "D-1 (proposal loop same subject re-offered after decline) → CT4V-07 (Executive Self-Consultation Gate) → D-3/D-5 (fabricated memory/past)"
+  },
   "path_to_26_rows_5_14_20_22_23_25_2026-08-14": {
     "session": "PATH TO 26 — Rows 5/14/20/22/23/25 (LOOK/ROUTE/LEARN/ADAPT/HISTORY/SELF-INTERPRET) driven to VERIFIED",
     "rows_verified": [5, 14, 20, 22, 23, 25],
