@@ -38,6 +38,24 @@ logger = logging.getLogger(__name__)
 # Valid layer declarations
 _VALID_LAYERS = ("output", "input", "observability")
 
+# ── Plugin capability namespace ───────────────────────────────────────────────
+# Every string a plugin may declare in its CAPABILITIES list.
+_KNOWN_CAPABILITIES = frozenset({
+    "text_generation",   # generate text responses
+    "voice_input",       # capture audio input
+    "voice_output",      # speak responses via TTS
+    "vision",            # process images
+    "hardware_output",   # drive physical devices (RESERVED — propose-only)
+    "observability",     # read system events; no side effects
+})
+
+# Capabilities that gate physical/irreversible output.
+# A plugin declaring any of these is registered but its deliver_output() is
+# blocked until an explicit actuation grant is issued by the registry.
+_RESERVED_CAPABILITIES = frozenset({
+    "hardware_output",
+})
+
 
 class PluginBase:
     """
@@ -127,6 +145,13 @@ class PluginBase:
             violations.append("NAME must be set to a unique non-empty string.")
         if not self.VERSION:
             violations.append("VERSION must be set.")
+        # 0026: capability registry check — each declared capability must be in the known namespace
+        for cap in (self.CAPABILITIES or []):
+            if cap not in _KNOWN_CAPABILITIES:
+                violations.append(
+                    f"CAPABILITIES declares {cap!r} which is not in the plugin capability registry "
+                    f"(known: {sorted(_KNOWN_CAPABILITIES)})."
+                )
         return violations
 
     # ── optional I/O hooks (voice, hardware) ──────────────────────────────────

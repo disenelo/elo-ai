@@ -27,6 +27,8 @@ Environment:
 import logging
 import os
 
+from plugins.base import _RESERVED_CAPABILITIES
+
 logger = logging.getLogger(__name__)
 
 
@@ -55,6 +57,18 @@ class PluginRegistry:
                     name, "\n  ".join(violations)
                 )
                 return   # refuse to register unsafe plugin
+
+        # 0026: RESERVED capability gate — propose-only mode for physical/hardware output
+        reserved = [cap for cap in getattr(plugin, "CAPABILITIES", []) if cap in _RESERVED_CAPABILITIES]
+        if reserved:
+            plugin.propose_only = True
+            logger.warning(
+                "Plugin %r declares RESERVED capabilities %s — registered in propose-only mode; "
+                "deliver_output() is blocked until an explicit actuation grant is issued.",
+                name, reserved,
+            )
+        else:
+            plugin.propose_only = False
 
         self._plugins[name] = plugin
         logger.debug("Plugin registered: %s", name)
@@ -165,6 +179,14 @@ class PluginRegistry:
         for plugin in self._plugins.values():
             if plugin.has_capability("voice_output") or plugin.has_capability("hardware_output"):
                 if plugin.is_available():
+                    # 0026: RESERVED gate — hardware_output requires explicit actuation grant
+                    if getattr(plugin, "propose_only", False):
+                        logger.warning(
+                            "Output plugin %r is in propose-only mode — deliver_output() blocked "
+                            "(declares RESERVED capability; no actuation grant issued).",
+                            plugin.NAME,
+                        )
+                        continue
                     try:
                         plugin.deliver_output(response, ctx)
                     except Exception as exc:
