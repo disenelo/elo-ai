@@ -17,6 +17,7 @@ Endpoints:
 import os
 import sys
 import json
+import queue as _queue_mod
 import time
 import random
 import threading
@@ -86,6 +87,11 @@ from self.elo_self_model import (
 )
 
 # ── session state (shared across requests, protected by lock) ─────────────────
+
+# P0-Z: FIFO turn queue — ensures turns are processed in arrival order regardless
+# of OS thread scheduling. ThreadingHTTPServer creates one thread per connection;
+# without this, lock acquisition order is non-deterministic under high concurrency.
+_turn_queue: "_queue_mod.Queue[tuple]" = _queue_mod.Queue()
 
 _lock            = threading.Lock()
 _state           = None
@@ -4008,6 +4014,33 @@ def _process_turn(raw: str) -> dict:
         }
 
 
+# ── P0-Z: FIFO turn queue worker ──────────────────────────────────────────────
+
+def _turn_worker() -> None:
+    """Single-threaded worker that drains _turn_queue in FIFO order.
+    Guarantees turn processing order matches HTTP arrival order."""
+    while True:
+        text, result_holder, done_event = _turn_queue.get()
+        try:
+            result = _process_turn(text)
+            result_holder.append(result)
+        except Exception as _tw_exc:
+            _logging.warning("turn worker error: %s", _tw_exc)
+            result_holder.append({"response": "", "mode": "error", "backend": "error"})
+        finally:
+            done_event.set()
+            _turn_queue.task_done()
+
+
+def _process_turn_queued(text: str) -> dict:
+    """Enqueue a chat turn and block until the FIFO worker processes it."""
+    _result: list = []
+    _done = threading.Event()
+    _turn_queue.put((text, _result, _done))
+    _done.wait()
+    return _result[0] if _result else {"response": "", "mode": "error", "backend": "error"}
+
+
 # ── HTTP handler ──────────────────────────────────────────────────────────────
 
 class _Handler(BaseHTTPRequestHandler):
@@ -4173,7 +4206,7 @@ class _Handler(BaseHTTPRequestHandler):
             # STT turn: record from mic → Whisper → _process_turn → speak
             try:
                 from voice_engine import listen_and_respond as _listen
-                result = _listen(_process_turn)
+                result = _listen(_process_turn_queued)
                 _maybe_run_promote_pass()   # WO-096B
                 self._send_json(200, result)
             except Exception as e:
@@ -4200,7 +4233,7 @@ class _Handler(BaseHTTPRequestHandler):
             self._send_json(400, {"error": "text required"})
             return
 
-        result = _process_turn(text)
+        result = _process_turn_queued(text)
         _maybe_run_promote_pass()   # WO-096B
         self._send_json(200, result)
 
@@ -4406,6 +4439,9 @@ if __name__ == "__main__":
     print(f"[eLo server] POST /listen  (mic → Whisper → eLo)")
     print(f"[eLo server] GET  /ping    →  {{\"ok\": true}}")
     print()
+
+    # P0-Z: FIFO turn queue worker — guarantees arrival-order processing
+    threading.Thread(target=_turn_worker, daemon=True, name="turn-worker").start()
 
     # Watch parent — dies with main.py / the app
     _parent_pid = os.getppid()

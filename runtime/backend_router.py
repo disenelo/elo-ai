@@ -635,6 +635,11 @@ def route(
                 if e.code == 429:
                     _groq_quota_cooldown_until = time.monotonic() + 60.0
                     _logger.warning("Groq 429 — 60 s cooldown, routing to Cerebras")
+                elif e.code == 403:
+                    _logger.error(
+                        "GROQ API KEY SUSPENDED (403 Forbidden) — all turns falling to Ollama. "
+                        "David: check console.groq.com and rotate the key in .env"
+                    )
                 else:
                     _logger.warning("Groq HTTP %s in pinned mode: %s", e.code, e)
             except Exception as e:
