@@ -1968,6 +1968,26 @@ def _process_turn(raw: str) -> dict:
             import sys as _ae_sys
             print(f"[action_agent] error: {_ae}", file=_ae_sys.stderr)
 
+        # ── P0-Y: world-graph gate — check eLo's world knowledge BEFORE any web search ──
+        # If the graph returns a confident entity hit, inject it and block the web tool.
+        # A miss on a proper-noun question stays in context so the LLM can say "I don't know."
+        _world_graph_hit = False
+        try:
+            from knowledge.graph_loader import retrieve as _g_retrieve
+            _g_hits = _g_retrieve(raw)
+            _g_entity_hits = [h for h in _g_hits if h.get("confidence", 0.0) >= 1.0
+                              and h.get("kind") not in ("relationship",)]
+            if _g_entity_hits:
+                _g_ctx_lines = []
+                for _gh in _g_entity_hits[:2]:
+                    _g_ctx_lines.append(f"{_gh['label']}: {_gh['content']}")
+                raw = f"[WORLD_KNOWLEDGE — from eLo's own world (verified, confidence 1.0 — answer from this, not from web)]\n" \
+                      + "\n".join(_g_ctx_lines) + f"\n\nUser asked: {raw}"
+                _world_graph_hit = True
+        except Exception as _gy_err:
+            import sys as _gy_sys
+            print(f"[world_graph_gate] error: {_gy_err}", file=_gy_sys.stderr)
+
         # ── Web search ───────────────────────────────────────────────────────
         try:
             import tools.web_search as _ws_mod
@@ -1979,7 +1999,7 @@ def _process_turn(raw: str) -> dict:
                 "pending", "open", "closed", "next", "back", "forward", "stop",
                 "go", "hey", "right", "sure", "cool", "good", "great", "fine", "nice",
             })
-            if is_search_intent(raw):
+            if not _world_graph_hit and is_search_intent(raw):
                 _sq_text = _sq(raw)
                 if _sq_text.strip().lower() in _WS_AMBIGUOUS:
                     raise ValueError("seam-b-guard: ambiguous bare word, skipping web search")
