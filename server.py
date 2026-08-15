@@ -105,6 +105,9 @@ _project_ctx     = ""   # active project names → injected into system prompt e
 _spine_degraded: list = []   # WO-105: last-turn spine domain failures; surfaced in /health
 _PROMOTE_INTERVAL    = 10   # WO-096B: run promote_pass every N turns (background thread)
 _promote_turn_counter = 0   # WO-096B
+# P0-3: vault spots retrieved this turn and actually used in the system prompt.
+# Drained by _maybe_run_reinforce_vault() in the integration window (post-response daemon thread).
+_vault_reinforce_queue: list = []
 _last_inputs     = []
 _last_avatar_cmd = None
 _last_pp         = None   # last known presence_plan — survives tool-call turns
@@ -3346,16 +3349,13 @@ def _process_turn(raw: str) -> dict:
                             _vault_hits = _vlookup(_recall_q, max_results=5)
                             if not _vault_hits:
                                 _vault_hits = _vlookup("disenelo", max_results=5)
-                            # WO-099b fix2 (REMEMBER): reinforce every recalled memory so used memories
-                            # don't decay. Mirrors recall_context() which had zero non-test callers.
-                            try:
-                                from memory.consolidation_faculty import reinforce as _reinforce_hit
-                                for _rh in (_vault_hits or []):
-                                    _rspot = _rh.get("spot", "")
-                                    if _rspot:
-                                        _reinforce_hit(_rspot)
-                            except Exception:
-                                pass
+                            # P0-3: collect spots for integration-window reinforce (post-response daemon).
+                            # Vol VIII §4.70 / §4.03: durable writes must not run in the hot loop.
+                            # Reinforce fires AFTER the executive has used these records, not at retrieval.
+                            for _rh in (_vault_hits or []):
+                                _rs = _rh.get("spot", "")
+                                if _rs:
+                                    _vault_reinforce_queue.append(_rs)
                             if _vault_hits:
                                 _vlines = [
                                     f"- {h['summary']} [{h['date']}]"
@@ -4257,7 +4257,8 @@ class _Handler(BaseHTTPRequestHandler):
             try:
                 from voice_engine import listen_and_respond as _listen
                 result = _listen(_process_turn_queued)
-                _maybe_run_promote_pass()   # WO-096B
+                _maybe_run_promote_pass()      # WO-096B
+                _maybe_run_reinforce_vault()   # P0-3: integration-window reinforce
                 self._send_json(200, result)
             except Exception as e:
                 self._send_json(500, {"error": str(e)})
@@ -4284,7 +4285,8 @@ class _Handler(BaseHTTPRequestHandler):
             return
 
         result = _process_turn_queued(text)
-        _maybe_run_promote_pass()   # WO-096B
+        _maybe_run_promote_pass()      # WO-096B
+        _maybe_run_reinforce_vault()   # P0-3: integration-window reinforce
         self._send_json(200, result)
 
 
@@ -4373,6 +4375,35 @@ def _maybe_run_promote_pass() -> None:
     if _promote_turn_counter % _PROMOTE_INTERVAL != 0:
         return
     threading.Thread(target=_run_promote_pass_bg, daemon=True).start()
+
+
+def _maybe_run_reinforce_vault() -> None:
+    """
+    P0-3: integration-window reinforce — fires post-response, not during retrieval.
+
+    Vol VIII §4.70 / §4.03: durable vault writes must not run in the hot loop.
+    §3.4 requires reinforce on records that were retrieved AND actually used.
+    Drains _vault_reinforce_queue (spots collected during this turn's vault lookup)
+    in a daemon thread so the response is never blocked.
+    """
+    global _vault_reinforce_queue
+    spots = list(_vault_reinforce_queue)
+    _vault_reinforce_queue.clear()
+    if not spots:
+        return
+
+    def _do_reinforce():
+        try:
+            from memory.consolidation_faculty import reinforce as _rf
+            for _spot in spots:
+                try:
+                    _rf(_spot)
+                except Exception as _e:
+                    _logging.warning("vault reinforce FAILED for spot %r: %s", _spot, _e)
+        except Exception as _e:
+            _logging.warning("vault reinforce background run FAILED: %s", _e)
+
+    threading.Thread(target=_do_reinforce, daemon=True).start()
 
 
 def _startup_faculty_check() -> None:

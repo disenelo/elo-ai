@@ -334,15 +334,10 @@ def lookup(query: str, max_results: int = 5) -> list[dict]:
 
     results.sort(key=lambda x: x["weight"], reverse=True)
     _truncated = results[:max_results]
-    # WO-109: reinforce every retrieved record — all retrieval paths go through lookup()
-    try:
-        from memory.consolidation_faculty import reinforce as _reinforce
-        for _hit in _truncated:
-            _spot = _hit.get("spot", "")
-            if _spot:
-                _reinforce(_spot)
-    except Exception:
-        pass
+    # P0-3 fix: reinforce() removed from lookup() — library must not do durable writes.
+    # Vol VIII §4.70 / §4.03: "retrieval runs in the response path … reading only; durable
+    # writes never happen in the hot loop." Reinforce fires in the integration window
+    # (server.py, post-response daemon thread) keyed on vault hits that were actually used.
     return _truncated
 
 

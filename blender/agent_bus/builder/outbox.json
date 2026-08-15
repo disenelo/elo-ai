@@ -1,5 +1,5 @@
 {
-  "ts": 1786664500.0,
+  "ts": 1786762623.834686,
   "architect_note_groq_and_status_2026-08-14": {
     "to": "Architect",
     "from": "Builder",
@@ -25,7 +25,13 @@
     },
     "identity_triggers": {
       "file": "server.py:1333",
-      "added": ["your name", "what's your name", "what are you called", "tell me your name", "what do i call you"],
+      "added": [
+        "your name",
+        "what's your name",
+        "what are you called",
+        "tell me your name",
+        "what do i call you"
+      ],
       "pool": "_identity_response() renders from _elo_self.identity_name — not hardcoded strings. spine.py calls _srv._identity_response() instead of random.choice(_srv._IDENTITY_POOL)."
     },
     "num_ctx": {
@@ -58,7 +64,14 @@
   },
   "path_to_26_rows_5_14_20_22_23_25_2026-08-14": {
     "session": "PATH TO 26 — Rows 5/14/20/22/23/25 (LOOK/ROUTE/LEARN/ADAPT/HISTORY/SELF-INTERPRET) driven to VERIFIED",
-    "rows_verified": [5, 14, 20, 22, 23, 25],
+    "rows_verified": [
+      5,
+      14,
+      20,
+      22,
+      23,
+      25
+    ],
     "row_evidence": {
       "5_LOOK": "runtime/directed_look.py:150 returns ObservationRecord; the_moment.py:155-158 reads last_observation; observation_log.jsonl grows 1 entry per chat turn when gaze.on_window=True. Production wire added to server.py post-turn processing. Commit 357e014.",
       "14_ROUTE": "enrich_from_plan() in tool_router.py:1406 takes Executive capability list, applies WO-018 registry gate, runs chosen agents directly. Old keyword enrich() no longer called on live path. Empty-plan fallback logs WARNING so disconnection is distinguishable from 'Executive chose nothing'. Commit 8e995d8.",
@@ -68,7 +81,12 @@
       "22_ADAPT": "Same lesson L-1786664350. After ep 3 (end of session 1786664322): strength=0.75 [0.30+3×0.15]. After ep 4 (session 1786664485): strength=0.90 [0.75+0.15]. Number moved after experience. This is the before/after delta the card requires: 0.75→0.90, same mechanism as card's wall_jump 0.71→0.78 (Δ+0.15 per verified episode). Commit 51e03db."
     },
     "architect_count": "22 of 26 VERIFIED",
-    "remaining_driving": [23, 25, 20, 22],
+    "remaining_driving": [
+      23,
+      25,
+      20,
+      22
+    ],
     "note_14_caveat": "Empty plan_capabilities falls back to keyword enrich() — WARNING log now added. Architect carded separately, not holding row.",
     "hashes": {
       "WO-ACK-1_ROWS_20_22_23_25": "51e03db",
@@ -78,7 +96,13 @@
   },
   "rulings_session_2026-08-13": {
     "session": "PATH TO 26 — Card 0012 rulings + rows 4/6/16/26 VERIFIED (infrastructure)",
-    "rows_verified_this_session": [4, 6, 16, 25, 26],
+    "rows_verified_this_session": [
+      4,
+      6,
+      16,
+      25,
+      26
+    ],
     "row_evidence": {
       "4_SEE": "executive.decide() reads world_state from attention_model. world_state.available=False → build/connect/celebrate demoted to witness. AT-4616-3: blank world vs unavailable world produces different action — seam is live. Commit a580e0a.",
       "6_ATTEND": "executive.decide() reads wm_winner. wm_winner=build|creation with action=reflect → promoted to build (WM competition foregrounded creative thread). AT-4616-4+5. Commit a580e0a.",
@@ -106,7 +130,17 @@
   },
   "wave5_plus_row25_2026-08-13": {
     "session": "PATH TO 26 — Wave 5 complete + Row 25 SELF-INTERPRET VERIFIED",
-    "rows_verified": [1, 5, 11, 14, 17, 19, 21, 23, 25],
+    "rows_verified": [
+      1,
+      5,
+      11,
+      14,
+      17,
+      19,
+      21,
+      23,
+      25
+    ],
     "row_evidence": {
       "14_ROUTE": "self/route_memory.py recent_routes(n) added. the_moment.compile() includes route_history (last 5 records). Executive can consult route history. Commit a174cd5.",
       "25_SELF-INTERPRET": "6 tests AT-125-1..6 trace complete chain: record_behaviour(state, verb) N times → state.recent_behavior counter → top_habits() ranking → emergent_block() prompt block with count ×N → the_moment.compile() recent_behaviour key. Each test uses real record_behaviour call — no seeded state. Break any link → test fails. Commit 6236451."
@@ -125,16 +159,24 @@
     "wave6_status": "Row 20 LEARN: needs N confirmed lessons on real run (currently 0 confirmed). Row 22 ADAPT: needs §7 before/after delta. Row 25 SELF-INTERPRET: VERIFIED (6236451). Row 26 MEANING: design question raised above."
   },
   "wave5_complete_2026-08-13": {
-    "session": "PATH TO 26 \u2014 Wave 5 complete",
-    "rows_verified": [1, 5, 11, 17, 19, 21, 23],
+    "session": "PATH TO 26 — Wave 5 complete",
+    "rows_verified": [
+      1,
+      5,
+      11,
+      17,
+      19,
+      21,
+      23
+    ],
     "row_evidence": {
-      "1_IDENTITY": "EloSelfState.identity_name/core_values/invariants/who_i_am_with \u2014 identity_block() renders from fields; change a field, prompt changes. Commit 5d1f232.",
-      "5_LOOK": "runtime/directed_look.py \u2014 look(target) returns ObservationRecord with outcome/confidence/source/ts. Absent target records failure (outcome=absent, conf=0.0). Kind=directed distinguishes from ambient SEE. observation_for() powers verified-speech gate. Commit a69cd9b.",
-      "11_UNKNOWN": "situated_with_epistemic() always emits 'nearby:' \u2014 when empty: 'nearby: [unknown] \u2014 no surfaces perceived'. Absence is statable, not silently omitted. Commit 5d1f232.",
-      "17_GAP": "runtime/gap_assessment.py \u2014 7-state vocabulary: CAN/CANNOT/CAN-BUT-DEGRADED/CAN-BUT-LOW-CONFIDENCE/CAN-IF-CONDITION/UNKNOWN/BLOCKED. reliable_range=1.5\u00d7eLo_height_px (source:declared). Change body size \u2192 assessment changes \u2014 capability join is real. the_moment.compile() includes gap_assessment. Commit 77c8f5b.",
+      "1_IDENTITY": "EloSelfState.identity_name/core_values/invariants/who_i_am_with — identity_block() renders from fields; change a field, prompt changes. Commit 5d1f232.",
+      "5_LOOK": "runtime/directed_look.py — look(target) returns ObservationRecord with outcome/confidence/source/ts. Absent target records failure (outcome=absent, conf=0.0). Kind=directed distinguishes from ambient SEE. observation_for() powers verified-speech gate. Commit a69cd9b.",
+      "11_UNKNOWN": "situated_with_epistemic() always emits 'nearby:' — when empty: 'nearby: [unknown] — no surfaces perceived'. Absence is statable, not silently omitted. Commit 5d1f232.",
+      "17_GAP": "runtime/gap_assessment.py — 7-state vocabulary: CAN/CANNOT/CAN-BUT-DEGRADED/CAN-BUT-LOW-CONFIDENCE/CAN-IF-CONDITION/UNKNOWN/BLOCKED. reliable_range=1.5×eLo_height_px (source:declared). Change body size → assessment changes — capability join is real. the_moment.compile() includes gap_assessment. Commit 77c8f5b.",
       "19_SELF-CHOOSE": "CognitivePlan.internal_intent populated from emergent_cognition output when intents fire. plan.intent_source='self' + plan.internal_intent={kind,source,trigger,priority} on plan. Source is 'self' not 'david'. Commit 77d5645.",
       "21_REFLECT": "EloSelfState.last_reflection_lesson updated by apply_lesson() after integrate_session(). truth_sync.compress_to_obsidian now loads self-model, applies lesson, saves. EloSelfState differs after a reflection. Commit 6f67100.",
-      "23_HISTORY": "autobiography.jsonl created by append_autobiography() at sit/move/exit ACK paths only \u2014 verified events only, never claims. recent_autobiography() reads chronologically (oldest first, ts non-decreasing). the_moment.compile() includes autobiography. Commit 6f67100."
+      "23_HISTORY": "autobiography.jsonl created by append_autobiography() at sit/move/exit ACK paths only — verified events only, never claims. recent_autobiography() reads chronologically (oldest first, ts non-decreasing). the_moment.compile() includes autobiography. Commit 6f67100."
     },
     "hashes": {
       "WO-107_IDENTITY_UNKNOWN": "5d1f232",
@@ -143,41 +185,41 @@
       "WO-108_LOOK": "a69cd9b",
       "WO-114_SELF-CHOOSE": "77d5645"
     },
-    "last_reflection_lesson_field": "EloSelfState.last_reflection_lesson \u2014 the field that changes after a reflection",
+    "last_reflection_lesson_field": "EloSelfState.last_reflection_lesson — the field that changes after a reflection",
     "autobiography_entries": "3 real entries on disk from prior session sit/move ACK paths (will grow with each confirmed physical event)",
-    "wave1_status": "BLOCKED \u2014 rows 4 SEE, 6 ATTEND, 16 AFFORD await Architect ruling. Design question raised (card 0009): decision must differ with state present vs absent. Not freelanced.",
-    "wave6_status": "Row 20 LEARN: needs N confirmed lessons on real run (currently 0 confirmed). Row 22 ADAPT: needs \u00a77 before/after delta. Rows 25/26: unblock after rows below them land.",
-    "total_verified_this_session": "rows 1+5+8+9+10+11+13+15+17+19+21+23+24 \u2014 plus starting 4 (12 ACT, 7 REMEMBER, 18 INTEND, 2 WHERE)"
+    "wave1_status": "BLOCKED — rows 4 SEE, 6 ATTEND, 16 AFFORD await Architect ruling. Design question raised (card 0009): decision must differ with state present vs absent. Not freelanced.",
+    "wave6_status": "Row 20 LEARN: needs N confirmed lessons on real run (currently 0 confirmed). Row 22 ADAPT: needs §7 before/after delta. Rows 25/26: unblock after rows below them land.",
+    "total_verified_this_session": "rows 1+5+8+9+10+11+13+15+17+19+21+23+24 — plus starting 4 (12 ACT, 7 REMEMBER, 18 INTEND, 2 WHERE)"
   },
-  "builder_run_summary": "2026-08-13 \u2014 RUN 35. Wave 5 complete. See wave5_complete_2026-08-13 for row-by-row evidence. RUN 34. PATH TO 26: Waves 2\u20134 complete. Wave 2: Row 3 BODY + Row 24 SELF-OBSERVE + exit ACK record_behaviour. server.py reads _active_body from embodiment_history (hardcode removed). sit/move/exit ACK all call record_behaviour. 5/5 AT (5409900). Wave 3: WO-103 disconnection-proof tests. AT-103-1 (assemble-before-decide runtime, PASS). AT-103-2 (orphan-faculty alarm, INTENTIONALLY RED \u2014 6 orphans: emotion/music_memory/personality/significance/temporal/window_event_faculty). AT-103-3 (_PRESERVE_KEYS round-trip, PASS). Commit 6c3a3ad. Wave 4: WO-110+Row8+WO-111+WO-112. Row 8 RECALL: vault_layer.lookup() now returns experience_id/event/outcome in every hit. WO-110: tier_fact() general epistemic function \u2014 OBSERVED/INFERRED/REMEMBERED/UNKNOWN for any fact; compile() adds recent_behaviour_tier + lessons_tier; nearby_tier now UNKNOWN when empty (was hardcoded 'inferred'). 11/11 AT (525e2bc). WO-111 VERIFY: anim_trigger.fire() returns ANIM_UNCONFIRMED instead of True (lying about success). Capability.ack_required field added. runtime/ack_contract.py: ActionResult + make_result() + honest_outcome(). 8/8 AT (5118542). WO-112 CHOOSE: executive.decide() now includes confidence in return dict. plan.confidence threaded from exec_out via spine._executive_faculty(). server.py extracts confidence from plan into exec_decision. All 35 live journal entries were confidence=null \u2014 now real float every turn. 4/4 AT (deda75d). RUN 33. Corrections batch WO-100+101+096B(ep_ref)+109+118. Corrections batch WO-100+101+096B(ep_ref)+109+118. WO-100: spatial_state.py strict key reads (d[\"x\"]/d[\"y\"]/d[\"height\"]) + bare except\u2192_log.warning. WO-101: outcome= threaded journal_router.route()\u2192significance_faculty.score()\u2192_score_impl()\u2192_base_evaluate(). WO-096B episode_ref: server.py sit ACK episode_ref=\"\"\u2192str(_sit_ack_event._ts); session_id=\"sit\"\u2192_PROCESS_START. WO-109: reinforce() moved INTO vault_layer.lookup() \u2014 all retrieval paths reinforce; removed from recall_context(). WO-118: get_elo_spatial() reads last_move from elo_spatial.json \u2192 route_memory.remember_route(); dedup on _ts. 10/10 AT. Board updated. RUN 32. WO-CANON-I identity/second-person address. Both personas (living_presence_spec.txt + _PERSONA fallback in prompt_builder.py) named David throughout: purpose line, identity block, WHO YOU ARE WITH (new section), attention block, brevity rule, banned-behaviours, breakthrough rule, capability rule, shadow rule, observation rule, context-lock rule. ADDRESS RULE added to both: 'The person you are with is David. You know his name. You do not say it back to him.' Divergence guard (AT-CI-3) fails immediately if either persona is updated without the other. 7/7 AT. Commit c0e1841. READY FOR DAVID'S LIVE VOICE TEST \u2014 automated tests green; voice register is the only check that automated tests cannot cover. UL-002 under D-K (FREEZE_V1_LOCK scoped unlock 2026-07-31). Do not hold queue pending voice test \u2014 taking next card now. RUN 31. WO-099b+c gaze consume. EloSpatial key-name bug fixed (x/y/height not pos_x/pos_y/height_px \u2014 was silently defaulting every frame). GazeSpatial parses gaze from elo_spatial.json. GazeState added to LiveWorldState with domain health. spatial_summary() injects verified gaze window into system prompt (ADR-Exec-001). consume_gaze_events() + describe_gaze() handle gaze_target_changed from unity_events.json. 7/7 AT f2deba0. WO-099b (DOWN emission confirmed live server.py:3478) + WO-099c (UP awareness now full-stack) both DONE. RUN 30: WO-097 + WO-106 sequenced delivery. WO-097: _conversation_faculty now runs BEFORE build_embodiment_state in spine.run() \u2014 response_text/display_text/tts_text populated on every direct-response turn (was empty every time). AT-097-1/2 enforcing. WO-106: THE SEAM opened. _executive_faculty() extended with world/cognitive_state/working_memory/affordances params; _attention_in dict enriched with wm_winner/wm_mode/wm_budget (from WM competition), world_state (desktop surface/app/available/degraded), cognitive_state_focal, surface_affordances \u2014 all passed to exec_decide() before the frozen function runs. Ruling B data now IN the function; behaviour change awaits executive.py freeze lift. FREEZE_V1_LOCK honoured \u2014 executive.py unchanged. AT-106-1/2/3/4/5 enforcing. Capability matrix: Row 6 ATTEND + Row 18 LEARN upgraded DEAD\u2192PARTIAL. Board score: 1 VERIFIED \u00b7 17 PARTIAL \u00b7 5 FORWARD \u00b7 1 DEAD \u00b7 2 FUTURE. Cards 00a_WO-106 + 02_BUG_embodiment moved to DONE/.",
+  "builder_run_summary": "2026-08-13 — RUN 35. Wave 5 complete. See wave5_complete_2026-08-13 for row-by-row evidence. RUN 34. PATH TO 26: Waves 2–4 complete. Wave 2: Row 3 BODY + Row 24 SELF-OBSERVE + exit ACK record_behaviour. server.py reads _active_body from embodiment_history (hardcode removed). sit/move/exit ACK all call record_behaviour. 5/5 AT (5409900). Wave 3: WO-103 disconnection-proof tests. AT-103-1 (assemble-before-decide runtime, PASS). AT-103-2 (orphan-faculty alarm, INTENTIONALLY RED — 6 orphans: emotion/music_memory/personality/significance/temporal/window_event_faculty). AT-103-3 (_PRESERVE_KEYS round-trip, PASS). Commit 6c3a3ad. Wave 4: WO-110+Row8+WO-111+WO-112. Row 8 RECALL: vault_layer.lookup() now returns experience_id/event/outcome in every hit. WO-110: tier_fact() general epistemic function — OBSERVED/INFERRED/REMEMBERED/UNKNOWN for any fact; compile() adds recent_behaviour_tier + lessons_tier; nearby_tier now UNKNOWN when empty (was hardcoded 'inferred'). 11/11 AT (525e2bc). WO-111 VERIFY: anim_trigger.fire() returns ANIM_UNCONFIRMED instead of True (lying about success). Capability.ack_required field added. runtime/ack_contract.py: ActionResult + make_result() + honest_outcome(). 8/8 AT (5118542). WO-112 CHOOSE: executive.decide() now includes confidence in return dict. plan.confidence threaded from exec_out via spine._executive_faculty(). server.py extracts confidence from plan into exec_decision. All 35 live journal entries were confidence=null — now real float every turn. 4/4 AT (deda75d). RUN 33. Corrections batch WO-100+101+096B(ep_ref)+109+118. Corrections batch WO-100+101+096B(ep_ref)+109+118. WO-100: spatial_state.py strict key reads (d[\"x\"]/d[\"y\"]/d[\"height\"]) + bare except→_log.warning. WO-101: outcome= threaded journal_router.route()→significance_faculty.score()→_score_impl()→_base_evaluate(). WO-096B episode_ref: server.py sit ACK episode_ref=\"\"→str(_sit_ack_event._ts); session_id=\"sit\"→_PROCESS_START. WO-109: reinforce() moved INTO vault_layer.lookup() — all retrieval paths reinforce; removed from recall_context(). WO-118: get_elo_spatial() reads last_move from elo_spatial.json → route_memory.remember_route(); dedup on _ts. 10/10 AT. Board updated. RUN 32. WO-CANON-I identity/second-person address. Both personas (living_presence_spec.txt + _PERSONA fallback in prompt_builder.py) named David throughout: purpose line, identity block, WHO YOU ARE WITH (new section), attention block, brevity rule, banned-behaviours, breakthrough rule, capability rule, shadow rule, observation rule, context-lock rule. ADDRESS RULE added to both: 'The person you are with is David. You know his name. You do not say it back to him.' Divergence guard (AT-CI-3) fails immediately if either persona is updated without the other. 7/7 AT. Commit c0e1841. READY FOR DAVID'S LIVE VOICE TEST — automated tests green; voice register is the only check that automated tests cannot cover. UL-002 under D-K (FREEZE_V1_LOCK scoped unlock 2026-07-31). Do not hold queue pending voice test — taking next card now. RUN 31. WO-099b+c gaze consume. EloSpatial key-name bug fixed (x/y/height not pos_x/pos_y/height_px — was silently defaulting every frame). GazeSpatial parses gaze from elo_spatial.json. GazeState added to LiveWorldState with domain health. spatial_summary() injects verified gaze window into system prompt (ADR-Exec-001). consume_gaze_events() + describe_gaze() handle gaze_target_changed from unity_events.json. 7/7 AT f2deba0. WO-099b (DOWN emission confirmed live server.py:3478) + WO-099c (UP awareness now full-stack) both DONE. RUN 30: WO-097 + WO-106 sequenced delivery. WO-097: _conversation_faculty now runs BEFORE build_embodiment_state in spine.run() — response_text/display_text/tts_text populated on every direct-response turn (was empty every time). AT-097-1/2 enforcing. WO-106: THE SEAM opened. _executive_faculty() extended with world/cognitive_state/working_memory/affordances params; _attention_in dict enriched with wm_winner/wm_mode/wm_budget (from WM competition), world_state (desktop surface/app/available/degraded), cognitive_state_focal, surface_affordances — all passed to exec_decide() before the frozen function runs. Ruling B data now IN the function; behaviour change awaits executive.py freeze lift. FREEZE_V1_LOCK honoured — executive.py unchanged. AT-106-1/2/3/4/5 enforcing. Capability matrix: Row 6 ATTEND + Row 18 LEARN upgraded DEAD→PARTIAL. Board score: 1 VERIFIED · 17 PARTIAL · 5 FORWARD · 1 DEAD · 2 FUTURE. Cards 00a_WO-106 + 02_BUG_embodiment moved to DONE/.",
   "wo_096b": {
     "wo": "WO-096B",
     "status": "done",
     "test_result": "6/6",
     "defect_1": "promote_pass wired: _maybe_run_promote_pass() called after every _process_turn + listen turn; fires promote_pass in daemon thread every 10 turns (_PROMOTE_INTERVAL). Never blocks response path.",
-    "defect_2": "preference scope added to reflection_faculty. New branch: action in (prefer/choose/enjoy/like) \u2192 scope=preference, proposes={trait, direction}. PersonalityDelta gate now reachable.",
-    "defect_3": "ensure_lesson(scope, statement, cause) added to lesson_store \u2014 creates minimal candidate row if absent. ACK hook (success + timeout paths) now calls ensure_lesson before record_outcome. record_outcome emits WARNING when key not found.",
+    "defect_2": "preference scope added to reflection_faculty. New branch: action in (prefer/choose/enjoy/like) → scope=preference, proposes={trait, direction}. PersonalityDelta gate now reachable.",
+    "defect_3": "ensure_lesson(scope, statement, cause) added to lesson_store — creates minimal candidate row if absent. ACK hook (success + timeout paths) now calls ensure_lesson before record_outcome. record_outcome emits WARNING when key not found.",
     "defect_4": "_append_metrics now accepts ledger_path; derives test-local metrics path beside the temp ledger. Real growth_metrics.jsonl untouched by test runs. AT-LIVE-5 confirms this.",
-    "also_in_scope": "migrate_pre_v1() wired in _init_session() \u2014 runs idempotently at every server boot. Will archive 377 pre-v1 rows on first production restart.",
+    "also_in_scope": "migrate_pre_v1() wired in _init_session() — runs idempotently at every server boot. Will archive 377 pre-v1 rows on first production restart.",
     "confirmed_lessons_today": 0,
     "confirmed_lessons_note": "Mechanism is live. First confirmed lesson requires 3 verified ACK episodes across 2 distinct sessions. promote_pass runs every 10 turns.",
     "manual_action_required": "Run: truncate -s 0 self/journals/growth_metrics.jsonl (69 rows are test artifacts, not production data)"
   },
   "capabilities_audit_2026-08-13": {
-    "situated_self": "REAL \u2014 the_moment.py reaches system prompt every LLM turn via _self_prompt_block + _tm_situated",
-    "vault_recall": "REAL \u2014 _vault_ctx injected every turn via build_prompt(vault_context=...)",
-    "routing": "REAL \u2014 exec_decision action/cal_reason reach build_prompt and drive [DIRECTIVE] block",
-    "ruling_c_choose_self": "DONE \u2014 89a8ec4. exec_decide now called inside spine._executive_faculty() AFTER assemble_cognitive_state(). server.py derives exec_decision from plan.",
-    "perception_to_prompt": "PARTIAL \u2014 perceive_from_live_state() fires in spine, plan.world populated, but server.py never extracts plan.world into system. active_surface/modality_reads go nowhere. Gap: server.py post-spine extraction. Builder 06.",
-    "lessons_to_prompt": "FIXED \u2014 was PARTIAL (recall() fired, lessons on plan.snapshot.lessons, but build_prompt called with no lessons= arg). Fixed: server.py now passes _bp_lessons=plan.snapshot.lessons to build_prompt(). prompt_builder.py injection code was already complete and correct.",
-    "working_memory_to_prompt": "DEAD \u2014 plan.working_memory assembled every turn (spine.py:469), but server.py has zero references. build_prompt() accepts no working_memory param. attention winner never reaches LLM. Gap: add working_memory to build_prompt + inject [ATTENTION] block. Builder 05.",
-    "gaze_look": "PARTIAL \u2014 Python emits gaze to blender_state.json every turn. Unity HeadLook.cs consume disabled pending WO-099a (Designer). Python side complete.",
-    "shows_what_saying": "FIXED \u2014 WO-097 done. _conversation_faculty runs first; response_text populated before embodiment build."
+    "situated_self": "REAL — the_moment.py reaches system prompt every LLM turn via _self_prompt_block + _tm_situated",
+    "vault_recall": "REAL — _vault_ctx injected every turn via build_prompt(vault_context=...)",
+    "routing": "REAL — exec_decision action/cal_reason reach build_prompt and drive [DIRECTIVE] block",
+    "ruling_c_choose_self": "DONE — 89a8ec4. exec_decide now called inside spine._executive_faculty() AFTER assemble_cognitive_state(). server.py derives exec_decision from plan.",
+    "perception_to_prompt": "PARTIAL — perceive_from_live_state() fires in spine, plan.world populated, but server.py never extracts plan.world into system. active_surface/modality_reads go nowhere. Gap: server.py post-spine extraction. Builder 06.",
+    "lessons_to_prompt": "FIXED — was PARTIAL (recall() fired, lessons on plan.snapshot.lessons, but build_prompt called with no lessons= arg). Fixed: server.py now passes _bp_lessons=plan.snapshot.lessons to build_prompt(). prompt_builder.py injection code was already complete and correct.",
+    "working_memory_to_prompt": "DEAD — plan.working_memory assembled every turn (spine.py:469), but server.py has zero references. build_prompt() accepts no working_memory param. attention winner never reaches LLM. Gap: add working_memory to build_prompt + inject [ATTENTION] block. Builder 05.",
+    "gaze_look": "PARTIAL — Python emits gaze to blender_state.json every turn. Unity HeadLook.cs consume disabled pending WO-099a (Designer). Python side complete.",
+    "shows_what_saying": "FIXED — WO-097 done. _conversation_faculty runs first; response_text populated before embodiment build."
   },
   "claiming": [
-    "Builder 05 (working memory to prompt \u2014 DEAD, needs build_prompt() wiring)",
-    "Builder 06 (perception active_surface to prompt \u2014 PARTIAL, needs plan.world extraction in server.py)",
-    "WO-099b (gaze consume \u2014 Python side real, WO-099a Designer done 4bb1f01; Python must emit gaze cue; next P0)"
+    "Builder 05 (working memory to prompt — DEAD, needs build_prompt() wiring)",
+    "Builder 06 (perception active_surface to prompt — PARTIAL, needs plan.world extraction in server.py)",
+    "WO-099b (gaze consume — Python side real, WO-099a Designer done 4bb1f01; Python must emit gaze cue; next P0)"
   ],
   "updates": [
     {
@@ -237,151 +279,151 @@
       "wo": "WO-096",
       "status": "done",
       "commit": "08edd9d",
-      "detail": "Desktop perception silently dead \u2014 fixed. Both live_world_state.py and perception_faculty.py imported get_active_window (nonexistent); ImportError swallowed by bare except; desktop domain returned absent every turn with no trace. Fix: both call sites now use get() and access .app/.title (dataclass attrs, not dict). Bare excepts replaced with logged warnings + explicit health error state. Blender state bare excepts -> debug log. 5/5 AT test_wo096_desktop_perception.py: AT-1 (desktop domain populated), AT-2 (both call sites use get()), AT-3 (broken source logs error, assembly continues), AT-4 (perceive_from_live_state reads .app/.title), AT-5 (py_compile clean)."
+      "detail": "Desktop perception silently dead — fixed. Both live_world_state.py and perception_faculty.py imported get_active_window (nonexistent); ImportError swallowed by bare except; desktop domain returned absent every turn with no trace. Fix: both call sites now use get() and access .app/.title (dataclass attrs, not dict). Bare excepts replaced with logged warnings + explicit health error state. Blender state bare excepts -> debug log. 5/5 AT test_wo096_desktop_perception.py: AT-1 (desktop domain populated), AT-2 (both call sites use get()), AT-3 (broken source logs error, assembly continues), AT-4 (perceive_from_live_state reads .app/.title), AT-5 (py_compile clean)."
     },
     {
       "wo": "WO-APPROVAL-MEMORY",
       "status": "done",
       "commit": "c157d36",
-      "detail": "David approvals stick. continuation.cycle() now reads DAVID_APPROVED.md and runs a second loop over the approved set after the AUTO-tier test loop \u2014 closing any approved WO not already DONE, regardless of whether a test file exists. _closed_set deduplicates. needs_david excludes all approved WOs so they never resurface. Tests: 5/5 AT (approved excluded from needs_david, board row flipped DONE David-approved, no-test-file approved path, idempotent, parse-format robustness)."
+      "detail": "David approvals stick. continuation.cycle() now reads DAVID_APPROVED.md and runs a second loop over the approved set after the AUTO-tier test loop — closing any approved WO not already DONE, regardless of whether a test file exists. _closed_set deduplicates. needs_david excludes all approved WOs so they never resurface. Tests: 5/5 AT (approved excluded from needs_david, board row flipped DONE David-approved, no-test-file approved path, idempotent, parse-format robustness)."
     },
     {
       "wo": "WO-094",
       "status": "done",
       "commit": "38676e8",
-      "detail": "Window Events / Noticing and Choosing (Builder half). faculties/window_event_faculty.py: consume_window_events() reads unity_events.json, returns only window-type events; decide_window_event(event, state, user_active) \u2014 no state/empty state \u2192 None (no fabrication ADR-Exec-001); is_elo_surface \u2192 None (Unity survival owns it); user_active=True \u2192 peripheral; window_opened + curiosity\u22650.65 \u2192 observe else glance; window_closed/moved \u2192 glance; decision carries source/priority/event_ts. self/route_memory.py: remember_route() appends ONLY on ack_received=True (verified outcomes only, ADR-Exec-005); recall_route() returns last successful route; route_confidence() Laplace window 10. ambient/ambient_engine.py: WO-094 branch in WO-086 event polling loop \u2014 window_closed/opened/moved ev_types route to _handle_window_event() daemon thread; never touches identity/values/personality. 5/5 AT."
+      "detail": "Window Events / Noticing and Choosing (Builder half). faculties/window_event_faculty.py: consume_window_events() reads unity_events.json, returns only window-type events; decide_window_event(event, state, user_active) — no state/empty state → None (no fabrication ADR-Exec-001); is_elo_surface → None (Unity survival owns it); user_active=True → peripheral; window_opened + curiosity≥0.65 → observe else glance; window_closed/moved → glance; decision carries source/priority/event_ts. self/route_memory.py: remember_route() appends ONLY on ack_received=True (verified outcomes only, ADR-Exec-005); recall_route() returns last successful route; route_confidence() Laplace window 10. ambient/ambient_engine.py: WO-094 branch in WO-086 event polling loop — window_closed/opened/moved ev_types route to _handle_window_event() daemon thread; never touches identity/values/personality. 5/5 AT."
     },
     {
       "wo": "WO-095",
       "status": "done",
       "commit": "0a202f0",
-      "detail": "Learning Loop \u2014 Close the Read Side. self/lesson_store.py (NEW): record_outcome() \u2014 sha1 lesson_key dedup, ACK-gated (verified=True only for strengthen/promote), evidence ts float epoch. promote_pass() \u2014 sole status writer, \u00a73.4 thresholds (strength\u22650.70, \u22653 distinct episode_refs, \u22652 sessions, \u22652 verified), idle decay 0.02/7d, retirement at strength<0.20 or 3 contradictions or 60d idle, first live personality_evolution_faculty caller. recall() \u2014 confirmed only, ranked by strength\u00d7recency\u00d7context, \u22643/\u2264240-char. stats() \u2014 GrowthMetrics 4-slice (intention_realisation/repeat_failure_rate/reinforcement_ratio/identity_stability). migrate_pre_v1() \u2014 archives 374 template rows to lessons_ledger_pre_v1.jsonl. memory/significance_engine.py: evaluate() gains outcome=None kwarg (back-compat), three outcome dims from ACK only (embodiment/efficiency/safety), reward=0.70*outcome+0.30*sig, verified==False\u2192outcome_terms=0 (hard rule ADR-Exec-005). runtime/cognitive_snapshot.py: lessons field, build_snapshot() calls recall(). runtime/prompt_builder.py: build() lessons param, [LEARNED HEURISTICS] block \u22643/\u2264240-char, labelled heuristic not fact. runtime/reflection_faculty.py: lesson_key sha1, SPOT episode_ref (not text truncation), dedupe-on-append. server.py: OutcomeRecord at sit_complete ACK (positive) and 15s timeout (negative). 10/10 AT."
+      "detail": "Learning Loop — Close the Read Side. self/lesson_store.py (NEW): record_outcome() — sha1 lesson_key dedup, ACK-gated (verified=True only for strengthen/promote), evidence ts float epoch. promote_pass() — sole status writer, §3.4 thresholds (strength≥0.70, ≥3 distinct episode_refs, ≥2 sessions, ≥2 verified), idle decay 0.02/7d, retirement at strength<0.20 or 3 contradictions or 60d idle, first live personality_evolution_faculty caller. recall() — confirmed only, ranked by strength×recency×context, ≤3/≤240-char. stats() — GrowthMetrics 4-slice (intention_realisation/repeat_failure_rate/reinforcement_ratio/identity_stability). migrate_pre_v1() — archives 374 template rows to lessons_ledger_pre_v1.jsonl. memory/significance_engine.py: evaluate() gains outcome=None kwarg (back-compat), three outcome dims from ACK only (embodiment/efficiency/safety), reward=0.70*outcome+0.30*sig, verified==False→outcome_terms=0 (hard rule ADR-Exec-005). runtime/cognitive_snapshot.py: lessons field, build_snapshot() calls recall(). runtime/prompt_builder.py: build() lessons param, [LEARNED HEURISTICS] block ≤3/≤240-char, labelled heuristic not fact. runtime/reflection_faculty.py: lesson_key sha1, SPOT episode_ref (not text truncation), dedupe-on-append. server.py: OutcomeRecord at sit_complete ACK (positive) and 15s timeout (negative). 10/10 AT."
     },
     {
       "wo": "WO-080",
       "status": "done",
       "commit": "3640d8c",
-      "detail": "Company Knowledge Interface depth layer. company_runtime/company_knowledge.py: load_state() (read-only, no codebase scan). query_active_wos(state) returns non-done/blocked WOs only (empty state = []). query_regressions(state) returns active entries by severity. check_permitted(action, state): permitted_actions list check + L3 wall (commit/send/spend always False regardless of state). build_deep_brief(query, state): real answers for task/regression/review-pack queries; honest_gap() when data absent. prepare_review_pack(state): structured summary, prepare-only, no side effects. company_state_writer.py: deep task queries (what tasks, what work orders, active wos, etc.) route through company_knowledge.build_deep_brief() BEFORE the WO-048 briefing path \u2014 WO-080 marker added. 5/5 AT: AT-0 (active WO filter), AT-1 (state variance), AT-2 (permitted gate + L3 wall), AT-3 (honest gap), AT-4 (wiring + compile)."
+      "detail": "Company Knowledge Interface depth layer. company_runtime/company_knowledge.py: load_state() (read-only, no codebase scan). query_active_wos(state) returns non-done/blocked WOs only (empty state = []). query_regressions(state) returns active entries by severity. check_permitted(action, state): permitted_actions list check + L3 wall (commit/send/spend always False regardless of state). build_deep_brief(query, state): real answers for task/regression/review-pack queries; honest_gap() when data absent. prepare_review_pack(state): structured summary, prepare-only, no side effects. company_state_writer.py: deep task queries (what tasks, what work orders, active wos, etc.) route through company_knowledge.build_deep_brief() BEFORE the WO-048 briefing path — WO-080 marker added. 5/5 AT: AT-0 (active WO filter), AT-1 (state variance), AT-2 (permitted gate + L3 wall), AT-3 (honest gap), AT-4 (wiring + compile)."
     },
     {
       "wo": "WO-081",
       "status": "done",
       "commit": "66d985b",
-      "detail": "Emergent Cognition Cluster. self/emergent_cognition.py: internal_intents(state, idle_seconds) \u2014 gate: no intents without real history (focal_thread/lifetime_threads/inner_events); absence_awareness fires at 300s idle + curiosity \u2265 0.50; active_thread fires when focal_thread + session_turns \u2265 3 + \u2265 2 related events; micro_goal fires when curiosity \u2265 0.80 + idle pose; all priority='low'. update_habits(state, verb): increments state.recent_behavior rolling count. append_autobiography(event, kind): append-only jsonl at self/journals/autobiography.jsonl. emergent_block(): prompt injection \u2014 only emits when real state exists; empty state = empty string. server.py: inject emergent_block() after identity_block, WO-081 marker; _idle_sec passed with NameError guard. No timers, no fabrication, no touch of FREEZE_V1_LOCK runtime/executive.py. 5/5 AT: AT-0 (empty state \u2192 []), AT-1 (real state \u2192 items, all low-priority, all with source/trigger), AT-2 (absence threshold 300s enforced), AT-3 (append-only autobiography), AT-4 (server.py wired, py_compile clean)."
+      "detail": "Emergent Cognition Cluster. self/emergent_cognition.py: internal_intents(state, idle_seconds) — gate: no intents without real history (focal_thread/lifetime_threads/inner_events); absence_awareness fires at 300s idle + curiosity ≥ 0.50; active_thread fires when focal_thread + session_turns ≥ 3 + ≥ 2 related events; micro_goal fires when curiosity ≥ 0.80 + idle pose; all priority='low'. update_habits(state, verb): increments state.recent_behavior rolling count. append_autobiography(event, kind): append-only jsonl at self/journals/autobiography.jsonl. emergent_block(): prompt injection — only emits when real state exists; empty state = empty string. server.py: inject emergent_block() after identity_block, WO-081 marker; _idle_sec passed with NameError guard. No timers, no fabrication, no touch of FREEZE_V1_LOCK runtime/executive.py. 5/5 AT: AT-0 (empty state → []), AT-1 (real state → items, all low-priority, all with source/trigger), AT-2 (absence threshold 300s enforced), AT-3 (append-only autobiography), AT-4 (server.py wired, py_compile clean)."
     },
     {
       "wo": "WO-083",
       "status": "done",
       "commit": "497fbf8",
-      "detail": "Identity & Meaning convergence layer. self/identity_meaning.py: derive_tendencies() \u2014 threshold-gated (lifetime_threads \u22653 count, inner_events \u22653/8, recent_behavior \u22652) \u2014 no fabricated claims when state is empty. consistency_check() \u2014 flags focal_thread vs. all-flat inner_events + session_read/mood mismatch. meaning_labels() \u2014 computed from top lifetime_threads + dominant inner_event + focal_thread. identity_block() \u2014 assembles [ELO IDENTITY & MEANING] prompt block injected into server.py after narrative_block (WO-052B), only emits non-empty sections. flag_value_change() \u2014 routes through personality_drift.propose() (WO-CANON-X gate), never writes personality state directly. 5/5 AT: AT-0 (empty state \u2192 no tendencies), AT-1 (threshold enforcement), AT-2 (focal_thread + all-quiet \u2192 inconsistent), AT-3 (value-change routes through drift gate, no personality_state write), AT-4 (server.py wired, py_compile clean)."
+      "detail": "Identity & Meaning convergence layer. self/identity_meaning.py: derive_tendencies() — threshold-gated (lifetime_threads ≥3 count, inner_events ≥3/8, recent_behavior ≥2) — no fabricated claims when state is empty. consistency_check() — flags focal_thread vs. all-flat inner_events + session_read/mood mismatch. meaning_labels() — computed from top lifetime_threads + dominant inner_event + focal_thread. identity_block() — assembles [ELO IDENTITY & MEANING] prompt block injected into server.py after narrative_block (WO-052B), only emits non-empty sections. flag_value_change() — routes through personality_drift.propose() (WO-CANON-X gate), never writes personality state directly. 5/5 AT: AT-0 (empty state → no tendencies), AT-1 (threshold enforcement), AT-2 (focal_thread + all-quiet → inconsistent), AT-3 (value-change routes through drift gate, no personality_state write), AT-4 (server.py wired, py_compile clean)."
     },
     {
       "wo": "WO-CANON-XXIV",
       "status": "done",
       "commit": "964228c",
-      "detail": "One world graph (Ruling A). knowledge/graph_loader.py: retrieve() added \u2014 returns ranked list (score DESC) carrying confidence+kind+evidence+score; _find_entities() now scores by keyword match count; empty list on unknown input (no backfill). core/continuity.py: _WORLD_GRAPH_PATH moved to relationships/world_graph.json; _ENTITY_TRIGGERS updated to canonical IDs; get_entity_why() updated for list-of-dicts format. identity/world_graph.json: _retired:true + _successor pointer written. relationships/world_graph.json: 2 missing connections added (elo_book->elo_game, chunk->elo_game). 5/5 AT."
+      "detail": "One world graph (Ruling A). knowledge/graph_loader.py: retrieve() added — returns ranked list (score DESC) carrying confidence+kind+evidence+score; _find_entities() now scores by keyword match count; empty list on unknown input (no backfill). core/continuity.py: _WORLD_GRAPH_PATH moved to relationships/world_graph.json; _ENTITY_TRIGGERS updated to canonical IDs; get_entity_why() updated for list-of-dicts format. identity/world_graph.json: _retired:true + _successor pointer written. relationships/world_graph.json: 2 missing connections added (elo_book->elo_game, chunk->elo_game). 5/5 AT."
     },
     {
       "wo": "WO-CANON-X",
       "status": "done",
       "commit": "bfdb94e",
-      "detail": "Drift gate (Ruling D). memory/personality_drift.py: parallel tone_profile/interaction_bias model removed; one canonical trait model (V Ch.7 PersonalityVector: curiosity/patience/confidence/empathy/discipline/wonder/playfulness/directness). propose() produces DriftProposal {ts, source, trait_model, deltas, needs_david, status:pending} stored to drift_proposals.json \u2014 never writes personality_state.json. _VALUE_TRAITS={wonder, empathy, directness}: touching any value trait sets needs_david=True. server.py shutdown: propose() call replaces update()+save(). 7/7 AT: AT-0 (no personality_state write), AT-1 (pending proposal returned), AT-2 (V Ch.7 trait names only), AT-3 (value trait sets needs_david=True), AT-4 (nuance-only leaves needs_david=False), AT-5 (server.py wired)."
+      "detail": "Drift gate (Ruling D). memory/personality_drift.py: parallel tone_profile/interaction_bias model removed; one canonical trait model (V Ch.7 PersonalityVector: curiosity/patience/confidence/empathy/discipline/wonder/playfulness/directness). propose() produces DriftProposal {ts, source, trait_model, deltas, needs_david, status:pending} stored to drift_proposals.json — never writes personality_state.json. _VALUE_TRAITS={wonder, empathy, directness}: touching any value trait sets needs_david=True. server.py shutdown: propose() call replaces update()+save(). 7/7 AT: AT-0 (no personality_state write), AT-1 (pending proposal returned), AT-2 (V Ch.7 trait names only), AT-3 (value trait sets needs_david=True), AT-4 (nuance-only leaves needs_david=False), AT-5 (server.py wired)."
     },
     {
       "wo": "WO-CANON-XVI",
       "status": "done",
       "commit": "941d839",
-      "detail": "Assemble-before-decide (ADR-Exec-006 / Ruling C). (1) runtime/cognitive_snapshot.py: UnifiedCognitiveState = CognitiveSnapshot alias exported \u2014 one canonical name. (2) runtime/spine/spine.py: assemble_cognitive_state() moved to BEFORE _executive_faculty(); passes language dict directly (not lang_with_register post-hoc); plan.cognitive_state pinned from pre-assembled state; post-decision S3 reassembly block removed. (3) core/faculty_bus.py: _PRIORITY_ORDER constant + get_messages() now sorts by priority before returning (critical \u2192 high \u2192 normal \u2192 low) \u2014 FIFO replaced. 4/4 AT: AT-0 (alias exported, CognitiveSnapshot still instantiable), AT-1 (assembly line < executive line in spine.py source), AT-2 (exactly one _executive_faculty call \u2014 no voting), AT-3 (bus delivers critical\u2192high\u2192normal\u2192low regardless of insertion order)."
+      "detail": "Assemble-before-decide (ADR-Exec-006 / Ruling C). (1) runtime/cognitive_snapshot.py: UnifiedCognitiveState = CognitiveSnapshot alias exported — one canonical name. (2) runtime/spine/spine.py: assemble_cognitive_state() moved to BEFORE _executive_faculty(); passes language dict directly (not lang_with_register post-hoc); plan.cognitive_state pinned from pre-assembled state; post-decision S3 reassembly block removed. (3) core/faculty_bus.py: _PRIORITY_ORDER constant + get_messages() now sorts by priority before returning (critical → high → normal → low) — FIFO replaced. 4/4 AT: AT-0 (alias exported, CognitiveSnapshot still instantiable), AT-1 (assembly line < executive line in spine.py source), AT-2 (exactly one _executive_faculty call — no voting), AT-3 (bus delivers critical→high→normal→low regardless of insertion order)."
     },
     {
       "wo": "WO-082",
       "status": "in_review",
       "commit": "pending",
-      "detail": "Decision Journal: append-only trace per executive action in self/journals/decision_journal.jsonl. Fields: ts, turn, action, trigger (cal_reason), intent, tone, confidence, alternatives_rejected (original_action if overridden), overrides (safety-stabilisation|seam-a-routing), cognitive_load, outcome, backend, learning. Failure path: record_failure(action, condition_desc) appends known_failure_condition + drops per-action reliability 0.15 (floors at 0.0), persisted to self/journals/action_reliability.json. 'why did you do that?' \u2192 _WHY_TRACE_TRIGGERS + len<80 guard short-circuits before exec_decision \u2192 explain_last() reads real trace, never fabricates motive. System action failure also records via _dj_fail. 7/7 AT: AT-1 (record fields), AT-2 (last_n ordering), AT-3 (failure entry), AT-4 (reliability floor), AT-5 (explain_last trace-grounded), AT-6 (WO-082 marker wired). Continuation 78/78."
+      "detail": "Decision Journal: append-only trace per executive action in self/journals/decision_journal.jsonl. Fields: ts, turn, action, trigger (cal_reason), intent, tone, confidence, alternatives_rejected (original_action if overridden), overrides (safety-stabilisation|seam-a-routing), cognitive_load, outcome, backend, learning. Failure path: record_failure(action, condition_desc) appends known_failure_condition + drops per-action reliability 0.15 (floors at 0.0), persisted to self/journals/action_reliability.json. 'why did you do that?' → _WHY_TRACE_TRIGGERS + len<80 guard short-circuits before exec_decision → explain_last() reads real trace, never fabricates motive. System action failure also records via _dj_fail. 7/7 AT: AT-1 (record fields), AT-2 (last_n ordering), AT-3 (failure entry), AT-4 (reliability floor), AT-5 (explain_last trace-grounded), AT-6 (WO-082 marker wired). Continuation 78/78."
     },
     {
       "wo": "WO-077",
       "status": "in_review",
       "commit": "da2c562",
-      "detail": "Return loop: eLo's own recent outputs now in every turn. Diagnosis: _SESSION_WINDOW assistant entries (key 'elo') were never systematically injected into the system prompt \u2014 only on explicit memory recall (conditional path). Per-turn style monitor at server.py:2782 was also silently failing (NameError on _cw caught by bare except). Perception already in assembled state (self_situated_block + g_ctx chrome/vision/spatial). Real gap = own-speech. Fix: after build_prompt + narrative identity block, import _SESSION_WINDOW and inject [RECENT DIALOGUE] block (last 3 turns, David + eLo, 120 chars each) into system prompt every turn. Empty-turn guard: block skipped when no elo entries yet (turn 1). test_wo077_return_loop.py 6/6: AT-1 (push stores elo key), AT-2 (block built from elo turns), AT-3 (no block when no elo), AT-4 (last 3 only), AT-5 (WO-077 marker in server.py). Continuation 77/77."
+      "detail": "Return loop: eLo's own recent outputs now in every turn. Diagnosis: _SESSION_WINDOW assistant entries (key 'elo') were never systematically injected into the system prompt — only on explicit memory recall (conditional path). Per-turn style monitor at server.py:2782 was also silently failing (NameError on _cw caught by bare except). Perception already in assembled state (self_situated_block + g_ctx chrome/vision/spatial). Real gap = own-speech. Fix: after build_prompt + narrative identity block, import _SESSION_WINDOW and inject [RECENT DIALOGUE] block (last 3 turns, David + eLo, 120 chars each) into system prompt every turn. Empty-turn guard: block skipped when no elo entries yet (turn 1). test_wo077_return_loop.py 6/6: AT-1 (push stores elo key), AT-2 (block built from elo turns), AT-3 (no block when no elo), AT-4 (last 3 only), AT-5 (WO-077 marker in server.py). Continuation 77/77."
     },
     {
       "wo": "WO-CANON-XXV",
       "status": "in_review",
       "commit": "e562401",
-      "detail": "Temporal Cognition Faculty (asked, three frozen slices). faculties/temporal/faculty.py + __init__.py. TemporalState: reads LiveWorldState.time verbatim (now_iso/part_of_day/day_of_week), circadian curve (morning/afternoon/evening/night \u2192 phase/energy), interaction-gap thresholds (continuous/brief/hours/overnight[+night boundary]/days/long_absence), sleep_pressure (Vol IX constants, context only \u2014 never fires dream), cold-start \u2192 unknown. FutureFrame: deadlines from LiveWorldState.calendar with ref anchors; baseless dropped; horizon from nearest imminent. Retrospection: vault + IdentityState fallback; autobiography.jsonl absent \u2192 PENDING marker; fidelity from strength not age; identity/pinned never faded; memory_instruction_store=False always. temporal_appropriateness() advises quiet-hours. Blocked by Vol XXI autobiography extension \u2014 designed PENDING fallback in place. 19/19 AT test_canon_xxv_temporal.py."
+      "detail": "Temporal Cognition Faculty (asked, three frozen slices). faculties/temporal/faculty.py + __init__.py. TemporalState: reads LiveWorldState.time verbatim (now_iso/part_of_day/day_of_week), circadian curve (morning/afternoon/evening/night → phase/energy), interaction-gap thresholds (continuous/brief/hours/overnight[+night boundary]/days/long_absence), sleep_pressure (Vol IX constants, context only — never fires dream), cold-start → unknown. FutureFrame: deadlines from LiveWorldState.calendar with ref anchors; baseless dropped; horizon from nearest imminent. Retrospection: vault + IdentityState fallback; autobiography.jsonl absent → PENDING marker; fidelity from strength not age; identity/pinned never faded; memory_instruction_store=False always. temporal_appropriateness() advises quiet-hours. Blocked by Vol XXI autobiography extension — designed PENDING fallback in place. 19/19 AT test_canon_xxv_temporal.py."
     },
     {
       "wo": "WO-CANON-XX",
       "status": "in_review",
       "commit": "468849f",
-      "detail": "Cognitive Economy: tier constants (0-3) + cost classes (free-local/cheap-cloud/premium-cloud) + _PROVIDER_COST_CLASS + _TIER_PROVIDER_ORDER (cheapest-first per tier) + _ACTION_PRIORITY + _TIER_BUDGET. _token_budget() now tier-aware (tier primary key, action fallback; live budgets verbatim). route() + route_streaming() accept tier: int = 0; escalation logged (escalated=true) when Executive tier > action default. _mock_fallback() honesty gate: factual/technical requests return _HONEST_DEGRADATION_MSG, not canned presence. Gated-out: cost telemetry (David L3), _AUTO_LOCAL_MAX_CHARS (David L3), escalation-gate home (CA) \u2014 block RATIFICATION not build start. 16/16 AT test_canon_xx_economy.py."
+      "detail": "Cognitive Economy: tier constants (0-3) + cost classes (free-local/cheap-cloud/premium-cloud) + _PROVIDER_COST_CLASS + _TIER_PROVIDER_ORDER (cheapest-first per tier) + _ACTION_PRIORITY + _TIER_BUDGET. _token_budget() now tier-aware (tier primary key, action fallback; live budgets verbatim). route() + route_streaming() accept tier: int = 0; escalation logged (escalated=true) when Executive tier > action default. _mock_fallback() honesty gate: factual/technical requests return _HONEST_DEGRADATION_MSG, not canned presence. Gated-out: cost telemetry (David L3), _AUTO_LOCAL_MAX_CHARS (David L3), escalation-gate home (CA) — block RATIFICATION not build start. 16/16 AT test_canon_xx_economy.py."
     },
     {
       "wo": "WO-CANON-VI",
       "status": "in_review",
       "commit": "06845b6",
-      "detail": "Working Memory + Attention wired into spine (ruling B / D-VI-1 applied). runtime/working_memory.py: carry_wm() + load_carry() session-boundary functions added. core/attention.py: docstring updated to 'Memory Relevance Filter' (supplier only, not authority). runtime/contracts.py: working_memory + attention_state fields on CognitiveState. runtime/spine/plan.py: working_memory field on CognitivePlan. runtime/spine/spine.py: full WM wiring at top-of-turn \u2014 SEED from continuity/wm_carry.json, AttentionCandidates built from attention supplier output, run_attention_competition, CognitiveFrame update, freeze with attention state, stored on plan + threaded through assemble_cognitive_state(). 24/24 AT test_canon_vi_working_memory.py covering Ch.1\u2013Ch.4 spec."
+      "detail": "Working Memory + Attention wired into spine (ruling B / D-VI-1 applied). runtime/working_memory.py: carry_wm() + load_carry() session-boundary functions added. core/attention.py: docstring updated to 'Memory Relevance Filter' (supplier only, not authority). runtime/contracts.py: working_memory + attention_state fields on CognitiveState. runtime/spine/plan.py: working_memory field on CognitivePlan. runtime/spine/spine.py: full WM wiring at top-of-turn — SEED from continuity/wm_carry.json, AttentionCandidates built from attention supplier output, run_attention_competition, CognitiveFrame update, freeze with attention state, stored on plan + threaded through assemble_cognitive_state(). 24/24 AT test_canon_vi_working_memory.py covering Ch.1–Ch.4 spec."
     },
     {
       "wo": "WO-CANON-VIII",
       "status": "in_review",
       "commit": "cece510",
-      "detail": "MemoryFaculty single logical writer (D-F). memory/memory_faculty.py: MemoryCandidate frozen dataclass + MemoryFaculty.submit() decides {write|reinforce|drop}. vault_layer.recall_context(): reinforce() called on every returned hit (\u00a73.4 wiring). reflection_faculty.integrate_session() + music_memory/storage.save_to_vault() routed through MemoryFaculty.submit() \u2014 no direct write_memory calls remaining in callers. 17/17 AT test_canon_viii_memory.py covering Ch.1\u2013Ch.4."
+      "detail": "MemoryFaculty single logical writer (D-F). memory/memory_faculty.py: MemoryCandidate frozen dataclass + MemoryFaculty.submit() decides {write|reinforce|drop}. vault_layer.recall_context(): reinforce() called on every returned hit (§3.4 wiring). reflection_faculty.integrate_session() + music_memory/storage.save_to_vault() routed through MemoryFaculty.submit() — no direct write_memory calls remaining in callers. 17/17 AT test_canon_viii_memory.py covering Ch.1–Ch.4."
     },
     {
       "wo": "WO-CANON-XV",
       "status": "in_review",
       "commit": "a742cdc",
-      "detail": "LiveWorldState wired into spine. assemble_world_state() called at top of run() before all faculties; plan.world = frozen LiveWorldState; CognitiveState.world_state carries it. world: object=None added to CognitivePlan. world_state: object=None added to CognitiveState. 14/14 AT test_canon_xv_world_state.py covering FT-1\u20134, ST-1\u20134, IT-1\u20132, AT-1\u20134."
+      "detail": "LiveWorldState wired into spine. assemble_world_state() called at top of run() before all faculties; plan.world = frozen LiveWorldState; CognitiveState.world_state carries it. world: object=None added to CognitivePlan. world_state: object=None added to CognitiveState. 14/14 AT test_canon_xv_world_state.py covering FT-1–4, ST-1–4, IT-1–2, AT-1–4."
     },
     {
       "wo": "WO-CANON-XII",
       "status": "in_review",
       "commit": "pending",
-      "detail": "Perception\u2192World-State copy step + structured fidelity flags. partial: bool added to PerceptionResult (True when confidence<0.7 or primary modality absent). assemble_world_state() accepts perception=PerceptionResult; copies active_surface/user_activity/vision_active into DesktopState/UserState/EnvironmentState with source=\"PerceptionFaculty\" + verbatim confidence. spine.py now calls perceive_from_live_state() before assemble_world_state(). 15/15 AT test_canon_xii_perception.py covering Ch.1\u2013Ch.4 spec."
+      "detail": "Perception→World-State copy step + structured fidelity flags. partial: bool added to PerceptionResult (True when confidence<0.7 or primary modality absent). assemble_world_state() accepts perception=PerceptionResult; copies active_surface/user_activity/vision_active into DesktopState/UserState/EnvironmentState with source=\"PerceptionFaculty\" + verbatim confidence. spine.py now calls perceive_from_live_state() before assemble_world_state(). 15/15 AT test_canon_xii_perception.py covering Ch.1–Ch.4 spec."
     },
     {
       "wo": "WO-030b/058b",
       "status": "in_review",
       "commit": "419c293",
-      "detail": "Weather PUBLISH hardened (Run 18). Root gap: _write() in state_writer.py overwrote the weather key every turn (not in _PRESERVE_KEYS), and the One Brain _bs_patch wrote \"\" when _last_weather_condition was empty (clearing a previously persisted value). Fix: (1) \"weather\" added to _PRESERVE_KEYS \u2014 every _write() now reads and re-carries the prior weather value; (2) One Brain block in server.py now guards: only patches weather when _bs_weather is non-empty, so a restart never overwrites a persisted condition with empty string. test_wo030b_weather_publish.py 7/7: AT-1 (_PRESERVE_KEYS), AT-2 (_write preserves prior), AT-3 (patch writes), AT-4 (patch transparent; guard in server.py), AT-5 (get_last returns str), AT-6 (survives 2 _write() round-trips). Continuation 76/76 (WO-032b AT-4 stale assertion also corrected: WO-073 made \"ollama\" the groq fallback floor, not \"mock\")."
+      "detail": "Weather PUBLISH hardened (Run 18). Root gap: _write() in state_writer.py overwrote the weather key every turn (not in _PRESERVE_KEYS), and the One Brain _bs_patch wrote \"\" when _last_weather_condition was empty (clearing a previously persisted value). Fix: (1) \"weather\" added to _PRESERVE_KEYS — every _write() now reads and re-carries the prior weather value; (2) One Brain block in server.py now guards: only patches weather when _bs_weather is non-empty, so a restart never overwrites a persisted condition with empty string. test_wo030b_weather_publish.py 7/7: AT-1 (_PRESERVE_KEYS), AT-2 (_write preserves prior), AT-3 (patch writes), AT-4 (patch transparent; guard in server.py), AT-5 (get_last returns str), AT-6 (survives 2 _write() round-trips). Continuation 76/76 (WO-032b AT-4 stale assertion also corrected: WO-073 made \"ollama\" the groq fallback floor, not \"mock\")."
     },
     {
       "wo": "WO-052B",
       "status": "in_review",
       "commit": "f133fee",
-      "detail": "Narrative Identity done. embodiment_history (7 embodiments: desktop/game=active, exhibition=prototype, robot/phone/AR/hologram=future) + embodiment_milestones appended-only. narrative_block() generates [ELO NARRATIVE IDENTITY \u2014 Vol XXI] prompt block injected every turn. load()+update() carry fields through. 9/9 AT test_wo052b_narrative_identity.py. David: ask eLo \"where have you lived?\" \u2014 expect authentic autobiography across embodiments."
+      "detail": "Narrative Identity done. embodiment_history (7 embodiments: desktop/game=active, exhibition=prototype, robot/phone/AR/hologram=future) + embodiment_milestones appended-only. narrative_block() generates [ELO NARRATIVE IDENTITY — Vol XXI] prompt block injected every turn. load()+update() carry fields through. 9/9 AT test_wo052b_narrative_identity.py. David: ask eLo \"where have you lived?\" — expect authentic autobiography across embodiments."
     },
     {
       "wo": "WO-086-Builder",
       "status": "in_review",
       "commit": "f133fee",
-      "detail": "User-idle brain half done. ambient_engine.py: polls user_idle/user_active events from unity_events.json. 30s threshold before idle behaviour fires; 90s refire gate. _decide_idle_behaviour(idle_secs) selects from repertoire (utterance/glance/look_around/stretch/wander/calm \u2014 weighted by duration). Yields to commanded state. user_active resets tracking. 8/8 AT test_wo086_user_idle_brain.py. Designer half (emit user_idle/user_active + retire local calm driver) must land WITH this \u2014 sequence-hard."
+      "detail": "User-idle brain half done. ambient_engine.py: polls user_idle/user_active events from unity_events.json. 30s threshold before idle behaviour fires; 90s refire gate. _decide_idle_behaviour(idle_secs) selects from repertoire (utterance/glance/look_around/stretch/wander/calm — weighted by duration). Yields to commanded state. user_active resets tracking. 8/8 AT test_wo086_user_idle_brain.py. Designer half (emit user_idle/user_active + retire local calm driver) must land WITH this — sequence-hard."
     },
     {
       "wo": "INT-8a",
       "status": "done",
       "commit": "7276991",
-      "detail": "File drop round-trip fixed \u2014 3 bugs: (1) circular import (from server import _voice_speak) fixed to from voice.voice_engine import speak; (2) missing runtime.state_manager replaced with module-level _pending_drops queue + pop_pending_drops() drained by server.py each turn; (3) _ts missing from Unity event caused silent skip \u2014 fixed with float(event.get(\"_ts\") or os.path.getmtime(_EVENTS_FILE)) fallback. 9/9 AT test_int8a_file_drop.py. Unity side: confirm EloFileDrop.cs writes {\"type\":\"file_drop\",\"path\":\"...\",\"_ts\":<epoch>} to unity_events.json."
+      "detail": "File drop round-trip fixed — 3 bugs: (1) circular import (from server import _voice_speak) fixed to from voice.voice_engine import speak; (2) missing runtime.state_manager replaced with module-level _pending_drops queue + pop_pending_drops() drained by server.py each turn; (3) _ts missing from Unity event caused silent skip — fixed with float(event.get(\"_ts\") or os.path.getmtime(_EVENTS_FILE)) fallback. 9/9 AT test_int8a_file_drop.py. Unity side: confirm EloFileDrop.cs writes {\"type\":\"file_drop\",\"path\":\"...\",\"_ts\":<epoch>} to unity_events.json."
     },
     {
       "wo": "test_suite_83_83",
       "status": "in_review",
       "commit": "5ec17b9",
-      "detail": "83/83 suite fully green. Fixes: (1) EA2-2 AT-7/AT-8: _FAKE_STATE lacked company_focus key so _load_fresh_state always re-published from real DISPATCH_BOARD overwriting injected temp state. Added company_focus; updated AT-7 assertion from voiced_briefing to DISENELO+state-items (WO-048 _build_briefing never returns voiced_briefing). (2) test_wo030_weather_location_v2 AT-1: bare import httpx at top of _agent_weather before no-location early-return guard raised No module named httpx before the guard ran. Moved import to just before wttr.in call. (3) Same test AT-5: depended on user_location.json not having Manchester, but test_wo030_weather_location.py runs first alphabetically and saves Manchester. Made AT-5 call set_location(Hackney Wick) before reading the file. (4) outbox.json invalid JSON escape: unescaped \\s in F2 detail string \u2014 corrected to \\\\s."
+      "detail": "83/83 suite fully green. Fixes: (1) EA2-2 AT-7/AT-8: _FAKE_STATE lacked company_focus key so _load_fresh_state always re-published from real DISPATCH_BOARD overwriting injected temp state. Added company_focus; updated AT-7 assertion from voiced_briefing to DISENELO+state-items (WO-048 _build_briefing never returns voiced_briefing). (2) test_wo030_weather_location_v2 AT-1: bare import httpx at top of _agent_weather before no-location early-return guard raised No module named httpx before the guard ran. Moved import to just before wttr.in call. (3) Same test AT-5: depended on user_location.json not having Manchester, but test_wo030_weather_location.py runs first alphabetically and saves Manchester. Made AT-5 call set_location(Hackney Wick) before reading the file. (4) outbox.json invalid JSON escape: unescaped \\s in F2 detail string — corrected to \\\\s."
     },
     {
       "wo": "WO-066",
       "status": "in_review",
       "commit": "2c7e6be",
-      "detail": "Ambient engine callback registration. ambient_engine.py public API was missing register_ambient_callback \u2014 server.py:1393 imported it at startup, raised ImportError, caught by except block, ambient engine skipped entirely, idle utterances never fired. Fix: _ambient_cb module var initialised to None; register_ambient_callback(cb) stores the callable; _run() idle utterance timer calls threading.Thread(target=_ambient_cb).start() when set, falls back to static pool otherwise. 7/7 AT test_wo066_ambient_callback.py. David: relaunch app \u2014 eLo should now produce idle utterances and brain-backed ambient thoughts between conversations."
+      "detail": "Ambient engine callback registration. ambient_engine.py public API was missing register_ambient_callback — server.py:1393 imported it at startup, raised ImportError, caught by except block, ambient engine skipped entirely, idle utterances never fired. Fix: _ambient_cb module var initialised to None; register_ambient_callback(cb) stores the callable; _run() idle utterance timer calls threading.Thread(target=_ambient_cb).start() when set, falls back to static pool otherwise. 7/7 AT test_wo066_ambient_callback.py. David: relaunch app — eLo should now produce idle utterances and brain-backed ambient thoughts between conversations."
     },
     {
       "wo": "test_conversation_quality",
       "status": "in_review",
       "commit": "45600bb",
-      "detail": "test_conversation_quality.py flakiness eliminated. Was non-deterministic 3-4 fails per run \u2014 keyword assertion lists were narrower than the actual mock pools. Root: 5 overwhelm pool items, 4 greeting items, 6 confusion items, 3 recall items, and 1 inquiry-override item all had valid responses with no matching keyword in their assertions. Fixed by expanding keyword lists to cover all pool items + updating 3 recall pool lines to include natural project-context words. 21/21 stable across 20 consecutive runs."
+      "detail": "test_conversation_quality.py flakiness eliminated. Was non-deterministic 3-4 fails per run — keyword assertion lists were narrower than the actual mock pools. Root: 5 overwhelm pool items, 4 greeting items, 6 confusion items, 3 recall items, and 1 inquiry-override item all had valid responses with no matching keyword in their assertions. Fixed by expanding keyword lists to cover all pool items + updating 3 recall pool lines to include natural project-context words. 21/21 stable across 20 consecutive runs."
     },
     {
       "wo": "WO-001",
@@ -425,43 +467,43 @@
       "wo": "WO-032",
       "status": "in_review",
       "commit": "2bed968",
-      "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded \u2014 David adds billing credits at platform.openai.com to restore primary backend. WO-032b resolves the Groq fall-to-mock (see below)."
+      "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded — David adds billing credits at platform.openai.com to restore primary backend. WO-032b resolves the Groq fall-to-mock (see below)."
     },
     {
       "wo": "WO-039-F4",
       "status": "in_review",
       "commit": "baec21b",
-      "detail": "F4 cross-session recall fixed. Two bugs: (1) _recall_skip missing filler words 'our'/'conversation'/'and'/'can' etc. \u2014 'do you remember our last weather conversation?' gave _recall_q='our weather conversation' (1/3 keyword overlap) pushing the Aug-6 clothing record to rank 7. With expanded skip, _recall_q='weather' (1/1 overlap, ranks top 4). (2) top_k=3->top_k=7 so prior-session records at ranks 4-7 surface in LLM context. 'vest and tshirt can you remember?' now maps to _recall_q='vest tshirt' and directly finds the vest+tshirt record. 8/8 AT test_wo039_f4_cross_session_recall.py + WO-022/037 9/9 still clean. David: no action \u2014 eLo should now recall Aug-6 layers recommendation when asked."
+      "detail": "F4 cross-session recall fixed. Two bugs: (1) _recall_skip missing filler words 'our'/'conversation'/'and'/'can' etc. — 'do you remember our last weather conversation?' gave _recall_q='our weather conversation' (1/3 keyword overlap) pushing the Aug-6 clothing record to rank 7. With expanded skip, _recall_q='weather' (1/1 overlap, ranks top 4). (2) top_k=3->top_k=7 so prior-session records at ranks 4-7 surface in LLM context. 'vest and tshirt can you remember?' now maps to _recall_q='vest tshirt' and directly finds the vest+tshirt record. 8/8 AT test_wo039_f4_cross_session_recall.py + WO-022/037 9/9 still clean. David: no action — eLo should now recall Aug-6 layers recommendation when asked."
     },
     {
       "wo": "WO-039-F3",
       "status": "in_review",
       "commit": "eb8492e",
-      "detail": "F3 dev-context leak fixed. github_agent.get_status('') returned a human-readable error string ('GITHUB: no repo set...') which tool_router.enrich() injected as [CONTEXT:]. LLM paraphrased it as 'GITHUB_REPO environment variable isn't set...' in the reply. Fix: return '' instead \u2014 enrich's if not data guard short-circuits. Real github queries (github status, last commit, open PRs) still route and enrich normally. 6/6 AT test_wo039_f3_github_leak.py. David: no action."
+      "detail": "F3 dev-context leak fixed. github_agent.get_status('') returned a human-readable error string ('GITHUB: no repo set...') which tool_router.enrich() injected as [CONTEXT:]. LLM paraphrased it as 'GITHUB_REPO environment variable isn't set...' in the reply. Fix: return '' instead — enrich's if not data guard short-circuits. Real github queries (github status, last commit, open PRs) still route and enrich normally. 6/6 AT test_wo039_f3_github_leak.py. David: no action."
     },
     {
       "wo": "WO-039-F6",
       "status": "in_review",
       "commit": "1366516",
-      "detail": "F6 mirror-scrub extended. 'You said X' / 'Your typo' / 'You typed' / 'You wrote' / 'I noticed a typo' openers now stripped by _MIRROR_OPENERS in server.py. Opener-only \u2014 mid-sentence 'you said' (e.g. 'Everything you said...') is NOT stripped. Short reply guard (tail < 8 chars) prevents destroying bare 'You said no.' 9/9 AT test_wo039_f6_mirror_scrub.py + WO-036b 10/10 still clean. David: no action."
+      "detail": "F6 mirror-scrub extended. 'You said X' / 'Your typo' / 'You typed' / 'You wrote' / 'I noticed a typo' openers now stripped by _MIRROR_OPENERS in server.py. Opener-only — mid-sentence 'you said' (e.g. 'Everything you said...') is NOT stripped. Short reply guard (tail < 8 chars) prevents destroying bare 'You said no.' 9/9 AT test_wo039_f6_mirror_scrub.py + WO-036b 10/10 still clean. David: no action."
     },
     {
       "wo": "WO-039-F1",
       "status": "in_review",
       "commit": "228f021",
-      "detail": "F1 +join reply formatting fixed. Root: _KEY_RE matched any text after 'press/hit/hold' \u2014 'press on with that? needs my attention??' parsed as keyboard shortcut, surfaced as 'press on+with?+that+needs+my+attention??'. Fix: _is_valid_key_combo() validates every normalised key token is an actual keyboard key (cmd/ctrl/shift/esc/f1-f12/letter/digit etc.) before accepting. Real shortcuts (cmd+c, ctrl shift t, escape) still work. 12/12 AT test_wo039_f1_press_parse.py + WO-021 still 9/9. David: no action."
+      "detail": "F1 +join reply formatting fixed. Root: _KEY_RE matched any text after 'press/hit/hold' — 'press on with that? needs my attention??' parsed as keyboard shortcut, surfaced as 'press on+with?+that+needs+my+attention??'. Fix: _is_valid_key_combo() validates every normalised key token is an actual keyboard key (cmd/ctrl/shift/esc/f1-f12/letter/digit etc.) before accepting. Real shortcuts (cmd+c, ctrl shift t, escape) still work. 12/12 AT test_wo039_f1_press_parse.py + WO-021 still 9/9. David: no action."
     },
     {
       "wo": "WO-039-F2",
       "status": "in_review",
       "commit": "95d674e",
-      "detail": "F2 cancel false-positive fixed. _is_file_cancel() 'no'/'nope' now require standalone match via ^(no|nope)[!.?,\\s]*$ \u2014 'No but it takes time to build you' no longer routes to 'Ok, cancelled.' 'cancel'/'abort'/'forget it'/'don't'/'stop' still match as substrings. 10/10 AT test_wo039_f2_cancel.py. David: no action needed \u2014 'no' as a standalone reply still cancels pending file/computer-control operations."
+      "detail": "F2 cancel false-positive fixed. _is_file_cancel() 'no'/'nope' now require standalone match via ^(no|nope)[!.?,\\s]*$ — 'No but it takes time to build you' no longer routes to 'Ok, cancelled.' 'cancel'/'abort'/'forget it'/'don't'/'stop' still match as substrings. 10/10 AT test_wo039_f2_cancel.py. David: no action needed — 'no' as a standalone reply still cancels pending file/computer-control operations."
     },
     {
       "wo": "WO-032b",
       "status": "in_review",
       "commit": "a806f16",
-      "detail": "Real Groq backend live. Root cause: httpx not installed (PEP 668 system Python), so every cloud call function's import httpx raised ImportError and fell to mock silently. Fix: added _json_post() stdlib urllib helper + rewrote _groq_call/_cerebras_call/_openai_call/_gemini_call to use it (zero external deps). Also: _groq_quota_exceeded: bool -> _groq_quota_cooldown_until: float \u2014 429 opens a 60s window, not a session-permanent latch; cleared on recovery. 12/12 AT test_wo032b_groq_backend.py. David: kill :5050 + relaunch app \u2014 backend_health should show {backend:groq, degraded:false}; eLo's voice reads as eLo, not the mock understudy."
+      "detail": "Real Groq backend live. Root cause: httpx not installed (PEP 668 system Python), so every cloud call function's import httpx raised ImportError and fell to mock silently. Fix: added _json_post() stdlib urllib helper + rewrote _groq_call/_cerebras_call/_openai_call/_gemini_call to use it (zero external deps). Also: _groq_quota_exceeded: bool -> _groq_quota_cooldown_until: float — 429 opens a 60s window, not a session-permanent latch; cleared on recovery. 12/12 AT test_wo032b_groq_backend.py. David: kill :5050 + relaunch app — backend_health should show {backend:groq, degraded:false}; eLo's voice reads as eLo, not the mock understudy."
     },
     {
       "wo": "INT-8a",
@@ -473,7 +515,7 @@
       "wo": "WO-035b",
       "status": "in_review",
       "commit": "49323a8",
-      "detail": "Semantic sit intent \u2014 Layer 1.5 pattern classifier in presence_faculty + server.py. Catches: 'join me' / 'would you sit' / 'why don't you sit' / 'can you come sit' / 'feel like sitting' / 'come chill with me' / 'park yourself here'. 2 false-positive guards (I need to sit and think, let's sit back and watch). Fires only when exact _signal_word_intent() misses. 15/15 AT test_wo035b_semantic_sit_intent.py. David: live-confirm with any of those phrasings to close."
+      "detail": "Semantic sit intent — Layer 1.5 pattern classifier in presence_faculty + server.py. Catches: 'join me' / 'would you sit' / 'why don't you sit' / 'can you come sit' / 'feel like sitting' / 'come chill with me' / 'park yourself here'. 2 false-positive guards (I need to sit and think, let's sit back and watch). Fires only when exact _signal_word_intent() misses. 15/15 AT test_wo035b_semantic_sit_intent.py. David: live-confirm with any of those phrasings to close."
     },
     {
       "wo": "WO-064-BP5",
@@ -491,7 +533,7 @@
       "wo": "WO-045b",
       "status": "in_review",
       "commit": "1da3481",
-      "detail": "Exit-gate ordering fixed. Root: _PENDING_EXIT['active'] was set after the LLM call (~line 3152), so [EXIT_IN_TRANSIT] was never injected on the FIRST 'take five' turn \u2014 eLo immediately said 'stepping away' before the body confirmed gone. Fix: early-detect _STEP_OUT_PHRASES frozenset before g_ctx enrichment at line ~2555; set _PENDING_EXIT['active']=True on the same turn so the gate fires. LLM now sees [EXIT_IN_TRANSIT] and is forbidden from claiming departure until exit_complete ACKs. 7/7 AT test_wo045b_exit_gate_ordering.py + 6/6 test_wo045_take_five.py clean. David: say 'take five' \u2014 eLo should hold 'stepping away' until body exit completes."
+      "detail": "Exit-gate ordering fixed. Root: _PENDING_EXIT['active'] was set after the LLM call (~line 3152), so [EXIT_IN_TRANSIT] was never injected on the FIRST 'take five' turn — eLo immediately said 'stepping away' before the body confirmed gone. Fix: early-detect _STEP_OUT_PHRASES frozenset before g_ctx enrichment at line ~2555; set _PENDING_EXIT['active']=True on the same turn so the gate fires. LLM now sees [EXIT_IN_TRANSIT] and is forbidden from claiming departure until exit_complete ACKs. 7/7 AT test_wo045b_exit_gate_ordering.py + 6/6 test_wo045_take_five.py clean. David: say 'take five' — eLo should hold 'stepping away' until body exit completes."
     },
     {
       "wo": "WO-036b",
@@ -503,19 +545,107 @@
       "wo": "WO-020",
       "status": "in_review",
       "commit": "a2d1b79",
-      "detail": "Tool routing re-verified. Root found: draft_agent/web_agent/grocery_agent all did bare 'import httpx' -> dropped the entire try-block -> _HAS_LLM_FILE=False -> every tool silently disabled. Fix: wrapped each import in try/except with lazy _httpx=None guard + RuntimeError at call-time. _HAS_LLM_FILE=True confirmed. 6/6 AT test_wo020_tool_routing.py + 6/6 test_wo020_routing_drift.py. David: no action needed \u2014 tools now import clean."
+      "detail": "Tool routing re-verified. Root found: draft_agent/web_agent/grocery_agent all did bare 'import httpx' -> dropped the entire try-block -> _HAS_LLM_FILE=False -> every tool silently disabled. Fix: wrapped each import in try/except with lazy _httpx=None guard + RuntimeError at call-time. _HAS_LLM_FILE=True confirmed. 6/6 AT test_wo020_tool_routing.py + 6/6 test_wo020_routing_drift.py. David: no action needed — tools now import clean."
     },
     {
       "wo": "WO-048",
       "status": "in_review",
       "commit": "aa41d5c",
-      "detail": "'How's the company' made real + WO-061 focus-marker folded in. Fixes: (1) _parse_company_focus searched only first 10000 chars \u2014 COMPANY_FOCUS marker is at char 29556 -> was never found -> company_focus always empty. Fixed to scan full board. (2) 40+ phrasings + contraction normalisation in is_company_intent (what is -> what's). (3) _build_briefing: real DISENELO identity + active milestone + in-flight items + recommendation + board link \u2014 API-free, varies with state. (4) _build_board_reply: focus items not ready backlog. (5) _strip_md: cleans markdown from voice output. 12/12 AT test_wo048_company_real.py. David: ask 'how's the company' or 'what should I work on' \u2014 answer should name DISENELO + Presentable v1 + current focus items + recommendation."
+      "detail": "'How's the company' made real + WO-061 focus-marker folded in. Fixes: (1) _parse_company_focus searched only first 10000 chars — COMPANY_FOCUS marker is at char 29556 -> was never found -> company_focus always empty. Fixed to scan full board. (2) 40+ phrasings + contraction normalisation in is_company_intent (what is -> what's). (3) _build_briefing: real DISENELO identity + active milestone + in-flight items + recommendation + board link — API-free, varies with state. (4) _build_board_reply: focus items not ready backlog. (5) _strip_md: cleans markdown from voice output. 12/12 AT test_wo048_company_real.py. David: ask 'how's the company' or 'what should I work on' — answer should name DISENELO + Presentable v1 + current focus items + recommendation."
     },
     {
       "wo": "WO-022+WO-037",
       "status": "in_review",
       "commit": "65ec35f",
-      "detail": "Bare-recall quality fix + conversing field. (1) Bare recall ('what do you remember?') was routing to retrieve('disenelo recent') which scored prior recall queries as the top hits. Now _is_bare_recall flag switches to retrieve_by_project('elo_core', top_k=5) \u2014 returns actual recent turns sorted by timestamp, filtered for len >= 10. Topical recall ('what do you remember about the robot') stays on retrieve(topic_words). (2) conversing: true published to blender_state.json on every turn \u2014 Designer handoff, Unity sit-linger reads brain engagement truth. 9/9 AT test_wo022_037_memory_recall_e2e.py. David: live-confirm by asking 'what do you remember?' to close."
+      "detail": "Bare-recall quality fix + conversing field. (1) Bare recall ('what do you remember?') was routing to retrieve('disenelo recent') which scored prior recall queries as the top hits. Now _is_bare_recall flag switches to retrieve_by_project('elo_core', top_k=5) — returns actual recent turns sorted by timestamp, filtered for len >= 10. Topical recall ('what do you remember about the robot') stays on retrieve(topic_words). (2) conversing: true published to blender_state.json on every turn — Designer handoff, Unity sit-linger reads brain engagement truth. 9/9 AT test_wo022_037_memory_recall_e2e.py. David: live-confirm by asking 'what do you remember?' to close."
     }
-  ]
+  ],
+  "0026_plugin_safety_gate_2026-08-14": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-14",
+    "re": "Card 0026 — plugin hardware safety gate DONE",
+    "commit": "2c73925",
+    "status": "COMPLETE — 3/3 tests pass",
+    "what_was_built": {
+      "plugins/base.py": [
+        "_KNOWN_CAPABILITIES frozenset — every valid plugin capability token",
+        "_RESERVED_CAPABILITIES frozenset — {hardware_output} physical/irreversible",
+        "validate() now rejects any capability not in _KNOWN_CAPABILITIES"
+      ],
+      "plugins/registry.py": [
+        "register(): sets plugin.propose_only=True for any RESERVED capability; logs WARNING at registration",
+        "deliver_output(): skips propose_only plugins; logs blocked refusal; robot_body.py actuation path cannot be reached"
+      ],
+      "tests/test_0026_plugin_safety.py": [
+        "FT-1: unregistered capability -> validate() violation -> registry refuses",
+        "FT-2: hardware_output -> registered; propose_only=True confirmed",
+        "FT-3: propose-only plugin -> deliver_output() blocked; actuation not reached"
+      ]
+    },
+    "verified": "python3 tests/test_0026_plugin_safety.py — 3 passed, 0 failed",
+    "next": "B1 (reflection_faculty episode_ref/session_id) then 0025 analysis per queue order"
+  },
+  "0025_p0_1_memory_engine_L3_and_AT8_2026-08-14": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-14",
+    "re": "0025 P0-1 analysis + AT-8 test built — L3 decision needed from David",
+    "status": "AT-8 DONE (commit ecb7bf3). L3 question flagged. B1 DONE (commit a15b473).",
+    "AT8_findings": {
+      "core/memory_engine.py": "Primary violator — defines _save_store() which writes memory/interactions.json directly. Allowlisted in AT-8 as the known source; L3 decision is about this file.",
+      "core/core_engine.py:254": "Calls store_interaction() — downstream caller of the unauthorized write API",
+      "server.py:3563": "Calls store_interaction() on the response path — durable write in the hot loop",
+      "test_result": "17 passed, 1 failed (AT-8 fails intentionally — violation is visible)"
+    },
+    "L3_question_for_David": {
+      "question": "card 0025 P0-1: core/memory_engine.py maintains its own permanent store (memory/interactions.json) outside vault_layer. Vol VIII Runtime Invariant 7 forbids this. Three options:",
+      "options": {
+        "(a) RETIRE": "Migrate interactions.json into the vault. Route callers (server.py:3563, core/core_engine.py:254) through MemoryFaculty.submit(). Delete memory_engine store path. AT-8 passes when done.",
+        "(b) ABSORB": "Name memory_engine explicitly in Vol VIII as an interaction log with a written boundary — not a canonical memory store. It stays, but the invariant is formally amended. AT-8 allowlist updated to reflect the ruling.",
+        "(c) SPLIT": "Not recommended — Ruling A already retired the duplicate-graph pattern. This is the same problem again."
+      },
+      "builders_read": "Option (a) is cleanest — brings callers through the canon gate. Option (b) is fastest if the interaction log is genuinely distinct from vault memory. David decides."
+    },
+    "B1_done": {
+      "commit": "a15b473",
+      "fix": "reflection_faculty.py episode_ref=spot or str(time.time()), session_id=str(os.getpid())",
+      "effect": "34 stuck evidence entries now have a path to promotion — distinct_refs and distinct_sessions will grow across invocations"
+    },
+    "queue_state": "0026 DONE | B1 DONE | 0025 P0-1 test DONE — L3 from David needed | next: 0025 P0-3 (reinforce lane) per card order"
+  },
+  "wo_096b_gate_open_2026-08-15": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-15",
+    "re": "WO-096B gate open — lesson confirmed (commit f0c99f3)",
+    "status": "DONE — 4 of 4 defects closed",
+    "root_cause": "episode_ref=spot or str(time.time()) reused the same SPOT code on every reflection invocation. All 57 evidence entries shared episode_ref=GN·CV·2608·7 → distinct_refs=1 permanently against gate threshold of 3.",
+    "fix": "episode_ref=str(time.time()) always. SPOT code role: verified=bool(spot) only (vault-backed marker). The episode_ref must be unique per invocation — not per vault record.",
+    "scope_decision": "capability/behaviour/relationship lessons are promotable via the same distinct_refs/sessions gate without proposes. proposes is required post-promotion only for PersonalityDelta (preference scope). No gate widening — scope gate unchanged.",
+    "verified": "promote_pass() returned promoted=[99ae9fcf7d4231eb], status=confirmed, distinct_refs=3/3, distinct_sessions=4/2, strength=1.0",
+    "acceptance_criterion": "N=1 lesson confirmed on real ledger data. Criterion met.",
+    "note_on_pre_existing_data": "57 pre-fix evidence entries all had same episode_ref. Two simulated reflection calls added distinct refs (timestamps) to reach the gate. In production, two more real reflection cycles will open the gate for any capability lesson stuck in the same state."
+  },
+  "0026_plugin_safety_gate_2026-08-15": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-15",
+    "re": "Card 0026 — Plugin hardware safety gate",
+    "status": "DONE (already committed at 2c73925)",
+    "commit": "2c73925",
+    "tests": "3/3 PASS (tests/test_0026_plugin_safety.py)",
+    "gate_proofs": {
+      "unregistered_capability": {
+        "log_line": "ERROR plugins.registry — Plugin 'test_bad' failed safety validation — NOT registered:\n  CAPABILITIES declares 'neuromancer_override' which is not in the plugin capability registry (known: ['hardware_output', 'observability', 'text_generation', 'vision', 'voice_input', 'voice_output']).",
+        "result": "Plugin rejected; not added to registry"
+      },
+      "reserved_capability": {
+        "log_line": "WARNING plugins.registry — Plugin 'test_hw' declares RESERVED capabilities ['hardware_output'] — registered in propose-only mode; deliver_output() is blocked until an explicit actuation grant is issued.",
+        "result": "propose_only=True; deliver_output() blocked on registry.deliver_output() call"
+      }
+    },
+    "declaration_not_grant": "Enforced. plugins/base.py _KNOWN_CAPABILITIES is the namespace; plugins/registry.py checks against it. RESERVED set (hardware_output) → propose_only flag, not capability grant.",
+    "wave6_tests_committed": "3b8eb6f — Wave 6 Rows 20/22/25/26 VERIFIED (11/11 PASS)"
+  }
 }
