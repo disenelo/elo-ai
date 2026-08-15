@@ -370,6 +370,19 @@ def _conversation_faculty(plan: CognitivePlan) -> CognitivePlan:
             plan.direct_backend  = "direct"
             return plan
 
+        # ── CT4V-07: Structural claim-type gate — tiers only fall, never rise ──
+        # Checks memory / capability / history sources before the LLM is called.
+        # UNKNOWN tier → direct response returned, LLM not consulted. Rule 1 alarm logged.
+        try:
+            from runtime.claim_gate import classify_and_gate as _ct4v_gate
+            _ct4v_type, _ct4v_resp = _ct4v_gate(raw)
+            if _ct4v_resp is not None:
+                plan.direct_response = _ct4v_resp
+                plan.direct_backend  = "claim_gate"
+                return plan
+        except Exception as _ct4v_err:
+            _log.warning("CT4V-07 gate error: %s", _ct4v_err)
+
         # ── Self-ref ─────────────────────────────────────────────────────────
         if any(p in raw_lower for p in _srv._SELF_REF_TRIGGERS):
             plan.direct_response = random.choice(_srv._SELF_REF_POOL)
