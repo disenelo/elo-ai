@@ -315,6 +315,17 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
         cal = {"action": "build", "confidence": 0.7,
                "reason": f"wm_winner={_wm_winner} foregrounded — active thread"}
 
+    # Row 14 ROUTE: if eLo just fell (last move failed + fell=True), temper enthusiasm.
+    # A body that just fell should witness, not build — presence first.
+    _route_hist = _world.get("route_history", [])
+    if _route_hist:
+        _last = _route_hist[-1] if isinstance(_route_hist[-1], dict) else {}
+        if not _last.get("arrived", True) and _last.get("fell", False):
+            if action in ("build", "connect", "celebrate"):
+                action = "witness"
+                cal = {"action": "witness", "confidence": 0.7,
+                       "reason": "route_history: last move fell — presence before enthusiasm"}
+
     # loop protection always wins
     if loop_detected or intent == "stabilise":
         return {
