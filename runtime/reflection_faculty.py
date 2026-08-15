@@ -180,8 +180,8 @@ def _write_journal_entry(
                 from self.lesson_store import record_outcome as _ls_record
                 _ls_record(
                     lkey=lkey,
-                    episode_ref=spot or str(time.time()),
-                    verified=bool(spot),  # SPOT code = verified episode (vault record exists)
+                    episode_ref=str(time.time()),   # unique per invocation; spot is verification, not episode ID
+                    verified=bool(spot),             # vault-backed = verified
                     session_id=str(os.getpid()),
                     contradicting=(lesson.get("delta") in ("failed", "partial")),
                 )
