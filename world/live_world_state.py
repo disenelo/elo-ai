@@ -163,6 +163,7 @@ class LiveWorldState:
     turn_id:       str    = ""
     domain_health: dict   = field(default_factory=dict)
     degraded:      tuple  = field(default_factory=tuple)
+    route_history: tuple  = field(default_factory=tuple)  # WO-118: recent route outcomes
 
 
 # ── Assembly ──────────────────────────────────────────────────────────────────
@@ -393,6 +394,17 @@ def assemble_world_state(turn_id: str = "", perception=None) -> LiveWorldState:
         except Exception:
             pass  # degraded perception never blocks world state
 
+    # WO-118: surface recent route outcomes to Executive (pairs with WO-106)
+    _route_hist: tuple = ()
+    try:
+        from self.route_memory import recent_routes as _recent_routes
+        _route_hist = tuple(_recent_routes(5))
+        _health("route", "live" if _route_hist else "absent",
+                "route_memory.jsonl" if _route_hist else "absent",
+                0.9 if _route_hist else 0.0)
+    except Exception:
+        _health("route", "absent", "absent", 0.0)
+
     return LiveWorldState(
         desktop=desktop,
         user=user,
@@ -410,6 +422,7 @@ def assemble_world_state(turn_id: str = "", perception=None) -> LiveWorldState:
         turn_id=turn_id,
         domain_health=domain_health,
         degraded=tuple(degraded),
+        route_history=_route_hist,
     )
 
 

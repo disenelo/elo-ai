@@ -38,6 +38,8 @@ _SPATIAL_PATH      = os.path.join(_ROOT, "blender", "elo_spatial.json")
 
 # WO-118: dedup — track last_move _ts values already fed to route_memory
 _seen_move_ts: set[float] = set()
+# WO-118 Rule 1 alarm: consecutive reads where body has goal but no last_move
+_absent_last_move_count: int = 0
 
 
 @dataclass
@@ -124,14 +126,16 @@ def get_elo_spatial() -> EloSpatial:
         spatial.screen_w  = int(d.get("screen_w", 2560))
         spatial.screen_h  = int(d.get("screen_h", 1440))
         # WO-118: feed completed moves into route_memory on first read per move
+        global _absent_last_move_count
         _lm = d.get("last_move")
         if isinstance(_lm, dict):
+            _absent_last_move_count = 0  # body is reporting — reset Rule 1 alarm
             _move_ts = float(_lm.get("_ts", 0.0))
             if _move_ts and _move_ts not in _seen_move_ts:
                 _seen_move_ts.add(_move_ts)
                 try:
                     from self.route_memory import remember_route as _rr
-                    _retries   = int(_lm.get("retries", 0))
+                    _retries    = int(_lm.get("retries", 0))
                     _smoothness = max(0.0, 1.0 - _retries * 0.2)
                     _rr(
                         goal_surface=str(_lm.get("goal", "")),
@@ -145,6 +149,18 @@ def get_elo_spatial() -> EloSpatial:
                     )
                 except Exception as _re:
                     _log.warning("get_elo_spatial: route_memory write failed — %s", _re)
+        else:
+            # WO-118 Rule 1: body has active goal/route but last_move absent → may have gone silent
+            if d.get("goal") or d.get("route"):
+                _absent_last_move_count += 1
+                if _absent_last_move_count >= 3:
+                    _log.warning(
+                        "WO-118 Rule 1: body navigating (goal=%r) but last_move absent "
+                        "for %d consecutive reads — body may have gone silent.",
+                        d.get("goal"), _absent_last_move_count,
+                    )
+            else:
+                _absent_last_move_count = 0
         # WO-099: read gaze UP — "eLo KNOWS what he's looking at"
         _g = d.get("gaze")
         if isinstance(_g, dict):
