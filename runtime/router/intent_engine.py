@@ -4,7 +4,10 @@ runtime/router/intent_engine.py — Stage 04: Intent Classification
 Determine what the user wants, not just what they said.
 Intent categories map to agent routing priorities.
 
-Output: {intent, confidence}
+Output: {intent, confidence, chain, category, reason}
+  category — Vol V Ch.8 five-category system:
+    Build | Explore | Reflect | Decide | Connect
+  reason   — one-phrase explanation of the category assignment
 """
 from __future__ import annotations
 import re
@@ -223,6 +226,43 @@ _CHAIN_PATTERNS = [
 ]
 
 
+# ── Vol V Ch.8: five-category system ─────────────────────────────────────────
+# Maps specific intents → (Build|Explore|Reflect|Decide|Connect, reason)
+
+_CATEGORY_MAP: dict[str, tuple[str, str]] = {
+    "file_ops":           ("Build",   "managing or creating files"),
+    "memory":             ("Reflect", "recalling past moments"),
+    "system":             ("Decide",  "choosing system settings"),
+    "utility_timer":      ("Decide",  "controlling time or task"),
+    "utility_reminder":   ("Decide",  "organising what needs doing"),
+    "utility_weather":    ("Explore", "seeking information about conditions"),
+    "utility_time":       ("Explore", "seeking the current time or date"),
+    "utility_calendar":   ("Explore", "checking schedule"),
+    "utility_spotify":    ("Connect", "enjoying music together"),
+    "utility_messages":   ("Connect", "communicating with others"),
+    "utility_clipboard":  ("Build",   "working with content"),
+    "utility_notes":      ("Build",   "capturing thoughts"),
+    "utility_news":       ("Explore", "staying informed"),
+    "utility_translate":  ("Connect", "crossing language barriers"),
+    "utility_calculator": ("Decide",  "working out a result"),
+    "utility_github":     ("Build",   "working with code projects"),
+    "utility_vision":     ("Explore", "seeing and interpreting"),
+    "file_read":          ("Explore", "reading and understanding files"),
+    "vault_write":        ("Build",   "building knowledge"),
+    "draft":              ("Build",   "creating content"),
+    "lookup":             ("Explore", "finding information"),
+    "social":             ("Connect", "sharing a moment"),
+    "planning":           ("Decide",  "charting a path forward"),
+    "creation":           ("Build",   "making something new"),
+    "conversation":       ("Connect", "being present together"),
+}
+
+
+def _categorise(intent: str) -> tuple[str, str]:
+    """Return (category, reason) for the given intent string."""
+    return _CATEGORY_MAP.get(intent, ("Explore", "general curiosity"))
+
+
 def detect(cleaned: str, session: dict | None = None) -> dict:
     """
     Stage 04 — classify intent from normalised, repaired input.
@@ -231,19 +271,27 @@ def detect(cleaned: str, session: dict | None = None) -> dict:
         intent      — primary intent string
         confidence  — 0.0–1.0
         chain       — optional list of intents for multi-agent (max 2)
+        category    — Vol V Ch.8: Build | Explore | Reflect | Decide | Connect
+        reason      — one-phrase explanation of the category assignment
     """
     t = cleaned.lower().strip()
 
     # Multi-agent chain detection
     for pattern, chain in _CHAIN_PATTERNS:
         if re.search(pattern, t):
-            return {"intent": chain[0], "confidence": 0.8, "chain": chain}
+            cat, reason = _categorise(chain[0])
+            return {"intent": chain[0], "confidence": 0.8, "chain": chain,
+                    "category": cat, "reason": reason}
 
     # Single intent — first match wins
     for intent, patterns in _INTENT_PATTERNS:
         for p in patterns:
             if re.search(p, t, re.IGNORECASE):
                 confidence = 0.9 if intent != "conversation" else 0.5
-                return {"intent": intent, "confidence": confidence, "chain": []}
+                cat, reason = _categorise(intent)
+                return {"intent": intent, "confidence": confidence, "chain": [],
+                        "category": cat, "reason": reason}
 
-    return {"intent": "conversation", "confidence": 0.5, "chain": []}
+    cat, reason = _categorise("conversation")
+    return {"intent": "conversation", "confidence": 0.5, "chain": [],
+            "category": cat, "reason": reason}
