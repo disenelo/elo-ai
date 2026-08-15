@@ -3165,6 +3165,12 @@ def _process_turn(raw: str) -> dict:
         elif _plan and _plan.direct_response:
             response     = _plan.direct_response
             backend_used = _plan.direct_backend
+            # WO-110: write the_moment.json on direct turns too — "never skip" rule.
+            try:
+                from runtime.the_moment import write as _tm_write_direct
+                _tm_write_direct(_elo_self)
+            except Exception:
+                pass
             if _plan.system_immediate and _plan.system_action:
                 # Execute the system action now
                 try:
