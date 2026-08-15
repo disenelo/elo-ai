@@ -3514,6 +3514,14 @@ def _process_turn(raw: str) -> dict:
                 _bh_degraded = (_llm_turn and backend_used == "mock"
                                 and _bh_expected != "mock"
                                 and os.environ.get("ELO_BACKEND", "") != "mock")
+                # CT0031 Step 1: merge Ollama timing fields when that backend was used
+                _bh_ollama = {}
+                if "ollama" in backend_used:
+                    try:
+                        from runtime.backend_router import _last_ollama_metrics as _bh_om
+                        _bh_ollama = dict(_bh_om)
+                    except Exception:
+                        pass
                 _bh_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                         "blender", "backend_health.json")
                 _bh_tmp  = _bh_path + ".tmp"
@@ -3523,6 +3531,7 @@ def _process_turn(raw: str) -> dict:
                         "expected": _bh_expected,
                         "degraded": _bh_degraded,
                         "_ts":      _bh_time.time(),
+                        **_bh_ollama,
                     }, _bh_f, ensure_ascii=False)
                 os.replace(_bh_tmp, _bh_path)
                 if _bh_degraded and _agent is None:

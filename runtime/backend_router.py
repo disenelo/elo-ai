@@ -55,6 +55,9 @@ _TIER_CONVERSATIONAL = 1   # cheapest capable (social, ambient, short answers)
 _TIER_REASONING      = 2   # capable cloud (build, plan, challenge, reflect)
 _TIER_DEEP           = 3   # premium (diagnose, deep, long analysis)
 
+# ── CT0031: Ollama timing telemetry — populated by _ollama_call each turn ─────
+_last_ollama_metrics: dict = {}
+
 # Provider cost classes — used for escalation comparison
 _COST_FREE_LOCAL    = "free-local"
 _COST_CHEAP_CLOUD   = "cheap-cloud"
@@ -300,13 +303,14 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
     host  = os.environ.get("ELO_OLLAMA_HOST",  "http://localhost:11434").rstrip("/")
     model = os.environ.get("ELO_OLLAMA_MODEL", "mistral")
     payload = _json.dumps({
-        "model":    model,
-        "messages": [
+        "model":      model,
+        "messages":   [
             {"role": "system", "content": system_prompt},
             {"role": "user",   "content": user_input},
         ],
-        "stream":  False,
-        "options": {"temperature": 0.7, "num_predict": 256, "num_ctx": 8192},
+        "stream":     False,
+        "keep_alive": "30m",   # CT0031 Fix A: keep model loaded between turns
+        "options":    {"temperature": 0.7, "num_predict": 256, "num_ctx": 8192},
     }).encode()
     req = _ureq.Request(
         f"{host}/api/chat",
@@ -315,7 +319,27 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
         method="POST",
     )
     with _ureq.urlopen(req, timeout=60) as _r:
-        return _json.loads(_r.read()).get("message", {}).get("content", "").strip()
+        body = _json.loads(_r.read())
+    # CT0031 Step 1: extract Ollama timing telemetry — all durations are nanoseconds
+    _ns = lambda ns: round(ns / 1_000_000, 1) if ns else 0.0  # noqa: E731
+    _load_ms   = _ns(body.get("load_duration", 0))
+    _pe_tok    = body.get("prompt_eval_count", 0)
+    _pe_ms     = _ns(body.get("prompt_eval_duration", 0))
+    _ev_tok    = body.get("eval_count", 0)
+    _ev_ms     = _ns(body.get("eval_duration", 0))
+    _logger.info(
+        "CT0031 ollama: load=%.0fms prompt_eval=%dtok(%.0fms) gen=%dtok(%.0fms)",
+        _load_ms, _pe_tok, _pe_ms, _ev_tok, _ev_ms,
+    )
+    _last_ollama_metrics.clear()
+    _last_ollama_metrics.update({
+        "load_ms":              _load_ms,
+        "prompt_eval_tokens":   _pe_tok,
+        "prompt_eval_ms":       _pe_ms,
+        "gen_tokens":           _ev_tok,
+        "gen_ms":               _ev_ms,
+    })
+    return body.get("message", {}).get("content", "").strip()
 
 
 def _openai_available() -> bool:
