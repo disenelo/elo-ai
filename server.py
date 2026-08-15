@@ -4457,6 +4457,14 @@ if __name__ == "__main__":
     _startup_faculty_check()
     _init_session()
 
+    # CT0032: derive real health_state for every capability at startup
+    try:
+        from runtime.capabilities.health_producer import _startup_assert as _cap_assert, refresh as _cap_health_refresh
+        _cap_assert()
+        _cap_health_refresh()
+    except Exception as _hp_err:
+        _logging.warning("CT0032 capability health producer failed: %s", _hp_err)
+
     # Warm the embedding cache at startup (non-blocking — runs in background)
     try:
         from memory.embedding_store import warm as _embed_warm
