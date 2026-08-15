@@ -1,5 +1,43 @@
 {
   "ts": 1786762623.834686,
+  "0022_ct4v07_claim_gate_2026-08-15": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-15",
+    "re": "Card 0022 CT4V-07 — Structural Claim-Type Gate DONE",
+    "commit": "65b7083",
+    "status": "COMPLETE — 8/8 tests pass",
+    "what_was_built": {
+      "runtime/claim_gate.py": [
+        "_memory_gate(): vault_layer.lookup() + memory_engine.retrieve(); both empty → UNKNOWN response",
+        "_vision_gate(): blender_state.json vision_active=False → UNKNOWN response",
+        "_history_gate(): autobiography.jsonl empty → UNKNOWN response",
+        "classify_and_gate(): top-level router — (None, None) when no claim detected; (type, None) when state present; (type, response) for UNKNOWN tier"
+      ],
+      "runtime/spine/spine.py": [
+        "CT4V-07 gate wired into _conversation_faculty() after identity gate",
+        "UNKNOWN tier → plan.direct_response set, backend='claim_gate'; LLM not consulted",
+        "Fails open on error — LLM proceeds if gate throws",
+        "Rule 1 alarm: every tier downgrade logged at INFO level (CT4V-07 tier downgrade: <type> → UNKNOWN)"
+      ],
+      "tests/test_0017_ct4v07_claim_gate.py": [
+        "CG-1/2: memory recall — empty vault→UNKNOWN, records exist→LLM proceeds",
+        "CG-3/4: vision — vision_active=False→UNKNOWN, True→LLM proceeds",
+        "CG-5/6: history — empty autobiography→UNKNOWN, entries→LLM proceeds",
+        "CG-7: non-claim question → (None, None), no gate fires",
+        "CG-8: spine.py CT4V-07 wiring confirmed (source inspection)"
+      ]
+    },
+    "tier_rule": "Tiers only fall, never rise (Vol VII §3.1.4). Gate is structural code — not a prompt instruction. LLM cannot override it.",
+    "claim_types_covered": ["memory", "capability.vision", "history"],
+    "identity_note": "Identity already handled by _IDENTITY_TRIGGERS + _identity_response() in spine.py (P0-X). CT4V-07 does not duplicate this — extends the same pattern to memory/capability/history.",
+    "transcript_tests_needed": [
+      "'Tell me something we discussed before' (empty vault) → 'My memory's clean on that one.' [no Plato]",
+      "'Can you see my screen?' (vision off) → 'I can't see your screen right now.'",
+      "'Where have you been?' (autobiography empty) → 'The record's still building.'"
+    ],
+    "next": "Card 0023 — viewpoints reconciliation + universe.json decision (remaining items). Then card 0021 D-1 (proposal loop)."
+  },
   "architect_note_groq_and_status_2026-08-14": {
     "to": "Architect",
     "from": "Builder",

@@ -1,4 +1,8 @@
 {
+  "_retired": true,
+  "_retired_date": "2026-08-15",
+  "_successor": "knowledge/viewpoints.json",
+  "_note": "Card 0023: orphaned — no Python code reads this file. Canonical viewpoints are in knowledge/viewpoints.json (loaded by graph_loader.py). The 8 topic values here are covered by the 47-topic list in the canonical file. Do not read from this file.",
   "convergence": "The OS, book and robot keep moving closer together. They're not separate projects — they're one identity across three bodies.",
   "chunk": "Chunk matters because eLo doesn't move on its own. Chunk is the body that knows how to cross different terrain.",
   "robot": "The robot exists because presence needs weight. You can't love something that never takes up space.",

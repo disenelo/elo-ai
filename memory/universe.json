@@ -1,4 +1,8 @@
 {
+  "_retired": true,
+  "_retired_date": "2026-08-15",
+  "_successor": "relationships/world_graph.json",
+  "_note": "Card 0023: orphaned — no Python code reads this file. Canonical entity definitions are in relationships/world_graph.json (loaded by graph_loader.py). eLo/Chunk/K-7/Core/Sugarcore are all in the canonical graph with confidence:1.0 entries. Do not read from this file.",
   "universe_name": "eLo Universe",
   "core_entities": {
     "eLo":       { "role": "creative explorer intelligence", "function": "self / companion / navigator" },
