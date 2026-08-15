@@ -201,11 +201,13 @@ def _executive_faculty(
     # World state — where eLo is, what the user is doing
     if world is not None:
         _desktop = getattr(world, "desktop", None)
+        _route_hist = list(getattr(world, "route_history", ()) or ())
         _attention_in["world_state"] = {
-            "surface":    getattr(_desktop, "surface",    "") if _desktop else "",
-            "active_app": getattr(_desktop, "active_app", "") if _desktop else "",
-            "available":  getattr(_desktop, "available",   True) if _desktop else False,
-            "degraded":   list(getattr(world, "degraded", [])),
+            "surface":       getattr(_desktop, "surface",    "") if _desktop else "",
+            "active_app":    getattr(_desktop, "active_app", "") if _desktop else "",
+            "available":     getattr(_desktop, "available",   True) if _desktop else False,
+            "degraded":      list(getattr(world, "degraded", [])),
+            "route_history": _route_hist,   # WO-118 / Row 14 ROUTE
         }
     else:
         _log.warning("executive_faculty: plan.world absent — deciding without world context")
