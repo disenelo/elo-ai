@@ -5,7 +5,7 @@ Python's half of the spatial contract:
   - Gets all visible window bounds via osascript (macOS)
   - Reads eLo's current window attachment from presence_state.json
   - Reads eLo's precise position from elo_spatial.json (written by Unity)
-  - Calculates distances, finds nearest windows, plans routes
+  - Calculates distances, finds nearest windows (does NOT plan routes — see faculties/spatial/)
 
 Unity's half (writes elo_spatial.json):
   {

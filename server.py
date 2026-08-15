@@ -2586,6 +2586,15 @@ def _process_turn(raw: str) -> dict:
         except Exception as _e:
             _logging.warning("g_ctx/spatial_state FAILED: %s", _e)
 
+        # WO-120: Spatial Faculty — affordances + reachability context for the Executive
+        try:
+            from faculties.spatial.spatial_faculty import context_block as _spat_fac
+            _spat_block = _spat_fac()
+            if _spat_block:
+                g_ctx = f"{g_ctx}\n{_spat_block}" if g_ctx else _spat_block
+        except Exception as _e:
+            _logging.warning("g_ctx/spatial_faculty FAILED: %s", _e)
+
         # WO-023: emit top-bias + keep-out position hint for Unity
         try:
             from desktop.position_faculty import emit as _pos_emit
