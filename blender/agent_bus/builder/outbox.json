@@ -1214,5 +1214,35 @@
     ],
     "UNKNOWN_condition_answered": "internal_intent set post-spine (server.py:3091), spine call at server.py:2428. Executive never sees internal_intent today. Smallest fix: add internal_intent param to spine.run(). Ambient implementation authorised after W5.",
     "next": "Loop test — one traced turn where faculty output reaches Executive, changes decision, produces real outcome, outcome reaches memory, reflection forms lesson, later decision_journal row names that lesson as trigger."
+  },
+  "l3_presence_rd_seat_2026-08-16": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-16",
+    "re": "L3 direction received — future Presence R&D seat acknowledged, no implementation taken",
+    "status": "ACKNOWLEDGED — strategic direction preserved, seat established in vision doc, work not authorised",
+    "document": "docs/architecture/_vision/ELO_PERSISTENT_SELF_MANY_PRESENCES.md",
+    "document_status": "L3 VISION — NOT canon. NOT a WO. NOT scheduled. NOT costed.",
+    "seat_structure_confirmed": "§4.2 of the vision document records the seat structure David described — BUILDER / DESIGNER rows for Desktop Presence, Mobile Presence Builder, and Physical Embodiment. Work not authorised for any row.",
+    "research_question": "How does the same eLo become present across different surfaces without creating another eLo?",
+    "research_territory": [
+      "Mobile widget / notification presence",
+      "Desktop presence",
+      "Voice-only / invisible presence",
+      "Surface handoff",
+      "Privacy state and perception permissions",
+      "How a surface reports capability without becoming a decision-maker",
+      "What makes 'eLo is here' feel like eLo"
+    ],
+    "hard_constraints": [
+      "No mobile codebase",
+      "No new runtime",
+      "No sync architecture",
+      "No Presence Router implementation",
+      "Research/design only until relevant architecture is ready and David authorises it"
+    ],
+    "invariant": "surface = body/interface, never brain. Consistent with the three prior demotions (0035 D8, AR-24, 0044 ambient_thought). §2.3 Presence Contract is the Architect's boundary to own.",
+    "r_and_d_intake_note": "Japanese sphere-joint R&D and Gemma/Pi offline AI R&D both kept as intake only (WO-084 and WO-098/LCI-01 respectively). R&D may discover mechanisms, constraints and opportunities — does not silently alter canon, create work, or authorise implementation.",
+    "execution_unchanged": "FINISH -> PROVE -> EXTEND. Builder on loop test (LOOP-7 open — requires live runtime)."
   }
 }
