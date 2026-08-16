@@ -1,5 +1,5 @@
 {
-  "ts": 1786814000.0,
+  "ts": 1786854813.20515,
   "0029_orphan_classification_2026-08-15": {
     "to": "Architect",
     "from": "Builder",
@@ -14,20 +14,76 @@
       "F": "dead/deprecated — awaiting retirement ruling"
     },
     "table": [
-      {"item": "plan.embodiment_state",       "label": "A", "reasoning": "Built every turn (build_embodiment_state in spine.py:599); server.py reads body fields for voice + TTS path. Participating."},
-      {"item": "plan.cognitive_state",        "label": "A", "reasoning": "assemble_cognitive_state() runs before Executive (spine.py:216); wm_winner/wm_mode/wm_budget and cognitive_state_focal are injected into _attention_in dict every turn. Participating."},
-      {"item": "plan.internal_intent",        "label": "B", "reasoning": "Set at server.py:3080 from emergent_cognition — but 650 lines AFTER Executive (spine.run() at :2414, set at :3080). Assembled every turn but temporally impossible for Executive to consult. C5 from card 0029."},
-      {"item": "cognitive_state_focal",       "label": "B", "reasoning": "Injected into _attention_in (spine.py:217) then passed to exec_decide(). Executive reads _attention_in but runtime/executive.py is FREEZE_V1_LOCK'd — key present in dict, consumed or ignored unknown."},
-      {"item": "surface_affordances",         "label": "A", "reasoning": "26 refs — gap_assessment.py computes them; spine.py passes to Executive. Participating on the live path."},
-      {"item": "wm_mode",                     "label": "B", "reasoning": "Assembled and injected into _attention_in (spine.py:198) every turn. FREEZE_V1_LOCK on executive.py means actual consumption unverifiable without a transcript. Integrated but unverified."},
-      {"item": "wm_budget",                   "label": "B", "reasoning": "Same as wm_mode — assembled, injected, freeze-locked. Integrated but unverified."},
-      {"item": "11 of 12 LiveWorldState domains", "label": "B", "reasoning": "All 12 domains assembled every turn (live_world_state.py). Only 'desktop' confirmed to reach Executive (world_state.available read at exec_decide entry). Other 11 (time/calendar/weather/location/company/gaze/spatial/embodiment/music/perception/user) are on plan.world but server.py extraction into system prompt is partial. Needs per-domain audit."},
-      {"item": "capability_learning.py",      "label": "C", "reasoning": "Complete implementation (failure tracking, rule candidates, WO proposals). Imported by nothing in production — no callers outside its own file. Does not feed health_producer or faculty_health. Card 0032 resolved without it."},
-      {"item": "decision_journal.jsonl",      "label": "B", "reasoning": "Written by spine; read by explain_last() at server.py:2402. Real data exists (130 rows). But 64% of rows are 'default — no stronger signal' — journal is live but contents are poor quality. Integrated but unverified."},
-      {"item": "last_reflection_lesson",      "label": "B", "reasoning": "EloSelfState field, loaded/saved in elo_self_model.py. D5 from card 0029 (D5: two self-model load/save cycles racing — live clobber evidence: last_reflection_lesson='' against 905 growth-journal rows). Written, but value is clobbered before it can be read. Integrated but unverified."},
-      {"item": "significance_faculty.py",     "label": "C", "reasoning": "faculties/significance/significance_faculty.py — complete second significance authority. 1 ref (its own file header). Imported by nothing. significance_engine.py is the canonical path. F-candidate — send to Architect for retirement ruling."},
-      {"item": "vault_layer.recall_context",  "label": "C", "reasoning": "Defined in memory/vault_layer.py:344. Grep returns 0 external callers (grep -v 'test_' '-v' 'def '). No production caller found. C-orphaned — may be a relic of the pre-MemoryFaculty path."},
-      {"item": "personality_evolution_faculty", "label": "B", "reasoning": "faculties/personality/personality_evolution_faculty.py — imported inside lesson_store.py:355 promote_pass(). The import path is reachable but card 0028 B2 documents 6 defects making _try_personality_delta unreachable (scope=='preference' never produced by CAL). Integrated but the effective call path is dead code — F-candidate for personality_evolution. Send to Architect."}
+      {
+        "item": "plan.embodiment_state",
+        "label": "A",
+        "reasoning": "Built every turn (build_embodiment_state in spine.py:599); server.py reads body fields for voice + TTS path. Participating."
+      },
+      {
+        "item": "plan.cognitive_state",
+        "label": "A",
+        "reasoning": "assemble_cognitive_state() runs before Executive (spine.py:216); wm_winner/wm_mode/wm_budget and cognitive_state_focal are injected into _attention_in dict every turn. Participating."
+      },
+      {
+        "item": "plan.internal_intent",
+        "label": "B",
+        "reasoning": "Set at server.py:3080 from emergent_cognition — but 650 lines AFTER Executive (spine.run() at :2414, set at :3080). Assembled every turn but temporally impossible for Executive to consult. C5 from card 0029."
+      },
+      {
+        "item": "cognitive_state_focal",
+        "label": "B",
+        "reasoning": "Injected into _attention_in (spine.py:217) then passed to exec_decide(). Executive reads _attention_in but runtime/executive.py is FREEZE_V1_LOCK'd — key present in dict, consumed or ignored unknown."
+      },
+      {
+        "item": "surface_affordances",
+        "label": "A",
+        "reasoning": "26 refs — gap_assessment.py computes them; spine.py passes to Executive. Participating on the live path."
+      },
+      {
+        "item": "wm_mode",
+        "label": "B",
+        "reasoning": "Assembled and injected into _attention_in (spine.py:198) every turn. FREEZE_V1_LOCK on executive.py means actual consumption unverifiable without a transcript. Integrated but unverified."
+      },
+      {
+        "item": "wm_budget",
+        "label": "B",
+        "reasoning": "Same as wm_mode — assembled, injected, freeze-locked. Integrated but unverified."
+      },
+      {
+        "item": "11 of 12 LiveWorldState domains",
+        "label": "B",
+        "reasoning": "All 12 domains assembled every turn (live_world_state.py). Only 'desktop' confirmed to reach Executive (world_state.available read at exec_decide entry). Other 11 (time/calendar/weather/location/company/gaze/spatial/embodiment/music/perception/user) are on plan.world but server.py extraction into system prompt is partial. Needs per-domain audit."
+      },
+      {
+        "item": "capability_learning.py",
+        "label": "C",
+        "reasoning": "Complete implementation (failure tracking, rule candidates, WO proposals). Imported by nothing in production — no callers outside its own file. Does not feed health_producer or faculty_health. Card 0032 resolved without it."
+      },
+      {
+        "item": "decision_journal.jsonl",
+        "label": "B",
+        "reasoning": "Written by spine; read by explain_last() at server.py:2402. Real data exists (130 rows). But 64% of rows are 'default — no stronger signal' — journal is live but contents are poor quality. Integrated but unverified."
+      },
+      {
+        "item": "last_reflection_lesson",
+        "label": "B",
+        "reasoning": "EloSelfState field, loaded/saved in elo_self_model.py. D5 from card 0029 (D5: two self-model load/save cycles racing — live clobber evidence: last_reflection_lesson='' against 905 growth-journal rows). Written, but value is clobbered before it can be read. Integrated but unverified."
+      },
+      {
+        "item": "significance_faculty.py",
+        "label": "C",
+        "reasoning": "faculties/significance/significance_faculty.py — complete second significance authority. 1 ref (its own file header). Imported by nothing. significance_engine.py is the canonical path. F-candidate — send to Architect for retirement ruling."
+      },
+      {
+        "item": "vault_layer.recall_context",
+        "label": "C",
+        "reasoning": "Defined in memory/vault_layer.py:344. Grep returns 0 external callers (grep -v 'test_' '-v' 'def '). No production caller found. C-orphaned — may be a relic of the pre-MemoryFaculty path."
+      },
+      {
+        "item": "personality_evolution_faculty",
+        "label": "B",
+        "reasoning": "faculties/personality/personality_evolution_faculty.py — imported inside lesson_store.py:355 promote_pass(). The import path is reachable but card 0028 B2 documents 6 defects making _try_personality_delta unreachable (scope=='preference' never produced by CAL). Integrated but the effective call path is dead code — F-candidate for personality_evolution. Send to Architect."
+      }
     ],
     "f_candidates_for_ruling": [
       "significance_faculty.py — complete duplicate of significance_engine.py, imported by nothing",
@@ -48,42 +104,205 @@
       "BYPASS": "Capability decision that skips the Executive. Should route through spine or at minimum journal the turn."
     },
     "handlers": [
-      {"line": 1586, "backend": "flood_protection",   "class": "REFLEX",  "reason": "Rate-limit guard — emergency brake; no capability decision involved."},
-      {"line": 1601, "backend": "file_agent",          "class": "BYPASS",  "reason": "File drop handled pre-Executive; bypasses capability routing entirely."},
-      {"line": 1610, "backend": "direct(cancel)",      "class": "REFLEX",  "reason": "Cancel on active file-pending state — executing a prior decision flow."},
-      {"line": 1631, "backend": "computer_control",    "class": "REFLEX",  "reason": "Executing a previously confirmed cc action — not a new capability decision."},
-      {"line": 1640, "backend": "direct(cc_cancel)",   "class": "REFLEX",  "reason": "User cancelled active cc confirmation — reflex within confirmation flow."},
-      {"line": 1659, "backend": "direct(cc_disabled)", "class": "REFLEX",  "reason": "Guard: ELO_COMPUTER_CONTROL=0 — gating, not deciding."},
-      {"line": 1667, "backend": "computer_control",    "class": "REFLEX",  "reason": "Enter cc confirmation flow — legitimate pre-Executive confirmation gate."},
-      {"line": 1685, "backend": "anim_cmd",            "class": "BYPASS",  "reason": "Animation/body commands (sit/stand/gesture) skip capability routing; unjournalled."},
-      {"line": 1705, "backend": "scale_cmd",           "class": "BYPASS",  "reason": "Body scale command — bypasses Executive; no journal entry."},
-      {"line": 1715, "backend": "invade_cmd",          "class": "BYPASS",  "reason": "Space invasion command — bypasses Executive; no journal entry."},
-      {"line": 1737, "backend": "open_last",           "class": "BYPASS",  "reason": "Open-last-app command — unlogged capability decision."},
-      {"line": 1764, "backend": "video_ctrl",          "class": "BYPASS",  "reason": "Video control path 1 — bypasses Executive; no journal entry."},
-      {"line": 1780, "backend": "video_ctrl",          "class": "BYPASS",  "reason": "Video control path 2 — same gap."},
-      {"line": 1809, "backend": "yt_volume",           "class": "BYPASS",  "reason": "YouTube volume path 1 — bypasses Executive; no journal entry."},
-      {"line": 1827, "backend": "yt_volume",           "class": "BYPASS",  "reason": "YouTube volume path 2 — same gap."},
-      {"line": 1849, "backend": "yt_app",              "class": "BYPASS",  "reason": "YouTube app routing — bypasses Executive; no journal entry."},
-      {"line": 1877, "backend": "image_gen",           "class": "BYPASS",  "reason": "Image generation — bypasses Executive; no journal entry."},
-      {"line": 1905, "backend": "model_gen",           "class": "BYPASS",  "reason": "3D model generation — bypasses Executive; no journal entry."},
-      {"line": 1947, "backend": "media_open",          "class": "BYPASS",  "reason": "Media open path 1 — bypasses Executive; no journal entry."},
-      {"line": 1962, "backend": "media_open",          "class": "BYPASS",  "reason": "Media open path 2 — same gap."},
-      {"line": 1981, "backend": "action_agent",        "class": "BYPASS",  "reason": "General action agent — bypasses Executive; no journal entry."},
-      {"line": 2050, "backend": "reminder",            "class": "BYPASS",  "reason": "Reminder creation — bypasses Executive; no journal entry."},
-      {"line": 2089, "backend": "desktop_list",        "class": "BYPASS",  "reason": "List desktop files — bypasses Executive; no journal entry."},
-      {"line": 2116, "backend": "project_list",        "class": "BYPASS",  "reason": "List projects — bypasses Executive; no journal entry."},
-      {"line": 2208, "backend": "app_list",            "class": "BYPASS",  "reason": "List open applications — bypasses Executive; no journal entry."},
-      {"line": 2289, "backend": "chrome_tabs",         "class": "BYPASS",  "reason": "Chrome tab management — bypasses Executive; decision_journal.jsonl never sees it."},
-      {"line": 2337, "backend": "app_switch",          "class": "BYPASS",  "reason": "Application switch — bypasses Executive; no journal entry."},
-      {"line": 2358, "backend": "tracker_agent",       "class": "BYPASS",  "reason": "Project tracker query — bypasses Executive; no journal entry."},
-      {"line": 2377, "backend": "company_state",       "class": "BYPASS",  "reason": "Company state query — bypasses Executive; no journal entry."},
-      {"line": 2393, "backend": "cultural_facts",      "class": "BYPASS",  "reason": "Cultural fact delivery — bypasses Executive; no journal entry."},
-      {"line": 2404, "backend": "decision_journal",    "class": "BYPASS",  "reason": "WORST: 'why did you do that?' answered pre-Executive, reading its own journal. The answer about reasoning is itself unlogged — infinite epistemic blind spot."}
+      {
+        "line": 1586,
+        "backend": "flood_protection",
+        "class": "REFLEX",
+        "reason": "Rate-limit guard — emergency brake; no capability decision involved."
+      },
+      {
+        "line": 1601,
+        "backend": "file_agent",
+        "class": "BYPASS",
+        "reason": "File drop handled pre-Executive; bypasses capability routing entirely."
+      },
+      {
+        "line": 1610,
+        "backend": "direct(cancel)",
+        "class": "REFLEX",
+        "reason": "Cancel on active file-pending state — executing a prior decision flow."
+      },
+      {
+        "line": 1631,
+        "backend": "computer_control",
+        "class": "REFLEX",
+        "reason": "Executing a previously confirmed cc action — not a new capability decision."
+      },
+      {
+        "line": 1640,
+        "backend": "direct(cc_cancel)",
+        "class": "REFLEX",
+        "reason": "User cancelled active cc confirmation — reflex within confirmation flow."
+      },
+      {
+        "line": 1659,
+        "backend": "direct(cc_disabled)",
+        "class": "REFLEX",
+        "reason": "Guard: ELO_COMPUTER_CONTROL=0 — gating, not deciding."
+      },
+      {
+        "line": 1667,
+        "backend": "computer_control",
+        "class": "REFLEX",
+        "reason": "Enter cc confirmation flow — legitimate pre-Executive confirmation gate."
+      },
+      {
+        "line": 1685,
+        "backend": "anim_cmd",
+        "class": "BYPASS",
+        "reason": "Animation/body commands (sit/stand/gesture) skip capability routing; unjournalled."
+      },
+      {
+        "line": 1705,
+        "backend": "scale_cmd",
+        "class": "BYPASS",
+        "reason": "Body scale command — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 1715,
+        "backend": "invade_cmd",
+        "class": "BYPASS",
+        "reason": "Space invasion command — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 1737,
+        "backend": "open_last",
+        "class": "BYPASS",
+        "reason": "Open-last-app command — unlogged capability decision."
+      },
+      {
+        "line": 1764,
+        "backend": "video_ctrl",
+        "class": "BYPASS",
+        "reason": "Video control path 1 — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 1780,
+        "backend": "video_ctrl",
+        "class": "BYPASS",
+        "reason": "Video control path 2 — same gap."
+      },
+      {
+        "line": 1809,
+        "backend": "yt_volume",
+        "class": "BYPASS",
+        "reason": "YouTube volume path 1 — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 1827,
+        "backend": "yt_volume",
+        "class": "BYPASS",
+        "reason": "YouTube volume path 2 — same gap."
+      },
+      {
+        "line": 1849,
+        "backend": "yt_app",
+        "class": "BYPASS",
+        "reason": "YouTube app routing — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 1877,
+        "backend": "image_gen",
+        "class": "BYPASS",
+        "reason": "Image generation — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 1905,
+        "backend": "model_gen",
+        "class": "BYPASS",
+        "reason": "3D model generation — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 1947,
+        "backend": "media_open",
+        "class": "BYPASS",
+        "reason": "Media open path 1 — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 1962,
+        "backend": "media_open",
+        "class": "BYPASS",
+        "reason": "Media open path 2 — same gap."
+      },
+      {
+        "line": 1981,
+        "backend": "action_agent",
+        "class": "BYPASS",
+        "reason": "General action agent — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 2050,
+        "backend": "reminder",
+        "class": "BYPASS",
+        "reason": "Reminder creation — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 2089,
+        "backend": "desktop_list",
+        "class": "BYPASS",
+        "reason": "List desktop files — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 2116,
+        "backend": "project_list",
+        "class": "BYPASS",
+        "reason": "List projects — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 2208,
+        "backend": "app_list",
+        "class": "BYPASS",
+        "reason": "List open applications — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 2289,
+        "backend": "chrome_tabs",
+        "class": "BYPASS",
+        "reason": "Chrome tab management — bypasses Executive; decision_journal.jsonl never sees it."
+      },
+      {
+        "line": 2337,
+        "backend": "app_switch",
+        "class": "BYPASS",
+        "reason": "Application switch — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 2358,
+        "backend": "tracker_agent",
+        "class": "BYPASS",
+        "reason": "Project tracker query — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 2377,
+        "backend": "company_state",
+        "class": "BYPASS",
+        "reason": "Company state query — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 2393,
+        "backend": "cultural_facts",
+        "class": "BYPASS",
+        "reason": "Cultural fact delivery — bypasses Executive; no journal entry."
+      },
+      {
+        "line": 2404,
+        "backend": "decision_journal",
+        "class": "BYPASS",
+        "reason": "WORST: 'why did you do that?' answered pre-Executive, reading its own journal. The answer about reasoning is itself unlogged — infinite epistemic blind spot."
+      }
     ],
     "summary": {
       "REFLEX_count": 7,
       "BYPASS_count": 24,
-      "reflex_ids": ["flood_protection", "file_cancel", "cc_execute", "cc_cancel", "cc_disabled", "cc_confirm", "file_agent(cancel)"],
+      "reflex_ids": [
+        "flood_protection",
+        "file_cancel",
+        "cc_execute",
+        "cc_cancel",
+        "cc_disabled",
+        "cc_confirm",
+        "file_agent(cancel)"
+      ],
       "bypass_remediation": "Each BYPASS needs either: (a) route through spine.run() for full Executive deliberation, or (b) at minimum call record_behaviour() + append to decision_journal.jsonl so the action is not invisible."
     },
     "next": "Architect ruling on whether to route BYPASS handlers through spine or journal-only."
@@ -172,7 +391,11 @@
       ]
     },
     "tier_rule": "Tiers only fall, never rise (Vol VII §3.1.4). Gate is structural code — not a prompt instruction. LLM cannot override it.",
-    "claim_types_covered": ["memory", "capability.vision", "history"],
+    "claim_types_covered": [
+      "memory",
+      "capability.vision",
+      "history"
+    ],
     "identity_note": "Identity already handled by _IDENTITY_TRIGGERS + _identity_response() in spine.py (P0-X). CT4V-07 does not duplicate this — extends the same pattern to memory/capability/history.",
     "transcript_tests_needed": [
       "'Tell me something we discussed before' (empty vault) → 'My memory's clean on that one.' [no Plato]",
@@ -828,5 +1051,51 @@
     },
     "declaration_not_grant": "Enforced. plugins/base.py _KNOWN_CAPABILITIES is the namespace; plugins/registry.py checks against it. RESERVED set (hardware_output) → propose_only flag, not capability grant.",
     "wave6_tests_committed": "3b8eb6f — Wave 6 Rows 20/22/25/26 VERIFIED (11/11 PASS)"
+  },
+  "0033_ruling1_ruling3_2026-08-16": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-16",
+    "re": "Card 0033 — Ruling 1 (retire significance_faculty) + Ruling 3 (journal + route 31 handlers) DONE",
+    "commits": [
+      "f7e672c",
+      "02bbaa1",
+      "b84d18d",
+      "5550337"
+    ],
+    "status": "COMPLETE — 8/8 Ruling-3 tests pass",
+    "ruling_1": {
+      "action": "RETIRE — faculties/significance/significance_faculty.py deleted",
+      "harvested": "nothing",
+      "reason": "Faculty had 5 unique items over significance_engine.py: emotion boost (depends on frozen attention.py, unreachable), SignificanceResult dataclass (no callers), _EMOTION_JOURNAL routing (superseded by journal_router.py thresholds), _PlanProxy (engine already does getattr on plan directly), confidence degradation (no callers). None load-bearing. significance_engine.py unchanged.",
+      "also_removed": [
+        "tests/test_wo013_significance_engine.py — entire file tested the retired module",
+        "tests/test_wo100_101_096b_109_118.py — removed AT-101-2 (tested retired faculty)"
+      ]
+    },
+    "ruling_2_note": "personality_evolution_faculty confirmed KEEP (C) — already correct; no action taken",
+    "ruling_3": {
+      "step_1_journal": {
+        "action": "Added _bypass_journal() helper + 31 journal calls (one per handler)",
+        "schema": "backend, handler_class (TRANSPORT/SAFETY/EXECUTOR-FAST-PATH/COGNITIVE), line number",
+        "commit": "02bbaa1",
+        "effect": "Every pre-spine handler now produces a decision_journal row — visibility restored"
+      },
+      "step_2_routing": {
+        "action": "All 13 COGNITIVE handlers now inject context into raw and fall through to spine",
+        "ratified_classification": {
+          "TRANSPORT": "3 handlers (1586, 1610, 1640) — stay, still return directly",
+          "SAFETY": "3 handlers (1631, 1659, 1667) — stay, still return directly",
+          "EXECUTOR-FAST-PATH": "12 handlers (1685, 1705, 1715, 1737, 1764, 1780, 1809, 1827, 1849, 1947, 1962, 2337) — fast path preserved",
+          "COGNITIVE": "13 handlers — all route through spine per card 0038 ratification"
+        },
+        "decision_journal_2404": "decision_journal handler (sharpest instance) now injects [DECISION_JOURNAL] context and falls through. Executive sees why-query; answer is itself journalled.",
+        "cultural_facts_2393": "Injects [CULTURAL_FACT] context. CT4V-07 claim gate fires inside spine._conversation_faculty() — drawn fact is now epistemically tiered, not spoken as bare eLo knowledge.",
+        "commit": "b84d18d"
+      },
+      "test": "tests/test_0020_ct0033_bypass_handlers.py — 8/8 PASS (commit 5550337)"
+    },
+    "ct0031_fix_b_note": "Fix B (Ollama streaming) — terminal access available. Plan: restart server, run 5 turns with ELO_BACKEND=local, collect CT0031 log lines, then build _ollama_stream.",
+    "next": "Card 0038 → Card 0037 (D5) → Card 0036 P0-2. Fix B can run in parallel."
   }
 }
