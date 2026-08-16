@@ -211,6 +211,24 @@ def _sanitise(text: str) -> str:
     return text
 
 
+def _bypass_journal(raw: str, backend: str, handler_class: str, line: int) -> None:
+    """Trace a pre-spine bypass handler to decision_journal — ends invisibility per card 0038."""
+    try:
+        from self.decision_journal import record as _dj_record
+        _dj_record(
+            turn=raw[:120],
+            action="bypass",
+            exec_decision={
+                "cal_reason": f"bypass:{handler_class}",
+                "intent":     f"{handler_class}:{backend}@{line}",
+            },
+            backend=backend,
+            outcome=f"bypass:{handler_class.lower()}",
+        )
+    except Exception:
+        pass
+
+
 def _is_user_away() -> bool:
     """Return True if presence.json reports the user is away."""
     try:
@@ -1583,6 +1601,7 @@ def _process_turn(raw: str) -> dict:
             _last_inputs.pop(0)
         if len(_last_inputs) == 3 and len(set(_last_inputs)) == 1:
             _last_inputs.clear()
+            _bypass_journal(_original_raw, backend="guard", handler_class="TRANSPORT", line=1586)
             return {"response": "Take a breath. Try a different message.", "mode": "direct", "backend": "guard"}
 
         # ── Pending file plan confirmation / cancellation ──────────────────────
@@ -1598,6 +1617,7 @@ def _process_turn(raw: str) -> dict:
                             _voice_speak(_fp_result)
                     except Exception:
                         pass
+                    _bypass_journal(_original_raw, backend="file_agent", handler_class="COGNITIVE", line=1601)
                     return {"response": _fp_result, "mode": "execute", "backend": "file_agent"}
                 elif _is_file_cancel(raw):
                     _fp_cancel()
@@ -1607,6 +1627,7 @@ def _process_turn(raw: str) -> dict:
                             _voice_speak(_cancel_txt)
                     except Exception:
                         pass
+                    _bypass_journal(_original_raw, backend="direct", handler_class="TRANSPORT", line=1610)
                     return {"response": _cancel_txt, "mode": "direct", "backend": "direct"}
         except Exception:
             pass
@@ -1628,6 +1649,7 @@ def _process_turn(raw: str) -> dict:
                             _voice_speak(_cc_result)
                     except Exception:
                         pass
+                    _bypass_journal(_original_raw, backend="computer_control", handler_class="SAFETY", line=1631)
                     return {"response": _cc_result, "mode": "execute", "backend": "computer_control"}
                 elif _is_file_cancel(raw):
                     _cc_clear()
@@ -1637,6 +1659,7 @@ def _process_turn(raw: str) -> dict:
                             _voice_speak(_cc_cancel)
                     except Exception:
                         pass
+                    _bypass_journal(_original_raw, backend="direct", handler_class="TRANSPORT", line=1640)
                     return {"response": _cc_cancel, "mode": "direct", "backend": "direct"}
         except Exception:
             pass
@@ -1656,6 +1679,7 @@ def _process_turn(raw: str) -> dict:
                             _voice_speak(_cc_disabled)
                     except Exception:
                         pass
+                    _bypass_journal(_original_raw, backend="direct", handler_class="SAFETY", line=1659)
                     return {"response": _cc_disabled, "mode": "direct", "backend": "direct"}
                 _cc_set(_cc_action)
                 _cc_confirm_txt = f"Shall I {_cc_describe(_cc_action)}?"
@@ -1664,6 +1688,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_cc_confirm_txt)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="computer_control", handler_class="SAFETY", line=1667)
                 return {"response": _cc_confirm_txt, "mode": "confirm", "backend": "computer_control"}
         except Exception:
             pass
@@ -1682,6 +1707,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_anim_reply)
             except Exception:
                 pass
+            _bypass_journal(_original_raw, backend="anim_cmd", handler_class="EXECUTOR-FAST-PATH", line=1685)
             return {"response": _anim_reply, "mode": "direct", "backend": "anim_cmd"}
 
         # ── Scale command (get bigger / get smaller) — instant, no LLM needed ──
@@ -1702,6 +1728,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_scale_reply)
             except Exception:
                 pass
+            _bypass_journal(_original_raw, backend="scale_cmd", handler_class="EXECUTOR-FAST-PATH", line=1705)
             return {"response": _scale_reply, "mode": "direct", "backend": "scale_cmd"}
 
         # ── Invade / SpawnWave command — instant, no LLM needed ──────────────
@@ -1712,6 +1739,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_invade_reply)
             except Exception:
                 pass
+            _bypass_journal(_original_raw, backend="invade_cmd", handler_class="EXECUTOR-FAST-PATH", line=1715)
             return {"response": _invade_reply, "mode": "direct", "backend": "invade_cmd",
                     "command": "spawn_wave"}
 
@@ -1734,6 +1762,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_ol_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="open_last", handler_class="EXECUTOR-FAST-PATH", line=1737)
                 return {"response": _ol_reply, "mode": "direct", "backend": "open_last"}
             except Exception as _ol_err:
                 import sys as _ol_sys
@@ -1761,6 +1790,7 @@ def _process_turn(raw: str) -> dict:
                             _voice_speak(_pv_reply)
                     except Exception:
                         pass
+                    _bypass_journal(_original_raw, backend="video_ctrl", handler_class="EXECUTOR-FAST-PATH", line=1764)
                     return {"response": _pv_reply, "mode": "direct", "backend": "video_ctrl"}
             except Exception as _pve:
                 import sys as _pve_sys
@@ -1777,6 +1807,7 @@ def _process_turn(raw: str) -> dict:
                             _voice_speak(_pv_reply2)
                     except Exception:
                         pass
+                    _bypass_journal(_original_raw, backend="video_ctrl", handler_class="EXECUTOR-FAST-PATH", line=1780)
                     return {"response": _pv_reply2, "mode": "direct", "backend": "video_ctrl"}
             except Exception as _pve2:
                 import sys as _pve2_sys
@@ -1806,6 +1837,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_yv_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="yt_volume", handler_class="EXECUTOR-FAST-PATH", line=1809)
                 return {"response": _yv_reply, "mode": "direct", "backend": "yt_volume"}
             except Exception as _yve:
                 import sys as _yve_sys
@@ -1824,6 +1856,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_yv_reply2)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="yt_volume", handler_class="EXECUTOR-FAST-PATH", line=1827)
                 return {"response": _yv_reply2, "mode": "direct", "backend": "yt_volume"}
             except Exception as _yve2:
                 import sys as _yve2_sys
@@ -1846,6 +1879,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_ya_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="yt_app", handler_class="EXECUTOR-FAST-PATH", line=1849)
                 return {"response": _ya_reply, "mode": "direct", "backend": "yt_app"}
             except Exception as _yae:
                 import sys as _yae_sys
@@ -1874,6 +1908,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_ig_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="image_gen", handler_class="COGNITIVE", line=1877)
                 return {"response": _ig_reply, "mode": "direct", "backend": "image_gen"}
             except Exception as _ig_err:
                 import sys as _ig_sys
@@ -1902,6 +1937,7 @@ def _process_turn(raw: str) -> dict:
                     if not _mg_result["ok"]:
                         print(f"[model_gen] all backends failed for: {_mg_prompt}")
                 _mg_thread.Thread(target=_mg_run, daemon=True).start()
+                _bypass_journal(_original_raw, backend="model_gen", handler_class="COGNITIVE", line=1905)
                 return {"response": _mg_reply, "mode": "direct", "backend": "model_gen"}
             except Exception as _mg_err:
                 import sys as _mg_sys
@@ -1944,6 +1980,7 @@ def _process_turn(raw: str) -> dict:
                             _voice_speak(_media_reply)
                     except Exception:
                         pass
+                    _bypass_journal(_original_raw, backend="media_open", handler_class="EXECUTOR-FAST-PATH", line=1947)
                     return {"response": _media_reply, "mode": "direct", "backend": "media_open"}
                 # Not open — search YouTube
                 _media_results = _ms_search(_media_q, max_results=1, engine="youtube")
@@ -1959,6 +1996,7 @@ def _process_turn(raw: str) -> dict:
                             _voice_speak(_media_reply)
                     except Exception:
                         pass
+                    _bypass_journal(_original_raw, backend="media_open", handler_class="EXECUTOR-FAST-PATH", line=1962)
                     return {"response": _media_reply, "mode": "direct", "backend": "media_open"}
             except Exception as _me_err:
                 import sys as _me_sys
@@ -1978,6 +2016,7 @@ def _process_turn(raw: str) -> dict:
                             _voice_speak(_act_reply)
                     except Exception:
                         pass
+                    _bypass_journal(_original_raw, backend="action_agent", handler_class="COGNITIVE", line=1981)
                     return {"response": _act_reply, "mode": "direct", "backend": "action_agent"}
         except Exception as _ae:
             import sys as _ae_sys
@@ -2047,6 +2086,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_rem_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="reminder", handler_class="COGNITIVE", line=2050)
                 return {"response": _rem_reply, "mode": "direct", "backend": "reminder"}
         except Exception as _rem_err:
             import sys as _rem_sys
@@ -2086,6 +2126,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_d_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="desktop_list", handler_class="COGNITIVE", line=2089)
                 return {"response": _d_reply, "mode": "direct", "backend": "desktop_list"}
             except Exception as _dl_err:
                 import sys as _dl_sys
@@ -2113,6 +2154,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_p_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="project_list", handler_class="COGNITIVE", line=2116)
                 return {"response": _p_reply, "mode": "direct", "backend": "project_list"}
             except Exception as _pl_err:
                 import sys as _pl_sys
@@ -2205,6 +2247,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_al_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="app_list", handler_class="COGNITIVE", line=2208)
                 return {"response": _al_reply, "mode": "direct", "backend": "app_list"}
             except Exception as _al_err:
                 import sys as _al_sys
@@ -2286,6 +2329,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_tab_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="chrome_tabs", handler_class="COGNITIVE", line=2289)
                 return {"response": _tab_reply, "mode": "direct", "backend": "chrome_tabs"}
             except Exception as _ct_err:
                 import sys as _ct_sys
@@ -2334,6 +2378,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_app_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="app_switch", handler_class="EXECUTOR-FAST-PATH", line=2337)
                 return {"response": _app_reply, "mode": "direct", "backend": "app_switch"}
 
         # ── Tracker / document creation ───────────────────────────────────────
@@ -2355,6 +2400,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_tracker_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="tracker_agent", handler_class="COGNITIVE", line=2358)
                 return {"response": _tracker_reply, "mode": "direct", "backend": "tracker_agent"}
         except Exception as _te:
             import sys as _te_sys
@@ -2374,6 +2420,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_company_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="company_state", handler_class="COGNITIVE", line=2377)
                 return {"response": _company_reply, "mode": "direct", "backend": "company_state"}
         except Exception as _csi_err:
             import sys as _csi_sys
@@ -2390,6 +2437,7 @@ def _process_turn(raw: str) -> dict:
                         _voice_speak(_fact_reply)
                 except Exception:
                     pass
+                _bypass_journal(_original_raw, backend="cultural_facts", handler_class="COGNITIVE", line=2393)
                 return {"response": _fact_reply, "mode": "direct", "backend": "cultural_facts"}
         except Exception as _cf_err:
             import sys as _cf_sys
@@ -2401,6 +2449,7 @@ def _process_turn(raw: str) -> dict:
             try:
                 from self.decision_journal import explain_last as _dj_explain
                 _why_resp = _dj_explain()
+                _bypass_journal(_original_raw, backend="decision_journal", handler_class="COGNITIVE", line=2404)
                 return {"response": _why_resp, "mode": "direct", "backend": "decision_journal"}
             except Exception:
                 pass
