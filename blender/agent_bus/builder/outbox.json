@@ -1,5 +1,5 @@
 {
-  "ts": 1786854813.20515,
+  "ts": 1786894534.094953,
   "0029_orphan_classification_2026-08-15": {
     "to": "Architect",
     "from": "Builder",
@@ -1097,5 +1097,122 @@
     },
     "ct0031_fix_b_note": "Fix B (Ollama streaming) — terminal access available. Plan: restart server, run 5 turns with ELO_BACKEND=local, collect CT0031 log lines, then build _ollama_stream.",
     "next": "Card 0038 → Card 0037 (D5) → Card 0036 P0-2. Fix B can run in parallel."
+  },
+  "CT0031_fix_b_2026-08-16": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-16",
+    "re": "CT0031 Fix B — measurement complete + _ollama_stream wired",
+    "measurement": {
+      "pe_tok_non_stream": 7198,
+      "pe_tok_stream": 7074,
+      "load_ms_cold": 263.3,
+      "load_ms_warm": 1934.9,
+      "prompt_eval_ms": 9188.9,
+      "gen_tokens": 71,
+      "gen_ms": 2011.9,
+      "truncating": false,
+      "note": "pe_tok ~7100 >> 3000 threshold. Prompt not truncating. num_ctx=8192, headroom ~1100 tokens."
+    },
+    "built": {
+      "_ollama_stream": "runtime/backend_router.py:451 — NDJSON streaming, mirrors _openai_stream signature, fires on_first_sentence callback, updates _last_ollama_metrics from done chunk",
+      "route_streaming_wiring": "runtime/backend_router.py:905 — if mode==local and _ollama_available(): try _ollama_stream, returns ollama(stream). Fallback to route() on error.",
+      "verified": "backend=ollama(stream)+timer confirmed live. pe_tok=7074 in backend_health.json."
+    },
+    "commit": "14db340"
+  },
+  "ambient_ingress_analysis_2026-08-16": {
+    "to": "Lead Architect (David)",
+    "from": "Builder",
+    "ts": "2026-08-16",
+    "re": "ambient_thought() — 32nd cognitive ingress: classification + options for ruling",
+    "status": "AWAITING RULING — no patch made",
+    "classification": {
+      "trigger": "timer (2-4 min daemon thread), NOT user-intent",
+      "within_31_handler_audit": false,
+      "note": "The 31 handlers are all in _process_turn(). ambient_thought() is structurally parallel — it runs on a timer outside _process_turn() entirely.",
+      "against_ONEBRAIN_011": {
+        "routing_invariant_scope": "card 0036 routing invariant covers user-intent-bearing paths; ambient is timer-initiated, so not literally in scope",
+        "but": "ONE BRAIN CONSUMPTION INVARIANT is broader — no capability operational until output reaches authoritative Executive. ambient_thought() makes a cognitive decision (speak/silence/emotion/movement) via LLM without ever touching executive.decide(). That is a consumption invariant violation.",
+        "verdict": "COGNITIVE INGRESS (timer-initiated). Not infrastructure, not transport, not safety, not auth. Must route through Executive per ONEBRAIN-012 contract."
+      },
+      "against_ONEBRAIN_012": {
+        "executive_context_violation": true,
+        "current_context": "9-line minimal _sys_lines (dream, cultural fact 25%, synthesis, energy/care)",
+        "canonical_context_missing": [
+          "identity",
+          "working_memory",
+          "attention",
+          "significance",
+          "epistemic_state",
+          "vision output",
+          "perch state",
+          "the_moment.json",
+          "session history"
+        ],
+        "verdict": "ambient decision is made without canonical Executive context — ONEBRAIN-012 not satisfied"
+      }
+    },
+    "canonical_design_question": {
+      "question": "Does the canonical design permit ambient initiation as an Executive-triggered decision?",
+      "answer": "Yes — the Executive already has silence as a possible action. The ambient timer can be reframed as input to the Executive rather than a parallel decision-maker. The Executive decides: speak (with content) / silence / emotion / movement. This preserves all intended behaviour.",
+      "reference": "card 0036 P0-1 target shape: INPUT -> TRANSPORT/SAFETY -> INTENT -> SPINE -> FACULTY -> EXECUTIVE -> PLAN -> EXECUTOR -> ACK"
+    },
+    "options_for_ruling": [
+      {
+        "option": "A",
+        "name": "Full spine route",
+        "description": "Ambient timer calls _process_turn(__ambient_tick__) with ambient flag. Spine detects flag, builds lightweight context, Executive decides, executor dispatches, decision journalled.",
+        "pro": "Satisfies CANONICAL SPINE requirement literally. Full journalling. One ingress path.",
+        "con": "20-30s Ollama latency per ambient tick. Ambient ticks currently run every 2-4 min — user may hear silence for 30s before speech fires. Significant UX degradation.",
+        "verdict": "Architecturally pure. Practically heavy."
+      },
+      {
+        "option": "B",
+        "name": "Executive-only route (no full spine)",
+        "description": "Ambient timer calls executive.decide(ambient_context_dict) directly. ambient_context_dict built from existing state (emotion, energy, synthesis, cultural fact, vision state). Executive returns action (speak/silence/emotion/movement). Decision journalled via decision_journal.record().",
+        "pro": "Lightweight. Fast. Preserves timing. Executive is the authority. Decision is journalled.",
+        "con": "Does not go through spine._conversation_faculty() or the full faculty bus. If CANONICAL SPINE means spine.run(), this falls short.",
+        "verdict": "Fast and Executive-governed. Satisfies ONEBRAIN-012 if spine is not required literally."
+      },
+      {
+        "option": "C",
+        "name": "Spine ambient entry point (cleanest)",
+        "description": "Add spine.ambient_tick(context) that runs executive.decide() with ambient context, journals the decision, returns {speak, emotion, movement}. Timer calls spine.ambient_tick() instead of _rt() directly.",
+        "pro": "Canonical Executive. Journalled. Lightweight (no 7100-token system prompt). Architecturally clean. Tests can verify the spine connection.",
+        "con": "Requires one new function in spine.py (small). Must verify it does not create a second Executive.",
+        "verdict": "RECOMMENDED if implementation is authorised. Minimal surface. Satisfies acceptance test literally."
+      }
+    ],
+    "acceptance_test_design": {
+      "positive": "AMBIENT TRIGGER -> spine.ambient_tick() / executive.decide() -> DECISION -> VOICE — verifiable by checking decision_journal.jsonl for a row with cal_reason=ambient_tick after a tick fires",
+      "negative": "Executive may choose silence — test that outcome=silence row can be produced and _voice_speak() is NOT called in that case",
+      "fail_condition": "Test must fail if _rt() is called directly in ambient_thought() without executive.decide() in the path",
+      "note": "Acceptance requirement per Lead Architect: ambient speech must be demonstrably attributable to the single Executive/One Brain decision path"
+    },
+    "one_brain_positive_finding": {
+      "recorded": true,
+      "description": "Runtime observation 2026-08-16: eLo spoke while Presence was not visibly loaded. This PROVES the runtime (server.py) exists independently of the visual embodiment (Unity). The daemon threads (ambient engine, vision loop) continue operating. This is the independence we want. The defect is not the existence of the ambient organ but its uncoordinated routing.",
+      "david_framing": "accidentally tested eLo exists independently of visual embodiment and proved the runtime does. Organs not yet One Brain coordinated. Exactly the distinction the programme aims to prove."
+    },
+    "questions_for_ruling": [
+      "Does CANONICAL SPINE mean spine.run() literally (Option A) or is executive.decide() sufficient (Option B/C)?",
+      "Is 20-30s Ollama latency per ambient tick acceptable, or must Option B/C be chosen for timing?",
+      "Is ambient_thought() classified as a ratified AMBIENT PROCESSOR category, or is it COGNITIVE with no exception?",
+      "When is implementation authorised — after W1/W2 queue items, or can it slot in alongside?"
+    ]
+  },
+  "w1_w2_w5_2026-08-16": {
+    "W1_outcome_derivation": "DONE — outcome=spoke/silent/unknown, never hardcoded success. Commit fcc79f2. Test 5/5.",
+    "W2_session_id": "DONE — _SESSION_ID = str(int(time.time())) at module load in reflection_faculty.py. Commit 48a3d24. Test 5/5.",
+    "W3_W4": "CONFIRMED DONE from 0043 — CT0033 bypass handlers verified (31 handlers journalled, 13 COGNITIVE routes through spine). BH-8 passing.",
+    "W5_executive_context": "DONE — ExecutiveContext built from canon. 8/11 fields sourced. Commit e16d27a. Test 7/7.",
+    "W5_NEW_ASSUMPTIONS_flagged_to_CA": [
+      "agency — not in any contract; CA: do not build yet (P2)",
+      "epistemic_state — no structured contract field; Vol VII Ch.3 is speech-licensing only",
+      "significance — Vol V §1.5 schema exists; significance_faculty.py does NOT exist"
+    ],
+    "UNKNOWN_condition_answered": "internal_intent set post-spine (server.py:3091), spine call at server.py:2428. Executive never sees internal_intent today. Smallest fix: add internal_intent param to spine.run(). Ambient implementation authorised after W5.",
+    "next": "Loop test — one traced turn where faculty output reaches Executive, changes decision, produces real outcome, outcome reaches memory, reflection forms lesson, later decision_journal row names that lesson as trigger."
   }
 }
