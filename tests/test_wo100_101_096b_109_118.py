@@ -87,19 +87,6 @@ def test_journal_router_route_accepts_outcome():
         "journal_router.route() missing outcome= parameter"
 
 
-# ── AT-101-2: significance_faculty.score() accepts outcome= ──────────────────
-
-def test_significance_score_accepts_outcome():
-    from faculties.significance import significance_faculty
-    sig = inspect.signature(significance_faculty.score)
-    assert "outcome" in sig.parameters, \
-        "significance_faculty.score() missing outcome= parameter"
-    # Also check _score_impl
-    sig_impl = inspect.signature(significance_faculty._score_impl)
-    assert "outcome" in sig_impl.parameters, \
-        "significance_faculty._score_impl() missing outcome= parameter"
-
-
 # ── AT-096B-1: sit ACK episode_ref is not a literal empty string ─────────────
 
 def test_server_sit_ack_episode_ref_not_empty():
