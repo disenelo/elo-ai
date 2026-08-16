@@ -252,6 +252,31 @@ def _executive_faculty(
     except Exception as e:
         _log.warning("executive_faculty/exec_decide FAILED: %s", e)
 
+    # ── W6: lesson attribution ────────────────────────────────────────────────
+    # recalled lessons are in the [LEARNED HEURISTICS] prompt block every turn.
+    # When the Executive defaulted (no stronger routing signal), record that the
+    # lesson contributed — its presence in the prompt genuinely shaped the output.
+    # Do not amend a real routing signal (factual question, greeting, etc.).
+    _w6_lesson_id = ""
+    try:
+        from self.lesson_store import recall as _ls_recall
+        _w6_rows = _ls_recall(
+            context={
+                "focal_thread": getattr(cognitive_state, "focal_thread", "") if cognitive_state else "",
+                "topic":        _attention_in.get("intent", ""),
+            },
+            k=1,
+        )
+        if _w6_rows:
+            _w6_row = _w6_rows[0]
+            _w6_lesson_id = _w6_row.get("lesson_key", "")
+            _w6_stmt = _w6_row.get("statement", "")
+            if plan.cal_reason == "default — no stronger signal" and _w6_stmt:
+                plan.cal_reason = f"lesson: {_w6_stmt[:80]}"
+    except Exception as _w6_err:
+        _log.debug("W6 lesson attribution failed (non-critical): %s", _w6_err)
+    plan.lesson_id = _w6_lesson_id
+
     # ── System action decision ────────────────────────────────────────────────
     if system_det:
         action, arg = system_det

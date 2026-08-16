@@ -61,6 +61,11 @@ class CognitivePlan:
     # ── Confidence ───────────────────────────────────────────────────────────
     confidence:           float = 0.7
 
+    # ── W6: lesson attribution ─────────────────────────────────────────────────
+    # lesson_key of the confirmed lesson that contributed this turn (or "").
+    # Threaded to decision_journal.learning so the closed loop is traceable.
+    lesson_id:            str   = ""
+
     # ── v1.4 — Relationship context (from Relationship Faculty) ──────────────
     # Never used for reasoning. Only influences expression posture.
     relationship_type:    str   = "creator"   # creator | collaborator | friend | stranger

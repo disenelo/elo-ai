@@ -2444,6 +2444,8 @@ def _process_turn(raw: str) -> dict:
                 "intent":        _plan.intent,
                 # WO-112: confidence threaded from exec_out via plan (was null in journal)
                 "confidence":    _plan.confidence,
+                # W6: lesson key that contributed this turn (or "")
+                "lesson_id":     getattr(_plan, "lesson_id", ""),
             }
             # WO-105: collect last-turn spine domain health for /health endpoint
             global _spine_degraded
@@ -4078,6 +4080,7 @@ def _process_turn(raw: str) -> dict:
                 exec_decision=exec_decision if exec_decision else {},
                 backend=backend_used,
                 outcome=_w1_outcome,
+                learning=(exec_decision.get("lesson_id", "") if exec_decision else ""),
             )
         except Exception:
             pass

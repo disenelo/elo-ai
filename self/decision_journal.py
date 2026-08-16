@@ -72,6 +72,7 @@ def record(
     exec_decision: dict,
     backend: str,
     outcome: str = "success",
+    learning: str = "",
 ) -> None:
     """Append one decision trace entry. Silent on failure — never blocks a turn."""
     try:
@@ -103,7 +104,7 @@ def record(
             "cognitive_load":        exec_decision.get("cognitive_load", ""),
             "outcome":               outcome,
             "backend":               backend,
-            "learning":              "",
+            "learning":              learning,
         }
         os.makedirs(os.path.dirname(_JOURNAL), exist_ok=True)
         with open(_JOURNAL, "a", encoding="utf-8") as f:
