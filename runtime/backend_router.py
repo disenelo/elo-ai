@@ -448,6 +448,83 @@ def _openai_stream(
 _SENTENCE_END_RE = __import__("re").compile(r"(?<=[.!?…])\s")
 
 
+def _ollama_stream(
+    system_prompt: str,
+    user_input: str,
+    max_tokens: int = None,
+    on_first_sentence=None,
+) -> "tuple[str, float]":
+    """Stream Ollama tokens via NDJSON /api/chat. Mirrors _openai_stream signature.
+    Updates _last_ollama_metrics from the final done=True chunk.
+    Returns (full_assembled_text, first_token_latency_ms).
+    """
+    import urllib.request as _ureq, json as _json, time as _t
+    host  = os.environ.get("ELO_OLLAMA_HOST",  "http://localhost:11434").rstrip("/")
+    model = os.environ.get("ELO_OLLAMA_MODEL", "mistral")
+    payload = _json.dumps({
+        "model":      model,
+        "messages":   [
+            {"role": "system", "content": system_prompt},
+            {"role": "user",   "content": user_input},
+        ],
+        "stream":     True,
+        "keep_alive": "30m",
+        "options":    {"temperature": 0.7, "num_predict": max_tokens or 256, "num_ctx": 8192},
+    }).encode()
+    req = _ureq.Request(
+        f"{host}/api/chat",
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    t_start = _t.monotonic()
+    first_token_ms = 0.0
+    buffer = []
+    first_sent_fired = False
+    _ns = lambda ns: round(ns / 1_000_000, 1) if ns else 0.0  # noqa: E731
+    with _ureq.urlopen(req, timeout=120) as _resp:
+        for _raw in _resp:
+            line = _raw.decode("utf-8", errors="replace").strip()
+            if not line:
+                continue
+            try:
+                chunk = _json.loads(line)
+            except Exception:
+                continue
+            delta = chunk.get("message", {}).get("content", "")
+            if delta:
+                if not buffer:
+                    first_token_ms = (_t.monotonic() - t_start) * 1000
+                buffer.append(delta)
+                if not first_sent_fired and on_first_sentence:
+                    assembled = "".join(buffer)
+                    _m = _SENTENCE_END_RE.search(assembled)
+                    if _m:
+                        first_sent_fired = True
+                        try:
+                            on_first_sentence(assembled[:_m.end()].strip())
+                        except Exception:
+                            pass
+            if chunk.get("done"):
+                _last_ollama_metrics.clear()
+                _last_ollama_metrics.update({
+                    "load_ms":            _ns(chunk.get("load_duration", 0)),
+                    "prompt_eval_tokens": chunk.get("prompt_eval_count", 0),
+                    "prompt_eval_ms":     _ns(chunk.get("prompt_eval_duration", 0)),
+                    "gen_tokens":         chunk.get("eval_count", 0),
+                    "gen_ms":             _ns(chunk.get("eval_duration", 0)),
+                })
+                _logger.info(
+                    "CT0031 ollama stream: load=%.0fms prompt_eval=%dtok(%.0fms) gen=%dtok(%.0fms)",
+                    _last_ollama_metrics["load_ms"],
+                    _last_ollama_metrics["prompt_eval_tokens"],
+                    _last_ollama_metrics["prompt_eval_ms"],
+                    _last_ollama_metrics["gen_tokens"],
+                    _last_ollama_metrics["gen_ms"],
+                )
+    return "".join(buffer).strip(), first_token_ms
+
+
 def _ollama_available() -> bool:
     """True only when Ollama is up AND at least one model is installed (WO-073)."""
     try:
@@ -824,6 +901,32 @@ def route_streaming(
     _env_mode = os.environ.get("ELO_BACKEND", "")
     _env_mode = _env_mode or "auto"
     mode = mode or _env_mode
+
+    # CT0031 Fix B: Ollama streaming for local/offline mode
+    if mode == "local" and _ollama_available():
+        try:
+            t0 = _t.monotonic()
+            raw, first_token_ms = _ollama_stream(
+                system_prompt, user_input,
+                max_tokens=_budget,
+                on_first_sentence=on_first_sentence,
+            )
+            total_ms = (_t.monotonic() - t0) * 1000
+            if not raw or _has_lore_drift(raw, user_input):
+                raise ValueError("empty or lore-drifted stream response")
+            normalised = normalise(raw, max_sentences)
+            if action in ("build", "celebrate"):
+                normalised = _strip_trailing_question(normalised) or normalised
+            if _is_duplicate(normalised, _last_responses.get(action, "")):
+                raise ValueError("duplicate stream response")
+            _last_responses[action] = normalised
+            _logger.debug("CT0031 ollama stream: first_token=%.0fms total=%.0fms", first_token_ms, total_ms)
+            return normalised, "ollama(stream)", first_token_ms
+        except Exception as _ose:
+            _logger.warning("Ollama streaming failed (%s), falling back to route()", _ose)
+            text, backend = route(system_prompt, user_input, mode=mode,
+                                  max_sentences=max_sentences, action=action, tier=tier)
+            return text, backend, 0.0
 
     if mode not in ("auto", "cloud") or not _openai_available():
         # Non-streaming path — latency not measured
