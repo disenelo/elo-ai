@@ -31,6 +31,9 @@ _JOURNAL_DIR = os.path.join(_ROOT, "self", "journals")
 _LESSON_LOG  = os.path.join(_ROOT, "self", "lessons_ledger.jsonl")
 _FAILURE_LOG = os.path.join(_ROOT, "self", "failure_log.jsonl")
 
+# W2: stable session ID — set once at module import (= process start), survives all turns
+_SESSION_ID: str = str(int(time.time()))
+
 
 # ── Significance threshold ────────────────────────────────────────────────────
 # Full Significance Engine is WO-009. Until then: simple heuristic.
@@ -182,7 +185,7 @@ def _write_journal_entry(
                     lkey=lkey,
                     episode_ref=str(time.time()),   # unique per invocation; spot is verification, not episode ID
                     verified=bool(spot),             # vault-backed = verified
-                    session_id=str(os.getpid()),
+                    session_id=_SESSION_ID,
                     contradicting=(lesson.get("delta") in ("failed", "partial")),
                 )
                 # Only append to ledger if this lesson_key is new
