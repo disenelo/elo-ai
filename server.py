@@ -3578,12 +3578,19 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # W1: derive outcome from executive action + response state; never a constant
+        try:
+            _w1_outcome = ("silent" if _action in ("stay_silent", "silent")
+                           else "spoke" if response else "unknown")
+        except NameError:
+            _w1_outcome = "unknown"
+
         # ── Journal Router — significance-driven memory routing ───────────────
         # Scores this turn on 9 dimensions; routes to Runtime/Obsidian/GitHub
         # based on significance thresholds. Non-blocking — never delays response.
         try:
             from memory.journal_router import route as _journal_route
-            _journal_route(raw, response, _action, plan=_plan, state=_state)
+            _journal_route(raw, response, _action, plan=_plan, state=_state, outcome=_w1_outcome)
         except Exception:
             pass
 
@@ -4070,7 +4077,7 @@ def _process_turn(raw: str) -> dict:
                 action=_action,
                 exec_decision=exec_decision if exec_decision else {},
                 backend=backend_used,
-                outcome="success",
+                outcome=_w1_outcome,
             )
         except Exception:
             pass
