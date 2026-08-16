@@ -1618,7 +1618,8 @@ def _process_turn(raw: str) -> dict:
                     except Exception:
                         pass
                     _bypass_journal(_original_raw, backend="file_agent", handler_class="COGNITIVE", line=1601)
-                    return {"response": _fp_result, "mode": "execute", "backend": "file_agent"}
+                    raw = f"[FILE_AGENT_RESULT]\n{_fp_result}\n\nUser asked: {_original_raw}"
+                    # Falls through to spine — file execution must reach autobiography
                 elif _is_file_cancel(raw):
                     _fp_cancel()
                     _cancel_txt = "Ok, cancelled."
@@ -1899,17 +1900,13 @@ def _process_turn(raw: str) -> dict:
                 _ig_prompt = _ig_m.group(1).strip().rstrip("?.!")
                 _ig_result = _img_generate(_ig_prompt)
                 if _ig_result["ok"]:
-                    _ig_src   = {"dalle3": "DALL-E 3", "dalle2": "DALL-E 2", "sd_local": "Stable Diffusion"}.get(_ig_result["source"], "")
-                    _ig_reply = f"Here you go — generated with {_ig_src}. Opening in Preview."
+                    _ig_src = {"dalle3": "DALL-E 3", "dalle2": "DALL-E 2", "sd_local": "Stable Diffusion"}.get(_ig_result["source"], "")
+                    _ig_ctx = f"Image generated with {_ig_src} for prompt: {_ig_prompt}. Opening in Preview."
                 else:
-                    _ig_reply = "Couldn't generate that right now — all backends failed. Try again in a moment."
-                try:
-                    if not _is_user_away():
-                        _voice_speak(_ig_reply)
-                except Exception:
-                    pass
+                    _ig_ctx = f"Image generation failed for prompt: {_ig_prompt} — all backends failed."
                 _bypass_journal(_original_raw, backend="image_gen", handler_class="COGNITIVE", line=1877)
-                return {"response": _ig_reply, "mode": "direct", "backend": "image_gen"}
+                raw = f"[IMAGE_GEN]\n{_ig_ctx}\n\nUser asked: {_original_raw}"
+                # Falls through to spine — artefact must reach memory/autobiography
             except Exception as _ig_err:
                 import sys as _ig_sys
                 print(f"[image_gen] error: {_ig_err}", file=_ig_sys.stderr)
@@ -1925,12 +1922,6 @@ def _process_turn(raw: str) -> dict:
             try:
                 from tools.model_gen_agent import generate as _model_generate
                 _mg_prompt = _mg_m.group(1).strip().rstrip("?.!")
-                _mg_reply  = f"On it — generating a 3D model of {_mg_prompt}. This takes a minute, I'll open it when it's ready."
-                try:
-                    if not _is_user_away():
-                        _voice_speak(_mg_reply)
-                except Exception:
-                    pass
                 import threading as _mg_thread
                 def _mg_run():
                     _mg_result = _model_generate(_mg_prompt)
@@ -1938,7 +1929,11 @@ def _process_turn(raw: str) -> dict:
                         print(f"[model_gen] all backends failed for: {_mg_prompt}")
                 _mg_thread.Thread(target=_mg_run, daemon=True).start()
                 _bypass_journal(_original_raw, backend="model_gen", handler_class="COGNITIVE", line=1905)
-                return {"response": _mg_reply, "mode": "direct", "backend": "model_gen"}
+                raw = (
+                    f"[MODEL_GEN]\nGenerating a 3D model of {_mg_prompt} in the background — "
+                    f"will open it when ready.\n\nUser asked: {_original_raw}"
+                )
+                # Falls through to spine — artefact must reach memory/autobiography
             except Exception as _mg_err:
                 import sys as _mg_sys
                 print(f"[model_gen] error: {_mg_err}", file=_mg_sys.stderr)
@@ -2002,7 +1997,7 @@ def _process_turn(raw: str) -> dict:
                 import sys as _me_sys
                 print(f"[media_open] error: {_me_err}", file=_me_sys.stderr)
 
-        # ── Action agent — "pull that up", "open that", "go find X" ─────────
+        # ── Action agent — selects an action; route through spine (Executive's job) ─
         try:
             from faculties.action_agent import is_action_intent, act_on_topic as _act
             if is_action_intent(raw):
@@ -2010,14 +2005,9 @@ def _process_turn(raw: str) -> dict:
                 _topic = _topic_m.group(1).strip() if _topic_m else raw
                 _action_result = _act(_topic)
                 if _action_result:
-                    _act_reply = _action_result.spoken
-                    try:
-                        if not _is_user_away():
-                            _voice_speak(_act_reply)
-                    except Exception:
-                        pass
                     _bypass_journal(_original_raw, backend="action_agent", handler_class="COGNITIVE", line=1981)
-                    return {"response": _act_reply, "mode": "direct", "backend": "action_agent"}
+                    raw = f"[ACTION_AGENT]\n{_action_result.spoken}\n\nUser asked: {_original_raw}"
+                    # Falls through to spine
         except Exception as _ae:
             import sys as _ae_sys
             print(f"[action_agent] error: {_ae}", file=_ae_sys.stderr)
@@ -2076,18 +2066,14 @@ def _process_turn(raw: str) -> dict:
             import sys as _ws_sys
             print(f"[web_search] error: {_ws_err}", file=_ws_sys.stderr)
 
-        # ── Reminder ─────────────────────────────────────────────────────────
+        # ── Reminder — set it, inject result, route through spine ────────────
         try:
             from tools.reminder_agent import is_reminder_intent, set_reminder as _set_reminder
             if is_reminder_intent(raw):
-                _rem_reply = _set_reminder(raw, context=raw)
-                try:
-                    if not _is_user_away():
-                        _voice_speak(_rem_reply)
-                except Exception:
-                    pass
+                _rem_result = _set_reminder(raw, context=raw)
                 _bypass_journal(_original_raw, backend="reminder", handler_class="COGNITIVE", line=2050)
-                return {"response": _rem_reply, "mode": "direct", "backend": "reminder"}
+                raw = f"[REMINDER_SET]\n{_rem_result}\n\nUser asked: {_original_raw}"
+                # Falls through to spine
         except Exception as _rem_err:
             import sys as _rem_sys
             print(f"[reminder] error: {_rem_err}", file=_rem_sys.stderr)
@@ -2120,14 +2106,10 @@ def _process_turn(raw: str) -> dict:
                 _desktop = _os_d.path.expanduser("~/Desktop")
                 _dfiles  = sorted(_os_d.listdir(_desktop))
                 _visible = [f for f in _dfiles if not f.startswith(".")][:20]
-                _d_reply = "Desktop: " + ", ".join(_visible) if _visible else "Desktop is empty."
-                try:
-                    if not _is_user_away():
-                        _voice_speak(_d_reply)
-                except Exception:
-                    pass
+                _d_ctx = "Desktop: " + ", ".join(_visible) if _visible else "Desktop is empty."
                 _bypass_journal(_original_raw, backend="desktop_list", handler_class="COGNITIVE", line=2089)
-                return {"response": _d_reply, "mode": "direct", "backend": "desktop_list"}
+                raw = f"[DESKTOP_LIST]\n{_d_ctx}\n\nUser asked: {_original_raw}"
+                # Falls through to spine
             except Exception as _dl_err:
                 import sys as _dl_sys
                 print(f"[desktop_list] error: {_dl_err}", file=_dl_sys.stderr)
@@ -2146,16 +2128,12 @@ def _process_turn(raw: str) -> dict:
                         n = n.replace("DISENELO - ", "").replace("DISENELO-", "").replace("DISENELO_", "").replace("DISENELO ", "").strip(" -")
                         if n:
                             _short.append(n)
-                    _p_reply = "DISENELO Projects — " + ", ".join(_short) + "."
+                    _p_ctx = "DISENELO Projects — " + ", ".join(_short) + "."
                 else:
-                    _p_reply = "No DISENELO project folders found."
-                try:
-                    if not _is_user_away():
-                        _voice_speak(_p_reply)
-                except Exception:
-                    pass
+                    _p_ctx = "No DISENELO project folders found."
                 _bypass_journal(_original_raw, backend="project_list", handler_class="COGNITIVE", line=2116)
-                return {"response": _p_reply, "mode": "direct", "backend": "project_list"}
+                raw = f"[PROJECT_LIST]\n{_p_ctx}\n\nUser asked: {_original_raw}"
+                # Falls through to spine
             except Exception as _pl_err:
                 import sys as _pl_sys
                 print(f"[project_list] error: {_pl_err}", file=_pl_sys.stderr)
@@ -2241,14 +2219,9 @@ def _process_turn(raw: str) -> dict:
                     "photoshop":           "Adobe Photoshop 2024",
                 }
                 _app_list_str = ", ".join(_APP_NAMES_LOCAL.keys())
-                _al_reply = f"Apps I can switch to: {_app_list_str}."
-                try:
-                    if not _is_user_away():
-                        _voice_speak(_al_reply)
-                except Exception:
-                    pass
                 _bypass_journal(_original_raw, backend="app_list", handler_class="COGNITIVE", line=2208)
-                return {"response": _al_reply, "mode": "direct", "backend": "app_list"}
+                raw = f"[APP_LIST]\nApps I can switch to: {_app_list_str}.\n\nUser asked: {_original_raw}"
+                # Falls through to spine
             except Exception as _al_err:
                 import sys as _al_sys
                 print(f"[app_list] error: {_al_err}", file=_al_sys.stderr)
@@ -2308,7 +2281,6 @@ def _process_turn(raw: str) -> dict:
                 from desktop.chrome_reader import all_tabs as _all_tabs
                 _tabs = _all_tabs()
                 if _tabs:
-                    # Try to extract the site name from the query
                     _site_match = _re.search(r'\b(?:find|locate|which|where(?:\s+is)?|for)\s+(?:the\s+)?(.+?)(?:\s+(?:tab|website|site|page|url|link))?\s*$', raw, _re.I)
                     _site_q = _site_match.group(1).strip() if _site_match else ""
                     if _site_q:
@@ -2316,21 +2288,17 @@ def _process_turn(raw: str) -> dict:
                         _found = _find_tab(_site_q)
                         if _found:
                             _focus_tab(_found)
-                            _tab_reply = f"Got it — {_found.title}."
+                            _tab_ctx = f"Found and focused tab: {_found.title}."
                         else:
-                            _tab_reply = f"No tab matching '{_site_q}' open right now."
+                            _tab_ctx = f"No tab matching '{_site_q}' open right now."
                     else:
                         _tab_lines = [f"{t.window_index}/{t.tab_index}: {t.title}" for t in _tabs[:8]]
-                        _tab_reply = "Open tabs: " + "; ".join(_tab_lines)
+                        _tab_ctx = "Open tabs: " + "; ".join(_tab_lines)
                 else:
-                    _tab_reply = "Chrome isn't open or no tabs found."
-                try:
-                    if not _is_user_away():
-                        _voice_speak(_tab_reply)
-                except Exception:
-                    pass
+                    _tab_ctx = "Chrome isn't open or no tabs found."
                 _bypass_journal(_original_raw, backend="chrome_tabs", handler_class="COGNITIVE", line=2289)
-                return {"response": _tab_reply, "mode": "direct", "backend": "chrome_tabs"}
+                raw = f"[CHROME_TABS]\n{_tab_ctx}\n\nUser asked: {_original_raw}"
+                # Falls through to spine
             except Exception as _ct_err:
                 import sys as _ct_sys
                 print(f"[chrome_tabs] error: {_ct_err}", file=_ct_sys.stderr)
@@ -2381,7 +2349,7 @@ def _process_turn(raw: str) -> dict:
                 _bypass_journal(_original_raw, backend="app_switch", handler_class="EXECUTOR-FAST-PATH", line=2337)
                 return {"response": _app_reply, "mode": "direct", "backend": "app_switch"}
 
-        # ── Tracker / document creation ───────────────────────────────────────
+        # ── Tracker / document creation — inject result, route through spine ────
         try:
             from tools.llm_file_agent import is_tracker_intent, tracker_agent as _tracker_agent
             if is_tracker_intent(raw):
@@ -2394,19 +2362,15 @@ def _process_turn(raw: str) -> dict:
                     )
                 except Exception:
                     pass
-                _tracker_reply = _tracker_agent(raw, _sess_ctx)
-                try:
-                    if not _is_user_away():
-                        _voice_speak(_tracker_reply)
-                except Exception:
-                    pass
+                _tracker_result = _tracker_agent(raw, _sess_ctx)
                 _bypass_journal(_original_raw, backend="tracker_agent", handler_class="COGNITIVE", line=2358)
-                return {"response": _tracker_reply, "mode": "direct", "backend": "tracker_agent"}
+                raw = f"[TRACKER_AGENT]\n{_tracker_result}\n\nUser asked: {_original_raw}"
+                # Falls through to spine
         except Exception as _te:
             import sys as _te_sys
             print(f"[tracker_agent] error: {_te}", file=_te_sys.stderr)
 
-        # ── EA2-2: Company Brain voice intents ────────────────────────────────
+        # ── EA2-2: Company Brain voice intents — inject result, route through spine ─
         try:
             from company_runtime.company_state_writer import (
                 is_company_intent as _is_company_intent,
@@ -2414,45 +2378,43 @@ def _process_turn(raw: str) -> dict:
             )
             _company_intent_key = _is_company_intent(raw)
             if _company_intent_key:
-                _company_reply = _handle_company_voice(raw)
-                try:
-                    if not _is_user_away():
-                        _voice_speak(_company_reply)
-                except Exception:
-                    pass
+                _company_result = _handle_company_voice(raw)
                 _bypass_journal(_original_raw, backend="company_state", handler_class="COGNITIVE", line=2377)
-                return {"response": _company_reply, "mode": "direct", "backend": "company_state"}
+                raw = f"[COMPANY_STATE]\n{_company_result}\n\nUser asked: {_original_raw}"
+                # Falls through to spine
         except Exception as _csi_err:
             import sys as _csi_sys
             print(f"[company_intent] routing error: {_csi_err}", file=_csi_sys.stderr)
 
-        # ── Cultural fact trigger — instant, no LLM needed ───────────────────
+        # ── Cultural fact trigger — inject drawn fact, route through spine + CT4V-07 ─
         try:
             from faculties.cultural_facts import is_fact_trigger, draw as _fact_draw
             if is_fact_trigger(raw):
                 _fact = _fact_draw()
-                _fact_reply = _fact.delivery if _fact else "Give me a second — checking my memory."
-                try:
-                    if not _is_user_away():
-                        _voice_speak(_fact_reply)
-                except Exception:
-                    pass
+                _fact_delivery = _fact.delivery if _fact else ""
                 _bypass_journal(_original_raw, backend="cultural_facts", handler_class="COGNITIVE", line=2393)
-                return {"response": _fact_reply, "mode": "direct", "backend": "cultural_facts"}
+                if _fact_delivery:
+                    raw = (
+                        f"[CULTURAL_FACT — drawn from world knowledge; "
+                        f"speak with appropriate epistemic tier per CT4V-07]\n{_fact_delivery}\n\n"
+                        f"User asked: {_original_raw}"
+                    )
+                # Falls through to spine — CT4V-07 runs inside spine._conversation_faculty()
         except Exception as _cf_err:
             import sys as _cf_sys
             print(f"[cultural_facts] routing error: {_cf_err}", file=_cf_sys.stderr)
 
-        # WO-082: "why did you do that?" — read real decision trace, no LLM fabrication.
+        # WO-082 / 0033 Ruling 3: "why did you do that?" — inject journal context, route through spine.
         _raw_l_why = raw.strip().lower()
         if len(_raw_l_why) < 80 and any(_raw_l_why.startswith(t) for t in _WHY_TRACE_TRIGGERS):
             try:
                 from self.decision_journal import explain_last as _dj_explain
-                _why_resp = _dj_explain()
+                _why_ctx = _dj_explain()
                 _bypass_journal(_original_raw, backend="decision_journal", handler_class="COGNITIVE", line=2404)
-                return {"response": _why_resp, "mode": "direct", "backend": "decision_journal"}
+                raw = f"[DECISION_JOURNAL — eLo's last decision trace]\n{_why_ctx}\n\nUser asked: {_original_raw}"
             except Exception:
                 pass
+            # Falls through to spine — Executive sees the journal context and responds naturally.
 
         attention_model = attn.compute(raw, _memory_pack, _state, loop_detected=False)
 
