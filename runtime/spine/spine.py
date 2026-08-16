@@ -184,43 +184,54 @@ def _executive_faculty(
     )
 
     # ── Ruling C (WO-CANON-VII): exec_decide called HERE, after assembly ────────
-    # ── WO-106: open the seam — merge assembled plan state into attention_model ─
-    # executive.py is FROZEN — we open the seam by enriching the dict it reads,
-    # not by changing the function. When the freeze is lifted, exec_decide will
-    # be able to use these fields directly.
+    # ── WO-ONEBRAIN-012 (W5): ExecutiveContext — canonical schema, derived from ─
+    # existing canon. executive.py is FROZEN — ExecutiveContext.as_dict() produces
+    # the flat dict exec_decide() reads. When executive.py unfreezes, it will
+    # receive ExecutiveContext directly. New fields (ec_*) are available then.
+    # NEW ASSUMPTIONS (flagged to CA): agency · epistemic_state · significance.
     _attention_in = dict(attention) if attention else {}
-
-    # Ruling B: working memory competition winner drives attention (not raw model)
-    if working_memory is not None:
-        _attn_state = getattr(working_memory, "attention", None)
-        if _attn_state is not None:
-            _attention_in["wm_winner"] = getattr(_attn_state, "winner", "")
-            _attention_in["wm_mode"]   = getattr(_attn_state, "mode",   "reactive")
-            _attention_in["wm_budget"] = getattr(_attn_state, "budget",  0.5)
-
-    # World state — where eLo is, what the user is doing
-    if world is not None:
-        _desktop = getattr(world, "desktop", None)
-        _route_hist = list(getattr(world, "route_history", ()) or ())
-        _attention_in["world_state"] = {
-            "surface":       getattr(_desktop, "surface",    "") if _desktop else "",
-            "active_app":    getattr(_desktop, "active_app", "") if _desktop else "",
-            "available":     getattr(_desktop, "available",   True) if _desktop else False,
-            "degraded":      list(getattr(world, "degraded", [])),
-            "route_history": _route_hist,   # WO-118 / Row 14 ROUTE
-        }
-    else:
-        _log.warning("executive_faculty: plan.world absent — deciding without world context")
-
-    # Focal thread from cognitive state
-    if cognitive_state is not None:
-        _attention_in["cognitive_state_focal"] = getattr(cognitive_state, "focal_thread", "")
-
-    # Surface affordances — what actions are available in the current context
-    if affordances:
-        _attention_in["surface_affordances"] = (
-            list(affordances) if not isinstance(affordances, list) else affordances
+    try:
+        from runtime.executive_context import build_executive_context as _build_ec
+        _ec = _build_ec(
+            intent=_attention_in.get("intent", "conversation"),
+            emotional_context=_attention_in.get("emotional_context", {}),
+            world=world,
+            working_memory=working_memory,
+            capabilities=capabilities,
+            cognitive_state=cognitive_state,
+            affordances=affordances,
+            attention=_attention_in,
         )
+        _attention_in = _ec.as_dict()
+    except Exception as _ec_err:
+        # Degrade gracefully: fall back to the manual enrichment below
+        _log.warning("build_executive_context FAILED: %s — using manual fallback", _ec_err)
+        # Ruling B: working memory competition winner drives attention (not raw model)
+        if working_memory is not None:
+            _attn_state = getattr(working_memory, "attention", None)
+            if _attn_state is not None:
+                _attention_in["wm_winner"] = getattr(_attn_state, "winner", "")
+                _attention_in["wm_mode"]   = getattr(_attn_state, "mode",   "reactive")
+                _attention_in["wm_budget"] = getattr(_attn_state, "budget",  0.5)
+        # World state
+        if world is not None:
+            _desktop = getattr(world, "desktop", None)
+            _route_hist = list(getattr(world, "route_history", ()) or ())
+            _attention_in["world_state"] = {
+                "surface":       getattr(_desktop, "surface",    "") if _desktop else "",
+                "active_app":    getattr(_desktop, "active_app", "") if _desktop else "",
+                "available":     getattr(_desktop, "available",   True) if _desktop else False,
+                "degraded":      list(getattr(world, "degraded", [])),
+                "route_history": _route_hist,
+            }
+        else:
+            _log.warning("executive_faculty: plan.world absent — deciding without world context")
+        if cognitive_state is not None:
+            _attention_in["cognitive_state_focal"] = getattr(cognitive_state, "focal_thread", "")
+        if affordances:
+            _attention_in["surface_affordances"] = (
+                list(affordances) if not isinstance(affordances, list) else affordances
+            )
 
     try:
         from runtime.executive import decide as _exec_decide_fn
