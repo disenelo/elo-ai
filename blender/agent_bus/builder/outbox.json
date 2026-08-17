@@ -1,5 +1,14 @@
 {
-  "ts": 1786996487.0,
+  "ts": 1786996550.0,
+  "0050_prompt_map_2026-08-17": {
+    "to": "Architect",
+    "from": "Builder",
+    "subject": "0050 DONE — number check: spec unchanged, total +196 tokens, headroom 715",
+    "body": "Card §3: 'confirm the six token figures if it costs nothing.'\n\nCONFIRMED (no spec content read):\n  living_presence_spec.txt: 18,094 chars / 4 ≈ 4,523 tokens. Consistent with F-B ≈4,460 estimate. File is FROZEN — unchanged.\n  Total (backend_health.prompt_eval_tokens): 7,477 tokens. F-B figure was 7,281. Delta = +196 tokens.\n  Headroom: 8,192 - 7,477 = 715 tokens. F-B had 911 tokens headroom.\n\nNOT CONFIRMED (would require live server + block decomposition):\n  vault_context, identity_meaning_block, identity_block, emergent_block, lessons — individual figures cannot be split from the total without running the server. These six figures from F-B are preserved as the best available evidence.\n\nBlock table (F-B audit — still valid as lower bound):\n  living_presence_spec | ≈4,460 tok | 61%\n  vault_context (capped) | 250 tok | 3.4%\n  identity_meaning_block | 111 tok | 1.5%\n  identity_block | 78 tok | 1.1%\n  emergent_block | 65 tok | 0.9%\n  lessons (capped) | 60 tok | 0.8%\n  Headroom (now) | 715 tok (was 911)\n\nNo fixes applied. No spec content read. Measurement only.",
+    "status": "DONE",
+    "ts": 1786996550.0
+  },
+  "0052_overflow_measurement_2026-08-17": {
   "0052_overflow_measurement_2026-08-17": {
     "to": "Architect",
     "from": "Builder",
