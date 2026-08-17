@@ -303,3 +303,24 @@ def patch(update: dict) -> None:
             os.replace(tmp, _STATE_PATH)
         except Exception:
             pass
+
+
+# ── F4: ambient freshness heartbeat ──────────────────────────────────────────
+# A quiet channel and an absent eLo are indistinguishable if _ts only advances
+# on state changes. This daemon thread ticks _ts every 30s so the receiver can
+# tell "eLo is present but quiet" from "eLo is gone" by staleness of _ts.
+_HEARTBEAT_INTERVAL = 30  # seconds
+
+
+def _heartbeat_loop() -> None:
+    while True:
+        time.sleep(_HEARTBEAT_INTERVAL)
+        patch({})   # empty update — only _ts advances
+
+
+def _start_heartbeat() -> None:
+    t = threading.Thread(target=_heartbeat_loop, daemon=True, name="state_writer_heartbeat")
+    t.start()
+
+
+_start_heartbeat()
