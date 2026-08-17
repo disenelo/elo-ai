@@ -136,10 +136,12 @@ def test_loop_7_lesson_trigger(rows, confirmed_lessons):
     if trigger_matches:
         ok(f"LOOP-7: 🎯 CLOSED — {len(trigger_matches)} journal row(s) cite a lesson as trigger. "
            f"ONE BRAIN ACCEPTANCE TEST PASSES.")
+        return True
     else:
         warn("LOOP-7: No journal row yet names a lesson as its trigger — LOOP OPEN. "
              "This requires runtime: session → lesson confirmed → next turn cites it. "
              "Re-run after hours of live operation.")
+        return False
 
 
 # ── LOOP-8: reflection_faculty uses _SESSION_ID (W2 wired) ───────────────────
@@ -179,7 +181,7 @@ if __name__ == "__main__":
     test_loop_4_real_backend(rows)
     confirmed = test_loop_5_lessons()
     test_loop_6_session_diversity(confirmed)
-    test_loop_7_lesson_trigger(rows, confirmed)
+    loop7_closed = test_loop_7_lesson_trigger(rows, confirmed)
     test_loop_8_session_id()
     test_loop_9_executive_context()
     print()
@@ -191,6 +193,11 @@ if __name__ == "__main__":
     print("  ✅ LOOP-9: W5 ExecutiveContext wired")
     print("  ⚠️  LOOP-2: live-verify after first post-W1 server turn")
     print("  ⚠️  LOOP-6: live-verify after 2+ server sessions (hours apart)")
-    print("  🔴 LOOP-7: OPEN — requires a lesson to influence a future decision")
-    print()
-    print("LOOP-7 is the acceptance criterion. Re-run after live runtime.")
+    if loop7_closed:
+        print("  ✅ LOOP-7: CLOSED — lesson cited as trigger in journal")
+        print()
+        print("ALL LEGS GREEN. ONE BRAIN ACCEPTANCE CRITERION MET.")
+    else:
+        print("  🔴 LOOP-7: OPEN — requires a lesson to influence a future decision")
+        print()
+        print("LOOP-7 is the acceptance criterion. Re-run after live runtime.")
