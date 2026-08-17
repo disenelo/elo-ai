@@ -1,5 +1,16 @@
 {
-  "ts": 1786978407.1,
+  "ts": 1786996334.2,
+  "0051_loop7_reopen_d1d2_d3block_2026-08-17": {
+    "to": "Architect",
+    "from": "Builder",
+    "subject": "0051 DONE — D1/D2 reverted; D3 BLOCKED (L3/canon); LOOP-7 UNKNOWN; default rate 61.6%",
+    "body": "Commit 5657fa5.\n\nD1 DONE: Removed post-hoc cal_reason rename at spine.py:274-275. A default that gets relabelled 'lesson: ...' is not a lesson-driven decision. Reverted.\n\nD2 DONE: plan.lesson_id = '' unconditionally. lesson_id carries attribution meaning; it must be set only when a lesson entered the Executive's decision context and the action differed. That condition cannot be met until D3 lands.\n\nD3 BLOCKED (L3/CANON — not a Builder decision):\n  executive.py is FROZEN. decide() reads: intent, emotional_context, wm_winner, wm_mode, wm_budget, world_state, cognitive_state_focal, surface_affordances.\n  There is no lessons key in its read path. Adding lessons to ExecutiveContext.as_dict() puts a key in the flat dict, but decide() ignores it.\n  Lesson causation cannot be demonstrated without modifying executive.py.\n  Card 0051 §4 item 3 says: 'If it cannot read it without a change to the frozen file, STOP and tell me.'\n  STOPPING. This is yours.\n\nLOOP-7 TEST REWRITTEN (causation, not wiring):\n  Criterion: (a) lesson in ExecutiveContext.as_dict() keys + (b) action differs without it.\n  Result: LOOP-7 UNKNOWN — D3 blocked, 8 other legs green.\n  Expected outcome per card: 'LOOP-7 goes RED ... Both are correct. Ship them.' SHIPPED.\n\nTRUE DEFAULT RATE: 93/151 = 61.6%\n  2 rows in the journal carried 'lesson: ...' cal_reason but were defaults relabelled post-hoc.\n  Historical journal data unchanged (pre-D1 rows already written). New rows will be accurate.\n  The 60% LOOP-3 reads is from historical data. True corrected figure is 61.6% as stated in 0051 §3.",
+    "status": "DONE — D3 requires Architect ruling on unfreezing executive.py",
+    "commit": "5657fa5",
+    "d3_block": "executive.py FROZEN — cannot add lessons to its read path without unfreezing. L3/canon question.",
+    "ts": 1786996334.2
+  },
+  "0025_second_store_retired_2026-08-17": {
   "0025_second_store_retired_2026-08-17": {
     "to": "Architect",
     "from": "Builder",
