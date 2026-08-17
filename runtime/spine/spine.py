@@ -252,30 +252,28 @@ def _executive_faculty(
     except Exception as e:
         _log.warning("executive_faculty/exec_decide FAILED: %s", e)
 
-    # ── W6: lesson attribution ────────────────────────────────────────────────
-    # recalled lessons are in the [LEARNED HEURISTICS] prompt block every turn.
-    # When the Executive defaulted (no stronger routing signal), record that the
-    # lesson contributed — its presence in the prompt genuinely shaped the output.
-    # Do not amend a real routing signal (factual question, greeting, etc.).
-    _w6_lesson_id = ""
+    # ── W6: lesson recall (prompt enrichment only — card 0051 D1/D2/D3) ─────────
+    # Lessons reach the prompt via prompt_builder [LEARNED HEURISTICS] block.
+    # Attribution (cal_reason amendment + lesson_id) is withheld: executive.py
+    # (FROZEN) has no lessons key — no lesson enters the Executive's decision
+    # context, so no causal attribution is possible (D3 → L3/canon question).
+    # D1 reverted: post-hoc cal_reason rename on defaults is removed.
+    # D2 applied: lesson_id stays "" until Executive receives lessons and a
+    # counterfactual difference in action can be demonstrated.
     try:
         from self.lesson_store import recall as _ls_recall
-        _w6_rows = _ls_recall(
+        _ls_recall(
             context={
                 "focal_thread": getattr(cognitive_state, "focal_thread", "") if cognitive_state else "",
                 "topic":        _attention_in.get("intent", ""),
             },
             k=1,
         )
-        if _w6_rows:
-            _w6_row = _w6_rows[0]
-            _w6_lesson_id = _w6_row.get("lesson_key", "")
-            _w6_stmt = _w6_row.get("statement", "")
-            if plan.cal_reason == "default — no stronger signal" and _w6_stmt:
-                plan.cal_reason = f"lesson: {_w6_stmt[:80]}"
+        # Recall runs so lesson_store's internal state is fresh each turn.
+        # No attribution derived here — prompt injection is prompt_builder's job.
     except Exception as _w6_err:
-        _log.debug("W6 lesson attribution failed (non-critical): %s", _w6_err)
-    plan.lesson_id = _w6_lesson_id
+        _log.debug("W6 lesson recall failed (non-critical): %s", _w6_err)
+    plan.lesson_id = ""  # D3 BLOCKED: attribution withheld until Executive unfreezes
 
     # ── System action decision ────────────────────────────────────────────────
     if system_det:

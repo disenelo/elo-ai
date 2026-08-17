@@ -16,12 +16,12 @@ Legs tested:
     LOOP-4  At least one journal row has backend != "mock" (real LLM reached Executive)
     LOOP-5  lessons_ledger.jsonl has at least one confirmed lesson
     LOOP-6  lesson_store promote_pass threshold is reachable (distinct_sessions >= 2)
-    LOOP-7  trigger field in a journal row names a lesson (closed loop — PENDING)
+    LOOP-7  lesson causation — lesson entered Executive context AND changed action (UNKNOWN — D3 blocked)
     LOOP-8  reflection_faculty writes session_id from _SESSION_ID (not os.getpid)
     LOOP-9  spine._executive_faculty builds ExecutiveContext (W5 live-confirmed)
 
-LOOP-7 requires runtime hours and two server sessions. The test REPORTS the current
-state for every leg; LOOP-7 is the only leg that may not yet have evidence.
+LOOP-7 asserts CAUSATION (card 0051): lesson must enter ExecutiveContext AND the action
+must differ without it. Currently UNKNOWN — executive.py is FROZEN (D3 L3/canon block).
 
 Run: python3 tests/test_loop_one_brain.py
 
@@ -122,33 +122,64 @@ def test_loop_6_session_diversity(confirmed_lessons):
          "W2 will produce them in future runs (hours apart). Current ids may predate W2.")
 
 
-# ── LOOP-7: a journal row names a lesson as its trigger (CLOSED LOOP) ─────────
+# ── LOOP-7: lesson causation — action attributable to a lesson the Executive received ──
 def test_loop_7_lesson_trigger(rows, confirmed_lessons):
-    lesson_keys = {l.get("lesson_key") for l in confirmed_lessons if l.get("lesson_key")}
-    lesson_stmts = {l.get("statement", "")[:40] for l in confirmed_lessons}
+    """
+    CAUSATION TEST (card 0051 rewrite):
+    A decision is lesson-attributable only if:
+      (a) the lesson entered the Executive's decision context, AND
+      (b) the chosen action would DIFFER without that lesson.
 
-    trigger_matches = []
-    for r in rows:
-        t = r.get("trigger", "")
-        if any(stmt and stmt.lower() in t.lower() for stmt in lesson_stmts if stmt):
-            trigger_matches.append(r)
+    Wiring (lesson_id threaded to journal) is necessary but not sufficient.
+    A relabelled default is not evidence of causation.
 
-    if not trigger_matches:
-        warn("LOOP-7: No journal row yet names a lesson as its trigger — LOOP OPEN. "
-             "This requires runtime: session → lesson confirmed → next turn cites it. "
-             "Re-run after hours of live operation.")
+    CURRENTLY BLOCKED — D3 (card 0051):
+      executive.py is FROZEN. It reads intent/emotional_context/wm_winner/world_state.
+      There is no `lessons` key in its read path.
+      No lesson can enter the Executive's decision context without unfreezing it.
+      => Causation cannot be demonstrated. LOOP-7 is UNKNOWN.
+    """
+    # Gate D3: does ExecutiveContext have a lessons field that as_dict() exposes?
+    try:
+        from runtime.executive_context import ExecutiveContext as _EC
+        ctx_keys = set(_EC().as_dict().keys())
+        lessons_in_context = any("lesson" in k.lower() for k in ctx_keys)
+    except Exception:
+        lessons_in_context = False
+
+    if not lessons_in_context:
+        warn(
+            "LOOP-7: UNKNOWN — causation cannot be established. "
+            "D3 BLOCKED: executive.py (FROZEN) has no lessons key in its read path. "
+            "No lesson enters the Executive's decision context. "
+            "Attribution requires: (a) lessons in ExecutiveContext, "
+            "(b) a demonstrated action difference with vs without the lesson. "
+            "Neither condition is met. Report L3/canon to Architect before closing."
+        )
         return False
 
-    # Falsifiability gate (card 0049 §4-2): trigger alone is not proof.
-    # server.py:4131 must also thread lesson_id → exec_decision → learning field.
-    # If learning is empty in a trigger-matching row, the wire is disconnected — fail.
-    unwired = [r for r in trigger_matches if not r.get("learning")]
-    if unwired:
-        err(f"LOOP-7: {len(unwired)} row(s) have lesson trigger but empty learning field — "
-            f"server.py:4131 lesson_id wire is broken. Cal_reason amended but lesson_id not threaded.")
+    # If D3 lands in a future turn, check for rows where lesson_id is non-empty
+    # AND cal_reason is NOT a relabelled default (i.e., it was a real routing signal
+    # the lesson contributed to — not a default renamed after the fact).
+    lesson_keys = {l.get("lesson_key") for l in confirmed_lessons if l.get("lesson_key")}
+    causal_rows = []
+    for r in rows:
+        lid = r.get("learning", "")
+        cal = r.get("exec_decision", {}).get("cal_reason", "") or r.get("cal_reason", "")
+        # causal: has a lesson_id AND cal_reason is NOT "default — no stronger signal"
+        # (a relabelled default is not causal evidence)
+        if lid and lid in lesson_keys and "default" not in cal.lower():
+            causal_rows.append(r)
 
-    ok(f"LOOP-7: 🎯 CLOSED — {len(trigger_matches)} journal row(s) cite a lesson as trigger "
-       f"AND carry lesson_id in learning field. ONE BRAIN ACCEPTANCE TEST PASSES.")
+    if not causal_rows:
+        warn(
+            "LOOP-7: UNKNOWN — no journal row shows a lesson-attributable decision. "
+            "Requirements: lesson in Executive context + action diff with/without lesson."
+        )
+        return False
+
+    ok(f"LOOP-7: 🎯 CLOSED — {len(causal_rows)} row(s) show a lesson-attributable "
+       f"Executive decision (lesson in context + non-default cal_reason + lesson_id).")
     return True
 
 
@@ -202,10 +233,11 @@ if __name__ == "__main__":
     print("  ✅ LOOP-2: outcome derived from action type (W1 live-verified)")
     print("  ✅ LOOP-6: 2+ distinct numeric session_ids confirmed")
     if loop7_closed:
-        print("  ✅ LOOP-7: CLOSED — lesson cited as trigger in journal")
+        print("  ✅ LOOP-7: CLOSED — lesson causation demonstrated (lesson in Executive context + action diff)")
         print()
         print("ALL LEGS GREEN. ONE BRAIN ACCEPTANCE CRITERION MET.")
     else:
-        print("  🔴 LOOP-7: OPEN — requires a lesson to influence a future decision")
+        print("  🔴 LOOP-7: UNKNOWN — causation not established (D3 BLOCKED: executive.py frozen)")
         print()
-        print("LOOP-7 is the acceptance criterion. Re-run after live runtime.")
+        print("LOOP-7 requires: (a) lessons in ExecutiveContext, (b) demonstrated action difference.")
+        print("D3 is an L3/canon question — executive.py must unfreeze before this can close.")
