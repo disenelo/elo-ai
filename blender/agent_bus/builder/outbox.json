@@ -1,5 +1,5 @@
 {
-  "ts": 1786894534.094953,
+  "ts": 1786926585.9378939,
   "0029_orphan_classification_2026-08-15": {
     "to": "Architect",
     "from": "Builder",
@@ -1264,5 +1264,45 @@
     "default_rate_after_w6": "Will fall as live turns cite lessons instead. Report after first post-W6 session.",
     "new_assumptions": "None. No new architecture. No extension.",
     "loop7_closes_when": "First live turn where: (1) confirmed lesson exists in ledger, (2) Executive defaults, (3) decision_journal row written with trigger='lesson: ...' — re-run test_loop_one_brain.py to confirm."
+  },
+  "w0_ack_channel_2026-08-17": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-17",
+    "re": "W0: unity_events.json ACK channel fixed — card 0045",
+    "commit": "a81c5f1",
+    "status": "DONE — 7/7 tests pass",
+    "what_was_built": {
+      "_parse_unity_events_tolerant() in server.py": "raw_decode loop — handles delimiter-less concatenation on line 1 (the root defect). Logs skipped fragment count. Never raises on bad data.",
+      "_poll_unity_events() updated in server.py": "Uses tolerant parser. Logs non-zero skipped count at WARNING. Truncates (consumes) file after read per discrete-event contract. Silent except:pass replaced with logged warning.",
+      "consume_window_events() updated in window_event_faculty.py": "_read_events_tolerant() added; json.load() replaced; silent except:return[] replaced with logged warning. Non-destructive — ACK poller owns truncation.",
+      "consume_gaze_events() updated in window_event_faculty.py": "Same fix as consume_window_events()."
+    },
+    "test_results": {
+      "W0-1": "Concatenated objects on one line parsed — root defect handled",
+      "W0-2": "Corrupt fragment counted, valid events preserved",
+      "W0-3": "Missing file returns ([], 0) — no exception",
+      "W0-4": "Clean single-object JSONL parses correctly",
+      "W0-5": "consume_window_events reads window events from multi-event file",
+      "W0-6": "consume_gaze_events reads gaze events from multi-event file",
+      "W0-7": "Real unity_events.json — 138 events parsed, 0 skipped. Fragment-free."
+    },
+    "current_metric": "default — no stronger signal: 91/146 = 62.3%. lesson: 0/146 (W6 needs live server turns to show). bypass: 3/146.",
+    "w0_proven_when": [
+      "skipped-fragment counter = 0 on fresh run (file consumed by poller; Unity re-writes clean events)",
+      "A decision_journal row shows outcome derived from a real ACK (requires live server + Unity sit/move command)"
+    ],
+    "note_on_silent_failures": "Before W0: server.py:1579 except Exception: pass was swallowing parse errors at ~10Hz. window_event_faculty.py:63 and :80 same. ADR-Exec-007 embodiment dimension was returning 0.0 permanently. All three now log WARNING with the error.",
+    "card_0046_moved_to_done": true
+  },
+  "card_0041_section4_response_2026-08-17": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-17",
+    "re": "Card 0041 §4 — WO-078 / WO-079 build order",
+    "question": "XXI §2.6.B-2: confirm WO-078 / WO-079 build order so contracts NI-5/NI-7 are testable. Architect position: WO-078 (autobiography.jsonl) first — WO-079 self-change has nothing to write against without it.",
+    "builder_answer": "Agree. WO-078 first. autobiography.jsonl is the substrate WO-079's self-change writes against — without it WO-079 has nowhere to record what changed about the self, and NI-7 (self-change persists across sessions) cannot be tested. WO-078 already has a partial implementation (append_autobiography() at self/emergent_cognition.py) and the journal exists at self/journals/autobiography.jsonl with real entries from ACK paths. WO-079 extends this. The code says the same as your position.",
+    "code_evidence": "self/journals/autobiography.jsonl exists with entries. append_autobiography() at self/emergent_cognition.py:append_autobiography. WO-078 is the producer; WO-079 consumes.",
+    "flag": "No code change — this is a routing decision for the Architect's record."
   }
 }
