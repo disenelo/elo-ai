@@ -514,7 +514,7 @@ try:
     _ALLOWED_WRITERS = {
         os.path.normpath("memory/vault_layer.py"),
         os.path.normpath("memory/consolidation_faculty.py"),
-        os.path.normpath("core/memory_engine.py"),   # the known violator — listed so we track it
+        # core/memory_engine.py removed: store_interaction/_save_store deleted (card 0025)
     }
 
     # Signatures that indicate a durable write to the interactions store specifically:
@@ -557,7 +557,6 @@ try:
             f"Vol VIII §4 Runtime Invariant 7 violated — {len(violations)} unauthorised "
             f"permanent-store writer(s) found:\n    "
             + "\n    ".join(violations)
-            + "\n    Awaiting David L3 decision: RETIRE / ABSORB / SPLIT (card 0025)"
         )
     else:
         ok("AT-8: whole-repo durable-write scan — no unauthorised permanent-store writers")

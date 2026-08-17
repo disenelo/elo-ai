@@ -3644,15 +3644,25 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
-        # ── WO-037 interactions write-back ────────────────────────────────────
-        # store_interaction() was only called from the CLI path (core_engine.py).
-        # The app /chat path never wrote to interactions.json — reconnected here.
+        # ── WO-037 interactions write-back (routed via MemoryFaculty — card 0025) ─
+        # Previously wrote to interactions.json via store_interaction().
+        # Now routes through MemoryFaculty.submit() — Vol VIII Invariant 7 compliant.
         try:
-            from core.memory_engine import store_interaction as _store_interaction
             from core.memory_engine import load_registry as _load_registry, resolve_project as _resolve_project
+            from memory.memory_faculty import MemoryFaculty as _MemFac, MemoryCandidate as _MemCand
             _mem_registry    = _load_registry()
             _mem_project_tag = _resolve_project(raw, _mem_registry)
-            _store_interaction(raw, response, _action, _mem_project_tag)
+            _content = (raw + " " + response)[:1000]
+            _MemFac().submit(_MemCand(
+                source_faculty="interaction",
+                content=_content,
+                proposed_type="episodic",
+                proposed_weight=3,
+                significance=0.25,
+                project=_mem_project_tag,
+                summary=(raw[:180] + "…" if len(raw) > 180 else raw),
+                tags=("interaction", _action),
+            ))
         except Exception:
             pass
 

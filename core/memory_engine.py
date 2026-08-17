@@ -23,7 +23,6 @@ A synthesis layer collapses all five into:
 Public API:
     load_registry()
     resolve_project(text, registry)
-    store_interaction(user_input, response, mode, project_tag)
     retrieve(query, top_k)
     retrieve_by_project(project_tag, top_k)
     retrieve_structured(query, project_hint)     — legacy 4-block format
@@ -31,6 +30,9 @@ Public API:
     export_memory()
     load_long_term_memory()
     load_session()
+
+Note: write path retired (card 0025). Writes now route through
+    MemoryFaculty.submit() — Vol VIII Runtime Invariant 7 compliant.
 """
 
 import json
@@ -171,35 +173,6 @@ def _load_store() -> list:
         with open(_STORE_PATH) as f:
             return json.load(f)
     return []
-
-
-def _save_store(interactions: list):
-    os.makedirs(os.path.dirname(_STORE_PATH), exist_ok=True)
-    with open(_STORE_PATH, "w") as f:
-        json.dump(interactions, f, indent=2)
-
-
-def store_interaction(
-    user_input: str,
-    response: str,
-    mode: str,
-    project_tag: str = "elo_core",
-):
-    """Append one interaction record to the persistent store."""
-    combined = user_input + " " + response
-    record = {
-        "timestamp":         datetime.utcnow().isoformat() + "Z",
-        "project_tag":       project_tag,
-        "mode":              mode,
-        "user":              user_input,
-        "response":          response,
-        "concepts":          _detect_concepts(combined),
-        "memory_categories": _classify_memory_categories(user_input),
-    }
-    interactions = _load_store()
-    interactions.append(record)
-    _save_store(interactions)
-    _update_session(record)
 
 
 # ── session state ──────────────────────────────────────────────────────────────

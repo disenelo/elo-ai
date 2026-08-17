@@ -36,7 +36,6 @@ from core.memory_engine import (
     load_registry,
     resolve_project,
     build_memory_influence,
-    store_interaction,
 )
 from core.state_engine    import StateEngine
 from core.emotion_engine  import get_tone_modifier
@@ -249,10 +248,23 @@ class CoreEngine:
                           for k in ("intent","perspective","response_bias")},
         )
 
-        # store
+        # store — routed through MemoryFaculty (Vol VIII Invariant 7 / card 0025)
         self.orb.insight()
-        store_interaction(user_input, response, meta["mode"],
-                          project_tag=raw_context.project)
+        try:
+            from memory.memory_faculty import MemoryFaculty as _MemFac, MemoryCandidate as _MemCand
+            _content = (user_input + " " + response)[:1000]
+            _MemFac().submit(_MemCand(
+                source_faculty="interaction",
+                content=_content,
+                proposed_type="episodic",
+                proposed_weight=3,
+                significance=0.25,
+                project=raw_context.project or "elo_core",
+                summary=(user_input[:180] + "…" if len(user_input) > 180 else user_input),
+                tags=("interaction", meta["mode"]),
+            ))
+        except Exception:
+            pass
         self.orb.idle()
 
         return response
