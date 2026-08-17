@@ -142,6 +142,41 @@ _ACK_BODY_TYPES = frozenset({"sit_complete", "sit_held", "move_complete", "exit_
 _ack_last_ts: float = 0.0     # last _ts seen — prevents re-appending the same event
 
 
+def _parse_unity_events_tolerant(path: str) -> tuple[list[dict], int]:
+    """W0: Read all JSON objects from unity_events.json, tolerating concatenated/corrupt records.
+
+    Uses raw_decode so delimiter-less concatenation on line 1 (the root defect) is handled.
+    Returns (events, skipped_count). Caller must log non-zero skipped counts.
+    """
+    events: list[dict] = []
+    skipped = 0
+    try:
+        with open(path, encoding="utf-8") as _f:
+            content = _f.read().strip()
+        if not content:
+            return [], 0
+        decoder = json.JSONDecoder()
+        idx = 0
+        while idx < len(content):
+            while idx < len(content) and content[idx] in " \t\r\n":
+                idx += 1
+            if idx >= len(content):
+                break
+            try:
+                obj, end = decoder.raw_decode(content, idx)
+                if isinstance(obj, dict):
+                    events.append(obj)
+                idx = end
+            except json.JSONDecodeError:
+                skipped += 1
+                idx += 1
+    except FileNotFoundError:
+        pass
+    except Exception as _e:
+        logging.getLogger(__name__).warning("W0: unity_events.json read error: %s", _e)
+    return events, skipped
+
+
 def _signal_greeting_event(greeting_type: str) -> None:
     """Read-merge-write greeting event — preserves presence_plan and all existing keys."""
     import time as _time
@@ -1563,21 +1598,34 @@ def _init_session():
 
     # WO-ACK-1: discrete event capture thread — polls unity_events.json every 0.1s
     # and enqueues body ACK events before gaze events can overwrite them.
+    # W0: uses tolerant raw_decode parser; logs skipped fragments; consumes file after read.
     def _poll_unity_events() -> None:
         global _ack_last_ts
         import time as _pt
+        _poller_log = logging.getLogger(__name__ + ".ack_poller")
         while True:
             try:
-                with open(_UNITY_EVENTS_PATH, encoding="utf-8") as _pf:
-                    _ev = json.load(_pf)
-                _ev_type = _ev.get("type", "")
-                _ev_ts   = float(_ev.get("_ts", 0))
-                if _ev_type in _ACK_BODY_TYPES and _ev_ts > _ack_last_ts:
-                    with _ACK_QUEUE_LOCK:
-                        _ACK_QUEUE.append(dict(_ev))
-                    _ack_last_ts = _ev_ts
-            except Exception:
-                pass
+                events, skipped = _parse_unity_events_tolerant(_UNITY_EVENTS_PATH)
+                if skipped:
+                    _poller_log.warning(
+                        "W0: unity_events.json — %d unparseable fragment(s) skipped", skipped
+                    )
+                for _ev in events:
+                    _ev_type = _ev.get("type", "")
+                    _ev_ts   = float(_ev.get("_ts", 0))
+                    if _ev_type in _ACK_BODY_TYPES and _ev_ts > _ack_last_ts:
+                        with _ACK_QUEUE_LOCK:
+                            _ACK_QUEUE.append(dict(_ev))
+                        _ack_last_ts = _ev_ts
+                # consume after read — contract: discrete events, CONSUMED after read
+                if events or skipped:
+                    try:
+                        with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _pf:
+                            pass  # truncate
+                    except Exception as _te:
+                        _poller_log.warning("W0: failed to truncate unity_events.json: %s", _te)
+            except Exception as _pe:
+                _poller_log.warning("W0: _poll_unity_events error: %s", _pe)
             _pt.sleep(0.10)
 
     threading.Thread(target=_poll_unity_events, daemon=True, name="ack-poller").start()

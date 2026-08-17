@@ -18,6 +18,7 @@ Decision dict: {action, goal_surface, reason, source: "window_event_faculty", pr
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
 from typing import TYPE_CHECKING
@@ -25,6 +26,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from self.elo_self_model import EloSelfState
 
+_log         = logging.getLogger(__name__)
 _ROOT        = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _EVENTS_PATH = os.path.join(_ROOT, "blender", "unity_events.json")
 
@@ -32,6 +34,44 @@ _EVENTS_PATH = os.path.join(_ROOT, "blender", "unity_events.json")
 _WINDOW_EVENT_TYPES: frozenset[str] = frozenset({
     "window_closed", "window_opened", "window_moved",
 })
+
+
+def _read_events_tolerant(path: str) -> list[dict]:
+    """W0: Read all JSON objects from unity_events.json using raw_decode.
+
+    Tolerates delimiter-less concatenation (the root defect: two objects on line 1 with no
+    separator). Logs — never swallows — parse errors. Non-destructive: file is not consumed here;
+    server.py's ACK poller owns truncation.
+    """
+    events: list[dict] = []
+    skipped = 0
+    try:
+        with open(path, encoding="utf-8") as f:
+            content = f.read().strip()
+        if not content:
+            return []
+        decoder = json.JSONDecoder()
+        idx = 0
+        while idx < len(content):
+            while idx < len(content) and content[idx] in " \t\r\n":
+                idx += 1
+            if idx >= len(content):
+                break
+            try:
+                obj, end = decoder.raw_decode(content, idx)
+                if isinstance(obj, dict):
+                    events.append(obj)
+                idx = end
+            except json.JSONDecodeError:
+                skipped += 1
+                idx += 1
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        _log.warning("W0: unity_events.json read error: %s", e)
+    if skipped:
+        _log.warning("W0: unity_events.json — %d fragment(s) skipped", skipped)
+    return events
 
 # WO-099: gaze event type (discrete noticing — debounced by Unity before emit)
 _GAZE_EVENT_TYPE: str = "gaze_target_changed"
@@ -49,19 +89,13 @@ _ACTION_WEIGHTS: dict[str, dict[str, float]] = {
 def consume_window_events(events_path: str | None = None) -> list[dict]:
     """
     Read window events from unity_events.json and return any that are window-type.
-    Non-destructive — does not clear the file (ambient_engine owns the file lifecycle).
+    Non-destructive — server.py ACK poller owns file truncation (consume contract).
     Returns [] if file absent, unreadable, or no window events.
+    W0: uses tolerant raw_decode reader; logs errors rather than swallowing them.
     """
-    try:
-        path = events_path or _EVENTS_PATH
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
-        ev_type = data.get("type", "")
-        if ev_type in _WINDOW_EVENT_TYPES:
-            return [data]
-        return []
-    except Exception:
-        return []
+    path = events_path or _EVENTS_PATH
+    events = _read_events_tolerant(path)
+    return [ev for ev in events if ev.get("type", "") in _WINDOW_EVENT_TYPES]
 
 
 def consume_gaze_events(events_path: str | None = None) -> list[dict]:
@@ -69,16 +103,11 @@ def consume_gaze_events(events_path: str | None = None) -> list[dict]:
     WO-099: Read gaze_target_changed events from unity_events.json.
     Unity debounces before emitting — each event is a settled new gaze target.
     Returns [] if no gaze event or file absent.
+    W0: uses tolerant raw_decode reader; logs errors rather than swallowing them.
     """
-    try:
-        path = events_path or _EVENTS_PATH
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
-        if data.get("type") == _GAZE_EVENT_TYPE:
-            return [data]
-        return []
-    except Exception:
-        return []
+    path = events_path or _EVENTS_PATH
+    events = _read_events_tolerant(path)
+    return [ev for ev in events if ev.get("type") == _GAZE_EVENT_TYPE]
 
 
 def describe_gaze(event: dict) -> str:
