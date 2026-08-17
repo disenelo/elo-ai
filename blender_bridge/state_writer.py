@@ -240,7 +240,15 @@ def write_with_presence(
 
 # Keys written by tool_router (nav, exit events) — must survive a state write
 # so Unity can poll them on its own cadence without them being overwritten mid-turn.
-_PRESERVE_KEYS = {"user_nav_event", "exit_event", "spotify", "vision", "intent", "trigger", "gesture", "weather"}
+# Core render fields (expression/motion/state/gaze/presence_plan) must survive
+# any patch() that doesn't carry them — e.g. a verbal-response write must not
+# drop the viseme block that lip-sync depends on.
+_PRESERVE_KEYS = {
+    "user_nav_event", "exit_event", "spotify", "vision",
+    "intent", "trigger", "gesture", "weather",
+    # Core render fields — absent from this set = droppable on any patch (F-A fix)
+    "expression", "motion", "state", "gaze", "presence_plan",
+}
 
 _VISION_DEFAULT = {"active": False, "attention": 0.0, "focus": {"x": 0.5, "y": 0.5}, "app": ""}
 

@@ -59,12 +59,13 @@ def _to_console(motion: dict, state: dict = None) -> None:
 
 
 def _to_blender(motion: dict, state: dict = None) -> None:
-    payload = {"motion": motion}
+    # Route through state_writer.patch() — honours _PRESERVE_KEYS + _STATE_LOCK + atomic write.
+    # Prior direct write bypassed the coordinator (state_writer.py Invariant 16 / F-A card 0047).
+    from blender_bridge.state_writer import patch as _sw_patch
+    update: dict = {"motion": motion}
     if state:
-        payload["state"] = state
-    os.makedirs(os.path.dirname(_BLENDER_PATH), exist_ok=True)
-    with open(_BLENDER_PATH, "w") as f:
-        json.dump(payload, f, indent=2)
+        update["state"] = state
+    _sw_patch(update)
 
 
 def _to_unity(motion: dict, state: dict = None) -> None:
