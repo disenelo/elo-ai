@@ -1,5 +1,15 @@
 {
-  "ts": 1786996334.2,
+  "ts": 1786996487.0,
+  "0052_overflow_measurement_2026-08-17": {
+    "to": "Architect",
+    "from": "Builder",
+    "subject": "0052 DONE — Ollama overflow measured (M2/M4 UNKNOWN — offline)",
+    "body": "Measurement script: tests/measure_0052_ollama_overflow.py\n\n| Metric | Finding |\n|---|---|\n| M1: live prompt/num_ctx | 7,477 / 8,192 = 91.3% capacity. Headroom: 715 tokens. NOT YET exceeded. |\n| M2: Ollama at overflow | UNKNOWN — Ollama returned 404 (offline at test time). Settle: run `python3 tests/measure_0052_ollama_overflow.py` when Ollama is live. |\n| M3: block order | pos 0: spec (4,460 tok, FROZEN). pos 1: personality. pos 2: self. pos 3: lessons. pos 4: memory. pos 5: user turn. IF back-truncation: spec survives longest. IF front-truncation: spec (CHARACTER DNA) dies first. Direction UNKNOWN — requires content comparison. |\n| M4: is truncation silent? | UNKNOWN (Ollama offline). What to look for: prompt_eval_count < tokens_sent in API body. Our code reads it into backend_health.json but has no alarm guard. |\n| M5: growth rate | 7,281 → 7,477 = +196 tokens over ~2 days ≈ 98 tokens/day. 715 headroom / 98 tok/day ≈ 7.3 days to overflow. Low confidence — 2-point window. What is growing: vault_context (lesson accumulation), self_block (facts.json), HEURISTICS (new confirmed lessons). |\n\nOPEN (settles when Ollama is live):\n- M2: does Ollama error, truncate front, truncate back, or drop middle?\n- M4: confirmed silent vs partially silent?\n- M3: direction — which specific block disappears first?\n\nNO FIXES APPLIED per CA directive. Measurement only.",
+    "status": "DONE — M2/M4 UNKNOWN (Ollama offline); M1/M3/M5 measured",
+    "script": "tests/measure_0052_ollama_overflow.py",
+    "ts": 1786996487.0
+  },
+  "0051_loop7_reopen_d1d2_d3block_2026-08-17": {
   "0051_loop7_reopen_d1d2_d3block_2026-08-17": {
     "to": "Architect",
     "from": "Builder",
