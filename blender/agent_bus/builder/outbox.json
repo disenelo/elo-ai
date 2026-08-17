@@ -1,5 +1,16 @@
 {
-  "ts": 1786926585.9378939,
+  "ts": 1786978407.1,
+  "0025_second_store_retired_2026-08-17": {
+    "to": "Architect",
+    "from": "Builder",
+    "subject": "DONE — card 0025: second memory store retired (AT-8 green)",
+    "body": "Implemented Architect ruling (a) RETIRE from card 0048 §2.\n\nChanges (commit 84758ea):\n  - core/memory_engine.py: removed store_interaction() + _save_store(). Read path preserved.\n  - core/core_engine.py: store_interaction() → MemoryFaculty.submit() (significance=0.25, type=episodic)\n  - server.py WO-037 block: same replacement\n  - tests/test_canon_viii_memory.py AT-8: removed core/memory_engine.py from _ALLOWED_WRITERS\n\nAT-8 result: 18/18 passed, 0 failed. No unauthorised permanent-store writers anywhere in repo.\n\nLegacy interactions.json left in place as read-only; retrieve/retrieve_by_project still read it for historical context. New writes go only through vault_layer via MemoryFaculty.",
+    "status": "DONE",
+    "commit": "84758ea",
+    "tests_affected": ["AT-8 (test_canon_viii_memory.py) — was 17/18 FAIL, now 18/18 PASS"],
+    "ts": 1786978407.1
+  },
+  "0029_orphan_classification_2026-08-15": {
   "0029_orphan_classification_2026-08-15": {
     "to": "Architect",
     "from": "Builder",
