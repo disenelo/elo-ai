@@ -9,7 +9,6 @@
     "ts": 1786996550.0
   },
   "0052_overflow_measurement_2026-08-17": {
-  "0052_overflow_measurement_2026-08-17": {
     "to": "Architect",
     "from": "Builder",
     "subject": "0052 DONE — Ollama overflow measured (M2/M4 UNKNOWN — offline)",
@@ -18,7 +17,6 @@
     "script": "tests/measure_0052_ollama_overflow.py",
     "ts": 1786996487.0
   },
-  "0051_loop7_reopen_d1d2_d3block_2026-08-17": {
   "0051_loop7_reopen_d1d2_d3block_2026-08-17": {
     "to": "Architect",
     "from": "Builder",
@@ -30,17 +28,17 @@
     "ts": 1786996334.2
   },
   "0025_second_store_retired_2026-08-17": {
-  "0025_second_store_retired_2026-08-17": {
     "to": "Architect",
     "from": "Builder",
     "subject": "DONE — card 0025: second memory store retired (AT-8 green)",
     "body": "Implemented Architect ruling (a) RETIRE from card 0048 §2.\n\nChanges (commit 84758ea):\n  - core/memory_engine.py: removed store_interaction() + _save_store(). Read path preserved.\n  - core/core_engine.py: store_interaction() → MemoryFaculty.submit() (significance=0.25, type=episodic)\n  - server.py WO-037 block: same replacement\n  - tests/test_canon_viii_memory.py AT-8: removed core/memory_engine.py from _ALLOWED_WRITERS\n\nAT-8 result: 18/18 passed, 0 failed. No unauthorised permanent-store writers anywhere in repo.\n\nLegacy interactions.json left in place as read-only; retrieve/retrieve_by_project still read it for historical context. New writes go only through vault_layer via MemoryFaculty.",
     "status": "DONE",
     "commit": "84758ea",
-    "tests_affected": ["AT-8 (test_canon_viii_memory.py) — was 17/18 FAIL, now 18/18 PASS"],
+    "tests_affected": [
+      "AT-8 (test_canon_viii_memory.py) — was 17/18 FAIL, now 18/18 PASS"
+    ],
     "ts": 1786978407.1
   },
-  "0029_orphan_classification_2026-08-15": {
   "0029_orphan_classification_2026-08-15": {
     "to": "Architect",
     "from": "Builder",
@@ -1435,15 +1433,60 @@
       "num_ctx_cap": 8192,
       "headroom_tokens": 911,
       "blocks": [
-        {"block": "living_presence_spec [FREEZE_V1_LOCK]", "chars": 17842, "approx_tokens": 4460, "pct": "61%"},
-        {"block": "identity_meaning_block", "chars": 446, "approx_tokens": 111, "pct": "1.5%"},
-        {"block": "identity_block", "chars": 312, "approx_tokens": 78, "pct": "1.1%"},
-        {"block": "emergent_block", "chars": 260, "approx_tokens": 65, "pct": "0.9%"},
-        {"block": "vault_context (hard-capped)", "chars": 1000, "approx_tokens": 250, "pct": "3.4%"},
-        {"block": "lessons (hard-capped)", "chars": 240, "approx_tokens": 60, "pct": "0.8%"},
-        {"block": "directive_block (est)", "chars": 500, "approx_tokens": 125, "pct": "1.7%"},
-        {"block": "recent_dialogue (est)", "chars": 400, "approx_tokens": 100, "pct": "1.4%"},
-        {"block": "narrative_block + the_moment + spatial/world injections (unmeasured)", "chars": "unknown", "approx_tokens": "~2,032 gap", "pct": "~28%"}
+        {
+          "block": "living_presence_spec [FREEZE_V1_LOCK]",
+          "chars": 17842,
+          "approx_tokens": 4460,
+          "pct": "61%"
+        },
+        {
+          "block": "identity_meaning_block",
+          "chars": 446,
+          "approx_tokens": 111,
+          "pct": "1.5%"
+        },
+        {
+          "block": "identity_block",
+          "chars": 312,
+          "approx_tokens": 78,
+          "pct": "1.1%"
+        },
+        {
+          "block": "emergent_block",
+          "chars": 260,
+          "approx_tokens": 65,
+          "pct": "0.9%"
+        },
+        {
+          "block": "vault_context (hard-capped)",
+          "chars": 1000,
+          "approx_tokens": 250,
+          "pct": "3.4%"
+        },
+        {
+          "block": "lessons (hard-capped)",
+          "chars": 240,
+          "approx_tokens": 60,
+          "pct": "0.8%"
+        },
+        {
+          "block": "directive_block (est)",
+          "chars": 500,
+          "approx_tokens": 125,
+          "pct": "1.7%"
+        },
+        {
+          "block": "recent_dialogue (est)",
+          "chars": 400,
+          "approx_tokens": 100,
+          "pct": "1.4%"
+        },
+        {
+          "block": "narrative_block + the_moment + spatial/world injections (unmeasured)",
+          "chars": "unknown",
+          "approx_tokens": "~2,032 gap",
+          "pct": "~28%"
+        }
       ],
       "finding": "living_presence_spec dominates at 61% and is frozen. The unmeasured 28% (narrative_block + the_moment situated + spatial/world injections from server.py lines 3299-3481) is where the growth comes from. Failed to load narrative_block and the_moment due to import errors — need Architect ruling on which blocks to audit/trim before code changes.",
       "growth_rate": "~7,100 two days ago → 7,281 now. +181 tokens in 2 days. At this rate: ~8,192 cap reached in ~10 days.",

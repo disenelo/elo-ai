@@ -324,8 +324,10 @@ def _handle_window_event(data: dict, user_is_idle: bool) -> None:
         except Exception:
             _ob = {}
         _ob.setdefault("pending_intents", []).append(decision)
-        with open(_outbox_path, "w", encoding="utf-8") as _f:
+        _tmp = _outbox_path + ".tmp"
+        with open(_tmp, "w", encoding="utf-8") as _f:
             json.dump(_ob, _f, indent=2)
+        os.replace(_tmp, _outbox_path)
     except Exception:
         pass
 
