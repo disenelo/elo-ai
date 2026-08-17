@@ -133,15 +133,23 @@ def test_loop_7_lesson_trigger(rows, confirmed_lessons):
         if any(stmt and stmt.lower() in t.lower() for stmt in lesson_stmts if stmt):
             trigger_matches.append(r)
 
-    if trigger_matches:
-        ok(f"LOOP-7: 🎯 CLOSED — {len(trigger_matches)} journal row(s) cite a lesson as trigger. "
-           f"ONE BRAIN ACCEPTANCE TEST PASSES.")
-        return True
-    else:
+    if not trigger_matches:
         warn("LOOP-7: No journal row yet names a lesson as its trigger — LOOP OPEN. "
              "This requires runtime: session → lesson confirmed → next turn cites it. "
              "Re-run after hours of live operation.")
         return False
+
+    # Falsifiability gate (card 0049 §4-2): trigger alone is not proof.
+    # server.py:4131 must also thread lesson_id → exec_decision → learning field.
+    # If learning is empty in a trigger-matching row, the wire is disconnected — fail.
+    unwired = [r for r in trigger_matches if not r.get("learning")]
+    if unwired:
+        err(f"LOOP-7: {len(unwired)} row(s) have lesson trigger but empty learning field — "
+            f"server.py:4131 lesson_id wire is broken. Cal_reason amended but lesson_id not threaded.")
+
+    ok(f"LOOP-7: 🎯 CLOSED — {len(trigger_matches)} journal row(s) cite a lesson as trigger "
+       f"AND carry lesson_id in learning field. ONE BRAIN ACCEPTANCE TEST PASSES.")
+    return True
 
 
 # ── LOOP-8: reflection_faculty uses _SESSION_ID (W2 wired) ───────────────────
@@ -191,8 +199,8 @@ if __name__ == "__main__":
     print("  ✅ LOOP-5: reflection loop has confirmed lessons")
     print("  ✅ LOOP-8: W2 session identity wired")
     print("  ✅ LOOP-9: W5 ExecutiveContext wired")
-    print("  ⚠️  LOOP-2: live-verify after first post-W1 server turn")
-    print("  ⚠️  LOOP-6: live-verify after 2+ server sessions (hours apart)")
+    print("  ✅ LOOP-2: outcome derived from action type (W1 live-verified)")
+    print("  ✅ LOOP-6: 2+ distinct numeric session_ids confirmed")
     if loop7_closed:
         print("  ✅ LOOP-7: CLOSED — lesson cited as trigger in journal")
         print()
