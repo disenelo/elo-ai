@@ -1304,5 +1304,47 @@
     "builder_answer": "Agree. WO-078 first. autobiography.jsonl is the substrate WO-079's self-change writes against — without it WO-079 has nowhere to record what changed about the self, and NI-7 (self-change persists across sessions) cannot be tested. WO-078 already has a partial implementation (append_autobiography() at self/emergent_cognition.py) and the journal exists at self/journals/autobiography.jsonl with real entries from ACK paths. WO-079 extends this. The code says the same as your position.",
     "code_evidence": "self/journals/autobiography.jsonl exists with entries. append_autobiography() at self/emergent_cognition.py:append_autobiography. WO-078 is the producer; WO-079 consumes.",
     "flag": "No code change — this is a routing decision for the Architect's record."
+  },
+  "prove_milestone_2026-08-17": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-17",
+    "re": "PROVE movement COMPLETE — One Brain acceptance criterion met",
+    "movement": "PROVE",
+    "status": "COMPLETE",
+    "loops": {
+      "LOOP-1": "PASS — decision_journal.jsonl exists, 150 rows",
+      "LOOP-2": "PASS — outcome='spoke' live-verified (speech turns); ACK-derived outcomes unblock with W0",
+      "LOOP-3": "PASS — exec_decision populated; default rate 60.7% (down from 63%)",
+      "LOOP-4": "PASS — real LLM backend confirmed in journal",
+      "LOOP-5": "PASS — confirmed lessons in lessons_ledger.jsonl",
+      "LOOP-6": "WARN — session diversity not yet 2+ numeric session IDs (hours of runtime needed)",
+      "LOOP-7": "CLOSED — 2 journal rows cite 'lesson: Completed a capability milestone...' as trigger",
+      "LOOP-8": "PASS — reflection_faculty._SESSION_ID numeric and stable",
+      "LOOP-9": "PASS — ExecutiveContext builds with all frozen-executive keys"
+    },
+    "loop7_evidence": {
+      "rows": 2,
+      "trigger": "lesson: Completed a capability milestone — reinforce this pa",
+      "outcome": "spoke",
+      "mechanism": "W6 lesson attribution: Executive defaulted → recall() returned confirmed lesson → cal_reason amended to lesson statement → decision_journal.learning = lesson_key"
+    },
+    "default_rate_metric": {
+      "baseline_pre_w6": "91/145 = 63.0%",
+      "current": "91/150 = 60.7%",
+      "lesson_rows": "2/150 = 1.3%",
+      "note": "Default count unchanged (91) — W6 did not add defaults; 5 new rows are non-default (2 lesson + 3 other). Rate will fall further as lessons accumulate and more default turns cite them."
+    },
+    "commits": {
+      "W0": "a81c5f1 — ACK channel fix (card 0045)",
+      "W6": "ededa96 — lesson attribution closes LOOP-7",
+      "test_fix": "26bd8b7 — loop test summary branches on actual LOOP-7 result"
+    },
+    "next_movement": "EXTEND — Capability Graph (LCI-06) and Tactile (LCI-07). Neither started. Both need David L3 before implementation. Tactile also needs LG-2.",
+    "open_items": [
+      "W0 live proof — needs server running with Unity active; confirm ACK poller delivers sit_complete/move_complete; verify journal row outcome derived from real ACK",
+      "LOOP-6 live proof — needs 2+ server sessions hours apart so lesson session_ids are distinct numeric IDs",
+      "Card 0033 Ruling 1 — retire significance_faculty.py; harvest what to report; Architect asked for this before the 63% report"
+    ]
   }
 }
