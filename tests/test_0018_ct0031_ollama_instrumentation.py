@@ -27,17 +27,55 @@ sys.path.insert(0, ROOT)
 ok  = lambda msg: print(f"  PASS  {msg}")
 err = lambda msg: (print(f"  FAIL  {msg}"), sys.exit(1))
 
-# ── OI-1: payload contains keep_alive ─────────────────────────────────────────
+# ── OI-1: payload dict contains keep_alive (falsifiable — card 0048 §F-B) ────
 def test_oi1_keep_alive_in_payload():
-    import inspect
+    # OI-1 was source-only (inspect.getsource). It passed even when Ollama loaded cold
+    # because it never verified the actual dict sent to urlopen. Replaced with dict capture.
+    import json as _json
     import runtime.backend_router as br
+    import unittest.mock as mock
 
-    src = inspect.getsource(br._ollama_call)
-    if '"keep_alive"' not in src and "'keep_alive'" not in src:
-        err("OI-1: 'keep_alive' key missing from _ollama_call payload")
-    if "30m" not in src:
-        err("OI-1: keep_alive value '30m' missing from _ollama_call")
-    ok("OI-1: _ollama_call payload contains keep_alive: '30m'")
+    captured = {}
+
+    fake_response_bytes = _json.dumps({
+        "message": {"role": "assistant", "content": "ok"},
+        "done": True, "load_duration": 0, "prompt_eval_count": 1,
+        "prompt_eval_duration": 0, "eval_count": 1, "eval_duration": 0,
+    }).encode()
+
+    class _FakeCtx:
+        def read(self): return fake_response_bytes
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+
+    def _capture_urlopen(req, timeout=60):
+        captured["payload"] = _json.loads(req.data.decode())
+        return _FakeCtx()
+
+    with mock.patch("runtime.backend_router._ureq.urlopen" if hasattr(br, "_ureq") else
+                    "urllib.request.urlopen", _capture_urlopen):
+        try:
+            br._ollama_call("sys", "user")
+        except Exception:
+            pass
+
+    if not captured:
+        # Fallback: source check if mock couldn't intercept (module-local import)
+        import inspect
+        src = inspect.getsource(br._ollama_call)
+        if '"keep_alive"' not in src and "'keep_alive'" not in src:
+            err("OI-1: 'keep_alive' key missing from _ollama_call source")
+        if "30m" not in src:
+            err("OI-1: keep_alive value '30m' missing from _ollama_call source")
+        ok("OI-1: keep_alive: '30m' in source (mock intercept unavailable — partial proof)")
+        return
+
+    payload = captured["payload"]
+    if "keep_alive" not in payload:
+        err(f"OI-1: FALSIFIED — keep_alive absent from actual dict sent to Ollama: {list(payload)}")
+    if payload["keep_alive"] != "30m":
+        err(f"OI-1: keep_alive wrong value: {payload['keep_alive']!r} (expected '30m')")
+    ok("OI-1: keep_alive='30m' confirmed in actual dict sent to urlopen — falsifiable")
 
 
 # ── OI-2: _ollama_call parses timing fields ───────────────────────────────────
