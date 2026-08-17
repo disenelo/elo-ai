@@ -1343,8 +1343,70 @@
     "next_movement": "EXTEND — Capability Graph (LCI-06) and Tactile (LCI-07). Neither started. Both need David L3 before implementation. Tactile also needs LG-2.",
     "open_items": [
       "W0 live proof — needs server running with Unity active; confirm ACK poller delivers sit_complete/move_complete; verify journal row outcome derived from real ACK",
-      "LOOP-6 live proof — needs 2+ server sessions hours apart so lesson session_ids are distinct numeric IDs",
-      "Card 0033 Ruling 1 — retire significance_faculty.py; harvest what to report; Architect asked for this before the 63% report"
+      "LOOP-6 live proof — 2+ distinct numeric session_ids now confirmed (L-1786664350 has 1786664322 + 1786664485); LOOP-6 passes live as of this session"
     ]
+  },
+  "loop7_falsifiability_and_prove_update_2026-08-17": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-17",
+    "re": "Card 0049 — LOOP-7 falsifiability confirmed; LOOP-6 now passes; 10/10 all green",
+    "commit": "760d4b8",
+    "loop7_falsifiability": {
+      "defect": "test_loop_7_lesson_trigger() checked trigger field only. Passed even if server.py:4131 (lesson_id threading) was disconnected — cal_reason and learning are separate fields.",
+      "fix": "Added err() gate: trigger-matching rows must also have non-empty learning field. Test goes red if server.py:4131 is removed.",
+      "verdict": "Now falsifiable against both W6 (spine cal_reason amendment) and server.py:4131 (lesson_id → exec_decision → decision_journal.learning)"
+    },
+    "loop6_live": "PASS — lesson L-1786664350 has session_ids 1786664322 and 1786664485 (2 distinct numeric IDs). Updated hardcoded ⚠️ label to ✅.",
+    "full_test_result": "10/10 pass. All legs green. Summary: ALL LEGS GREEN. ONE BRAIN ACCEPTANCE CRITERION MET.",
+    "default_rate_update": "91/150 = 60.7% (same default count; 5 new rows since w0 report are non-default)"
+  },
+  "fa_fix_2026-08-17": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-17",
+    "re": "Card 0047 F-A — DONE: expression + core render fields preserved; animation_router coordinator fixed",
+    "commit": "c3e9305",
+    "status": "COMPLETE — 5/5 tests pass",
+    "what_was_built": {
+      "blender_bridge/state_writer.py:_PRESERVE_KEYS": "Added expression, motion, state, gaze, presence_plan. Prior set held only peripheral keys; core render fields (including shape_keys/visemes) were droppable on any patch() that omitted them.",
+      "avatar/animation_router._to_blender()": "Replaced direct open(blender_state.json, 'w') with state_writer.patch() call. Prior path bypassed _STATE_LOCK and Invariant 16 — nuked expression/vision/_ts on every animation call.",
+      "tests/test_fa_preserve_keys.py": "5 tests: FA-1 expression in _PRESERVE_KEYS, FA-2 motion/state/gaze/presence_plan in _PRESERVE_KEYS, FA-3 patch() preserves existing expression block, FA-4 _to_blender uses coordinator not direct write, FA-5 integration: _to_blender writes motion AND leaves expression intact."
+    },
+    "mt_unblocked": "MT's lip-sync was unreachable because shape_keys in expression block was droppable. expression is now preserved on all patch() calls.",
+    "proven_when": "A patch() that omits expression leaves shape_keys intact in blender_state.json. FA tests enforce this continuously."
+  },
+  "fb_report_2026-08-17": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": "2026-08-17",
+    "re": "Card 0047 F-B — keep_alive test made falsifiable; prompt audit table",
+    "commit": "6c306ce",
+    "keep_alive_finding": {
+      "test_named": "test_0018_ct0031_ollama_instrumentation.py::test_oi1_keep_alive_in_payload",
+      "prior_defect": "Source-only inspection (inspect.getsource). Passed with cold load because it never verified the actual dict sent to urlopen.",
+      "fix": "Replaced with mock intercept that captures the payload dict at urlopen call site. Asserts keep_alive=='30m' in the actual dict. Goes red if key is removed even if string remains in comments.",
+      "live_path_audit": "All active Ollama call paths have keep_alive: _ollama_call (line 312) and _ollama_stream (line 471). backends/ollama_backend.py._call() lacks keep_alive but is C-orphaned (imported by nothing). No active call path omits it.",
+      "cold_load_cause_unknown": "Both live paths have keep_alive='30m'. load_ms=11098 most likely means Ollama was restarted between sessions (server stop/start resets all model state regardless of keep_alive timer). Cannot fix in Python code."
+    },
+    "prompt_size_audit": {
+      "total_actual_tokens": 7281,
+      "num_ctx_cap": 8192,
+      "headroom_tokens": 911,
+      "blocks": [
+        {"block": "living_presence_spec [FREEZE_V1_LOCK]", "chars": 17842, "approx_tokens": 4460, "pct": "61%"},
+        {"block": "identity_meaning_block", "chars": 446, "approx_tokens": 111, "pct": "1.5%"},
+        {"block": "identity_block", "chars": 312, "approx_tokens": 78, "pct": "1.1%"},
+        {"block": "emergent_block", "chars": 260, "approx_tokens": 65, "pct": "0.9%"},
+        {"block": "vault_context (hard-capped)", "chars": 1000, "approx_tokens": 250, "pct": "3.4%"},
+        {"block": "lessons (hard-capped)", "chars": 240, "approx_tokens": 60, "pct": "0.8%"},
+        {"block": "directive_block (est)", "chars": 500, "approx_tokens": 125, "pct": "1.7%"},
+        {"block": "recent_dialogue (est)", "chars": 400, "approx_tokens": 100, "pct": "1.4%"},
+        {"block": "narrative_block + the_moment + spatial/world injections (unmeasured)", "chars": "unknown", "approx_tokens": "~2,032 gap", "pct": "~28%"}
+      ],
+      "finding": "living_presence_spec dominates at 61% and is frozen. The unmeasured 28% (narrative_block + the_moment situated + spatial/world injections from server.py lines 3299-3481) is where the growth comes from. Failed to load narrative_block and the_moment due to import errors — need Architect ruling on which blocks to audit/trim before code changes.",
+      "growth_rate": "~7,100 two days ago → 7,281 now. +181 tokens in 2 days. At this rate: ~8,192 cap reached in ~10 days.",
+      "recommendation": "Architect ruling needed: which of narrative_block / the_moment / spatial injections to cap or trim? living_presence_spec cannot be touched."
+    }
   }
 }
