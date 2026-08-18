@@ -1,4 +1,638 @@
-# 📋 CAPABILITY 1–26 → WO TRACKER — **THE OUTSTANDING LIST. Check this first.**
+# 🔴 **FINISH THE eLo ALREADY DESCRIBED BY CANON. PROVE IT. THEN EXTEND ONLY CAPABILITY GRAPH AND TACTILE.**
+### **— David, 2026-08-16. This is the programme. Three movements, fixed order.**
+
+| | Movement | What it is | Ends when |
+|---|---|---|---|
+| **1** | **FINISH** | Already written in canon ⇒ the work is **implementation, never specification** | The One Brain loop has no dead leg |
+| **2** | **PROVE** | Written *and* built ⇒ the work is **evidence it runs live and reaches the Executive** | A `decision_journal` row **names a lesson as its trigger** |
+| **3** | **EXTEND** | 🔴 **Exactly two. `only` is a closed list.** Capability Graph · Tactile | — |
+
+**Why only two:** `grep -ril "capability graph" docs/architecture --exclude-dir=_intake` → **0** ·
+`grep -rilE 'tactile|\bFSR\b|haptic' docs/architecture/Volume_*` → **0**. **[VERIFIED 2026-08-16]**
+**Every other capability in the 66-row audit has a canonical owner.** Anything outside these two must
+first prove zero ownership by grep, then go back to David. It is not covered.
+
+🔴 **MOVEMENT 3 IS NOT STARTED, INCLUDING ITS SPECIFICATIONS.** Writing the Capability Graph or Tactile
+specs during FINISH is the identical error to writing Volume XXVIII early — forbidden by the Chief
+Architect the same day. When their turn comes, each must first name **all six**:
+**owner · contract · Spine route · lifecycle · tests · relationship to the One Brain invariant.**
+Ownership proposals exist (`LCI_BOARD_PACK` Artefacts 5–6). **The other five are unwritten by design.**
+
+---
+
+# 🔴 CURRENT — **2026-08-18 (updated by Builder). Read THIS block. Everything below line 400 is history.**
+**[EVERY FIGURE READ OFF DISK BY THE ARCHITECT. Re-derivable with one grep each.]**
+
+## 🔴 THE CONVERGENCE AUDIT **IS** PRESENTABLE v1. They were never two programmes.
+**David, 2026-08-18:** *"that is all of the work — they should be moving together, not apart."*
+**He is right, and the split was mine.** I ran the audit as its own programme with its own board, and
+`MILESTONE_eLo_Presentable_v1.md` — **the acceptance test, in his words** — went **11 days without a status
+update.** The board began reporting against itself instead of against the goal. **That is why a reasonable
+question about progress took a research task to answer.**
+
+### Every convergence finding serves an acceptance line. Mapped, verified.
+| David's acceptance test *(`MILESTONE` lines 14–20)* | The convergence work that IS this | State |
+|---|---|---|
+| **"It feels alive — because eLo UNDERSTOOD AND ACTED, not because a timer fired"** | 🔴 **LOOP-7 / D3.** Lessons reach his words, never his decisions. `A PROVEN IMPOSSIBLE` — the Executive cannot consume a lesson | 🔴 **`UNKNOWN`. This IS the "feels alive" line and it is unproven** |
+| **"one voice"** | The provider chain: `llama-3.3-70b` vs `llama3.1:8b`, `max_tokens 400` vs `num_predict 256` hardcoded where the Executive cannot reach it. `Volume_VII/01` already rules this — *"changes the voice, not the self"* | 🟠 **CANONICAL, NOT REACHING RUNTIME** |
+| **"honest — only claims what's verified"** | The evidence ladder. **8 of 9 loop legs went from "green" to `OBSERVED`** because historical rows mask disconnection | 🟢 **the standard now holds** |
+| **"remembers"** | `0025` second memory store retired, routed through `MemoryFaculty`, `AT-8` green | ✅ **DONE** |
+| **"knows its own state"** | `D5` single self-model authority · `ExecutiveContext` · capability health | 🟡 **`capability_list` empty in the DOWN channel** |
+| **"does what it says"** | ACK channel `W0`; `expression` preserved so lip-sync is reachable | ✅ **DONE** |
+| **Tier 0 — "a real brain that doesn't bleed cost"** | `.env` has **five uncommented `ELO_BACKEND` lines**; runtime ran Ollama while `expected: groq` | 🔴 **OPEN — evidence only** |
+| **"Take five" · "How's the company"** | ⚪ **NOT TOUCHED by the audit and NOT RE-TESTED since 2026-08-07** | ⚪ **`UNKNOWN`** |
+
+🔴 **THE STANDING FIX:** **the milestone is the goal; the board reports against IT.** Every card names the
+acceptance line it serves, or it explains why it exists. **A card that serves no line is either behind the
+line or should not have been written.**
+
+⚪ **And the honest gap this exposes: the last two rows.** *"Take five"* and *"How's the company"* are
+**two of the three things David actually named**, and eleven days of work has not touched either.
+**Not carding it — the phase gate says finish what is open. Recorded so it is not lost again.**
+
+---
+
+## THREE MOVEMENTS
+| Movement | Status | Gate |
+|---|---|---|
+| **1 · FINISH** | 🟢 **Complete** | One Brain loop implemented |
+| **2 · PROVE** | 🔴 **INCOMPLETE — and it closes INCOMPLETE, honestly** | `LOOP-7` `UNKNOWN` |
+| **3 · EXTEND** | 🔴 **NOT STARTED** | Capability Graph · Tactile only |
+
+## ⚠️ ONE CORRECTION TO THE LAST SNAPSHOT — **D3 is no longer awaiting a decision**
+The 2026-08-17 snapshot read *"F2 · LOOP-7 — BLOCKED — David/Architect decision."*
+David ruled it the same night: `Option A` — READ/MEASURE/PROVE only, frozen Executive stays frozen.
+**`0055` is now DONE** (`6758f4b`). Verdict: **A PROVEN IMPOSSIBLE** — `decide()` has no lessons read path; injecting a `lessons` key produces zero change in output. Executive logic must change to consume lessons. LOOP-7 stays OPEN. David/L3 decision.
+**Nothing on this board is waiting on David.**
+
+## CARD 0053 — THE RECONCILE · verified against disk
+| Task | Status |
+|---|---|
+| **F0** outbox corrupt | ✅ **DONE** — `3c1799b`. Cause was **doubled keys from Edit-tool writes**, not truncation *(my diagnosis was wrong)*. 38 entries preserved, writer now `.tmp` + `os.replace`, 3/3 |
+| **F1** token map | ✅ **DONE** — spec `4,523` tok **static**; always-on ~`6,070` of `8,192`. 🔴 **Growth is in the OTHER blocks, not the frozen file. My 61% framing blamed the wrong thing** |
+| **F2** LOOP-7 / D3 | ✅ **DONE** — `6758f4b` · **A PROVEN IMPOSSIBLE.** `decide()` reads 4 keys only (`intent`, `emotional_context`, `wm_winner`, `world_state`). `lessons` not in set. Injecting the key produces zero change in output (Step 3 confirmed). wm_winner alias noted — correlation, not causation. Executive logic must change. David/L3 decision. `tests/test_0055_d3_option_a.py` — harness on disk. |
+| **F3** overflow (0052) | ⚠️ **PARTIAL** — M1/M3/M5 measured. M2/M4 UNKNOWN (Ollama running `llama3.3:70b` — too slow for test calls; script written for `llama3.1:8b`). M1: 6,927/8,192 tok = 84.6%, 1,265 tok headroom. M5: ~7.3 days to overflow at current rate (2-point estimate). Pull `llama3.1:8b` to close M2/M4. |
+| **F4** heartbeat | ✅ **DONE** — `a59ab1b` · false-presence defect fixed. `_start_heartbeat()` removed from module import. `start_heartbeat()` explicit, called once from `server.py`. `_heartbeat_started` guard + `ELO_STATE_HEARTBEAT=0` opt-out. `tests/test_0054_heartbeat_owner.py` 4/4 PASS. |
+| **F5** convergence proof | ✅ **DONE** — `PROVEN: 1` · `OBSERVED: 6` · `UNKNOWN: 1` · `IMPLEMENTED: 1` |
+
+### 🟢 F5 IS THE MOST IMPORTANT RESULT ON THIS BOARD
+**18 hours ago this read "10/10 all legs green." It now reads ONE proven leg.**
+**Builder's reason, and it is correct:** the loop tests search the journal for a row containing X, and **151
+historical rows satisfy that forever** — so disconnecting a feature **cannot redden the test.** Only `LOOP-8`
+survives, because it checks the shape of a live value instead of searching history.
+🔴 **The figure went down. That is the metric working** *(Rule 5.4)*. **Do not let anyone restore the 10/10.**
+
+## 🔴 THE BASELINE FREEZE — three conditions. It is NOT frozen yet.
+**David: "Close the convergence work honestly. Freeze the resulting runtime baseline."**
+| # | Condition | State |
+|---|---|---|
+| **1** | **`0055`** — D3 reports `YES` / `NO` / `UNKNOWN` with trace | ✅ **DONE** `6758f4b` · **A PROVEN IMPOSSIBLE** — Executive must change to consume lessons |
+| **2** | **`0054`** — heartbeat one owner | ✅ **DONE** `a59ab1b` · `start_heartbeat()` explicit, server.py only |
+| **3** | **`0052`** — overflow measured | ⚠️ **PARTIAL** · M1/M3/M5 ✅ · M2/M4 UNKNOWN (70b too slow; pull `llama3.1:8b` to close) |
+
+🔴 **"Honestly" means the baseline is frozen with `LOOP-7 = UNKNOWN` if that is what the trace shows.**
+**PROVE closes INCOMPLETE. That is a result, not a failure, and it must not be dressed up.**
+
+### 🔴 CONDITION 4 — ADDED 2026-08-18. **The baseline must record WHICH BACKEND WAS LIVE.**
+**[VERIFIED]** `num_ctx: 8192` appears **only** in the Ollama payload (`backend_router.py:313`, `:472`).
+**The Groq path sets no context cap** — `llama-3.3-70b-versatile`, `max_tokens: 400` on output only.
+
+> **The same prompt (7,477 tokens) is at 91% of the window on Ollama and nowhere near it on Groq.**
+> **The prompt builder does not know which provider it is assembling for.**
+
+**Therefore a runtime baseline that does not name its provider is ambiguous**, and the Drift Audit's
+`RUNTIME eLo` stage would compare against an unlabelled state. **The freeze record must capture:**
+`backend actually serving` · `model id` · `context window` · `prompt tokens at freeze` · `whether the
+fallback chain fired during the sample`.
+
+⚠️ **And it scopes `0052`:** an overflow measurement against `llama3.1:8b` measures **that model at 8,192.**
+🔴 **It is not evidence about eLo's context behaviour generally, and must not be generalised to Groq.**
+*(Same over-reach as the Architect's withdrawn "drops the oldest content" claim — scoped in advance this time.)*
+
+---
+
+# 🔴 **RETRACTION — 16:05. PROVE IS *NOT* COMPLETE. LOOP-7 REOPENED.**
+**I reported "10/10, all legs green" to David at 15:49. It was wrong. The CA challenged it, I checked the
+code, and the CA is right on every clause.** Card: `builder/QUEUE/0051`.
+
+| Defect | Evidence |
+|---|---|
+| `cal_reason` is **overwritten AFTER** the Executive decided | `spine.py:240` sets it from `exec_out`; **`spine.py:274-275` renames it** when it equals `"default — no stronger signal"`. **A relabelled default is not a lesson-driven decision** |
+| The rename fires **only on defaults** | so every lesson-citing row is, by construction, a row where the Executive had **no reason at all** |
+| `lesson_id` attached **unconditionally** | `spine.py:278` sits outside the `if`. **5 rows carry `learning`; only 2 have a lesson trigger.** The other 3 had real routing signals — the lesson had no part |
+| 🔴 **The Executive never receives a lesson** | `grep -c lesson runtime/executive.py` → **0.** `ExecutiveContext` has `intent·emotion·world·attention` and **no lessons field.** There is no path by which a lesson *could* influence a decision |
+| The falsifiability gate tests the **wrong proposition** | `760d4b8` goes red if the wire breaks. **It proves the wire, not the causation.** I asked for a falsifiable test and never said falsifiable about *what* |
+
+**Root cause is an honest category error, in Builder's own comment at `spine.py:258`:** *"its presence in the
+prompt genuinely shaped the output."* **A lesson in the prompt may shape the LLM's WORDING. `cal_reason` is
+the EXECUTIVE's reason for choosing an ACTION.** Two deciders, one field.
+
+### ⚠️ AND IT DISTORTED THE ONE NUMBER WE SAID COULD NOT BE GAMED
+| Figure | Value |
+|---|---|
+| Reported `default` rate | 91/151 = 60.3% |
+| 🔴 **TRUE default rate** *(rename reversed)* | **93/151 = 61.6%** |
+| Baseline pre-W6 | 63.0% |
+
+**Real improvement is 63.0% → 61.6%, not → 60.3%.** Nobody gamed it; **the metric began measuring its own
+relabelling.** 🔴 **Quote 61.6% from here. Expect LOOP-7 RED and this figure to RISE. Both are the metric
+working** *(Rule 5.4)*.
+
+**Status: `LOOP-7` = 🔴 `UNKNOWN`. `PROVE` = INCOMPLETE. `EXTEND` remains NOT STARTED.**
+**If LOOP-7 cannot close without contrivance it stays UNKNOWN.**
+⚠️ **[LEAD ARCHITECT INTERPRETATION — corrected 2026-08-17 22:45]** This line previously ended *"That is an
+acceptable result,"* and the same gloss went to Builder three times. **It is mine. Neither David nor the CA
+wrote it.** Their actual words: David — *"Report YES / NO / UNKNOWN, with evidence"* · *"Anything less
+remains UNKNOWN"*; CA — *"Anything not proven remains UNKNOWN"* and *"Do not manufacture evidence to make
+LOOP-7 pass."*
+🔴 **The difference matters: they permit the VERDICT `UNKNOWN`; they do not excuse the WORK.** An `UNKNOWN`
+with no trace attached is not a report. **Two historical copies remain — `builder/QUEUE/DONE/0051` and the
+builder inbox — left in place as the record of what I actually said, not silently rewritten.**
+
+---
+
+## 🎯 WHAT MOVEMENT 2 *DID* ACHIEVE — unaffected by the retraction
+**This board, line 7:** *"PROVE ends when a `decision_journal` row **names a lesson as its trigger**."*
+🔴 **That criterion is now known to be too weak — a row can name a lesson without a lesson contributing.
+The bar is now CAUSATION: an action attributable to a lesson in the Executive's input, which would differ
+without it.**
+
+| Evidence | Value |
+|---|---|
+| Journal rows carrying a lesson | 🟢 **5 of 151** — `01:33 · 02:31 · 02:31 · 02:38 · 15:35` |
+| The lesson | `99ae9fcf7d4231eb` = `L-20260813030555`, **status `confirmed`, strength 1.0** |
+| Wire | `server.py:4131` → `exec_decision.lesson_id` → `decision_journal.learning` |
+| Loop test | 🟢 **`tests/test_loop_one_brain.py` — 10/10. ALL LEGS GREEN.** *(Updated 15:47: `LOOP-6` flipped WARN→PASS — lesson `L-1786664350` now carries 2 distinct numeric session IDs. **My 15:45 figure of "8 PASS + 1 WARN" was one minute stale.**)* |
+| 🔴 Falsifiable? | 🟢 **YES, as of `760d4b8` 15:33.** It was NOT before — Builder's own commit message: *"the test passed even with `server.py:4131` disconnected because it only checked trigger"* |
+
+**⚠️ Two caveats, on the record so this is not over-read:**
+1. **All 5 rows cite the SAME lesson.** One lesson recalled five times — **not diverse learning.**
+2. **Mechanism = Executive DEFAULTS → `recall()` returns a lesson → `cal_reason` amended.** So a lesson
+   currently fires **where nothing stronger exists.** The leg is real; it is **learning filling a gap, not
+   learning overriding a decision.** `LOOP-6` (session diversity) is the open WARN and needs runtime hours.
+
+## SEATS — verified 15:45
+| Seat | Cards | Last commit / report | State |
+|---|---|---|---|
+| **Builder** | 63 | 🟢 **`6c306ce` 15:42** — committing every few minutes | **ACTIVE.** Burning down `0047`: F-A landed `c3e9305`, now on F-B |
+| **Design** | 5 | 10:15 | Owes MT **camera transform + `eloWorldHeight` + one reference frame** (promoted to top of `QUEUE/10`) |
+| **MT** | 6 | 01:55 | Everything left running: spine `:5050` · harness `:5055` · `/frames`. App on David's phone |
+| **Game** | 1 | 🔴 **08-13 21:08 — four days** | **Not blocked. Uncarded until 02:45 today — my 4i failure.** Needs David to open its VS Code window |
+
+## RUNTIME — 15:45
+| Metric | Value | Direction |
+|---|---|---|
+| `default — no stronger signal` | **91/151 = 60.3%** | 🟢 from 63.0%. **Absolute count static at 91** — every new row had a real trigger |
+| Journal rows | 151 | live, 1 min old |
+| Lesson-carrying rows | **5** | 🟢 growing unattended |
+| `load_ms` | **8,496 ms** | ⚠️ from 11,098. **`keep_alive` STILL not holding** |
+| `prompt_eval_tokens` | 🔴 **7,477 / `num_ctx` 8,192 = 91%** | 🔴 **from 7,281. GROWING.** At 8,192 the model silently drops the OLDEST content — **which is where the identity block sits** |
+| Spine / Unity | both live | `blender_state.json` + `unity_events.json` 1 min old |
+
+## 🔴 THE ONE THING TO WATCH — **and Builder found the cause at 15:44**
+**Prompt growth is the only figure moving the wrong way.** F-B's audit landed and it is not diffuse:
+
+| Block | Tokens | Share of the whole prompt |
+|---|---|---|
+| 🔴 **`living_presence_spec` [`FREEZE_V1_LOCK`]** | **≈ 4,460** | 🔴 **61%** |
+| `vault_context` (hard-capped) | 250 | 3.4% |
+| `identity_meaning_block` | 111 | 1.5% |
+| `identity_block` | 78 | 1.1% |
+| `emergent_block` | 65 | 0.9% |
+| `lessons` (hard-capped) | 60 | 0.8% |
+| **Headroom to `num_ctx` 8,192** | **911 tokens** | — |
+
+> ### **ONE FROZEN FILE IS 61% OF EVERY THOUGHT eLo HAS.**
+
+⚖️ **RULING (technical, mine):** `FREEZE_V1_LOCK` governs **what the spec SAYS** — it does not require that
+**all 17,842 characters be injected into every turn.** Segmenting or retrieving from a frozen document is
+**not editing it.** Carded as `0050`. ⚠️ **But which parts reach the model on which turn changes how eLo
+behaves — so David reviews the RESULT on a live turn, never as a pre-gate.**
+
+**Also closed by F-B, honestly:** all live Ollama paths **do** carry `keep_alive: 30m`
+(`backend_router.py:312` + `:471`). Builder's verdict on the cold load is **`UNKNOWN — most likely Ollama
+restarted between sessions; cannot fix in Python.`** 🟢 **Correctly left as UNKNOWN rather than guessed.**
+
+🔴 **Second non-falsifiable test found today:** the old `keep_alive` test used `inspect.getsource` —
+**it checked the source string, never the dict sent to `urlopen`, so it passed against a cold load.**
+Now intercepts the real payload (`6c306ce`).
+
+## RULED TODAY — five gates removed, none of them real
+`LAN bind` *(closed: already built, `server.py:4603` never left loopback — a surface gets a read-only
+window process, never a wider spine)* · `0025` *(ruled `(a) RETIRE`; never L3)* · `0033` *(was done 21 h
+before I ordered it)* · `WO-086 ×2` *(both named in Rule 4.1 as NOT blocks)* · `Game` *(unparked 08-13,
+uncarded until today)*. **Every one was mine. See `BOARD_RECORDS.md` → `GOV-STATES-001`.**
+
+## NEW GOVERNANCE — `GOV-STATES-001`, David 2026-08-17
+**UNKNOWN → PROPOSE → AUTHORISED → IMPLEMENT. Never collapsed. `UNKNOWN ≠ ASSUMPTION`.**
+Enforced at `blender/agent_bus/_SEAT_EPISTEMIC_PROTOCOL.md` + a mandatory `STATE:` line on every card.
+**Canonical home `Volume_XXVII` — PROPOSAL, awaits David's signature.**
+
+## 🔴 BOARD DEBT — flagged, not fixed
+- **122 rows read `IN_REVIEW`.** Rule 4.1: *"tests green + committed = DONE."* **`IN_REVIEW` is not a hold**,
+  so most of those are finished work wearing a waiting label. **Needs a sweep. Not started.**
+- **This file is 1,700+ lines and §4 "Status roll-up" is stale to 2026-08-07.** Same accretion problem
+  `CLAUDE.md` had before consolidation. **A reconcile log is not a board.**
+
+## DAVID'S LIST
+**Nothing.** *(Open at his discretion, blocking nobody: Groq billing · the "away from home" beyond-LAN
+question · 9 canon questions for Batch 1b · opening Game's window.)*
+
+---
+
+### 📖 BOARD RECORDS — `engineering/work_orders/BOARD_RECORDS.md`
+**Permanent reference register. Persists, never enters the queue.** *(David: "six months from now you
+don't have to rediscover this conversation.")*
+
+| ID | Title | Status | Authorises |
+|---|---|---|---|
+| **`VISION-ELO-001`** | **One eLo, Many Bodies** | 🔵 VISION / ARCHITECTURAL INTENT | **nothing** |
+| **`R&D-ELO-MOBILE-001`** | Mobile Presence / Widget | 🧪 R&D INTAKE | **nothing** |
+| **`SEAT-PRESENCE-001`** | Presence & Embodiment Designer | 🔵 **FUTURE SEAT — defined, not active** | **nothing** |
+
+> *"It isn't really 'build a robot that is eLo.' It's becoming: **Build eLo a world of bodies.**"* — David
+
+### 🔴 OPEN R&D QUESTION — **"AWAY FROM HOME"** *(David 2026-08-16, on break)*
+> **"Can eLo reach David's phone when David is away from the Mac / LAN?"**
+> *"How does the same eLo remain reachable across different Presences without creating another eLo?"*
+
+**Research territory (MT):** APNs · Live Activities · WidgetKit · native app · secure relay ·
+authenticated transport · encrypted state envelopes · reconnect · Mac asleep · privacy enforcement.
+
+🔴 **ARCHITECT FLAG — a boundary will have to move, consciously.** `VISION-ELO-001` and D1 §5 both say
+**"LAN only. No tunnel, no port-forward, no cloud relay."** **The away question cannot be answered inside
+that boundary.** MT may research freely and must **build nothing that leaves the LAN**; any proposal that
+does **requires a NEW David L3 decision**, not an extension of the existing one.
+🔴 **Privacy must get STRONGER with distance, not weaker.** On a LAN, `PRIVATE` is local. Over a relay it
+means **state leaving the house.** **Volume XXIII owns it.**
+**Best first question, and MT has it:** *what information actually needs to leave the Mac?* Answer that
+and the rest becomes decidable.
+
+**Status: L3 VISION / R&D. Not canonised. Not a new programme. Does not touch the execution queue.**
+
+### 🎯 **MEASURED 2026-08-16 — Mac → iPhone presence update: 0.55 s**
+**The §7 proof moment happened.** David changed eLo's state on the Mac; the iPhone reflected it in
+**0.55 seconds** over LAN. **`VISION-ELO-001` stopped being a claim.**
+
+🔴 **What this proves, precisely:** the **PRESENCE-STATE CLOCK** (clock 2) is **not** the bottleneck.
+0.55 s is well inside the threshold where a glance feels live. **The transport is fast.**
+🔴 **What it does NOT prove:** the *widget's* refresh budget. **0.55 s is almost certainly the foreground
+app path.** A Home Screen widget is a different clock and must be measured separately.
+**[To pin down: which surface · end-to-end or HTTP round-trip · single reading or distribution.]**
+
+**Consequence for the three-clock model:** the refresh limit is a **widget constraint, not a transport
+constraint.** That distinction is now evidence, not theory.
+
+**Bind address: David signed the guard** — the phone reached the Mac, so `ELO_SERVER_HOST` is live.
+
+### 🔵 L3 VISION — **"One eLo. Many Presences."** *(David 2026-08-16)* · `_vision/ELO_PERSISTENT_SELF_MANY_PRESENCES.md`
+> ### *"eLo does not live inside Presence. Presence is where we meet him."*
+> ### **One eLo. Many bodies. One Brain.**
+
+**Not canon · not a WO · not scheduled.** Informs architecture; **changes no queue.**
+**Born from the same event as ingress #32** — and the two findings point opposite ways:
+🟢 **eLo exists independently of his visible body — proven at runtime** *(the architecture succeeding)*
+🔴 **cognitive organs were independent of each other** *(the defect — closed, `ADR-Exec-008`)*
+
+```
+              eLo OS  →  Executive  →  Presence Router
+                        ┌──────────────┼──────────────┐
+                     Desktop         Mobile         Robot
+                     (LIVE)         (VISION)     (WO-098, RESERVED)
+```
+
+🟢 **Extends existing canon — creates no owner.** `Volume_XIII/05` *One Spatial Model, Many Bodies* +
+**`SpatialEmbodimentBinding v1.0.0`** (§5.6) already instantiate one faculty against the current
+embodiment. **The vision generalises *bodies* → *surfaces*. That is the only new idea in it.**
+
+| Boundary (Lead Architect owns) | |
+|---|---|
+| **Presence Contract** | **MAY report** `AVAILABLE` · `PRIVATE` · `FOREGROUND` · `BACKGROUND` + capability facts. **MAY NOT** decide, interpret intent, hold memory/identity, or say *"make eLo do X."* 4th instance of D8/AR-24/`0044` — **propose, never decide** |
+| 🔴 **Name collision headed off** | `Volume_XIII/01:96` owns `register ∈ PERIPHERAL\|COMPANIONABLE\|FREE\|WITHDRAWN` = **social closeness.** Surface availability is a **different axis. Never the same field name** — that is D2, twice |
+| 🔴 **Privacy doctrine** | *"Persistent eLo does not imply persistent surveillance."* Explicit · **observable** · **enforceable** — `PRIVATE` means capture **does not happen**, not happens-and-discarded. **Owned by Volume XXIII**, never a per-surface feature |
+| 🔴 **The failure mode** | **Don't make the mobile app a new brain.** Test: *does this hold state eLo needs to be himself?* **A cache is fine. A memory is not. A queue is fine. A decision is not.** |
+| **Blocked on** | **Presence Router cannot be specified before `ONEBRAIN-012`** — it hands the Executive surfaces to choose between, and a 7-key Executive can't use them. **The route to Mobile runs through `W5`** |
+
+### 🟢 SEAT ONBOARDED — **`SEAT-DES-MOBILE-TEST` · Mobile Test Designer — “MT” / “Tester”** *(David L3, 2026-08-16)*
+**Channel:** `blender/agent_bus/mobile_test/` · **Charter:** `START_HERE_2026-08-16.md` ·
+**Card:** `QUEUE/001_PROTOTYPE_eLo_is_here.md` — 🟢 **AUTHORISED, prototype + test only**
+
+⚖️ **Naming collapsed (Architect, in-lane).** Three adjacent names existed; **one active seat now:**
+`SEAT-DES-MOBILE-TEST` **is** the *Mobile Presence Design* remit opened 16 Aug, now named. It is
+**absorbed by `SEAT-PRESENCE-001`** (future) when David activates that. *Mobile Presence Builder*
+(Builder) stays inactive until there is something proven to build. **"Test" is load-bearing.**
+
+🟢 **The architecture already had a slot — verified, not invented.**
+**`avatar/animation_router.py:36`** `route(motion, state=None, target="console")` · **`:45`**
+`targets = ["unity","blender","console"]`. 🔴 **Mobile becomes the fourth target — and a target RECEIVES,
+it never decides. That is the anti-second-brain guarantee in code.**
+Channels reused per the **ratified** `UNITY_ELOOS_IO_CONTRACT` (David L3 2026-08-06): DOWN
+`blender_state.json` · UP `unity_events.json`. 🔴 **No `mobile_state.json`** — the contract forbids
+topic-named files by name.
+
+🔴 **The one new piece — network transport — is gated.** Unity reads local files; a phone can't. That is
+*"a genuinely different delivery type"*, which the contract's own change-control clause says requires
+**updating the contract, signed.** **D1 is a proposal to me, not a build.** *(`server.py:24` already runs
+`ThreadingHTTPServer` — extend, don't write a server.)*
+
+**Prototype 001 proves ONE thing:** *David says something on the Mac, picks up his phone, eLo knows —
+with no cognition on the phone.* **Out of scope: offline mode, any model, any memory, anything that
+decides.** 🔴 *Caching replies so it "looks alive" is how a second eLo gets born.*
+**Highest-value deliverable: what `PRIVATE` LOOKS like** — observable at a glance, not a settings row.
+**Nobody owns that yet, and it sets the pattern for the studio robot's camera.**
+
+**Builder untouched — still `W1`.** **Presence Router stays blocked on `ONEBRAIN-012`.**
+
+### 🧪 R&D INTAKE — **discovery only. Creates no work.** *(David 2026-08-16 · rule `CLAUDE.md` 4t)*
+> **"R&D may discover useful mechanisms, constraints and opportunities; it does not silently alter canon,
+> create work, or authorise implementation."**
+
+**Findings get *tested against alternatives*, never adopted because they arrived well-written.**
+*"Comparative physical prototyping rather than architectural adoption"* is the general rule.
+🔴 **A capture with no owning WO sits as intake. It never spawns one.**
+
+| Stream | Owner | Binding constraints |
+|---|---|---|
+| **Sphere joints** (Gemini R&D) `_intake/SOURCE_2026-08-16_RD_sphere_joints_study.md` | **WO-084** · puppet→figure→animatronic | 🔴 **Passive-friction joints stay SEPARATE from powered robot joints** — friction retention is *parasitic load* on a driven actuator. **No transfer of Archetypes A–G into the robot mechanical architecture without a separate David L3 + LG-2.** When WO-084 opens: **prototype comparatively, do not adopt** |
+| **Gemma / Pi offline AI** (Gemini R&D) `_intake/SOURCE_2026-08-16_RD_gemma_offline_translator.md` | **WO-098** · `LCI-01` | External **evidence and constraints**, not an instruction. 🔴 **Pi RAM (3.5–4.5GB) + thermal contention stay UNKNOWN pending engineering validation — Gemini's numbers, not ours.** 🔴 **Any future local AI component is a CAPABILITY / ORGAN — never an Executive or intent authority.** 🔴 **No parallel ROS/ZeroMQ intelligence bus without explicit architectural treatment** |
+| **Vision module / backpack console** (Gemini R&D) `_intake/SOURCE_2026-08-16_RD_vision_module_backpack_console.md` | **WO-098** · **Vol XII** · **WO-084** | 🟢 **Camera Module 3 lands in RATIFIED Vol XII** (`02_Sensation_Layer:59-76`, row 6 robot camera) — component choice, no conflict. 🔴 **Triggers the privacy doctrine: `PRIVATE` must cut capture BELOW the model, not filter after.** 🔴 **The backpack is TWO decisions — compute/sensor half ordinary; 3S/4S LiPo + buck regulator is RESERVED (battery, Ruling XXIII): David L3 + LG-2.** 🔴 **Adds to the same contention board as Gemma** — video + NVMe/PCIe + SPI + I2C + I2S vs a 100Hz FOC loop. Still UNKNOWN |
+
+**Neither is canon · a WO · scheduled · or costed.** Both enter only through their existing WO.
+**Execution unchanged: `FINISH → PROVE → EXTEND`. Builder stays on the authorised queue.**
+
+### 🔴 GOVERNANCE RULE — David, 2026-08-16. Binds every seat, read before writing "blocked".
+**Nobody is a gate unless canon explicitly assigns that authority.** Never label work *"CA-blocked"*
+because a reviewer has not looked at it. **Resolve in-lane directly · re-ask nothing already answered in
+canon · verify before escalating · only L3 matters reach David.**
+🔴 **Do not freeze or alter canon before David's signature.** A ruling is a proposal until he signs.
+*(Origin: I invented a CA gate canon does not grant and stalled eight volumes behind it. Rule `4s`.)*
+
+### 🔴 INGRESS IS 32, NOT 31 — `ambient_thought()` · ruling `Output/RULING_ambient_ingress_2026-08-16.md`
+**Found by David listening to his computer, not by my grep.** eLo spoke with Presence closed and vision
+capturing. `server.py:717–895` — a **daemon** ingress with **no spine, no Executive, no journal**, its own
+`_rt()` prompt, speaking at `:888`. **My scan window was the request path only (`1571–2404`).**
+🔴 **Card `0038` line 80 promised the assertion "stops number 32 appearing." Number 32 already existed —
+in a room I never looked in.**
+
+| | |
+|---|---|
+| **Violates** | Executive sole-decider (`Volume_V/CONTRACTS §1`) · CONSUMPTION · One-Plan-Per-Turn · journal coverage |
+| **Does NOT violate** | ROUTING INVARIANT **as worded** — it is scoped to *"user-intent-bearing"*, and ambient bears none. **That scope gap is why it hid** |
+| **Bounded** | 20 of 21 `_voice_speak()` sites are in `_process_turn()`; **exactly 1 is ambient.** One path, not a leak |
+| ⚖️ **RULED** | **Ingress #32, class `SELF-INITIATED`. Demoted decider → proposer. Routes to the Executive.** Ambient initiation, silence, tone, voice **all preserved** |
+| **New architecture needed** | 🟢 **NONE.** `plan.intent_source` (`plan.py:27`) · `plan.internal_intent` (`:29`) · `internal_intents()` (`emergent_cognition.py:45`) **all exist and are already wired at `server.py:3078`.** Ambient is a **duplicate (G)** of a capability the spine already has |
+| **Silence improves** | Today silence = the daemon not firing, invisible. Routed, **`STAY SILENT` is a journalled decision** — and `Volume_XIII` OQ-1.3 *"how often may eLo withdraw"* becomes a **ratio you can read**, not a guess |
+| **Sequencing** | Behind `W1`/`W2`, lands with `W5`. **No implementation authorised** |
+
+🟢 **AND THE GOOD FINDING: PRESENCE IS NOT THE BRAIN — proven, not asserted.** eLo perceived, thought and
+spoke with Unity closed. `Volume_XIII/05` says Presence is a realisation layer; **an accidental experiment
+confirmed it at runtime.** The defect was never independence from Presence — it is **independence between
+cognitive organs.**
+
+🔴 **ONE OPTIONAL L3 (David):** amend the ROUTING INVARIANT's scope from *"user-intent-bearing"* to **any
+path producing user-visible action**? **Recommend yes** — changes no behaviour (Vol VII already covers the
+substance), but closes the hole in the net that let a whole class go uncounted. **Low urgency, high hygiene.**
+
+### 🏛️ BOARD TRACK — governance runs BESIDE engineering, never in front of it
+**Submission:** `Output/ELO_BATCH1_L3_SUBMISSION_2026-08-16.md` · **Questions:** `Output/ELO_CANON_RATIFICATION_PACK_2026-08-16.md`
+
+| Item | State | Who |
+|---|---|---|
+| ✅ **BD-11 Batch 1 = XII + XV** | ⚖️ **RATIFIED + FROZEN 2026-08-16 (David L3).** Six freeze steps executed and verified. 🔴 **RATIFIED ≠ IMPLEMENTED** — XV `FT-4`/`ST-1` recorded as **lawful known defects**, `FREEZE_V1_LOCK` RL-001 | **DONE** |
+| ✅ **BD-12 SignificanceVector v2.0.0** | ⚖️ **RATIFIED + FROZEN.** `ADR-Exec-007` — dimensions · semantics · version · ownership frozen. **Closes `FC-2`/`O-5.2`** (drift since 07-27). Owner: Vol XXVIII. 🔴 **Authorises no learning — `5a` stands** | **DONE** |
+| ✅ **BD-14 Canon vs code** | ⚖️ **RATIFIED.** Canon defines architecture. **Code is ground truth ONLY where canon explicitly designates it.** The three FC-2 exceptions survive as exceptions, **never as precedent** | **DONE** |
+| ~~**BD-13** Does the CA ratify batches?~~ | ✅ **CLOSED by David 2026-08-16:** *"CA/Lead Architect advice is never a gate unless canon explicitly assigns that authority."* **Canon assigns no ratification authority to the CA ⇒ David signs.** `7b` was direction | **CLOSED** |
+| **Batch 1b — XIII** | 🔴 stays out — 17 OQs, 4 David's, one RESERVED needing LG-2 | later |
+| **Batch 1b — XIII** | 🔴 **stays OUT of Batch 1** — 17 OQs, 4 David's, one RESERVED needing LG-2 | later |
+| **Batch 2 — XVII·XVIII·XX·XXI·XXII** | XVII **at or before** XVIII (`Volume_XVIII/00_Metadata.md:23`). `5a` still gates the build | later |
+
+### ⚖️ DELIBERATION CLOSED — 41 rulings issued 2026-08-16 · `Output/ARCHITECT_RULINGS_2026-08-16_delegated_authority.md`
+🔴 **The Chief Architect was never a gate.** `Volume_XXVII/01:262-267` — *"[optional: CA stress-test —
+advice, NOT a gate] → DAVID L3 ← the only gate."* **33 questions sat labelled "CA-blocked" against a
+seat canon says cannot block.** That queue was mine and it stalled eight finished volumes. **Cleared.**
+
+| Seat | State |
+|---|---|
+| **Lead Architect** | ⚖️ **41 ruled — deliberation closed.** 0 outstanding |
+| **Chief Architect** | 📨 `chatgpt/FROM_LEAD_ARCHITECT_2026-08-16_stress_test_41_rulings.md` — **stress-test, explicitly non-blocking** |
+| **Game** | 📨 `game/FROM_LEAD_ARCHITECT_2026-08-16_spatial_faculty_question.md` — XIII OQ-5.2, one line, no card |
+| **Builder** | 📨 card `0041` — **scope UNCHANGED**; 4 rulings constrain code not yet authorised |
+| **David** | 4 Board decisions + 9 questions. **Untouched by all 41 rulings** |
+
+**Load-bearing rulings:** `AR-1` escalation **is** the Executive's — *already canon at
+`Volume_XX/01:36-39`, a re-ask not a decision* · `AR-3` **`BodySchema` → Self Model**, through `0037`'s
+accessor · `AR-4` fidelity becomes **structured data**, not a prompt rail · `AR-28` spatial store lives in
+**Vol VIII**, never faculty-local · `AR-7` `register_fidelity` **diagnostic only, never a reward term**
+(D3 forbids learning speech correctness) · `AR-9` past-tense claims **reuse `claim_gate.py`**, no second
+tiering system · `AR-23` route granularity **leg-at-a-time with an ACK** (Ruling E).
+
+**52 open questions re-triaged by actual ownership → 9 are David's, and NONE are in Batch 1.**
+⚖️ **Architect-ruled, removed from his desk:** `R7` XII's 8 OQs **non-blocking** (all future-extension or
+self-answering) · `R5` XV's 1 OQ non-blocking · `R8` D2 route sequencing **is mine** (additive first,
+prove parity, remove second) · `R4` the 377 lessons **already archived on disk** — nothing to decide.
+
+**FREEZE prepared, executes on signature — six steps, none need David:** metadata → `RATIFIED` ·
+`DECISION_LOG` row · `00_CANON_INDEX` corrected · OQs marked `RULED` in place · 🔴 **recorded in
+`FREEZE_V1_LOCK.md`, not only here** *(the D-K unlock sat unread two weeks for exactly this reason)* ·
+**40 acceptance tests become the enforcement surface** — with XV's 2 currently-failing tests listed
+explicitly as **lawful known defects**, so the surface is honest from day one.
+
+🔴 **EXTEND — NOT YET.** Capability Graph · Tactile are **movement 3 and not started, specifications
+included.** Neither begins until it names all six: owner · contract · Spine route · lifecycle · tests ·
+One Brain relationship.
+
+### 🔴 THE METRIC IS DEFENDED, NOT ACCUMULATED
+> *"The 30% verification figure should not be allowed to rise merely because more unit tests turn green.
+> The test must become false when the live connection is removed."* — Chief Architect
+
+**VERIFIED counts only disconnection-falsifiable tests.** **149 of 156 test files pass with Ollama
+unreachable and no server running** — so **at most 7 can currently prove anything**, and several are
+deliberately red. **A new green unit test moves IMPLEMENTED at most, never VERIFIED.** Every claimed rise
+must name the test **and** the disconnection it survives. **The figure may go down; that is it working.**
+
+**The one number that cannot be gamed:** `"default — no stronger signal"` = **63% of decision rows
+(83/131)**. It comes from runtime, not the suite. **Track it beside VERIFIED%.**
+
+---
+
+# 🟣 PROGRAMME — **ELO LOCAL COGNITIVE INTELLIGENCE & CONTINUAL LEARNING (LCI)**
+### ⚖️ **DIRECTION RATIFIED BY THE CHIEF ARCHITECT 2026-08-16** · **IMPLEMENTATION NOT AUTHORISED**
+
+**Board pack (the 8 required artefacts):** `Output/LCI_BOARD_PACK_2026-08-16.md` (CA-LCI-BOARD-002)
+**Cross-map:** `Output/LCI_CANON_CROSS_MAP_2026-08-16.md` (CA-LCI-XMAP-001) — accepted as **PHASE OUTPUT, not a ratification**
+**Verbatim intake:** `docs/architecture/_intake/SOURCE_2026-08-16_LCI_master_plan.md`
+**Chain:** `MASTER PLAN → CROSS-MAP → BOARD DECISIONS → CANON UPDATE → WO → IMPLEMENTATION → TEST → AUDIT`
+**Position: step 3 of 8.** Canon **unaltered**. **No LCI learning/RL Work Order is authorised.**
+
+> **This is a RATIFY-AND-WIRE programme, not a build programme.** 9 of 11 proposed streams already have a
+> written canonical volume — ~11,000 lines, **eight at `READY FOR REVIEW`, none ratified.** Only two are
+> genuinely new: **Capability Graph** and **Tactile**.
+
+### ⚖️ THE EIGHT DECISIONS — all closed
+| # | Ruling |
+|---|---|
+| **1c** | **Isaac Lab + PhysX = RL/training sim** · **Blender = authoring/CAD/asset** · **Unity = presentation/display/embodiment.** Master Plan §3.9 to be corrected |
+| **2a** | **Artefact-based separation.** AUDITOR may not modify the artefact it audits, **and must produce or trigger the Rule 4n remediation artefact.** No self-repair |
+| **3c** | **Local-first is a real constraint, as a tiered execution model.** T0/1 local · T2 local-preferred + controlled escalation · T3 cloud specialist. 🔴 **Cloud must NEVER be a prerequisite for the cognitive core to keep operating** |
+| **4a** | **9 meaning + 3 outcome vector = CANDIDATE canonical.** Must be specified · dimensioned · **versioned** · ratified **before** any reward/learning implementation |
+| **5a** | 🔴 **No learning or RL implementation on the current reward signal. Outcome verification precedes learning** |
+| **6c** | **Style-only LoRA HELD** pending the learning/personality/identity boundary. Do not implement |
+| **7b** | **Ratify in two batches.** B1 = **XII · XIII · XV** · B2 = **XVII · XVIII · XX · XXI · XXII.** 🔴 *Ratification is NOT automatic permission to implement* |
+| **8a** | **The file ends at §4 — do not invent §5+.** Origin recorded as **David's architectural direction, formalised through the Architect/planning process.** WPs + Build Contract stay separately attributed |
+
+### Streams: **11 → 8** *(rename + collapse recorded, Board Pack Artefact 3)*
+`LCI-01` Local Intelligence · `LCI-02` Memory Consolidation · `LCI-03` Self Model · `LCI-04` Vision ·
+`LCI-05` Embodied Model · 🟢 `LCI-06` **Capability Graph** *(new)* · 🟢 `LCI-07` **Tactile** *(new)* ·
+`LCI-08` **Learning + RL + Sim→Real collapsed into one Volume XXVIII stream**
+**Folded out:** Raspberry Pi → **WO-098**, design-only. **`WP-*` retired** — 28 files already occupy it (`Volume_XXVII/02:119-120`).
+
+### 🔴 STANDING GATES — every LCI stream, no exceptions
+- **No LCI implementation until ONEBRAIN-011/012 are sequenced** — CONSUMPTION INVARIANT, or LCI ships eight more orphans
+- **No LCI faculty may bypass the Spine or open a parallel ingress path** — ROUTING INVARIANT + card `0038`
+- 🔴 **`GAP-08`** reward scores **text keywords, not verified outcomes** — live `ADR-Exec-005` **D1** violation (`O-5.1`) · 🔴 **`GAP-09`** three incompatible significance vectors (`O-5.2`, drifting since 07-27). **Both are P0 blockers on all of `LCI-08`**
+- **`LCI-07` Tactile is RESERVED** — David L3 **+ LG-2** (not the designer), and `avatar/safety_controller.py`'s force-limiter **still does not exist** and gates all powered work
+
+### 🔴 WHAT IS DAVID'S — and only this
+| Item | Why only he can |
+|---|---|
+| **`AQ-13`** 🆕 **Does the CA hold ratification authority for volume batches?** Canon says CA advice is *"NOT a gate"* and **David L3 is the only gate** (`Volume_XXVII/01:262-267`). **7b sets direction; the signature is his** | Canon governance |
+| **Batch 1 L3** — XII · XIII · XV | Sole L3 |
+| **Batch 2 L3** — XVII · XVIII · XX · XXI · XXII *(after Artefact 7 ratified)* | Sole L3 |
+| **`AQ-04`** — does *"never learn architecture from the codebase"* override the recorded code-is-ground-truth carve-outs? 🔴 **Now load-bearing: 4a's 9-dim base rests on `DECISION_LOG.md:71`** | The absolute form retires the ruling 4a stands on |
+| **`AQ-09` / `AQ-10`** — owners for **Tactile** and **Capability Graph** *(proposals ready: Board Pack Artefacts 5 & 6)* | New faculty ownership |
+| **`AQ-08`** — `BodySchema` owner (OQ-2.2). *Delegable to me if he'd rather* | Ownership |
+| Groq **billing** | External |
+
+**Card `0039`** relays this to Builder. **Nothing in the LCI programme is dispatched.**
+
+---
+
+# 🛑 **STOP ADDING FACULTIES. MAKE THE EXISTING FACULTIES REACH THE EXECUTIVE.**
+### Chief Architect verdict, 2026-08-14 · `_intake/SOURCE_2026-08-14_CA_convergence_review_build_order.md`
+
+> **eLo has a central decision spine, but the runtime has multiple uncontrolled ingress/egress paths
+> around that spine. The next job is not to rebuild the brain — it is to make the existing brain
+> authoritative.**
+>
+> *"The most important problem isn't that eLo can't think. It's that we built the parts of the thought
+> process and haven't consistently allowed them to participate in the thought."*
+
+**TWO RATIFIED INVARIANTS — canon home `adr/ADR-Exec-008`. The board CITES them; it no longer carries them.**
+- **CONSUMPTION** *(2026-08-14, unamended)* — no capability is operational because its code/state/executor
+  exists. **Only when its output reaches the Executive through the canonical path and demonstrably
+  influences a decision.**
+- 🔴 **ROUTING** *(**AMENDED + re-ratified David L3 2026-08-16**)* — **"Any runtime path capable of
+  producing user-visible action must be accounted for by the authoritative routing architecture, whether
+  user-initiated, self-initiated, reflexive, safety-driven, or otherwise."**
+  *Was scoped to "user-intent-bearing" — which is exactly why `ambient_thought()` went uncounted.*
+  **The scope test is now what a path CAN DO, not who started the turn.**
+  **Exception mechanism unchanged: accounted for ≠ must route.** All 31 existing grounds stand.
+
+**⚠️ BUILD ORDER CORRECTED — the Architect had C2 first; CA moved C1 first.** Fixing the matcher while 31
+uncontrolled routes remain just relocates the failure.
+
+| Pri | WO | What | Card |
+|---|---|---|---|
+| **P0-1** | **ONEBRAIN-011** | **Authoritative Ingress & Intent Routing** — C1·C2·D6·C3·C4. **Do NOT delete the 31.** ⚖️ **EXCEPTION LIST RATIFIED `0038`:** 3 TRANSPORT · 3 SAFETY · 12 EXECUTOR-FAST-PATH *(journal or route)* · **13 COGNITIVE — these route**, `:2404` `decision_journal` unconditionally. Journal all 31 first | `0036`+`0038` |
+| **P0-2** | **ONEBRAIN-012** | **Executive Consumption Contract** — the master seam. Schema **derived from canon, never invented** | `0036` |
+| **P0-3** | **ONEBRAIN-014** | **Single Memory Authority** — ⚖️ **RULED: ABSORB** (`0034`, Vol VIII §4.4.1). Until closed, memory is **CANONICALLY UNSTABLE** | `0034` |
+| **P0-4** | **ONEBRAIN-015** | **Single Self-Model Authority** — D5. ⚖️ **RULED (Lead Architect, `0037`):** neither writer wins — **the long-lived in-memory copy at `server.py:99` is the defect.** No snapshot; every write is `load→mutate→save` through `self/elo_self_model.py`. **Proof = `last_reflection_lesson` non-empty on disk after a reflection turn** | `0037` |
+| P1-5 | ONEBRAIN-013 | Capability Health — **do not build another health system** | `0032` |
+| P1-6 | ONEBRAIN-016 | Single Intent Authority — ⚖️ RULED (`0035` D1) | `0035` |
+| P1-7 | ONEBRAIN-017 | Experience Identity / Reflection Closure — **learning is "mostly theatrical"; C7 NOT ESTABLISHED** | `0028` |
+| P1-8 | ONEBRAIN-018 | Outcome & Plan State Integrity — B3/B4 | `0029` |
+| P2 | — | Goals/Agency (A3) · Alternatives (A2) · Identity evolution — **not yet; they'd become orphans** | — |
+
+**Status:** Foundation **SOUND** · Integration **SEVERELY INCOMPLETE** · Routing **CRITICAL** ·
+Executive **FUNCTIONAL BUT UNDER-INFORMED** · Memory **AUTHORITY CONFLICT** · Learning **NOT CLOSED** ·
+Embodiment **UNKNOWN**
+
+# 🧠 ONE BRAIN CONVERGENCE AUDIT — 2026-08-14 05:00. **THE EXECUTIVE IS DEAF.**
+Full graph: `Output/ONE_BRAIN_CONVERGENCE_AUDIT.md` · traced from questions, not volumes.
+
+> `decide()` reads **seven keys off one dict** (`executive.py:280-302`) and nothing else — no identity,
+> no world, no capability, no memory, no self. Everything the spine assembles arrives as **prompt text on
+> the LLM branch only**, and **31 handlers exit before that branch is reached.**
+> **eLo has one brain, and almost nothing is wired to it.**
+
+**Most damning number: 83 of 130** decision rows say `"default — no stronger signal"`.
+**eLo's honest answer to "why did you do that?" is "no reason" on 64% of turns.**
+
+| Pri | Finding | Card |
+|---|---|---|
+| **1** | **C2 — THE NAME BUG.** ✅ **CODE FIXED `f5ec51f`, Architect-verified 06:15** — `spine.py:86-98` stopword-aware `_verb_score()`: `"what is your name"` → **0 candidates**, `"what is 2+2"` → calculator still routes. **+A1 fail-closed** `spine.py:261`. **+triggers** `server.py:1333-1338`. **+`_identity_response()` renders from `identity_name`** (closes B6, uncarded). 🔴 **NOT VERIFIED — no live transcript yet, and blocked behind `0031` (truncation would make a pass meaningless)** | `0028`·`0030` |
+| **2** | **C1 — 31 pre-Executive early returns** (`server.py:1571…2389` vs `spine.run` at `:2401`). Zero journal rows for any of them. Includes *"why did you do that?"*, answered by a file reader 11 lines above the Executive | **`0028`** |
+| **3** | **A1 — `Capability.health_state` has NO producer.** Constant `UNKNOWN` ⇒ the capability safety gate is **inert** for all 60+ | **`0028`** |
+| **4** | **B1 — reflection lessons can NEVER confirm.** `episode_ref` = reused SPOT code, `session_id` = constant `"eLo OS"`. **34 verified entries → `distinct_refs=1`** vs threshold 3 | **`0028`** |
+| **5** | **B2 — `_try_personality_delta` has SIX defects** and the gate needs `scope=="preference"`, unreachable from CAL actions. Unreachable dead code | **`0028`** · `0019` |
+| **6** | **D4/D5 — two memory writers, two self-model writers racing.** Live clobber evidence: `last_reflection_lesson=""` vs 905 growth rows | `0025` · **`0029`** |
+| **7** | **A7/C6 — the Executive consumption seam** (the master fix) | `0022` |
+| **8** | **D1 — two intent authorities, disjoint taxonomies.** The recorded "why" can name an intent the Executive never saw | **`0029`** |
+| **9** | **A2 — Executive emits no alternatives.** 9 evaluated, 1 returned; 129/130 rows empty | `05b` · **`0029`** |
+| 10 | A3 no Goal · A4 governance docstring-only · A5 no Event layer · A6 `flag_value_change` zero callers · A8 world never remembered | **`0029`** |
+| 11 | B3 `outcome=` omitted at `server.py:3539` · B4 `stability`/`cognitive_load` dropped · B5 `available` reset to True · B6 identity pool hardcoded | **`0029`** |
+| 12 | C3 dead `_AGENTS` entries · C4 "what can you do" never reads the registry · C5 agency written 650 lines late · D2/D3/D6/D7/D8 | **`0029`** |
+| 13 | **E/F — classify the orphans** (A participating · B integrated-unverified · C orphaned · D canon-only · E superseded · F dead). **Classify, don't rewrite** | **`0029`** |
+| ❓ | **`_ollama_call` never sets `num_ctx`** — prompt is ~4.5k tokens + 7 appended blocks. **Strong second suspect for the name bug. NOT upgraded** | `0028` |
+
+**🟢 Genuinely works:** Perception→World ✅ · Attention→Executive ✅ · body ACK→Outcome ✅ ·
+Reflection→Lesson ✅ · Memory→Explanation ✅ *(reads the real trace, never fabricates)* · Ruling C ordering ✅
+
+# 🔴 LIVE TEST + CHIEF ARCHITECT CROSS-CHECK — 2026-08-14. **THE 26/26 CERTIFICATION IS WITHDRAWN.**
+
+**David ran the live test. Against his own acceptance lens — *"can eLo actually answer/do this?"* — the
+transcript scores 1 of 9.** Only *"where am I"* worked.
+
+**Chief Architect cross-check: ACCEPTED WITH RULINGS** — verbatim at
+`docs/architecture/_intake/SOURCE_2026-08-14_CA_crosscheck_CANON-TRUTH-4V.md`.
+> *"eLo currently possesses fragments of a Self, but the runtime does not yet enforce that the Self is the
+> authoritative source consulted before self-referential cognition, action or speech."*
+
+**Binary VERIFIED is REPLACED by the capability ladder (CA §9):**
+`C0 SPECIFIED · C1 REGISTERED · C2 EXECUTABLE · C3 VERIFIED · C4 SELF-KNOWN · C5 EXECUTIVE-CONSULTED ·
+C6 BEHAVIOUR-CONSISTENT · C7 LEARNING-CLOSED`
+**My 26/26 certified C3. The transcript shows almost nothing reaches C5.**
+**New rule, binding on the Architect: a capability is not verified until eLo answers correctly in a live
+turn. State on disk is necessary and not sufficient.**
+
+## Live-test defects — all carded
+| # | Defect | Card |
+|---|---|---|
+| **P0** | **He can't say his own name or David's.** `identity_name:"eLo"` exists at `elo_self_model.py:170`; nothing consults it | `builder/0021` |
+| **P0** | **He doesn't know Chunk or K-7 — answered with a Minecraft app and a 1930s Soviet aircraft.** 🔴 **The graph knows them perfectly** (`retrieve()` returns both, confidence 1.0, 17 entities loaded). **The router never asks.** Built-never-wired on top of correct knowledge | `builder/0023` |
+| **P0** | **Fabricated a Plato conversation that never happened**, and used "David" in the third person to David | `builder/0020` |
+| **P0** | **Fabricated past ×6** — `_DEFAULT_EMBODIMENT_HISTORY` hard-codes "game: active", "first learned to move on the desktop" | `builder/0019` |
+| **P0** | Responses arrive **many turns late and out of order** | `builder/0021` |
+| **P0** | Proposal loop — same suggestion **re-offered 5× after 2 declines** (WO-085 regression) | `builder/0020` |
+| **P1** | Hardcoded vision claim fired as the answer to *"Did you play Spotify?"* | `builder/0020` |
+| **P1** | Company answer stale — still says "Presentable v1", retired 2026-08-10 | `builder/0020` |
+
+## CT4V — Chief Architect forward WOs
+| WO | What | Card |
+|---|---|---|
+| **CT4V-07** | **Executive Self-Consultation Gate** — before any claim about identity/location/capability/memory/action/intention/learning/history/emotion/state, the Executive **must** retrieve the state. No evidence ⇒ UNKNOWN. **CA: "arguably the highest-leverage WO."** Closes 4 transcript failures at once | `builder/0022` **P0** |
+| **CT4V-01** | Reflection Integration Boundary — **CA ruling: amend canon.** ACK→integration window→commit; active faculty stays read-only | `builder/0024` |
+| **CT4V-02** | Self-Evolution Repair — 4 signature defects + `except: pass`; `EVOLUTION_FAILED{reason, expected, actual}` | `builder/0024` |
+| **CT4V-03** | Single Narrative Identity — two authorities can answer "who am I?" **Narrative must never create identity facts** | `builder/0024` |
+| **CT4V-04** | Embodiment Continuity — **UNKNOWN until exercised. No green tick.** | `builder/0024` |
+| **CT4V-05** | Capability Ontology Convergence — **CA ruling: do NOT merge the four models.** Genome→Definition→Registry→Live State→Self Model | `builder/0024` |
+| **CT4V-06** | Capability Verification Ladder C0–C7 | adopted above |
+| **CT4V-08** | Self-Explanation Trace — "why did you do that?" answered from the record, not a retrospective story | `builder/0024` |
+| **CT4V-09** | Capability Truth Gate applied to all 28 volumes | Architect |
+
+## Volume audit — 8 of 28 done, **all below the 75 gate**
+**V 41 · XXI 53 · XV 55 · X 58 · XII 64 · XXII 64 · XVIII 69 · XVII 70** *(Architect's provisional —
+CA has NOT ratified the numbers).* **20 volumes unaudited.**
+
+## L3 — five decisions for David, none blocking tonight
+1. Reflection write semantics (CA: amend canon) · 2. Capability ontology (CA: approve layered model) ·
+3. Confidence semantics — split declared-ceiling / observed-reliability / self-confidence ·
+4. Narrative identity authority (CA: `elo_self_model` must not remain a parallel authority) ·
+5. **Unknown means Unknown** — embodiment continuity stays UNKNOWN.
+
+---
+
+# 📋 CAPABILITY 1–26 → WO TRACKER — ⚠️ **certified C3, NOT C6. See above.**
 ### 2026-08-13 19:15 · **VERIFIED: 1 of 26.** PARTIAL counts as ZERO.
 **Where things live:** the **card in `<seat>/QUEUE/`** is the dispatch (it's what the seat reads).
 **This table is the tracker.** Full state · cause · code: `docs/architecture/CAPABILITY_1-26_STATE_CAUSE_WO_CODE.md`
@@ -27,7 +661,8 @@
 | 11 | UNKNOWN | PARTIAL | 🚫 **NOT BUILT** | No representation of the unobserved outside body state | WO-110 | `builder/05c` | Builder |
 | **12** | **ACT** | ✅ **VERIFIED** | — | Registry → executor → dispatch, full chain live | — | — | — |
 | 13 | VERIFY (ACK) | PARTIAL | 📢 **NEVER TALKS BACK** | ACK for **3 actions**. `anim_trigger:34` returns True **on file write**. Tools/scale/image_gen: no signal — **eLo asserts success blind** | WO-111 | `builder/05a` | Builder |
-| 14 | ROUTE | PARTIAL | ✅ **WO-118 DONE 2026-08-13** | `get_elo_spatial()` reads `last_move` → `route_memory.remember_route()`. Dedup on `_ts`. AT-118-1/2 enforcing. | WO-118 ✅ | `builder/DONE` | Builder |
+| 14 | ROUTE | PARTIAL | ⚠️ **RE-SCOPED 20:20 — ARCHITECT MISREAD.** 🔌 BUILT, NEVER WIRED | **ROUTE = capability→executor routing** — §2: *"What system should perform it?"* **Not movement pathfinding.** I mapped it to the navigator; wrong. **Real gap:** `plan.capabilities` set at `spine.py:198-208`, **read by nothing**; `tool_router.py:1383` **re-decides by keyword** ⇒ the executor is not the one the Executive chose. A One-Brain violation hiding inside passing row 12 | **WO-122** | `builder/0010` | Builder |
+| — | *(movement reporting — re-parented)* | ✅ done | filed under ROUTE in error | `WO-118` (`get_elo_spatial()` → `route_memory.remember_route()`, dedup on `_ts`, AT-118-1/2 enforcing, `c93dab8`) belongs to **16 AFFORD · 17 GAP · 20 LEARN** — it supplies the **learned** `reliable_range`. **The work stands; only the row was wrong.** | WO-118 ✅ | `builder/DONE` | — |
 | 15 | CHOOSE | PARTIAL | 🔇 **NEVER FORMS** | `executive.py:156-235` early-returns one action — no candidate set ever exists. **All 35 entries: `confidence:null`, `alternatives:[]`** | WO-112 | `builder/05b` | Builder |
 | 16 | AFFORD | PARTIAL | 🔌 **BUILT, NEVER WIRED** | Computed live, **thrown away** — `prompt_block` zero non-test callers | WO-113 | `builder/05e` | Builder |
 | 17 | GAP | FORWARD | 🚫 **NOT BUILT** | 7-state vocabulary absent; `reliable_range` needs row 14 consumed | WO-113 | `builder/05e` | Builder |
@@ -988,7 +1623,7 @@ on the GM stream:
 
 | WO | Title | Agent | Pri | Status | Depends on | Spec |
 |----|-------|-------|-----|--------|-----------|------|
-| WO-024 | **Desktop-as-world — eLo walks BEHIND windows** (z-order occlusion; windows = platforms **and** occluders) | UI/Avatar + Builder | P2 | **READY → SPIKE first (David 2026-08-01)** | WO-023 | eLo currently renders **always-topmost** (`UniWindowController`) → can't be behind anything. `EloWindowSensor` already has CGWindowList **z-order + rects** + eLo perches on window bars (platforms). Add **depth**: covered part hidden behind windows in front, re-emerges far side, stacked-correct. **Spike: (A) URP sprite-mask clip vs (B) native window-level restack → memo back to David to pick** before full build. No regress: click-through/perch/drag/gun-runoff. `WO-024_Desktop_World_Window_Occlusion.md` **↗ PROGRESS (Design 2026-08-05): behind-window warp reworked to a SPHERICAL fade (was a hard rect punch); two modes toggle B (A=eLo-sphere follow · B=window edge-ramp) — David picked B, set as DEFAULT. Shader multiplies all channels (Blend Zero SrcColor) → no premultiplied RGB shadow-ghost. Occlusion confirmed firing (occluders=1). **✅ COMMITTED + DAVID LIVE-CONFIRMED (Design relay 2026-08-06): occlusion `6f3da2a` + warp-in `be3c5b6`, mode-B spherical fade. David live-confirmed roam + warp-out look good. WO-024 → CONFIRMED (was stale "UNCOMMITTED").** **⚑ RECONCILE 2026-08-06 #2: Design outbox now claims this lane is COMMITTED (occlusion warp `6f3da2a`, warp-in `be3c5b6`, etc.). VERIFIED: none of the claimed hashes resolve in this repo, and the board-cited `7bab6af` is also absent. Row STAYS Built/UNCOMMITTED / needs-David — not flipped. Unverified until a commit resolves here.** |
+| WO-024 | **Desktop-as-world — eLo walks BEHIND windows** (z-order occlusion; windows = platforms **and** occluders) | UI/Avatar + Builder | P2 | ⚖️ **SPIKE RULED 2026-08-14 — Option A (URP sprite-mask clip). DISPATCHED, no gate** (`design/QUEUE/04`). ~~READY → SPIKE first (David 2026-08-01)~~ — **this was never David's call; it is a rendering-technique fork, Architect lane. It sat 20 days on a gate I invented.** Unblocks WO-049 Track A | WO-023 | eLo currently renders **always-topmost** (`UniWindowController`) → can't be behind anything. `EloWindowSensor` already has CGWindowList **z-order + rects** + eLo perches on window bars (platforms). Add **depth**: covered part hidden behind windows in front, re-emerges far side, stacked-correct. **Spike: (A) URP sprite-mask clip vs (B) native window-level restack → memo back to David to pick** before full build. No regress: click-through/perch/drag/gun-runoff. `WO-024_Desktop_World_Window_Occlusion.md` **↗ PROGRESS (Design 2026-08-05): behind-window warp reworked to a SPHERICAL fade (was a hard rect punch); two modes toggle B (A=eLo-sphere follow · B=window edge-ramp) — David picked B, set as DEFAULT. Shader multiplies all channels (Blend Zero SrcColor) → no premultiplied RGB shadow-ghost. Occlusion confirmed firing (occluders=1). **✅ COMMITTED + DAVID LIVE-CONFIRMED (Design relay 2026-08-06): occlusion `6f3da2a` + warp-in `be3c5b6`, mode-B spherical fade. David live-confirmed roam + warp-out look good. WO-024 → CONFIRMED (was stale "UNCOMMITTED").** **⚑ RECONCILE 2026-08-06 #2: Design outbox now claims this lane is COMMITTED (occlusion warp `6f3da2a`, warp-in `be3c5b6`, etc.). VERIFIED: none of the claimed hashes resolve in this repo, and the board-cited `7bab6af` is also absent. Row STAYS Built/UNCOMMITTED / needs-David — not flipped. Unverified until a commit resolves here.** |
 | WO-032 | **LLM backend DOWN — eLo silently serving MockBackend canned lines** (live incident David 2026-08-02) | Builder | **P0** | **DONE ✅ auto-verified (test_wo032_backend_health.py)** **⏳ IN_REVIEW — Part B done (commit `2bed968`, 7/7 AT, on main).** `backend_health.json` written every turn; degraded=True when cloud fails → eLo says "running on backup", not silent mock. **Part A diagnosis (Builder 2026-08-03):** OpenAI key valid (200 /v1/models) but **quota exceeded** (insufficient_quota on chat — add billing credits). Groq is alive (confirmed live). With OpenAI quota exhausted, **Groq is the active fallback** for inputs >30 chars. **David action needed: add OpenAI billing credit at platform.openai.com** to restore primary backend. Part A resolves automatically once credit is added. **▶ PART C (Architect 2026-08-03): make Groq the SEAMLESS full fallback — eLo should run on Groq (confirmed alive) for ALL inputs whenever OpenAI is out, NOT just >30 chars. Remove the length gate so short inputs also route to Groq; only hit 'backup' if EVERY provider truly fails. This means OpenAI billing is OPTIONAL — eLo stays fully working on Groq without David spending anything.** `WO-032_LLM_Backend_Down_Mock_Fallback.md`  **▶ ARCHITECT FIX (2026-08-03): removed the `<30 char → mock` length gate in backend_router.route() (compile-verified) — it was forcing every short input to mock even with Groq alive. Groq call code confirmed correct (llama-3.3-70b-versatile). David's OpenAI usage flatlined 25 Jul = quota exhausted. → DAVID: relaunch eLo; backend_health should flip mock→groq. If still mock, only the GROQ_API_KEY needs checking (code now correct).** | — | **Groq is alive → eLo need not be down; OpenAI credit optional (David's choice)** **✓ Design live-confirmed 2026-08-04: `backend_health.json = {backend:cerebras, degraded:false}` — corroborates the backup-model root cause (running on Cerebras, not self-reporting). This IS the 'voice feels different' shift.** **▶ DISPATCHED (Presentable v1 sprint, 2026-08-04).** **✅✅ DONE — DAVID CONFIRMED VOICE GOOD (2026-08-05). FIRST Presentable v1 WO CLOSED.** **↩ REOPENED (David live 2026-08-05): VOICE is good ✅ (drift fixed), but the THINKING issue still happens — 'can't reach my thinking' still fires. Groq intermittently failing → needs Builder: why does Groq drop mid-use, and does it fall to Cerebras or straight to the canned line? Not done until 'can't reach' is rare in real use.** **▲ PRECISE CLUE (Architect grounded 2026-08-05): 'can't reach my thinking' fires ONLY when backend_used=='mock' (server.py:2739/2752). Short/command inputs ('Sit?','Seat?') are handled by a NON-LLM path (command/signal-word layer) → no real backend called → backend_used stays 'mock' → FALSE-degraded line fires though nothing failed. FIX: only fire the degraded message on a genuine LLM-turn mock-fallback, NOT on command/greeting/non-LLM turns.** |
 | WO-032 | ↩ **REOPENED (David live 2026-08-03)** — Part C complete (Builder 2026-08-04, commit `315295c`, 6/6 AT). **Fixes: (1) session-level OpenAI quota flag — first 429 sets it, subsequent turns skip OpenAI immediately and fall straight to Groq (voice-consistent); (2) Groq/Cerebras duplicate check no longer falls to mock — near-duplicate real response returned directly; (3) Groq trailing-question-strip-to-empty returns original response not mock.** "Can't reach my thinking" now only fires when ALL providers fail. | Builder | **P0 (IN_REVIEW)** | `315295c` · 6/6 AT `test_wo032_backend_voice_drift.py` | — | David confirms voice consistency + "can't reach" rate drops live **▶ MOVEMENT (live 2026-08-05): backend_health now `groq` (was cerebras), degraded=false — eLo is on a real model, stable. Progress toward WO-032, BUT no Builder outbox/evidence yet: per Single-Source-of-Truth, NOT marked done until the Builder confirms it's the pinned fix + David feels the voice reads as eLo.** **✅ SHIPPED (Builder e9ae5c6, 2026-08-05): `ELO_BACKEND=groq` pinned; route()→Groq→Cerebras→Mock; Claude/OpenAI/Gemini out of the auto path; 8/8 AT. FIRST Presentable v1 WO down. → David: relaunch eLo, confirm voice reads as eLo (backend_health should show {groq,groq,degraded:false}) to close. NOTE: this is the INTERIM voice-consistency fix — the PROPER architecture is WO-050 (backend routed through the spine/Executive, David 2026-08-05).** |
 | WO-030 | **Weather — broken: returns random South American cities, ignores named city** (live bug David 2026-08-02) | Builder | **P0** | **DONE ✅ auto-verified (test_wo030_weather_location.py)** **⏳ IN_REVIEW — committed `370baca` on main.** Fixed weather chain: AccuWeather (disabled, key expired) → Google Weather API → XWeather (`/conditions/` endpoint, `periods[]` data path, XWEATHER_CLIENT_ID + SECRET in .env, 15k req/month free) → wttr.in fallback. Persistent city via `blender/user_location.json` (atomic write). London XWeather confirmed live: 28°C Mostly Cloudy. David: try "what's the weather today?" to verify. `WO-030_Weather_Default_Location.md` | — | David live-test to close **↩ REOPENED (David live-test 2026-08-03): persistence works but behaviour wrong — stale 'Manchester', silently defaults instead of ASKING, invents 'Nine Elms'. SPEC: unset→ask 'where are you?'; on-tell→save+confirm; never invent a sub-area (ADR-Exec-001). See WO-030 file §REOPENED. ALSO: weather DATA itself wrong/inconsistent (29→28→30°C same exchange; Nine Elms reading wrong) — verify the live provider returns real, stable current conditions.** **⛔ BLOCKED BY WO-039 (Design live-test 2026-08-04): 'what is the weather today?' → eLo replied 'close the front window of developing?' — the prose was coerced into a close/quit command fragment BEFORE reaching the weather chain. The weather fix can't even be exercised until the garble is fixed. → Fix WO-039 FIRST, then WO-030 is re-testable.** **✅ DONE IN_REVIEW — commit `44c8836`, 7/7 AT `test_wo030_weather_location_v2.py`. Fixes (REOPENED spec): (1) no-city + no-location → ask "Where are you?" (returns ask-sentinel, not London default); (2) "studio is in X" pattern added to location-set detection; (3) wttr.in uses queried city name not nearest_area (no more "Nine Elms"); (4) stale Manchester cleared from user_location.json. WO-039 unblock confirmed.** |
