@@ -1552,5 +1552,12 @@
       "LOOP-6"
     ],
     "ts": 1786997870.109
+  },
+  "f0_0054_heartbeat_fix": {
+    "card": "0054",
+    "status": "done",
+    "commit": "a59ab1b",
+    "ts": 1787014270.852,
+    "summary": "Heartbeat false-presence defect fixed. _start_heartbeat() removed from module import; start_heartbeat() is explicit, called once from server.py. _heartbeat_started guard + ELO_STATE_HEARTBEAT=0 env opt-out for tests. test_0054_heartbeat_owner.py 4/4 PASS (T2 goes RED if module-level call returns)."
   }
 }
