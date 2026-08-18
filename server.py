@@ -3775,6 +3775,14 @@ def _process_turn(raw: str) -> dict:
                 elif _PENDING_SIT["active"]:
                     if _now_sp - _PENDING_SIT["since"] > 300.0:
                         _PENDING_SIT["active"] = False
+                # WO-045 Spine fix: signal words bypass _movement_intent in the Spine path.
+                # Check here and emit leave_command via patch so _embody's writes are preserved.
+                _sp_sw = _signal_word_intent(raw)
+                if _sp_sw == "step_out":
+                    _PENDING_EXIT["active"] = True
+                    _PENDING_EXIT["since"]  = _now_sp
+                    from blender_bridge.state_writer import patch as _sw_patch
+                    _sw_patch({"leave_command": {"_ts": _now_sp}})
             else:
                 # ── Legacy fallback: compute movement intent independently ─────
                 _vision      = _state.get("vision") if isinstance(_state, dict) else None
