@@ -73,7 +73,8 @@ from presence.presence_engine    import derive as _pstate_derive
 from presence.presence_scheduler import PresenceScheduler as _PresenceScheduler
 from avatar.avatar_controller    import build_command as _avatar_cmd
 from avatar.avatar_rules         import apply as _avatar_rules
-from blender_bridge.state_writer import write as _state_write, write_with_presence as _state_write_presence
+from blender_bridge.state_writer import write as _state_write, write_with_presence as _state_write_presence, start_heartbeat as _sw_start_heartbeat
+_sw_start_heartbeat()  # 0054: one owner — server.py is the only process entitled to assert eLo's presence
 from expression.expression_mapper import build_expression as _expr_build, map_emotion as _expr_map_emotion
 from voice.voice_engine import speak as _voice_speak
 from memory import personality_drift as _personality_drift

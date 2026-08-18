@@ -305,11 +305,12 @@ def patch(update: dict) -> None:
             pass
 
 
-# ── F4: ambient freshness heartbeat ──────────────────────────────────────────
-# A quiet channel and an absent eLo are indistinguishable if _ts only advances
-# on state changes. This daemon thread ticks _ts every 30s so the receiver can
-# tell "eLo is present but quiet" from "eLo is gone" by staleness of _ts.
+# ── F4 / 0054: ambient freshness heartbeat ───────────────────────────────────
+# _ts advances only when eLo (server.py) is running — not on any bare import.
+# server.py calls start_heartbeat() once at startup. All other importers get
+# the write API with no side effects.
 _HEARTBEAT_INTERVAL = 30  # seconds
+_heartbeat_started  = False  # module-level guard — second call is a no-op
 
 
 def _heartbeat_loop() -> None:
@@ -318,9 +319,14 @@ def _heartbeat_loop() -> None:
         patch({})   # empty update — only _ts advances
 
 
-def _start_heartbeat() -> None:
+def start_heartbeat() -> None:
+    """Start the _ts freshness heartbeat. Call ONCE from server.py at startup.
+    No-op if already started or if ELO_STATE_HEARTBEAT=0 (test opt-out)."""
+    global _heartbeat_started
+    if _heartbeat_started:
+        return
+    if os.environ.get("ELO_STATE_HEARTBEAT", "1") == "0":
+        return
+    _heartbeat_started = True
     t = threading.Thread(target=_heartbeat_loop, daemon=True, name="state_writer_heartbeat")
     t.start()
-
-
-_start_heartbeat()

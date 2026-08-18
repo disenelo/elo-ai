@@ -2,9 +2,8 @@
 tests/test_f4_heartbeat.py — card 0053 F4: _ts must advance on a periodic
 heartbeat even when no other field changes.
 
-✅ Done when: importing state_writer starts a daemon heartbeat thread, and
-  patch({}) — which the heartbeat calls — advances _ts without modifying
-  other fields.
+Updated by 0054: heartbeat no longer starts on import — only server.py calls
+start_heartbeat(). T1 updated to call it explicitly before checking.
 
 Run: python3 tests/test_f4_heartbeat.py
 """
@@ -14,6 +13,8 @@ import sys
 import threading
 import time
 
+os.environ.setdefault("ELO_STATE_HEARTBEAT", "1")
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
@@ -21,13 +22,15 @@ ok  = lambda msg: print(f"  PASS  {msg}")
 err = lambda msg: (print(f"  FAIL  {msg}"), sys.exit(1))
 
 
-# ── T1: heartbeat thread starts on import ────────────────────────────────────
+# ── T1: start_heartbeat() starts the thread (called explicitly, not on import) ─
 def test_t1_heartbeat_thread_starts():
-    import blender_bridge.state_writer  # noqa: F401 — import triggers _start_heartbeat
+    from blender_bridge import state_writer as sw
+    sw._heartbeat_started = False   # reset so we can test fresh
+    sw.start_heartbeat()
     names = {t.name for t in threading.enumerate()}
     if "state_writer_heartbeat" not in names:
-        err("T1: 'state_writer_heartbeat' daemon thread not found after import")
-    ok("T1: state_writer_heartbeat daemon thread is running")
+        err("T1: 'state_writer_heartbeat' daemon thread not found after start_heartbeat()")
+    ok("T1: start_heartbeat() starts the state_writer_heartbeat daemon thread")
 
 
 # ── T2: patch({}) advances _ts, leaves other fields untouched ────────────────
