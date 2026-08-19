@@ -90,3 +90,4 @@ Ruling 3 (Rows 20 LEARN, 22 ADAPT) remains emergent — no build required by car
 Live-run task on this card is David's lane (single-live-tester rule); not attempted.
 
 Duplicate closed to `DONE/0012_..._DUPLICATE.md`; canonical DONE at `DONE/0012_...`.
+Close-out commit: `b90372b`.

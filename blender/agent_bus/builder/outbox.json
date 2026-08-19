@@ -159,7 +159,8 @@
     "evidence": "Card was re-picked from QUEUE/ into DOING/. Original work landed 2026-08-19 07:11 at commit 7ab3bbe (memory/journal_router.py: non-dict outcome guard + last_significance.json persist carrying outcome; runtime/the_moment.py: Verified Speech gate on previous-turn significance line). Canonical DONE stamp at DONE/0012_RULINGS_and_the_live_run_that_proves_19.md (commit 656c432). Re-verified this pass: tests/test_wo126_meaning.py + tests/test_wo_rows_4_6_16.py = 16/16 PASS. Ruling 3 (Rows 20/22) emergent, no build required. Live 20-turn run is David's lane (single-live-tester rule); not attempted. Duplicate closed to DONE/0012_RULINGS_and_the_live_run_that_proves_19_DUPLICATE.md; canonical DONE preserved.",
     "commits": [
       "7ab3bbe",
-      "656c432"
+      "656c432",
+      "b90372b"
     ],
     "acceptance_met": true
   }
