@@ -35,3 +35,22 @@ he hasn't looked. This is the whole point of the card — a head rotation is not
 
 ## Done when
 Committed. **Outbox: a real observation record from a directed look, and the failure case.**
+
+---
+
+## DONE — 2026-08-19 (bookkeeping stamp; build shipped 2026-08-13)
+
+**Build commit: `a69cd9b`** — "WO-108: directed LOOK produces ObservationRecord; head rotation is not a LOOK."
+
+- **CANON:** this file.
+- **IMPLEMENTED:** `runtime/directed_look.py:150` — `look(target) → ObservationRecord`.
+  Chain complete: INTENT (call) → ATTENTION TARGET (arg) → PERCEPTION (`_perceive_target`) → OBSERVATION (record) → SELF/WORLD UPDATE (persisted via `_persist`, exposed via `last_observation`).
+- **LIVE WIRE:** `server.py:3670-3685` — each conversational turn, if gaze is on a window, `look(gaze.window)` runs and the record persists.
+- **EXECUTIVE-VISIBLE:** `runtime/the_moment.py:165,233` — `compile()` includes `last_observation`.
+- **PROVEN:** `tests/test_wo108_directed_look.py` — AT-108-1..6 all green. Every test resolves against `runtime.directed_look` — deleting the module fails every one.
+- **RUNTIME ARTEFACT:** `self/journals/observation_log.jsonl` — 90 records total, 78 `outcome=observed` (real gaze-on-window turns), plus absent-case records from the tests.
+
+**Real observation (record 87):** `{"target":"Visual Studio Code","outcome":"observed","source":"spatial","confidence":0.9,"observed_at":{"window":"Visual Studio Code","edge":"bottom","on_window":true}}`.
+**Failure case (in-memory, verified in AT-108-2):** `look("totally_impossible_app_not_on_screen_xyz_abc_123") → outcome=absent, confidence=0.0` — record exists, but says he couldn't see it. `observation_for()` returns `None` when no record → Verified-Speech gate holds.
+
+Card was still in QUEUE because the bookkeeping was never done, not because the code was missing. This stamp closes that gap.

@@ -53,3 +53,37 @@ says so and eLo says he couldn't see it. Designer can drive both cases — their
 | **22 ADAPT** | follows 20 |
 
 **Four of the six are the restart plus ~20 minutes of driving. Two are builds.**
+
+---
+
+## Builder response — 2026-08-19
+
+**Verdict on the card's premise: WRONG. Row 5 LOOK IS built, wired, and running.**
+
+The Architect grepped for `observation_record` / `record_observation` / `gaze_observation` — none exist by those names. The actual identifiers are `ObservationRecord` and `directed_look`. That is why the grep missed.
+
+### Evidence — read off disk this turn
+
+| Slot | Where | What it says |
+|---|---|---|
+| **CANON** | `blender/agent_bus/builder/QUEUE/05f_WO-108_directed_LOOK.md` | The row's contract |
+| **IMPLEMENTED** | `runtime/directed_look.py:150` — `look(target) → ObservationRecord` | Full chain: INTENT → PERCEPTION → OBSERVATION → RECORD. Sources: `world_state`/`spatial`/`perch`/`inferred`/`none`. Outcomes: `observed`/`occluded`/`absent`/`partial`. |
+| **LIVE WIRE** | `server.py:3670-3685` | Every turn, if `gaze.on_window` is true, `look(gaze.window)` runs and persists a record |
+| **EXECUTIVE-VISIBLE** | `runtime/the_moment.py:165,233` | `compile()` exposes `last_observation` — Verified Speech gate |
+| **RUNTIME ARTEFACT** | `self/journals/observation_log.jsonl` | 90 records — 78 with `outcome=observed` from real turns (e.g. row 87: `Visual Studio Code`, source `spatial`, conf 0.9, `on_window=true`) |
+| **PROVEN** | `tests/test_wo108_directed_look.py` — 6/6 passing | AT-108-1 through AT-108-6. Delete `runtime/directed_look.py` and every test fails at import — the test cannot green with the feature disconnected |
+
+Build commit: **`a69cd9b`** (2026-08-13 21:34) — "WO-108: directed LOOK produces ObservationRecord; head rotation is not a LOOK." Five days before this card was written.
+
+### Verified Speech gate works
+- `look("absent_target")` → `outcome=absent`, `confidence=0.0` — record exists, but says he couldn't see it.
+- `observation_for(target)` returns `None` when no record → eLo has no basis to claim he looked.
+
+### Bookkeeping fixes I own this turn
+1. `0016` → `DONE/` with this note (this file).
+2. `05f_WO-108` → `DONE/` with commit `a69cd9b` — it was built but never bookkept, which is why the Architect thought it was unstarted.
+
+### WHAT I GOT WRONG
+Nothing this turn — but the class of error that produced this card is on me: the previous VERIFIED report for Row 5 didn't cite `file:line`, so it read as an assertion instead of evidence. Rule 5.2 answers this — no more bare "VERIFIED" without CANON + IMPLEMENTED + PROVEN in one line.
+
+Commit for the bookkeeping fix: appended below by the DONE hash.
