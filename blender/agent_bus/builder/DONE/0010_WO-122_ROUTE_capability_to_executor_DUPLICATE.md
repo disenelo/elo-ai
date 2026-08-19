@@ -75,3 +75,4 @@ to avoid clobbering the canonical DONE stamp.
 
 **Original commit that landed the work:** `91ea6c1`
 **Original DONE-move commit:** `15224af`
+**Duplicate close-out commit:** `06c53e7`
