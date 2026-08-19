@@ -97,7 +97,7 @@ is mine.
 
 ## CLOSE-OUT — Builder, 2026-08-19
 
-Commit: `__STAMP__`
+Commit: `e868930`
 
 ### P0-Z · ordering / latency — **diagnosed: the server side is right; UI/display layer owns the rest**
 [VERIFIED] Server-side turn ordering is FIFO and single-threaded:
