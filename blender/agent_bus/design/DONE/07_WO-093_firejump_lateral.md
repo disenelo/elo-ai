@@ -31,3 +31,6 @@ can · below the minimum never does · `SuppressGun` set whenever it fires. No r
 
 ## Done when
 implemented + verified + committed → hash, DONE/, outbox, next card.
+
+## Result — ALREADY DONE in commit 9208ff7 (card 06 audit fixes)
+- WO-093 fire-jump: re-gated to LATERAL-only (horiz dominates 1.5x, roughly flat) past fireJumpMinLateral 0.18vp; never drop/forward; faces jump dir (DirectionalYaw); gun prop hidden (SuppressGun).

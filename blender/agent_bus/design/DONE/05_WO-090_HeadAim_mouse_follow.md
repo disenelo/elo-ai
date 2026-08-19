@@ -127,3 +127,6 @@ implemented + verified + committed → append hash, move to DONE/, outbox line, 
 ## Result
 - commit:
 - test:
+
+## Result — ALREADY BUILT this session (reconciled)
+- WO-090 HeadAim: built the CODE head-aim (Architect ruled the constraint stack was editor-blocked; David directed the code approach). Decoupled L/R+U/D (LookRotation), body-local axes from [BASIS], nearby-cursor aim, chest trails, sit-aware, brain-driven (WO-099a). Confirmed working by David. Commits 5180b0f..582dd10.

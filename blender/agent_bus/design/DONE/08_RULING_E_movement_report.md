@@ -34,3 +34,8 @@ reflex (drop onto a surface) also reports · assert a failed reach reports the f
 ## Done when
 implemented + verified + committed → hash, DONE/, outbox, next card.
 This is the half that makes eLo's movement *learnable* — it's the highest-value card in your queue.
+
+## Result
+- commit: d91cf34 — VERIFIED live: [eLoOS] Ruling-E movement_report arrived legs=[drop] issued_by=reflex
+- movement_report {goal_win,outcome,legs,issued_by,secs,dist,retries} on unity_events.json (same ACK channel)
+- hooks: jump/drop launch (legs), settle+fall-land (arrived), no-reachable (blocked+retry). Reflexes report too.

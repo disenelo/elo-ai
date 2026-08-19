@@ -1,0 +1,12 @@
+Card closed. DOING/ is empty; DONE/10_RD_EXPRESSION_001_and_residual_render_kit.md exists with a Result section; outbox.json has the closure entry (ts=2026-08-19T05:45:00, 45 updates); worker_result.json written.
+
+**Summary**
+- **Status:** DONE (paperwork closure — card was SUPERSEDED 2026-08-18 by the Lead Architect with the explicit instruction "Move to `DONE/`.")
+- **Code changes:** none — all deliverables the card asked about were already shipped by design (blendshapeScale=50, no ×10 root scale, orthographic camera transform, screenHeightFraction=0.42).
+- **Commits:** none — seat cards in this workflow tree are untracked workspace state, and there was no code diff to commit.
+- **Files touched:**
+  - `blender/agent_bus/design/DONE/10_RD_EXPRESSION_001_and_residual_render_kit.md` (moved from DOING/, Result section appended)
+  - `blender/agent_bus/design/outbox.json` (entry appended, ts bumped)
+  - `blender/agent_bus/design/worker_result.json` (written)
+- **Acceptance:** MET — the only action the card required (mv to DONE/) is complete.
+- **Next in seat queue:** card `12` (take-five killer first) + exporter offer remains open.

@@ -29,3 +29,6 @@ click-through · gun-runoff).
 
 ## Done when
 implemented + verified + committed → hash, DONE/, outbox, next card.
+
+## Result — ALREADY DONE in commit 9208ff7 (card 06 audit fixes)
+- WO-092 wall-jump: exposed wallJumpChance Inspector dial (0.4->0.5) + per-reject logging [card06 walljump] naming which of the 4 gates failed.

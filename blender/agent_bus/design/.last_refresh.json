@@ -1,6 +1,34 @@
 {
-  "ts": 1785765438.8860228,
+  "ts": 1787112619.650177,
   "pending": [
+    {
+      "wo": "WO-074",
+      "title": "Movement-feel bugs: hide fire-jump GUN (A) \u00b7 edge-roam (C) \u00b7 jump-too-",
+      "state": "active",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-075",
+      "title": "Desktop gravity + screen-wrap landing \u2014 eLo always lands on a real sur",
+      "state": "active",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "\u2605 MILESTONE: eLo Presentable v1 \u2014 BUILD-READY DEFAULTS (David 2026-08-03)",
+      "title": "THE gate before CAD + reinforcement learning. Defaults first \u2014 RL/phys",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-058",
+      "title": "eLo desktop VFX layer \u2014 snow \u00b7 meditation-glow \u00b7 rain (David's existin",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
     {
       "wo": "INT-1",
       "title": "Plushies \u2192 Robot: shared character-model export (soft form \u2192 TPU shell",
@@ -23,13 +51,6 @@
       "badge": "\ud83d\udfe2"
     },
     {
-      "wo": "INT-6b",
-      "title": "Retargeter/Bridge \u2192 DesktopBuddy: material sync",
-      "state": "ready",
-      "importance": "AUTO",
-      "badge": "\ud83d\udfe2"
-    },
-    {
       "wo": "WO-024",
       "title": "Desktop-as-world \u2014 eLo walks BEHIND windows (z-order occlusion; window",
       "state": "ready",
@@ -37,32 +58,53 @@
       "badge": "\ud83d\udfe0"
     },
     {
-      "wo": "INT7-M6-TUNE",
-      "title": "One Brain \u2014 M6 tuning: strengthen the inward tighten (asymmetric \u2014 con",
-      "state": "ready",
-      "importance": "AUTO",
-      "badge": "\ud83d\udfe2"
-    },
-    {
       "wo": "INT7-HEAT",
       "title": "One Brain \u2014 live cognitive heat-map / observability layer (David spec ",
       "state": "in_review",
-      "importance": "AUTO",
-      "badge": "\ud83d\udfe2"
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
     },
     {
       "wo": "INT-8",
       "title": "Drag-drop files onto the eLo avatar \u2192 eLo reads/reviews",
       "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "INT-9",
+      "title": "3D file viewer \u2014 enable GLB/GLTF runtime loader (drop a 3D model \u2192 eLo",
+      "state": "ready",
       "importance": "DAVID",
       "badge": "\ud83d\udfe0"
     },
     {
-      "wo": "WO-028",
-      "title": "eLo Presence avatar \u2014 fix the wave gesture + arm rotation (blocks avat",
+      "wo": "WAVE\u2192GAME",
+      "title": "Reuse the wave gesture in eLo-Planet (David 2026-08-03) \u2014 `ArmWave.cs`",
       "state": "ready",
       "importance": "DAVID",
       "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-047",
+      "title": "Auto graphic template drop-in (David 2026-08-03) \u2014 drop content into b",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-062",
+      "title": "Expressiveness layer \u2014 micro-expressions + squash-and-stretch (David 2",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "049-A",
+      "title": "Spatial Embodiment \u2014 Nav foundation + moveset (Track A)",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
     },
     {
       "wo": "FH-2",
@@ -74,14 +116,14 @@
     {
       "wo": "FH-3",
       "title": "3\u20135 fashion prototypes",
-      "state": "blocked",
+      "state": "ready",
       "importance": "DAVID",
       "badge": "\ud83d\udfe0"
     },
     {
       "wo": "FH-4",
       "title": "First footwear prototype (upper pattern + last/sole 3D)",
-      "state": "blocked",
+      "state": "ready",
       "importance": "DAVID",
       "badge": "\ud83d\udfe0"
     },
@@ -102,7 +144,7 @@
     {
       "wo": "FH-7",
       "title": "Mini collection + lookbook",
-      "state": "blocked",
+      "state": "ready",
       "importance": "DAVID",
       "badge": "\ud83d\udfe0"
     },
@@ -119,6 +161,62 @@
       "state": "ready",
       "importance": "AUTO",
       "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XIII",
+      "title": "Build Volume XIII Spatial Faculty \u2014 `faculties/spatial/` owns reachabi",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XI",
+      "title": "Build Volume XI Motor Cortex \u2014 formalise the DOWN command / UP ACK con",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-090",
+      "title": "HeadAim \u00b7 ChestAim \u00b7 ArmAim \u2014 rig-constraint stack owns head rotation ",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-091",
+      "title": "Night light \u2014 animation concept PENDING (David is choosing it)",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-092",
+      "title": "Wall-jump visibility \u2014 45\u00b0 arc IS built but gated behind up-level + re",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-093",
+      "title": "Fire-jump axis + size \u2014 re-gate to LATERAL (left/right) hops only, nev",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-III",
+      "title": "Build Volume III \u2014 System Architecture. Formalise the four runtime con",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-099a",
+      "title": "\ud83d\udd34 P0 \u2014 RESTORE BRAIN CONTROL OF THE HEAD (David: *\"fix what they broke",
+      "state": "active",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
     }
   ]
 }

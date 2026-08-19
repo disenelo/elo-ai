@@ -1,8 +1,79 @@
 {
-  "ts": 1786609624.457983,
+  "ts": "2026-08-19T05:45:00",
   "from": "design",
   "seat": "SEAT-ENG-004",
   "updates": [
+    {
+      "wo": "WO-124 frame set \u2014 PRODUCED to MT's authorised facing spec + RELEASED (visual/creative production seat)",
+      "from_designer_seat": "SEAT-ENG-004",
+      "state": "DELIVERED + ACCEPTANCE MET + RELEASED \u00b7 authorised: MT relayed spec (facing_set_request) + David direct",
+      "title": "full real directional set (Walk/Run/Jump x front/right/left/back) + Wave + Sit + Idle + Calm",
+      "output_path": "~/elo-ai/blender/elo_frames/ (19 captures, 442 frames, 20MB, 512x768 transparent PNG @24fps, manifest.json)",
+      "acceptance": "MET - every capture identicalPairs=0 (no frozen frames); REAL renders per side (NOT mirror - verified Walk_right faces right / Walk_left faces left, correct arm/leg lead each way, MT's explicit concern); Run rendered not substituted (MT ask); brain layers off (Tier-1); naming key label=<Clip>_<dir> resolves the same-state collision MT flagged. Delivered both channels; MT can drop their INVENTED mirror interim.",
+      "released": true,
+      "status": "done \u00b7 delivered both channels \u00b7 RELEASED \u00b7 app relaunched normal (PID 82946)",
+      "detail": "David initially routed this as an MT-relayed ask; then said 'I asked for it so do' -> built to his stated rule. Compositing rule: L<->R = horizontal MIRROR (capture ONE side, MT flips on-device); FRONT/BACK = distinct silhouettes (captured separately - can't rotate a side into a front). DELIVERED (~/elo-ai/blender/elo_frames/, all 0 identical-pairs, VERIFIED by viewing): Walk_front(0)/back(180)/side(78) 20f each + Jump_front/back/side (eLo_LongJ) 20f each - back-walk confirmed distinct (back-of-head, no mouth). WAVE 72f: procedural gesture (ArmWave arm + receiver head-roll), captured with captureFramerate=24 so the real-time envelope is frame-deterministic - arm-up confirmed. SIT: Sit_hold 48f (base Idle + masked SitLegs 'Sit' layer = folded legs, how the app composes a sit; NO world-drop, MT positions) + Sit_getup 13f (SitExit) - legs-folded confirmed. EXPORTER EXTENDED (committed fb96055): kind=clip|wave|sit + per-clip label/facingYaw/durationSecs; label routes same state@N yaws -> N folders. Bug: none this round (Wave() confirmed public before build). App relaunched NORMAL after export (killed live instance first to avoid double-eLo, brought back PID 94974, traps armed).",
+      "open_for_MT": "Front-only still: Wave/Sit/Idle/Calm (gestures usually seen front-on). MT can request side/back sit, directional wave, Run, Gun states, different durations/framing via the sentinel or a relay - one-run turnaround."
+    },
+    {
+      "wo": "MT corrections ACCEPTED (I read the dead rig 3x) + taking the frame EXPORTER + disabled-duplicate flag",
+      "from_designer_seat": "SEAT-ENG-004",
+      "state": "IMPLEMENT (exporter, my lane, MT withdrew stand-down) + record-correction (owned) + FLAG for David/Architect",
+      "title": "eloWorldHeight 3.736 not 5.25; BlendShapeDump caveat closed; building the play-mode exporter; recommend deleting the disabled duplicate rig",
+      "status": "corrections-applied \u00b7 exporter-building \u00b7 duplicate flagged for David",
+      "detail": "MT (EloWhichRig.cs) proved the scene has THREE eLo rigs; only eLo-ProductonReady (#2) is live. My Agent-2 scale, my Y1a height, and the ortho cross-check ALL read the DISABLED duplicate #3 - owned. CORRECTED in the spec: live eloWorldHeight=3.736 (not 5.25=dead #3); ortho-by-formula 3.736/0.84=4.45 (serialized 6.25 is stale=dead rig); live root rotation (270,180,0), children scale 1 (the x10 and 0.1 were both the dead rig). screenHeightFraction 0.42 UNAFFECTED + stands. BlendShapeDump CLOSED - MT ran it, all 46 names match position-for-position. blendshapeScale=50 confirmed independently by MT (killed LA's 'eLo under-expressing on desktop' product finding: 0/22 visible at 20 -> 13/22 at 50). TAKING THE EXPORTER: MT withdrew their stand-down + asked me to build the play-mode frame exporter (their AnimationMode+BakeMesh can't reconstruct the 4-layer pose; -batchmode+EnterPlaymode CRASHES Unity 6000.3 there). Approach: a STANDALONE self-export mode (headless-runnable via build_and_run, since Editor play-mode crashes) that renders the LIVE running rig to transparent ortho PNG frames per clip at 24fps with the real LateUpdate mechanics running + a byte-identical guard.",
+      "FLAG_for_david_architect": "The disabled duplicate rig ('eLo' GO, m_IsActive:0, empty shapeMeshes) has now caused FOUR cross-team corrections (x10, 5.25 height, scale-20, 0.1 children). MT + I both recommend it be removed from eLoBuddy.unity. I will NOT delete a scene object without your explicit say (standing rule). David/Architect: authorise removal of the disabled duplicate eLo rig (and the other dead rig #1 eLo-AnimationNLA-FinalFixedDONOTTOUCH) or say keep."
+    },
+    {
+      "wo": "Frame EXPORTER \u2014 BUILT + VERIFIED + delivered to MT (committed a283215)",
+      "from_designer_seat": "SEAT-ENG-004",
+      "state": "IMPLEMENT + VERIFIED (looked at the actual PNGs) \u00b7 committed a283215",
+      "title": "headless standalone self-export of the live rig -> transparent 24fps PNG frames per clip",
+      "status": "done \u00b7 verified-by-eye \u00b7 delivered both channels",
+      "detail": "EloFrameExporter.cs: sentinel-gated (/tmp/elo_frame_export.json), never runs in a normal launch. The live app renders its OWN running rig (eLo-ProductonReady, controller eLo) to 512x768 transparent ortho PNG frames per clip at native 24fps, with the real LateUpdate mechanics running (Animator clip + FollowHead) - so it captures the composed pose, not AnimationMode's half-pose. BRAIN layers neutralised (HeadLook aim, idle glances, ArmWave/Reach, expression/visemes) = Tier-1, driven on-device (One Brain Many Bodies). Byte-identical guard fails LOUD (MT's frozen-frames bug). Runs HEADLESS via build_and_run (Editor -batchmode EnterPlaymode crashes 6000.3 - the reason it fell to me). VERIFIED by viewing PNGs: Idle 43f dead-on arms-rest; Walk 20f @78deg clean profile mid-stride; eLo_LongJ 20f arms-spread leap (327-bone clip); Calm 12/9/13f - ALL frames distinct (identicalPairs 0, guard passed). Frame counts match the controller audit exactly. Frames at ~/elo-ai/blender/elo_frames/ + manifest.json. Delivered mobile_test/FROM_DESIGN_2026-08-19_frame_exporter_DELIVERED.md + inbox. Bug fixed en route: AnimatorStateInfo.length is Infinity at speed 0 -> read raw AnimationClip.length instead. Two builds (first=1 frame/clip from that bug, second=full sequences). Open (MT's call): facing set (gave Idle/Calm/jump 0deg + Walk 78deg per spec 6), Run/Gun states, ortho size/feet anchor - re-runnable by MT via the sentinel or I produce on request."
+    },
+    {
+      "wo": "WO-124 movement+expression \u2014 FULL animation export spec DELIVERED to MT (both channels) + 2 corrections",
+      "from_designer_seat": "SEAT-ENG-004",
+      "state": "IMPLEMENT/DELIVER \u00b7 process-first, nothing stripped \u00b7 pulled+cross-checked via 4-agent audit + direct verification",
+      "title": "how eLo animates end-to-end so MT's frame export reproduces all 4 layers, not a half-pose",
+      "status": "delivered \u00b7 both-channels \u00b7 supersedes my earlier blendshapeScale=20 and x10 statements",
+      "detail": "David asked for a FULL frame-by-frame animation export spec (nothing omitted, process-first) to align MT. Ran a 4-way parallel deep-read (controller/clips/masks; procedural bone layers; blendshape/face; state-driver) + verified the crux myself. THE MODEL: on-screen pose = 4 composited layers, only 1 bakeable - (1) Animator skeletal clip [BakeMesh captures], (2) procedural bones in LateUpdate that ABSOLUTE-write and BEAT the clip [HeadLook order 10 c_head.x, ArmWave/Reach 15, idle sway 20, FollowHead 1000], (3) blendshapes SMR weights [visemes/emotions/jaw], (4) root facing-yaw + squash scale in Update [root motion OFF]. Delivered: live controller=eLo.controller (shape-keys one is dead orphan), GENERIC rig 24fps (bake per-bone local TRS, exact ARP paths), NO blend trees (0.12s crossfades), 5 layers + masks, 10 live clips + 2 FBX with framecounts/loop/bones, full transition+speed+special-state+intent+ACK tables, all procedural bone params, 46 blendshape names + corrected scales, per-frame composition order, and a 3-bin export recommendation (BAKE clips / REPRODUCE procedural+blendshapes / DRIVER map).",
+      "CORRECTIONS_flagged_to_MT": "(1) blendshapeScale=50 NOT 20 - the 20 (+smooth 12) I sent earlier is on a DISABLED duplicate eLo GO (m_IsActive:0, empty shapeMeshes -> drives nothing); the LIVE prefab uses 50/10/100/28/46. Verified directly (prefab line 1269 =50 + 5 shapeMeshes; scene's only blendshapeScale hit =20 is the disabled GO). Recalibrated MT's 'drive harder' advice. (2) NO x10 root scale exists live - size by world-height 5.25 + fraction 0.42 (already sent, invariant).",
+      "files": "mobile_test/FROM_DESIGN_2026-08-19_FULL_animation_export_spec.md + appended mobile_test/inbox.json (msg design_2026-08-19_FULL_animation_export_spec).",
+      "open": "byte-exact 46-name order needs BlendShapeDump run in-Editor (live body-mesh GUID 4f19 missing from project; names came from byte-identical sibling FBXs, all code-referenced names present); word/phoneme->viseme map lives in eLo OS Python (Builder), not Unity.",
+      "reframe_ONE_BRAIN_MANY_BODIES": "David: 'the aim is One Brain, many bodies.' Added section 0.5 to the spec + flagged to MT: the deliverable is NOT an iOS port of the desktop - it's the iOS BODY of the one eLo. Three tiers: (1) BRAIN CONTRACT shared byte-identical for every body (blender_state.json mode/motion/intent/expression.shape_keys/gaze + lipsync_state + emotion_event + meditation + awareness UP) - no body invents its own intent, one brain no parallel drivers; (2) CHARACTER invariant (proportions+framing, the 46-shape face vocab + visemes + jaw amounts, movement vocab + FEEL, no eyes); (3) BODY per-embodiment how (desktop Unity = REFERENCE body; iOS = MT's engine; ROBOT = next body - section 7 IS the jaw-servo/viseme contract, mode->NeoPixel). The bake/reproduce/drive split sits UNDER this. Same expression/jaw contract serves desktop + iOS + robot faces."
+    },
+    {
+      "wo": "TELEPORT (eLo runs then teleports) \u2014 UNKNOWN resolved by discovery, minimal fix BUILT + committed",
+      "from_designer_seat": "SEAT-ENG-004",
+      "state": "IMPLEMENT \u00b7 UNKNOWN(mode vocab) RESOLVED by discovery -> now clearly in-lane + restores documented intent \u00b7 authorised: David reported it live + 4e",
+      "title": "ReadStateOnce no longer force-wakes a dormant eLo during idle mode",
+      "status": "built \u00b7 committed 1d3f38b \u00b7 trap left armed for live confirmation",
+      "commit": "1d3f38b",
+      "detail": "Held at PROPOSE earlier for a real UNKNOWN (the brain's mode vocabulary). RESOLVED IT BY DISCOVERY (read the brain emitter, not a guess): state.mode is only ever idle/walk/dreaming (default idle); 'exploring' is a MOOD, never a mode (server.py:917 mood:exploring,mode:walk). So the old guard 'mode != exploring' excluded NOTHING and fired the wake on 'idle' -> yanked a dropped-off eLo back the instant DropOffCo dropped him -> ReturnFromTop snap = the run-then-teleport (trap-proven chain ReturnFromTop<-WakeFromExit<-ReadStateOnce, live mode=idle). FIX (EloOSAvatarReceiver.cs:499, +9/-1): also exclude 'idle' from the wake -> restores DropOffCo's DOCUMENTED 'stay away until a mouse move brings him back' (restoring intent, not a new design call). Genuine returns still fire via mouse-move (ApplyReturnCommand/biReturn) + commands (WakeForCommand); walk/dreaming still wake (present-requiring). Build CLIBUILD_OK + relaunched. VERIFICATION (honest): root cause trap-verified; fix removes exactly that path by construction; compiles+runs; live mode=idle so the fix path is active; NO teleport chain since launch BUT no drop-off occurred in the window so it's no-regression-visible, not a positive catch. Left the [TELE-SRC] trap ARMED so any recurrence during David's normal use names the source; definitive 'gone over hours' is his live-test (probabilistic drop-off race). Did NOT force-drop-off on the live avatar to fake a catch (would manipulate what David's watching).",
+      "supersedes": "The 'ratify the teleport fix' item in new_board_item_for_architect: UNKNOWN resolved + minimal fix (option A, idle-exclusion) built. The BROADER redesign (retire mode-based wake entirely / whitelist present-requiring modes) remains an Architect call if the minimal fix proves insufficient.",
+      "must_not_regress": "perch/roam/drag/click-through/gun-runoff/sit-hold untouched; only the dormant-wake condition changed; mouse-move + command returns intact; WO-063 WakeForCommand path intact."
+    },
+    {
+      "wo": "Lipsync latch (mouth frozen + bubble stuck) \u2014 Unity half BUILT + VERIFIED live (David-reported bug)",
+      "from_designer_seat": "SEAT-ENG-004",
+      "state": "IMPLEMENT + VERIFIED (observed, both directions) \u00b7 in-lane under 4e (no UNKNOWN) \u00b7 authorised: David reported the bug",
+      "title": "ReadSpeaking freeze-watchdog: stale lipsync_state.json (>1.5s) forces speech OFF, no re-arm",
+      "status": "DONE \u00b7 built \u00b7 verified-live \u00b7 committed 150907c",
+      "commit": "150907c",
+      "detail": "David reported lip-sync paused + speech bubble stuck. VERIFIED root: a latched active:true lipsync_state.json + the 0.25s heartbeat re-armed IsSpeaking past the 20s maxSpeechSecs watchdog forever. FIX (EloOSAvatarReceiver.ReadSpeaking, +12 lines, single file, additive): if File.GetLastWriteTime age > lipsyncStaleSecs(1.5) -> IsSpeaking=false + no re-arm + one-shot edge watchdog log. Implements the staleness->neutral recovery the code comment (line 267) already promised but never wired for the speaking path. VERIFIED LIVE (Player.log, not by inspection): '[lipsync] eLo OS stopped writing ... (110.6s stale) -> speech forced OFF' (startup, on the real latched file) THEN '[lipsync] eLo OS writing again -> speech re-enabled' (brain resumed - no false-positive, live speech unaffected) THEN forced OFF again at 1.5s. Both directions proven. Build CLIBUILD_OK + relaunched (PID 54712-> new). NOTE: watchdog log is EDGE-triggered (once per stale-onset), not per-frame spam. Builder's writer close-out (always emit active:false on end/interrupt/shutdown) is the OTHER half - still out for their verify (builder/FROM_DESIGN_2026-08-17_lipsync_active_latch_verify.md); this Unity guard makes eLo robust regardless of the brain.",
+      "threshold_note": "lipsyncStaleSecs=1.5s derived from write cadence (brain writes ~50ms frames + 0.25s heartbeat) - Inspector-tunable, reversible. Not a guess: >1.5s silence == stopped."
+    },
+    {
+      "wo": "WO-099a P0 (RESTORE BRAIN CONTROL OF HEAD) \u2014 VERIFIED: consume done, loop open on Builder emit",
+      "from_designer_seat": "SEAT-ENG-004",
+      "state": "VERIFIED (not assumed) \u00b7 my half DONE/intact \u00b7 P0 gated on Builder WO-099b emit",
+      "title": "brain emits LEGACY {yaw,pitch,active} not the intent object -> GazeActive=false -> can't steer",
+      "status": "consume-verified-intact \u00b7 routed-to-builder \u00b7 legacy-guard proposed for architect",
+      "detail": "Board re-flagged WO-099a P0 'fix what they broke'. VERIFIED before touching anything: (1) my consume half (4bb1f01) is INTACT - HeadLook.cs:450-461 + EloOSAvatarReceiver.cs:435-451 parse the ratified intent object (mode/win_id/point/weight/hold_secs/issued_by), weight-blended, reflex guard present; git shows 4bb1f01 not reverted; only uncommitted change is my [headaim] debug-log strip. (2) LIVE blender_state.json gaze = {yaw:0.0, pitch:-5.0, active:true} - the LEGACY format, NO mode/weight/win_id. So GazeActive (receiver:214, needs a mode) = false -> the WO-099a intent steer path never runs -> only the legacy path is live -> active:true+yaw:0 drives the head straight (the exact degenerate cue WO-099a was built to replace). ROOT: 'brain can't drive the head' is NOT a consume bug (Unity steers from both intent object AND legacy yaw/pitch) - the brain is emitting a non-steering legacy cue. That's the EMIT half = Builder WO-099b (my 4bb1f01 already flagged it 'UNBLOCKED'). Routed to builder/FROM_DESIGN_2026-08-17_WO-099b_emit_gap_head_control.md with the intent schema. Did NOT redo my done work, did NOT cross into Builder's Python.",
+      "for_architect": "WO-099a consume = done+verified; the P0 closes end-to-end the moment Builder's emit sends a real mode+weight. See new_board_item_for_architect for the legacy-path guard ratify."
+    },
     {
       "wo": "WO-058",
       "title": "Meditation VFX + weather \u2014 grass, floor, fireflies, weather-during-meditation",
@@ -174,36 +245,259 @@
       "status": "working-confirmed + advice-for-architect",
       "commit": "5180b0f",
       "detail": "David confirmed the head-aim works: decoupled L/R+U/D, looks at nearby cursors (aimResponse 0.10), chest trails the head, tracks fully while seated + after getup. ROOT FIX that unblocked sit/getup: the brain's HeadCueActive was stuck ON and BLOCKING the cursor-follow (head followed the brain's ~0 cue instead of the mouse) -> made the cursor-follow PRIMARY. Consequence: the brain currently can't drive the head. David: 'the brain will need to trigger this soon - advise how to make it read that way.' Full advice: design/ADVICE_head_aim_brain_trigger_2026-08-13.md. TL;DR: replace the blunt HeadCueActive on/off with a gaze INTENT DOWN (mode: follow_cursor|look_at_window|look_at|rest, +win_id/point/weight/hold_secs in blender_state.json's gaze object); HeadLook consumes it (same aim mechanism, brain-chosen target, falls back to the cursor reflex when silent); body emits gaze awareness UP (what he's looking at + window under gaze) so the brain decides aware. Same 3-part shape as WO-086/WO-094. REQUESTING: a WO + the channel decision + WO-086 sequencing. Open Designer items queued for David's return: sit-clip bobble speed, the gaze-awareness emit (pending your channel call), and stripping the [headaim]/[TELE]/[BASIS] diagnostic logs once David locks the feel."
+    },
+    {
+      "wo": "WO-099a",
+      "title": "Brain drives head via gaze intent (DOWN) + cursor-reflex guard",
+      "status": "committed",
+      "commit": "4bb1f01",
+      "detail": "Replaced blunt HeadCueActive with the ratified gaze intent (mode/win_id/point/weight/hold_secs/issued_by) from blender_state.json. HeadLook aims at the brain's target with the existing tuned aim (look_at_window->window centre, look_at->point, follow_cursor->cursor), blended by weight. GUARD: silent/stale/rest/weight~0 -> cursor reflex, never freezes; freshness free (state re-parses only on content change). Builder WO-099b UNBLOCKED (relayed). Next: card 04 (gaze awareness UP)."
+    },
+    {
+      "wo": "QUEUE CLEARED",
+      "title": "All design cards DONE",
+      "status": "queue-empty",
+      "detail": "04 WO-099 gaze loop (awareness UP: elo_spatial.json gaze state + debounced gaze_target_changed; VERIFIED win_id=Code) + head eases off cursor while moving (David) [582dd10]. 05 WO-090 HeadAim reconciled DONE (code head-aim, David-confirmed). 06 WO-092 walljump + 07 WO-093 firejump reconciled DONE (9208ff7). 08 Ruling E movement_report VERIFIED live (arrived legs=[drop] issued_by=reflex) [d91cf34]. Plus this session: teleport ROOT-fixed (dual-anchor conflict + uncapped edge-follow snaps; verified clean 6min), WO-099a brain->head gaze intent. Builder can now consume: gaze awareness (elo_spatial.json gaze + unity_events gaze_target_changed) + movement_report (unity_events). Queue EMPTY."
+    },
+    {
+      "wo": "URGENT Ruling E (body reports up)",
+      "title": "elo_spatial.json now carries goal/route/last_move \u2014 nav reports UP",
+      "status": "committed",
+      "commit": "4fb0323",
+      "detail": "EloDesktopNav had 0 file writes; now goal+route+last_move{goal,route,legs,arrived,fell,cost_secs,cost_dist,retries,issued_by} in elo_spatial.json (+ movement_report event on unity_events.json). VERIFIED live: arrived legs=[drop] route=[26,24] issued_by=reflex. HONEST PARTIAL: fell+blocked paths wired but not yet observed live; route=planned(RouteDown), legs=actual types."
+    },
+    {
+      "wo": "One Brain card 01 (x9 items)",
+      "title": "Quantum-organism polish \u2014 all 9 items resolved",
+      "status": "committed",
+      "commit": "bea8c4e (+ 3af3576 item6)",
+      "detail": "item6 remove dead RING code: stripped orbit/orbitRadius/orbitDir/orbitSpeed from Node struct+init [3af3576]; warnings 47->26. item5 no imposed circle-rings: VERIFIED no change \u2014 motes already seed as golden-spiral SPHERES (code comment 'not a flat ring'), no resting imposed ring; item6 removed the only orbit-ring code. item3 firing bead=mote: synapse comet head localScale 0.018+0.032*headFade (head <= mote) + firing OUTWARD-dominant core->mote 0.55 / mote->core 0.12 / mote->mote 0.33 [bea8c4e]. item4 voice wave hugs Voice node: voiceWaveRadius 0.7->0.58, peak spread 0.4->0.3 [bea8c4e]. item1 sharpen glow GENTLY: SmoothStep firms only the faint outer halo (crisper edge); core body+peak untouched so it CANNOT drown the motes (unlike reverted 466a4e1 solid-core) [bea8c4e]. item2 hit/contact reaction: a landing comet fires the destination mote's existing tuned arrival-pop, one-shot [bea8c4e]. item7 consistency: VERIFIED \u2014 all travelling beads use MoodPalette colCur + morph-to-destination; single shared Radial() texture so the sharpen applies uniformly; head<=mote holds for the mote-web synapse. Node<->node HERO comet left at David's firingBeadScale=0.8 (deliberately larger, NOT resized). item8 INT7-M6-TUNE [10fe49e] + item9 INT7-BEAD/VW [e60dcf1]: confirmed green \u2014 both ancestors of HEAD, in-build. Build CLIBUILD_OK sizeMB=169 warnings=26. Visual items are David's-eye judgement at live test."
+    },
+    {
+      "wo": "WO-058 (card 03 / card 02 item 1)",
+      "title": "VFX weather+meditation layer VERIFIED complete \u2014 prefab LOOK under-specified, relaying",
+      "status": "vfx-done \u00b7 prefab-look-needs-definition",
+      "detail": "VFX LAYER = DONE + WIRED (already committed, now re-verified end-to-end): EloOSAvatarReceiver.cs:492 reads REAL top-level 'weather' (root.weather || state.weather), lowercased; EloAmbientVfx.cs drives rain/snow by weather with a MOOD fallback when weather=='' (_rainMoods/_snowMoods), fireflies+mushrooms+grass = the meditation glow on Calm state, occlusion-aware fade, live-tunable via vfx_tuning.json. All Resources present: VFX_Rain/VFX_Snow/VFX_Fireflies prefabs, Mushrooms-Group.fbx, grass01.tga. Reads the real feed already \u2014 returns mood atmosphere until Builder WO-119 publishes 'weather', the intended fallback (no swap needed). In the last clean build (CLIBUILD_OK 169MB). PREFAB LOOK: card says 'prefab LOOK parked for David's break \u2014 take it', but there is NO concrete definition anywhere in the bus / outbox history / git log / docs of WHICH prefab or WHAT look-change. Every WO-058 prefab look already implemented + David-tuned. NOT freelancing an unspecified visual change. Need: which prefab + what look. Relayed."
+    },
+    {
+      "wo": "WO-063 (card 02 item 2) \u2014 command wakes the body",
+      "title": "ALREADY IMPLEMENTED + WIRED \u2014 card's 'never started' is stale; only windowed verification remains",
+      "status": "code-complete \u00b7 needs windowed verification (not headless-runnable)",
+      "detail": "Verified by reading \u2014 WO-063 is fully in the code (prior session), all 4 scope steps + sit parity + honesty guard: DesktopBuddy.WakeForCommand() (1967): wrStopped=false + steered=false + WakeFromExit() on _exitDormant (logs 'WO-063 command woke eLo from dormancy') + wrNeedsAttach=true when wrWinId==-1 (the existing nearest-window attach path, line 297). ExecuteNav() (1979) and SitInPlace() (1998) BOTH call WakeForCommand() first, then dispatch through the SAME resolver (wrNavPending -> WindowRoamStep -> HandleNav, 1520) \u2014 no parallel driver. Honesty guard PRESERVED: _navMoved set only on a real move (1521); receiver MoveAckCo (EloOSAvatarReceiver:685) emits move_complete ONLY when !NavPending && NavMoved && MoveSettled, else silent (688) \u2014 no false ACK. Sit-dormant parity: receiver DeferredSit (629) retries the commanded sit once he's back on-screen. In the last clean build (CLIBUILD_OK 169MB). OPEN (DoD): the 5 inject/log scenarios want a WINDOWED test env (EloWindowSensor ready, wins>0). That sensor reads REAL OS windows via the native plugin, so it can't be exercised in my headless CLI build \u2014 needs David's live windowed session or a future in-editor/playmode harness that fakes the sensor. Flagging: card 02 item 2 'never started' is STALE \u2014 it's implemented."
+    },
+    {
+      "wo": "WO-058 (card 03) \u2014 CLOSED",
+      "title": "VFX layer done + prefab LOOK resolved (Architect ruling 19:56) \u2014 card 03 -> DONE",
+      "status": "done",
+      "detail": "Architect ruled prefab LOOK RESOLVED (stale note): the two Aug-8 concerns (firefly glow = hard squares; per-type feel code-forced) were both solved IN CODE, not in-editor \u2014 MakeGlow()+SoftCircle() (EloAmbientVfx.cs:295) generate a runtime soft-additive glow that replaced the square alpha texture, and per-type feel is live-tunable via vfx_tuning.json. Traced to origin commit f8cf7fa. WO-058 both halves complete: VFX layer wired (reads real weather at receiver:492 + mood fallback + meditation glow) and prefab LOOK closed. Moving card 03 QUEUE->DONE. FOR DAVID (result review at live test, NOT a gate): weather/meditation VFX now generate the soft glow at runtime and per-type feel lives in vfx_tuning.json \u2014 anything read wrong (snowflakes too square / rain streaks off / firefly glow)? If so name it and Architect cards one targeted prefab-authoring task."
+    },
+    {
+      "wo": "WO-049 / Spatial Faculty (card 02 item 3) \u2014 ownership split proposed",
+      "title": "Unity/Python split written to builder/FROM_DESIGN \u2014 awaiting Builder ratify",
+      "status": "coordination-sent \u00b7 no-build-until-agreed",
+      "detail": "Grounded in Volume XIII Ch.5 \u00a75.2/\u00a75.3/\u00a75.4. SPLIT: Unity (mine) = raw-geometry sense+emit UP (done: Ruling E/WO-094/WO-099) + verb EXECUTION (DesktopBuddy+EloDesktopNav, \u00a75.4 names it the executor) + per-body capability MEASUREMENT (WO-074F, needs to emit as capability_set). Python (Builder) = desktop/spatial_state.py World Adapter (EXISTS, 268 lines) + faculties/spatial/spatial_faculty.py the ONE shared reasoning core (MISSING \u2014 canon owner absent, Builder to create). THE CONFLICT to agree: EloDesktopNav.cs currently DECIDES routes (BFS ComputeRouteDown/GoalWinId/NextStepWinId) AND executes; canon says deciding belongs to the Python faculty, body executes verbs. Proposed (per OQ-5.2 'deciding moves to the faculty over time'): INTERIM = Nav keeps planning+executing + emits goal/route/last_move UP (done), faculty reads for LEARNING (WO-118) not planning; MIGRATION = Unity emits Surface-graph inputs (window adjacency + gap px + capability_set), faculty plans, Nav becomes pure executor. NON-DUPLICATION (card's 'don't both build it'): Unity adds no more reasoning than the interim Nav planner; Builder doesn't re-implement the executor; spatial_state.py is the only geometry->Surface adapter (I emit RAW geometry, not Surface objects). My next deliverable is GATED on Builder creating spatial_faculty.py + naming its interface; until then I build nothing new here. File: agent_bus/builder/FROM_DESIGN_2026-08-13_WO-049_spatial_split.md."
+    },
+    {
+      "wo": "WO-024 traversal half (card 02 item 4) \u2014 plan written (required before build)",
+      "title": "'what changes / what stays intact' safety list delivered; recommend build steps 1-2 now, hold step 3",
+      "status": "plan-done \u00b7 build-order-proposed",
+      "detail": "Card required a plan first. Confirmed state: occlusion half DONE (approach A, EloWindowOcclusion.cs 232 lines \u2014 walk-behind + stacked + EloOccluded glow-hide; the A/B spike gate is resolved). Routing across windows present (EloDesktopNav BFS). So the traversal half = make windows ONE connected surface graph + behind-space as a routable PLACE (Ch.5 \u00a75.4), and hand deciding to the faculty per WO-049. CHANGES: (1) emit window adjacency + gap px + capability_set UP [= same as WO-049 migration input]; (2) behind-space becomes a routable node; (3) deciding migrates to spatial_faculty.py, Nav stays executor [gated on WO-049]; (4) traversal graph makes the 'one world' true for routing too. STAYS INTACT (safety list): WO-024 occlusion approach A \u00b7 perch/roam/hop \u00b7 drag-to-place (+ ChatBoxAnchor.Suppress teleport fix) \u00b7 click-through per-pixel \u00b7 gun run-off \u00b7 foreground-when-intended \u00b7 teleport root-fix (single CommitRoam owner) \u00b7 honesty guard. RECOMMEND: build steps 1-2 now (pure geometry emit, touches nothing on the intact list, doubles as WO-049 migration input), HOLD step 3 for Builder's spatial_faculty.py + interface. But step 1's exact FORMAT should match the interface Builder names in the WO-049 reply \u2014 so holding the emit format until they ratify avoids rework. File: agent_bus/design/PLAN_WO-024_traversal_half_2026-08-13.md."
+    },
+    {
+      "wo": "card 02 item 8 \u2014 grab-release + Track-B field audit (against today's state)",
+      "title": "capability panel UNBLOCKED (stale) \u00b7 notification field GENUINELY missing \u00b7 drop-to-edge done \u00b7 walk-to-end works",
+      "status": "audit-done",
+      "detail": "#2 Capability panel: NO LONGER BLOCKED \u2014 Unity receiver reads show_capability_panel + capability_list (EloOSAvatarReceiver:1199-1200) AND Python emits them today (server.py:3731 on a capability query, auto-hides after 8s via _hide_panel). Tracker's 'waiting on eLo OS to emit' is STALE \u2014 both sides wired; needs only a live verify (ask eLo 'what can you do' -> panel shows). #8b/#10 Notifications: GENUINELY STILL MISSING both sides \u2014 no Unity consumer of a notification field (only a FileSystemWatcher NotifyFilter, unrelated) and Python writes NO notification field to blender_state.json (only osascript system notifications in reminder/timer tools). NAME THE FIELD to card to Builder: brain must emit notification{kind,corner,_ts} into blender_state.json; then I build the Unity consumer (HANDOVER_eLoOS_notifications.md scoped). #13 grab-release: 'drop -> fall to nearest edge on release' is DONE (drop-fall -> land on nearest top ledge, never stranded). The REST of #13 (dangle rotation cooperating with ScreenAnchor, grab-point placement, 5deg lean, rotation-reset) is PARKED BY DAVID for a technical reason (dangle vs ScreenAnchor conflict) \u2014 NOT the retired schedule gate; not unparking without his say. WindowPlatform walk-to-end (David's Q): WORKS \u2014 wrPatrolRange 0.01-0.99 of window width (comment: widened from 0.12-0.88 which 'kept him off the ends'); he reaches the ENDS, pauses 0.8-2.0s, re-patrols on the SAME window (clamped, never walks off). Stepping ONTO/BEHIND the next window AT the end = the WO-024 traversal-half connectivity (planned, gated on WO-049 interface)."
+    },
+    {
+      "wo": "Capability rows 5 \u00b7 13 \u00b7 17 (Designer halves) \u2014 Architect rebalance 2026-08-13",
+      "title": "gaze observation data + anim completion-ACK + gap in physics units",
+      "status": "committed",
+      "commit": "c571f59",
+      "detail": "Row 5 LOOK: gaze emit (DesktopBuddy WriteSpatial) adds the gazed window's rect (viewport, same frame as gaze x/y) + z-depth + frontmost. With win_id/on_window the observation record now has OCCLUDED (topmost-visible != intended target -> brain compares) and ABSENT (on_window:false). Body half done; Builder builds the record. Row 13 VERIFY: extended sit/move/exit completion-ACK to anim. wave -> AnimAckCo waits ArmWave.Playing to FINISH then anim_complete{anim}; FAILURES ACK too -> anim_failed{anim} (no component / never engaged / >8s bound). Head gestures (nod/shake/tilt/think/lookup) -> anim_complete at GestureCo's real end. HONEST GAP: animator-clip triggers (jump/gun/calm) NOT faked -> deferred, they need per-state completion detection; faking = the exact dishonesty this row fixes. Builder must read anim_complete/anim_failed instead of anim_trigger.py:34's file-write True. Row 17 GAP: movement report (last_move) adds gap_distance_sizes (widest gap attempted, eLo-sizes) + max_hop_sizes (physics ceiling=6), both in MaxHopDist's unit -> reliable_range learns against the ACTUAL hop reach. RECONCILIATION FLAG (David's call, NOT retuned): planner rejects gaps > 1.5 heights (EloDesktopNav:188 maxJumpEloHeights) while physics hops up to 6 sizes (DesktopBuddy:261 MaxHopDist) \u2014 ~4x disagreement, so eLo ROUTES around gaps he can physically clear. Emitted the gap against the PHYSICS number so learning is honest; making the planner clamp match MaxHopDist changes traversal feel -> David decides. Build CLIBUILD_OK sizeMB=169 warnings=26. Rows 5/17 body-side done; 13 wave+head done, clip-triggers deferred. Builder consumes: gaze rect/z, anim_complete/anim_failed, gap_distance_sizes/max_hop_sizes."
+    },
+    {
+      "wo": "00c RULING \u2014 planner matches physics (Row 17)",
+      "title": "planner jump-gate now reads the body's real reach (MaxHopDist), one rule not two",
+      "status": "committed",
+      "commit": "839fd80",
+      "detail": "Built per the ruling. DesktopBuddy.MaxHopReachPx() = MaxHopDist()*Screen.height (one source of truth) is PUSHED down to the planner each frame via EloDesktopNav.SetHopReachPx(); planner's maxGapPx now = that reach * jumpReachMult, no longer its own maxJumpEloHeights constant. BOUNDARY respected: body->planner (the allowed direction); the planner never reaches INTO DesktopBuddy (line-53 rule). TUNING DIAL: jumpReachMult default 1.0 \u2014 David retunes the feel with ONE number. REVERT-SAFE: falls back to the old maxJumpEloHeights constant if the body hasn't fed a reach yet (kept as fallback). MUST-NOT-REGRESS (only the jump-plan gate changed, nothing else touched): perch \u00b7 roam \u00b7 drag \u00b7 click-through \u00b7 gun-runoff \u00b7 sit-hold \u00b7 seated head-track. gap_distance_sizes still emitted against the physics number (learning honest). Build CLIBUILD_OK 169MB warnings=26. FOR DAVID (live-test result note): the planner now uses the physics reach \u2014 he takes more direct routes, fewer detours; multiplier is 1.0, one number to retune if it's too far."
+    },
+    {
+      "wo": "00 WO-111 ACK-everything (Row 13) + 00b WO-108/113 (Rows 5\u00b717\u00b73) \u2014 Unity halves",
+      "title": "action_id matching \u00b7 clip completion \u00b7 scale ACK \u00b7 embodiment \u00b7 gaze ts/confidence",
+      "status": "committed",
+      "commit": "50bdf2e (00) + b660d44 (00b)",
+      "detail": "00 WO-111: WriteUnityEvent carries action_id -> ACKs pair with the brain's request. Completion ACKs (anim_complete/anim_failed, failures included): wave (ArmWave finish), head gestures (GestureCo end), jump/celebrate (ACK on LANDING via !locomoting). DEFERRED honestly (NOT faked): gun_check/gun_run/gun_fire + calm_enter/exit \u2014 state-entries with different completion semantics. scale_cmd now ACKs (scale_complete/scale_failed). Row 3 BODY: embodiment='desktop' emitted on elo_spatial.json -> live body reports itself, kills the hardcoded server constant. 00b WO-108: gaze block adds ts + conf (frontmost&clear=1, behind others=0.6, nothing=0). Row 17 governing limit NAMED: max_hop_sizes (physics) is canonical after 00c -> reliable_range learns against it. FIELD NAMES written to Builder: agent_bus/builder/FROM_DESIGN_2026-08-13_capability_field_names.md (anim_complete/anim_failed + action_id, gaze block, gap fields, embodiment) \u2014 asked them to ratify/rename esp. action_id. spawn_wave NOT driven Unity-side (flagged, not faked). Builds CLIBUILD_OK 169MB warnings=26 (both)."
+    },
+    {
+      "wo": "App UP + left up \u00b7 WO-111 state-ACK ruling (gun/calm entered/exited)",
+      "title": "Presence app running + emitting the new fields; clip-trigger deferral closed honestly",
+      "status": "committed \u00b7 app-live",
+      "commit": "e83f481",
+      "detail": "APP IS UP AND LEFT UP (PID live, elo_spatial.json age <1s) so every ACK Designer built round-trips through Unity \u2014 rows 13/5/17/14/16/3 can now be VERIFIED, not read as broken. Built via build_and_run: CLIBUILD_OK 169MB + CODESIGN_OK (stable TCC). LIVE-VERIFIED in the actual output: embodiment='desktop' (Row 3), gaze block carries rect/z/frontmost/ts/conf (Rows 5/00b). STATE-ACK RULING (closes my clip-trigger deferral honestly): states emit entered+exited, NOT complete \u2014 StateAckCo mirrors sit_held/sit_ended. gun_check/gun_run/gun_fire -> gun_entered/gun_exited (via _gunHoldUntil + InAnyGunState); calm_enter -> calm_entered (settles into CalmLoop) / calm_exited (calm_exit ends it); <kind>_failed if never engaged. Field names appended to builder/FROM_DESIGN_2026-08-13_capability_field_names.md. NEGATIVE CASES (the ones that PROVE the rows \u2014 a report that only fires on success is what we removed): app is ready to drive a failing gesture -> anim_failed, an occluded look -> gaze win_id != intent, a falling traversal -> last_move fell:true. Ready to drive on Builder's signal, or Builder injects and I confirm the negative report. Coordinating via outbox, not through David."
+    },
+    {
+      "wo": "Row 23/25 drive \u2014 the 'one body action' delivered; gate is the backend restart",
+      "title": "drove a sit -> sit_complete fired durably, but autobiography.jsonl still absent (WO-115 not loaded)",
+      "status": "body-action-proven \u00b7 row23-blocked-on-restart",
+      "detail": "Drove ONE body action to fire the sit/move ACK Row 23 needs: injected a sit_command into the (20-min-idle) blender_state.json. App consumed it -> sit_complete fired (Player.log 120548) and PERSISTED ~4s in unity_events.json before the delayed sit_held; released cleanly -> sit_ended (127054). The app-side ACK round-trip is fully PROVEN + durable. BUT autobiography.jsonl is STILL absent after the sit -> the RUNNING backend has no WO-115 autobiography writer loaded (it's the old-code process). So 'one body action' is necessary but NOT sufficient: Row 23/25 unblock on the BACKEND RESTART (Builder's), and I've now removed all doubt that the body side is ready. Note (not the cause here, latent): unity_events.json is single-slot; sit_complete survived because gaze_target_changed was quiet during the stationary sit. A move_complete COULD be clobbered if the cursor moves during traversal (gaze events share the slot). Not fixing unilaterally \u2014 flagging in case reliable ACK delivery wants an append-log; Architect's call on the event-channel contract. eLo returned to autonomous (sit released). App stays UP for the restart."
+    },
+    {
+      "wo": "Row 23/25 drive (post-restart) \u2014 Unity side PROVEN; close needs a BRAIN-commanded sit, not an injection",
+      "title": "sit_complete fires + persists, but autobiography is gated on _PENDING_SIT (brain-originated)",
+      "status": "unity-proven \u00b7 close-needs-conversation-sit",
+      "detail": "Backend IS restarted (self/state/the_moment.json live; server.py:2673 append_autobiography loaded). Drove another sit via injection -> sit_complete fired again (Player.log, 4x total, persists ~4s). BUT autobiography STILL absent because the write is GATED: server.py:2638-2676 only appends when _PENDING_SIT['active'] is True (set by the BRAIN at server.py:3628 when it commands a sit from a conversation turn) AND a sit_complete arrives with _ts > since, AND the check runs on a conversation turn processing 'raw'. My injection writes sit_command straight to blender_state.json, bypassing the brain's pending-sit tracking -> no _PENDING_SIT -> the ACK never correlates -> no autobiography. So 'one sit through the backend' must ORIGINATE in the brain (a conversation 'sit down'), which sets _PENDING_SIT; then my app ACKs; then the next turn writes autobiography -> Row 23 verified, Row 25 unblocks. UNITY SIDE IS 100% READY + PROVEN. The close is a brain/conversation trigger (David says 'sit' to eLo, or Builder scripts a turn that sets _PENDING_SIT) \u2014 NOT a Designer injection, and not something I drive without steering the brain (Builder's lane). Real path (checked the code, not the report). Test sit released; eLo autonomous; app UP."
+    },
+    {
+      "wo": "3D model viewer (WP_N previewer) \u2014 BUILT",
+      "title": "GLB + STL preview: orbit/zoom frosted panel, triggered by hud_model",
+      "status": "committed \u00b7 verified",
+      "commit": "09050ef",
+      "detail": "Implemented the stubbed EloHudModel end-to-end: watches hud_model, shows a frosted preview panel on eLo's right. GLB/glTF via GLTFast (full look \u2014 materials/textures) behind ELO_GLTFAST; STL via a built-in binary+ASCII parser (geometry, single colour, Z-up->Y-up). Isolated render: model on an unused layer far from eLo, dedicated sub-camera -> RenderTexture -> RawImage. Left-drag orbit, scroll zoom, fit-to-bounds, x/right-click dismiss; failures show 'can't open', never silent. VERIFIED: GLB (2.7MB textured water-droplet) popped up + rendered on launch (David confirmed 'I saw it pop up'); STL (test cube) parsed with no errors. Build CLIBUILD_OK 169MB. NOTE: my test drove it by injecting hud_model into blender_state.json, which the live backend overwrites (flicker) \u2014 in real use the backend SETS hud_model on a model file_drop and holds it. That real trigger depends on the drag-drop fix (next). FBX/.blend still need GLB export (no free runtime loader)."
+    },
+    {
+      "wo": "OVERNIGHT (David asleep) \u2014 00d append-log built; WO-062/03 reconciled",
+      "title": "unity_events.json is now an append-log; board tidied; drag-drop staged for David's live test",
+      "status": "committed",
+      "commit": "9157203",
+      "detail": "00d RULING done (my half): unity_events.json converted single-slot -> APPEND-LOG. New EloEventLog.Append writes rows {seq,type,subject,action_id,payload,_ts}, monotonic seq (resumes across relaunch), bounded 400 rows, WARNING on rotating rows above the backend's consumed_seq cursor. Converted ALL 6 writers (receiver WriteUnityEvent, DesktopBuddy movement_report, EloFileDrop file_drop, EloPresenceSignal idle/window/gaze). Fixes row-13: move_complete + gaze in the same tick both append now (were clobbering). Schema posted to builder/FROM_DESIGN_2026-08-15_unity_events_append_log_schema.md for their 0015 reader (ack-by-seq + write consumed_seq to unity_events_cursor.json). Build CLIBUILD_OK. WO-062 (card 03): confirmed DESIGNER-DONE already (8873b20 \u2014 EloSquashStretch + ApplyExpression/FlashMicro present); open half is Builder's emit (WO-064 BP-4), not mine. clip-ACK ruling (card 03) already closed via e83f481. Previewer done (09050ef). So card 03's Designer directives are all satisfied -> DONE. Board reconciled: 00d + 03 -> DONE. Left in QUEUE: 02 (drag-drop/INT-8 still open), 04 (WO-024 spike ruled A = occlusion already built; traversal half gated on WO-049 faculty interface, Builder). DRAG-DROP (NSWindowBelow) NOT done overnight ON PURPOSE: the fix needs a real OS drag to verify (green + / draggingEntered) and the hitTest-vs-click-through interaction can't be validated headlessly. Staged as the first item for David's morning live-test rather than shipping an unverifiable native change."
+    },
+    {
+      "wo": "OVERNIGHT \u2014 drag-drop positioning fix (INT-8)",
+      "title": "drop view ABOVE the content (was NSWindowBelow); bundle recompiled",
+      "status": "committed \u00b7 needs-live-drag-test",
+      "commit": "56d93dc",
+      "detail": "EloRegisterDragDrop added the EloDragView positioned:NSWindowBelow -> it sat behind Unity's content view and never received drags (no green +). Changed to NSWindowAbove + recompiled the native bundle. Safe/neutral: the view draws nothing + hitTest nil, so it can't cover eLo and clicks still pass through; only drags captured. Can't regress (drops were 0% before). NEEDS David's live drag-test (a real OS drag can't be simulated headlessly). If the green + still doesn't register, next lever = hitTest / window-level drag registration vs the click-through overlay. Build CLIBUILD_OK."
+    },
+    {
+      "wo": "Mobile Test \u2014 5 rig questions answered (routed to me on David's instruction)",
+      "title": "blendshape wiring/weights, HeadLook/FollowHead params, render path, prefab \u2014 answered from code",
+      "status": "answered",
+      "detail": "Wrote mobile_test/FROM_DESIGN_2026-08-16_rig_answers.md. Q1: face path is NAME-DRIVEN (any of 46 drivable if spine sends it; 17 fire today; render only what the spine sends). Q2 (load-bearing): input 0..1, per-category scale \u2014 SCENE overrides blendshapeScale to 20 (prefab/default 50), emotionScale 28 cap 46, tongue 100 -> desktop drives expression VERY low; confirmed mobile must drive several\u00d7 harder; gave the real number (20, not 50). Q3: HeadLook writes c_head.x absolutely (\u00b192 yaw/\u00b140 pitch, lookSmooth 2.25, code defaults \u2014 HeadLook not serialized in scene so David's in-session 80 was transient); FollowHead locks jaw/tongue to head at authored offsets. Q4: no ready body-rig render path (EmojiSpriteBuilder is emoji glyphs); SMR re-skins only in PLAY mode -> play-mode Camera->RenderTexture is the path; offered to build one. Q5: canonical = eLo-ProductonReady 1.prefab, but eLoBuddy.unity instance carries overrides (incl. blendshapeScale=20) -> scene is source of truth. Also noted: Lead Architect opened a Mobile Presence DESIGN seat for me (explore-only, no build, vision pressure-test) \u2014 engaging as exploration, live queue unchanged."
+    },
+    {
+      "wo": "Mobile Test rig answers \u2014 COMPLETED (full details, after incomplete first pass)",
+      "title": "gave the full details David flagged were missing",
+      "status": "complete",
+      "detail": "OWNED: my first answer was incomplete \u2014 I gave explanations where MT asked for enumerated data + skipped Q3 head-offset. Now full in mobile_test/FROM_DESIGN_2026-08-16_rig_answers.md (flagged UPDATED, re-read before building): Q1 = TWO expression paths (17 visemes via shape_keys@20 speech-only; ~9 emotion shapes via FlashMicro/PlayFace@28) + full word->shape map. Q2 = complete effective-values table, 2 scene overrides (blendshapeScale 50->20, blendshapeSmooth 10->12), rest match prefab. Q3 = head is a RIG BONE (position authored, not scripted) \u2014 only rotation is runtime; corrected MT's 'reconstruct empirically' premise. Q4/Q5 already complete. MT is actively building (MT-R&D-001 mobile animation system in their DOING) so the corrections are load-bearing. Lesson logged: answer the literal ask with PULLED data + verify each sub-item before shipping, esp. downstream."
+    },
+    {
+      "wo": "WO-124 Y1+Y5 (P0 pull-forward) \u2014 camera transform + fraction DELIVERED to MT, both channels",
+      "from_designer_seat": "SEAT-ENG-004",
+      "state": "IMPLEMENT/DELIVER \u00b7 authorised by Lead Architect P0 (Y1_Y5_promoted_top + stand_down_exporter)",
+      "title": "screenHeightFraction=0.42, camera transform, eloWorldHeight=5.25, corrected the 'fixed camera offset' premise",
+      "status": "delivered \u00b7 both-channels",
+      "detail": "MT blocked (eLo wrong size on David's phone) on guessed camera + screenHeightFraction. PULLED from eLoBuddy.unity + DesktopBuddy.cs, none guessed: (Y1b) screenHeightFraction=0.42 [DesktopBuddy.cs:225] = THE fix, eLo occupies 42% of frame height. (Y1c) Main Camera = Orthographic, world pos (-1.65,0.44,-6.48), rotation IDENTITY (dead-on, zero tilt), near 0.01/far 1000, transparent; ortho size NOT constant - SizeToScreen recomputes orthographicSize=eloWorldHeight/(2*shf)=6.25 for Idle. CORRECTED MT's premise: NO fixed camera->eLo offset - authored root pos (29.8,14.2,48.1) is OUTSIDE the 6.25 frame; eLo is runtime-placed (roamVp->screenAnchor). Transferable rule = ortho + dead-on + height 0.42 + floored (feet bottom, head ~0.56 from top) + centred = their SwiftUI scale+Yoffset. (Y1a) eloWorldHeight=5.25 (live Idle; authored-AABB cross-check 5.01 via SMR extent.y 25.0513 * body-scale 0.1 *2; the 5.01->5.25 gap IS MT's #2 authored-rest-vs-Idle; exact=live smr.bounds.size.y). Confirmed default pose=Idle chain (authored rest never shown). (Y5) reference = the numeric recipe per MT's 'numbers not screenshot' pref; literal capture on request. Stood down on exporter (MT solved via AnimationMode+BakeMesh). Delivered: mobile_test/FROM_DESIGN_2026-08-17_camera_transform_Y1_Y5.md + APPENDED mobile_test/inbox.json (msg id design_2026-08-17_camera_transform_Y1_Y5) - the channel the Architect flagged failed last time.",
+      "still_owed": "Rest of WO-124 A-J manifest (X1-X5 amplitude chain, Y2 46 blendshape names, Y3 viseme map, Y4 blend times, render kit) - card 09 stays open; this was the camera-first reorder only."
+    },
+    {
+      "wo": "Lipsync paused + bubble stuck \u2014 PROPOSE to Builder to VERIFY (David 2026-08-17)",
+      "from_designer_seat": "SEAT-ENG-004",
+      "title": "lipsync_state.json left latched at active:true \u2014 spine close-out verify + my Unity staleness guard",
+      "status": "proposed-to-builder \u00b7 awaiting-verify \u00b7 my-half-gated-on-david-go",
+      "state": "PROPOSE (not asserting broken; asking Builder to verify their writer)",
+      "evidence": "Live pull ~/elo-ai/blender/ @02:31 \u2014 lipsync_state.json: active=TRUE, text='', _ts=1786930290, mtime age 768s (13min stale). blender_state.json expression.shape_keys count=1, age 332s. Reads as: speech session ended/interrupted/died WITHOUT a close-out write of active:false; visemes also stopped updating (mouth frozen).",
+      "lane_split": "TRIGGER = Builder (spine left lipsync_state.json latched active:true, no active:false on end/interrupt/shutdown). LATCH-that-keeps-it-stuck = mine (Unity ReadSpeaking trusts the active flag with NO staleness check; 0.25s heartbeat re-reads the frozen file forever, re-arming past the 20s maxSpeechSecs watchdog -> never recovers, defeating the code comment's own 'staleness -> neutral' promise).",
+      "asked_builder_to_verify": "(1) does the lipsync writer ALWAYS write active:false on speech end incl. interrupt/barge-in/early-stop + on shutdown/crash? (2) is shape_keys cleared/neutralised at end, or just left frozen? (3) is text:'' while active:true an expected transient or a half-update? File: builder/FROM_DESIGN_2026-08-17_lipsync_active_latch_verify.md",
+      "my_half_proposed": "ReadSpeaking(): if lipsync file mtime age > ~1.5s, force IsSpeaking=false + don't re-arm. Closes the latch regardless of spine. Belt-and-braces (mine stops it STICKING; Builder's close-out stops it STARTING). Gated on David's go; not building until greenlit.",
+      "note": "Per four-state discipline: KNOWN mechanism, PROPOSE state \u2014 surfaced Builder-lane half to Builder for verify + held my in-lane fix for David's go rather than silently implementing."
+    },
+    {
+      "card": "10_RD_EXPRESSION_001_and_residual_render_kit.md",
+      "state": "DONE \u2014 paperwork closure (SUPERSEDED 2026-08-18 by Lead Architect)",
+      "action": "Moved DOING/ -> DONE/ per card instruction 'Move to DONE/.'",
+      "code_changes": "none \u2014 card was closed by Architect as SUPERSEDED; all deliverables already shipped earlier (blendshapeScale=50 correction, no x10 root scale, orthographic camera transform, screenHeightFraction=0.42; see FROM_DESIGN_2026-08-19_FULL_animation_export_spec.md and prior outbox entries).",
+      "commits": [],
+      "acceptance": "MET \u2014 the only action the card required (moving to DONE/) is complete.",
+      "next": "card 12 (take-five killer first) + exporter offer remains open."
     }
   ],
-  "new_board_item_for_architect": {
-    "proposed": "WO-083 (Architect to number/author)",
-    "title": "Mouse-idle -> Brain: one-brain ambient trigger; retire the local calm driver",
-    "principle_from_david": "The brain feeds ALL autonomous behaviour: brain > body > brain. Even a mouse-idle trigger must relay UP to the brain and be read back DOWN \u2014 no local driver deciding what eLo does. (one brain / no parallel drivers)",
-    "problem": "EloIdleBehaviour.cs is a PARALLEL DRIVER: it detects mouse-idle locally and directly plays the Calm pose (animator.speed=calmLoopSpeed 0.28). The brain never knows the user went idle, and eLo's only idle trick is 'calm' \u2014 no variety. Meanwhile there are TWO calm paths writing animator.speed for the same clips (meditation 0.3 via EloOSAvatarReceiver.cs:509 vs mouse-idle 0.28), which can drift/fight.",
-    "event_contract": {
-      "UP (Unity -> brain, unity_events.json \u2014 same channel as EloFileDrop/sit-heartbeat)": "{'type':'user_idle','idle_secs':<float>,'_ts':<float>} when the mouse is still past a threshold; {'type':'user_active','_ts':<float>} when it moves again.",
-      "DECIDE (brain, eLo OS ambient engine \u2014 extends WO-066)": "Consume user_idle; pick an idle behaviour from a REPERTOIRE by mood/context \u2014 calm, look-around, stretch, glance at an app, wander, a soft utterance \u2014 not always calm. On user_active, release.",
-      "DOWN (brain -> Unity, blender_state.json)": "Write the chosen action through the SAME action path meditation/sit/move already use; EloOSAvatarReceiver executes it. Must compose with WO-041 (verify-before-speak) + WO-035 (a COMMANDED state owns the body; ambient idle must yield, exactly as EloIdleBehaviour already yields to SitHeld)."
+  "new_board_item_for_architect": [
+    {
+      "proposed": "WO-083 (Architect to number/author)",
+      "title": "Mouse-idle -> Brain: one-brain ambient trigger; retire the local calm driver",
+      "principle_from_david": "The brain feeds ALL autonomous behaviour: brain > body > brain. Even a mouse-idle trigger must relay UP to the brain and be read back DOWN \u2014 no local driver deciding what eLo does. (one brain / no parallel drivers)",
+      "problem": "EloIdleBehaviour.cs is a PARALLEL DRIVER: it detects mouse-idle locally and directly plays the Calm pose (animator.speed=calmLoopSpeed 0.28). The brain never knows the user went idle, and eLo's only idle trick is 'calm' \u2014 no variety. Meanwhile there are TWO calm paths writing animator.speed for the same clips (meditation 0.3 via EloOSAvatarReceiver.cs:509 vs mouse-idle 0.28), which can drift/fight.",
+      "event_contract": {
+        "UP (Unity -> brain, unity_events.json \u2014 same channel as EloFileDrop/sit-heartbeat)": "{'type':'user_idle','idle_secs':<float>,'_ts':<float>} when the mouse is still past a threshold; {'type':'user_active','_ts':<float>} when it moves again.",
+        "DECIDE (brain, eLo OS ambient engine \u2014 extends WO-066)": "Consume user_idle; pick an idle behaviour from a REPERTOIRE by mood/context \u2014 calm, look-around, stretch, glance at an app, wander, a soft utterance \u2014 not always calm. On user_active, release.",
+        "DOWN (brain -> Unity, blender_state.json)": "Write the chosen action through the SAME action path meditation/sit/move already use; EloOSAvatarReceiver executes it. Must compose with WO-041 (verify-before-speak) + WO-035 (a COMMANDED state owns the body; ambient idle must yield, exactly as EloIdleBehaviour already yields to SitHeld)."
+      },
+      "lane_split": {
+        "design_ui_avatar (SEAT-ENG-004, me)": "Publish user_idle/user_active UP; retire EloIdleBehaviour's local DECISION (keep detection->publish, keep the yield-to-commanded guard); execute whatever idle behaviours come DOWN.",
+        "builder_eloOS": "Ambient engine consumes user_idle, owns the idle-behaviour repertoire + selection (extends WO-066 idle utterances to full idle BEHAVIOURS).",
+        "architect": "Number/author the WO; define the DOWN action vocabulary for ambient idle behaviours + ownership/ACK so it composes with WO-041/WO-035; sensitive DesktopBuddy file -> short plan + David greenlight BEFORE build."
+      },
+      "related": [
+        "WO-066 Ambient Engine Idle Utterances",
+        "WO-041 Verify-before-speak/ACK",
+        "WO-035 Commanded state owns the body",
+        "one-brain / no parallel drivers"
+      ],
+      "status": "FLAGGED by Design, awaiting Architect authoring + David greenlight (David asked for this on 2026-08-10)",
+      "loop_model_from_david": "brain > body > brain. A CLOSED LOOP: the brain decides + drives the body (DOWN), the body only SENSES and ACTS and reports its state back UP, and the brain reads that back and decides again. The body NEVER decides on its own. Mouse-idle is just one PERCEPTION feeding this loop \u2014 not a special case. The generalisable rule the Architect should check: every body perception (mouse-idle, occlusion/behind-window, perch/surface, user-active, file-drop) relays UP so the brain closes the loop; no local script may choose a behaviour.",
+      "architect_to_check": "Evaluate this as the LOOP PATTERN (brain>body>brain), with mouse-idle as the first application. Then audit for OTHER local drivers that skip the loop (EloIdleBehaviour's mouse-idle calm is the known one; check for others that decide behaviour without relaying up). Confirm it composes with WO-041 (verify/ACK) + WO-035 (commanded state owns the body)."
     },
-    "lane_split": {
-      "design_ui_avatar (SEAT-ENG-004, me)": "Publish user_idle/user_active UP; retire EloIdleBehaviour's local DECISION (keep detection->publish, keep the yield-to-commanded guard); execute whatever idle behaviours come DOWN.",
-      "builder_eloOS": "Ambient engine consumes user_idle, owns the idle-behaviour repertoire + selection (extends WO-066 idle utterances to full idle BEHAVIOURS).",
-      "architect": "Number/author the WO; define the DOWN action vocabulary for ambient idle behaviours + ownership/ACK so it composes with WO-041/WO-035; sensitive DesktopBuddy file -> short plan + David greenlight BEFORE build."
+    {
+      "proposed": "WO-058 prefab-LOOK definition",
+      "title": "'prefab LOOK parked for David's break' has no concrete spec",
+      "ask": "Which prefab (eLo_Combine 1? a VFX prefab? the meditation scene?) and what look-change was parked? The WO-058 VFX layer is verified done. Give the target and I build it; I won't guess a visual change on a prefab."
     },
-    "related": [
-      "WO-066 Ambient Engine Idle Utterances",
-      "WO-041 Verify-before-speak/ACK",
-      "WO-035 Commanded state owns the body",
-      "one-brain / no parallel drivers"
-    ],
-    "status": "FLAGGED by Design, awaiting Architect authoring + David greenlight (David asked for this on 2026-08-10)",
-    "loop_model_from_david": "brain > body > brain. A CLOSED LOOP: the brain decides + drives the body (DOWN), the body only SENSES and ACTS and reports its state back UP, and the brain reads that back and decides again. The body NEVER decides on its own. Mouse-idle is just one PERCEPTION feeding this loop \u2014 not a special case. The generalisable rule the Architect should check: every body perception (mouse-idle, occlusion/behind-window, perch/surface, user-active, file-drop) relays UP so the brain closes the loop; no local script may choose a behaviour.",
-    "architect_to_check": "Evaluate this as the LOOP PATTERN (brain>body>brain), with mouse-idle as the first application. Then audit for OTHER local drivers that skip the loop (EloIdleBehaviour's mouse-idle calm is the known one; check for others that decide behaviour without relaying up). Confirm it composes with WO-041 (verify/ACK) + WO-035 (commanded state owns the body)."
-  },
+    {
+      "proposed": "WO-049 spatial split \u2014 ratify + sequence",
+      "title": "Unity(executor+geometry)/Python(faculty+adapter) split proposed to Builder",
+      "ask": "Ratify the split (Volume XIII Ch.5): Unity owns raw-geometry emit + verb execution + capability measurement; Builder owns spatial_state.py adapter (exists) + the MISSING spatial_faculty.py reasoning core. Open decision = when route-DECIDING migrates from EloDesktopNav (C# BFS today) to the Python faculty. Proposed interim=Nav decides+emits, faculty learns; migration=faculty decides, Nav executes. Needs Builder to create spatial_faculty.py + name the interface before I emit Surface-graph inputs."
+    },
+    {
+      "proposed": "Notifications field emit (Builder) \u2014 unblocks Track-B #8b/#10",
+      "title": "brain must emit notification{kind,corner,_ts} into blender_state.json",
+      "ask": "Audit result: the ONLY Track-B item still genuinely blocked on a brain field is notifications. Neither side has it (no Python writer, no Unity reader). Card Builder to emit notification{kind,corner,_ts}; I then build the Unity consumer per HANDOVER_eLoOS_notifications.md. Capability-panel field is already emitted (stale block, cleared)."
+    },
+    {
+      "proposed": "Jump reach reconciliation (Row 17) \u2014 David feel call",
+      "title": "planner 1.5 heights vs physics 6 sizes (~4x) \u2014 eLo routes around clearable gaps",
+      "ask": "Row 17 gap now emits against the PHYSICS reach so reliable_range is honest. But the planner (EloDesktopNav maxJumpEloHeights=1.5) is ~4x more conservative than the physics (maxHopSizes=6), so eLo over-routes. Reconciling them (planner clamp -> MaxHopDist basis) changes traversal FEEL -> needs David. Also: Builder must consume anim_complete/anim_failed (Row 13) instead of anim_trigger's file-write ACK; animator-clip trigger completion (jump/gun/calm) is a deferred Designer follow-up."
+    },
+    {
+      "proposed": "WO-099a P0 \u2014 end-to-end gated on Builder emit + legacy-path guard ratify (Architect)",
+      "title": "consume VERIFIED done; brain still emits legacy {yaw,pitch,active}; guard the mode-less cue?",
+      "verified": "My WO-099a consume (4bb1f01) is intact + correct (parses the intent object, weight-blend, reflex guard). Live brain emits LEGACY {yaw:0,pitch:-5,active:true} (no mode) -> GazeActive=false -> intent steer never runs -> legacy path forces a straight stare. So the P0 'restore brain control' is gated on Builder WO-099b EMIT (intent object), not my consume. Routed to Builder.",
+      "designer_proposal_to_ratify": "While the brain still emits the mode-less legacy cue, guard the legacy HeadLook path: treat legacy active:true with NO mode as NON-STEERING -> decay to the cursor reflex (matches the WO-099a card's 'empty cue decays to reflex') instead of forcing yaw 0. In-lane (HeadLook.cs), reversible. Held for ratify so it composes with Builder's emit switch (if they emit the intent object, the legacy path is moot and this is just insurance).",
+      "ask": "(a) confirm WO-099a consume = DONE end-to-end on my side (it is); (b) route WO-099b emit to Builder as the P0 blocker; (c) ratify the legacy-cue guard (or say 'skip, Builder's emit lands first')."
+    },
+    {
+      "proposed": "TELEPORT root-cause VERIFIED \u2014 ratify the fix (Architect)",
+      "title": "eLo runs then teleports: blanket WakeFromExit defeats DropOffCo 'stay away until mouse move'",
+      "root_cause_VERIFIED": "Instrumented roamVp with a stack-capturing setter; the [TELE-SRC] trap CAUGHT it: roamVp snaps (0.809,0.020)->(0.809,1.220) inside ReturnFromTop <- WakeFromExit <- EloOSAvatarReceiver.ReadStateOnce. ReadStateOnce (EloOSAvatarReceiver.cs:496-500) calls dbw.WakeFromExit() on EVERY state read where mode != 'exploring'. Live brain mode = 'idle' (non-exploring) so it fires every 0.25s. DropOffCo (DesktopBuddy.cs:2399) sets _exitDormant/_droppedOut with the comment 'He stays away until a mouse move brings him back (ReturnFromTop)' \u2014 the blanket wake yanks him back the very next read, so: random drop-off -> instant wake -> ReturnFromTop snap to y=1.220 -> re-enter = the teleport. Line 496-500 is from 2026-06-30 (eeea1d18): a latent collision that surfaced now the brain emits mode:'idle'. This is VERIFIED via the trap, not inferred.",
+      "fix_options": {
+        "A_recommended": "Gate ReadStateOnce:496-500 to wake ONLY on a real return trigger (mouse-move / return_command). The proper wake paths already exist (ApplyReturnCommand:416, biReturn+mouse:877) \u2014 so the blanket wake is redundant AND harmful; removing/gating it restores the documented 'stay away until a mouse move'.",
+        "B": "Suppress DropOffCo while mode is idle/non-exploring (don't drop-off when the brain wants him present).",
+        "C": "ReturnFromTop: no snap-to-top when eLo is already on-screen (kills the visible teleport but not the spurious drop-off/wake cycle)."
+      },
+      "ask": "VERIFY my root-cause read (trap evidence above) + RATIFY which fix. Touches brain-driven exit/return presence, so it's a Board ruling not a Builder one. On ratify I implement + confirm via the same [TELE-SRC] trap that the teleport stops. One residual UNKNOWN for the Architect: the ORIGINAL intent of the 496-500 wake (what it was protecting on 2026-06-30) \u2014 if that intent still holds, option A must preserve it via the real return triggers."
+    },
+    {
+      "proposed": "LIPSYNC latch \u2014 ratify my Unity staleness guard (Architect)",
+      "title": "lip-sync paused + bubble stuck: Unity trusts a frozen active:true forever",
+      "verified_mechanism": "Live: lipsync_state.json latched active:true, text='', 768s stale; shape_keys stopped. Unity ReadSpeaking() (EloOSAvatarReceiver.cs:507) trusts the active flag with NO staleness check; the 0.25s heartbeat (line 345) re-reads the frozen file forever, re-arming past the 20s maxSpeechSecs watchdog (line 358) -> never recovers. The code comment (line 267) already PROMISES 'staleness -> recover to neutral'; the speaking path just never implemented it.",
+      "builder_half_sent": "Spine close-out (always write active:false on end/interrupt/shutdown) sent to Builder to VERIFY: builder/FROM_DESIGN_2026-08-17_lipsync_active_latch_verify.md.",
+      "my_half_for_ratify": "ReadSpeaking(): if lipsync file mtime age > ~1.5s, force IsSpeaking=false + don't re-arm. In-lane (my receiver), reversible (~4 lines). Belt-and-braces: mine stops it STICKING, Builder's close-out stops it STARTING.",
+      "ask": "RATIFY the Unity staleness guard so I implement without bouncing it to David. Verify the ~1.5s threshold sits right (brain writes ~50ms lipsync frames + 0.25s heartbeat, so >1.5s silence = stopped)."
+    }
+  ],
   "carry_forward_open_handoff": {
     "wo": "WO-030 / WO-058",
     "need": "Brain must publish real weather into blender_state.json as top-level 'weather':'<condition>' on its normal state tick. Unity read-side shipped. Currently weather only shows when injected fast enough to out-write the brain's state tick \u2014 real weather needs this publish. Builder lane."
   },
-  "next": "Head-aim DONE + confirmed working by David. Brain-trigger advice filed for Architect (ADVICE_head_aim_brain_trigger_2026-08-13.md). Awaiting: your WO+channel call for the gaze intent/awareness loop. Queued: sit bobble speed, diagnostic-log cleanup (on David's ok). David away (nap)."
+  "next": "PROPOSED to Builder: verify lipsync_state.json close-out (active:false on end/interrupt/shutdown) \u2014 builder/FROM_DESIGN_2026-08-17_lipsync_active_latch_verify.md. My Unity staleness guard (ReadSpeaking >1.5s stale -> IsSpeaking=false) held for David's go. Also open: teleport ROOT-cause KNOWN (blanket WakeFromExit at EloOSAvatarReceiver:496-500 defeats DropOffCo 'stay away until mouse move'), proposed fix awaiting David's pick. Live queue: drag-drop needs David's drag-test; WO-024 Builder-gated.",
+  "10_RD_EXPRESSION_001_and_residual_render_kit_run1": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787114492.414648,
+    "state": "DONE",
+    "output": [],
+    "evidence": "Card was SUPERSEDED 2026-08-18 by the Lead Architect; header explicitly states 'CLOSED 2026-08-18 by the Lead Architect. Move to DONE/.' The only action required was the mv; no code change was requested. Performed: (1) mv DOING/10_RD_EXPRESSION_001_and_residual_render_kit.md -> DONE/; (2) appended Result section to card documenting closure; (3) appended entry to design/outbox.json (ts=2026-08-19T0",
+    "duration_s": 149.74
+  }
 }
