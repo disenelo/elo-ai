@@ -279,4 +279,19 @@ def situated_with_epistemic(state, *, perch_fresh: bool = False, pose_acked: boo
         lines.append(f"nearby: [unknown] — no surfaces perceived")
     if m["current_action"] and m["current_action"] != "idle":
         lines.append(f"currently: {m['current_action']}")
+
+    # Ruling 1 (card 0012) — Verified Speech for last_significance:
+    # only surface the score when it is present, and only as the PREVIOUS turn's.
+    # eLo must never attribute the score to the sentence he is currently producing.
+    _ls = m.get("last_significance") or {}
+    _prof = _ls.get("profile") if isinstance(_ls, dict) else None
+    if _prof and _prof.get("overall") is not None:
+        _overall = _prof.get("overall")
+        _prev_action = _ls.get("action", "?")
+        _outcome = _ls.get("outcome")
+        _tag = f", outcome={_outcome}" if _outcome else ""
+        lines.append(
+            f"last turn ({_prev_action}{_tag}): significance={float(_overall):.2f} "
+            f"[previous turn only — NOT this sentence]"
+        )
     return "\n".join(lines)

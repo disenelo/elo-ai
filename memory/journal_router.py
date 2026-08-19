@@ -119,7 +119,12 @@ def route(
 
     # Score
     from memory.significance_engine import evaluate, format_profile
-    profile  = evaluate(raw, response, action, plan=plan, state=state, outcome=outcome)
+    # evaluate() expects outcome as a dict (WO-101 OutcomeRecord). Callers that
+    # thread a short string label (e.g. "spoke" / "silent" / "unknown") are still
+    # valid inputs to route(): keep the label for persistence, but don't hand a
+    # non-dict to evaluate() — it would crash and no last_significance would land.
+    _outcome_for_scoring = outcome if isinstance(outcome, dict) else None
+    profile  = evaluate(raw, response, action, plan=plan, state=state, outcome=_outcome_for_scoring)
     weight   = _memory_weight(profile)
 
     decision = {
@@ -135,15 +140,17 @@ def route(
     # eLo reads the PREVIOUS turn's score — evaluate() runs after the response, so
     # whatever is in last_significance.json at speak time is one turn old. That is
     # the score he may reference; he must never attribute it to the current sentence.
+    # Ruling 1 (card 0012): the record must carry the outcome that produced it.
     _sig_path = os.path.join(_ROOT, "self", "state", "last_significance.json")
     try:
         import time as _sig_t
         os.makedirs(os.path.dirname(_sig_path), exist_ok=True)
         with open(_sig_path, "w", encoding="utf-8") as _sf:
             json.dump(
-                {"ts": _sig_t.time(), "action": action, "profile": profile},
+                {"ts": _sig_t.time(), "action": action, "profile": profile, "outcome": outcome},
                 _sf,
                 ensure_ascii=False,
+                default=str,
             )
     except Exception:
         pass

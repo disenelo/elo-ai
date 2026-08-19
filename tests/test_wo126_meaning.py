@@ -229,3 +229,96 @@ def test_stale_significance_drops_to_empty(tmp_path):
         f"Score older than 1800s must drop to empty dict — got {sig}. "
         "A stale score is a fabrication about eLo's inner life."
     )
+
+
+# ── AT-126-7 (card 0012 Ruling 1): record carries outcome that produced it ────
+
+def test_route_persists_outcome_in_last_significance(tmp_path):
+    """
+    Ruling 1 (card 0012): last_significance must carry the outcome that produced it.
+    Without the outcome tag, a downstream reader cannot know what the score refers to
+    (a met ACK vs a fallback vs a silent turn all produce different meanings of 0.7).
+    """
+    from memory import journal_router as jr
+
+    state_dir = tmp_path / "self" / "state"
+    state_dir.mkdir(parents=True)
+
+    import unittest.mock as mock
+    with mock.patch.object(jr, "_ROOT", str(tmp_path)):
+        jr.route(
+            raw="sit down",
+            response="Sitting.",
+            action="sit",
+            state={},
+            outcome="spoke",   # server threads a string label; a dict is also valid
+        )
+
+    sig_file = state_dir / "last_significance.json"
+    record = json.loads(sig_file.read_text())
+    assert "outcome" in record, (
+        "last_significance.json must include the outcome that produced it"
+    )
+    assert record["outcome"] == "spoke", (
+        f"outcome must round-trip verbatim: got {record['outcome']!r}"
+    )
+
+
+# ── AT-126-8 (card 0012 Ruling 1): Verified Speech — no line when absent ─────
+
+def test_situated_block_omits_significance_line_when_absent(tmp_path):
+    """
+    Ruling 1 Verified Speech: eLo may state the score ONLY when it is present.
+    No file → no line. He must not claim significance without evidence.
+    """
+    from self.elo_self_model import EloSelfState
+    from runtime import the_moment
+
+    state_dir = tmp_path / "self" / "state"
+    state_dir.mkdir(parents=True)
+    # No last_significance.json written
+
+    import unittest.mock as mock
+    with mock.patch.object(the_moment, "_ROOT", str(tmp_path)):
+        block = the_moment.situated_with_epistemic(EloSelfState())
+
+    assert "significance" not in block.lower(), (
+        f"Situated block must NOT mention significance when no score exists.\n"
+        f"Block was:\n{block}"
+    )
+
+
+# ── AT-126-9 (card 0012 Ruling 1): Verified Speech — line present when there ─
+
+def test_situated_block_shows_significance_line_when_present(tmp_path):
+    """
+    Ruling 1 Verified Speech: when a fresh score exists, the block shows it,
+    tagged as the PREVIOUS turn and carrying the outcome that produced it.
+    The line must NOT read as though it applies to the current sentence.
+    """
+    from self.elo_self_model import EloSelfState
+    from runtime import the_moment
+
+    state_dir = tmp_path / "self" / "state"
+    state_dir.mkdir(parents=True)
+    sig_file = state_dir / "last_significance.json"
+    sig_file.write_text(json.dumps({
+        "ts": time.time() - 5.0,
+        "action": "build",
+        "outcome": "spoke",
+        "profile": {"overall": 0.74, "creation": 0.91, "system_change": 0.65},
+    }))
+
+    import unittest.mock as mock
+    with mock.patch.object(the_moment, "_ROOT", str(tmp_path)):
+        block = the_moment.situated_with_epistemic(EloSelfState())
+
+    assert "significance=0.74" in block, (
+        f"Situated block must include last-turn significance when present. Block:\n{block}"
+    )
+    assert "previous turn only" in block.lower(), (
+        "Line must be tagged as the PREVIOUS turn's score — never attributed to the current sentence"
+    )
+    assert "spoke" in block, (
+        "The outcome that produced the score must travel with it (Ruling 1)"
+    )
