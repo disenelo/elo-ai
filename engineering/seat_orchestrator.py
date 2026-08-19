@@ -822,6 +822,89 @@ def probe_item1() -> dict:
     return {"item1": answer, "evidence": evidence, "transport": "claude-code"}
 
 
+# ── continuous loop ───────────────────────────────────────────────────────────
+
+def _seat_status(result: dict) -> str:
+    """Normalise run_seat() return to a top-level status string."""
+    top = result.get("status")
+    if top:
+        return top
+    return result.get("result", {}).get("status", "UNKNOWN")
+
+
+def run_loop(seats: list[str]) -> dict:
+    """
+    Continuously operate all given seats until each is IDLE, BLOCKED, or
+    DAVID_REQUIRED. Runs one card per seat per iteration (round-robin),
+    so all seats make progress concurrently rather than one starving others.
+
+    Three terminal states (per spec):
+      IDLE           — queue empty; seat removed from rotation.
+      BLOCKED        — worker failed or transport error; seat removed.
+      DAVID_REQUIRED — all remaining cards reserved; seat removed, logged.
+    """
+    active = list(seats)
+    stalled: list[str] = []
+    stats: dict = {
+        "seats": seats,
+        "runs": 0,
+        "done": 0,
+        "blocked": 0,
+        "david_required": 0,
+        "idle": 0,
+    }
+
+    print(f"═══ Continuous loop: seats={', '.join(active)} ═══\n", flush=True)
+
+    while active:
+        next_active: list[str] = []
+        for seat in active:
+            print(f"\n{'─' * 54}", flush=True)
+            print(f"═══ Seat: {seat} ═══", flush=True)
+            result   = run_seat(seat)
+            status   = _seat_status(result)
+            stats["runs"] += 1
+
+            if status == "DONE":
+                stats["done"] += 1
+                next_active.append(seat)   # may have more cards
+
+            elif status == "IDLE":
+                stats["idle"] += 1
+                print(f"[LOOP] {seat} → IDLE — queue empty, removing from rotation",
+                      flush=True)
+
+            elif status == "DAVID_REQUIRED":
+                stats["david_required"] += 1
+                stalled.append(seat)
+                print(f"[LOOP] {seat} → DAVID_REQUIRED — all remaining cards reserved",
+                      flush=True)
+
+            elif status == "BLOCKED":
+                stats["blocked"] += 1
+                blocker = result.get("blocker") or result.get("result", {}).get("blocker", "")
+                print(f"[LOOP] {seat} → BLOCKED — {blocker} — removing from rotation",
+                      flush=True)
+
+            else:
+                # PARTIAL / UNKNOWN — worker produced some output; remove to avoid spin
+                print(f"[LOOP] {seat} → {status} — removing from rotation", flush=True)
+
+        active = next_active
+
+    print(f"\n{'═' * 54}", flush=True)
+    print(f"═══ Loop finished ═══", flush=True)
+    print(
+        f"  runs={stats['runs']}  done={stats['done']}  "
+        f"blocked={stats['blocked']}  david_required={stats['david_required']}  "
+        f"idle={stats['idle']}",
+        flush=True,
+    )
+    if stalled:
+        print(f"  Stalled (all reserved): {', '.join(stalled)}", flush=True)
+    return stats
+
+
 # ── entry ─────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -841,6 +924,16 @@ if __name__ == "__main__":
         print(f"═══ Seat: {mode} ═══")
         result = run_seat(mode)
 
+    elif mode == "loop":
+        # Continuously operate all auto-runnable seats (builder, design).
+        # Pass a comma-separated list as argv[2] to override, e.g.:
+        #   python3 engineering/seat_orchestrator.py loop builder,design,game
+        default_seats = ["builder", "design"]
+        seat_list = (
+            sys.argv[2].split(",") if len(sys.argv) > 2 else default_seats
+        )
+        result = run_loop(seat_list)
+
     elif mode == "gp1_then_item1":
         print("═══ GP-1 then Item 1 ═══")
         r1 = run_seat("script")
@@ -851,5 +944,5 @@ if __name__ == "__main__":
 
     else:
         print(f"Unknown mode: {mode}")
-        print("Modes: gp1 | item1 | gp1_then_item1 | builder | design | game | script")
+        print("Modes: gp1 | item1 | gp1_then_item1 | builder | design | game | script | loop [seats]")
         sys.exit(1)
