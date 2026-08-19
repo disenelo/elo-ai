@@ -110,35 +110,60 @@ def top_habits(state: "EloSelfState", n: int = 3) -> list[tuple[str, int]]:
 
 # ── Autobiography ─────────────────────────────────────────────────────────────
 
+# Provenance gate: only these sources are accepted as body-ACK evidence.
+_VALID_SOURCES = frozenset({"body_ack"})
+
+
 def append_autobiography(
     event: str,
     kind: str = "action",
     *,
     verified: bool = False,
     source: str = "unknown",
+    episode_ref: str | None = None,
     _path: str | None = None,
-) -> None:
+) -> bool:
     """
     Append a single lived event to the autobiography log.
-    verified: True only for entries confirmed by a body ACK.
-    source: provenance of the confirmation (e.g. "body_ack").
+
+    Provenance is a FIELD, not prose. An entry is written ONLY if:
+      - verified is True
+      - source is in _VALID_SOURCES (currently only "body_ack")
+      - episode_ref is a non-empty string identifying the ACK event
+
+    Returns True if written, False if rejected. Rejections emit a WARNING —
+    silent drops on the autobiography path would hide fabrication attempts.
+
     _path: override the file path (for tests — keeps the real file clean).
     """
     if not event:
-        return
+        return False
+    if verified is not True:
+        _log.warning("append_autobiography: rejected — verified is not True (event=%r)", event)
+        return False
+    if source not in _VALID_SOURCES:
+        _log.warning("append_autobiography: rejected — source %r not in %s (event=%r)",
+                     source, sorted(_VALID_SOURCES), event)
+        return False
+    if not episode_ref or not isinstance(episode_ref, str):
+        _log.warning("append_autobiography: rejected — episode_ref missing/empty (event=%r)", event)
+        return False
     entry = {
         "ts": time.time(),
         "kind": kind,
         "event": event,
-        "verified": verified,
+        "verified": True,
         "source": source,
+        "episode_ref": episode_ref,
     }
     target = _path or _AUTOB_DEFAULT
     try:
         with open(target, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")
+        return True
     except Exception as _e:
         _log.warning("append_autobiography: write failed — eLo's history may be incomplete: %s", _e)
+        return False
 
 
 def recent_autobiography(n: int = 10, *, _path: str | None = None) -> list[dict]:

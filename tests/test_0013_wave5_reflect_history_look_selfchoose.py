@@ -139,9 +139,12 @@ try:
     with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False, dir="/tmp") as _tf:
         _tmp = _tf.name
 
-    # Write one verified and one unverified
-    append_autobiography("real ACK event", verified=True,  source="body_ack", _path=_tmp)
-    append_autobiography("unverified claim", verified=False, source="claimed",  _path=_tmp)
+    # Write one verified (with provenance fields) and one unverified —
+    # the second must be rejected by the write gate (0017 row 23 provenance).
+    append_autobiography("real ACK event",   verified=True,  source="body_ack",
+                          episode_ref="1786664344.549", _path=_tmp)
+    append_autobiography("unverified claim", verified=False, source="claimed",
+                          episode_ref="1786664350.000", _path=_tmp)
 
     results = recent_autobiography(10, _path=_tmp)
     try: os.unlink(_tmp)

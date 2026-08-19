@@ -2823,7 +2823,13 @@ def _process_turn(raw: str) -> dict:
                 # WO-115: autobiography — verified events only (body ACK = confirmed)
                 try:
                     from self.emergent_cognition import append_autobiography as _ab_sit
-                    _ab_sit("sat — body ACK confirmed", kind="action", verified=True, source="body_ack")
+                    _ab_sit(
+                        "sat — body ACK confirmed",
+                        kind="action",
+                        verified=True,
+                        source="body_ack",
+                        episode_ref=str(_sit_ack_event.get("_ts", "")),
+                    )
                 except Exception:
                     pass
                 _self_save(_elo_self)
@@ -2948,7 +2954,13 @@ def _process_turn(raw: str) -> dict:
                 try:
                     from self.emergent_cognition import append_autobiography as _ab_mv
                     _mv_desc = _PENDING_MOVE.get("sub_type", "") or _PENDING_MOVE.get("direction", "unknown")
-                    _ab_mv(f"moved ({_mv_desc}) — body ACK confirmed", kind="action", verified=True, source="body_ack")
+                    _ab_mv(
+                        f"moved ({_mv_desc}) — body ACK confirmed",
+                        kind="action",
+                        verified=True,
+                        source="body_ack",
+                        episode_ref=str(_mv_ev.get("_ts", "")),
+                    )
                 except Exception:
                     pass
             elif _move_age < 8.0:
@@ -3031,7 +3043,13 @@ def _process_turn(raw: str) -> dict:
                 # WO-115: autobiography — verified events only (body ACK = confirmed)
                 try:
                     from self.emergent_cognition import append_autobiography as _ab_ex
-                    _ab_ex("exited surface — body ACK confirmed", kind="action", verified=True, source="body_ack")
+                    _ab_ex(
+                        "exited surface — body ACK confirmed",
+                        kind="action",
+                        verified=True,
+                        source="body_ack",
+                        episode_ref=str(_ex_ev.get("_ts", "")),
+                    )
                 except Exception:
                     pass
                 _self_save(_elo_self)
