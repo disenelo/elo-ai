@@ -94,5 +94,44 @@
         "state": "READY"
       }
     ]
+  },
+  "script": {
+    "role": "Ops / Automation (Python scripts)",
+    "transport": "python",
+    "launch": "PROVEN",
+    "launcher": "subprocess.Popen(['python3', '-m', '<module>'])",
+    "match": [
+      "script",
+      "ops",
+      "automation",
+      "company_state",
+      "cron"
+    ],
+    "seats": [
+      {
+        "seat": "SEAT-OPS-001",
+        "div": "DIV-OPS",
+        "role": "Ops Automation",
+        "state": "READY"
+      }
+    ]
+  },
+  "mobile_test": {
+    "role": "Mobile / iOS Test",
+    "transport": "claude-code",
+    "launch": "UNPROVEN",
+    "match": [
+      "mobile",
+      "ios",
+      "mobile_test"
+    ],
+    "seats": [
+      {
+        "seat": "SEAT-DES-MOBILE-TEST",
+        "div": "DIV-ENG",
+        "role": "Mobile Test",
+        "state": "READY"
+      }
+    ]
   }
 }

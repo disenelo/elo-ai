@@ -1,0 +1,12 @@
+{
+ "owner": null,
+ "pid": null,
+ "work_id": null,
+ "state": "RELEASED",
+ "released_ts": 1787110477.9612975,
+ "reclaimed_from": {
+  "pid": 999,
+  "work_id": "OPS-X"
+ },
+ "note": "stale reclaim"
+}

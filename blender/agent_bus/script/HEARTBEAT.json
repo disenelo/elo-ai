@@ -1,0 +1,12 @@
+{
+ "seat": "script",
+ "work_id": "OPS-X",
+ "pid": 999,
+ "started_at": 1787107477.9584708,
+ "last_activity_at": 1787107477.9584708,
+ "current_action": "launching worker",
+ "execution_position": 2,
+ "last_output": null,
+ "last_evidence": null,
+ "next_action": null
+}
