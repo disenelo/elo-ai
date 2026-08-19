@@ -1388,7 +1388,7 @@ _BREVITY_POOL = [
 
 # "who are you" / "are you eLo" / "what is your name" identity responses
 _IDENTITY_TRIGGERS = (
-    "are you elo", "who are you", "what are you", "are you real",
+    "are you elo", "who are you", "what are you?", "are you real",
     "are you an ai", "are you a bot", "what is elo",
     "your name", "what's your name", "what are you called",
     "tell me your name", "what do i call you",
