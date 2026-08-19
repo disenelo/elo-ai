@@ -85,11 +85,55 @@
     "from": "builder",
     "ts": 1787122500.0,
     "state": "DONE",
-    "subject": "0010 WO-122 ROUTE — duplicate re-queue; work already shipped at 91ea6c1",
-    "evidence": "Card was re-queued into QUEUE/. Original work landed 2026-08-19 06:57 at commit 91ea6c1 (tools/tool_router.py::enrich_from_plan gates dispatch by plan.capabilities; keyword fallback removed). Canonical DONE stamp at DONE/0010_WO-122_ROUTE_capability_to_executor.md (commit 15224af). Re-verified this pass: tests/test_wo122_route_capability_to_executor.py 5/5 (RT-1 disconnection green: blank plan.capabilities → weather agent does NOT fire on weather-worded query). Confirmed server.py:3534-3536 still passes plan.capabilities into enrich_from_plan(). Duplicate closed to DONE/0010_WO-122_ROUTE_capability_to_executor_DUPLICATE.md; canonical DONE preserved.",
+    "subject": "0010 WO-122 ROUTE \u2014 duplicate re-queue; work already shipped at 91ea6c1",
+    "evidence": "Card was re-queued into QUEUE/. Original work landed 2026-08-19 06:57 at commit 91ea6c1 (tools/tool_router.py::enrich_from_plan gates dispatch by plan.capabilities; keyword fallback removed). Canonical DONE stamp at DONE/0010_WO-122_ROUTE_capability_to_executor.md (commit 15224af). Re-verified this pass: tests/test_wo122_route_capability_to_executor.py 5/5 (RT-1 disconnection green: blank plan.capabilities \u2192 weather agent does NOT fire on weather-worded query). Confirmed server.py:3534-3536 still passes plan.capabilities into enrich_from_plan(). Duplicate closed to DONE/0010_WO-122_ROUTE_capability_to_executor_DUPLICATE.md; canonical DONE preserved.",
     "commits": [
       "91ea6c1",
       "15224af"
+    ],
+    "acceptance_met": true
+  },
+  "0010_WO-122_ROUTE_capability_to_executor_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787122371.601144,
+    "state": "DONE",
+    "output": [
+      "91ea6c1",
+      "15224af"
+    ],
+    "evidence": "Duplicate re-queue. Work already shipped 2026-08-19 06:57 at commit 91ea6c1 (tools/tool_router.py::enrich_from_plan gates dispatch by plan.capabilities; keyword fallback removed; unknown capability logs WARN). Canonical DONE at DONE/0010_WO-122_ROUTE_capability_to_executor.md (commit 15224af). Re-verified this pass: tests/test_wo122_route_capability_to_executor.py 5/5 including RT-1 disconnection ",
+    "duration_s": 162.05
+  },
+  "000_URGENT_2000_VERIFIED_COUNT_dup_2026-08-19": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787122382.59643,
+    "state": "DONE",
+    "subject": "000_URGENT stale duplicate closed \u2014 code demands landed 2026-08-13, no new commit needed",
+    "evidence": "Card was re-queued into DOING/ as a stale duplicate. Canonical close-out already exists at DONE/000_URGENT_2000_VERIFIED_COUNT.md (2026-08-19 06:41) with per-fix commit evidence. This pass re-verified against disk: (1) desktop/spatial_state.py:122-124 reads Unity keys x/y/height. (2) blender_bridge/state_writer.py:250 has 'gaze' in _PRESERVE_KEYS. (3) runtime/spine/spine.py:160-238 opens the seam \u2014 Executive receives world/cognitive_state/working_memory/affordances via build_executive_context() at :194. (4) python3 tests/test_0008_seam_disconnection.py \u2192 4 passed, 0 failed (SD-1 world.available=False\u2192'witness'; SD-2 True\u2192'build'; SD-3 absent\u2192'build'; SD-4 wm_winner=creation\u2192'build') \u2014 decision CHANGES with state absent, so the seam is open per the card's mandatory disconnection test. Duplicate closed to DONE/000_URGENT_2000_VERIFIED_COUNT_dup_2026-08-19.md; canonical DONE preserved.",
+    "commits": [],
+    "acceptance_met": true
+  },
+  "000_URGENT_2000_VERIFIED_COUNT_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787122400.926399,
+    "state": "DONE",
+    "output": [],
+    "evidence": "Stale duplicate re-queue. Card issued 2026-08-13 18:52 with 20:00 same-day deadline. All three technical demands (WO-100 WHERE keys + gaze preserve, WO-106+WO-097 seam, WO-096B ep_ref) were committed 2026-08-13 (bdf085a, c93dab8, c3e9305, 3657f53). Canonical close-out already sits in DONE/000_URGENT_2000_VERIFIED_COUNT.md dated 2026-08-19 06:41 with per-fix evidence. This pass re-verified against ",
+    "duration_s": 214.75
+  },
+  "0011_WO-111_consume_anim_complete_DUPLICATE": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787123000.0,
+    "state": "DONE",
+    "subject": "0011 WO-111 consume anim_complete — duplicate re-queue; work already shipped at 44171c7 (5118542 for contract)",
+    "evidence": "Card was re-queued into DOING/. Original work shipped 2026-08-19: 5118542 (runtime/ack_contract.py — ActionResult + honest_outcome) and 44171c7 (blender_bridge/anim_trigger.py — wait_for_ack + fire_ack; _ANIM_ACK_COVERED = wave + head gestures; clip triggers report unconfirmed). Canonical DONE stamp at DONE/0011_WO-111_consume_anim_complete.md. Re-verified this pass: pytest tests/test_wo111_consume_ack.py 6/6 in 1.32s including the dead-executor guard test_no_ack_consumer_means_no_confirmation. eLo's three honest sentences (via honest_outcome): completed -> 'Done — wave confirmed.'; failed -> 'That didn't work — wave reported a failure.'; unconfirmed -> 'I triggered jump but can't confirm it happened.' Duplicate closed to DONE/0011_WO-111_consume_anim_complete_dup_2026-08-19.md; canonical DONE preserved.",
+    "commits": [
+      "5118542",
+      "44171c7"
     ],
     "acceptance_met": true
   }

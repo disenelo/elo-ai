@@ -26,3 +26,28 @@
 ## Done when
 Committed. **Outbox: the sentence eLo produces for each of completed / failed / unconfirmed.**
 Row 13 goes VERIFIED when a broken executor makes him say so — not before.
+
+---
+
+## Builder close-out — DUPLICATE (2026-08-19)
+
+**Status:** DONE (duplicate). Original work already shipped.
+
+**Original commits:**
+- `5118542` — WO-111 ACK contract: `runtime/ack_contract.py` (ActionResult · `honest_outcome`).
+- `44171c7` — WO-111 builder half: `blender_bridge/anim_trigger.py` gains `wait_for_ack()` +
+  `fire_ack()`; `fire()` stamps `action_id`; only `_ANIM_ACK_COVERED` (wave + head gestures)
+  wait on real ACKs; clip triggers (jump/gun_*/calm_*/celebrate/spawn_wave) report `unconfirmed`.
+
+**Canonical DONE stamp:** `DONE/0011_WO-111_consume_anim_complete.md` (already present, dated 2026-08-19).
+
+**Re-verified this pass:** `pytest tests/test_wo111_consume_ack.py` — **6/6 passed** in 1.32s.
+That includes the dead-executor guard (`test_no_ack_consumer_means_no_confirmation`) — if
+`fire_ack` regresses to trusting the file write, that test fails.
+
+**The three sentences eLo produces (via `runtime.ack_contract.honest_outcome`):**
+- completed → `"Done — wave confirmed."`
+- failed    → `"That didn't work — wave reported a failure."`
+- unconfirmed → `"I triggered jump but can't confirm it happened."`
+
+Duplicate closed to `DONE/0011_WO-111_consume_anim_complete_dup_2026-08-19.md`; canonical DONE preserved.
