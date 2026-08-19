@@ -1,14 +1,24 @@
 """
 tests/test_wo052b_narrative_identity.py — Acceptance tests for WO-052B
+(updated by Card 0019 P0-A — Vol XXI · D-XXI-2, Verified Speech)
 
-  AT-1: narrative_block() returns a non-empty string
-  AT-2: active embodiments (desktop, game) appear in block
-  AT-3: future embodiments (robot, phone) appear in block
-  AT-4: prototype (exhibition) appears under "glimpsed"
-  AT-5: milestone ("first learned to move on the desktop") appears in block
+WO-052B originally shipped with hard-coded fabricated defaults ("adventuring
+in eLo-Planet", "first learned to move on the desktop") — Card 0019 removed
+those. The narrative_block() function must:
+
+  1. Produce an honest "no autobiography yet" block when history + milestones
+     are empty (defaults).
+  2. Still narrate correctly when history + milestones are populated with
+     verified events.
+
+  AT-1: narrative_block() returns a non-empty string with an empty state
+  AT-2: default state's block explicitly declines to invent a past
+  AT-3: default state's block contains NO fabricated embodiment names
+  AT-4: populated state narrates active / prototype / future correctly
+  AT-5: populated state emits its milestones
   AT-6: update() carries embodiment_history + milestones through (no silent reset)
-  AT-7: load() falls back to defaults when JSON missing the new fields
-  AT-8: narrative_block() uses autobiography phrasing cues
+  AT-7: load() falls back to EMPTY defaults when JSON is missing the new fields
+  AT-8: narrative_block() never fabricates when history is empty
   AT-9: py_compile clean on elo_self_model.py and server.py
 
 Run: python3 tests/test_wo052b_narrative_identity.py
@@ -26,7 +36,7 @@ from self.elo_self_model import (
     _DEFAULT_EMBODIMENT_HISTORY, _DEFAULT_EMBODIMENT_MILESTONES,
 )
 
-# AT-1: narrative_block() is non-empty
+# AT-1: narrative_block() is non-empty even with empty state
 try:
     state = EloSelfState()
     block = narrative_block(state)
@@ -37,49 +47,67 @@ except AssertionError as e:
 except Exception as e:
     fail("AT-1", e)
 
-# AT-2: active embodiments appear
+# AT-2: default state's block explicitly declines to invent a past
 try:
     state = EloSelfState()
-    block = narrative_block(state)
-    assert "desktop" in block, "expected 'desktop' in narrative block"
-    assert "game" in block, "expected 'game' in narrative block"
-    ok("AT-2: active embodiments (desktop, game) appear in narrative block")
+    block = narrative_block(state).lower()
+    assert "no verified autobiography yet" in block, \
+        "expected honest 'no autobiography yet' phrasing on empty state"
+    assert "do not invent" in block or "silence is the correct answer" in block, \
+        "expected explicit anti-fabrication instruction on empty state"
+    ok("AT-2: empty state block explicitly declines to invent a past")
 except AssertionError as e:
     fail("AT-2", e)
 except Exception as e:
     fail("AT-2", e)
 
-# AT-3: future embodiments appear
+# AT-3: default state's block contains NO fabricated embodiment names
 try:
     state = EloSelfState()
-    block = narrative_block(state)
-    assert "robot" in block, "expected 'robot' in narrative block"
-    assert "phone" in block, "expected 'phone' in narrative block"
-    ok("AT-3: future embodiments (robot, phone) appear in narrative block")
+    block = narrative_block(state).lower()
+    for tainted in ("adventuring in elo-planet", "one day a physical body",
+                    "early glimpses", "where i've mostly lived",
+                    "first learned to move on the desktop"):
+        assert tainted not in block, f"empty-state block leaked tainted default: '{tainted}'"
+    # "current: desktop" is a live embodiment fact from state.embodiment — fine.
+    # But invented history entries ('lived in: game', 'yet to come: robot') must NOT appear.
+    assert "lived in:" not in block, "empty state should not narrate 'lived in'"
+    assert "yet to come:" not in block, "empty state should not narrate 'yet to come'"
+    assert "glimpsed:" not in block, "empty state should not narrate 'glimpsed'"
+    ok("AT-3: empty state block contains no fabricated embodiment history")
 except AssertionError as e:
     fail("AT-3", e)
 except Exception as e:
     fail("AT-3", e)
 
-# AT-4: prototype appears under glimpsed
+# AT-4: populated state narrates active / prototype / future correctly
 try:
     state = EloSelfState()
+    state.embodiment_history = [
+        {"name": "desktop",    "status": "active",    "note": ""},
+        {"name": "exhibition", "status": "prototype", "note": ""},
+        {"name": "robot",      "status": "future",    "note": ""},
+    ]
     block = narrative_block(state)
-    assert "exhibition" in block, "expected 'exhibition' in narrative block"
-    assert "glimpsed" in block.lower(), "expected 'glimpsed' label in block"
-    ok("AT-4: prototype (exhibition) appears under 'glimpsed'")
+    assert "desktop" in block, "populated state missing 'desktop' under lived in"
+    assert "exhibition" in block, "populated state missing 'exhibition' under glimpsed"
+    assert "robot" in block, "populated state missing 'robot' under yet to come"
+    assert "glimpsed" in block.lower(), "populated state missing 'glimpsed' label"
+    ok("AT-4: populated state narrates active / prototype / future correctly")
 except AssertionError as e:
     fail("AT-4", e)
 except Exception as e:
     fail("AT-4", e)
 
-# AT-5: milestone appears
+# AT-5: populated state emits its milestones
 try:
     state = EloSelfState()
+    state.embodiment_milestones = [{"note": "handed something back for the first time"}]
+    state.embodiment_history = [{"name": "desktop", "status": "active", "note": ""}]
     block = narrative_block(state)
-    assert "first learned to move on the desktop" in block, \
-        "expected milestone in narrative block"
-    ok("AT-5: milestone 'first learned to move on the desktop' in block")
+    assert "handed something back for the first time" in block, \
+        "populated milestone missing from block"
+    ok("AT-5: populated state emits its milestones")
 except AssertionError as e:
     fail("AT-5", e)
 except Exception as e:
@@ -101,7 +129,7 @@ except AssertionError as e:
 except Exception as e:
     fail("AT-6", e)
 
-# AT-7: load() falls back to defaults when JSON missing new fields
+# AT-7: load() falls back to EMPTY defaults when JSON missing new fields
 try:
     import json, tempfile, pathlib
     from self import elo_self_model as _esm
@@ -112,11 +140,13 @@ try:
     _esm._STATE_PATH = tmp
     try:
         loaded = load()
-        assert loaded.embodiment_history == _DEFAULT_EMBODIMENT_HISTORY, \
-            "expected default embodiment_history on partial JSON"
-        assert loaded.embodiment_milestones == _DEFAULT_EMBODIMENT_MILESTONES, \
-            "expected default milestones on partial JSON"
-        ok("AT-7: load() falls back to defaults when JSON missing the new fields")
+        assert loaded.embodiment_history == [], \
+            f"expected empty embodiment_history on partial JSON, got {loaded.embodiment_history!r}"
+        assert loaded.embodiment_milestones == [], \
+            f"expected empty milestones on partial JSON, got {loaded.embodiment_milestones!r}"
+        assert _DEFAULT_EMBODIMENT_HISTORY == [], "module-level default must be empty"
+        assert _DEFAULT_EMBODIMENT_MILESTONES == [], "module-level milestones default must be empty"
+        ok("AT-7: load() falls back to EMPTY defaults on partial JSON")
     finally:
         _esm._STATE_PATH = old_path
         tmp.unlink(missing_ok=True)
@@ -125,14 +155,21 @@ except AssertionError as e:
 except Exception as e:
     fail("AT-7", e)
 
-# AT-8: autobiography phrasing cues present
+# AT-8: narrative_block() never fabricates when history is empty
 try:
+    # Every possible tainted phrase from the old defaults must be absent
     state = EloSelfState()
     block = narrative_block(state)
-    assert "autobiography" in block.lower() or "Speak from this" in block, \
-        "expected autobiography instruction in block"
-    assert "desktop" in block, "expected desktop reference in block"
-    ok("AT-8: narrative_block() contains autobiography phrasing cues")
+    tainted_names = ["game", "exhibition", "phone", "AR", "hologram"]
+    for name in tainted_names:
+        # 'game' could conceivably appear in other prose — but under a "lived in"
+        # or "glimpsed" or "yet to come" line, that's fabrication.
+        for label in ("lived in: ", "glimpsed: ", "yet to come: "):
+            assert (label + name) not in block, \
+                f"empty state leaked '{label}{name}' — fabricated embodiment"
+            assert (label + name + ",") not in block, \
+                f"empty state leaked '{label}{name},' — fabricated embodiment"
+    ok("AT-8: narrative_block() never fabricates on empty history")
 except AssertionError as e:
     fail("AT-8", e)
 except Exception as e:

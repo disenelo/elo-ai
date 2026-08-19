@@ -351,26 +351,69 @@ def _last_any_ts(evidence: list) -> float | None:
 
 
 def _try_personality_delta(row: dict, transitions: dict) -> None:
+    """
+    Card 0019 P0-B (Vol X D-09 · Vol XVIII D-XVIII-1): the sole production route
+    from a confirmed lesson to a trait change. The prior implementation was dead
+    on four independent counts — this function now uses the real call convention
+    of personality_evolution_faculty, and every rejection is LOGGED (Vol XVIII
+    §1.7 — rejections are recorded, not swallowed).
+    """
+    lkey = row.get("lesson_key", "")
     try:
         from faculties.personality.personality_evolution_faculty import (
-            validate_delta, apply_delta, save_personality,
+            PersonalityDelta, validate_delta, apply_delta,
+            save_personality, load_personality,
         )
-        proposal = row.get("proposes", {})
-        if not proposal:
-            return
-        delta = {
-            "sender": "ReflectionGrowthEngine",
-            "strength": "confirmed",
-            "evidence": [e.get("episode_ref") for e in row.get("evidence", []) if e.get("verified")],
-            **proposal,
-        }
-        result = validate_delta(delta)
-        if result.get("approved"):
-            apply_delta(result)
-            save_personality()
-            transitions["personality_delta"].append(row.get("lesson_key", ""))
-    except Exception:
-        pass
+    except Exception as e:
+        _log.warning("personality_delta[%s]: import failed reason=%s", lkey, e)
+        return
+
+    proposal = row.get("proposes") or {}
+    if not proposal:
+        _log.info("personality_delta[%s]: no proposes dict on row — skipping", lkey)
+        return
+
+    evidence_refs = tuple(
+        e.get("episode_ref", "") for e in row.get("evidence", [])
+        if e.get("verified") and e.get("episode_ref")
+    )
+
+    try:
+        delta = PersonalityDelta(
+            sender="ReflectionGrowthEngine",
+            trait=str(proposal.get("trait", "")),
+            direction=str(proposal.get("direction", "")),
+            magnitude=float(proposal.get("magnitude", 0.0)),
+            evidence=evidence_refs,
+            strength="confirmed",
+        )
+    except (TypeError, ValueError) as e:
+        _log.warning(
+            "personality_delta[%s]: malformed proposal (payload=%s) reason=%s",
+            lkey, proposal, e,
+        )
+        return
+
+    result = validate_delta(delta)
+    if not result.accepted:
+        _log.info("personality_delta[%s]: rejected — %s", lkey, result.reason)
+        return
+
+    pv = load_personality()
+    updated_pv, version = apply_delta(delta, pv, validation=result)
+    if version is None:
+        _log.info(
+            "personality_delta[%s]: apply rejected (identity floor or clamp) trait=%s",
+            lkey, delta.trait,
+        )
+        return
+
+    save_personality(updated_pv)
+    transitions["personality_delta"].append(lkey)
+    _log.info(
+        "personality_delta[%s]: applied trait=%s dir=%s mag=%.4f -> version=%s",
+        lkey, delta.trait, delta.direction, delta.magnitude, updated_pv.version,
+    )
 
 
 # ── recall ─────────────────────────────────────────────────────────────────────

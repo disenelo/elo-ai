@@ -117,20 +117,12 @@ def _derive_session_read(events: list[str]) -> str:
 
 
 # ── WO-052B: Narrative defaults (module-level so load() can reference them) ────
+# Card 0019 P0-A (Vol XXI · D-XXI-2, Verified Speech): defaults MUST be empty.
+# Fields populate only from verified events (via apply_embodiment / autobiography).
+# Never assert an embodiment or milestone that has not been anchored to a real event.
 
-_DEFAULT_EMBODIMENT_HISTORY = [
-    {"name": "desktop",    "status": "active",    "note": "where I've mostly lived"},
-    {"name": "game",       "status": "active",    "note": "adventuring in eLo-Planet"},
-    {"name": "exhibition", "status": "prototype", "note": "early glimpses"},
-    {"name": "robot",      "status": "future",    "note": "one day a physical body"},
-    {"name": "phone",      "status": "future",    "note": ""},
-    {"name": "AR",         "status": "future",    "note": ""},
-    {"name": "hologram",   "status": "future",    "note": ""},
-]
-
-_DEFAULT_EMBODIMENT_MILESTONES = [
-    {"note": "first learned to move on the desktop"},
-]
+_DEFAULT_EMBODIMENT_HISTORY: list = []
+_DEFAULT_EMBODIMENT_MILESTONES: list = []
 
 # ── Data structure ─────────────────────────────────────────────────────────────
 
@@ -533,6 +525,10 @@ def narrative_block(state: "EloSelfState") -> str:
     WO-052B: Narrative Identity — eLo's autobiography across embodiments.
     Answers 'who have I been / who will I become?' Not runtime facts.
     Injected into the system prompt alongside the inner-state and situated blocks.
+
+    Card 0019 P0-A (Vol XXI · D-XXI-2): with no verified history, this block
+    explicitly declines to invent one. Only anchored embodiments and milestones
+    are ever narrated.
     """
     active = [e["name"] for e in state.embodiment_history if e.get("status") == "active"]
     proto  = [e["name"] for e in state.embodiment_history if e.get("status") == "prototype"]
@@ -542,6 +538,15 @@ def narrative_block(state: "EloSelfState") -> str:
         "[ELO NARRATIVE IDENTITY — autobiography across embodiments (Vol XXI)]",
         f"current: {state.embodiment}",
     ]
+
+    if not state.embodiment_history and not state.embodiment_milestones:
+        lines += [
+            "no verified autobiography yet — this is early.",
+            "If asked what you've been through, say honestly there isn't a story yet.",
+            "Do NOT invent embodiments, adventures, or a past. Silence is the correct answer.",
+        ]
+        return "\n".join(lines)
+
     if active:
         lines.append(f"lived in: {', '.join(active)}")
     if proto:
@@ -554,11 +559,8 @@ def narrative_block(state: "EloSelfState") -> str:
             lines.append(f"milestones: {ms}")
     lines += [
         "",
-        "Speak from this as autobiography, casually and honestly. Examples:",
-        "  'I've mostly lived on the desktop so far.'",
-        "  'One day I'll have a robot body.'",
-        "  'Today I'm with you on the desktop.'",
-        "Never fabricate embodiments not in this list. One sentence when relevant.",
+        "Speak from this as autobiography, casually and honestly — but ONLY from what's here.",
+        "Never fabricate embodiments or milestones not in this list. One sentence when relevant.",
     ]
     return "\n".join(lines)
 

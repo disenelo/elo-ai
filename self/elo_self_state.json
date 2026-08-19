@@ -39,46 +39,6 @@
   "current_action": "idle",
   "goal": "",
   "recent_behavior": {},
-  "embodiment_history": [
-    {
-      "name": "desktop",
-      "status": "active",
-      "note": "where I've mostly lived"
-    },
-    {
-      "name": "game",
-      "status": "active",
-      "note": "adventuring in eLo-Planet"
-    },
-    {
-      "name": "exhibition",
-      "status": "prototype",
-      "note": "early glimpses"
-    },
-    {
-      "name": "robot",
-      "status": "future",
-      "note": "one day a physical body"
-    },
-    {
-      "name": "phone",
-      "status": "future",
-      "note": ""
-    },
-    {
-      "name": "AR",
-      "status": "future",
-      "note": ""
-    },
-    {
-      "name": "hologram",
-      "status": "future",
-      "note": ""
-    }
-  ],
-  "embodiment_milestones": [
-    {
-      "note": "first learned to move on the desktop"
-    }
-  ]
+  "embodiment_history": [],
+  "embodiment_milestones": []
 }

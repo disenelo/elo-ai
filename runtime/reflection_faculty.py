@@ -43,6 +43,13 @@ _SIG_MIN_WORDS      = 20    # user input long enough to contain substance
 _SIG_ACTIONS        = {"build", "connect", "reflect", "remember", "design", "fix", "explain"}
 _SIG_WEIGHT_MIN     = 5     # weight below this → peripheral, skip deep journal
 
+# Card 0019 P0-B: only emit a personality proposal when the action names an
+# actual trait in the eight-trait vector (personality_evolution_faculty).
+_PERSONALITY_TRAIT_NAMES = frozenset({
+    "curiosity", "patience", "confidence", "empathy",
+    "discipline", "wonder", "playfulness", "directness",
+})
+
 
 def _is_significant(
     session_summary: str,
@@ -101,11 +108,18 @@ def _form_lesson(
     norm_stmt = re.sub(r"\s+", " ", statement.strip().lower())
     lkey = hashlib.sha1(f"{scope}|{norm_stmt}|{cause}".encode()).hexdigest()[:16]
 
-    # WO-096B: preference lessons carry a proposes dict so the PersonalityDelta gate
-    # (lesson_store.py:264 scope=="preference" AND proposes) can actually fire.
+    # Card 0019 P0-B: emit a WELL-FORMED proposes dict.
+    # Prior payload used `direction ∈ {1, -1}` and no `magnitude`; PersonalityDelta
+    # requires `direction ∈ {"increase","decrease"}` and `magnitude ≤ MAX_STEP`.
+    # Also: `action` is a CAL verb ("prefer", "choose", …), not a trait — only emit
+    # when the verb actually names one of the eight personality traits.
     proposes: dict | None = None
-    if scope == "preference":
-        proposes = {"trait": action.lower(), "direction": 1 if delta == "met" else -1}
+    if scope == "preference" and action.lower() in _PERSONALITY_TRAIT_NAMES:
+        proposes = {
+            "trait":     action.lower(),
+            "direction": "increase" if delta == "met" else "decrease",
+            "magnitude": 0.02,  # MAX_STEP — bounded step per §7.5
+        }
 
     return {
         "id":         f"L-{_ts_compact()}",
