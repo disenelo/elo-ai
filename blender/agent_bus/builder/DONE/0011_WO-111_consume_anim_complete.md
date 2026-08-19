@@ -31,7 +31,7 @@ Row 13 goes VERIFIED when a broken executor makes him say so — not before.
 
 ## Builder close-out (2026-08-19)
 
-**Status:** DONE. Commit: `<PENDING_COMMIT>`
+**Status:** DONE. Commit: `44171c7`
 
 **Changed:**
 - `blender_bridge/anim_trigger.py` — added `wait_for_ack(action_id, timeout_s)` and
