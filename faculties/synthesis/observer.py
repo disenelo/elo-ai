@@ -41,7 +41,17 @@ _DECLINE_PHRASES = frozenset({
     "don't need to track", "don't need that", "nothing to do", "i'm relaxing",
     "i'm trying to relax", "thank you", "got it", "i got it", "i'm good",
     "leave it", "that's fine", "all good", "i know", "already have",
+    # D-1 (card 0020): the transcript shapes David actually uses to decline.
+    "not everything is", "not everything's", "not worth saving",
+    "not everything", "worth saving", "no thanks", "no thank",
 })
+
+# D-1 (card 0020): a decline is also anything that BEGINS with the word "no"
+# (possibly followed by a subject), or "not " — matched by pattern rather than
+# hard-coded string, so David never has to guess which words we listen for.
+_DECLINE_PATTERN = re.compile(
+    r"^(no\b|not\b|nope\b|nah\b|don't\b|do not\b|dont\b)", re.IGNORECASE
+)
 
 # ── Cooldown + decline trackers ───────────────────────────────────────────────
 _last_fired: dict[str, float] = {}   # topic_key → epoch
@@ -49,13 +59,53 @@ _declined_topics: dict[str, float] = {}  # topic_key → decline epoch
 _declined_until: float = 0.0             # global proposal cooldown after any decline
 _DECLINE_COOLDOWN = 300.0                # 5 min global silence after a decline
 
+# D-1 (card 0020): the last SynthesisHit we actually surfaced to David.
+# When David declines the next turn, we suppress not just the head keyword
+# but every keyword from that hit — for the whole session, not a 5-minute
+# cooldown — so the same subject can never come back under a paraphrase.
+_last_offered: dict = {"topic": "", "keywords": frozenset(), "at": 0.0}
+_SESSION_DECLINE_TTL = 24 * 60 * 60  # 24h ≙ session-lifetime for a declined subject
+
+
+def is_decline(text: str) -> bool:
+    """D-1: broader than substring match — pattern + phrase check on the leading tokens."""
+    if not text:
+        return False
+    lower = text.lower().strip()
+    if _DECLINE_PATTERN.match(lower):
+        return True
+    return any(phrase in lower for phrase in _DECLINE_PHRASES)
+
+
+def record_offer(hit: "SynthesisHit") -> None:
+    """D-1: remember the last hit we actually surfaced so a subsequent decline
+    can suppress the whole subject (topic + every keyword), not just the head."""
+    if not hit:
+        return
+    all_kw = frozenset(kw for s in hit.signals for kw in s.keywords) | {hit.topic.lower()}
+    _last_offered["topic"] = hit.topic.lower()
+    _last_offered["keywords"] = all_kw
+    _last_offered["at"] = time.time()
+
 
 def record_decline(topic: str = "") -> None:
-    """Call when David declines a proposal. Suppresses that topic + global cooldown."""
+    """Call when David declines a proposal. Suppresses that topic + global cooldown.
+
+    D-1 (card 0020): if no topic is passed but a `_last_offered` is remembered,
+    suppress its full keyword set for the session — that is what makes a decline
+    persist against the SUBJECT, not the phrasing (per the card)."""
     global _declined_until
     _declined_until = time.time() + _DECLINE_COOLDOWN
     if topic:
         _declined_topics[topic.lower()] = time.time() + _DECLINE_COOLDOWN
+
+    # D-1: also lock out the last-offered subject and every keyword under it.
+    _lo = _last_offered.get("keywords") or frozenset()
+    if _lo:
+        until = time.time() + _SESSION_DECLINE_TTL
+        for kw in _lo:
+            if kw:
+                _declined_topics[kw.lower()] = until
 
 
 def is_relaxation_signal(text: str) -> bool:
@@ -284,7 +334,17 @@ def observe(
     best_score  = 0.0
     best_sigs   = []
 
+    _now = time.time()
     for kw, sigs in clusters.items():
+        # D-1: skip any cluster whose HEAD keyword has been declined this session.
+        if respect_cooldown and _now < _declined_topics.get(kw.lower(), 0):
+            continue
+        # D-1: skip any cluster whose signals overlap ANY declined keyword.
+        # A single overlapping token is enough — the whole subject is off.
+        if respect_cooldown:
+            _sig_kws = frozenset(k for s in sigs for k in s.keywords)
+            if any(_now < _declined_topics.get(k.lower(), 0) for k in _sig_kws):
+                continue
         sources = {s.source for s in sigs}
         # Score: more distinct sources = higher confidence
         score = min(1.0, len(sources) / 3.0)
@@ -329,13 +389,17 @@ def observe(
     if any(s.source == "chrome_tab" for s in deduped):
         actions.append("bookmark")
 
-    return SynthesisHit(
+    _hit = SynthesisHit(
         topic=best_kw,
         signals=deduped,
         confidence=best_score,
         offer=offer,
         actions=actions,
     )
+    # D-1 (card 0020): remember this offer so the next-turn decline can suppress
+    # its full keyword set — the subject, not just the head token.
+    record_offer(_hit)
+    return _hit
 
 
 _OFFER_VARIANTS = [

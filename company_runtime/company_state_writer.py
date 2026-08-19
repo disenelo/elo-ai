@@ -674,6 +674,24 @@ def _load_fresh_state(state_path: str = _STATE_PATH) -> dict:
     return state
 
 
+# D-7 (card 0020): David L3 retired Presentable v1 on 2026-08-10. If the parsed
+# focus still surfaces it (stale marker, cache, etc.), rewrite to the honest
+# post-Presentable state instead of speaking a two-week-old milestone.
+_RETIRED_MILESTONES: dict[str, str] = {
+    "presentable v1": (
+        "no active milestone — Presentable v1 was retired by David L3 on 2026-08-10; "
+        "the focus now is post-Presentable audit-fix + canon integration + One Brain"
+    ),
+}
+
+
+def _milestone_label(focus: dict) -> str:
+    """Return the milestone string, replacing retired names with an honest fallback."""
+    m = (focus or {}).get("milestone", "") or ""
+    key = m.strip().lower()
+    return _RETIRED_MILESTONES.get(key, m)
+
+
 def _recommend(state: dict) -> str:
     """Return the single highest-priority unblocked focus WO as a recommendation string."""
     focus = state.get("company_focus", {})
@@ -714,7 +732,7 @@ def _build_briefing(state: dict) -> str:
     Content changes whenever the state changes (varied by design).
     """
     focus = state.get("company_focus", {})
-    milestone = focus.get("milestone", "")
+    milestone = _milestone_label(focus)  # D-7: strip retired names
     today = state.get("today_priorities", [])
     roadmap = state.get("roadmap", [])
     in_prog = [r for r in state.get("board", []) if r.get("status") == "WORKING"]
@@ -766,7 +784,7 @@ def _build_briefing(state: dict) -> str:
 def _build_board_reply(state: dict) -> str:
     """WO-048: board intent → surface FOCUS items, not the ready backlog."""
     focus = state.get("company_focus", {})
-    milestone = focus.get("milestone", "")
+    milestone = _milestone_label(focus)  # D-7: strip retired names
     today = state.get("today_priorities", [])
     in_prog = [r for r in state.get("board", []) if r.get("status") == "WORKING"]
 

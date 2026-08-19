@@ -825,11 +825,11 @@ def ambient_thought() -> None:
             from faculties.synthesis.observer import (
                 observe as _syn_observe,
                 record_decline as _syn_decline,
-                _DECLINE_PHRASES as _SYN_DECLINE_PHRASES,
+                is_decline as _syn_is_decline,
             )
-            # WO-085: if user is declining/dismissing → record it before observing
-            _raw_lower = (raw or "").lower()
-            if any(phrase in _raw_lower for phrase in _SYN_DECLINE_PHRASES):
+            # WO-085 + D-1 (card 0020): broaden decline detection to leading-"no"
+            # patterns so any decline of the last offer suppresses the subject.
+            if _syn_is_decline(raw or ""):
                 _syn_decline()
             _recent_conv = ""
             try:
@@ -3332,31 +3332,77 @@ def _process_turn(raw: str) -> dict:
                 # Capability self-awareness — inject a live capability summary so eLo
                 # can answer "what can you do" / "be more aware of yourself" accurately
                 # without inventing or guessing. Short always-on block.
+                # D-2 (card 0020): the vision-claim advertisement no longer fires every
+                # turn. It is emitted only when the current query is actually about
+                # seeing/screen, and it is generated from live vision state.
                 try:
                     from runtime.capabilities.registry import all_enabled as _cap_all
                     _caps = _cap_all()
                     if _caps:
                         _cap_names = ", ".join(c.display_name for c in _caps)
-                        # WO-044: inject live faculty health so eLo answers self-diagnosis truthfully
                         try:
                             from runtime.faculty_health import health_summary as _fh_sum
                             _health_line = f"\n\n[FACULTY HEALTH — live state]\n{_fh_sum()}\n" \
                                            f"When asked 'are you working right?' / 'what can't you access?' — answer from this, not philosophy."
                         except Exception:
                             _health_line = ""
+
+                        # D-2 · vision-claim gate: only inject when the user is asking
+                        # about seeing / the screen. Compiled once, kept local.
+                        _vision_ask = _re.search(
+                            r"\b(can you see|are you (able to |)see(ing|)|do you see|"
+                            r"see (my )?screen|watch (my )?screen|view (my )?screen|"
+                            r"look at (my )?screen|read (what('s| is) on|my) screen|"
+                            r"are you watching|what (can you|do you) see|what's on (my )?screen)\b",
+                            raw or "", flags=_re.I,
+                        )
+
+                        _vision_block = ""
+                        if _vision_ask:
+                            _vis_active = False
+                            _vis_perm = True
+                            try:
+                                _bs_path = os.path.join(
+                                    os.path.dirname(os.path.abspath(__file__)),
+                                    "blender", "blender_state.json",
+                                )
+                                if os.path.exists(_bs_path):
+                                    with open(_bs_path, encoding="utf-8") as _bsf:
+                                        _bs_state = json.load(_bsf)
+                                    _vis = _bs_state.get("vision") or {}
+                                    _vis_active = bool(_vis.get("active"))
+                                    if "screen_record_perm" in _bs_state:
+                                        _vis_perm = bool(_bs_state.get("screen_record_perm"))
+                            except Exception:
+                                _vis_active = False
+                            try:
+                                from runtime.faculty_health import get_status as _fh_get
+                                _vis_online = _fh_get("tools") != "OFFLINE"
+                            except Exception:
+                                _vis_online = True
+
+                            if _vis_active and _vis_perm and _vis_online:
+                                _vphrase = ("Right now — vision is active. I can read what's on "
+                                            "screen if you point me at it.")
+                            elif not _vis_perm:
+                                _vphrase = ("Right now — I can't. Screen-recording permission "
+                                            "isn't granted, so I can't read the screen.")
+                            else:
+                                _vphrase = ("Right now — vision isn't active. I can't read the "
+                                            "screen until it comes on.")
+                            _vision_block = (
+                                f"\n\n[VISION — live, only for this turn because David is asking]\n"
+                                f"{_vphrase}\n"
+                                f"Do not extend this into a general capability advertisement."
+                            )
+
                         system = system + (
                             f"\n\n[CAPABILITIES — what you can actually do right now]\n"
                             f"{_cap_names}.\n"
                             f"When asked what you can do, answer from this list specifically. "
-                            f"Do not list capabilities not shown here.\n\n"
-                            f"[WHAT YOU CAN OBSERVE — be consistent about this]\n"
-                            f"YES: active app name, active window title, active browser tab title + URL, "
-                            f"all open Chrome tabs (title + URL), Chrome bookmarks, recent Chrome history, "
-                            f"screen text (on request — I take a screenshot and read it via vision; I can do this).\n"
-                            f"NO: inactive app windows; file contents unless read via file tools.\n"
-                            f"When asked 'can you see my screen' — say: I can read what's on screen if you ask me to. "
-                            f"I take a screenshot and extract the text. I also see your active app, window title, "
-                            f"and all open Chrome tabs at all times."
+                            f"Do not list capabilities not shown here.\n"
+                            f"Do NOT volunteer what you can see or observe unless David is asking about it."
+                            + _vision_block
                             + _health_line
                         )
                 except Exception:
@@ -4086,6 +4132,30 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # ── D-3 (card 0020): unverified-memory-claim scrub ────────────────────
+        # Post-generation gate. Any "I remember when…" / "you told me…" /
+        # "we talked about…" sentence in eLo's own reply must resolve to a real
+        # vault or ledger entry. If nothing supports it, replace the sentence
+        # with an honest fallback and log at WARNING. See:
+        #   runtime/memory_claim_guard.py  (module doc + patterns)
+        #   docs/architecture/adr/ADR-Exec-001  (Verified Speech is the floor)
+        try:
+            from runtime.memory_claim_guard import scrub_unverified_memory_claims as _mcg
+            response = _mcg(response)
+        except Exception:
+            pass
+
+        # ── D-4 (card 0020): Ruling G — second-person address to David ────────
+        # WO-CANON-I put the ADDRESS RULE in both personas; the live test
+        # showed it not holding under generation ("I remember when David…"
+        # said to David). Outbound guard rewrites "David <verb>" and bare
+        # "David" into "you" so the rule survives the LLM.
+        try:
+            from runtime.address_rule_guard import enforce_second_person_to_david as _arg
+            response = _arg(response)
+        except Exception:
+            pass
+
         # ── Multi-bubble split ────────────────────────────────────────────────
         # Split on paragraph breaks → one bubble per paragraph.
         # Chat panel renders all bubbles. TTS joins all bubbles (paragraph
@@ -4177,6 +4247,25 @@ def _process_turn(raw: str) -> dict:
                 outcome=_w1_outcome,
                 learning=(exec_decision.get("lesson_id", "") if exec_decision else ""),
             )
+        except Exception:
+            pass
+
+        # ── D-6 (card 0020): silent turn = loud log + honest fallback ─────────
+        # WO-097's response/display/tts publish could go empty on direct turns
+        # ("What is your name?" / "Can you wave?"). Rule 1 alarm: a silent turn
+        # must never reach David without a WARNING on record, and it must never
+        # LOOK silent — the fallback beat is short and truthful.
+        try:
+            if not response or not response.strip():
+                import logging as _sil_log
+                _sil = _sil_log.getLogger("elo.silent_turn")
+                _sil.warning(
+                    "D-6 silent-turn alarm: empty response for raw=%r "
+                    "action=%s backend=%s bubbles=%d",
+                    (raw or "")[:120], _action, backend_used, len(_bubbles),
+                )
+                response  = "One sec — that came back empty. Ask me again?"
+                _bubbles  = [response]
         except Exception:
             pass
 

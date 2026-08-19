@@ -1373,7 +1373,7 @@ _Last updated: 2026-08-10 (auto-reconcile #28) — **NO NEW SEAT MOVEMENT since 
 >
 > **Bank now (already shipped — need David live-confirm, NOT build): WO-030 · WO-036 · WO-039 · WO-042 · WO-043 · WO-044 + merge branches WO-031 · WO-026.**
 >
-<!-- COMPANY_FOCUS: Presentable v1 | items: sit-close(WO-059/052A+WO-040), movement-fix+misroute, Self-Model(WO-052A/059), TTS(WO-016/019), memory-recall(WO-022/037/053), tool-routing(WO-020), mirror-scrub(WO-036) | note: these are IN-PROGRESS focus, not "ready" backlog — the coordinator's today_priorities must surface THIS, not the first ready-P1 rows. See WO-061. -->
+<!-- COMPANY_FOCUS: post-Presentable audit + canon integration + One Brain | items: audit-fix-landings(CT4V-01-08), canon-volume-integration(WO-CANON-I..XXVIII), one-brain(INT7-HEAT), live-test-defect-triage(builder/0019+0020+0021), spatial-faculty(WO-049 Track B), ruling-G-address(WO-CANON-I) | note: Presentable v1 was RETIRED by David L3 on 2026-08-10 — do not surface it as the milestone. today_priorities must surface the CURRENT audit-fix + canon-integration workstream (see board §"UNPARKED BY THIS DIRECTIVE"). D-7 (card 0020, 2026-08-19). -->
 
 > **Done bar (experience test):** one working session where eLo keeps one voice · finishes his sentences · remembers what you told him · routes a tool truthfully · never false-alarms "can't reach my thinking" · knows itself (where/how big/what it can do) · and sits AND moves when asked. All true → Presentable v1 is real.
 
