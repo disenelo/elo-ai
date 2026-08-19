@@ -46,5 +46,51 @@
     "evidence": "Wave 1-6 planning card. Re-verified closed portions: rows 4 SEE / 6 ATTEND / 16 AFFORD via seam disconnection test (landed 3657f53 under card 0008); Wave 2 truncate via metrics isolation test (landed b7b16de under card 0007). Remaining 19 rows are already dispatched as focused per-row cards in QUEUE (Row 14 ROUTE closed at 91ea6c1; Row 5 LOOK stamped; Rows 20/22/23 stamped). VERIFIED count for THIS card per Ruling H: 4 -> 7. Removed pristine DOING duplicate; closed-out DONE copy retained.",
     "commits": [],
     "next": "Autorun continues on the focused Wave 2-6 cards already in QUEUE."
+  },
+  "0009_PATH_TO_26_run_this_without_stopping_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787122186.170314,
+    "state": "PARTIAL",
+    "output": [
+      "43969f3"
+    ],
+    "evidence": "Ch.10 Autonomous Action & Agency Engine built + wired. runtime/agency_engine.py (new, 5-layer contract per Vol V Ch.10 \u00a72). server.py wire-in immediately after the emergent_cognition internal_intent populate: propose() is called and result stored on new CognitivePlan.agency_proposal (runtime/spine/plan.py). Test tests/test_0006_wo121_ch10_agency.py \u2014 8/8 passed (FT-import, FT-1..3, ST-1..3, IT-1).",
+    "duration_s": 156.1
+  },
+  "0006_WO-121_VolV_seven_chapters_ch10_run_1787122189": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787122189.319403,
+    "state": "PARTIAL",
+    "commit": "43969f3",
+    "subject": "0006 Ch.10 AgencyEngine built + wired \u2014 8/8 test green",
+    "evidence": "runtime/agency_engine.py new (5-layer contract per Vol V Ch.10 \u00a72). server.py wires propose() right after _plan.internal_intent is populated; result stored on new CognitivePlan.agency_proposal. tests/test_0006_wo121_ch10_agency.py 8/8 (FT-import, FT-1..3, ST-1..3, IT-1). IT-1 is the disconnection guard. No regression: WO-114, WO-005, Ch.8 FT-1 all green. Card remains PARTIAL until Ch.9 lands \u2014 one chapter per pass. Standing state: Ch.1/2/3/6 IMPLEMENTED, Ch.8 PARTIAL, Ch.10 IMPLEMENTED (this pass), Ch.9 NOT BUILT (next pass \u2014 same shape as Ch.10).",
+    "acceptance_met": true,
+    "duration_s": null
+  },
+  "0006_WO-121_VolV_seven_chapters_no_WO_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787122209.506469,
+    "state": "DONE",
+    "output": [
+      "baf7694"
+    ],
+    "evidence": "card in DONE/. new commit: baf7694 0009 DONE (PARTIAL close-out): PATH_TO_26 planning card retired",
+    "duration_s": 482.4
+  },
+  "0010_WO-122_ROUTE_capability_to_executor_DUPLICATE": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787122500.0,
+    "state": "DONE",
+    "subject": "0010 WO-122 ROUTE — duplicate re-queue; work already shipped at 91ea6c1",
+    "evidence": "Card was re-queued into QUEUE/. Original work landed 2026-08-19 06:57 at commit 91ea6c1 (tools/tool_router.py::enrich_from_plan gates dispatch by plan.capabilities; keyword fallback removed). Canonical DONE stamp at DONE/0010_WO-122_ROUTE_capability_to_executor.md (commit 15224af). Re-verified this pass: tests/test_wo122_route_capability_to_executor.py 5/5 (RT-1 disconnection green: blank plan.capabilities → weather agent does NOT fire on weather-worded query). Confirmed server.py:3534-3536 still passes plan.capabilities into enrich_from_plan(). Duplicate closed to DONE/0010_WO-122_ROUTE_capability_to_executor_DUPLICATE.md; canonical DONE preserved.",
+    "commits": [
+      "91ea6c1",
+      "15224af"
+    ],
+    "acceptance_met": true
   }
 }
