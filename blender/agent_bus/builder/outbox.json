@@ -1,5 +1,5 @@
 {
-  "ts": 1786996550.0,
+  "ts": 1787097742.4480362,
   "0050_prompt_map_2026-08-17": {
     "to": "Architect",
     "from": "Builder",
@@ -1567,5 +1567,35 @@
     "verdict": "A PROVEN IMPOSSIBLE",
     "ts": 1787014409.673,
     "summary": "D3 Option A measurement complete. frozen executive.decide() reads exactly 4 keys from attention_model: intent, emotional_context, wm_winner, world_state. 'lessons' is not in that set. Injecting a lessons key produces zero change in output (Step 3 confirmed). wm_winner alias noted but is correlation not causation. A PROVEN IMPOSSIBLE: Executive logic must change to consume lessons. David/L3 decision. Builder stops here."
+  },
+  "f0_0056_WO045_spine_fix": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": 1787097742.4480362,
+    "subject": "WO-045: Spine path signal word detection \u2014 committed, needs restart",
+    "body": "WO-045 Spine bypass bug fixed. _signal_word_intent() was only called in the Legacy path. Spine path (when _plan.presence_plan is set) bypassed it entirely \u2014 'take five' never wrote leave_command. Fix (commit 1a66020): call _signal_word_intent(raw) in Spine path block after _PENDING_SIT check; on step_out set _PENDING_EXIT active and emit leave_command via state_writer.patch. Fix committed but NOT live \u2014 running PID 35788 loaded old code. Needs server restart to test.",
+    "commits": [
+      "1a66020"
+    ],
+    "status": "COMMITTED_NOT_LIVE"
+  },
+  "f0_0056_WO037_identity_fix": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": 1787097742.4480362,
+    "subject": "WO-037: Identity trigger misroute \u2014 what are you working on fixed",
+    "body": "'what are you working on?' returned 'eLo. That's me.' (backend: direct) because _IDENTITY_TRIGGERS contained the bare substring 'what are you', which matched any question starting with those words. Root: spine.py:402 uses `any(p in raw_lower for p in _IDENTITY_TRIGGERS)` \u2014 substring match. Fix (commit a40daec): changed 'what are you' to 'what are you?' in _IDENTITY_TRIGGERS. raw_lower strips .,! but NOT ?, so 'what are you?' does not match inside 'what are you working on?'. Fix committed, not live until restart.",
+    "commits": [
+      "a40daec"
+    ],
+    "status": "COMMITTED_NOT_LIVE"
+  },
+  "f0_0056_live_test_results": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": 1787097742.4480362,
+    "subject": "0056 live test results \u2014 WO-022 PASS, WO-048 FAIL, WO-037 CONFIRMED",
+    "body": "WO-022 (recall): PASS. 'Do you remember K-7?' \u2192 specific accurate answer via obsidian. WO-037 (working on): CONFIRMED DEFECT. 'What are you working on?' \u2192 'eLo. That's me.' (backend: direct). Root cause found and fixed (see WO-037 outbox entry). WO-048 (company): company state IS injected correctly \u2014 [COMPANY_STATE] block sent to LLM with real data. But Ollama 70b + max_sentences=1 (action=answer, DIRECT tone) collapses to 'We're on track for Presentable v1, and that's a good sign.' FAILS acceptance line ('returns real, varying content with links'). Root: LLM summarization is the bottleneck, not the company handler. Fix options: (A) early-return company state directly (bypass LLM), (B) increase max_sentences for company intent, (C) verify on Groq first. David decision needed. WO-061 (check in on company): same path as WO-048 \u2014 same status.",
+    "status": "DAVID_DECISION_NEEDED"
   }
 }

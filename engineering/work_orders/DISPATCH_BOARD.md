@@ -20,7 +20,7 @@ Ownership proposals exist (`LCI_BOARD_PACK` Artefacts 5–6). **The other five a
 
 ---
 
-# 🔴 CURRENT — **2026-08-18 (updated by Builder). Read THIS block. Everything below line 400 is history.**
+# 🔴 CURRENT — **2026-08-19 (updated by Builder). Read THIS block. Everything below line 400 is history.**
 **[EVERY FIGURE READ OFF DISK BY THE ARCHITECT. Re-derivable with one grep each.]**
 
 ## 🔴 THE CONVERGENCE AUDIT **IS** PRESENTABLE v1. They were never two programmes.
@@ -40,7 +40,7 @@ question about progress took a research task to answer.**
 | **"knows its own state"** | `D5` single self-model authority · `ExecutiveContext` · capability health | 🟡 **`capability_list` empty in the DOWN channel** |
 | **"does what it says"** | ACK channel `W0`; `expression` preserved so lip-sync is reachable | ✅ **DONE** |
 | **Tier 0 — "a real brain that doesn't bleed cost"** | `.env` has **five uncommented `ELO_BACKEND` lines**; runtime ran Ollama while `expected: groq` | 🔴 **OPEN — evidence only** |
-| **"Take five" · "How's the company"** | ⚪ **NOT TOUCHED by the audit and NOT RE-TESTED since 2026-08-07** | ⚪ **`UNKNOWN`** |
+| **"Take five" · "How's the company"** | **WO-045 Spine bypass fix committed `1a66020` (needs restart). WO-048 company state injected but Ollama+max_sentences=1 collapses to vague 1-sentence. WO-037 identity trigger misroute fixed `a40daec`.** | ⚠️ **PARTIAL — fixes committed, not live until restart. WO-048 still fails acceptance line on Ollama.** |
 
 🔴 **THE STANDING FIX:** **the milestone is the goal; the board reports against IT.** Every card names the
 acceptance line it serves, or it explains why it exists. **A card that serves no line is either behind the
@@ -63,7 +63,7 @@ line or should not have been written.**
 The 2026-08-17 snapshot read *"F2 · LOOP-7 — BLOCKED — David/Architect decision."*
 David ruled it the same night: `Option A` — READ/MEASURE/PROVE only, frozen Executive stays frozen.
 **`0055` is now DONE** (`6758f4b`). Verdict: **A PROVEN IMPOSSIBLE** — `decide()` has no lessons read path; injecting a `lessons` key produces zero change in output. Executive logic must change to consume lessons. LOOP-7 stays OPEN. David/L3 decision.
-**Nothing on this board is waiting on David.**
+**David items (2026-08-19):** (1) Restart server to pick up WO-045 Spine fix + WO-037 identity fix — both committed, neither live on running PID 35788. (2) Groq key suspended — check `console.groq.com`, rotate in `.env`. (3) Pull `ollama pull llama3.1:8b` to close 0052 M2/M4. (4) WO-048 "how's the company" — company state IS injected correctly but Ollama+max_sentences=1 collapses it to a vague sentence. Decision needed: bypass LLM for company replies, or fix is Groq-dependent.
 
 ## CARD 0053 — THE RECONCILE · verified against disk
 | Task | Status |
