@@ -64,3 +64,52 @@ output instead of discarding it.
   **No test counts.**
 
 — Architect, 19:00
+
+---
+
+## DONE — 2026-08-19 (stale-card closeout)
+
+Card issued 2026-08-13 19:00; all five fixes landed same evening / next few days. Card sat in QUEUE
+then DOING for 6 days. All state verified against disk today. No new code this pass — Rule 6 says
+extend, don't duplicate. Evidence per fix:
+
+**Fix 1 · WHERE — commit `c93dab8` (2026-08-13 19:47)**
+`desktop/spatial_state.py:122-128` reads Unity keys `x`/`y`/`height` + consumes `window`/`edge`.
+`spatial.pos_x = float(d["x"])`, `spatial.pos_y = float(d["y"])`, `spatial.height_px = int(d["height"])`.
+`degraded=True` set when read fails (server.py:3286-3290 batch). VERIFIED.
+
+**Fix 2 · REMEMBER — commits `6c07a82` (2026-08-13 19:18) + `776d6ce` (2026-08-15 04:03)**
+Approach chosen: **reinforce in the integration window, not inside `lookup()`** — Vol VIII §4.70/§4.03
+forbids durable writes in the retrieval hot loop.
+`server.py:110` `_vault_reinforce_queue: list = []`. Populated at `:3414-3420` on vault hits.
+Drained by `_maybe_run_reinforce_vault()` at `:4477-4503` — post-response daemon thread. Fires at
+`:4358` and `:4386`. Reinforce impl: `memory/consolidation_faculty.py:164 reinforce()`. VERIFIED wired.
+
+**Fix 3 · BODY — commit `5409900` (2026-08-13 21:04)**
+Live writer at `server.py:3279-3290` (marked `# WO-107 BODY`):
+```
+_active_body = next((e["name"] for e in _elo_self.embodiment_history
+                     if e.get("status") == "active"), "desktop")
+_self_apply_embodiment(_elo_self, location=..., surface=..., embodiment=_active_body)
+```
+Tier now **computed**, not hardcoded: `runtime/the_moment.py:190`
+`"embodiment_tier": tier_fact(state.embodiment, source="sensor", confirmed=True)` (WO-110). VERIFIED.
+
+**Fix 4 · SELF-OBSERVE — commit `5409900` (2026-08-13 21:04)**
+`record_behaviour` now has 4 live callers:
+`server.py:2819` (sit), `:2943` (move), `:3027` (exit ACK), `:4134` (post-response daemon).
+Was 0 non-test callers pre-fix. VERIFIED wired. Also unblocks ADAPT (row 22) prereq.
+
+**Fix 5 · INTEND — commit `6c07a82` (2026-08-13 19:18)**
+Field added at `runtime/spine/plan.py:27`:
+`intent_source: str = "david"    # WO-099b fix5: "david" | "self" | "reflex"`
+Also `internal_intent: dict = field(default_factory=dict)` at `:29` (WO-114 — full kind/source/trigger/priority).
+Written from emergent output at `server.py:3137-3141`: `_plan.intent_source = "self"` when internal
+intent fires. VERIFIED — Executive-readable.
+
+**Commits:** `c93dab8` · `6c07a82` · `5409900` · `776d6ce`
+**Acceptance:** all five state predicates hold against disk 2026-08-19.
+**What I got wrong:** did not close this card when the work landed 6 days ago — architect had already
+recorded VERIFIED count movement via card 0009. Closeout now unblocks seat rotation.
+
+— Builder, 2026-08-19
