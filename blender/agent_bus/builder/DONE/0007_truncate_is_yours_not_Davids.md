@@ -35,3 +35,19 @@ that bites, rows 4 SEE · 6 ATTEND · 16 AFFORD are carrying values, not consult
 them. Report the result either way.
 
 ## Current verified count: **4 of 26** — ACT · REMEMBER · INTEND · WHERE.
+
+---
+
+## DONE — 2026-08-19
+
+**Scope executed (only the "Do it" section — sections 20-37 are commentary/other cards):**
+
+1. **Truncated** `self/journals/growth_metrics.jsonl` — 1026 → 0 bytes (11 stale test-artifact rows removed; `wc -l` = 0).
+2. **Guard verified already in place** at `self/lesson_store.py:544-559` — `_append_metrics` writes beside `ledger_path` when supplied (`os.path.join(os.path.dirname(ledger_path), "journals", "growth_metrics.jsonl")`), else `_METRICS`. Landed with WO-096B (commit f94c6a2). No refill possible.
+3. **Rule 1 alarm exists** — `tests/test_0007_metrics_isolation.py` MI-1/MI-2 assert prod file size unchanged after `promote_pass(ledger_path=tmp)`. Committed d728c87. Re-run against the now-empty file: **2 passed, 0 failed** (`production growth_metrics.jsonl unchanged (0 bytes)`).
+
+**Not touched (not this card's scope — Rule 4.1, stay in lane):**
+- Row 3 BODY (`server.py:3088` hardcoded "desktop") — separate card.
+- Row 24 SELF-OBSERVE (`record_behaviour` zero callers) — separate card.
+- Disconnection test on `plan.world` seam — separate card.
+
