@@ -1,8 +1,8 @@
 {
-  "card": "0012_RULINGS_and_the_live_run_that_proves_19.md",
+  "card": "0013_RESTART_NOW_and_the_staleness_guard.md",
   "status": "DONE",
-  "commits": ["7ab3bbe", "656c432", "b90372b"],
+  "commits": ["1095389", "2d39a1b", "3b0a9b6", "7ab3bbe"],
   "acceptance_met": true,
-  "evidence": "DUPLICATE close-out. Rulings 1 & 2 already landed at commit 7ab3bbe (memory/journal_router.py outcome guard + last_significance persist with outcome; runtime/the_moment.py Verified Speech gate on previous-turn significance line) and stamped by 656c432. Re-verified this pass: tests/test_wo126_meaning.py + tests/test_wo_rows_4_6_16.py = 16/16 PASS. Ruling 3 is emergent (no build). Live 20-turn run is David's lane. Duplicate moved to DONE/0012_..._DUPLICATE.md; canonical DONE stamp preserved.",
+  "evidence": "All four Row 26 fixes shipped and re-verified: (1) journal_router.py:150 writes 'ts'; (2) the_moment.py:142 sets 1800s bound; (3) stale ⇒ {} at the_moment.py:143,149-151; (4) WARNING log at the_moment.py:154-158 with age+threshold and dead-writer alarm. Tests re-run this pass: tests/test_wo126_meaning.py 10/10 PASS (incl. AT-STALE-EMPTY + AT-STALE-WARN); tests/test_wo_rows_4_6_16.py 6/6 PASS. Canonical fix commit: 1095389. Card moved DOING→DONE. Backend restart + live drive left to David/Designer per single-live-tester rule.",
   "blocker": null
 }

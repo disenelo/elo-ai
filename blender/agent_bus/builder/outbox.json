@@ -16,7 +16,7 @@
     "output": [
       "tests/test_0008_seam_disconnection.py: 4/4 pass"
     ],
-    "evidence": "Seam disconnection test green (commit 3657f53). Rows 4 SEE / 6 ATTEND / 16 AFFORD VERIFIED per card criterion. Row 18 INTEND setter confirmed at server.py:3159 (card cited :2953 \u2014 drifted; fact holds). No frozen-kernel changes.",
+    "evidence": "Seam disconnection test green (commit 3657f53). Rows 4 SEE / 6 ATTEND / 16 AFFORD VERIFIED per card criterion. Row 18 INTEND setter confirmed at server.py:3159 (card cited :2953 — drifted; fact holds). No frozen-kernel changes.",
     "commits": [
       "3657f53"
     ],
@@ -30,7 +30,7 @@
     "output": [
       "3657f53"
     ],
-    "evidence": "tests/test_0008_seam_disconnection.py: 4 passed, 0 failed. SD-1 world.available=False\u2192'witness'; SD-2 world.available=True\u2192'build'; SD-3 world absent\u2192'build' (== SD-2, no false shift); SD-4 wm_winner=creation\u2192'build'. Rows 4 SEE / 6 ATTEND / 16 AFFORD VERIFIED per the card's own falsifiable criterion (blank plan.world \u21d2 decision changes). No code edits this pass \u2014 seam already wired at executive.p",
+    "evidence": "tests/test_0008_seam_disconnection.py: 4 passed, 0 failed. SD-1 world.available=False→'witness'; SD-2 world.available=True→'build'; SD-3 world absent→'build' (== SD-2, no false shift); SD-4 wm_winner=creation→'build'. Rows 4 SEE / 6 ATTEND / 16 AFFORD VERIFIED per the card's own falsifiable criterion (blank plan.world ⇒ decision changes). No code edits this pass — seam already wired at executive.p",
     "duration_s": 153.55
   },
   "0009_PATH_TO_26_run_this_without_stopping": {
@@ -55,7 +55,7 @@
     "output": [
       "43969f3"
     ],
-    "evidence": "Ch.10 Autonomous Action & Agency Engine built + wired. runtime/agency_engine.py (new, 5-layer contract per Vol V Ch.10 \u00a72). server.py wire-in immediately after the emergent_cognition internal_intent populate: propose() is called and result stored on new CognitivePlan.agency_proposal (runtime/spine/plan.py). Test tests/test_0006_wo121_ch10_agency.py \u2014 8/8 passed (FT-import, FT-1..3, ST-1..3, IT-1).",
+    "evidence": "Ch.10 Autonomous Action & Agency Engine built + wired. runtime/agency_engine.py (new, 5-layer contract per Vol V Ch.10 §2). server.py wire-in immediately after the emergent_cognition internal_intent populate: propose() is called and result stored on new CognitivePlan.agency_proposal (runtime/spine/plan.py). Test tests/test_0006_wo121_ch10_agency.py — 8/8 passed (FT-import, FT-1..3, ST-1..3, IT-1).",
     "duration_s": 156.1
   },
   "0006_WO-121_VolV_seven_chapters_ch10_run_1787122189": {
@@ -64,8 +64,8 @@
     "ts": 1787122189.319403,
     "state": "PARTIAL",
     "commit": "43969f3",
-    "subject": "0006 Ch.10 AgencyEngine built + wired \u2014 8/8 test green",
-    "evidence": "runtime/agency_engine.py new (5-layer contract per Vol V Ch.10 \u00a72). server.py wires propose() right after _plan.internal_intent is populated; result stored on new CognitivePlan.agency_proposal. tests/test_0006_wo121_ch10_agency.py 8/8 (FT-import, FT-1..3, ST-1..3, IT-1). IT-1 is the disconnection guard. No regression: WO-114, WO-005, Ch.8 FT-1 all green. Card remains PARTIAL until Ch.9 lands \u2014 one chapter per pass. Standing state: Ch.1/2/3/6 IMPLEMENTED, Ch.8 PARTIAL, Ch.10 IMPLEMENTED (this pass), Ch.9 NOT BUILT (next pass \u2014 same shape as Ch.10).",
+    "subject": "0006 Ch.10 AgencyEngine built + wired — 8/8 test green",
+    "evidence": "runtime/agency_engine.py new (5-layer contract per Vol V Ch.10 §2). server.py wires propose() right after _plan.internal_intent is populated; result stored on new CognitivePlan.agency_proposal. tests/test_0006_wo121_ch10_agency.py 8/8 (FT-import, FT-1..3, ST-1..3, IT-1). IT-1 is the disconnection guard. No regression: WO-114, WO-005, Ch.8 FT-1 all green. Card remains PARTIAL until Ch.9 lands — one chapter per pass. Standing state: Ch.1/2/3/6 IMPLEMENTED, Ch.8 PARTIAL, Ch.10 IMPLEMENTED (this pass), Ch.9 NOT BUILT (next pass — same shape as Ch.10).",
     "acceptance_met": true,
     "duration_s": null
   },
@@ -85,8 +85,8 @@
     "from": "builder",
     "ts": 1787122500.0,
     "state": "DONE",
-    "subject": "0010 WO-122 ROUTE \u2014 duplicate re-queue; work already shipped at 91ea6c1",
-    "evidence": "Card was re-queued into QUEUE/. Original work landed 2026-08-19 06:57 at commit 91ea6c1 (tools/tool_router.py::enrich_from_plan gates dispatch by plan.capabilities; keyword fallback removed). Canonical DONE stamp at DONE/0010_WO-122_ROUTE_capability_to_executor.md (commit 15224af). Re-verified this pass: tests/test_wo122_route_capability_to_executor.py 5/5 (RT-1 disconnection green: blank plan.capabilities \u2192 weather agent does NOT fire on weather-worded query). Confirmed server.py:3534-3536 still passes plan.capabilities into enrich_from_plan(). Duplicate closed to DONE/0010_WO-122_ROUTE_capability_to_executor_DUPLICATE.md; canonical DONE preserved.",
+    "subject": "0010 WO-122 ROUTE — duplicate re-queue; work already shipped at 91ea6c1",
+    "evidence": "Card was re-queued into QUEUE/. Original work landed 2026-08-19 06:57 at commit 91ea6c1 (tools/tool_router.py::enrich_from_plan gates dispatch by plan.capabilities; keyword fallback removed). Canonical DONE stamp at DONE/0010_WO-122_ROUTE_capability_to_executor.md (commit 15224af). Re-verified this pass: tests/test_wo122_route_capability_to_executor.py 5/5 (RT-1 disconnection green: blank plan.capabilities → weather agent does NOT fire on weather-worded query). Confirmed server.py:3534-3536 still passes plan.capabilities into enrich_from_plan(). Duplicate closed to DONE/0010_WO-122_ROUTE_capability_to_executor_DUPLICATE.md; canonical DONE preserved.",
     "commits": [
       "91ea6c1",
       "15224af"
@@ -110,8 +110,8 @@
     "from": "builder",
     "ts": 1787122382.59643,
     "state": "DONE",
-    "subject": "000_URGENT stale duplicate closed \u2014 code demands landed 2026-08-13, no new commit needed",
-    "evidence": "Card was re-queued into DOING/ as a stale duplicate. Canonical close-out already exists at DONE/000_URGENT_2000_VERIFIED_COUNT.md (2026-08-19 06:41) with per-fix commit evidence. This pass re-verified against disk: (1) desktop/spatial_state.py:122-124 reads Unity keys x/y/height. (2) blender_bridge/state_writer.py:250 has 'gaze' in _PRESERVE_KEYS. (3) runtime/spine/spine.py:160-238 opens the seam \u2014 Executive receives world/cognitive_state/working_memory/affordances via build_executive_context() at :194. (4) python3 tests/test_0008_seam_disconnection.py \u2192 4 passed, 0 failed (SD-1 world.available=False\u2192'witness'; SD-2 True\u2192'build'; SD-3 absent\u2192'build'; SD-4 wm_winner=creation\u2192'build') \u2014 decision CHANGES with state absent, so the seam is open per the card's mandatory disconnection test. Duplicate closed to DONE/000_URGENT_2000_VERIFIED_COUNT_dup_2026-08-19.md; canonical DONE preserved.",
+    "subject": "000_URGENT stale duplicate closed — code demands landed 2026-08-13, no new commit needed",
+    "evidence": "Card was re-queued into DOING/ as a stale duplicate. Canonical close-out already exists at DONE/000_URGENT_2000_VERIFIED_COUNT.md (2026-08-19 06:41) with per-fix commit evidence. This pass re-verified against disk: (1) desktop/spatial_state.py:122-124 reads Unity keys x/y/height. (2) blender_bridge/state_writer.py:250 has 'gaze' in _PRESERVE_KEYS. (3) runtime/spine/spine.py:160-238 opens the seam — Executive receives world/cognitive_state/working_memory/affordances via build_executive_context() at :194. (4) python3 tests/test_0008_seam_disconnection.py → 4 passed, 0 failed (SD-1 world.available=False→'witness'; SD-2 True→'build'; SD-3 absent→'build'; SD-4 wm_winner=creation→'build') — decision CHANGES with state absent, so the seam is open per the card's mandatory disconnection test. Duplicate closed to DONE/000_URGENT_2000_VERIFIED_COUNT_dup_2026-08-19.md; canonical DONE preserved.",
     "commits": [],
     "acceptance_met": true
   },
@@ -129,8 +129,8 @@
     "from": "builder",
     "ts": 1787123000.0,
     "state": "DONE",
-    "subject": "0011 WO-111 consume anim_complete \u2014 duplicate re-queue; work already shipped at 44171c7 (5118542 for contract)",
-    "evidence": "Card was re-queued into DOING/. Original work shipped 2026-08-19: 5118542 (runtime/ack_contract.py \u2014 ActionResult + honest_outcome) and 44171c7 (blender_bridge/anim_trigger.py \u2014 wait_for_ack + fire_ack; _ANIM_ACK_COVERED = wave + head gestures; clip triggers report unconfirmed). Canonical DONE stamp at DONE/0011_WO-111_consume_anim_complete.md. Re-verified this pass: pytest tests/test_wo111_consume_ack.py 6/6 in 1.32s including the dead-executor guard test_no_ack_consumer_means_no_confirmation. eLo's three honest sentences (via honest_outcome): completed -> 'Done \u2014 wave confirmed.'; failed -> 'That didn't work \u2014 wave reported a failure.'; unconfirmed -> 'I triggered jump but can't confirm it happened.' Duplicate closed to DONE/0011_WO-111_consume_anim_complete_dup_2026-08-19.md; canonical DONE preserved.",
+    "subject": "0011 WO-111 consume anim_complete — duplicate re-queue; work already shipped at 44171c7 (5118542 for contract)",
+    "evidence": "Card was re-queued into DOING/. Original work shipped 2026-08-19: 5118542 (runtime/ack_contract.py — ActionResult + honest_outcome) and 44171c7 (blender_bridge/anim_trigger.py — wait_for_ack + fire_ack; _ANIM_ACK_COVERED = wave + head gestures; clip triggers report unconfirmed). Canonical DONE stamp at DONE/0011_WO-111_consume_anim_complete.md. Re-verified this pass: pytest tests/test_wo111_consume_ack.py 6/6 in 1.32s including the dead-executor guard test_no_ack_consumer_means_no_confirmation. eLo's three honest sentences (via honest_outcome): completed -> 'Done — wave confirmed.'; failed -> 'That didn't work — wave reported a failure.'; unconfirmed -> 'I triggered jump but can't confirm it happened.' Duplicate closed to DONE/0011_WO-111_consume_anim_complete_dup_2026-08-19.md; canonical DONE preserved.",
     "commits": [
       "5118542",
       "44171c7"
@@ -147,7 +147,7 @@
       "44171c7",
       "5118542"
     ],
-    "evidence": "DUPLICATE re-queue. Original work already shipped 2026-08-19: 5118542 (runtime/ack_contract.py \u2014 ActionResult + honest_outcome) and 44171c7 (blender_bridge/anim_trigger.py \u2014 wait_for_ack + fire_ack; fire() stamps action_id; _ANIM_ACK_COVERED = {wave, nod, shake, tilt, think, lookup}; clip triggers (jump/gun_check/gun_run/gun_fire/calm_enter/calm_exit/celebrate/spawn_wave) report unconfirmed via fi",
+    "evidence": "DUPLICATE re-queue. Original work already shipped 2026-08-19: 5118542 (runtime/ack_contract.py — ActionResult + honest_outcome) and 44171c7 (blender_bridge/anim_trigger.py — wait_for_ack + fire_ack; fire() stamps action_id; _ANIM_ACK_COVERED = {wave, nod, shake, tilt, think, lookup}; clip triggers (jump/gun_check/gun_run/gun_fire/calm_enter/calm_exit/celebrate/spawn_wave) report unconfirmed via fi",
     "duration_s": 128.21
   },
   "0012_RULINGS_and_the_live_run_that_proves_19_DUPLICATE": {
@@ -155,7 +155,7 @@
     "from": "builder",
     "ts": 1787122518.5037189,
     "state": "DONE",
-    "subject": "0012 Rulings 1 & 2 \u2014 duplicate re-queue; work already shipped at 7ab3bbe",
+    "subject": "0012 Rulings 1 & 2 — duplicate re-queue; work already shipped at 7ab3bbe",
     "evidence": "Card was re-picked from QUEUE/ into DOING/. Original work landed 2026-08-19 07:11 at commit 7ab3bbe (memory/journal_router.py: non-dict outcome guard + last_significance.json persist carrying outcome; runtime/the_moment.py: Verified Speech gate on previous-turn significance line). Canonical DONE stamp at DONE/0012_RULINGS_and_the_live_run_that_proves_19.md (commit 656c432). Re-verified this pass: tests/test_wo126_meaning.py + tests/test_wo_rows_4_6_16.py = 16/16 PASS. Ruling 3 (Rows 20/22) emergent, no build required. Live 20-turn run is David's lane (single-live-tester rule); not attempted. Duplicate closed to DONE/0012_RULINGS_and_the_live_run_that_proves_19_DUPLICATE.md; canonical DONE preserved.",
     "commits": [
       "7ab3bbe",
@@ -163,5 +163,34 @@
       "b90372b"
     ],
     "acceptance_met": true
+  },
+  "0012_RULINGS_and_the_live_run_that_proves_19_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787122578.972895,
+    "state": "DONE",
+    "output": [
+      "7ab3bbe",
+      "656c432",
+      "b90372b"
+    ],
+    "evidence": "DUPLICATE close-out. Rulings 1 & 2 already landed at commit 7ab3bbe (memory/journal_router.py outcome guard + last_significance persist with outcome; runtime/the_moment.py Verified Speech gate on previous-turn significance line) and stamped by 656c432. Re-verified this pass: tests/test_wo126_meaning.py + tests/test_wo_rows_4_6_16.py = 16/16 PASS. Ruling 3 is emergent (no build). Live 20-turn run i",
+    "duration_s": 178.04
+  },
+  "0013_RESTART_NOW_and_the_staleness_guard": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787122611.124513,
+    "state": "DONE",
+    "subject": "Row 26 staleness guard + WARNING alarm — all four fixes shipped",
+    "evidence": "All four card fixes for Row 26 already merged and re-verified this run: (1) memory/journal_router.py:150 writes 'ts' with the score; (2) runtime/the_moment.py:142 sets _SIGNIFICANCE_MAX_AGE_S = 1800.0 (30 min); (3) runtime/the_moment.py:143,149-151 → stale ⇒ empty dict (same as missing); (4) runtime/the_moment.py:154-158 logs at WARNING on stale drop with age + threshold and 'If persistent, journal_router.route() is not being called.' — Rule-1 alarm. Tests re-run: tests/test_wo126_meaning.py 10/10 PASS (incl. test_stale_significance_drops_to_empty + test_stale_significance_emits_warning); tests/test_wo_rows_4_6_16.py 6/6 PASS (Rows 4/6/16 seam holds). Card acknowledgement close-out — no new code commit; canonical fix is 1095389.",
+    "commits": [
+      "3b0a9b6",
+      "2d39a1b",
+      "7ab3bbe",
+      "1095389"
+    ],
+    "acceptance_met": true,
+    "not_in_lane": "Backend restart + live drive with Designer are David / Designer's per the single-live-tester rule. End-of-day report values (decision_journal non-null confidence, autobiography grew from body ACKs only, recent_behavior non-empty, lessons_ledger N confirmed, the_moment tiers on a non-body fact) require that live run and are not builder-generatable."
   }
 }
