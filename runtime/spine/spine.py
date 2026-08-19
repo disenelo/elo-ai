@@ -404,6 +404,12 @@ def _conversation_faculty(plan: CognitivePlan) -> CognitivePlan:
             plan.direct_backend  = "direct"
             return plan
 
+        # ── 0021 P0-X: David's name resolves from who_i_am_with, not from an LLM guess
+        if any(p in raw_lower for p in _srv._DAVID_NAME_TRIGGERS):
+            plan.direct_response = _srv._david_name_response()
+            plan.direct_backend  = "direct"
+            return plan
+
         # ── CT4V-07: Structural claim-type gate — tiers only fall, never rise ──
         # Checks memory / capability / history sources before the LLM is called.
         # UNKNOWN tier → direct response returned, LLM not consulted. Rule 1 alarm logged.

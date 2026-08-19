@@ -25,6 +25,18 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _GRAPH_PATH      = os.path.join(_ROOT, "relationships", "world_graph.json")
 _CONCEPTS_PATH   = os.path.join(_ROOT, "relationships", "concepts.json")
 _VIEWPOINTS_PATH = os.path.join(_ROOT, "knowledge",     "viewpoints.json")
+# WO-102 (Vol XXIV §1.3.5-7): Person / Place / Event stores. Empty by default —
+# David populates them; nothing is seeded. Card 0021 P0-Y: loading them is a
+# prerequisite for eLo to know his own world instead of the internet.
+_PEOPLE_PATH     = os.path.join(_ROOT, "relationships", "people.json")
+_PLACES_PATH     = os.path.join(_ROOT, "relationships", "places.json")
+_EVENTS_PATH     = os.path.join(_ROOT, "relationships", "events.json")
+
+# WO-102: closed set of entity types. Free-form was how two ontologies drifted apart.
+_ALLOWED_ENTITY_TYPES = frozenset({
+    "project", "brand", "character", "companion", "state", "mechanic",
+    "world_stage", "system", "person", "place", "event",
+})
 
 # Module-level cache — loaded once per process
 _graph:      dict = {}
@@ -32,16 +44,109 @@ _concepts:   dict = {}
 _viewpoints: dict = {}
 
 
+def _load_json(path: str) -> dict:
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _person_to_entity(p: dict) -> dict:
+    """Project a Vol XXIV Person into the entity shape retrieve() expects."""
+    facts = p.get("facts") or []
+    descr = "; ".join(str(f.get("fact", "")).strip() for f in facts if f.get("fact")) or ""
+    relation = str(p.get("relation") or "").strip()
+    note     = str(p.get("relation_note") or "").strip()
+    header   = f"{p.get('name', p.get('id', ''))} — {relation}".strip(" —")
+    body     = " — ".join(bit for bit in (note, descr) if bit)
+    aliases  = [str(a) for a in (p.get("also_known_as") or []) if a]
+    keywords = list(p.get("keywords") or [])
+    for tok in [str(p.get("name") or ""), *aliases]:
+        if tok:
+            keywords.append(tok.lower())
+    return {
+        "id":          p.get("id", ""),
+        "name":        p.get("name", p.get("id", "")),
+        "type":        "person",
+        "description": (header + (": " + body if body else "")).strip(": "),
+        "keywords":    [k for k in (kw.lower() for kw in keywords) if k],
+        "confidence":  1.0,
+        "sensitivity": p.get("sensitivity", "normal"),
+    }
+
+
+def _place_to_entity(pl: dict) -> dict:
+    keywords = list(pl.get("keywords") or [])
+    for tok in [str(pl.get("name") or ""), str(pl.get("locality") or "")]:
+        if tok:
+            keywords.append(tok.lower())
+    sig = pl.get("significance") or ""
+    return {
+        "id":          pl.get("id", ""),
+        "name":        pl.get("name", pl.get("id", "")),
+        "type":        "place",
+        "description": f"{pl.get('kind', 'place')} — {sig}" if sig else pl.get("kind", "place"),
+        "keywords":    [k for k in (kw.lower() for kw in keywords) if k],
+        "confidence":  1.0,
+        "sensitivity": pl.get("sensitivity", "normal"),
+    }
+
+
+def _event_to_entity(ev: dict) -> dict:
+    keywords = list(ev.get("keywords") or [])
+    what = str(ev.get("what") or "").strip()
+    outcome = str(ev.get("outcome") or "").strip()
+    when = ev.get("when") or {}
+    when_str = str(when.get("date") or "").strip()
+    header = f"event: {what}" if what else "event"
+    body = " — ".join(bit for bit in (when_str, outcome) if bit)
+    return {
+        "id":          ev.get("id", ""),
+        "name":        ev.get("id", "event"),
+        "type":        "event",
+        "description": (header + (" — " + body if body else "")).strip(),
+        "keywords":    [k for k in (kw.lower() for kw in keywords) if k],
+        "confidence":  1.0,
+        "sensitivity": ev.get("sensitivity", "normal"),
+    }
+
+
 def _load_all():
     global _graph, _concepts, _viewpoints
     if _graph:
         return
-    try:
-        with open(_GRAPH_PATH,      encoding="utf-8") as f: _graph      = json.load(f)
-        with open(_CONCEPTS_PATH,   encoding="utf-8") as f: _concepts   = json.load(f)
-        with open(_VIEWPOINTS_PATH, encoding="utf-8") as f: _viewpoints = json.load(f)
-    except Exception:
-        _graph = _concepts = _viewpoints = {}
+    _graph      = _load_json(_GRAPH_PATH)      or {"entities": [], "relationships": []}
+    _concepts   = _load_json(_CONCEPTS_PATH)
+    _viewpoints = _load_json(_VIEWPOINTS_PATH)
+
+    # WO-102: merge people / places / events into the single entity table (Ruling A —
+    # one canonical graph). Type validation: unknown types are dropped with a warning.
+    import logging as _lg
+    _log = _lg.getLogger(__name__)
+    for src, projector in (
+        (_load_json(_PEOPLE_PATH).get("people", []), _person_to_entity),
+        (_load_json(_PLACES_PATH).get("places", []), _place_to_entity),
+        (_load_json(_EVENTS_PATH).get("events", []), _event_to_entity),
+    ):
+        for item in src:
+            try:
+                ent = projector(item)
+                if ent["type"] not in _ALLOWED_ENTITY_TYPES:
+                    _log.warning("WO-102: dropped entity id=%r with out-of-set type=%r",
+                                 ent.get("id"), ent.get("type"))
+                    continue
+                # sensitivity=private hides the entry from open retrieval (Vol XXIII).
+                if ent.get("sensitivity") == "private":
+                    continue
+                _graph.setdefault("entities", []).append(ent)
+            except Exception as _e:
+                _log.warning("WO-102: entity projection failed: %s", _e)
+
+    # Ruling A: identity/world_graph.json is retired. If it exists, log — do not load.
+    _legacy = os.path.join(_ROOT, "identity", "world_graph.json")
+    if os.path.exists(_legacy):
+        _log.warning("Ruling A: legacy identity/world_graph.json present but IGNORED — canonical graph is relationships/")
 
 
 # ── entity matching ────────────────────────────────────────────────────────────

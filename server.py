@@ -1413,6 +1413,41 @@ def _identity_response() -> str:
     ]
     return random.choice(pool)
 
+
+# 0021 P0-X: David-name triggers — resolves from _elo_self.who_i_am_with, never LLM guess.
+# The transcript failure was "What is my name?" → "I think you're asking about my name."
+# The field exists in state; nothing consulted it. Fix: read from state, short-circuit.
+_DAVID_NAME_TRIGGERS = (
+    "what is my name",
+    "what's my name",
+    "whats my name",
+    "who am i",
+    "tell me my name",
+    "do you know my name",
+    "what do you call me",
+    "what am i called",
+    "say my name",
+    "my name?",
+)
+
+
+def _david_name_response() -> str:
+    """Return David's name rendered from _elo_self.who_i_am_with — never a guess."""
+    name = "David"
+    try:
+        if _elo_self and _elo_self.who_i_am_with:
+            name = _elo_self.who_i_am_with
+    except Exception:
+        pass
+    pool = [
+        f"You're {name}.",
+        f"{name}.",
+        f"{name} — that's you.",
+        f"You're {name}. Same as always.",
+        f"{name}, obviously.",
+    ]
+    return random.choice(pool)
+
 # ── multilingual greetings ─────────────────────────────────────────────────────
 # eLo tries a foreign greeting, catches himself, lands back warmly.
 # Format: (foreign phrase, eLo's correction beat)
@@ -2080,6 +2115,38 @@ def _process_turn(raw: str) -> dict:
         except Exception as _gy_err:
             import sys as _gy_sys
             print(f"[world_graph_gate] error: {_gy_err}", file=_gy_sys.stderr)
+
+        # ── 0021 P0-Y: proper-noun miss short-circuit ─────────────────────────
+        # Transcript failure: "Who is K-7" → Kalinin K-7 aircraft (web laundered as
+        # eLo's own knowledge). Card 0021: proper-noun who-is questions that miss
+        # the graph must resolve to "I don't know who that is — tell me?" — never
+        # a web search presented as knowledge of his own world.
+        if not _world_graph_hit:
+            # Inline (?i:...) makes "who/what/is/are" case-insensitive; the captured
+            # proper-noun keeps its case so we only fire for capitalised nouns.
+            _PN_ASK = _re.compile(
+                r"\b(?i:who|what)(?i:'s|\s+is|\s+are)\s+([A-Z][A-Za-z0-9\-]{1,30})\b"
+            )
+            _pn_m = _PN_ASK.search(_original_raw)
+            if _pn_m:
+                _pn_name = _pn_m.group(1)
+                # Skip pronouns / common capitalised words at sentence start.
+                if _pn_name.lower() not in {"i", "it", "the", "that", "this", "you",
+                                             "he", "she", "they", "we", "your", "my"}:
+                    import logging as _pn_log
+                    _pn_log.getLogger("elo.proper_noun_gate").info(
+                        "0021 P0-Y: proper-noun miss %r → don't-know short-circuit", _pn_name
+                    )
+                    _bypass_journal(_original_raw, backend="proper_noun_gate",
+                                    handler_class="COGNITIVE", line=2140)
+                    _pn_reply = f"I don't know who {_pn_name} is — tell me?"
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_pn_reply)
+                    except Exception:
+                        pass
+                    return {"response": _pn_reply, "mode": "direct",
+                            "backend": "proper_noun_gate"}
 
         # ── Web search ───────────────────────────────────────────────────────
         try:
