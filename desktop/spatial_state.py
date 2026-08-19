@@ -89,6 +89,7 @@ class EloSpatial:
     screen_w:  int   = 2560
     screen_h:  int   = 1440
     gaze:      "GazeSpatial | None" = None   # WO-099: gaze awareness UP
+    degraded:  bool  = False   # True when the spatial read failed and defaults are in use
 
     @property
     def pixel_x(self) -> int:
@@ -175,14 +176,16 @@ def get_elo_spatial() -> EloSpatial:
         return spatial
     except Exception as _e:
         _log.warning("get_elo_spatial: elo_spatial.json key read failed — %s", _e)
+        spatial.degraded = True
 
     # Fallback: read window from presence_state.json
     try:
         with open(_PRESENCE_PATH, encoding="utf-8") as f:
             p = json.load(f)
         spatial.window = p.get("frontWindowName", "")
-    except Exception:
-        pass
+    except Exception as _pe:
+        _log.warning("get_elo_spatial: presence_state.json read failed — %s", _pe)
+        spatial.degraded = True
 
     return spatial
 
