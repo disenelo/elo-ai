@@ -95,7 +95,7 @@ turns) still biting, or the Executive failing silently on these paths.
 
 ## CLOSE-OUT — Builder, 2026-08-19
 
-Commit: `<pending — appended after commit>`
+Commit: `aa380e0`
 
 ### D-1 · proposal loop — **fixed at the source**
 - `faculties/synthesis/observer.py`: broadened decline detection (`is_decline()` +
