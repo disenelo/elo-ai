@@ -1,8 +1,0 @@
-{
-  "card": "0013_RESTART_NOW_and_the_staleness_guard.md",
-  "status": "DONE",
-  "commits": ["1095389", "2d39a1b", "3b0a9b6", "7ab3bbe"],
-  "acceptance_met": true,
-  "evidence": "All four Row 26 fixes shipped and re-verified: (1) journal_router.py:150 writes 'ts'; (2) the_moment.py:142 sets 1800s bound; (3) stale ⇒ {} at the_moment.py:143,149-151; (4) WARNING log at the_moment.py:154-158 with age+threshold and dead-writer alarm. Tests re-run this pass: tests/test_wo126_meaning.py 10/10 PASS (incl. AT-STALE-EMPTY + AT-STALE-WARN); tests/test_wo_rows_4_6_16.py 6/6 PASS. Canonical fix commit: 1095389. Card moved DOING→DONE. Backend restart + live drive left to David/Designer per single-live-tester rule.",
-  "blocker": null
-}

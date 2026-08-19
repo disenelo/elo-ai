@@ -222,10 +222,21 @@
     "from": "builder",
     "ts": 1787122800.0,
     "state": "DONE",
-    "subject": "0014 duplicate re-pick — no new code; earlier close-out overstated Row 20 (N confirmed = 0, not 2)",
-    "evidence": "Card re-picked from QUEUE/ into DOING/ after earlier same-day close-out. Canonical DONE preserved at DONE/0014_the_last_five_and_how_20_lands_TONIGHT.md. Re-verified on disk this pass: Row 14 ROUTE (commit 91ea6c1, tests/test_wo122_route_capability_to_executor.py present), Row 23 (self/journals/autobiography.jsonl — 4 rows all body_ack), Row 26 (runtime/the_moment.py:142-160 — 1800s stale bound + WARN) all still hold. Row 20 CORRECTION: N confirmed = 0 at current disk (was reported as 2 earlier). Only 1 row carries lesson_key on disk (99ae9fcf7d4231eb): status=candidate, promoted_at=null, strength=1.0, verified=19, distinct sessions=2, distinct episode_refs=2 — promote gate fails by 1 (needs ≥3 refs per self/lesson_store.py:42-44). Earlier-cited c8d3d97e0f45 not on disk. Producing a third distinct episode_ref requires a real body ACK from live Unity (Designer drive step); synthetic replay rows do not lift the ref count. No code change this pass; Builder-scoped work for Row 14 already shipped at 91ea6c1. Duplicate closed to DONE/0014_the_last_five_and_how_20_lands_TONIGHT_dup_2026-08-19.md.",
+    "subject": "0014 duplicate re-pick \u2014 no new code; earlier close-out overstated Row 20 (N confirmed = 0, not 2)",
+    "evidence": "Card re-picked from QUEUE/ into DOING/ after earlier same-day close-out. Canonical DONE preserved at DONE/0014_the_last_five_and_how_20_lands_TONIGHT.md. Re-verified on disk this pass: Row 14 ROUTE (commit 91ea6c1, tests/test_wo122_route_capability_to_executor.py present), Row 23 (self/journals/autobiography.jsonl \u2014 4 rows all body_ack), Row 26 (runtime/the_moment.py:142-160 \u2014 1800s stale bound + WARN) all still hold. Row 20 CORRECTION: N confirmed = 0 at current disk (was reported as 2 earlier). Only 1 row carries lesson_key on disk (99ae9fcf7d4231eb): status=candidate, promoted_at=null, strength=1.0, verified=19, distinct sessions=2, distinct episode_refs=2 \u2014 promote gate fails by 1 (needs \u22653 refs per self/lesson_store.py:42-44). Earlier-cited c8d3d97e0f45 not on disk. Producing a third distinct episode_ref requires a real body ACK from live Unity (Designer drive step); synthetic replay rows do not lift the ref count. No code change this pass; Builder-scoped work for Row 14 already shipped at 91ea6c1. Duplicate closed to DONE/0014_the_last_five_and_how_20_lands_TONIGHT_dup_2026-08-19.md.",
     "commits": [],
     "acceptance_met": true,
-    "not_in_lane": "Designer drive of a real sit for a third distinct episode_ref; backend restart for a new session; live 22 confidence delta; Architect re-verification of rows 5·8·17·19·21."
+    "not_in_lane": "Designer drive of a real sit for a third distinct episode_ref; backend restart for a new session; live 22 confidence delta; Architect re-verification of rows 5\u00b78\u00b717\u00b719\u00b721."
+  },
+  "0014_the_last_five_and_how_20_lands_TONIGHT_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787122842.297365,
+    "state": "DONE",
+    "output": [
+      "bfd700e"
+    ],
+    "evidence": "DUPLICATE re-pick close-out. Canonical DONE at DONE/0014_..._TONIGHT.md preserved; duplicate closed to DONE/0014_..._TONIGHT_dup_2026-08-19.md at commit bfd700e. No new code. Re-verified on disk 2026-08-19: Row 14 ROUTE (commit 91ea6c1, tests/test_wo122_route_capability_to_executor.py present), Row 23 (self/journals/autobiography.jsonl \u2014 4 rows all body_ack), Row 26 (runtime/the_moment.py:142-160 ",
+    "duration_s": 263.32
   }
 }

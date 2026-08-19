@@ -62,3 +62,33 @@ WO-104 needs a GPU session, so it **cannot** be front of queue. Do these first, 
    `embodiment="desktop"` (`server.py:3088`) and `record_behaviour`'s zero callers.
 3. **WO-103** — disconnection-proof tests. It's the rule the rest depend on.
 4. Then WO-102, WO-CANON-XXV. WO-104 when a GPU session exists.
+
+---
+
+## BUILDER RESULT — 2026-08-19
+
+**Status:** DONE
+**Commit anchor:** `3657f53` (existing — card 0008 seam disconnection proof)
+**Test run:** `python3 tests/test_0008_seam_disconnection.py` → **4 passed, 0 failed**
+
+```
+SD-1 world.available=False → 'witness'          ✅
+SD-2 world.available=True  → 'build'            ✅
+SD-3 world absent          → 'build' (== SD-2)  ✅
+SD-4 wm_winner=creation    → 'build'            ✅
+```
+
+**Rows verified by this run:**
+- **4 SEE**   — `world_state.available=False` shifts `build/connect/celebrate` → `witness` (executive.py:306-310) [VERIFIED]
+- **6 ATTEND** — `wm_winner ∈ {creation,build}` overrides `reflect` → `build` (executive.py:313-316) [VERIFIED]
+- **16 AFFORD** — same mechanism as row 4 (available=False → witness) [VERIFIED]
+
+**Row 18 INTEND confirmation for the board:**
+- `intent_source: str = "david"` at `runtime/spine/plan.py:27` [VERIFIED]
+- `_plan.intent_source = "self"` setter at `server.py:3159` (card cited `:2953` — file has drifted; fact confirmed) [VERIFIED]
+
+**Falsifiable seam test lives at:** `tests/test_0008_seam_disconnection.py`. It is the artefact the ruling required. No code changes needed this pass — the seam is wired, the proof runs green.
+
+**Not touched (per Rule 3 — inputs build, logic asks):** the 9 CAL actions, the 5 tones, priority order. Additive composition only.
+
+**Next per card ordering:** card `0007` (truncate + BODY hardcoded embodiment + `record_behaviour` zero callers).

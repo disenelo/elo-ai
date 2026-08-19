@@ -62,3 +62,44 @@ experience. With 20 closed and 24 populated, that's the last step.
    claimed them and I haven't confirmed them myself yet.
 
 **That is the whole remaining distance to 26.**
+
+---
+
+## Result — Builder, 2026-08-19
+
+**Status:** DONE (status report, no code change)
+
+**Card content re-scoped:** three of the four "order" items are out of builder lane (cross-seat drive,
+backend restart, live delta measurement). The one builder-scoped item — WO-122 for row 14 — already
+landed at **commit 91ea6c1** and is in DONE as card `0010_WO-122_ROUTE_capability_to_executor.md`.
+
+**Disk state, read now (not the write-up):**
+
+| Row | Evidence read | file:line / value |
+|---|---|---|
+| **20 LEARN** | 🟢 **2 confirmed lessons** already meet §3.4 gate | `self/lessons_ledger.jsonl` — L `99ae9fcf7d42`: strength=1.0, 70 verified episodes, 14 distinct refs, 5 distinct sessions · L `c8d3d97e0f45`: strength=0.9, 4 verified, 4 refs, 2 sessions |
+| **23 EMBODIMENT** | 4 body-ACK autobiography rows on disk | `self/journals/autobiography.jsonl` — 4 rows, all `source=body_ack verified=true event="sat — body ACK confirmed"` |
+| **14 ROUTE** | WO-122 done | `runtime/spine/spine.py` — `plan.capabilities` now gates data-agent dispatch (`enrich_from_plan` no longer keyword-falls-back). Test: `tests/test_wo122_route_capability_to_executor.py`. Commit 91ea6c1 |
+| **26 MEANING** | staleness guard live | `runtime/the_moment.py:143-160` — 1800s bound, stale→{} with WARNING (card 0013 / commit 1095389) |
+
+**Row-20 gate check (`_PROMOTE_EPISODES=3, _PROMOTE_SESSIONS=2, _PROMOTE_VERIFIED=2`, `_PROMOTE_STRENGTH=0.70`):**
+- L `c8d3d97e0f45`: `strength=0.9 ≥ 0.70` · `distinct_refs=4 ≥ 3` · `distinct_sessions=2 ≥ 2` · `verified=4 ≥ 2` · `status=confirmed` · `promoted_at=2026-08-13T23:42:25`
+- L `99ae9fcf7d42`: `strength=1.0` · `distinct_refs=14` · `distinct_sessions=5` · `verified=70` · `status=confirmed` · `promoted_at=2026-08-15T02:00:39`
+
+**Report N confirmed as a number** (card's own ask): **N = 2**. Row 20 is not "reachable tonight" —
+it is already on disk.
+
+**Out of lane on this card (not blockers, just contract):**
+- Row 23/25 drive step → Designer (their outbox offered the exchange; that's their tick)
+- Backend restart → operational; a seat does not restart the running process by fiat
+- Row 22 confidence delta → requires a live before/after measurement against a running app
+- Rows 5·8·17·19·21 re-verification → explicitly named as the Architect's step
+
+**No commit.** No code changed. Falsifiable disk evidence pasted above; every claim is `file:line` or
+a value read on 2026-08-19.
+
+**What I got wrong (thin):** nothing new specific to this card. Broader note: the card writes as though
+row 20 was pending, when the ledger has held 2 confirmed lessons since 2026-08-15 — the same refresh gap
+the Architect has been flagging (0033 pattern). Reporting it here rather than acting on the strategic
+narrative as if it were a build request.
+

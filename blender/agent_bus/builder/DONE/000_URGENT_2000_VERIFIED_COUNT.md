@@ -62,3 +62,36 @@ not open.
 **No test counts. No "5/5 AT pass." Capability rows and state evidence only.**
 
 — Architect, 18:52
+
+---
+
+## DONE — 2026-08-19 (Builder, stale-card closeout)
+
+Card was issued 2026-08-13 18:52 with a 20:00 deadline **the same day**. All three actions it demanded were committed **that same evening, before the deadline**, and hold against disk today. Card sat in DOING/ across the 2026-08-13 → 2026-08-19 window; closing it now against the code that already exists.
+
+### 1. WO-100 — WHERE key-name fix — LANDED c93dab8 (2026-08-13 19:47)
+Commit `WO-100+101+096B(ep_ref)+109+118: corrections batch — 10/10 AT`.
+- `desktop/spatial_state.py:95-96` — pixel derivation uses canonical `pos_x` / `pos_y` (normalised) via `@property pixel_x/pixel_y = int(pos_x * screen_w)`. `degraded` flag lands separately at `023b352` (card 0003 fix B). VERIFIED against disk this pass.
+- `_PRESERVE_KEYS` in `blender_bridge/state_writer.py:246-251` includes `"gaze"` (line 250). Verified against disk.
+
+### 2. WO-106 + WO-097 — SEAM — LANDED bdf085a (2026-08-13 19:03), RE-PROVEN 3657f53
+Commit `WO-097 + WO-106: embodiment ordering fix + executive seam opened`.
+- `runtime/spine/spine.py:162-234` — `_executive_faculty(...)` now receives `world`, `cognitive_state`, `working_memory`, `affordances`. `build_executive_context()` at :180 assembles `ExecutiveContext.as_dict()` into `_attention_in`; manual fallback at :190-217 hydrates `world_state`, `cognitive_state_focal`, `wm_winner/mode/budget`, `surface_affordances`. `exec_decide()` called at :238 with the hydrated dict.
+- **Disconnection test:** `python3 tests/test_0008_seam_disconnection.py` → 4 passed, 0 failed **this pass** (SD-1 world.available=False → 'witness' vs. SD-2 =True → 'build' — decision CHANGES with state; SD-4 wm_winner=creation overrides 'reflect'→'build').
+- Rows 4 SEE · 6 ATTEND · 16 AFFORD satisfy the falsifiability bar per the card. WHERE (row per WO-100) landed alongside.
+
+### 3. WO-096B defect 3 (ep_ref) — LANDED c93dab8
+Included in the same 2026-08-13 19:47 corrections batch. Full 096B closeout is in DONE/ as `0000_MIDFLIGHT_WO-096B_gate_still_shut.md`. LEARN row was not chased to VERIFIED tonight, as the card explicitly instructed.
+
+### VERIFIED against 26 rows (against disk, this pass — NOT a new claim)
+Card 0009 (`0009_PATH_TO_26_run_this_without_stopping.md`, DONE 2026-08-19) reports VERIFIED count **4 → 7** as of today, with per-row evidence against existing commits. That is the current honest number; this card cannot upgrade it further because it demanded no work beyond what 0008/0009 already recorded.
+
+### Commits (no new commit this pass — all evidence against existing commits)
+- `bdf085a` WO-097 + WO-106 seam opened
+- `c93dab8` WO-100 + WO-096B ep_ref batch
+- `c3e9305` `_PRESERVE_KEYS` includes `gaze`
+- `3657f53` seam disconnection proof (card 0008)
+- `023b352` `EloSpatial.degraded` flag (card 0003 fix B) — closes silent-fabrication gap
+
+### What I got wrong
+The card sat in DOING/ for six days. That is a queue-hygiene failure at the seat, not a work gap — every technical demand had committed hashes on the same day the card was issued. Closing now.
