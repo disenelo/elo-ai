@@ -238,5 +238,17 @@
     ],
     "evidence": "DUPLICATE re-pick close-out. Canonical DONE at DONE/0014_..._TONIGHT.md preserved; duplicate closed to DONE/0014_..._TONIGHT_dup_2026-08-19.md at commit bfd700e. No new code. Re-verified on disk 2026-08-19: Row 14 ROUTE (commit 91ea6c1, tests/test_wo122_route_capability_to_executor.py present), Row 23 (self/journals/autobiography.jsonl \u2014 4 rows all body_ack), Row 26 (runtime/the_moment.py:142-160 ",
     "duration_s": 263.32
+  },
+  "0018_26_of_26_and_three_residuals_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787143200.0,
+    "state": "DONE",
+    "subject": "0018 DUPLICATE close-out \u2014 all three Row 23 residuals already at f7bea04; David one-liner below",
+    "output": ["cf2dcfe", "c87e213"],
+    "acceptance_met": true,
+    "evidence": "Verified on disk in self/emergent_cognition.py that commit f7bea04 (this session, 07:38) already landed all three P1 residuals card 0018 named: (1) _path override on append_autobiography (line 124) and recent_autobiography (line 169), with _AUTOB_DEFAULT base at line 34 \u2014 test AP-6 asserts real self/journals/autobiography.jsonl is byte-identical after the suite; (2) write failure now emits WARNING via _log.warning (lines 164-166) instead of swallowing silently; (3) writer rejects verified!=True with WARNING (line 141) AND recent_autobiography filters verified=True on read (lines 180-181) \u2014 both belt-and-braces; (+) episode_ref is a required non-empty string (line 148, rejects None/empty with WARNING) and is carried on written entries (line 157). Acceptance test tests/test_0017_autobiography_provenance.py: 6/6 passing (AP-1 unverified rejected \u00b7 AP-2 non-body_ack source rejected \u00b7 AP-3 None/empty episode_ref rejected \u00b7 AP-4 valid triple written with all provenance fields \u00b7 AP-5 real autobiography.jsonl \u2014 all 4 entries have verified=True + source=body_ack + episode_ref \u00b7 AP-6 real file byte-identical after test writes). Card stamped at cf2dcfe, moved DOING\u2192DONE at c87e213. No new product code this pass \u2014 close-out only.",
+    "david_one_liner": "Row 23 HISTORY is at 26/26 with provenance as fields (verified/source/episode_ref) \u2014 look at self/journals/autobiography.jsonl and confirm the 4 body_ack entries are what you did, in order, with the ACK episode_ref you can trace to the event log.",
+    "blocker": null
   }
 }

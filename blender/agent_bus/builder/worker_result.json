@@ -1,0 +1,8 @@
+{
+  "card": "0018_26_of_26_and_three_residuals.md",
+  "status": "DONE",
+  "commits": ["cf2dcfe", "c87e213"],
+  "acceptance_met": true,
+  "evidence": "DUPLICATE close-out. All three Row 23 residuals named in card 0018 were closed earlier this session by commit f7bea04. Verified on disk in self/emergent_cognition.py: (1) _path override at lines 124/169 with _AUTOB_DEFAULT base at line 34; (2) write-failure now logs WARNING (lines 164-166) rather than swallow; (3) writer rejects verified!=True with WARNING (line 141) AND recent_autobiography filters verified=True on read (lines 180-181); (+) episode_ref required (line 148) and carried on entries (line 157). Acceptance test tests/test_0017_autobiography_provenance.py: 6/6 passing (AP-1 unverified rejected · AP-2 non-body_ack rejected · AP-3 empty episode_ref rejected · AP-4 valid triple written with all provenance fields · AP-5 real autobiography.jsonl all 4 entries have provenance · AP-6 real self/journals/autobiography.jsonl byte-identical after test writes). Card stamped at cf2dcfe, moved DOING→DONE at c87e213. No new product code this pass — close-out only.",
+  "blocker": null
+}
