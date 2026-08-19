@@ -865,9 +865,10 @@ def run_loop(seats: list[str]) -> dict:
             status   = _seat_status(result)
             stats["runs"] += 1
 
-            if status == "DONE":
+            if status in ("DONE", "PARTIAL"):
+                # Card was processed (and moved to DONE/) — seat may have more.
                 stats["done"] += 1
-                next_active.append(seat)   # may have more cards
+                next_active.append(seat)
 
             elif status == "IDLE":
                 stats["idle"] += 1
@@ -887,8 +888,9 @@ def run_loop(seats: list[str]) -> dict:
                       flush=True)
 
             else:
-                # PARTIAL / UNKNOWN — worker produced some output; remove to avoid spin
-                print(f"[LOOP] {seat} → {status} — removing from rotation", flush=True)
+                # UNKNOWN — stuck state; remove to avoid spin
+                print(f"[LOOP] {seat} → {status} (unknown) — removing from rotation",
+                      flush=True)
 
         active = next_active
 
