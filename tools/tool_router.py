@@ -1048,6 +1048,129 @@ def _youtube_to_spotify(user_input: str) -> str:
         return ""
 
 
+def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
+    """
+    WO-122 Row 14 ROUTE — OS-level intercepts that fire regardless of Executive
+    capability selection. These do NOT dispatch data agents from the capability
+    set — they are direct OS actions (nav, game entry, system control), window-
+    state reads, identity responses (lore/creator), or user-config actions
+    (location set). Returns (enriched, executor) if an intercept fires, else None.
+    """
+    _lower = user_input.lower()
+
+    # ── eLo universe lore intercept ──
+    _LORE_INTERCEPTS = [
+        (r"\bk-?7\b",        "K-7 is eLo's spirit animal companion — a shapeshifting entity that can take 7 different forms. K-7 travels with eLo through the universe."),
+        (r"\bchunk\b",       "Chunk is eLo's friend — a modular character whose body transforms into different vehicles and structures to help navigate the world."),
+        (r"\bdisenelo\b",    "DISENELO is David's creative brand — home of eLo the character, the game, the book, the robot, and a series of free maker tools."),
+        (r"\belo(?:\s+the\s+(?:character|book|game))?\b", "eLo is an original character — an adorable childhood imagination paired with adult reality. The book, game, robot, and art all radiate from eLo."),
+    ]
+    _LORE_TRIGGER = r"\b(?:what(?:'s| is)|who(?:'s| is)|tell\s+me\s+about|explain|describe)\b"
+    if re.search(_LORE_TRIGGER, _lower):
+        for _lore_pat, _lore_fact in _LORE_INTERCEPTS:
+            if re.search(_lore_pat, _lower, re.IGNORECASE):
+                return f"[CONTEXT: {_lore_fact}]\n\n{user_input}", "lore"
+
+    # ── Creator question — "who made you / built you / created you" ──
+    _CREATOR_PATTERNS = [
+        r"\bwho\s+(?:made|built|created|designed|programmed)\s+you\b",
+        r"\bwho(?:'s|\s+is)\s+(?:your|the)\s+(?:creator|maker|builder|author)\b",
+        r"\bwhere\s+(?:do\s+you\s+come\s+from|are\s+you\s+from)\b",
+    ]
+    if any(re.search(p, _lower) for p in _CREATOR_PATTERNS):
+        return (
+            "[CONTEXT: eLo was made by David Charles, founder of DISENELO. "
+            "David has been building eLo since childhood — the character, the world, the book, the game, and now the robot. "
+            "eLo is not just software — eLo is David's creative universe made real.]\n\n" + user_input,
+            "lore",
+        )
+
+    # ── Game entry ──
+    try:
+        from runtime.executive import _GAME_ENTRY_PHRASES as _GE
+        if any(p in _lower for p in _GE):
+            _write_game_entry_event()
+            return f"[GAME_ENTRY: exit sequence triggered — say your going-in line now]\n\n{user_input}", "game_entry"
+    except Exception as _e:
+        _logger.debug("game entry intercept failed: %s", _e)
+
+    # ── Movement / navigation ──
+    try:
+        from runtime.executive import _MOVEMENT_COMMAND_PHRASES as _MV
+        if any(p in _lower for p in _MV):
+            nav_type, target = _parse_nav(user_input)
+            _write_nav_event(nav_type, target)
+            ctx = f"target={target}" if target else "moving"
+            return f"[NAV: {nav_type} — {ctx}]\n\n{user_input}", "nav"
+    except Exception as _e:
+        _logger.debug("nav intercept failed: %s", _e)
+
+    # ── YouTube Music / active browser tab ──
+    _YT_MUSIC_PATTERNS_EARLY = [
+        r"\byoutube\s+music\b",
+        r"\bwhat'?s?\s+(?:playing|on)\s+(?:on\s+)?(?:that\s+)?(?:youtube|yt)\b",
+        r"\bwhat'?s?\s+(?:the\s+)?(?:music|song|track|video)\s+(?:on\s+)?(?:that\s+)?window\b",
+        r"\bwhat'?s?\s+(?:playing|on)\s+(?:in\s+)?(?:that\s+)?(?:tab|window|chrome)\b",
+        r"\bcan\s+you\s+read\s+(?:my\s+)?(?:google\s+)?chrome\b",
+        r"\bwhat'?s?\s+(?:on\s+)?(?:my\s+)?chrome\b",
+    ]
+    if any(re.search(p, _lower) for p in _YT_MUSIC_PATTERNS_EARLY):
+        try:
+            from desktop.window_state import get as _ws_get, _browser_tab
+            from desktop.app_context import classify_browser
+            ws = _ws_get()
+            if ws.available and ws.app and any(b in ws.app for b in ("Chrome", "Safari", "Firefox")):
+                tab_title, tab_url = _browser_tab(ws.app)
+                if tab_title:
+                    classified = classify_browser(tab_title, tab_url)
+                    label = classified.get("label", tab_title[:60])
+                    return f"[CONTEXT: Browser tab — {label}]\n\n{user_input}", "browser_tab"
+            ctx = f"App in focus: {ws.app}" if ws.available and ws.app else "Browser not in focus"
+            return f"[CONTEXT: {ctx}]\n\n{user_input}", "browser_tab"
+        except Exception as _e:
+            _logger.debug("browser tab (early) failed: %s", _e)
+
+    # ── App / screen visibility ──
+    _VISIBILITY_PATTERNS_EARLY = [
+        r"\bcan\s+you\s+see\s+(?:my\s+)?(\w+)\b",
+        r"\bwhat\s+(?:app|apps|window|windows)\s+can\s+you\s+see\b",
+        r"\bwhat'?s?\s+on\s+(?:my\s+)?(?:screen|window|display)\b",
+        r"\bwhat\s+(?:app|apps)\s+(?:are|do)\s+(?:you\s+)?(?:see|have)\s+open\b",
+        r"\bwhat\s+apps\s+can\s+you\s+see\b",
+        r"\bwhat'?s?\s+(?:the\s+)?(?:current|active)\s+(?:window|app|application)\b",
+        r"\bwhat\s+app\s+(?:is|are)\s+(?:open|running|active)\b",
+        r"\bwhat\s+(?:is|am)\s+i\s+(?:looking\s+at|working\s+on|doing)\b",
+    ]
+    if any(re.search(p, _lower) for p in _VISIBILITY_PATTERNS_EARLY):
+        try:
+            from desktop.window_state import get as _ws_get
+            ws = _ws_get()
+            if ws.available and ws.app:
+                title_info = f" — {ws.title}" if ws.title and ws.title != ws.app else ""
+                ctx = f"Active app: {ws.app}{title_info}. Activity: {ws.activity}."
+                return f"[CONTEXT: {ctx}]\n\n{user_input}", "screen_visibility"
+            return f"[CONTEXT: Desktop visibility unavailable.]\n\n{user_input}", "screen_visibility"
+        except Exception as _e:
+            _logger.debug("screen visibility (early) failed: %s", _e)
+
+    # ── System agent (OS control, gated confirmations) ──
+    sys_ctx = _check_system(user_input)
+    if sys_ctx:
+        return f"{sys_ctx}\n\n{user_input}", "system"
+
+    # ── Location setting — direct user configuration action ──
+    new_city = detect_location_set(user_input)
+    if new_city:
+        set_location(new_city)
+        return (
+            f"[CONTEXT: User just set their location to {new_city}. "
+            f"Acknowledge warmly and confirm you'll use {new_city} for weather from now on.]\n\n{user_input}",
+            "location_set",
+        )
+
+    return None
+
+
 def enrich(user_input: str) -> Tuple[str, Optional[str]]:
     """
     Check if any tool can answer the query. If so, fetch the data and prepend
@@ -1093,112 +1216,12 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
         except Exception:
             pass
 
-    # ── eLo universe lore intercept — block search from misidentifying eLo characters ──
-    # K-7, Chunk, eLo, DISENELO are eLo-universe entities. "what is K-7" must NOT
-    # trigger a Wikipedia/DuckDuckGo search (Kalinin K-7 aircraft, etc.)
-    _LORE_INTERCEPTS = [
-        (r"\bk-?7\b",        "K-7",        "K-7 is eLo's spirit animal companion — a shapeshifting entity that can take 7 different forms. K-7 travels with eLo through the universe."),
-        (r"\bchunk\b",       "Chunk",      "Chunk is eLo's friend — a modular character whose body transforms into different vehicles and structures to help navigate the world."),
-        (r"\bdisenelo\b",    "DISENELO",   "DISENELO is David's creative brand — home of eLo the character, the game, the book, the robot, and a series of free maker tools."),
-        (r"\belo(?:\s+the\s+(?:character|book|game))?\b", "eLo", "eLo is an original character — an adorable childhood imagination paired with adult reality. The book, game, robot, and art all radiate from eLo."),
-    ]
-    _LORE_TRIGGER = r"\b(?:what(?:'s| is)|who(?:'s| is)|tell\s+me\s+about|explain|describe)\b"
-    if re.search(_LORE_TRIGGER, _lower):
-        for _lore_pat, _lore_name, _lore_fact in _LORE_INTERCEPTS:
-            if re.search(_lore_pat, _lower, re.IGNORECASE):
-                return f"[CONTEXT: {_lore_fact}]\n\n{user_input}", "lore"
-
-    # Creator question — "who made you / built you / created you"
-    _CREATOR_PATTERNS = [
-        r"\bwho\s+(?:made|built|created|designed|programmed)\s+you\b",
-        r"\bwho(?:'s|\s+is)\s+(?:your|the)\s+(?:creator|maker|builder|author)\b",
-        r"\bwhere\s+(?:do\s+you\s+come\s+from|are\s+you\s+from)\b",
-    ]
-    if any(re.search(p, _lower) for p in _CREATOR_PATTERNS):
-        return (
-            "[CONTEXT: eLo was made by David Charles, founder of DISENELO. "
-            "David has been building eLo since childhood — the character, the world, the book, the game, and now the robot. "
-            "eLo is not just software — eLo is David's creative universe made real.]\n\n" + user_input,
-            "lore",
-        )
-
-    # ── Direct command intercepts — always fire before pipeline ─────────────────
-    # These control the avatar/system directly. Pipeline is for DATA agents only.
-    # Nav, game-entry, screen-visibility, browser-tab, and system commands must
-    # never be blocked by the pipeline's conversation_only early-return.
-
-    # game entry
-    try:
-        from runtime.executive import _GAME_ENTRY_PHRASES as _GE
-        if any(p in _lower for p in _GE):
-            _write_game_entry_event()
-            return f"[GAME_ENTRY: exit sequence triggered — say your going-in line now]\n\n{user_input}", "game_entry"
-    except Exception as _e:
-        _logger.debug("game entry intercept failed: %s", _e)
-
-    # movement / navigation
-    try:
-        from runtime.executive import _MOVEMENT_COMMAND_PHRASES as _MV
-        if any(p in _lower for p in _MV):
-            nav_type, target = _parse_nav(user_input)
-            _write_nav_event(nav_type, target)
-            ctx = f"target={target}" if target else "moving"
-            return f"[NAV: {nav_type} — {ctx}]\n\n{user_input}", "nav"
-    except Exception as _e:
-        _logger.debug("nav intercept failed: %s", _e)
-
-    # YouTube Music / active browser tab
-    _YT_MUSIC_PATTERNS_EARLY = [
-        r"\byoutube\s+music\b",
-        r"\bwhat'?s?\s+(?:playing|on)\s+(?:on\s+)?(?:that\s+)?(?:youtube|yt)\b",
-        r"\bwhat'?s?\s+(?:the\s+)?(?:music|song|track|video)\s+(?:on\s+)?(?:that\s+)?window\b",
-        r"\bwhat'?s?\s+(?:playing|on)\s+(?:in\s+)?(?:that\s+)?(?:tab|window|chrome)\b",
-        r"\bcan\s+you\s+read\s+(?:my\s+)?(?:google\s+)?chrome\b",
-        r"\bwhat'?s?\s+(?:on\s+)?(?:my\s+)?chrome\b",
-    ]
-    if any(re.search(p, _lower) for p in _YT_MUSIC_PATTERNS_EARLY):
-        try:
-            from desktop.window_state import get as _ws_get, _browser_tab
-            from desktop.app_context import classify_browser
-            ws = _ws_get()
-            if ws.available and ws.app and any(b in ws.app for b in ("Chrome", "Safari", "Firefox")):
-                tab_title, tab_url = _browser_tab(ws.app)
-                if tab_title:
-                    classified = classify_browser(tab_title, tab_url)
-                    label = classified.get("label", tab_title[:60])
-                    return f"[CONTEXT: Browser tab — {label}]\n\n{user_input}", "browser_tab"
-            ctx = f"App in focus: {ws.app}" if ws.available and ws.app else "Browser not in focus"
-            return f"[CONTEXT: {ctx}]\n\n{user_input}", "browser_tab"
-        except Exception as _e:
-            _logger.debug("browser tab (early) failed: %s", _e)
-
-    # app / screen visibility
-    _VISIBILITY_PATTERNS_EARLY = [
-        r"\bcan\s+you\s+see\s+(?:my\s+)?(\w+)\b",
-        r"\bwhat\s+(?:app|apps|window|windows)\s+can\s+you\s+see\b",
-        r"\bwhat'?s?\s+on\s+(?:my\s+)?(?:screen|window|display)\b",
-        r"\bwhat\s+(?:app|apps)\s+(?:are|do)\s+(?:you\s+)?(?:see|have)\s+open\b",
-        r"\bwhat\s+apps\s+can\s+you\s+see\b",
-        r"\bwhat'?s?\s+(?:the\s+)?(?:current|active)\s+(?:window|app|application)\b",
-        r"\bwhat\s+app\s+(?:is|are)\s+(?:open|running|active)\b",
-        r"\bwhat\s+(?:is|am)\s+i\s+(?:looking\s+at|working\s+on|doing)\b",
-    ]
-    if any(re.search(p, _lower) for p in _VISIBILITY_PATTERNS_EARLY):
-        try:
-            from desktop.window_state import get as _ws_get
-            ws = _ws_get()
-            if ws.available and ws.app:
-                title_info = f" — {ws.title}" if ws.title and ws.title != ws.app else ""
-                ctx = f"Active app: {ws.app}{title_info}. Activity: {ws.activity}."
-                return f"[CONTEXT: {ctx}]\n\n{user_input}", "screen_visibility"
-            return f"[CONTEXT: Desktop visibility unavailable.]\n\n{user_input}", "screen_visibility"
-        except Exception as _e:
-            _logger.debug("screen visibility (early) failed: %s", _e)
-
-    # system agent
-    sys_ctx = _check_system(user_input)
-    if sys_ctx:
-        return f"{sys_ctx}\n\n{user_input}", "system"
+    # ── Direct intercepts (WO-122) — OS-level, non-capability plumbing ──
+    # lore/creator/game-entry/nav/YT-music/visibility/system/location — fire
+    # regardless of Executive selection because they are not data agents.
+    _di = _direct_intercepts(user_input)
+    if _di is not None:
+        return _di
 
     # ── Unified Routing Pipeline — data agents only ───────────────────────────
     # Direct commands (nav, system, visibility) have already fired above.
@@ -1262,16 +1285,6 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
 
     except Exception as _pe:
         _logger.debug("router pipeline failed: %s", _pe)
-
-    # ── location-setting ──────────────────────────────────────────────────────
-    new_city = detect_location_set(user_input)
-    if new_city:
-        set_location(new_city)
-        return (
-            f"[CONTEXT: User just set their location to {new_city}. "
-            f"Acknowledge warmly and confirm you'll use {new_city} for weather from now on.]\n\n{user_input}",
-            "location_set",
-        )
 
     # ── LLM file agent — natural language file operations ─────────────────────
     if _HAS_LLM_FILE and is_file_ops_intent(user_input):
@@ -1414,20 +1427,37 @@ def enrich_from_plan(
     plan_capabilities: list,
 ) -> Tuple[str, Optional[str]]:
     """
-    WO-118 Row 14 ROUTE: use the Executive's capability choice from CognitivePlan
-    instead of re-running keyword matching.
+    WO-122 Row 14 ROUTE — capability → executor routing, gated by Executive.
 
     plan_capabilities is CognitivePlan.capabilities: [(agent_name, query), ...]
-    Each entry was chosen by the spine's capability faculty — trust it.
+    chosen by the Executive from candidates surfaced by the capability faculty.
 
-    Applies the same capability registry gate (WO-018) as enrich().
-    Falls back to enrich() if no plan capabilities fire successfully.
+    Contract:
+      1. Direct intercepts (nav/game/lore/system/location) run first — they are
+         not data-agent capabilities, they are OS-level plumbing.
+      2. plan.capabilities gates data-agent dispatch. Executive must select a
+         capability for it to run — no silent keyword re-decision.
+      3. Empty plan_capabilities → NO data agent runs (loud log, unenriched).
+      4. Unknown capability (not in _AGENTS) → loud warning, no silent default.
+      5. Executor and reason recorded in the return value (executor name) and
+         logs (route source, capability, why).
     """
-    if not plan_capabilities:
-        _logger.warning("WO-118: plan_capabilities empty — falling back to keyword enrich(). "
-                        "Executive chose nothing or plan not assembled.")
-        return enrich(user_input)
+    # 1. Direct intercepts (WO-122) — always fire regardless of Executive choice.
+    _di = _direct_intercepts(user_input)
+    if _di is not None:
+        _logger.info("WO-122 ROUTE: direct intercept fired — executor=%r", _di[1])
+        return _di
 
+    # 2. Executive selected no capability → do NOT fall back to keyword dispatch.
+    #    Two deciders is the fault, not the fallback (WO-122).
+    if not plan_capabilities:
+        _logger.info(
+            "WO-122 ROUTE: Executive selected no capability — no data agent will run "
+            "(keyword fallback removed). input=%r", user_input[:80]
+        )
+        return user_input, None
+
+    # 3. Dispatch only the Executive's selection.
     try:
         from runtime.capabilities.registry import all_enabled as _reg_all_enabled
         _enabled_cap_ids: set | None = {c.id for c in _reg_all_enabled()}
@@ -1436,6 +1466,7 @@ def enrich_from_plan(
 
     context_parts = []
     last_used: Optional[str] = None
+    selected_names = []
 
     for entry in plan_capabilities[:2]:
         if isinstance(entry, (list, tuple)) and len(entry) >= 2:
@@ -1444,16 +1475,29 @@ def enrich_from_plan(
             ag_name  = entry.get("agent", "")
             ag_query = entry.get("query", user_input)
         else:
+            _logger.warning("WO-122 ROUTE: malformed plan.capabilities entry %r — skipping", entry)
             continue
+
+        selected_names.append(ag_name)
 
         # WO-018: registry gate — same check as enrich() pipeline path
         if _enabled_cap_ids is not None:
             _cap_id = _ROUTER_TO_CAP_ID.get(ag_name)
             if _cap_id and _cap_id not in _enabled_cap_ids:
+                _logger.info(
+                    "WO-122 ROUTE: Executive-selected capability %r disabled in registry — skipping",
+                    ag_name,
+                )
                 continue
 
         ag_fn = _AGENTS.get(ag_name)
         if ag_fn is None:
+            # Unknown capability — LOUD, never silently fall through.
+            _logger.warning(
+                "WO-122 ROUTE: Executive selected UNKNOWN capability %r "
+                "(no executor in _AGENTS) — not dispatching, no keyword fallback.",
+                ag_name,
+            )
             continue
 
         try:
@@ -1461,12 +1505,23 @@ def enrich_from_plan(
             if data:
                 context_parts.append(data)
                 last_used = ag_name
+                _logger.info(
+                    "WO-122 ROUTE: executor=%r ran for Executive-selected capability %r",
+                    ag_name, ag_name,
+                )
         except Exception as _e:
-            _logger.debug("plan capability %s failed: %s", ag_name, _e)
+            _logger.debug("WO-122 ROUTE: plan capability %s failed: %s", ag_name, _e)
 
     if context_parts:
+        global _last_agent, _last_arg
+        _last_agent = last_used
+        _last_arg = user_input
         combined = " | ".join(context_parts)
         return f"[CONTEXT: {combined}]\n\n{user_input}", last_used
 
-    # No plan agent fired — fall back to keyword-based routing
-    return enrich(user_input)
+    # Executive selected capabilities but none produced data — no fallback.
+    _logger.info(
+        "WO-122 ROUTE: Executive selected %r but no data produced — not falling back "
+        "to keyword dispatch (Executive's choice is authoritative).", selected_names,
+    )
+    return user_input, None
