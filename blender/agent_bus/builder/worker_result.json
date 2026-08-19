@@ -1,8 +1,8 @@
 {
-  "card": "0013_RESTART_NOW_and_the_staleness_guard.md",
+  "card": "0004_WO-119_weather_publish_open_handoff.md",
   "status": "DONE",
-  "commits": ["1095389"],
+  "commits": ["419c293"],
   "acceptance_met": true,
-  "evidence": "Card asked for 4 fixes on row 26; grep on runtime/the_moment.py:142-160 showed fixes 1-3 were already committed (ts field at journal_router.py:150; 1800s bound at the_moment.py:142; stale-to-empty on else branch — commits 3b0a9b6/2d39a1b/7ab3bbe). Only fix 4 (WARN on stale drop) was missing. Built that: the_moment.py:149-160 replaces silent else with _log.warning naming age and threshold. Falsifiable test tests/test_wo126_meaning.py::test_stale_significance_emits_warning (AT-STALE-WARN) writes a 2h-old score, asserts last_significance drops to {} AND a WARNING record with 'last_significance stale' fires on logger runtime.the_moment. Deleting the warning call fails this test while AT-126-6 still passes — separate contracts. 10/10 test_wo126_meaning pass; 6/6 test_wo_rows_4_6_16 pass (regression guard on rows 4/6/16). Out of lane: backend restart and Designer live drive are runtime steps, not code.",
+  "evidence": "Already shipped under WO-030b/058b in commit 419c293. blender_bridge/state_writer.py:246-251 has 'weather' in _PRESERVE_KEYS (line 248). server.py:3948-3993 publishes top-level 'weather' via _bs_patch() on every state tick (empty-string guard: 'if _bs_weather'). tools/tool_router.py get_last_weather_condition() provides the cached source. tests/test_wo030b_weather_publish.py passes 7/7 (AT-0 py_compile, AT-1 weather in _PRESERVE_KEYS, AT-2 preserved by _write, AT-3 patch writes top-level, AT-4 empty-string transparency, AT-5 accessor returns str, AT-6 survives round-trip). No new code commit needed. DOING duplicate removed; DONE copy already carries the RESULT section.",
   "blocker": null
 }
