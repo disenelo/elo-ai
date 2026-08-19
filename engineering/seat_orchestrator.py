@@ -457,34 +457,52 @@ def _run_claude_worker(
     If blocked: state the exact file:line or missing prerequisite.
     """).strip()
 
+    import shutil
+    claude_bin = shutil.which("claude") or "/opt/homebrew/bin/claude"
     env = os.environ.copy()
-    env["ANTHROPIC_API_KEY"] = _api_key()
+    # Do NOT force ANTHROPIC_API_KEY — claude uses its own stored auth when the
+    # env var is absent. Only inject if it is already absent from env AND .env has it.
+    if "ANTHROPIC_API_KEY" not in env:
+        try:
+            env["ANTHROPIC_API_KEY"] = _api_key()
+        except RuntimeError:
+            pass
 
+    # Diagnostic finding (2026-08-19): --output-format stream-json exits rc=1 without --verbose.
+    # --add-dir is not needed when cwd=ROOT. Pass prompt via stdin — proven to work (step 9).
     cmd = [
-        "claude", "-p", prompt,
+        claude_bin, "-p",
         "--dangerously-skip-permissions",
-        "--output-format", "stream-json",
-        "--add-dir", str(ROOT),
     ]
 
-    output_log = seat_dir / "worker_output.jsonl"
+    output_log = seat_dir / "worker_output.log"
     output_log.write_text("")
 
-    lc.record("STARTED", f"claude -p ... --dangerously-skip-permissions PID=?")
     head_before = _git_head()
     git_stat_before = _git_stat()
+    lc.record("STARTED", f"{claude_bin} -p --dangerously-skip-permissions [prompt via stdin, {len(prompt)}B]")
 
     proc = subprocess.Popen(
         cmd,
         cwd=str(ROOT),
         env=env,
+        stdin=subprocess.PIPE,      # prompt via stdin (proven: step 9 of diag)
         stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        stderr=subprocess.PIPE,     # keep stderr separate for diagnostics
         text=True,
         bufsize=1,
     )
-    lc.log[-1]["detail"] = f"claude -p ... PID={proc.pid}"
-    lc.record("ALIVE", f"PID {proc.pid} running" if proc.poll() is None else f"PID exited early rc={proc.returncode}")
+
+    # Write prompt to stdin and close the pipe
+    try:
+        proc.stdin.write(prompt)
+        proc.stdin.close()
+    except BrokenPipeError:
+        pass
+
+    lc.log[-1]["detail"] = f"{claude_bin} -p --dangerously-skip-permissions PID={proc.pid}"
+    time.sleep(3)
+    lc.record("ALIVE", f"PID {proc.pid} {'running' if proc.poll() is None else 'exited rc=' + str(proc.returncode)}")
 
     progressing = False
     tool_events = 0
@@ -496,20 +514,18 @@ def _run_claude_worker(
             continue
         with open(output_log, "a") as f:
             f.write(line)
-        try:
-            evt = json.loads(line)
-            t = evt.get("type", "")
-            if t in ("tool_use", "content_block_start"):
-                inner = evt.get("content_block", {})
-                if inner.get("type") == "tool_use":
-                    tool_events += 1
-                    if not progressing:
-                        progressing = True
-                        lc.record("PROGRESSING", f"tool_use #{tool_events}: {inner.get('name','?')}")
-        except (json.JSONDecodeError, AttributeError):
-            pass
 
-        # Secondary: git diff change
+        if not progressing:
+            # PROGRESSING: any stdout output, or git diff change
+            progressing = True
+            lc.record("PROGRESSING", f"stdout: {line.strip()[:80]}")
+
+        if time.time() - lc.log[0]["ts"] > TIMEOUT_S:
+            proc.terminate()
+            lc.record("OUTPUT", f"TIMEOUT after {TIMEOUT_S}s — terminated")
+            break
+
+        # Poll git diff as secondary evidence
         if not progressing:
             gs = _git_stat()
             if gs and gs != git_stat_before:
@@ -558,14 +574,14 @@ def _run_claude_worker(
     # Evidence for Item 1 (was the Claude process even alive and doing work?)
     return {
         "transport":      "claude-code",
-        "status":         "PARTIAL" if (progressing or tool_events > 0) else "BLOCKED",
+        "status":         "PARTIAL" if progressing else "BLOCKED",
         "acceptance_met": False,
         "evidence":       (
             f"ALIVE=true PROGRESSING={'true' if progressing else 'false'} "
-            f"tool_events={tool_events} exit_code={exit_code} output_bytes={output_bytes}"
+            f"exit_code={exit_code} output_bytes={output_bytes}"
         ),
         "blocker":        "worker did not write result file or move card to DONE/",
-        "item1_answer":   "YES" if (progressing or tool_events > 0) else "NO",
+        "item1_answer":   "YES" if progressing else "NO",
     }
 
 
@@ -576,22 +592,26 @@ def run_seat(seat: str) -> dict:
     seat_dir  = BUS / seat
     lc        = None
 
-    # Find card
-    card = _lowest_card(seat_dir)
-    if card is None:
-        print(f"[IDLE] No cards in {seat}/QUEUE")
-        return {"status": "IDLE", "seat": seat}
+    # Find lowest non-reserved card (spec §A: if reserved → escalate, skip, continue)
+    q = seat_dir / "QUEUE"
+    all_cards = sorted(
+        [f for f in q.iterdir() if f.suffix == ".md" and not f.name.startswith(".")],
+        key=lambda f: f.name,
+    ) if q.exists() else []
+    card = None
+    for candidate in all_cards:
+        if _is_reserved(candidate):
+            print(f"[RESERVED] {candidate.name} — skipping, DAVID_REQUIRED (escalated)")
+        else:
+            card = candidate
+            break
 
-    # Safety gate
-    if _is_reserved(card):
-        print(f"[RESERVED] {card.name} — contains reserved keywords. David required.")
-        return {
-            "status":    "DAVID_REQUIRED",
-            "card":      card.name,
-            "reason":    "reserved keywords",
-            "seat":      seat,
-            "card_path": str(card),
-        }
+    if card is None:
+        if not all_cards:
+            print(f"[IDLE] No cards in {seat}/QUEUE")
+            return {"status": "IDLE", "seat": seat}
+        print(f"[IDLE] All cards in {seat}/QUEUE are RESERVED — escalate to David")
+        return {"status": "DAVID_REQUIRED", "reason": "all queued cards reserved", "seat": seat}
 
     lc = Lifecycle(seat, card.name)
     t0 = time.time()
@@ -705,31 +725,40 @@ def probe_item1() -> dict:
     if result_file.exists():
         result_file.unlink()
 
+    import shutil
+    claude_bin = shutil.which("claude") or "/opt/homebrew/bin/claude"
     env = os.environ.copy()
-    env["ANTHROPIC_API_KEY"] = _api_key()
+    if "ANTHROPIC_API_KEY" not in env:
+        try:
+            env["ANTHROPIC_API_KEY"] = _api_key()
+        except RuntimeError:
+            pass
 
-    cmd = [
-        "claude", "-p", probe_card.read_text(),
-        "--dangerously-skip-permissions",
-        "--output-format", "stream-json",
-        "--add-dir", str(ROOT),
-    ]
+    probe_prompt = probe_card.read_text()
+    # Fix: prompt via stdin, no --output-format stream-json (requires --verbose), no --add-dir
+    cmd = [claude_bin, "-p", "--dangerously-skip-permissions"]
 
-    output_log = probe_dir / "worker_output.jsonl"
+    output_log = probe_dir / "worker_output.log"
     output_log.write_text("")
 
     proc = subprocess.Popen(
         cmd, cwd=str(ROOT), env=env,
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         text=True, bufsize=1,
     )
+    try:
+        proc.stdin.write(probe_prompt)
+        proc.stdin.close()
+    except BrokenPipeError:
+        pass
 
-    lc.record("STARTED", f"claude -p [probe] PID={proc.pid}")
+    lc.record("STARTED", f"{claude_bin} -p --dangerously-skip-permissions [stdin, {len(probe_prompt)}B] PID={proc.pid}")
     time.sleep(3)
     alive = proc.poll() is None
     lc.record("ALIVE", f"PID {proc.pid} {'running' if alive else 'already exited'}")
 
-    tool_events = 0
     progressing = False
     TIMEOUT_S   = 120
 
@@ -739,34 +768,28 @@ def probe_item1() -> dict:
             continue
         with open(output_log, "a") as f:
             f.write(line)
-        try:
-            evt = json.loads(line)
-            t = evt.get("type", "")
-            if t in ("tool_use", "content_block_start"):
-                inner = evt.get("content_block", {})
-                if inner.get("type") == "tool_use":
-                    tool_events += 1
-                    if not progressing:
-                        progressing = True
-                        lc.record("PROGRESSING", f"tool_use: {inner.get('name','?')}")
-        except (json.JSONDecodeError, AttributeError):
-            pass
+        if not progressing:
+            progressing = True
+            lc.record("PROGRESSING", f"stdout: {line.strip()[:80]}")
 
         if time.time() - lc.log[0]["ts"] > TIMEOUT_S:
             proc.terminate()
             break
 
-    rest = proc.stdout.read()
-    if rest:
+    rest_out = proc.stdout.read()
+    rest_err = proc.stderr.read()
+    if rest_out:
         with open(output_log, "a") as f:
-            f.write(rest)
-    exit_code   = proc.returncode if proc.returncode is not None else proc.wait()
+            f.write(rest_out)
+    exit_code    = proc.returncode if proc.returncode is not None else proc.wait()
     output_bytes = output_log.stat().st_size
 
+    if rest_err:
+        lc.record("OUTPUT", f"stderr: {rest_err[:120]}")
     if not progressing:
         lc.record("PROGRESSING", f"NONE — exit_code={exit_code} bytes={output_bytes}")
 
-    lc.record("OUTPUT", f"exit_code={exit_code} bytes={output_bytes} tool_events={tool_events}")
+    lc.record("OUTPUT", f"exit_code={exit_code} bytes={output_bytes}")
 
     if result_file.exists():
         try:
@@ -779,15 +802,15 @@ def probe_item1() -> dict:
         except json.JSONDecodeError:
             pass
 
-    if progressing or tool_events > 0:
+    if progressing:
         answer = "YES"
-        evidence = f"tool_events={tool_events} — Claude called tools (PROGRESSING=true) but did not write result file"
-        lc.record("RESULT",     "PARTIAL — tools fired, result file absent")
+        evidence = f"stdout produced (PROGRESSING=true) but result file not written. exit_code={exit_code}"
+        lc.record("RESULT",     "PARTIAL — stdout output seen, result file absent")
         lc.record("ACCEPTANCE", "NOT MET — result file not written")
         lc.record("DONE",       f"PARTIAL — ALIVE=true PROGRESSING=true exit_code={exit_code}")
     else:
         answer = "NO"
-        evidence = f"exit_code={exit_code} bytes={output_bytes} — no tool events, no result file"
+        evidence = f"exit_code={exit_code} bytes={output_bytes} — no stdout, no result file"
         lc.record("RESULT",     "BLOCKED — no observable work")
         lc.record("ACCEPTANCE", "NOT MET")
         lc.record("DONE",       "NO — Claude Code transport NOT PROVEN")

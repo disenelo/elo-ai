@@ -1,0 +1,8 @@
+{
+  "card": "0002_WO-118_consume_last_move_ROUTE.md",
+  "status": "DONE",
+  "commits": ["3112e40"],
+  "acceptance_met": true,
+  "evidence": "Implementation already committed as 3112e40 (2026-08-15) — 'WO-118 (card 0002): wire last_move → route_memory, surface to Executive, Rule 1 alarm'. Card had been left in DOING/; closed on 2026-08-19. Wiring verified against disk: desktop/spatial_state.py:128-163 reads last_move, dedups on _ts, feeds self.route_memory.remember_route(); world/live_world_state.py:397-406 surfaces route_history=tuple(recent_routes(5)) into LiveWorldState. All four card acceptance criteria pass: AT-1 completed move recorded (test_last_move_feeds_route_memory PASSED); AT-2 failed move (arrived=False, fell=True) recorded in recent_routes (live-verified); AT-3 3 attempts (T/F/T) on 'top_of_chrome' → route_confidence=0.667; AT-4 Rule 1 alarm fires WARNING 'WO-118 Rule 1: body navigating (goal=54676) but last_move absent for 3 consecutive reads — body may have gone silent.' Dedup test_last_move_deduplicates_on_ts PASSED. Live elo_spatial.json now carries last_move with the Ruling-E fields (goal, route, legs, arrived, fell, cost_secs, retries, issued_by, _ts). Unblocks row 17 GAP reliable_range (WO-113 can switch declared → learned); pairs with WO-106.",
+  "blocker": null
+}

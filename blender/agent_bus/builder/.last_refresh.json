@@ -1,31 +1,24 @@
 {
-  "ts": 1785691999.42257,
+  "ts": 1786929872.2311301,
   "pending": [
     {
-      "wo": "INT-1",
-      "title": "Plushies \u2192 Robot: shared character-model export (soft form \u2192 TPU shell",
+      "wo": "\u2605 MILESTONE: eLo Presentable v1 \u2014 BUILD-READY DEFAULTS (David 2026-08-03)",
+      "title": "THE gate before CAD + reinforcement learning. Defaults first \u2014 RL/phys",
       "state": "ready",
       "importance": "AUTO",
       "badge": "\ud83d\udfe2"
     },
     {
-      "wo": "INT-3",
-      "title": "5D \u2192 Robot movement: pointcloud \u2192 World Model spatial nodes",
-      "state": "blocked",
+      "wo": "\u2605 EPIC: The Moment \u2014 Embodied Cognition assembly (GREENLIT, David 2026-08-05)",
+      "title": "Assemble ONE continuously-updated cognitive state (self\u00b7body\u00b7world\u00b7aff",
+      "state": "ready",
       "importance": "AUTO",
       "badge": "\ud83d\udfe2"
     },
     {
-      "wo": "WO-015",
-      "title": "eLo behaviour fixes \u00d74 (1st-person body language \u00b7 no unprompted emoti",
-      "state": "in_review",
-      "importance": "AUTO",
-      "badge": "\ud83d\udfe2"
-    },
-    {
-      "wo": "WO-023",
-      "title": "eLo screen-position \u2014 top-bias; stop drifting over the app I'm using /",
-      "state": "in_review",
+      "wo": "INT-1",
+      "title": "Plushies \u2192 Robot: shared character-model export (soft form \u2192 TPU shell",
+      "state": "ready",
       "importance": "AUTO",
       "badge": "\ud83d\udfe2"
     },
@@ -37,46 +30,74 @@
       "badge": "\ud83d\udfe0"
     },
     {
-      "wo": "WO-025",
-      "title": "Perception spatial sensor stub \u2014 pointcloud/depth domain in Perception",
+      "wo": "WO-032",
+      "title": "\u21a9 REOPENED (David live 2026-08-03) \u2014 Part C complete (Builder 2026-08-",
+      "state": "ready",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "WO-034",
+      "title": "App doesn't fire the reply \u2014 CLI works, app doesn't (eLo OS \u2194 UI were ",
       "state": "ready",
       "importance": "AUTO",
       "badge": "\ud83d\udfe2"
     },
     {
-      "wo": "WO-021",
-      "title": "Enable + verify Computer Control (reminders / app control)",
+      "wo": "EPIC: Executive Authority \u2014 RATIFIED (ADR-Exec-001 Verified Authority + ADR-Exec-002 Single Cognitive Truth = One Brain at runtime) \u00b7 \u25b6 DISPATCHED \u2192 Builder 2026-08-03 (WO-041/042/043 P0, WO-044 P1)",
+      "title": "Canon: the Executive reports VERIFIED reality, never intent. Order: Ob",
       "state": "ready",
-      "importance": "AUTO",
-      "badge": "\ud83d\udfe2"
-    },
-    {
-      "wo": "INT-7",
-      "title": "One Brain visualiser \u21c4 `brain_state.json` feed",
-      "state": "active",
       "importance": "AUTO",
       "badge": "\ud83d\udfe2"
     },
     {
       "wo": "INT7-HEAT",
       "title": "One Brain \u2014 live cognitive heat-map / observability layer (David spec ",
-      "state": "ready",
-      "importance": "AUTO",
-      "badge": "\ud83d\udfe2"
+      "state": "in_review",
+      "importance": "DAVID",
+      "badge": "\ud83d\udfe0"
     },
     {
       "wo": "INT-8",
       "title": "Drag-drop files onto the eLo avatar \u2192 eLo reads/reviews",
       "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-062",
+      "title": "Expressiveness layer \u2014 micro-expressions + squash-and-stretch (David 2",
+      "state": "ready",
       "importance": "DAVID",
       "badge": "\ud83d\udfe0"
     },
     {
-      "wo": "FH-1",
-      "title": "Pattern\u2192plotter pipeline (Plushies unwrap \u2192 cut-file export \u2192 test cut",
-      "state": "in_review",
+      "wo": "WO-049 (EPIC)",
+      "title": "eLo SPATIAL EMBODIMENT \u2014 the desktop as a world eLo inhabits (CA-refra",
+      "state": "ready",
       "importance": "DAVID",
       "badge": "\ud83d\udfe0"
+    },
+    {
+      "wo": "049-B1",
+      "title": "Spatial Faculty v1 (world model: window graph \u00b7 affordances \u00b7 body-fit",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "049-B2",
+      "title": "Continuity wiring (Memory+Emotion+Attention+Temporal \u2192 movement: favou",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "049-B3",
+      "title": "Imagination + inner life (Creative-Imagination overlay \u00b7 home/worlds-w",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
     },
     {
       "wo": "RD-CAD",
@@ -86,29 +107,99 @@
       "badge": "\ud83d\udd34"
     },
     {
-      "wo": "EA2-4",
-      "title": "Scheduling Faculty (move/reorder WOs)",
+      "wo": "WO-CANON-XX",
+      "title": "Cognitive-tier selector + value-gated escalation",
       "state": "ready",
       "importance": "AUTO",
       "badge": "\ud83d\udfe2"
     },
     {
-      "wo": "EA2-5",
-      "title": "Approval Faculty (L3 gate as a faculty \u2014 net-new)",
+      "wo": "WO-CANON-XXI",
+      "title": "Narrative Identity: autobiography journal + guard",
       "state": "ready",
       "importance": "AUTO",
       "badge": "\ud83d\udfe2"
     },
     {
-      "wo": "EA2-6",
-      "title": "Orchestration Faculty (multi-seat chains \u2014 net-new)",
+      "wo": "WO-CANON-XXII",
+      "title": "Faculty Genome descriptor + registry",
       "state": "ready",
       "importance": "AUTO",
       "badge": "\ud83d\udfe2"
     },
     {
-      "wo": "EA2-7",
-      "title": "Company Memory store (via unified Memory)",
+      "wo": "WO-CANON-XXIII",
+      "title": "Security & Trust: gates + define LG-2",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XXVI",
+      "title": "Creative Intelligence: domain generators",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XXVIII",
+      "title": "Adaptive Learning / RL Faculty (ADR-Exec-005)",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XIII",
+      "title": "Build Volume XIII Spatial Faculty \u2014 `faculties/spatial/` owns reachabi",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XI",
+      "title": "Build Volume XI Motor Cortex \u2014 formalise the DOWN command / UP ACK con",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-IV",
+      "title": "Build Volume IV \u2014 the Cognitive Spine. Canonised turn order becomes en",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-III",
+      "title": "Build Volume III \u2014 System Architecture. Formalise the four runtime con",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XIV",
+      "title": "Build Volume XIV \u2014 Plugin Architecture. Reconcile the TWO capability r",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XVII",
+      "title": "Build Volume XVII \u2014 Reflection Engine. Growth metrics + improvement cy",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-XVIII",
+      "title": "Build Volume XVIII \u2014 Self-Evolution. Capability/faculty versioning; AD",
+      "state": "ready",
+      "importance": "AUTO",
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "wo": "WO-CANON-II",
+      "title": "Build Volume II \u2014 Cognitive Principles. Epistemic tiers as reasoning d",
       "state": "ready",
       "importance": "AUTO",
       "badge": "\ud83d\udfe2"

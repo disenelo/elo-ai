@@ -1,0 +1,170 @@
+{
+  "ts": 1787113359.787801,
+  "claude": "/opt/homebrew/bin/claude",
+  "steps": [
+    {
+      "step": "1_known_good_inline",
+      "argv": [
+        "/opt/homebrew/bin/claude",
+        "-p",
+        "Reply with exactly one word: hello",
+        "--dangerously-skip-permissions"
+      ],
+      "stdin": null,
+      "exit_code": 0,
+      "stdout_bytes": 6,
+      "stderr_bytes": 0,
+      "stdout_head": "hello\\n",
+      "stderr_head": "",
+      "elapsed_s": 2.92,
+      "ok": true
+    },
+    {
+      "step": "2_known_good_stdin",
+      "argv": [
+        "/opt/homebrew/bin/claude",
+        "-p",
+        "--dangerously-skip-permissions"
+      ],
+      "stdin": "Reply with exactly one word: hello",
+      "exit_code": 0,
+      "stdout_bytes": 6,
+      "stderr_bytes": 0,
+      "stdout_head": "hello\\n",
+      "stderr_head": "",
+      "elapsed_s": 2.53,
+      "ok": true
+    },
+    {
+      "step": "3_stream_json_inline",
+      "argv": [
+        "/opt/homebrew/bin/claude",
+        "-p",
+        "Reply with exactly one word: hello",
+        "--dangerously-skip-permissions",
+        "--output-format",
+        "stream-json"
+      ],
+      "stdin": null,
+      "exit_code": 1,
+      "stdout_bytes": 0,
+      "stderr_bytes": 74,
+      "stdout_head": "",
+      "stderr_head": "Error: When using --print, --output-format=stream-json requires --verbose\\n",
+      "elapsed_s": 0.6,
+      "ok": false
+    },
+    {
+      "step": "4_stream_json_stdin",
+      "argv": [
+        "/opt/homebrew/bin/claude",
+        "-p",
+        "--dangerously-skip-permissions",
+        "--output-format",
+        "stream-json"
+      ],
+      "stdin": "Reply with exactly one word: hello",
+      "exit_code": 1,
+      "stdout_bytes": 0,
+      "stderr_bytes": 74,
+      "stdout_head": "",
+      "stderr_head": "Error: When using --print, --output-format=stream-json requires --verbose\\n",
+      "elapsed_s": 0.57,
+      "ok": false
+    },
+    {
+      "step": "5_add_dir_inline",
+      "argv": [
+        "/opt/homebrew/bin/claude",
+        "-p",
+        "Reply with exactly one word: hello",
+        "--dangerously-skip-permissions",
+        "--output-format",
+        "stream-json",
+        "--add-dir",
+        "/Users/Disenelo/elo-ai"
+      ],
+      "stdin": null,
+      "exit_code": 1,
+      "stdout_bytes": 0,
+      "stderr_bytes": 74,
+      "stdout_head": "",
+      "stderr_head": "Error: When using --print, --output-format=stream-json requires --verbose\\n",
+      "elapsed_s": 0.62,
+      "ok": false
+    },
+    {
+      "step": "6_full_prompt_inline",
+      "argv": [
+        "/opt/homebrew/bin/claude",
+        "-p",
+        "You are the builder implementation seat in the eLo OS project.\n    Project root: /Users/Disenelo/elo-ai\n\n    AUTORUN PROTOCOL:\n    # AUTORUN PROTOCOL \u2014 work fires on its own (David 2026-08-10)\n### The fix for: \"I dispatched it on the board and nothing happened.\"\n\n**Root cause it solves:** dispatch used to live in a board *status cell*. Seat crons scan their *folder*.\nSo dispatches were invisible and seats sat idle reporting \"nothing new.\"\n**New rule: THE FILE IS THE TRIGGER.** If a card file exists in your QUEUE, that is your work. No status\ncell, no greenlight, no relay needed.\n\n## Folder structure (per seat: `builder/` \u00b7 `design/` \u00b7 `game/`)\n```\nblender/agent_bus/<seat>/\n  QUEUE/    \u2190 work waiting. Files named NN_WO-XXX_slug.md, picked LOWEST NUMBER FIRST.\n  DOING/    \u2190 move the card here when you start it (so everyone sees what's in flight)\n  DONE/     \u2190 move the card here when committed + test green. Append the commit hash inside.\n  outbox.json  \u2190 your report line (append-only)\n```\n\n## The seat loop (every cron tick \u2014 no human in it)\n1. `ls QUEUE/` \u2192 if empty, stay silent and stop. If not empty, take the **lowest-numbered** card.\n2. `mv` that card `QUEUE/ \u2192 DOING/`.\n3. Do exactly what the card says \u2014 nothing more (no freelancing, stay in lane).\n4. Run its test. Must pass **without David**.\n5. Commit only your changed files.\n6. Append the commit hash + result to the card, `mv` it `DOING/ \u2192 DONE/`, append a line to `outbox.json`.\n7. Loop: go back to step 1 and take the next card. **Do not stop to ask.**\n\n## Standing rules (David 2026-08-10)\n- **Nothing is held.** David is NOT a daytime gate. He runs ONE LIVE TEST AT END OF DAY \u2014 that is the review.\n- Build \u2192 test \u2192 commit \u2192 next. Only **money \u00b7 legal \u00b7 safety** are reserved (those cards are marked\n  `RESERVED` in the title and must NOT be auto-run).\n- A card in `DOING/` older than a day = that seat probably died \u2192 the Architect re-queues it.\n- **Architect never edits code.** It writes cards. Seats build. That's the whole contract.\n\n## Architect loop (what I do)\n- Turn every need into a **card** in the right seat's `QUEUE/` (not a board cell).\n- Read `DONE/` + outboxes \u2192 reconcile the board \u2192 write the next cards. The board becomes a *report*,\n  not the dispatch mechanism.\n\n## Card template\nSee `_CARD_TEMPLATE.md`. A card is self-contained: goal \u00b7 exact scope \u00b7 files to touch \u00b7 test to run \u00b7 done-when.\n\n\n    SEAT CONTRACT:\n    # \ud83d\udd34 THE FOUR STATES \u2014 **binding on every seat, from now**\n### `SEAT-ENG-*` \u00b7 `SEAT-DES-*` \u00b7 `SEAT-GAME-*` \u00b7 `SEAT-DES-MOBILE-TEST` \u00b7 **and the Lead Architect**\n**David, 2026-08-17.** Verbatim source: `docs/architecture/_intake/SOURCE_2026-08-17_david_four_states.md`\n\n> ## **UNKNOWN** \u2014 *\"I don't know.\"*\n> ## **PROPOSE** \u2014 *\"Here is what I think we could do.\"*\n> ## **AUTHORISED** \u2014 *\"David/CA/LA has accepted this.\"*\n> ## **IMPLEMENT** \u2014 *\"Now build it.\"*\n>\n> ### **Those four states should never collapse into one.**\n> ### **Especially: UNKNOWN \u2260 ASSUMPTION**\n> \u2014 **David**\n\n**Read this before your `START_HERE`. It outranks the phrasing of any card you hold, including mine.**\n\n---\n\n## 1 \u00b7 WHAT EACH STATE PERMITS \u2014 and the sentence that gives it away\n\n| State | You may | You may NOT | \ud83d\udd34 The tell that you have collapsed it |\n|---|---|---|---|\n| **UNKNOWN** | say so \u00b7 name the measurement that would resolve it \u00b7 keep working around it | fill the hole with a plausible value \u00b7 infer it from a nearby value \u00b7 leave the row blank | **a number with no source.** *\"roughly\"*, *\"should be about\"*, *\"typically\"* |\n| **PROPOSE** | design it \u00b7 cost it \u00b7 prototype it \u00b7 argue for it | build it into the live path \u00b7 write it into a spec as settled \u00b7 report it as a plan of record | **\"we're going with X\"** when nobody said so |\n| **AUTHORISED** | build exactly the thing that was accepted | widen it \u00b7 improve it on the way past \u00b7 carry an adjacent fix along | **scope that grew between acceptance and commit** |\n| **IMPLEMENT** | build \u00b7 test \u00b7 commit \u00b7 report | call it done before the behaviour changed *(Rule 4g)* | **\"done\"** with no falsifiable test |\n\n## 2 \u00b7 \ud83d\udd34 `UNKNOWN \u2260 ASSUMPTION` \u2014 the one David singled out\n\n**An assumption is an UNKNOWN wearing a number.** It reads identically to a fact three documents later,\nand by then the seat that wrote it is gone.\n\n**Write `UNKNOWN` and what would settle it. Every time. It is a complete, professional answer.**\n```\n\u274c  torque \u2248 4 Nm\n\u2705  torque UNKNOWN \u2014 resolved by bench-testing the actual servo under load\n```\n**Never write a blank row.** `NONE` if it does not apply, `UNKNOWN` if you do not know.\n**A blank is indistinguishable from an omission, and an omission is invisible.**\n\n\ud83d\udfe2 **Nobody is ever penalised for `UNKNOWN` here.** MT wrote `0 of 22` against their own earlier result and\nit became a Board investigation. Designer wrote *\"what I did NOT exhaustively pull, so you don't assume I\ndid\"* and it became a five-row card instead of a wasted week. **Both of those are this rule working.**\n\n## 2b \u00b7 \ud83d\udd34 **INTENT IS ABOVE IMPLEMENTATION** \u2014 **DAVID, 2026-08-17. His words.**\n**Verbatim:** `docs/architecture/_intake/SOURCE_2026-08-17_DAVID_intent_integrity_three_layers.md`\n\n> **Three layers the architecture must distinguish:**\n> | Layer | What it is |\n> |---|---|\n> | **DAVID'S INTENT** | *\"what David actually specified, **including unusual, aesthetic, emotional or experiential requirements**.\"* |\n> | **ARCHITECTURAL INTERPRETATION** | *\"h\n\n    WORK CARD:\n    Card: test card. Write the string OK to /tmp/elo_probe_result.txt\n\n    Write the string {\"status\":\"DONE\",\"evidence\":\"probe complete\"} to /tmp/elo_probe_result.txt",
+        "--dangerously-skip-permissions",
+        "--output-format",
+        "stream-json",
+        "--add-dir",
+        "/Users/Disenelo/elo-ai"
+      ],
+      "stdin": null,
+      "exit_code": 1,
+      "stdout_bytes": 0,
+      "stderr_bytes": 74,
+      "stdout_head": "",
+      "stderr_head": "Error: When using --print, --output-format=stream-json requires --verbose\\n",
+      "elapsed_s": 0.57,
+      "ok": false
+    },
+    {
+      "step": "7_full_prompt_stdin",
+      "argv": [
+        "/opt/homebrew/bin/claude",
+        "-p",
+        "--dangerously-skip-permissions",
+        "--output-format",
+        "stream-json"
+      ],
+      "stdin": "You are the builder implementation seat in the eLo OS project.\n    Project root:",
+      "exit_code": 1,
+      "stdout_bytes": 0,
+      "stderr_bytes": 74,
+      "stdout_head": "",
+      "stderr_head": "Error: When using --print, --output-format=stream-json requires --verbose\\n",
+      "elapsed_s": 0.57,
+      "ok": false
+    },
+    {
+      "step": "8_stdin_plus_env_key",
+      "argv": [
+        "/opt/homebrew/bin/claude",
+        "-p",
+        "--dangerously-skip-permissions",
+        "--output-format",
+        "stream-json"
+      ],
+      "stdin": "You are the builder implementation seat in the eLo OS project.\n    Project root:",
+      "exit_code": 1,
+      "stdout_bytes": 0,
+      "stderr_bytes": 74,
+      "stdout_head": "",
+      "stderr_head": "Error: When using --print, --output-format=stream-json requires --verbose\\n",
+      "elapsed_s": 0.58,
+      "ok": false
+    },
+    {
+      "step": "9_no_format_stdin",
+      "argv": [
+        "/opt/homebrew/bin/claude",
+        "-p",
+        "--dangerously-skip-permissions"
+      ],
+      "stdin": "You are the builder implementation seat in the eLo OS project.\n    Project root:",
+      "exit_code": 0,
+      "stdout_bytes": 86,
+      "stderr_bytes": 0,
+      "stdout_head": "Wrote `{\"status\":\"DONE\",\"evidence\":\"probe complete\"}` to `/tmp/elo_probe_result.txt`.\\n",
+      "stderr_head": "",
+      "elapsed_s": 6.34,
+      "ok": true
+    }
+  ]
+}

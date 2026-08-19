@@ -10,8 +10,8 @@
       "state": "READY"
     }
   ],
-  "ts": 1786629641.1605973,
-  "generated": "2026-08-13 15:00:41",
+  "ts": 1787112619.646566,
+  "generated": "2026-08-19 05:10:19",
   "pending": [
     {
       "wo": "\u2605 MILESTONE: eLo Presentable v1 \u2014 BUILD-READY DEFAULTS (David 2026-08-03)",
@@ -161,13 +161,6 @@
       "badge": "\ud83d\udfe2"
     },
     {
-      "wo": "WO-CANON-VII",
-      "title": "Build Volume VII Executive Cortex \u2014 close Ruling C (move the `decide()",
-      "state": "ready",
-      "importance": "AUTO",
-      "badge": "\ud83d\udfe2"
-    },
-    {
       "wo": "WO-CANON-XIII",
       "title": "Build Volume XIII Spatial Faculty \u2014 `faculties/spatial/` owns reachabi",
       "state": "ready",
@@ -178,13 +171,6 @@
       "wo": "WO-CANON-XI",
       "title": "Build Volume XI Motor Cortex \u2014 formalise the DOWN command / UP ACK con",
       "state": "ready",
-      "importance": "AUTO",
-      "badge": "\ud83d\udfe2"
-    },
-    {
-      "wo": "WO-097",
-      "title": "LIVE BUG: EmbodimentState publishes EMPTY \u2014 `build_embodiment_state`:5",
-      "state": "active",
       "importance": "AUTO",
       "badge": "\ud83d\udfe2"
     },
@@ -219,13 +205,6 @@
     {
       "wo": "WO-CANON-XVIII",
       "title": "Build Volume XVIII \u2014 Self-Evolution. Capability/faculty versioning; AD",
-      "state": "ready",
-      "importance": "AUTO",
-      "badge": "\ud83d\udfe2"
-    },
-    {
-      "wo": "WO-CANON-I",
-      "title": "Build Volume I \u2014 Philosophy. Retire \"the user\" framing; eLo's person i",
       "state": "ready",
       "importance": "AUTO",
       "badge": "\ud83d\udfe2"

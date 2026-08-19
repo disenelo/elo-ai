@@ -1,5 +1,5 @@
 {
-  "ts": 1787112784.885153,
+  "ts": 1787114109.513675,
   "0050_prompt_map_2026-08-17": {
     "to": "Architect",
     "from": "Builder",
@@ -1611,5 +1611,43 @@
     "duration_s": 0,
     "commit": "7d3035d",
     "gp2_blocked_by": "auto-mode classifier blocks subprocess.Popen([\"claude\", ...]) from within session"
+  },
+  "0000_MIDFLIGHT_WO-096B_gate_still_shut_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787112917.0650141,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=false tool_events=0 exit_code=1 output_bytes=74",
+    "duration_s": 3.51,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "0002_WO-118_route_history_2026-08-19": {
+    "to": "Architect",
+    "from": "Builder",
+    "subject": "0002 WO-118 DONE \u2014 last_move \u2192 route_memory wired; route_history in LiveWorldState",
+    "body": "Implementation was already committed as 3112e40 (2026-08-15); card had been left in DOING/. Closed on 2026-08-19. No new code \u2014 verified the wiring against disk and re-ran acceptance.\n\nWiring (verified 2026-08-19):\n  desktop/spatial_state.py:128-163  reads last_move, dedups on _ts, feeds route_memory.remember_route()\n  desktop/spatial_state.py:152-163  Rule 1 alarm \u2014 WARNING when body has goal/route but last_move absent for N\u22653 reads\n  world/live_world_state.py:397-406 route_history=tuple(recent_routes(5)) + domain_health['route']\n\nAcceptance (all four card criteria):\n  AT-1 completed move recorded             OK  (test_last_move_feeds_route_memory PASSED)\n  AT-2 failed move (arrived=False) recorded OK (live run: arrived=False, fell=True present in recent_routes)\n  AT-3 success rate changes on repeat      OK  (3 attempts T/F/T on top_of_chrome \u2192 route_confidence=0.667)\n  AT-4 Rule 1 alarm fires when moving mute OK  (WARNING at count=3: 'body may have gone silent')\n  dedup (test_last_move_deduplicates_on_ts) PASSED\n\nSample route_memory entries produced live in the verification run (3 attempts on 'top_of_chrome'):\n  {arrived:true,  fell:false, duration_s:2.4, smoothness:1.0}\n  {arrived:false, fell:true,  duration_s:1.1, smoothness:0.4}\n  {arrived:true,  fell:false, duration_s:2.0, smoothness:1.0}\n  route_confidence('top_of_chrome') = 0.667 after 3 attempts (2/3).\n\nPairs with WO-106 (surfaces route_history to Executive). Unblocks row 17 GAP reliable_range (WO-113 can switch declared \u2192 learned).",
+    "status": "DONE",
+    "commit": "3112e40",
+    "card": "0002_WO-118_consume_last_move_ROUTE.md",
+    "acceptance": {
+      "AT-1_completed_move_recorded": true,
+      "AT-2_failed_move_recorded": true,
+      "AT-3_success_rate_after_3": 0.667,
+      "AT-4_rule1_alarm_fires": true,
+      "dedup_on_ts": true
+    },
+    "ts": 1787114109.513674
+  },
+  "0002_WO-118_consume_last_move_ROUTE_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787114128.0649831,
+    "state": "DONE",
+    "output": [
+      "3112e40"
+    ],
+    "evidence": "Implementation already committed as 3112e40 (2026-08-15) \u2014 'WO-118 (card 0002): wire last_move \u2192 route_memory, surface to Executive, Rule 1 alarm'. Card had been left in DOING/; closed on 2026-08-19. Wiring verified against disk: desktop/spatial_state.py:128-163 reads last_move, dedups on _ts, feeds self.route_memory.remember_route(); world/live_world_state.py:397-406 surfaces route_history=tuple(",
+    "duration_s": 157.76
   }
 }

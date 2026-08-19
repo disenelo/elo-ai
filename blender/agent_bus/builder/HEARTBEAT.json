@@ -1,0 +1,12 @@
+{
+  "seat": "builder",
+  "work_id": "0002_WO-118_consume_last_move_ROUTE.md",
+  "pid": 0,
+  "started_at": 1787113970.305164,
+  "last_activity_at": 1787114128.063874,
+  "current_action": "DONE",
+  "execution_position": 10,
+  "last_output": "MET elapsed=157.8s",
+  "last_evidence": null,
+  "next_action": null
+}

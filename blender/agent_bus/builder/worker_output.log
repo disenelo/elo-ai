@@ -1,0 +1,17 @@
+Card `0002_WO-118` is closed as **DONE**.
+
+**Finding.** The implementation was already committed as `3112e40` on 2026-08-15 (`WO-118 (card 0002): wire last_move → route_memory, surface to Executive, Rule 1 alarm`). The card had been left in `DOING/`. No new code was needed — I closed the loop.
+
+**Verified against disk (2026-08-19):**
+- `desktop/spatial_state.py:128-163` — reads `last_move`, dedups on `_ts`, feeds `route_memory.remember_route()`.
+- `desktop/spatial_state.py:152-163` — Rule 1 WARNING when body has `goal`/`route` but `last_move` absent for ≥3 reads.
+- `world/live_world_state.py:397-406` — `route_history = tuple(recent_routes(5))` + `domain_health["route"]` on `LiveWorldState`.
+
+**Acceptance — all four card criteria pass:**
+- AT-1 completed move recorded — `test_last_move_feeds_route_memory` PASSED.
+- AT-2 failed move (`arrived=False, fell=True`) recorded in `recent_routes` — live-verified.
+- AT-3 3 attempts (T/F/T) on `top_of_chrome` → `route_confidence = 0.667` (2/3).
+- AT-4 Rule 1 alarm fires: `WO-118 Rule 1: body navigating (goal=54676) but last_move absent for 3 consecutive reads — body may have gone silent.`
+- Dedup: `test_last_move_deduplicates_on_ts` PASSED.
+
+Card moved `DOING/ → DONE/` with the result block appended; `outbox.json` entry `0002_WO-118_route_history_2026-08-19` added; `worker_result.json` written. Unblocks row 17 GAP `reliable_range` (WO-113 can now switch declared → learned).
