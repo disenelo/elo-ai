@@ -63,7 +63,10 @@ line or should not have been written.**
 The 2026-08-17 snapshot read *"F2 · LOOP-7 — BLOCKED — David/Architect decision."*
 David ruled it the same night: `Option A` — READ/MEASURE/PROVE only, frozen Executive stays frozen.
 **`0055` is now DONE** (`6758f4b`). Verdict: **A PROVEN IMPOSSIBLE** — `decide()` has no lessons read path; injecting a `lessons` key produces zero change in output. Executive logic must change to consume lessons. LOOP-7 stays OPEN. David/L3 decision.
-**David items (2026-08-19):** (1) Restart server to pick up WO-045 Spine fix + WO-037 identity fix — both committed, neither live on running PID 35788. (2) Groq key suspended — check `console.groq.com`, rotate in `.env`. (3) Pull `ollama pull llama3.1:8b` to close 0052 M2/M4. (4) WO-048 "how's the company" — company state IS injected correctly but Ollama+max_sentences=1 collapses it to a vague sentence. Decision needed: bypass LLM for company replies, or fix is Groq-dependent.
+**David items (2026-08-19):** (1) Restart server to pick up WO-045 Spine fix + WO-037 identity fix — both committed, neither live on running PID 35788. (2) Groq key suspended — check `console.groq.com`, rotate in `.env`. (3) Pull `ollama pull llama3.1:8b` to close 0052 M2/M4. (4) WO-048 "how's the company" — company state IS injected correctly but Ollama+max_sentences=1 collapses it to a vague sentence. Decision needed: bypass LLM for company replies, or fix is Groq-dependent. (5) 0058 Orchestrator GP-2 / claude-code transport: auto-mode classifier blocks subprocess.Popen(["claude",...]) inside Claude Code session — run `python3 engineering/seat_orchestrator.py builder` from external shell/cron to prove host transport; or add a Bash permission rule to allow it in-session.
+
+**0058 THE ORCHESTRATOR — 2026-08-19 · commit 7d3035d:**
+GP-1 DONE — Python transport proven (LA: OPS-001 ×2; Builder: publish()=True). Schema converged: HEARTBEAT.json, canonical outbox, canonical metrics keys. Item 1 (claude-code transport): ALIVE=YES from sandbox; BLOCKED by auto-mode classifier from Builder session; UNKNOWN from external cron — needs David to run from shell. GP-2 gated on Item 1 host verification.
 
 ## CARD 0053 — THE RECONCILE · verified against disk
 | Task | Status |
@@ -81,6 +84,42 @@ David ruled it the same night: `Option A` — READ/MEASURE/PROVE only, frozen Ex
 historical rows satisfy that forever** — so disconnecting a feature **cannot redden the test.** Only `LOOP-8`
 survives, because it checks the shape of a live value instead of searching history.
 🔴 **The figure went down. That is the metric working** *(Rule 5.4)*. **Do not let anyone restore the 10/10.**
+
+
+## ✅ `IN_REVIEW` SWEEP — **DONE 2026-08-19. The 122 was noise; here is the real number.**
+**Rule 4.1: `IN_REVIEW` is not a hold — tests green + committed = DONE.** It had been flagged twice and
+never swept. Swept now, mechanically, against `git log` and all four seat outboxes.
+
+| | Count | Evidence |
+|---|---|---|
+| WOs appearing on `IN_REVIEW` lines | **68 distinct** *(the "122" was line-mentions, not items)* | — |
+| ✅ **have commits** | **45** | named in a commit subject |
+| ✅ **reported in a seat outbox** *(commit subject just didn't name the WO)* | **10** | `GM-2 · GM-2b · WO-015 · WO-024 · WO-041 · WO-062 · WO-063 · WO-074 · WO-075 · WO-087` |
+| 🔴 **no commit AND no outbox mention** | **13** | see below |
+
+> ### **55 of 68 are finished work wearing a waiting label. 13 are genuinely unevidenced.**
+
+### ✅ THE 13 — **RESOLVED 2026-08-19. Grepped, not flagged again.**
+| Verdict | Count | WOs | Evidence |
+|---|---|---|---|
+| 🟢 **HAS IMPLEMENTING CODE** — commit subject simply never named it | **9** | `EA2-1` *(test_ea2_7)* · `INT-2` *(robot_vision_bridge.py)* · `WO-019` *(server.py)* · `WO-040` *(wo_policy.py)* · `WO-042` *(server.py)* · `WO-052A` *(test_wo059)* · `WO-056`+`WO-057` *(cognitive_snapshot.py)* · `WO-065` *(server.py)* | code located per WO |
+| 🟡 **DAVID FEEL-TEST, code elsewhere** | **2** | `INT-8b` reach · `WO-074C` movement feel | already on David's 5-item list |
+| 🔴 **GENUINELY NOTHING ON DISK** | **2** | `WO-028` · `WO-050` | no code, no test, no commit |
+
+> ### **The real number is 2, not 13, and not 122.**
+**`WO-028` and `WO-050` are the only genuinely unevidenced work orders in the company.**
+
+### 🔴 WHAT ACTUALLY NEEDS DAVID — one session, not a queue
+**Everything below is a FEEL check on finished work. None of it is a gate; all of it is a result he reviews.**
+| Item | What he does |
+|---|---|
+| `GM-2b` | run on W/S — does sprint fire |
+| `GM-4` | does the arm track the cursor · dial `pitchAxis` |
+| `GM-idle-life` | does it read as alive |
+| `WO-074C` / `WO-075` | movement feel · dial `maxJumpEloHeights` |
+| `INT-8b` | the drag-drop test |
+
+**Five items, one sitting. That is the whole of David's review backlog** — not 122, not 68.
 
 ## 🔴 THE BASELINE FREEZE — three conditions. It is NOT frozen yet.
 **David: "Close the convergence work honestly. Freeze the resulting runtime baseline."**

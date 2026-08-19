@@ -1,5 +1,5 @@
 {
-  "ts": 1787097742.4480362,
+  "ts": 1787112784.885153,
   "0050_prompt_map_2026-08-17": {
     "to": "Architect",
     "from": "Builder",
@@ -1597,5 +1597,19 @@
     "subject": "0056 live test results \u2014 WO-022 PASS, WO-048 FAIL, WO-037 CONFIRMED",
     "body": "WO-022 (recall): PASS. 'Do you remember K-7?' \u2192 specific accurate answer via obsidian. WO-037 (working on): CONFIRMED DEFECT. 'What are you working on?' \u2192 'eLo. That's me.' (backend: direct). Root cause found and fixed (see WO-037 outbox entry). WO-048 (company): company state IS injected correctly \u2014 [COMPANY_STATE] block sent to LLM with real data. But Ollama 70b + max_sentences=1 (action=answer, DIRECT tone) collapses to 'We're on track for Presentable v1, and that's a good sign.' FAILS acceptance line ('returns real, varying content with links'). Root: LLM summarization is the bottleneck, not the company handler. Fix options: (A) early-return company state directly (bypass LLM), (B) increase max_sentences for company intent, (C) verify on Groq first. David decision needed. WO-061 (check in on company): same path as WO-048 \u2014 same status.",
     "status": "DAVID_DECISION_NEEDED"
+  },
+  "f0_0058_orchestrator_item1": {
+    "to": "Architect",
+    "from": "Builder",
+    "ts": 1787112784.885157,
+    "state": "PARTIAL",
+    "output": [
+      "engineering/seat_orchestrator.py",
+      "blender/agent_bus/script/"
+    ],
+    "evidence": "GP-1 PROVEN (python transport). Item 1: claude -p BLOCKED by auto-mode classifier inside Claude Code session. External cron path UNKNOWN but architecture correct. Schema converged.",
+    "duration_s": 0,
+    "commit": "7d3035d",
+    "gp2_blocked_by": "auto-mode classifier blocks subprocess.Popen([\"claude\", ...]) from within session"
   }
 }
