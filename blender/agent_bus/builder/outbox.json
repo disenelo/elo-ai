@@ -129,11 +129,37 @@
     "from": "builder",
     "ts": 1787123000.0,
     "state": "DONE",
-    "subject": "0011 WO-111 consume anim_complete — duplicate re-queue; work already shipped at 44171c7 (5118542 for contract)",
-    "evidence": "Card was re-queued into DOING/. Original work shipped 2026-08-19: 5118542 (runtime/ack_contract.py — ActionResult + honest_outcome) and 44171c7 (blender_bridge/anim_trigger.py — wait_for_ack + fire_ack; _ANIM_ACK_COVERED = wave + head gestures; clip triggers report unconfirmed). Canonical DONE stamp at DONE/0011_WO-111_consume_anim_complete.md. Re-verified this pass: pytest tests/test_wo111_consume_ack.py 6/6 in 1.32s including the dead-executor guard test_no_ack_consumer_means_no_confirmation. eLo's three honest sentences (via honest_outcome): completed -> 'Done — wave confirmed.'; failed -> 'That didn't work — wave reported a failure.'; unconfirmed -> 'I triggered jump but can't confirm it happened.' Duplicate closed to DONE/0011_WO-111_consume_anim_complete_dup_2026-08-19.md; canonical DONE preserved.",
+    "subject": "0011 WO-111 consume anim_complete \u2014 duplicate re-queue; work already shipped at 44171c7 (5118542 for contract)",
+    "evidence": "Card was re-queued into DOING/. Original work shipped 2026-08-19: 5118542 (runtime/ack_contract.py \u2014 ActionResult + honest_outcome) and 44171c7 (blender_bridge/anim_trigger.py \u2014 wait_for_ack + fire_ack; _ANIM_ACK_COVERED = wave + head gestures; clip triggers report unconfirmed). Canonical DONE stamp at DONE/0011_WO-111_consume_anim_complete.md. Re-verified this pass: pytest tests/test_wo111_consume_ack.py 6/6 in 1.32s including the dead-executor guard test_no_ack_consumer_means_no_confirmation. eLo's three honest sentences (via honest_outcome): completed -> 'Done \u2014 wave confirmed.'; failed -> 'That didn't work \u2014 wave reported a failure.'; unconfirmed -> 'I triggered jump but can't confirm it happened.' Duplicate closed to DONE/0011_WO-111_consume_anim_complete_dup_2026-08-19.md; canonical DONE preserved.",
     "commits": [
       "5118542",
       "44171c7"
+    ],
+    "acceptance_met": true
+  },
+  "0011_WO-111_consume_anim_complete_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787122499.810842,
+    "state": "DONE",
+    "output": [
+      "076baf4",
+      "44171c7",
+      "5118542"
+    ],
+    "evidence": "DUPLICATE re-queue. Original work already shipped 2026-08-19: 5118542 (runtime/ack_contract.py \u2014 ActionResult + honest_outcome) and 44171c7 (blender_bridge/anim_trigger.py \u2014 wait_for_ack + fire_ack; fire() stamps action_id; _ANIM_ACK_COVERED = {wave, nod, shake, tilt, think, lookup}; clip triggers (jump/gun_check/gun_run/gun_fire/calm_enter/calm_exit/celebrate/spawn_wave) report unconfirmed via fi",
+    "duration_s": 128.21
+  },
+  "0012_RULINGS_and_the_live_run_that_proves_19_DUPLICATE": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787122518.5037189,
+    "state": "DONE",
+    "subject": "0012 Rulings 1 & 2 \u2014 duplicate re-queue; work already shipped at 7ab3bbe",
+    "evidence": "Card was re-picked from QUEUE/ into DOING/. Original work landed 2026-08-19 07:11 at commit 7ab3bbe (memory/journal_router.py: non-dict outcome guard + last_significance.json persist carrying outcome; runtime/the_moment.py: Verified Speech gate on previous-turn significance line). Canonical DONE stamp at DONE/0012_RULINGS_and_the_live_run_that_proves_19.md (commit 656c432). Re-verified this pass: tests/test_wo126_meaning.py + tests/test_wo_rows_4_6_16.py = 16/16 PASS. Ruling 3 (Rows 20/22) emergent, no build required. Live 20-turn run is David's lane (single-live-tester rule); not attempted. Duplicate closed to DONE/0012_RULINGS_and_the_live_run_that_proves_19_DUPLICATE.md; canonical DONE preserved.",
+    "commits": [
+      "7ab3bbe",
+      "656c432"
     ],
     "acceptance_met": true
   }

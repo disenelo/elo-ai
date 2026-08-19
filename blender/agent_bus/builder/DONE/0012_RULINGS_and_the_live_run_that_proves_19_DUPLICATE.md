@@ -70,3 +70,23 @@ evidence. **Report N confirmed after the run above** — that number is the row.
 1. **The live run + state report** (converts most of the 19)
 2. Rulings 1 and 2 — both are builds, neither needs David
 3. `0010_WO-122` ROUTE — capability→executor, still open and still a One-Brain violation
+
+---
+
+## DUPLICATE close-out — 2026-08-19, builder
+
+Card was re-picked from QUEUE/ into DOING/ after original close-out. **Work already shipped**
+at commit `7ab3bbe` + stamp `656c432` — canonical DONE stamp preserved at
+`DONE/0012_RULINGS_and_the_live_run_that_proves_19.md`.
+
+**Re-verified this pass** (Rule 2 VERIFY-BEFORE-CLAIM):
+
+- `memory/journal_router.py:122-127` — non-dict `outcome` guard present (`_outcome_for_scoring`).
+- `memory/journal_router.py:143-155` — `last_significance.json` persist path present, record carries `outcome` alongside `ts / action / profile`.
+- `runtime/the_moment.py:290-303` — Verified Speech gate present: significance line emits **only** when a fresh profile exists, tagged as previous turn.
+- `tests/test_wo126_meaning.py` (10 tests, includes the WO-127 stale-guard from commit 1095389) + `tests/test_wo_rows_4_6_16.py` (6 tests) — **16/16 PASS**.
+
+Ruling 3 (Rows 20 LEARN, 22 ADAPT) remains emergent — no build required by card.
+Live-run task on this card is David's lane (single-live-tester rule); not attempted.
+
+Duplicate closed to `DONE/0012_..._DUPLICATE.md`; canonical DONE at `DONE/0012_...`.

@@ -1,8 +1,8 @@
 {
-  "card": "0010_WO-122_ROUTE_capability_to_executor.md",
+  "card": "0012_RULINGS_and_the_live_run_that_proves_19.md",
   "status": "DONE",
-  "commits": ["91ea6c1", "15224af"],
+  "commits": ["7ab3bbe", "656c432"],
   "acceptance_met": true,
-  "evidence": "Duplicate re-queue. Work already shipped 2026-08-19 06:57 at commit 91ea6c1 (tools/tool_router.py::enrich_from_plan gates dispatch by plan.capabilities; keyword fallback removed; unknown capability logs WARN). Canonical DONE at DONE/0010_WO-122_ROUTE_capability_to_executor.md (commit 15224af). Re-verified this pass: tests/test_wo122_route_capability_to_executor.py 5/5 including RT-1 disconnection (blank plan.capabilities on weather-worded query → weather agent does NOT fire). server.py:3534-3536 confirmed still routing plan.capabilities into enrich_from_plan(). Duplicate card closed to DONE/0010_WO-122_ROUTE_capability_to_executor_DUPLICATE.md.",
+  "evidence": "DUPLICATE close-out. Rulings 1 & 2 already landed at commit 7ab3bbe (memory/journal_router.py outcome guard + last_significance persist with outcome; runtime/the_moment.py Verified Speech gate on previous-turn significance line) and stamped by 656c432. Re-verified this pass: tests/test_wo126_meaning.py + tests/test_wo_rows_4_6_16.py = 16/16 PASS. Ruling 3 is emergent (no build). Live 20-turn run is David's lane. Duplicate moved to DONE/0012_..._DUPLICATE.md; canonical DONE stamp preserved.",
   "blocker": null
 }
