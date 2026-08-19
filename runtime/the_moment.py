@@ -148,7 +148,14 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
         _sig_age = now - _sig_record.get("ts", 0.0)
         if _sig_age <= _SIGNIFICANCE_MAX_AGE_S:
             _last_significance = _sig_record
-        # else: score is stale — leave _last_significance as {} so eLo makes no claim
+        else:
+            # Card 0013 fix 4: stale score dropped — WARN so a dead journal_router
+            # can't hide. If this fires every turn the writer has stopped.
+            _log.warning(
+                "last_significance stale: age=%.0fs > max=%.0fs — dropped to {}. "
+                "If persistent, journal_router.route() is not being called.",
+                _sig_age, _SIGNIFICANCE_MAX_AGE_S,
+            )
     except Exception:
         pass
 

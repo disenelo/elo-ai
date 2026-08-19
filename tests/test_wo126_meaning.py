@@ -19,6 +19,7 @@ AT-126-3: when file is absent, last_significance is empty dict (no false claim)
 AT-126-4: profile carries overall + reward when outcome= is threaded (WO-101 join)
 AT-126-5: last_significance is previous turn's score — the file from turn N is read at turn N+1
 AT-126-6: stale score (age > 1800s) drops to empty dict — never presented as "last thing that mattered"
+AT-STALE-WARN (card 0013 fix 4): a dropped stale score emits a WARNING so a dead writer cannot hide.
 """
 from __future__ import annotations
 
@@ -321,4 +322,40 @@ def test_situated_block_shows_significance_line_when_present(tmp_path):
     )
     assert "spoke" in block, (
         "The outcome that produced the score must travel with it (Ruling 1)"
+    )
+
+
+# ── AT-STALE-WARN (card 0013 fix 4): stale-drop emits WARNING ─────────────────
+
+def test_stale_significance_emits_warning(tmp_path, caplog):
+    """
+    Card 0013 fix 4: a stale score dropped to {} must log at WARNING so a dead
+    journal_router (nothing writing new scores) cannot hide behind silent drops.
+    """
+    import logging as _logging
+    from self.elo_self_model import EloSelfState
+    from runtime import the_moment
+
+    state_dir = tmp_path / "self" / "state"
+    state_dir.mkdir(parents=True)
+    sig_file = state_dir / "last_significance.json"
+    sig_file.write_text(json.dumps({
+        "ts": time.time() - 7200.0,   # 2 hours old — well past 1800s bound
+        "action": "build",
+        "profile": {"overall": 0.82, "creation": 0.91},
+    }))
+
+    import unittest.mock as mock
+    caplog.set_level(_logging.WARNING, logger="runtime.the_moment")
+    with mock.patch.object(the_moment, "_ROOT", str(tmp_path)):
+        moment = the_moment.compile(EloSelfState())
+
+    assert moment.get("last_significance") == {}, (
+        "Stale score must drop to {} (AT-126-6 precondition)"
+    )
+    warnings = [r for r in caplog.records if r.levelno == _logging.WARNING
+                and "last_significance stale" in r.getMessage()]
+    assert warnings, (
+        "Stale drop must emit a WARNING so a dead writer is visible. "
+        f"Records seen: {[r.getMessage() for r in caplog.records]}"
     )
