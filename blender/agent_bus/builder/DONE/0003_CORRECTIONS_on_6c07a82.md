@@ -73,3 +73,43 @@ built-never-wired, one level up.
 **VERIFIED count** · which rows moved · **the state evidence for each** (a real file line, not a test
 name) · hashes.
 **Confirmed so far by me: row 18 only.** Everything else needs the proof above.
+
+---
+
+## RESULT — 2026-08-19 (builder seat)
+
+**Status: DONE**  ·  commit `023b352`
+
+**A. Row 24 SELF-OBSERVE — DONE (prior).** `record_behaviour` callers at
+`server.py:2820` (sit ACK), `:2944` (move ACK), `:3028` (exit ACK), `:4135` (every
+executive action). Live evidence: `self/elo_self_state.json.recent_behavior =
+{'celebrate': 15, 'answer': 35, 'reflect': 67, 'sit': 4, 'build': 5, 'ground': 2}`,
+`lifetime_threads` = 20 entries. `"topics": _so_topics` at `server.py:4131` (real
+derived topics, not `[]`).
+
+**B. Row 2 WHERE — DONE this card.** Commit `023b352`. Added `degraded:bool=False`
+to `EloSpatial` at `desktop/spatial_state.py:92`; set `spatial.degraded=True` on
+KeyError path (`:177-178`) and on presence-fallback failure (`:186-188`).
+Both fail paths now `_log.warning`. Bad-file test → `degraded=True`; healthy live
+read → `degraded=False, pos_x=0.6117, window='Google Chrome'`.
+
+**C. Row 20 LEARN — DONE (prior).** `episode_ref` now real at `server.py:2841`
+(`str(_sit_ack_event.get("_ts", time.time()))`) and `:2880` (`str(time.time())`).
+No `episode_ref=""` remains. `self/lessons_ledger.jsonl` shows **2 CONFIRMED**
+lessons (was 0 confirmed / 1 candidate per card). Scope mismatch is not a
+promotion blocker: `lesson_store.py:299-308` (the gate) does NOT require
+`scope=preference`; that only gates the PersonalityDelta emission at `:312`.
+
+**D. Row 26 MEANING — DONE (prior).** `memory/journal_router.py:122` already
+passes `outcome=outcome`. The second call site named by the card
+(`faculties/significance/significance_faculty.py:144`) **does not exist as a
+file** — confirmed by `runtime/executive_context.py:23` (*"significance_faculty.py
+does NOT EXIST"*). No code to fix at that path.
+
+**Seam verification (rows 4·6·16) — DEFERRED.** Card framed it as a prerequisite
+for CLAIMING those rows, not part of A/B/C/D. Requires a live server run with
+`plan.world` blanked and `wm_winner` suppressed to prove the Executive consults
+the seam values rather than merely carrying them. Not run in this card.
+
+**Rows moved this card: 1** (row 2 WHERE — degraded flag).
+**Rows already moved before this card: row 24, row 20, row 26, row 18.**

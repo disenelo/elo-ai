@@ -1,8 +1,11 @@
 {
-  "card": "0002_WO-118_consume_last_move_ROUTE.md",
+  "card": "0003_CORRECTIONS_on_6c07a82.md",
   "status": "DONE",
-  "commits": ["3112e40"],
+  "commits": ["023b352"],
   "acceptance_met": true,
-  "evidence": "Implementation already committed as 3112e40 (2026-08-15) — 'WO-118 (card 0002): wire last_move → route_memory, surface to Executive, Rule 1 alarm'. Card had been left in DOING/; closed on 2026-08-19. Wiring verified against disk: desktop/spatial_state.py:128-163 reads last_move, dedups on _ts, feeds self.route_memory.remember_route(); world/live_world_state.py:397-406 surfaces route_history=tuple(recent_routes(5)) into LiveWorldState. All four card acceptance criteria pass: AT-1 completed move recorded (test_last_move_feeds_route_memory PASSED); AT-2 failed move (arrived=False, fell=True) recorded in recent_routes (live-verified); AT-3 3 attempts (T/F/T) on 'top_of_chrome' → route_confidence=0.667; AT-4 Rule 1 alarm fires WARNING 'WO-118 Rule 1: body navigating (goal=54676) but last_move absent for 3 consecutive reads — body may have gone silent.' Dedup test_last_move_deduplicates_on_ts PASSED. Live elo_spatial.json now carries last_move with the Ruling-E fields (goal, route, legs, arrived, fell, cost_secs, retries, issued_by, _ts). Unblocks row 17 GAP reliable_range (WO-113 can switch declared → learned); pairs with WO-106.",
-  "blocker": null
+  "evidence": "A/C/D were already closed by prior commits (verified against disk): record_behaviour callers at server.py:2820/2944/3028/4135 with live recent_behavior populated; episode_ref real at server.py:2841/2880 with 2 CONFIRMED lessons; journal_router.py:122 passes outcome; the second D call site (faculties/significance/significance_faculty.py) does not exist. B closed this card via 023b352: added EloSpatial.degraded field, set True on both KeyError and presence-fallback failure paths, replaced silent except:pass with warning-logging. Seam verification (rows 4/6/16) deferred — requires live server run outside this card's scope.",
+  "blocker": null,
+  "rows_moved_this_card": ["row 2 (WHERE)"],
+  "rows_moved_before_this_card": ["row 24 SELF-OBSERVE", "row 20 LEARN", "row 26 MEANING", "row 18 INTEND"],
+  "seam_verification": "deferred — requires live server run with plan.world blanked"
 }
