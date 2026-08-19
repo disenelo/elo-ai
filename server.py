@@ -3158,6 +3158,16 @@ def _process_turn(raw: str) -> dict:
             if _ec_raw and _plan is not None:
                 _plan.intent_source = "self"
                 _plan.internal_intent = _ec_raw[0]  # highest-priority emergent intent
+                # WO-121 Ch.10: Agency Engine consumes the internal intent and
+                # attaches a §2 Layer-3 action_proposal to the plan. Layer-4 execution
+                # remains gated by execution_gate.py; this step only proposes.
+                try:
+                    from runtime.agency_engine import propose as _agency_propose
+                    _agency_prop = _agency_propose(_ec_raw[0], state=_elo_self)
+                    if _agency_prop is not None:
+                        _plan.agency_proposal = _agency_prop.to_dict()
+                except Exception:
+                    pass
         except Exception:
             pass
 

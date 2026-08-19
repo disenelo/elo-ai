@@ -27,6 +27,8 @@ class CognitivePlan:
     intent_source:        str   = "david"    # WO-099b fix5: "david" | "self" | "reflex"
     # WO-114: full internal intent when source == "self" (kind, source, trigger, priority)
     internal_intent:      dict  = field(default_factory=dict)
+    # WO-121 Ch.10: AgencyEngine proposal when internal_intent fires (§2 Layer 3 shape).
+    agency_proposal:      dict  = field(default_factory=dict)
     register:             str   = ""         # SOUTH_LDN_MODE | PATOIS_MODE | ...
     social:               str   = ""         # greeting | affirmation | farewell | ""
 
