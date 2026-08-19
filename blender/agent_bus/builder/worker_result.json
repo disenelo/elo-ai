@@ -1,11 +1,8 @@
 {
-  "card": "0003_CORRECTIONS_on_6c07a82.md",
+  "card": "0005_WO-120_spatial_faculty_does_not_exist.md",
   "status": "DONE",
-  "commits": ["023b352"],
+  "commits": ["d4cc0ad"],
   "acceptance_met": true,
-  "evidence": "A/C/D were already closed by prior commits (verified against disk): record_behaviour callers at server.py:2820/2944/3028/4135 with live recent_behavior populated; episode_ref real at server.py:2841/2880 with 2 CONFIRMED lessons; journal_router.py:122 passes outcome; the second D call site (faculties/significance/significance_faculty.py) does not exist. B closed this card via 023b352: added EloSpatial.degraded field, set True on both KeyError and presence-fallback failure paths, replaced silent except:pass with warning-logging. Seam verification (rows 4/6/16) deferred — requires live server run outside this card's scope.",
-  "blocker": null,
-  "rows_moved_this_card": ["row 2 (WHERE)"],
-  "rows_moved_before_this_card": ["row 24 SELF-OBSERVE", "row 20 LEARN", "row 26 MEANING", "row 18 INTEND"],
-  "seam_verification": "deferred — requires live server run with plan.world blanked"
+  "evidence": "faculties/spatial/spatial_faculty.py exists (120 lines, Vol XIII canonical owner). Wired at server.py:2654-2661 (imported every live turn — asserted NOT orphaned). desktop/spatial_state.py:8 false 'plans routes' docstring removed. tests/test_0005_wo120_spatial_faculty.py = 3 passed 0 failed on 2026-08-19 (SF-1 importable, SF-2 real-state block '[SPATIAL] surface=window_bottom can=[stand, peek, exit] | last_move→180:arrived', SF-3 docstring clean). Split with Designer ratified in writing at blender/agent_bus/design/FROM_BUILDER_2026-08-19_WO-120_spatial_faculty_split_ratified.md (accepts Designer's FROM_DESIGN_2026-08-13_WO-049 proposal verbatim + names Python interface for migration). Commit d4cc0ad already in main since 2026-08-15 — this autorun tick closed the housekeeping (card was stale in DOING/).",
+  "blocker": null
 }
