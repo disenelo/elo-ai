@@ -1,0 +1,7 @@
+{
+  "scheduler_proof": true,
+  "card": "ORCH-PROOF-001",
+  "ts": "2026-08-19T06:24:40Z",
+  "evidence": "launchd invocation completed without human start",
+  "worker_pid": 47375
+}
