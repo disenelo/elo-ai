@@ -1,8 +1,8 @@
 {
-  "card": "0004_WO-119_weather_publish_open_handoff.md",
-  "status": "DONE",
-  "commits": ["419c293"],
-  "acceptance_met": true,
-  "evidence": "Already shipped under WO-030b/058b in commit 419c293. blender_bridge/state_writer.py:246-251 has 'weather' in _PRESERVE_KEYS (line 248). server.py:3948-3993 publishes top-level 'weather' via _bs_patch() on every state tick (empty-string guard: 'if _bs_weather'). tools/tool_router.py get_last_weather_condition() provides the cached source. tests/test_wo030b_weather_publish.py passes 7/7 (AT-0 py_compile, AT-1 weather in _PRESERVE_KEYS, AT-2 preserved by _write, AT-3 patch writes top-level, AT-4 empty-string transparency, AT-5 accessor returns str, AT-6 survives round-trip). No new code commit needed. DOING duplicate removed; DONE copy already carries the RESULT section.",
+  "card": "0009_PATH_TO_26_run_this_without_stopping.md",
+  "status": "PARTIAL",
+  "commits": [],
+  "acceptance_met": false,
+  "evidence": "0009 is a Wave 1-6 planning card. This pass re-verified the closed portions against disk: tests/test_0008_seam_disconnection.py -> 4 passed, 0 failed (SD-1 world.available=False->'witness'; SD-2 True->'build'; SD-3 absent==True; SD-4 wm_winner=creation->'build') -> rows 4 SEE / 6 ATTEND / 16 AFFORD VERIFIED. tests/test_0007_metrics_isolation.py -> 2 passed, 0 failed. self/journals/growth_metrics.jsonl = 0 bytes. Wave 1 landed via card 0008 at 3657f53; Wave 2 truncate landed via card 0007 at b7b16de. Remaining rows for Waves 2-6 are dispatched as focused per-row cards already in QUEUE (Row 3 BODY, Row 24 SELF-OBSERVE, Row 14 ROUTE (done at 91ea6c1), Row 1 IDENTITY, WO-103, WO-108/109/110/111/112/113/114/115/107, WO-116/117 + emergent rows 20/22/25/26). VERIFIED count for THIS card per Ruling H: starting 4 -> +3 (rows 4/6/16 via 0008) = 7. Removed pristine DOING duplicate; closed-out DONE copy retained (contains the PARTIAL close-out written this session). No new commit strictly required for verification (evidence is against existing commits 3657f53 and b7b16de), but this run commits the DONE stamp + outbox + worker_result so the card stops re-firing under autorun.",
   "blocker": null
 }

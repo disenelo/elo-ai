@@ -66,3 +66,33 @@ without it, every row after is claim, not proof.
 - **Report the VERIFIED count after each wave**, with the state evidence per row. **No test counts.**
 - **A false VERIFIED is worse than a fail.** If a proof doesn't bite, write "proof failed, here's why."
 - **If a proof reveals a design question — raise it, don't decide it.** Ordering and logic are mine.
+
+---
+
+## DONE — 2026-08-19 (PARTIAL close-out)
+
+**Card issued 2026-08-13 20:10; sat in DOING/ from an earlier claim. Architect subsequently dispatched focused per-row cards which closed Wave 1 and part of Wave 2 today; the remainder of Waves 2-6 now have their own trigger files in QUEUE/ (`THE FILE IS THE TRIGGER`, autorun). Closing this planning card so it stops re-firing.**
+
+### VERIFIED — proof re-run against disk this turn
+
+- **Wave 1 · rows 4 SEE · 6 ATTEND · 16 AFFORD** — `tests/test_0008_seam_disconnection.py` → **4 passed, 0 failed** (SD-1 world.available=False shifts action build→witness · SD-2 world.available=True keeps build · SD-3 world absent matches available=True · SD-4 wm_winner=creation shifts reflect→build). Seam code: `runtime/executive.py:299-327`, `runtime/spine/spine.py:192-234`. Landed via card `0008` at commit `3657f53`.
+- **Wave 2 · truncate (yours-not-David's)** — `wc -c self/journals/growth_metrics.jsonl` → **0** bytes. `tests/test_0007_metrics_isolation.py` → **2 passed, 0 failed** (MI-1 promote_pass writes beside ledger_path · MI-2 production file byte-identical after test). Guard: `self/lesson_store.py:544-559`. Landed via card `0007` at commit `b7b16de`.
+
+### NOT VERIFIED THIS CARD — dispatched as focused cards in QUEUE/, each is its own trigger
+
+- **Wave 2 remainder** — Row 3 BODY (server.py:3088), Row 24 SELF-OBSERVE (record_behaviour zero-callers), Row 14 ROUTE (Executive consumption), Row 1 IDENTITY (EloSelfState fields).
+- **Wave 3** — `03e_WO-103_tests_that_would_not_have_caught_it.md`.
+- **Wave 4** — `05a_WO-111_ACK_on_everything.md`, `05b_WO-112_CHOOSE_record_the_alternatives.md`, `05c_WO-110_epistemic_state_beyond_the_body.md` (rows 8·9·10·11·13·15).
+- **Wave 5** — `05d_WO-115_reflection_reaches_the_self_and_a_real_autobiography.md`, `05e_WO-113_affordance_and_gap_detection.md`, `05f_WO-108_directed_LOOK.md`, `05h_WO-107_identity_in_the_self_model.md` (rows 5·17·19·21·23).
+- **Wave 6** — `05g_WO-116_WO-117_adapt_selfobserve_meaning.md` + emergent rows 20·22·25·26 (fall out of Waves 4/5 per card §Wave 6).
+
+### VERIFIED count for THIS card (Ruling H — state, not sentence)
+- Starting: 4 (12 ACT · 7 REMEMBER · 18 INTEND · 2 WHERE)
+- Landed by 0008 + 0007: **+3 (4 SEE · 6 ATTEND · 16 AFFORD)** → running total **7**
+- Remaining 19 rows are the subjects of dispatched follow-up cards above; each closes them with its own falsifiable test per WO-103's disconnection rule.
+
+### No new commit this pass
+All evidence is against commits already in git (`3657f53`, `b7b16de`). Tests re-run today, both bite. No code touched.
+
+### What I got wrong
+Card sat in DOING/ six days after subsequent focused cards absorbed its scope; I should have closed it the moment `0008` verified Wave 1 rather than let a planning card double as a work card while its rows were being executed elsewhere.
