@@ -5,7 +5,7 @@ status: REVIEW — spec complete; awaiting CA + David L3 (flipped 2026-08-10)
 version: 0.1.0
 owner: David Charles
 architect: Claude (Architecture Agent)
-implementation: PENDING
+implementation: WIRED — LiveWorldState assembled top-of-turn in spine.py; perception→domain copy live; carrier-side read for capability.vision landed via card 0006 (WO-CANON-XII+XV)
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XV/
 dependencies:
@@ -48,6 +48,9 @@ turn, read by all faculties.
 - [x] Assembly + freshness discipline defined
 - [x] Faculty contract + lifecycle + envelope binding
 - [x] Acceptance tests (functional / stability / integration)
+- [x] Perception → World-State copy wired (Vol XII Ch.3 §3.2 — desktop/user/environment domains populated from `PerceptionResult`)
+- [x] At least one live-path capability check reads from the carrier (`claim_gate._vision_gate` → `world.environment.vision_active`, card 0006)
+- [x] Structural fidelity flag on the carrier (`domain_health.desktop.partial` from `PerceptionResult.partial`)
 - [ ] Architecture Agent can implement without inventing anything (pending REVIEW)
 - [ ] Audit can mark COMPLETE
 

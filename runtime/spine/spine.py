@@ -425,7 +425,8 @@ def _conversation_faculty(plan: CognitivePlan) -> CognitivePlan:
         # UNKNOWN tier → direct response returned, LLM not consulted. Rule 1 alarm logged.
         try:
             from runtime.claim_gate import classify_and_gate as _ct4v_gate
-            _ct4v_type, _ct4v_resp = _ct4v_gate(raw)
+            # Vol XII Ch.3 §3.4: read capability state from the carrier, not the raw sensor.
+            _ct4v_type, _ct4v_resp = _ct4v_gate(raw, world=getattr(plan, "world", None))
             if _ct4v_resp is not None:
                 plan.direct_response = _ct4v_resp
                 plan.direct_backend  = "claim_gate"

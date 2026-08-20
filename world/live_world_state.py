@@ -364,6 +364,10 @@ def assemble_world_state(turn_id: str = "", perception=None) -> LiveWorldState:
                     "source":     "PerceptionFaculty",
                     "status":     p_desk_status if p_desk_status in ("live", "cached") else
                                   domain_health.get("desktop", {}).get("status", "absent"),
+                    # Ch.4 §4.3: structural fidelity flag — carrier-side so no consumer
+                    # has to re-derive it from a rail. `partial=True` means "do not
+                    # assert this domain as whole."
+                    "partial":    bool(getattr(perception, "partial", False)),
                 }
 
             # User — update focus_state from perceived activity

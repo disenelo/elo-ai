@@ -99,14 +99,29 @@ def _memory_gate(text: str) -> str | None:
         return None  # fail-open
 
 
-def _vision_gate() -> str | None:
+def _vision_gate(world: object | None = None) -> str | None:
     """
-    Check blender_state.json for vision_active.
+    Check vision availability. Vol XII Ch.3 §3.4 single-writer discipline:
+    when a LiveWorldState carrier is passed, read `environment.vision_active`
+    from it (one read per turn, no double-read of the underlying sensor).
+    Otherwise fall back to reading blender_state.json directly.
+
     Returns None if vision is active (LLM proceeds).
     Returns an UNKNOWN-tier response string if vision is off.
     Fails open on error (LLM proceeds).
     """
     try:
+        if world is not None:
+            env = getattr(world, "environment", None)
+            if env is not None:
+                if not getattr(env, "vision_active", False):
+                    _log.info(
+                        "CT4V-07 tier downgrade: capability.vision → UNKNOWN "
+                        "(carrier: environment.vision_active=False)"
+                    )
+                    return "I can't see your screen right now — vision isn't active."
+                return None  # carrier says vision is live → proceed
+            # carrier present but no environment slice — fall through to sensor fallback
         _bs = os.path.join(_ROOT, "blender", "blender_state.json")
         if os.path.exists(_bs):
             with open(_bs, encoding="utf-8") as _f:
@@ -143,10 +158,16 @@ def _history_gate() -> str | None:
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 
-def classify_and_gate(text: str) -> tuple[str | None, str | None]:
+def classify_and_gate(text: str, world: object | None = None) -> tuple[str | None, str | None]:
     """
     CT4V-07 structural gate — called in spine._conversation_faculty() before
     any LLM path.
+
+    Args:
+        text  — user input to classify
+        world — optional LiveWorldState carrier (Vol XII Ch.3 §3.4 single-read).
+                When passed, capability checks read from it instead of touching
+                the underlying sensor a second time.
 
     Returns:
         (claim_type, direct_response)
@@ -160,7 +181,7 @@ def classify_and_gate(text: str) -> tuple[str | None, str | None]:
         return ("memory", _memory_gate(text))
 
     if _VISION_PATTERNS.search(text):
-        return ("capability.vision", _vision_gate())
+        return ("capability.vision", _vision_gate(world=world))
 
     if _HISTORY_PATTERNS.search(text):
         return ("history", _history_gate())

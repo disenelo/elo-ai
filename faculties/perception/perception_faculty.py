@@ -170,7 +170,8 @@ class PerceptionResult:
     confidence:      float             = 1.0        # 0.0–1.0; lower when modalities missing
     source_health:   dict              = field(default_factory=dict)   # {source: {status, ts}}
     spatial_frame:   "SpatialFrame | None" = None  # WO-025: Vol XV §2 spatial domain; None when ELO_SPATIAL_SENSOR not set
-    partial:         bool              = False      # Ch.4 §4.3: True when confidence < 0.7 or primary modality absent
+    partial:         bool              = False      # Ch.4 §4.3: True when confidence < 0.7, primary modality absent, or a modality read is truncated
+    relations:       tuple             = field(default_factory=tuple)  # Ch.4 §4.1.3: explicit — perception asserts NO inter-item relations unless grounded
 
 
 # ── Interpret helpers ─────────────────────────────────────────────────────────
@@ -205,6 +206,24 @@ def _infer_scene(app_name: str, window_title: str, surface: str) -> str:
 
 def _source_health(status: str, ts: float = 0.0) -> dict:
     return {"status": status, "ts": ts}
+
+
+def tag_partial(text: str) -> str:
+    """Ch.4 §4.2.1 — mark a truncated read [PARTIAL: …] so downstream never presents it as whole.
+
+    Generalises the WO-076 Chrome-path tagger to every modality: window titles,
+    voice transcripts, file names, vision text. Trailing Unicode ellipsis,
+    ASCII ellipsis, or en-dash triggers the tag.
+    """
+    t = (text or "").strip()
+    if t.endswith("…") or t.endswith("...") or t.endswith("–"):
+        return f"[PARTIAL: {t}]"
+    return t
+
+
+def _is_truncated(text: str) -> bool:
+    t = (text or "").strip()
+    return t.endswith("…") or t.endswith("...") or t.endswith("–")
 
 
 # ── Core: perceive() ──────────────────────────────────────────────────────────
@@ -301,11 +320,14 @@ def perceive(
         confidence = max(0.0, confidence - 0.1)
 
     _confidence_final = round(confidence, 3)
-    # Ch.4 §4.3: partial when primary modalities (window, vision) are absent or confidence low
+    # Ch.4 §4.3: partial when primary modalities (window, vision) are absent, confidence low,
+    # or any modality read is truncated (structural signal — enforced pre-prompt, not a rail).
+    _any_truncated = any(_is_truncated(v) for v in modality_reads.values() if isinstance(v, str))
     _partial = (
         _confidence_final < 0.7
         or source_health.get("window", {}).get("status") == "absent"
         or (not vision_permitted and source_health.get("vision", {}).get("status") == "absent")
+        or _any_truncated
     )
 
     return PerceptionResult(
@@ -318,6 +340,7 @@ def perceive(
         source_health=source_health,
         spatial_frame=spatial_data,
         partial=_partial,
+        relations=(),  # Ch.4 §4.1.3: perception never asserts inter-item links unless grounded
     )
 
 
