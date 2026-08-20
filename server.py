@@ -3807,6 +3807,14 @@ def _process_turn(raw: str) -> dict:
                         _bh_ollama = dict(_bh_om)
                     except Exception:
                         pass
+                # card 0047 F-B: per-block prompt audit — expose where the 7,281 tokens go
+                _bh_prompt = {}
+                try:
+                    from runtime.prompt_builder import _last_prompt_audit as _bh_pa
+                    if _bh_pa:
+                        _bh_prompt = {"prompt_audit": dict(_bh_pa)}
+                except Exception:
+                    pass
                 _bh_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                         "blender", "backend_health.json")
                 _bh_tmp  = _bh_path + ".tmp"
@@ -3817,6 +3825,7 @@ def _process_turn(raw: str) -> dict:
                         "degraded": _bh_degraded,
                         "_ts":      _bh_time.time(),
                         **_bh_ollama,
+                        **_bh_prompt,
                     }, _bh_f, ensure_ascii=False)
                 os.replace(_bh_tmp, _bh_path)
                 if _bh_degraded and _agent is None:

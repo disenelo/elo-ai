@@ -103,7 +103,8 @@ class OllamaBackend(BaseBackend):
                 {"role": "system", "content": system_prompt},
                 {"role": "user",   "content": user_input},
             ],
-            "stream":  False,
+            "stream":     False,
+            "keep_alive": "30m",   # card 0047 F-B: every Ollama call path must set this
             "options": {
                 "temperature": 0.7,
                 "num_predict": 256,

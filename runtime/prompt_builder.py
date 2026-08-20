@@ -12,6 +12,17 @@ import os as _os
 _SPEC_PATH = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))),
                             "prompts", "living_presence_spec.txt")
 
+# card 0047 F-B: per-block prompt audit — populated by build() so backend_health
+# can show where the 7,281 prompt_eval_tokens go. Ollama uses BPE that averages
+# ~3.5 chars/token for English narrative; we report chars AND estimated tokens so
+# the caller can compare against Ollama's reported prompt_eval_count.
+_last_prompt_audit: dict = {}
+
+
+def _est_tokens(text: str) -> int:
+    """Approximate token count. Llama-family BPE ≈ 3.5 chars/token for English."""
+    return max(1, round(len(text) / 3.5)) if text else 0
+
 
 def load_living_presence_spec() -> str:
     """Load spec from file. Falls back to embedded _PERSONA if file missing."""
@@ -301,13 +312,20 @@ def build(
     exec_decision (optional): output of runtime.executive.decide().
         Injects a tone directive telling Claude exactly which voice mode to use.
     """
-    sections = [load_living_presence_spec()]
+    # card 0047 F-B: per-block audit — track each section's contribution
+    _audit_blocks: list[dict] = []
+    def _push(name: str, text: str) -> None:
+        sections.append(text)
+        _audit_blocks.append({"name": name, "chars": len(text), "est_tokens": _est_tokens(text)})
+
+    sections: list[str] = []
+    _push("living_presence_spec", load_living_presence_spec())
 
     if personality_block.strip():
-        sections.append(personality_block)
+        _push("personality_block", personality_block)
 
     if self_block.strip():
-        sections.append(self_block)
+        _push("self_block", self_block)
 
     # WO-095: confirmed learned heuristics — ≤3 lessons, ≤240 chars total
     # Labelled as heuristics, never as facts (ADR-Exec-001)
@@ -322,9 +340,10 @@ def build(
             if len(lesson_lines) >= 3:
                 break
         if lesson_lines:
-            sections.append(
+            _push(
+                "learned_heuristics",
                 "[LEARNED HEURISTICS — patterns from verified past outcomes, not facts]\n"
-                + "\n".join(lesson_lines)
+                + "\n".join(lesson_lines),
             )
 
     if attention:
@@ -358,21 +377,21 @@ def build(
                     lines.append(sc_line.strip())
 
         if lines:
-            sections.append("[ACTIVE MEMORY — ATTENTION FILTERED]\n" + "\n".join(lines))
+            _push("active_memory", "[ACTIVE MEMORY — ATTENTION FILTERED]\n" + "\n".join(lines))
 
         # always inject vault world knowledge so LLM backends know the eLo universe
         if vault_context.strip():
-            sections.append(f"[WORLD KNOWLEDGE]\n{vault_context[:1000]}")
+            _push("world_knowledge", f"[WORLD KNOWLEDGE]\n{vault_context[:1000]}")
 
         # relationship graph context — entities, connections, viewpoint
         if graph_context.strip():
-            sections.append(f"[RELATIONSHIP & PERSPECTIVE]\n{graph_context}")
+            _push("relationship_graph", f"[RELATIONSHIP & PERSPECTIVE]\n{graph_context}")
     else:
         # backward-compatible path
         if state_context.strip():
-            sections.append(f"[PERSISTENT MEMORY]\n{state_context}")
+            _push("persistent_memory", f"[PERSISTENT MEMORY]\n{state_context}")
         if vault_context.strip():
-            sections.append(f"[WORLD MEMORY]\n{vault_context[:1200]}")
+            _push("world_memory", f"[WORLD MEMORY]\n{vault_context[:1200]}")
 
     # executive directive — explicit action + tone for this response
     if exec_decision:
@@ -412,6 +431,21 @@ def build(
         ]
         if stable:
             directive_lines.append("Stability mode: active — stabilise first, simplify, no extra questions.")
-        sections.append("\n".join(directive_lines))
+        _push("executive_directive", "\n".join(directive_lines))
 
-    return "\n\n".join(sections)
+    assembled = "\n\n".join(sections)
+
+    # card 0047 F-B: finalise the audit — include totals and each block's share
+    _total_chars      = sum(b["chars"]      for b in _audit_blocks) if _audit_blocks else 0
+    _total_est_tokens = sum(b["est_tokens"] for b in _audit_blocks) if _audit_blocks else 0
+    for b in _audit_blocks:
+        b["pct_tokens"] = round(100.0 * b["est_tokens"] / _total_est_tokens, 1) if _total_est_tokens else 0.0
+    _last_prompt_audit.clear()
+    _last_prompt_audit.update({
+        "blocks":            _audit_blocks,
+        "total_chars":       _total_chars,
+        "total_est_tokens":  _total_est_tokens,
+        "assembled_chars":   len(assembled),
+    })
+
+    return assembled
