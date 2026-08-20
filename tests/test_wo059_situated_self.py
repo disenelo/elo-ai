@@ -9,7 +9,7 @@ Run: python3 tests/test_wo059_situated_self.py
 import sys, os, py_compile
 sys.path.insert(0, ".")
 from self.elo_self_model import (
-    EloSelfState, update, apply_embodiment, situated_block, can_i, capability_summary, record_behaviour,
+    EloSelfState, apply_turn as update, apply_embodiment, situated_block, can_i, capability_summary, record_behaviour,
 )
 
 PASS = 0; FAIL = 0

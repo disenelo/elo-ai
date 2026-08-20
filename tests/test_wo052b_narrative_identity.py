@@ -32,7 +32,7 @@ def fail(n, r): global FAIL; FAIL += 1; print(f"  ❌ {n}: {r}")
 
 
 from self.elo_self_model import (
-    EloSelfState, narrative_block, update, load,
+    EloSelfState, narrative_block, apply_turn as update, load,
     _DEFAULT_EMBODIMENT_HISTORY, _DEFAULT_EMBODIMENT_MILESTONES,
 )
 

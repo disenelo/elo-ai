@@ -138,15 +138,16 @@ def compress_to_obsidian(
         if spot:
             print(f"[truth-sync] integrated turn {_turn_count} → {spot}")
 
-        # WO-115: reflection reaches the self-model — lesson written to EloSelfState
+        # WO-115: reflection reaches the self-model — lesson written to EloSelfState.
+        # 0037/WO-ONEBRAIN-015: through the single-authority mutator (load→mutate→save
+        # atomically) so a concurrent server write cannot clobber this lesson.
         if result.get("lesson"):
             try:
                 from self.elo_self_model import (
-                    load as _sm_load, save as _sm_save, apply_lesson as _sm_apply,
+                    update as _sm_update, apply_lesson as _sm_apply,
                 )
-                _sm = _sm_load()
-                _sm = _sm_apply(_sm, result["lesson"])
-                _sm_save(_sm)
+                _lesson = result["lesson"]
+                _sm_update(lambda s: _sm_apply(s, _lesson))
             except Exception:
                 pass
 

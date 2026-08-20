@@ -339,18 +339,19 @@ def run_dream(
 
 def wake_from_dream(dream_result: DreamResult, elo_self):
     """
-    Integrate dream insight back into EloSelfState.
-    Called after the dream cycle ends, before Unity returns to idle.
+    Integrate dream insight back into EloSelfState. Mutates in place and returns it.
+
+    0037/WO-ONEBRAIN-015: previously returned a NEW EloSelfState built from a subset
+    of fields — silently defaulting identity/narrative/reflection fields on every wake.
+    Now: only dream-derived fields (mood, curiosity, satisfaction, inner_events,
+    session_read, last_updated) are mutated.
 
     Dreams restore:
     - Curiosity (+0.12) — dreaming re-ignites interest
     - Mood (+0.08) — rest, even symbolic, is restorative
     - Inner events — "connection" added (dream as integration)
     - Session read — updated with the insight fragment
-
-    Returns updated EloSelfState.
     """
-    from self.elo_self_model import EloSelfState
     import time as _t
 
     new_curiosity = min(1.0, getattr(elo_self, "curiosity", 0.5) + 0.12)
@@ -362,14 +363,10 @@ def wake_from_dream(dream_result: DreamResult, elo_self):
     insight_fragment = dream_result.insight[:45] if dream_result.insight else ""
     new_read = f"woke from dream — {insight_fragment}" if insight_fragment else getattr(elo_self, "session_read", "")
 
-    return EloSelfState(
-        mood=round(new_mood, 3),
-        curiosity=round(new_curiosity, 3),
-        satisfaction=round(getattr(elo_self, "satisfaction", 0.5) * 0.9 + new_mood * 0.1, 3),
-        inner_events=events,
-        focal_thread=getattr(elo_self, "focal_thread", ""),
-        session_read=new_read,
-        session_turns=getattr(elo_self, "session_turns", 0),
-        last_updated=_t.time(),
-        lifetime_threads=list(getattr(elo_self, "lifetime_threads", [])),
-    )
+    elo_self.mood         = round(new_mood, 3)
+    elo_self.curiosity    = round(new_curiosity, 3)
+    elo_self.satisfaction = round(getattr(elo_self, "satisfaction", 0.5) * 0.9 + new_mood * 0.1, 3)
+    elo_self.inner_events = events
+    elo_self.session_read = new_read
+    elo_self.last_updated = _t.time()
+    return elo_self

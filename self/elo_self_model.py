@@ -30,13 +30,15 @@ Public API:
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 _STATE_PATH = Path(__file__).parent / "elo_self_state.json"
+_logger = logging.getLogger(__name__)
 
 # ── Inner event vocabulary ────────────────────────────────────────────────────
 # What eLo can feel happening inside the conversation.
@@ -220,13 +222,53 @@ def load() -> EloSelfState:
 
 
 def save(state: EloSelfState) -> None:
-    """Save eLo's self-state to disk."""
+    """Save eLo's self-state to disk. Atomic write via tmp + os.replace (0037/WO-ONEBRAIN-015)."""
     try:
         _STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with open(_STATE_PATH, "w", encoding="utf-8") as f:
+        tmp = str(_STATE_PATH) + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump(asdict(state), f, indent=2)
+        os.replace(tmp, _STATE_PATH)
     except Exception as e:
         print(f"[eLo self] save error: {e}")
+
+
+def update(fn: Callable[[EloSelfState], Optional[EloSelfState]]) -> EloSelfState:
+    """
+    Single-authority mutator (0037 / WO-ONEBRAIN-015).
+
+    Load fresh from disk → run `fn(state)` (fn may mutate in place and/or return a new
+    EloSelfState) → save atomically. Rule 1 alarm: if any field on disk differs
+    between our load and our save AND our save would overwrite that change with a
+    different value, log a WARNING naming the field(s).
+
+    This is the ONLY correct write path. Direct `save(state)` on a long-lived cached
+    state is what caused this defect — writers holding a snapshot from process start
+    clobbered reflection lessons written to disk minutes later.
+    """
+    state = load()
+    before = asdict(state)
+    result = fn(state)
+    if isinstance(result, EloSelfState):
+        state = result
+    after = asdict(state)
+    # Rule 1: re-check disk against our load; warn if we're about to clobber.
+    try:
+        current = asdict(load())
+    except Exception:
+        current = before
+    stale: list[str] = []
+    for k in set(current) | set(before):
+        if before.get(k) != current.get(k) and after.get(k) != current.get(k):
+            stale.append(k)
+    if stale:
+        _logger.warning(
+            "[self-model Rule 1] stale-overwrite detected on save: fields=%s "
+            "(load-time value differed from current disk; save would overwrite)",
+            sorted(stale),
+        )
+    save(state)
+    return state
 
 
 def identity_block(state: EloSelfState) -> str:
@@ -266,9 +308,15 @@ def check_identity_drift(state: EloSelfState, prompt_text: str) -> list[str]:
 
 # ── Update ────────────────────────────────────────────────────────────────────
 
-def update(state: EloSelfState, turn_data: dict) -> EloSelfState:
+def apply_turn(state: EloSelfState, turn_data: dict) -> EloSelfState:
     """
-    Update eLo's inner state after a turn.
+    Update eLo's inner state after a turn. Mutates `state` in place and returns it.
+
+    0037/WO-ONEBRAIN-015: previously this returned a NEW EloSelfState built from a
+    subset of fields — silently defaulting `identity_name`, `core_values`, `invariants`,
+    `who_i_am_with`, and `last_reflection_lesson` on every turn. That was the
+    disk-level clobber (server saved the reset state over reflection's write).
+    Now: only the fields this function actually derives from the turn are mutated.
 
     turn_data keys:
         action   str   — conversation action (build, connect, celebrate, etc.)
@@ -330,35 +378,16 @@ def update(state: EloSelfState, turn_data: dict) -> EloSelfState:
     if topics:
         lifetime_threads = _accumulate_lifetime(lifetime_threads, topics)
 
-    return EloSelfState(
-        mood=round(new_mood, 3),
-        curiosity=round(new_curiosity, 3),
-        satisfaction=round(new_satisfaction, 3),
-        inner_events=events,
-        focal_thread=focal_thread,
-        session_read=session_read,
-        session_turns=state.session_turns + 1,
-        last_updated=time.time(),
-        lifetime_threads=lifetime_threads,
-        # WO-052A FIX: carry the Situated Self / Body Schema fields through update()
-        # (previously dropped every turn → pose/surface/actions silently reset to defaults).
-        pose=state.pose,
-        available_actions=list(state.available_actions),
-        locomotion_faculty_health=state.locomotion_faculty_health,
-        surface=state.surface,
-        embodiment=state.embodiment,
-        location=state.location,
-        size=dict(state.size),
-        balance=state.balance,
-        nearby_surfaces=list(state.nearby_surfaces),
-        reachable_areas=list(state.reachable_areas),
-        current_action=state.current_action,
-        goal=state.goal,
-        recent_behavior=dict(state.recent_behavior),
-        # WO-052B: carry narrative fields through every update (never reset to defaults)
-        embodiment_history=list(state.embodiment_history),
-        embodiment_milestones=list(state.embodiment_milestones),
-    )
+    state.mood            = round(new_mood, 3)
+    state.curiosity       = round(new_curiosity, 3)
+    state.satisfaction    = round(new_satisfaction, 3)
+    state.inner_events    = events
+    state.focal_thread    = focal_thread
+    state.session_read    = session_read
+    state.session_turns   = state.session_turns + 1
+    state.last_updated    = time.time()
+    state.lifetime_threads = lifetime_threads
+    return state
 
 
 def _decay_toward(value: float, target: float, rate: float) -> float:

@@ -80,7 +80,9 @@ from voice.voice_engine import speak as _voice_speak
 from memory import personality_drift as _personality_drift
 from elo_personality_engine.injection_layer import load_personality_profile as _load_profile
 from self.elo_self_model import (
-    load as _self_load, update as _self_update, save as _self_save,
+    EloSelfState as _EloSelfState,
+    load as _self_load, apply_turn as _self_update, save as _self_save,
+    update as _self_mutate,
     prompt_block as _self_prompt_block,
     apply_embodiment as _self_apply_embodiment,
     situated_block as _self_situated_block,
@@ -97,7 +99,12 @@ _turn_queue: "_queue_mod.Queue[tuple]" = _queue_mod.Queue()
 
 _lock            = threading.Lock()
 _state           = None
-_elo_self        = _self_load()   # eLo's own inner state — persists across sessions
+# 0037/WO-ONEBRAIN-015: module-level self-model load retired. That long-lived snapshot
+# was the disk-level clobber (server saved a stale copy over reflection's write).
+# `_elo_self` is refreshed at the top of every _process_turn from disk; every
+# mutation goes through _self_mutate(fn) (load-mutate-save atomically). Ambient tick
+# also refreshes before use. Default state here is a transient safety value only.
+_elo_self        = _EloSelfState()   # cache only — refreshed each turn; never save this reference directly
 _obs_store       = _ObsStore()   # accumulates user messages across this session
 _runtime_state   = None
 _memory_pack     = {}
@@ -779,6 +786,8 @@ def ambient_thought() -> None:
             from faculties.dream.dream_faculty import should_dream, run_dream, wake_from_dream
             _idle_sec = _time_mod.time() - (_state or {}).get("last_user_ts", _time_mod.time())
             _energy_hist = (_state or {}).get("energy_history", [])
+            # 0037: ambient tick refreshes self-model before use (no long-lived cache).
+            _elo_self = _self_load()
             if should_dream(_elo_self, _idle_sec, _energy_hist):
                 # Signal Unity: eLo is sleeping
                 from blender_bridge.state_writer import patch as _dp
@@ -794,9 +803,8 @@ def ambient_thought() -> None:
                     return _rt(_ab(), msgs)
 
                 _dream_result = run_dream(_elo_self, _dream_topics, _dream_llm)
-                # Integrate insight into self-state
-                _elo_self = wake_from_dream(_dream_result, _elo_self)
-                _self_save(_elo_self)
+                # Integrate insight into self-state — 0037: through single-authority mutator
+                _elo_self = _self_mutate(lambda s: wake_from_dream(_dream_result, s))
                 # Signal Unity: wake
                 _dp({"state": {"mode": "idle", "emotion": "calm"}})
                 _lock.release()
@@ -1674,6 +1682,9 @@ def _process_turn(raw: str) -> dict:
     _original_raw = raw  # WO-020: capture before enrichment for routing trace
 
     with _lock:
+        # 0037/WO-ONEBRAIN-015: refresh self-model from disk at the start of every turn.
+        # No long-lived in-memory copy. All mutations this turn go through _self_mutate(fn).
+        _elo_self = _self_load()
         # stamp user activity time — dream faculty uses this to measure idle
         import time as _time_mod
         if _state is not None:
@@ -2893,19 +2904,23 @@ def _process_turn(raw: str) -> dict:
             if _sit_acked:
                 # ACK received — body confirms sit. Update Situated Self.
                 _PENDING_SIT["active"] = False
-                _elo_self.pose = "idle"
-                _elo_self.available_actions = ["stand", "look", "wave", "gesture"]
+                _sit_surface: str | None = None
                 try:
                     with open(_BLENDER_STATE_PATH, encoding="utf-8") as _bsf2:
-                        _elo_self.surface = str(json.load(_bsf2).get("surface_type", ""))
+                        _sit_surface = str(json.load(_bsf2).get("surface_type", ""))
                 except Exception:
-                    pass
-                # WO-116 SELF-OBSERVE: record ACKed physical action
-                try:
-                    from self.elo_self_model import record_behaviour as _rb_sit
-                    _elo_self = _rb_sit(_elo_self, "sit")
-                except Exception:
-                    pass
+                    _sit_surface = None
+                # 0037: single-authority mutator (load→mutate→save atomically).
+                from self.elo_self_model import record_behaviour as _rb_sit
+
+                def _apply_sit_ack(s):
+                    s.pose = "idle"
+                    s.available_actions = ["stand", "look", "wave", "gesture"]
+                    if _sit_surface is not None:
+                        s.surface = _sit_surface
+                    _rb_sit(s, "sit")
+                    return s
+                _elo_self = _self_mutate(_apply_sit_ack)
                 # WO-115: autobiography — verified events only (body ACK = confirmed)
                 try:
                     from self.emergent_cognition import append_autobiography as _ab_sit
@@ -2918,7 +2933,6 @@ def _process_turn(raw: str) -> dict:
                     )
                 except Exception:
                     pass
-                _self_save(_elo_self)
                 # WO-095/096B: emit verified OutcomeRecord for learning loop
                 # ensure_lesson guarantees the row exists before record_outcome is called
                 try:
@@ -2986,9 +3000,12 @@ def _process_turn(raw: str) -> dict:
             _se_ts = float(_se_ev.get("_ts", 0))
             if (_se_ev.get("type") == "sit_ended"
                     and _se_ts > _wo41_time.time() - 120.0):
-                _elo_self.pose = "standing"
-                _elo_self.available_actions = ["move", "jump", "wave", "gesture", "explore"]
-                _self_save(_elo_self)
+                # 0037: single-authority mutator
+                def _apply_sit_ended(s):
+                    s.pose = "standing"
+                    s.available_actions = ["move", "jump", "wave", "gesture", "explore"]
+                    return s
+                _elo_self = _self_mutate(_apply_sit_ended)
                 with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _bsse2:
                     json.dump({}, _bsse2)
         except Exception:
@@ -3005,9 +3022,12 @@ def _process_turn(raw: str) -> dict:
                 )
             _sh_ts = float(_sh_ev_q.get("_ts", 0)) if _sh_ev_q else 0.0
             if _sh_ev_q and _sh_ts > _wo41_time.time() - 30.0:
-                _elo_self.pose = "sitting"
-                _elo_self.available_actions = ["stand", "look", "wave", "gesture"]
-                _self_save(_elo_self)
+                # 0037: single-authority mutator
+                def _apply_sit_held(s):
+                    s.pose = "sitting"
+                    s.available_actions = ["stand", "look", "wave", "gesture"]
+                    return s
+                _elo_self = _self_mutate(_apply_sit_held)
         except Exception:
             pass
 
@@ -3119,13 +3139,14 @@ def _process_turn(raw: str) -> dict:
                     _ACK_QUEUE.clear()
             if _exit_acked:
                 _PENDING_EXIT["active"] = False
-                _self_apply_embodiment(_elo_self, pose="hidden", current_action="hidden")
-                # WO-116 SELF-OBSERVE: record ACKed physical action
-                try:
-                    from self.elo_self_model import record_behaviour as _rb_ex
-                    _elo_self = _rb_ex(_elo_self, "exit")
-                except Exception:
-                    pass
+                # 0037: single-authority mutator
+                from self.elo_self_model import record_behaviour as _rb_ex
+
+                def _apply_exit(s):
+                    _self_apply_embodiment(s, pose="hidden", current_action="hidden")
+                    _rb_ex(s, "exit")
+                    return s
+                _elo_self = _self_mutate(_apply_exit)
                 # WO-115: autobiography — verified events only (body ACK = confirmed)
                 try:
                     from self.emergent_cognition import append_autobiography as _ab_ex
@@ -3138,7 +3159,6 @@ def _process_turn(raw: str) -> dict:
                     )
                 except Exception:
                     pass
-                _self_save(_elo_self)
                 # WO-ACK-1: queue already cleared above; file-wipe no longer needed.
                 g_ctx = (
                     f"{g_ctx}\n[EXIT_CONFIRMED] Body has left the screen — you can say 'stepping away' or "
@@ -3396,12 +3416,18 @@ def _process_turn(raw: str) -> dict:
                              if e.get("status") == "active"),
                             "desktop",
                         )
-                        _self_apply_embodiment(
-                            _elo_self,
-                            location=_perch_app,
-                            surface=f"{_perch_edge} edge of {_perch_app}" if _perch_edge else _perch_app,
-                            embodiment=_active_body,
-                        )
+                        _perch_surface = f"{_perch_edge} edge of {_perch_app}" if _perch_edge else _perch_app
+
+                        # 0037: persist perch mutations through single-authority mutator
+                        def _apply_perch(s):
+                            _self_apply_embodiment(
+                                s,
+                                location=_perch_app,
+                                surface=_perch_surface,
+                                embodiment=_active_body,
+                            )
+                            return s
+                        _elo_self = _self_mutate(_apply_perch)
                         _wo79_perch_fresh = True
                 except Exception:
                     pass
@@ -4344,18 +4370,22 @@ def _process_turn(raw: str) -> dict:
                 if len(w) >= 4 and w.lower().strip("?!.,;:") not in _so_skip
             ]
             _so_topics = list(dict.fromkeys(w.strip("?!.,;:'\"") for w in _so_words))[:5]
-            _elo_self = _self_update(_elo_self, {
+            _turn_data = {
                 "action":     _action,
                 "tone":       exec_decision.get("tone", "CHILDLIKE-WISE") if exec_decision else "CHILDLIKE-WISE",
                 "response":   response,
                 "user_input": raw,
                 "topics":     _so_topics,
-            })
-            # WO-099b fix4: record the executed action in the behavioural store
+            }
+            # 0037: single-authority mutator — apply_turn + record_behaviour in one atomic
+            # load→mutate→save. Fresh disk read guarantees reflection-lesson writes survive.
             from self.elo_self_model import record_behaviour as _rb
-            _elo_self = _rb(_elo_self, _action)
-            # Row 24 SELF-OBSERVE: persist recent_behavior so it survives restart
-            _self_save(_elo_self)
+
+            def _apply_end_of_turn(s):
+                _self_update(s, _turn_data)
+                _rb(s, _action)
+                return s
+            _elo_self = _self_mutate(_apply_end_of_turn)
         except Exception:
             pass
 
@@ -4644,10 +4674,10 @@ def _shutdown_cleanly(server: ThreadingHTTPServer) -> None:
         _ambient_stop()
     except Exception:
         pass
-    try:
-        _self_save(_elo_self)
-    except Exception:
-        pass
+    # 0037/WO-ONEBRAIN-015: shutdown-save retired. Every mutation this session already
+    # persisted via _self_mutate(fn) (load→mutate→save atomically). Saving the cached
+    # `_elo_self` here would clobber any reflection lesson written between the last turn
+    # and shutdown — exactly the defect this ruling closes.
     with _lock:
         if _state:
             _state_ref = state_manager.close_session(_state)
