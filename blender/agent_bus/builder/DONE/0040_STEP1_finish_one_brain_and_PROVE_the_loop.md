@@ -151,3 +151,34 @@ I have been reporting *"the reflection loop is INERT — 0 of 377 lessons confir
 
 **Waiting on David:** Groq billing · Batch 1 ratification · 11 of the 52 canon questions
 (`Output/ELO_CANON_RATIFICATION_PACK_2026-08-16.md`). **Nothing in your queue waits on him.**
+
+---
+
+## BUILDER CLOSE-OUT — 2026-08-20
+
+**Status: PARTIAL** — sequence W1→W5 landed; loop-test leg (LOOP-7) remains D3-blocked (executive.py frozen — L3/canon).
+
+**Sequence at close-out** (verified against the current tree):
+
+| Item | State | Evidence |
+|---|---|---|
+| 0033 retire `significance_faculty` | DONE (prior) | `0dc8671` per outbox 0039 |
+| **W1 outcome (kill constant)** | **DONE (prior)** | `server.py:3855-3860` derives `_w1_outcome`; passed at `:3867` (`_journal_route`) and `:4400` (`decision_journal.record`). `decision_journal.jsonl` 60 rows: 25×`spoke`, 3×`bypass:cognitive`, 32 legacy `success`. The row-with-outcome!="success" acceptance is met. |
+| **W2 session id** | **DONE (this commit)** | `80974d4` — `runtime/session_id.py` monotonic-persisted allocator; wired into `self/decision_journal.py` (record + record_failure) and `runtime/reflection_faculty.py`. Tests: `test_w2_session_id.py` 5/5 · `test_w2_decision_journal_session_id.py` 4/4 (W2-DJ-1..4). |
+| W3 journal 31 (card 0038) | DONE (prior) | `02bbaa1` per outbox 0039 |
+| W4 route the 13 COGNITIVE | DONE (prior) | `b84d18d` per outbox 0039 |
+| W5 ONEBRAIN-012 (card 0036) | DONE (prior) | LOOP-9 in `test_loop_one_brain.py` green |
+| 0037 D5 self-model | DONE (prior) | `2b32736` |
+| 0031 Fix B | DONE (prior) | `14db340` per outbox 0039 |
+| **Loop test — one-brain acceptance** | **PARTIAL** | LOOP-1/2/3/4/8/9 green. LOOP-5 red: `lessons_ledger.jsonl` has 1 lesson, status=`candidate` (the two `confirmed` lessons the card cited have degraded — separate reflection-loop issue). **LOOP-7 UNKNOWN — D3 BLOCKED:** `executive.py` is frozen, has no `lessons` key in its read path; causation (lesson in Executive context + action-difference) cannot be established. Escalation to Architect required — L3/canon. |
+
+**W1 correction to the record.** The card cites `server.py:4062` and `server.py:3575` — those line numbers have since drifted. The real sites at close-out are `:3867` (`_journal_route` call, now passes `outcome=_w1_outcome`) and `:4400` (`decision_journal.record` call, now passes `outcome=_w1_outcome`). Derivation at `:3857-3860`.
+
+**W2 spec-verbatim check.** Card requires "One session id per process start, stable for its life, monotonic, stored. Not `os.getpid()`. Not `str(time.time())` per call." Implementation: `runtime/session_id.py::_allocate()` picks `max(prev+1, int(time.time()))` from a persisted counter file — module-scope, so one id per process start; strictly greater than any previously-recorded id; persisted to `self/journals/session_counter.json`. Numeric-string format (≥10 digits) preserves the `promote_pass()` distinct_sessions contract.
+
+**Not authorised in this run** (per card): Volume XXVIII · Capability Graph · Tactile · any LCI stream · any RL work. None touched.
+
+**Escalation for the Architect:** LOOP-5 has regressed since 2026-08-16 — the two confirmed lessons the card names are now candidate. Reflection promotion is stalling. Suggest a follow-up card scoped to the promotion path (not authorised by 0040).
+
+**Commit (W2 implementation):** `80974d4`
+**Test artefact:** `tests/test_w2_decision_journal_session_id.py` — 4/4 PASS.
