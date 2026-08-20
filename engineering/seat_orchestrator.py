@@ -557,18 +557,48 @@ def _run_claude_worker(
         with open(output_log, "a") as f:
             f.write(rest)
 
+    stderr_text = proc.stderr.read() or ""
     exit_code = proc.returncode if proc.returncode is not None else proc.wait()
     output_bytes = output_log.stat().st_size if output_log.exists() else 0
     if not progressing:
         lc.record("PROGRESSING", "NONE — no tool_use events, no git diff change")
     lc.record("OUTPUT", f"exit_code={exit_code} bytes={output_bytes} tool_events={tool_events}")
 
-    # RESULT — check observable evidence
+    # Gate 1: non-zero exit is always BLOCKED — do not trust any card move the worker may have made
+    _QUOTA_STRINGS = ("credit balance", "insufficient_quota", "rate limit", "billing",
+                      "quota exceeded", "you've exceeded")
+    full_output = (output_log.read_text() if output_log.exists() else "") + stderr_text
+    quota_hit = any(s in full_output.lower() for s in _QUOTA_STRINGS)
+
+    if exit_code != 0:
+        return {
+            "transport":      "claude-code",
+            "status":         "BLOCKED",
+            "acceptance_met": False,
+            "evidence":       f"exit_code={exit_code} — non-zero exit, card NOT closed",
+            "blocker":        f"worker exited {exit_code}; stderr: {stderr_text[:200]}",
+        }
+
+    # Gate 2: credit/quota error in output → BLOCKED even on exit 0
+    if quota_hit:
+        return {
+            "transport":      "claude-code",
+            "status":         "BLOCKED",
+            "acceptance_met": False,
+            "evidence":       f"credit/quota error detected in output (exit {exit_code})",
+            "blocker":        "Credit balance / quota exceeded — worker ran but could not call API",
+        }
+
+    # Gate 3: result_file written by worker — trust it (worker is authoritative on its own outcome)
     if result_file.exists():
         try:
             worker_result = json.loads(result_file.read_text())
-            worker_result["transport"] = "claude-code"
-            return worker_result
+            # Reject if status is DONE but result file is the CONSUMED stub we wrote
+            if worker_result.get("state") == "CONSUMED":
+                pass  # fall through to card-in-DONE check below
+            else:
+                worker_result["transport"] = "claude-code"
+                return worker_result
         except json.JSONDecodeError:
             pass
 
@@ -576,6 +606,7 @@ def _run_claude_worker(
     head_after  = _git_head()
     new_commit  = head_after != head_before
 
+    # Gate 4: card in DONE/ AND a new commit exists — genuine completion
     if done_card.exists() and new_commit:
         return {
             "transport":      "claude-code",
@@ -585,17 +616,33 @@ def _run_claude_worker(
             "commits":        [head_after.split()[0]],
         }
 
-    # Evidence for Item 1 (was the Claude process even alive and doing work?)
+    # Card in DONE/ but NO new commit — treat as BLOCKED (worker may have self-reported falsely)
+    if done_card.exists() and not new_commit:
+        return {
+            "transport":      "claude-code",
+            "status":         "BLOCKED",
+            "acceptance_met": False,
+            "evidence":       f"card found in DONE/ but HEAD unchanged — no real work committed",
+            "blocker":        "card in DONE/ without commit evidence — fabricated close suspected",
+        }
+
+    # Worker produced stdout (progressing) but no card move — PARTIAL
+    if progressing:
+        return {
+            "transport":      "claude-code",
+            "status":         "PARTIAL",
+            "acceptance_met": False,
+            "evidence":       f"PROGRESSING=true exit_code={exit_code} output_bytes={output_bytes}",
+            "blocker":        "worker produced output but did not move card or write result",
+        }
+
     return {
         "transport":      "claude-code",
-        "status":         "PARTIAL" if progressing else "BLOCKED",
+        "status":         "BLOCKED",
         "acceptance_met": False,
-        "evidence":       (
-            f"ALIVE=true PROGRESSING={'true' if progressing else 'false'} "
-            f"exit_code={exit_code} output_bytes={output_bytes}"
-        ),
-        "blocker":        "worker did not write result file or move card to DONE/",
-        "item1_answer":   "YES" if progressing else "NO",
+        "evidence":       f"exit_code={exit_code} output_bytes={output_bytes} — no progress observed",
+        "blocker":        "worker produced no output and did not move card to DONE/",
+        "item1_answer":   "NO",
     }
 
 
@@ -683,12 +730,26 @@ def run_seat(seat: str) -> dict:
     accepted = bool(result.get("acceptance_met"))
     lc.record("ACCEPTANCE", f"{'MET' if accepted else 'NOT MET'} — {str(result.get('evidence',''))[:100]}")
 
-    # Move card to DONE (if worker didn't)
-    done_dir  = seat_dir / "DONE"
+    # Move card based on status — NEVER unconditionally to DONE
+    status = result.get("status", "UNKNOWN")
+    done_dir    = seat_dir / "DONE"
+    blocked_dir = seat_dir / "BLOCKED"
+    queue_dir   = seat_dir / "QUEUE"
     done_dir.mkdir(exist_ok=True)
-    done_card = done_dir / card_doing.name
-    if card_doing.exists() and not done_card.exists():
-        card_doing.rename(done_card)
+    done_card    = done_dir    / card_doing.name
+    blocked_card = blocked_dir / card_doing.name if blocked_dir.exists() else None
+
+    if card_doing.exists():
+        if status in ("DONE", "PARTIAL") and not done_card.exists():
+            card_doing.rename(done_card)
+        elif status in ("BLOCKED", "DAVID_REQUIRED", "UNKNOWN"):
+            # Return card to QUEUE — do not move to DONE
+            queue_card = queue_dir / card_doing.name
+            if not queue_card.exists():
+                card_doing.rename(queue_card)
+            else:
+                # Duplicate name in QUEUE (shouldn't happen) — leave in DOING, release lock
+                pass
 
     # Release lock
     _release_lock(seat_dir)
