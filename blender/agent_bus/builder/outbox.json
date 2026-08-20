@@ -846,7 +846,9 @@
       "tests/test_canon_viii_memory.py: 18/0 PASS (AT-8 green \u2014 no unauthorised permanent-store writers)"
     ],
     "evidence": "Reconciliation-only close-out. All three items in card \u00a73 were already committed before this card ran. F-A landed c3e9305 ('expression' in _PRESERVE_KEYS at blender_bridge/state_writer.py:250); F-B landed 521be07 (keep_alive='30m' on _ollama_call, _ollama_stream, ollama_backend._call + prompt_audit); 0025 landed 84758ea + e2c506d (memory_engine second store retired; core_engine.py:254 routes through MemoryFaculty.submit()). Re-verified live per Rule 2 by re-running each test. No new source commits \u2014 only close-out + card move DOING\u2192DONE. Metric unchanged: 91/146 = 62.3% (no capability-moving work performed).",
-    "commits": [],
+    "commits": [
+      "72afee0"
+    ],
     "acceptance_met": true,
     "duration_s": null
   }

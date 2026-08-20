@@ -1,7 +1,7 @@
 {
   "card": "0048_ORDER_CORRECTED_0033_was_done_and_0025_was_never_L3.md",
   "status": "DONE",
-  "commits": [],
+  "commits": ["72afee0"],
   "acceptance_met": true,
   "evidence": "Reconciliation-only close-out. All three items in card §3 already committed before this card ran. F-A c3e9305 (blender_bridge/state_writer.py:250 has 'expression' in _PRESERVE_KEYS; test_fa_preserve_keys.py 5/5). F-B 521be07 (keep_alive='30m' on all three Ollama call paths + per-block prompt_audit; test_fb_keepalive_prompt_audit.py 6/6). 0025 84758ea + e2c506d (memory_engine second store retired; core_engine.py:254 routes through MemoryFaculty.submit(); test_canon_viii_memory.py 18/0, AT-8 whole-repo durable-write scan green). Re-ran each test live (Rule 2) instead of trusting board. Card moved DOING/ -> DONE/ with close-out block appended. 91/146=62.3% unchanged (no capability-moving work).",
   "blocker": null
