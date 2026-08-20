@@ -31,8 +31,11 @@ _JOURNAL_DIR = os.path.join(_ROOT, "self", "journals")
 _LESSON_LOG  = os.path.join(_ROOT, "self", "lessons_ledger.jsonl")
 _FAILURE_LOG = os.path.join(_ROOT, "self", "failure_log.jsonl")
 
-# W2: stable session ID — set once at module import (= process start), survives all turns
-_SESSION_ID: str = str(int(time.time()))
+# W2 (card 0040): stable, monotonic, persisted session id — one per process
+# start. Shared with self.decision_journal so a turn's decision row and any
+# lesson evidence it produces carry the same session_id.
+from runtime.session_id import SESSION_ID
+_SESSION_ID: str = SESSION_ID
 
 
 # ── Significance threshold ────────────────────────────────────────────────────

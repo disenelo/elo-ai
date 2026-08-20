@@ -19,6 +19,11 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _JOURNAL = os.path.join(_ROOT, "self", "journals", "decision_journal.jsonl")
 _RELIABILITY = os.path.join(_ROOT, "self", "journals", "action_reliability.json")
 
+# W2 (card 0040): stable per-process id, monotonic across restarts, persisted.
+# Import once at module load — every record() call in this process shares it.
+from runtime.session_id import SESSION_ID
+_SESSION_ID: str = SESSION_ID
+
 
 # ── Reliability persistence ───────────────────────────────────────────────────
 
@@ -109,6 +114,7 @@ def record(
 
         entry = {
             "ts":                    time.time(),
+            "session_id":            _SESSION_ID,
             "turn":                  turn[:120],
             "action":                action,
             "trigger":               exec_decision.get("cal_reason") or "unknown",
@@ -142,6 +148,7 @@ def record_failure(action: str, condition_desc: str) -> None:
     try:
         entry = {
             "ts":                      time.time(),
+            "session_id":              _SESSION_ID,
             "action":                  action,
             "outcome":                 "failure",
             "known_failure_condition": condition_desc,
