@@ -51,3 +51,34 @@ Your report landed and it's correct: `elo_spatial.json` now carries `goal` · `r
 `last_move{legs, arrived, fell, outcome, issued_by, cost_secs, cost_dist, retries}`.
 **Nothing on the Python side reads it yet** — that's Builder's `0002_WO-118`, carded. Your half is done;
 row 14 ROUTE closes when they consume it.
+
+---
+
+# CLOSE-OUT — 2026-08-20, SEAT-ENG-004
+
+**STATE: DONE — DUPLICATE close-out.** All 8 items in this card were already delivered by prior
+commits, superseded by newer task-specific cards, or explicitly deferred by card `12`. No new code
+change lands with this move; the card sat in `DOING/` since 2026-08-13 while work migrated to
+task-specific cards. Per-item reconciliation below.
+
+| # | Item | State | Evidence |
+|---|---|---|---|
+| 1 | **WO-058 desktop VFX + prefab LOOK** | DONE | `DONE/03_WO-058_weather_and_prefab_look.md` (2026-08-13); backend half at `f133fee` |
+| 2 | **WO-063 command wakes body** | DEFERRED | Card `12` §3: *"queued POST-Presentable. Leave it."* Not blocking the acceptance test |
+| 3 | **WO-049 Track B + Spatial Faculty** | SPLIT ACCEPTED | `faculties/spatial/spatial_faculty.py` now exists (Builder-owned Python half). Card `12` §3: *"backlog card 02. Not blocking the acceptance test."* Unity half stays here as backlog |
+| 4 | **WO-024 traversal half** | SUPERSEDED | `QUEUE/04_RULING_WO-024_spike_decided.md` — Option A ruled 2026-08-14. Occlusion built; traversal half Builder-gated on WO-049 faculty interface (outbox line 364) |
+| 5 | **WO-062 anticipation half** | DESIGNER-DONE | Outbox: *"WO-062 confirmed DESIGNER-DONE already (`8873b20` — `EloSquashStretch` + `ApplyExpression`/`FlashMicro` present); open half is Builder's emit (WO-064 BP-4), not mine."* |
+| 6 | **INT-8 drag-drop + reach** | STAGED — David's live test | Card `12` §4: *"Genuinely David's. He judges the result on a live turn."* Staged for his drag-test (outbox line 364), not gate-held |
+| 7 | **3D file previewer (`EloHudModel.cs`)** | DONE | Outbox: *"3D model viewer (WP_N previewer) — BUILT"* at `09050ef`; David confirmed *"I saw it pop up"* on the GLB test |
+| 8 | **Presence grab-release + Track-B field audit** | AUDITED — one item routed | Audit against today's state (outbox line 453): only remaining Track-B block is a `notifications{kind,corner,_ts}` field emit. Carded to Builder; Unity consumer will follow the emit |
+
+## Not in this close-out
+- No new code change; item 1/5/7 commits landed under their own task cards.
+- No cross-lane edits; item 3's `spatial_faculty.py` is Builder's — neither written nor moved by me.
+
+## Pure backlog remaining (nothing is blocked on it)
+- **Item 3 Unity half** — Track B UI/nav consumers on the Unity side.
+- **Item 8b** — Unity `notifications` consumer, waiting on Builder's field emit.
+
+Both non-blocking against the current acceptance test (`MILESTONE_eLo_Presentable_v1.md:14`
+"take five" — governed by card `12` §1, the DropOffCo wake root-cause fix).
