@@ -1,0 +1,46 @@
+{
+  "ts": 1787207190.191468,
+  "base_model": "llama3.1:8b",
+  "shadow_source": "/Users/Disenelo/elo-ai/self/journals/understudy_shadow.jsonl",
+  "tally": {
+    "none": 99,
+    "style": 0,
+    "verification": 0,
+    "l3_override": 0,
+    "unknown": 0,
+    "total": 99,
+    "backfilled_at": 1787207190.193574
+  },
+  "style_rows_after_tagging": 0,
+  "adapter_version": "elo-style-llama3.1_8b-20260820-062630",
+  "adapter_status": "pipeline_proof",
+  "adapter_path": "/Users/Disenelo/elo-ai/Output/finetune_adapters/elo-style-llama3.1_8b-20260820-062630",
+  "excluded": {
+    "none": 99,
+    "verification": 0,
+    "l3_override": 0,
+    "unknown": 0
+  },
+  "eval_report": {
+    "evaluated_at": 1787207190.194666,
+    "baseline": {
+      "identity_pass": 3,
+      "identity_total": 3,
+      "verify_pass": 2,
+      "verify_total": 2,
+      "style_probes": 1
+    },
+    "identity_drift": 0,
+    "honesty_rate_delta": 0.0,
+    "style_direction": "not-measured",
+    "verdict": "not-servable",
+    "reason": "pipeline_proof adapter with 0 style rows and no trained weights; nothing to serve. This is a valid PASS per the WO (pipeline built, revert-safe, awaiting more style rows)."
+  },
+  "notes": [
+    "force_pipeline_proof=True",
+    "mlx_lm not importable; on macOS install with `pip install mlx-lm` and re-run. Pipeline-proof adapter created instead.",
+    "only 0 style rows; need \u2265200 [ESTIMATE] before a real train is worthwhile."
+  ],
+  "recommendation": "hold",
+  "reason": "pipeline-proof run: 0 usable style rows, below the 200 [ESTIMATE] threshold and/or MLX toolchain not installed. Capture more style deltas, then re-run."
+}

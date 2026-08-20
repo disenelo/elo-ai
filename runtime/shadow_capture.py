@@ -83,6 +83,26 @@ def _ensure_writer() -> None:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+_VALID_DELTA_CAUSES = ("none", "style", "verification", "l3_override", "unknown")
+
+
+def _derive_delta_cause(raw_gen: str | None, final: str | None,
+                        explicit: str | None) -> str:
+    """
+    Ruling F [DAVID 2026-08-10]: every shadow row MUST carry delta_cause.
+    Only rows tagged `style` are eligible for training.
+
+    - explicit value from caller wins (must be one of _VALID_DELTA_CAUSES)
+    - raw_gen == final → 'none' (no delta occurred)
+    - otherwise → 'unknown' (safest default; excluded from training per Rule 4d)
+    """
+    if explicit in _VALID_DELTA_CAUSES:
+        return explicit
+    if raw_gen == final:
+        return "none"
+    return "unknown"
+
+
 def record_turn(
     raw_input: str,
     elo_raw_gen: str,
@@ -93,10 +113,16 @@ def record_turn(
     context: dict | None = None,
     executed_action: str = "",
     l3_rating: str | None = None,
+    delta_cause: str | None = None,
 ) -> None:
     """
     Enqueue one turn record for background writing. Returns immediately.
     Never raises — any failure is logged and dropped silently.
+
+    delta_cause classifies why elo_raw_gen and elo_final differ (Ruling F).
+    If not supplied, it is derived: 'none' when raw==final, else 'unknown'.
+    Only rows tagged 'style' are ever used for fine-tuning; 'verification'
+    and 'l3_override' rows are collected but must never train the model.
     """
     _ensure_writer()
     record = {
@@ -109,6 +135,7 @@ def record_turn(
         "backend_used":    backend_used,
         "executed_action": executed_action,
         "l3_rating":       l3_rating,
+        "delta_cause":     _derive_delta_cause(elo_raw_gen, elo_final, delta_cause),
     }
     try:
         _q.put_nowait(record)
