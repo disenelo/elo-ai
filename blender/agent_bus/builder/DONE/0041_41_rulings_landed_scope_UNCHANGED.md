@@ -72,3 +72,54 @@ implementation until David signs `BD-11`.
 
 **Waiting on David:** four Board decisions + Groq billing. **Nothing in your queue waits on him, on me, or
 on the Chief Architect.**
+
+---
+
+## CLOSE-OUT — Builder, 2026-08-20
+
+**Card carries no code work.** §5 states "YOUR ORDER — UNCHANGED. No ruling above adds a
+line of work today." Nothing here changes files. Close-out ACKs the four §2 rulings so
+their shape is on record before the WOs they touch land, and answers the one question in §4.
+
+### Four §2 rulings — ACKNOWLEDGED (binding on future work)
+- **AR-3** — `BodySchema` in the SELF MODEL, mutated via `0037`'s `update(fn)` load-mutate-save.
+  No long-lived in-memory `BodySchema`, no second body-state file. Noted for when authorised.
+- **AR-28** — spatial learning lives in the Vol VIII memory system (sole-writer **D-F**);
+  a faculty-local `spatial_learning.jsonl` = D4 violation. **Will refuse any card that asks
+  for it and return to Architect.**
+- **AR-8** — `except: pass` on a continuity write is forbidden. Use `0037`'s Rule 1 alarm
+  pattern (log WARNING with the field name). Same defect class as `lesson_store.py:353-373`.
+- **AR-9** — past-tense claims extend the existing `runtime/claim_gate.py` (already tiers
+  memory/vision/history 8/8). **Will not build a second tiering system for Vol XXI.**
+
+### §4 — WO-078 / WO-079 build order — **CONFIRMED: WO-078 FIRST**
+Code supports the Architect's position:
+- **Writer already exists** — `self/emergent_cognition.py:117 append_autobiography()` is the
+  WO-078 write path into `self/journals/autobiography.jsonl`. Verified-only, source-gated,
+  episode_ref required; rejects unverified writes with WARNING (already AR-8-compliant).
+- **Reader already exists** — `runtime/the_moment.py:227` emits `autobiography_tier` via
+  `recent_autobiography()`; degrades to `"unknown"` when the file is absent
+  (`faculties/temporal/faculty.py:325-334` — `PENDING` sentinel on the retrospection path).
+- **Order the code assumes:** WO-078 produces `autobiography.jsonl`; WO-079 already reads
+  it with a graceful absent-file fallback. Reversing the order — WO-079 self-change before
+  WO-078 — leaves NI-5/NI-7 untestable (no rows to gate against). Code agrees with the
+  Architect.
+
+**Position: WO-078 (`autobiography.jsonl`) first, then WO-079 (self-change / NI-5·NI-7).**
+
+### §3 — NO-OP notes (recorded, no work now)
+- **AR-1** — escalation stays in the Executive; tier work will wire *provider order* only.
+- **AR-13** — `_AUTO_LOCAL_MAX_CHARS` gets wired (not retired) after Artefact 8 ratifies.
+
+**Files changed:** this card only (close-out ACK footer).
+**Not authorised (per §5):** Vol XXVIII · Capability Graph · Tactile · LCI · RL · Batch 1
+until David signs BD-11. **Not touched.**
+
+**Order continues unchanged:** `0033` → W1 (`outcome="success"` kill at `server.py:4062` +
+`:3575`) → W2 (real session ids) → W3 → W4 → W5. `0037` slots in before W5. `0031` Fix B mine.
+
+**Verification (read-only greps, no code executed):**
+- `grep -n "autobiography_tier" runtime/the_moment.py` → line 227 emits the tier.
+- `grep -n "append_autobiography" self/emergent_cognition.py` → line 117 write path.
+- `grep -n "PENDING" faculties/temporal/faculty.py` → lines 325/329-334 graceful fallback.
+
