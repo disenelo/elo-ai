@@ -66,7 +66,7 @@ def update(
 
     Args:
         current:       Current state dict (not mutated).
-        attention:     Output of core.attention.compute().
+        attention:     Output of core.memory_relevance_filter.compute().
         exec_decision: Output of runtime.executive.decide().
         loop_signal:   True when hard loop detection or confusion fired.
 

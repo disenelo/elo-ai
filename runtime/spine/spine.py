@@ -178,7 +178,7 @@ def _executive_faculty(
     The Executive is the only entity permitted to make decisions.
     All other faculties contribute information. Only Executive decides.
     """
-    # D1 ruling (Card 0035): plan.intent = COGNITIVE intent (from core/attention),
+    # D1 ruling (Card 0035): plan.intent = COGNITIVE intent (from core/memory_relevance_filter),
     # plan.capability_hint = router hint (from intent_engine). Two questions, two
     # answers, two names. The journal records the cognitive intent — the one the
     # Executive actually decides on.
@@ -499,7 +499,7 @@ def run(
         _log.warning("assemble_world_state FAILED: %s", _world_err)
 
     # ── WO-CANON-VI: Working Memory + Attention — top-of-turn, before faculties ─
-    # core/attention.py = candidate/signal supplier. WM competition = sole driver.
+    # core/memory_relevance_filter.py = candidate/signal supplier. WM competition = sole driver.
     _wm = None
     try:
         import time as _wm_time
@@ -518,7 +518,7 @@ def run(
             continuity_summary=_carry.get("rolling_summary", ""),
             open_threads=_carry.get("open_threads", []),
         )
-        # Build candidates from core/attention supplier output
+        # Build candidates from core/memory_relevance_filter supplier output
         _wm_candidates = []
         if raw:
             _wm_candidates.append(_AttnCand(item=raw[:80], novelty=0.5, importance=0.5, urgency=0.4))
@@ -725,7 +725,7 @@ def assemble_cognitive_state(
     _attn_state = getattr(working_memory, "attention", None) if working_memory else None
 
     # D1 ruling (Card 0035): intent_signal is the COGNITIVE intent that the
-    # Executive decides on — sourced from core/attention (attention_model["intent"]).
+    # Executive decides on — sourced from core/memory_relevance_filter (attention_model["intent"]).
     # The intent_engine's router hint travels as `capability_hint`, elsewhere.
     return CognitiveState(
         raw_input=language.get("original", ""),

@@ -317,22 +317,26 @@ except Exception as e:
     fail("Ch.3/ST-9", e)
 
 
-# ── Ch.3/IT-1: one driver not two — core/attention.py is supplier only ───────
+# ── Ch.3/IT-1: one driver not two — core/memory_relevance_filter.py is supplier only ───────
+# WO-CANON-VI ruling B rename: the misleading name "core/attention.py" was retired.
 try:
-    import inspect
-    import core.attention as _attn_mod
-    src = inspect.getsource(_attn_mod)
-    # core/attention.py must NOT call run_attention_competition (it IS the supplier,
+    import inspect, os as _os
+    import core.memory_relevance_filter as _mrf_mod
+    src = inspect.getsource(_mrf_mod)
+    # The relevance filter must NOT call run_attention_competition (it IS the supplier,
     # it must not drive the competition itself). Mention in a comment/docstring is fine;
     # what we forbid is an actual call or import of the function.
     assert "run_attention_competition(" not in src, \
-        "core/attention.py must not call run_attention_competition — it's a supplier"
+        "core/memory_relevance_filter.py must not call run_attention_competition — it's a supplier"
     assert "from runtime.working_memory import" not in src, \
-        "core/attention.py must not import from working_memory — it's a supplier"
-    # And its docstring must reference its supplier role
+        "core/memory_relevance_filter.py must not import from working_memory — it's a supplier"
+    # And its docstring must reference its supplier / relevance-filter role
     assert "supplier" in src.lower() or "relevance filter" in src.lower(), \
-        "core/attention.py docstring must acknowledge its supplier/filter role"
-    ok("Ch.3/IT-1: core/attention.py is a supplier/filter — does not run the competition (one driver)")
+        "core/memory_relevance_filter.py docstring must acknowledge its supplier/filter role"
+    # The old misleading filename must no longer exist (rename, not a shim).
+    assert not _os.path.exists("core/attention.py"), \
+        "core/attention.py must be renamed — no misleading duplicate should remain"
+    ok("Ch.3/IT-1: core/memory_relevance_filter.py is a supplier/filter — does not run the competition (one driver)")
 except AssertionError as e:
     fail("Ch.3/IT-1", e)
 except Exception as e:
@@ -439,7 +443,7 @@ try:
         "runtime/contracts.py",
         "runtime/spine/plan.py",
         "runtime/spine/spine.py",
-        "core/attention.py",
+        "core/memory_relevance_filter.py",
     ):
         py_compile.compile(f, doraise=True)
     ok("AT-8: py_compile clean on all WO-CANON-VI touched files")

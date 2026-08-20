@@ -31,7 +31,7 @@ _STATE_PATH = os.path.join(_ROOT, "blender", "blender_state.json")
 
 def from_text(text: str) -> dict:
     """Run the full cognition pipeline on text. Returns {motion, state}."""
-    from core.attention         import compute as attn_compute
+    from core.memory_relevance_filter import compute as attn_compute
     from runtime.executive      import decide  as exec_decide
     from avatar.presence_engine import compute as presence_compute
     from avatar.motion_mapper   import map     as motion_map

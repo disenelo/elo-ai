@@ -1,9 +1,10 @@
 """
-core/attention.py — Memory Relevance Filter (WO-CANON-VI, ruling B / D-VI-1 applied).
+core/memory_relevance_filter.py — Memory Relevance Filter (WO-CANON-VI, ruling B / D-VI-1).
 
-Supplies relevance-scored candidates and emotional/urgency signals to the WM attention
-competition (runtime/working_memory.py::run_attention_competition). NOT a second
-attention authority — the WM competition is the single attention driver.
+Renamed from core/attention.py (WO-CANON-VI, ruling B) so the module name matches its
+role. This is a SUPPLIER of relevance-scored candidates and emotional/urgency signals
+into the WM attention competition (runtime/working_memory.py::run_attention_competition).
+NOT a second attention authority — the WM competition is the single attention driver.
 
 Output (AttentionModel dict — supplier format, unchanged):
     {

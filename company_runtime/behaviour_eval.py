@@ -15,7 +15,7 @@ WHY THIS EXISTS
 WHAT IT DOES / DOESN'T TOUCH
     ADDITIVE ONLY. This module imports from the frozen kernel / runtime / tools
     and never edits them. The real, importable routing entry points used:
-        core.attention.compute        — build the attention model (intent + valence)
+        core.memory_relevance_filter.compute  — build the relevance-filter model (intent + valence)
         runtime.executive.decide       — the CAL action (ANSWER/CONNECT/REFLECT/...)
         core.kernel.classify_input     — kernel input type → mode
         core.kernel loop detector      — record_response / detect_loop (loop filter)
@@ -64,7 +64,7 @@ NA   = "N/A — needs live LLM"
 
 def _cal_decision(text: str) -> dict:
     """Run the real attention → executive (CAL) path. Returns intent/action/tone."""
-    from core.attention import compute
+    from core.memory_relevance_filter import compute
     from runtime.executive import decide
     from core.kernel import classify_input
 

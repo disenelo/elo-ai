@@ -25,7 +25,7 @@ class CognitivePlan:
     meaning:              str   = ""         # normalised + repaired
     # D1 ruling (Card 0035): plan.intent is the COGNITIVE intent — the one the
     # Executive decides on (stabilise|emotional|simplify|recall|creation|inquiry|conversation).
-    # Sourced from core/attention._classify_intent via attention_model["intent"].
+    # Sourced from core/memory_relevance_filter._classify_intent via attention_model["intent"].
     intent:               str   = "conversation"
     # D1 ruling: capability_hint is the CAPABILITY-ROUTER hint from intent_engine
     # (file_ops|memory|system|utility_*|...). It answers "which tool does this need?"

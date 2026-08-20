@@ -7,7 +7,7 @@ Executive-owned per D-G (DECISION_LOG.md).
 Spec:  docs/architecture/Volume_VI/01_Working_Memory_and_Attention.md
 Canon: Working Memory = bounded, typed, per-turn frames.
        Attention = scored competition (novelty × importance × urgency).
-       core/attention.py = Memory Relevance Filter (supplier of candidates, NOT a
+       core/memory_relevance_filter.py = Memory Relevance Filter (supplier of candidates, NOT a
        second attention authority — ruling B / D-VI-1 applied, WO-CANON-VI).
        WM never writes LTM — CARRY hands threads/summary to continuity/ at session close.
 

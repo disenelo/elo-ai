@@ -967,7 +967,7 @@ def _mock_fallback(user_input: str, action: str = "") -> str:
         return _HONEST_DEGRADATION_MSG
     global _mock_backend_instance
     from backends.mock_backend import MockBackend
-    from core.attention import compute
+    from core.memory_relevance_filter import compute
     from runtime.executive import decide as exec_decide
     if _mock_backend_instance is None:
         _mock_backend_instance = MockBackend()

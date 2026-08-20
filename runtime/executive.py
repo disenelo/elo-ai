@@ -264,7 +264,7 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
     Compute the executive decision from the attention model.
 
     Args:
-        attention_model: Output of core.attention.compute().
+        attention_model: Output of core.memory_relevance_filter.compute().
         loop_detected:   True if hard loop detection fired.
 
     Returns:
