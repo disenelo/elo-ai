@@ -81,8 +81,13 @@ def _lowest_card(seat_dir: pathlib.Path) -> pathlib.Path | None:
 
 
 def _is_reserved(card: pathlib.Path) -> bool:
-    txt = card.read_text().lower()
-    return any(kw in txt for kw in _RESERVED_KEYWORDS)
+    """Card is restricted only if its frontmatter explicitly declares reserved=true.
+    Never scan body prose — a card that discusses a restricted topic is not itself restricted.
+    """
+    fm = _read_frontmatter(card)
+    if "reserved" in fm:
+        return fm["reserved"].strip().lower() in ("true", "yes", "1")
+    return False
 
 
 def _read_frontmatter(card: pathlib.Path) -> dict:
@@ -98,6 +103,15 @@ def _read_frontmatter(card: pathlib.Path) -> dict:
             k, _, v = line.partition(":")
             fm[k.strip()] = v.strip()
     return fm
+
+
+# ── atomic write helper ───────────────────────────────────────────────────────
+
+def _atomic_write(path: pathlib.Path, data: dict) -> None:
+    """Write data to path atomically via a .tmp sibling + os.replace."""
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data, indent=2))
+    os.replace(tmp, path)
 
 
 # ── lock management ───────────────────────────────────────────────────────────
@@ -644,10 +658,10 @@ def run_seat(seat: str) -> dict:
         reg = json.loads(REGISTRY.read_text()) if REGISTRY.exists() else {}
         transport = reg.get(seat, {}).get("transport", "")
 
-    # Result file (observable)
+    # Result file (observable) — overwrite atomically; never unlink (PermissionError on this mount)
     result_file = seat_dir / "worker_result.json"
     if result_file.exists():
-        result_file.unlink()
+        _atomic_write(result_file, {"state": "CONSUMED", "consumed_ts": time.time()})
 
     # Dispatch to adapter
     if transport == "python":
@@ -723,7 +737,7 @@ def probe_item1() -> dict:
     lc.record("LOCKED", "no lock needed for probe")
 
     if result_file.exists():
-        result_file.unlink()
+        _atomic_write(result_file, {"state": "CONSUMED", "consumed_ts": time.time()})
 
     import shutil
     claude_bin = shutil.which("claude") or "/opt/homebrew/bin/claude"
@@ -832,7 +846,20 @@ def _seat_status(result: dict) -> str:
     return result.get("result", {}).get("status", "UNKNOWN")
 
 
-def run_loop(seats: list[str]) -> dict:
+def _regen_company_state() -> None:
+    """Regenerate company_state.json via the EXISTING writer after a worker (David 2026-08-20).
+    Best-effort: never aborts the loop."""
+    try:
+        subprocess.run(
+            ["python3", "-m", "company_runtime.company_state_writer"],
+            cwd=str(ROOT), capture_output=True, text=True, timeout=120,
+        )
+        print("[STATE] company_state.json regenerated (existing writer)", flush=True)
+    except Exception as e:
+        print(f"[STATE] company_state regen skipped: {e}", flush=True)
+
+
+def run_loop(seats: list[str], max_runs: int | None = None) -> dict:
     """
     Continuously operate all given seats until each is IDLE, BLOCKED, or
     DAVID_REQUIRED. Runs one card per seat per iteration (round-robin),
@@ -856,7 +883,8 @@ def run_loop(seats: list[str]) -> dict:
 
     print(f"═══ Continuous loop: seats={', '.join(active)} ═══\n", flush=True)
 
-    while active:
+    _stop = False
+    while active and not _stop:
         next_active: list[str] = []
         for seat in active:
             print(f"\n{'─' * 54}", flush=True)
@@ -864,6 +892,10 @@ def run_loop(seats: list[str]) -> dict:
             result   = run_seat(seat)
             status   = _seat_status(result)
             stats["runs"] += 1
+
+            # After a worker runs, regenerate company_state.json (existing writer).
+            if status in ("DONE", "PARTIAL", "BLOCKED"):
+                _regen_company_state()
 
             if status in ("DONE", "PARTIAL"):
                 # Card was processed (and moved to DONE/) — seat may have more.
@@ -891,6 +923,13 @@ def run_loop(seats: list[str]) -> dict:
                 # UNKNOWN — stuck state; remove to avoid spin
                 print(f"[LOOP] {seat} → {status} (unknown) — removing from rotation",
                       flush=True)
+
+            # Per-invocation safety bound: each launchd wake does bounded work; the next wake continues.
+            if max_runs and stats["runs"] >= max_runs:
+                print(f"[LOOP] max_runs={max_runs} reached — bounded exit; next launchd wake continues",
+                      flush=True)
+                _stop = True
+                break
 
         active = next_active
 
@@ -930,11 +969,12 @@ if __name__ == "__main__":
         # Continuously operate all auto-runnable seats (builder, design).
         # Pass a comma-separated list as argv[2] to override, e.g.:
         #   python3 engineering/seat_orchestrator.py loop builder,design,game
-        default_seats = ["builder", "design"]
+        default_seats = ["builder", "design", "game", "mobile_test"]
         seat_list = (
             sys.argv[2].split(",") if len(sys.argv) > 2 else default_seats
         )
-        result = run_loop(seat_list)
+        max_runs = int(sys.argv[3]) if len(sys.argv) > 3 else None
+        result = run_loop(seat_list, max_runs)
 
     elif mode == "gp1_then_item1":
         print("═══ GP-1 then Item 1 ═══")

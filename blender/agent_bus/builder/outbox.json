@@ -353,7 +353,283 @@
       "e868930"
     ],
     "acceptance_met": true,
-    "evidence": "P0-X — David-name side of the identity rule was the gap. server.py adds _DAVID_NAME_TRIGGERS + _david_name_response() reading _elo_self.who_i_am_with (never a literal). runtime/spine/spine.py:_conversation_faculty() adds one branch right after the existing identity trigger; both short-circuit direct so the LLM cannot fabricate. Proof: 5x 'What is your name?' -> 5 responses containing _elo_self.identity_name (change field to Nova -> next answer Nova); 5x 'What is my name?' -> 5 responses containing _elo_self.who_i_am_with (change field to Alex -> next answer Alex). P0-Y — WO-102 stores created empty (relationships/people.json / places.json / events.json) with Vol XXIV §1.3.5-7 schemas; NO fabricated names seeded (card's hard constraint held). knowledge/graph_loader.py folds Person/Place/Event into the one canonical entity table (Ruling A); closed _ALLOWED_ENTITY_TYPES rejects out-of-set types with a Rule-1 alarm; sensitivity=private hidden from open retrieval (Vol XXIII); legacy identity/world_graph.json logged and ignored. server.py world_graph_gate (from 2187405) now has a miss short-circuit: input matches (?i:who|what) (?i:is|are) [A-Z]... AND graph miss -> direct 'I don't know who X is - tell me?' (never a web search, never an LLM guess). Proof: seeded Person(name='Michael Paul', relation='friend') is retrievable via retrieve('Who is Michael Paul?'); K-7 and Chunk return entity hits at confidence 1.0 blocking web search; 'Who is Zenobia?' regex matches with 'Zenobia' capture. P0-Z — diagnosed only, server-side is right: FIFO turn queue at server.py:96 + _turn_worker() at 4283-4305 + /chat enqueue at 4501 + daemon-thread boot at 4747 guarantee turn ordering matches HTTP arrival order. Out-of-order behaviour in the live transcript must come from the display layer downstream, which is the game seat's surface. 73 tests pass 0 fail across new suite + all regressions.",
+    "evidence": "P0-X \u2014 David-name side of the identity rule was the gap. server.py adds _DAVID_NAME_TRIGGERS + _david_name_response() reading _elo_self.who_i_am_with (never a literal). runtime/spine/spine.py:_conversation_faculty() adds one branch right after the existing identity trigger; both short-circuit direct so the LLM cannot fabricate. Proof: 5x 'What is your name?' -> 5 responses containing _elo_self.identity_name (change field to Nova -> next answer Nova); 5x 'What is my name?' -> 5 responses containing _elo_self.who_i_am_with (change field to Alex -> next answer Alex). P0-Y \u2014 WO-102 stores created empty (relationships/people.json / places.json / events.json) with Vol XXIV \u00a71.3.5-7 schemas; NO fabricated names seeded (card's hard constraint held). knowledge/graph_loader.py folds Person/Place/Event into the one canonical entity table (Ruling A); closed _ALLOWED_ENTITY_TYPES rejects out-of-set types with a Rule-1 alarm; sensitivity=private hidden from open retrieval (Vol XXIII); legacy identity/world_graph.json logged and ignored. server.py world_graph_gate (from 2187405) now has a miss short-circuit: input matches (?i:who|what) (?i:is|are) [A-Z]... AND graph miss -> direct 'I don't know who X is - tell me?' (never a web search, never an LLM guess). Proof: seeded Person(name='Michael Paul', relation='friend') is retrievable via retrieve('Who is Michael Paul?'); K-7 and Chunk return entity hits at confidence 1.0 blocking web search; 'Who is Zenobia?' regex matches with 'Zenobia' capture. P0-Z \u2014 diagnosed only, server-side is right: FIFO turn queue at server.py:96 + _turn_worker() at 4283-4305 + /chat enqueue at 4501 + daemon-thread boot at 4747 guarantee turn ordering matches HTTP arrival order. Out-of-order behaviour in the live transcript must come from the display layer downstream, which is the game seat's surface. 73 tests pass 0 fail across new suite + all regressions.",
     "blocker": null
+  },
+  "0021_P0_he_does_not_know_who_he_is_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125412.2206972,
+    "state": "DONE",
+    "output": [
+      "e868930"
+    ],
+    "evidence": "P0-X (David name): server.py adds _DAVID_NAME_TRIGGERS + _david_name_response() reading _elo_self.who_i_am_with; runtime/spine/spine.py:_conversation_faculty() gets one branch right after the existing identity trigger. Both short-circuit direct \u2014 the LLM cannot fabricate. Proof: 'What is your name?' 5x returns 5 responses containing _elo_self.identity_name; change the field to 'Nova' and the answe",
+    "duration_s": 928.45
+  },
+  "0027_WO-ONEBRAIN_convergence_programme_RETRACTED": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125481.876835,
+    "state": "DONE",
+    "output": [],
+    "evidence": "Card retracted at line 1 by Chief Architect 04:20 2026-08-14. Directive: DO NOT BUILD. Followed exactly \u2014 no code, no commits. Moved DOING/ \u2192 DONE/0027_..._RETRACTED.md with close-out note. Redirect per card: 0026 \u2192 0025 \u2192 0021/0022/0023 (0021 already DONE at e868930 + 701eadc).",
+    "commits": [],
+    "next": "Seat idle on this ticket. Architect must dispatch 0026 / 0025 / 0022 / 0023 into QUEUE/ before Builder can act on the redirect."
+  },
+  "0027_WO-ONEBRAIN_convergence_programme_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125491.4668438,
+    "state": "DONE",
+    "output": [],
+    "evidence": "Card is explicitly RETRACTED at line 1: '\u26d4 RETRACTED. DO NOT BUILD THIS CARD.' Chief Architect reversed it 04:20 on 2026-08-14 (reasoning in _intake/SOURCE_2026-08-14_CA_ruling_convergence_mode.md \u00a711). The card's directive is to NOT build \u2014 followed exactly. No code touched, no commits produced. Card moved DOING/ \u2192 DONE/0027_WO-ONEBRAIN_convergence_programme_RETRACTED.md with close-out note appen",
+    "duration_s": 79.24
+  },
+  "0030_FINISH_C2_before_D1_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125683.107824,
+    "state": "DONE",
+    "output": [
+      "f5ec51f"
+    ],
+    "evidence": "Duplicate close-out \u2014 C2 (spine.py:83-102 word-boundary + stopword scoring), name-phrasing triggers (server.py:1390-1395), _identity_response from _elo_self.identity_name (server.py:1398-1414), _DAVID_NAME_TRIGGERS + _david_name_response wired into spine.py:407-411, A1 fail-closed on UNKNOWN health (spine.py:295-301 + capability.py:46,54-55), and num_ctx=8192 (backend_router.py:313,472) all already shipped at f5ec51f. Runtime verification just now: _capability_faculty('what is your name?', 'conversation') returned [] (0 candidates); identity trigger + David trigger both fire; UNKNOWN-first candidate list is correctly skipped in favour of ONLINE. Card stamped with verification section and moved DOING/ -> DONE/. No new commit.",
+    "commits": [
+      "f5ec51f"
+    ],
+    "acceptance_met": true,
+    "next": "D-1 (proposal loop) is now unblocked \u2014 C2 finish-it items are all in the tree."
+  },
+  "0030_FINISH_C2_before_D1_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125698.901282,
+    "state": "DONE",
+    "output": [
+      "f5ec51f"
+    ],
+    "evidence": "Duplicate close-out. All three finish-it items + num_ctx were already shipped at f5ec51f before this card was queued. Independent runtime verification, just now, from the current tree: (1) spine.py:83-102 uses word-boundary + stopword-content scoring \u2014 _capability_faculty('what is your name?', 'conversation') returned []. (2a) server.py:1390-1395 _IDENTITY_TRIGGERS now includes 'your name', \"what'",
+    "duration_s": 207.43
+  },
+  "0043_overnight_VERIFIED_and_one_test_I_specified_wrong_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125811.020181,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 112.11,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "0044_INGRESS_32_ambient_thought_RULED_not_yet_authorised_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125815.217848,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 4.19,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "0049_LOOP7_CLOSED_the_row_exists_run_the_test_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125819.369477,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 4.15,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "0053_RECONCILE_close_the_audit_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125822.705528,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.33,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "0056_BOTH_LISTS_convergence_and_presentable_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125826.1355011,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.43,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "0057_THE_4_SECOND_RULE_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125829.5362492,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.4,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "01b_WO-100_gaze_dropped_and_worldstate_import_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125832.9592052,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.42,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "03b_WO-CANON-XXV_temporal_is_dead_code_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125836.521664,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.56,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "03c_WO-101_significance_reward_reads_outcomes_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125839.974627,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.45,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "03d_WO-102_eLo_cannot_know_Davids_family_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125843.5188758,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.54,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "03e_WO-103_tests_that_would_not_have_caught_it_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125847.3025038,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.78,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "05b_WO-112_CHOOSE_record_the_alternatives_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125850.867108,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.56,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "05c_WO-110_epistemic_state_beyond_the_body_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125854.254762,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.38,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "05d_WO-115_reflection_reaches_the_self_and_a_real_autobiography_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125858.258715,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 4.0,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "05e_WO-113_affordance_and_gap_detection_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125861.690229,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.43,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "05g_WO-116_WO-117_adapt_selfobserve_meaning_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125865.484789,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.79,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "05h_WO-107_identity_in_the_self_model_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125869.085067,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.59,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "07_WO-CANON-VIII_memory_loop_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125872.658918,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.57,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "09_WO-CANON-XIV_plugin_gates_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787125876.238454,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.58,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "0000_LOOP_CRASH_AND_SKIP_FILTER_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787199110.837209,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 4.47,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "0000_LOOP_TWO_DEFECTS_STOPPING_THE_COMPANY_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787199424.399612,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=true exit_code=1 output_bytes=26",
+    "duration_s": 3.3,
+    "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "0001_CAPABILITY_1-26_THE_CODE_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787199680.563135,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "ALIVE=true PROGRESSING=false exit_code=143 output_bytes=0",
+    "duration_s": 9.02,
+    "blocker": "worker did not write result file or move card to DONE/"
   }
 }

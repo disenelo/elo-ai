@@ -34,7 +34,7 @@ trap 'rm -f "$PID_FILE"' EXIT
 
 echo "[$(ts)] START — launchd invocation  python=$PYTHON  pid=$$" >> "$LOG_FILE"
 
-"$PYTHON" "$ORCHESTRATOR" loop builder,design >> "$LOG_FILE" 2>&1
+"$PYTHON" "$ORCHESTRATOR" loop builder,design,game,mobile_test 4 >> "$LOG_FILE" 2>&1
 EXIT_CODE=$?
 
 echo "[$(ts)] EXIT  code=$EXIT_CODE" >> "$LOG_FILE"

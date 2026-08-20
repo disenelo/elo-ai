@@ -1,8 +1,4 @@
 {
-  "card": "02_UNPARKED_backlog_carded.md",
-  "status": "DONE",
-  "commits": ["cea8b42"],
-  "acceptance_met": true,
-  "evidence": "DUPLICATE close-out. All 8 items reconciled: (1) WO-058 VFX+prefab LOOK DONE via DONE/03_WO-058_weather_and_prefab_look.md + f133fee; (2) WO-063 DEFERRED post-Presentable per card 12; (3) Spatial Faculty split accepted, Python half exists at faculties/spatial/spatial_faculty.py (Builder-owned), Unity half backlog; (4) WO-024 SUPERSEDED by QUEUE/04 Option A ruling; (5) WO-062 designer-half DONE at 8873b20; (6) INT-8 drag-drop STAGED for David's live test (card 12 §4); (7) EloHudModel previewer DONE at 09050ef (David confirmed live); (8) Track-B audit done, only notifications field emit still open, carded to Builder. Per-item table appended to card body. Card sat in DOING since 2026-08-13 while work migrated to per-task cards.",
-  "blocker": null
+  "state": "CONSUMED",
+  "consumed_ts": 1787199680.567586
 }

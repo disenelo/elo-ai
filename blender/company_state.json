@@ -1,7 +1,7 @@
 {
   "schema": "company_state/v1",
-  "_ts": 1786629641.11,
-  "updated": "2026-08-13T14:00:41.109665Z",
+  "_ts": 1787199428.01,
+  "updated": "2026-08-20T04:17:08.010538Z",
   "source": "company_runtime.company_state_writer \u2014 parsed live from DISPATCH_BOARD.md",
   "greeting": {
     "founder": "David",
@@ -9,25 +9,30 @@
   },
   "voiced_briefing": "1 item ready to pick up \u00b7 1 awaiting David approval \u00b7 WO-074, WO-075, RD-4 in progress",
   "company_focus": {
-    "milestone": "Presentable v1",
+    "milestone": "post-Presentable audit + canon integration + One Brain",
     "items": [
-      "sit-close(WO-059/052A+WO-040)",
-      "movement-fix+misroute",
-      "Self-Model(WO-052A/059)",
-      "TTS(WO-016/019)",
-      "memory-recall(WO-022/037/053)",
-      "tool-routing(WO-020)",
-      "mirror-scrub(WO-036)"
+      "audit-fix-landings(CT4V-01-08)",
+      "canon-volume-integration(WO-CANON-I..XXVIII)",
+      "one-brain(INT7-HEAT)",
+      "live-test-defect-triage(builder/0019+0020+0021)",
+      "spatial-faculty(WO-049 Track B)",
+      "ruling-G-address(WO-CANON-I)"
     ],
-    "note": "these are IN-PROGRESS focus, not \"ready\" backlog \u2014 the coordinator's today_priorities must surface THIS, not the first ready-P1 rows. See WO-061."
+    "note": "Presentable v1 was RETIRED by David L3 on 2026-08-10 \u2014 do not surface it as the milestone. today_priorities must surface the CURRENT audit-fix + canon-integration workstream (see board \u00a7\"UNPARKED BY THIS DIRECTIVE\"). D-7 (card 0020, 2026-08-19)."
   },
   "today_priorities": [
     {
-      "text": "**LIVE BUG: EmbodimentState publishes EMPTY** \u2014 `build_embodiment_state`:503 run",
-      "owner": "Builder (eLo OS)",
+      "text": "Focus: post-Presentable audit + canon integration + One Brain",
+      "owner": "Builder",
       "priority": "P0",
-      "status": "dispatched",
-      "focus_milestone": "Presentable v1"
+      "items": [
+        "audit-fix-landings(CT4V-01-08)",
+        "canon-volume-integration(WO-CANON-I..XXVIII)",
+        "one-brain(INT7-HEAT)",
+        "live-test-defect-triage(builder/0019+0020+0021)",
+        "spatial-faculty(WO-049 Track B)",
+        "ruling-G-address(WO-CANON-I)"
+      ]
     }
   ],
   "waiting_for_approval": [
@@ -82,7 +87,7 @@
     "open": 15,
     "in_review": 1,
     "blocked": 0,
-    "notes": "135 work orders parsed live from the board."
+    "notes": "139 work orders parsed live from the board."
   },
   "alerts": [
     {
@@ -1398,9 +1403,9 @@
     },
     {
       "id": "WO-CANON-VII",
-      "title": "**Build Volume VII Executive Cortex** \u2014 close Ruling C (move the `decide()` call",
+      "title": "**Build Volume VII Executive Cortex** \u2014 close Ruling C",
       "lane": "Engineering",
-      "status": "READY",
+      "status": "DONE",
       "seat": "Builder (eLo OS)",
       "pri": "P1",
       "importance": "AUTO",
@@ -1444,7 +1449,7 @@
       "id": "WO-097",
       "title": "**LIVE BUG: EmbodimentState publishes EMPTY** \u2014 `build_embodiment_state`:503 run",
       "lane": "Engineering",
-      "status": "WORKING",
+      "status": "DONE",
       "seat": "Builder (eLo OS)",
       "pri": "P0",
       "importance": "AUTO",
@@ -1552,11 +1557,11 @@
     },
     {
       "id": "WO-CANON-I",
-      "title": "**Build Volume I \u2014 Philosophy.** Retire \"the user\" framing; eLo's person is Davi",
+      "title": "**Build Volume I \u2014 Identity.** eLo KNOWS the person is David; addresses him in t",
       "lane": "Engineering",
-      "status": "READY",
+      "status": "DONE",
       "seat": "Builder (eLo OS)",
-      "pri": "P2",
+      "pri": "P1",
       "importance": "AUTO",
       "needs_david": false,
       "badge": "\ud83d\udfe2"
@@ -1578,6 +1583,50 @@
       "lane": "R&D",
       "status": "WORKING",
       "seat": "R&D (Gemini)",
+      "pri": "P2",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-099a",
+      "title": "**\ud83d\udd34 P0 \u2014 RESTORE BRAIN CONTROL OF THE HEAD** (David: *\"fix what they broke and r",
+      "lane": "Creative",
+      "status": "WORKING",
+      "seat": "Design (UI/Avatar)",
+      "pri": "P0",
+      "importance": "DAVID",
+      "needs_david": true,
+      "badge": "\ud83d\udfe0"
+    },
+    {
+      "id": "WO-099b",
+      "title": "**Brain must actually EMIT the gaze cue** \u2014 \u26a0 **[VERIFIED in code]** Unity has A",
+      "lane": "Engineering",
+      "status": "DONE",
+      "seat": "**Builder (eLo OS)**",
+      "pri": "P0",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-099c",
+      "title": "**Gaze awareness UP** \u2014 body reports what he's looking at: continuous `gaze` STA",
+      "lane": "Runtime",
+      "status": "READY",
+      "seat": "reflex`) and a DEBOUNCED `gaze_target_ch",
+      "pri": "P3",
+      "importance": "AUTO",
+      "needs_david": false,
+      "badge": "\ud83d\udfe2"
+    },
+    {
+      "id": "WO-090",
+      "title": "**HeadAim / ChestAim** \u2014 cursor head-aim, decoupled L/R+U/D, chest trails, track",
+      "lane": "Creative",
+      "status": "DONE",
+      "seat": "Design (UI/Avatar)",
       "pri": "P2",
       "importance": "AUTO",
       "needs_david": false,
@@ -2106,9 +2155,9 @@
   ],
   "coordination": {
     "counts": {
-      "total": 135,
-      "outstanding": 68,
-      "needs_david": 44,
+      "total": 139,
+      "outstanding": 67,
+      "needs_david": 48,
       "blocked": 0,
       "ready_now": 5
     },
@@ -2128,11 +2177,11 @@
         "agent": "Game (Unity)"
       },
       {
-        "id": "WO-097",
-        "title": "**LIVE BUG: EmbodimentState publishes EMPTY** \u2014 `build_embodiment_state`:503 run",
+        "id": "WO-099a",
+        "title": "**\ud83d\udd34 P0 \u2014 RESTORE BRAIN CONTROL OF THE HEAD** (David: *\"fix what they broke and r",
         "pri": "P0",
         "status": "dispatched",
-        "agent": "Builder (eLo OS)"
+        "agent": "Design (UI/Avatar)"
       },
       {
         "id": "WO-032",
@@ -2501,11 +2550,39 @@
         "agent": "Builder (eLo OS)"
       },
       {
+        "id": "WO-CANON-VII",
+        "title": "**Build Volume VII Executive Cortex** \u2014 close Ruling C",
+        "pri": "P1",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
         "id": "WO-096",
         "title": "**LIVE BUG: desktop perception silently DEAD** \u2014 `live_world_state.py:194` impor",
         "pri": "P0",
         "status": "done_claimed",
         "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-097",
+        "title": "**LIVE BUG: EmbodimentState publishes EMPTY** \u2014 `build_embodiment_state`:503 run",
+        "pri": "P0",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-CANON-I",
+        "title": "**Build Volume I \u2014 Identity.** eLo KNOWS the person is David; addresses him in t",
+        "pri": "P1",
+        "status": "done_claimed",
+        "agent": "Builder (eLo OS)"
+      },
+      {
+        "id": "WO-099b",
+        "title": "**Brain must actually EMIT the gaze cue** \u2014 \u26a0 **[VERIFIED in code]** Unity has A",
+        "pri": "P0",
+        "status": "done_claimed",
+        "agent": "**Builder (eLo OS)**"
       }
     ],
     "safety_gated_waiting": [
@@ -3474,254 +3551,13 @@
       "seats": [
         "SEAT-ENG-001"
       ],
-      "last_seen": 1786589950.637814,
+      "last_seen": 1787125876.2387083,
       "fresh": true,
-      "pending": 32,
-      "active": 1,
+      "pending": 29,
+      "active": 0,
       "in_review": 1,
       "blocked": 0,
-      "updates": [
-        {
-          "wo": "WO-096",
-          "status": "done",
-          "detail": "Desktop perception silently dead \u2014 fixed. Both live_world_state.py and perception_faculty.py imported get_active_window (nonexistent); ImportError swallowed by bare except; desktop domain returned absent every turn with no trace. Fix: both call sites now use get() and access .app/.title (dataclass attrs, not dict). Bare excepts replaced with logged warnings + explicit health error state. Blender state bare excepts -> debug log. 5/5 AT test_wo096_desktop_perception.py: AT-1 (desktop domain populated), AT-2 (both call sites use get()), AT-3 (broken source logs error, assembly continues), AT-4 (perceive_from_live_state reads .app/.title), AT-5 (py_compile clean)."
-        },
-        {
-          "wo": "WO-APPROVAL-MEMORY",
-          "status": "done",
-          "detail": "David approvals stick. continuation.cycle() now reads DAVID_APPROVED.md and runs a second loop over the approved set after the AUTO-tier test loop \u2014 closing any approved WO not already DONE, regardless of whether a test file exists. _closed_set deduplicates. needs_david excludes all approved WOs so they never resurface. Tests: 5/5 AT (approved excluded from needs_david, board row flipped DONE David-approved, no-test-file approved path, idempotent, parse-format robustness)."
-        },
-        {
-          "wo": "WO-094",
-          "status": "done",
-          "detail": "Window Events / Noticing and Choosing (Builder half). faculties/window_event_faculty.py: consume_window_events() reads unity_events.json, returns only window-type events; decide_window_event(event, state, user_active) \u2014 no state/empty state \u2192 None (no fabrication ADR-Exec-001); is_elo_surface \u2192 None (Unity survival owns it); user_active=True \u2192 peripheral; window_opened + curiosity\u22650.65 \u2192 observe else glance; window_closed/moved \u2192 glance; decision carries source/priority/event_ts. self/route_memory.py: remember_route() appends ONLY on ack_received=True (verified outcomes only, ADR-Exec-005); recall_route() returns last successful route; route_confidence() Laplace window 10. ambient/ambient_engine.py: WO-094 branch in WO-086 event polling loop \u2014 window_closed/opened/moved ev_types route to _handle_window_event() daemon thread; never touches identity/values/personality. 5/5 AT."
-        },
-        {
-          "wo": "WO-095",
-          "status": "done",
-          "detail": "Learning Loop \u2014 Close the Read Side. self/lesson_store.py (NEW): record_outcome() \u2014 sha1 lesson_key dedup, ACK-gated (verified=True only for strengthen/promote), evidence ts float epoch. promote_pass() \u2014 sole status writer, \u00a73.4 thresholds (strength\u22650.70, \u22653 distinct episode_refs, \u22652 sessions, \u22652 verified), idle decay 0.02/7d, retirement at strength<0.20 or 3 contradictions or 60d idle, first live personality_evolution_faculty caller. recall() \u2014 confirmed only, ranked by strength\u00d7recency\u00d7context, \u22643/\u2264240-char. stats() \u2014 GrowthMetrics 4-slice (intention_realisation/repeat_failure_rate/reinforcement_ratio/identity_stability). migrate_pre_v1() \u2014 archives 374 template rows to lessons_ledger_pre_v1.jsonl. memory/significance_engine.py: evaluate() gains outcome=None kwarg (back-compat), three outcome dims from ACK only (embodiment/efficiency/safety), reward=0.70*outcome+0.30*sig, verified==False\u2192outcome_terms=0 (hard rule ADR-Exec-005). runtime/cognitive_snapshot.py: lessons field, build_snapshot() calls recall(). runtime/prompt_builder.py: build() lessons param, [LEARNED HEURISTICS] block \u22643/\u2264240-char, labelled heuristic not fact. runtime/reflection_faculty.py: lesson_key sha1, SPOT episode_ref (not text truncation), dedupe-on-append. server.py: OutcomeRecord at sit_complete ACK (positive) and 15s timeout (negative). 10/10 AT."
-        },
-        {
-          "wo": "WO-080",
-          "status": "done",
-          "detail": "Company Knowledge Interface depth layer. company_runtime/company_knowledge.py: load_state() (read-only, no codebase scan). query_active_wos(state) returns non-done/blocked WOs only (empty state = []). query_regressions(state) returns active entries by severity. check_permitted(action, state): permitted_actions list check + L3 wall (commit/send/spend always False regardless of state). build_deep_brief(query, state): real answers for task/regression/review-pack queries; honest_gap() when data absent. prepare_review_pack(state): structured summary, prepare-only, no side effects. company_state_writer.py: deep task queries (what tasks, what work orders, active wos, etc.) route through company_knowledge.build_deep_brief() BEFORE the WO-048 briefing path \u2014 WO-080 marker added. 5/5 AT: AT-0 (active WO filter), AT-1 (state variance), AT-2 (permitted gate + L3 wall), AT-3 (honest gap), AT-4 (wiring + compile)."
-        },
-        {
-          "wo": "WO-081",
-          "status": "done",
-          "detail": "Emergent Cognition Cluster. self/emergent_cognition.py: internal_intents(state, idle_seconds) \u2014 gate: no intents without real history (focal_thread/lifetime_threads/inner_events); absence_awareness fires at 300s idle + curiosity \u2265 0.50; active_thread fires when focal_thread + session_turns \u2265 3 + \u2265 2 related events; micro_goal fires when curiosity \u2265 0.80 + idle pose; all priority='low'. update_habits(state, verb): increments state.recent_behavior rolling count. append_autobiography(event, kind): append-only jsonl at self/journals/autobiography.jsonl. emergent_block(): prompt injection \u2014 only emits when real state exists; empty state = empty string. server.py: inject emergent_block() after identity_block, WO-081 marker; _idle_sec passed with NameError guard. No timers, no fabrication, no touch of FREEZE_V1_LOCK runtime/executive.py. 5/5 AT: AT-0 (empty state \u2192 []), AT-1 (real state \u2192 items, all low-priority, all with source/trigger), AT-2 (absence threshold 300s enforced), AT-3 (append-only autobiography), AT-4 (server.py wired, py_compile clean)."
-        },
-        {
-          "wo": "WO-083",
-          "status": "done",
-          "detail": "Identity & Meaning convergence layer. self/identity_meaning.py: derive_tendencies() \u2014 threshold-gated (lifetime_threads \u22653 count, inner_events \u22653/8, recent_behavior \u22652) \u2014 no fabricated claims when state is empty. consistency_check() \u2014 flags focal_thread vs. all-flat inner_events + session_read/mood mismatch. meaning_labels() \u2014 computed from top lifetime_threads + dominant inner_event + focal_thread. identity_block() \u2014 assembles [ELO IDENTITY & MEANING] prompt block injected into server.py after narrative_block (WO-052B), only emits non-empty sections. flag_value_change() \u2014 routes through personality_drift.propose() (WO-CANON-X gate), never writes personality state directly. 5/5 AT: AT-0 (empty state \u2192 no tendencies), AT-1 (threshold enforcement), AT-2 (focal_thread + all-quiet \u2192 inconsistent), AT-3 (value-change routes through drift gate, no personality_state write), AT-4 (server.py wired, py_compile clean)."
-        },
-        {
-          "wo": "WO-CANON-XXIV",
-          "status": "done",
-          "detail": "One world graph (Ruling A). knowledge/graph_loader.py: retrieve() added \u2014 returns ranked list (score DESC) carrying confidence+kind+evidence+score; _find_entities() now scores by keyword match count; empty list on unknown input (no backfill). core/continuity.py: _WORLD_GRAPH_PATH moved to relationships/world_graph.json; _ENTITY_TRIGGERS updated to canonical IDs; get_entity_why() updated for list-of-dicts format. identity/world_graph.json: _retired:true + _successor pointer written. relationships/world_graph.json: 2 missing connections added (elo_book->elo_game, chunk->elo_game). 5/5 AT."
-        },
-        {
-          "wo": "WO-CANON-X",
-          "status": "done",
-          "detail": "Drift gate (Ruling D). memory/personality_drift.py: parallel tone_profile/interaction_bias model removed; one canonical trait model (V Ch.7 PersonalityVector: curiosity/patience/confidence/empathy/discipline/wonder/playfulness/directness). propose() produces DriftProposal {ts, source, trait_model, deltas, needs_david, status:pending} stored to drift_proposals.json \u2014 never writes personality_state.json. _VALUE_TRAITS={wonder, empathy, directness}: touching any value trait sets needs_david=True. server.py shutdown: propose() call replaces update()+save(). 7/7 AT: AT-0 (no personality_state write), AT-1 (pending proposal returned), AT-2 (V Ch.7 trait names only), AT-3 (value trait sets needs_david=True), AT-4 (nuance-only leaves needs_david=False), AT-5 (server.py wired)."
-        },
-        {
-          "wo": "WO-CANON-XVI",
-          "status": "done",
-          "detail": "Assemble-before-decide (ADR-Exec-006 / Ruling C). (1) runtime/cognitive_snapshot.py: UnifiedCognitiveState = CognitiveSnapshot alias exported \u2014 one canonical name. (2) runtime/spine/spine.py: assemble_cognitive_state() moved to BEFORE _executive_faculty(); passes language dict directly (not lang_with_register post-hoc); plan.cognitive_state pinned from pre-assembled state; post-decision S3 reassembly block removed. (3) core/faculty_bus.py: _PRIORITY_ORDER constant + get_messages() now sorts by priority before returning (critical \u2192 high \u2192 normal \u2192 low) \u2014 FIFO replaced. 4/4 AT: AT-0 (alias exported, CognitiveSnapshot still instantiable), AT-1 (assembly line < executive line in spine.py source), AT-2 (exactly one _executive_faculty call \u2014 no voting), AT-3 (bus delivers critical\u2192high\u2192normal\u2192low regardless of insertion order)."
-        },
-        {
-          "wo": "WO-082",
-          "status": "in_review",
-          "detail": "Decision Journal: append-only trace per executive action in self/journals/decision_journal.jsonl. Fields: ts, turn, action, trigger (cal_reason), intent, tone, confidence, alternatives_rejected (original_action if overridden), overrides (safety-stabilisation|seam-a-routing), cognitive_load, outcome, backend, learning. Failure path: record_failure(action, condition_desc) appends known_failure_condition + drops per-action reliability 0.15 (floors at 0.0), persisted to self/journals/action_reliability.json. 'why did you do that?' \u2192 _WHY_TRACE_TRIGGERS + len<80 guard short-circuits before exec_decision \u2192 explain_last() reads real trace, never fabricates motive. System action failure also records via _dj_fail. 7/7 AT: AT-1 (record fields), AT-2 (last_n ordering), AT-3 (failure entry), AT-4 (reliability floor), AT-5 (explain_last trace-grounded), AT-6 (WO-082 marker wired). Continuation 78/78."
-        },
-        {
-          "wo": "WO-077",
-          "status": "in_review",
-          "detail": "Return loop: eLo's own recent outputs now in every turn. Diagnosis: _SESSION_WINDOW assistant entries (key 'elo') were never systematically injected into the system prompt \u2014 only on explicit memory recall (conditional path). Per-turn style monitor at server.py:2782 was also silently failing (NameError on _cw caught by bare except). Perception already in assembled state (self_situated_block + g_ctx chrome/vision/spatial). Real gap = own-speech. Fix: after build_prompt + narrative identity block, import _SESSION_WINDOW and inject [RECENT DIALOGUE] block (last 3 turns, David + eLo, 120 chars each) into system prompt every turn. Empty-turn guard: block skipped when no elo entries yet (turn 1). test_wo077_return_loop.py 6/6: AT-1 (push stores elo key), AT-2 (block built from elo turns), AT-3 (no block when no elo), AT-4 (last 3 only), AT-5 (WO-077 marker in server.py). Continuation 77/77."
-        },
-        {
-          "wo": "WO-CANON-XXV",
-          "status": "in_review",
-          "detail": "Temporal Cognition Faculty (asked, three frozen slices). faculties/temporal/faculty.py + __init__.py. TemporalState: reads LiveWorldState.time verbatim (now_iso/part_of_day/day_of_week), circadian curve (morning/afternoon/evening/night \u2192 phase/energy), interaction-gap thresholds (continuous/brief/hours/overnight[+night boundary]/days/long_absence), sleep_pressure (Vol IX constants, context only \u2014 never fires dream), cold-start \u2192 unknown. FutureFrame: deadlines from LiveWorldState.calendar with ref anchors; baseless dropped; horizon from nearest imminent. Retrospection: vault + IdentityState fallback; autobiography.jsonl absent \u2192 PENDING marker; fidelity from strength not age; identity/pinned never faded; memory_instruction_store=False always. temporal_appropriateness() advises quiet-hours. Blocked by Vol XXI autobiography extension \u2014 designed PENDING fallback in place. 19/19 AT test_canon_xxv_temporal.py."
-        },
-        {
-          "wo": "WO-CANON-XX",
-          "status": "in_review",
-          "detail": "Cognitive Economy: tier constants (0-3) + cost classes (free-local/cheap-cloud/premium-cloud) + _PROVIDER_COST_CLASS + _TIER_PROVIDER_ORDER (cheapest-first per tier) + _ACTION_PRIORITY + _TIER_BUDGET. _token_budget() now tier-aware (tier primary key, action fallback; live budgets verbatim). route() + route_streaming() accept tier: int = 0; escalation logged (escalated=true) when Executive tier > action default. _mock_fallback() honesty gate: factual/technical requests return _HONEST_DEGRADATION_MSG, not canned presence. Gated-out: cost telemetry (David L3), _AUTO_LOCAL_MAX_CHARS (David L3), escalation-gate home (CA) \u2014 block RATIFICATION not build start. 16/16 AT test_canon_xx_economy.py."
-        },
-        {
-          "wo": "WO-CANON-VI",
-          "status": "in_review",
-          "detail": "Working Memory + Attention wired into spine (ruling B / D-VI-1 applied). runtime/working_memory.py: carry_wm() + load_carry() session-boundary functions added. core/attention.py: docstring updated to 'Memory Relevance Filter' (supplier only, not authority). runtime/contracts.py: working_memory + attention_state fields on CognitiveState. runtime/spine/plan.py: working_memory field on CognitivePlan. runtime/spine/spine.py: full WM wiring at top-of-turn \u2014 SEED from continuity/wm_carry.json, AttentionCandidates built from attention supplier output, run_attention_competition, CognitiveFrame update, freeze with attention state, stored on plan + threaded through assemble_cognitive_state(). 24/24 AT test_canon_vi_working_memory.py covering Ch.1\u2013Ch.4 spec."
-        },
-        {
-          "wo": "WO-CANON-VIII",
-          "status": "in_review",
-          "detail": "MemoryFaculty single logical writer (D-F). memory/memory_faculty.py: MemoryCandidate frozen dataclass + MemoryFaculty.submit() decides {write|reinforce|drop}. vault_layer.recall_context(): reinforce() called on every returned hit (\u00a73.4 wiring). reflection_faculty.integrate_session() + music_memory/storage.save_to_vault() routed through MemoryFaculty.submit() \u2014 no direct write_memory calls remaining in callers. 17/17 AT test_canon_viii_memory.py covering Ch.1\u2013Ch.4."
-        },
-        {
-          "wo": "WO-CANON-XV",
-          "status": "in_review",
-          "detail": "LiveWorldState wired into spine. assemble_world_state() called at top of run() before all faculties; plan.world = frozen LiveWorldState; CognitiveState.world_state carries it. world: object=None added to CognitivePlan. world_state: object=None added to CognitiveState. 14/14 AT test_canon_xv_world_state.py covering FT-1\u20134, ST-1\u20134, IT-1\u20132, AT-1\u20134."
-        },
-        {
-          "wo": "WO-CANON-XII",
-          "status": "in_review",
-          "detail": "Perception\u2192World-State copy step + structured fidelity flags. partial: bool added to PerceptionResult (True when confidence<0.7 or primary modality absent). assemble_world_state() accepts perception=PerceptionResult; copies active_surface/user_activity/vision_active into DesktopState/UserState/EnvironmentState with source=\"PerceptionFaculty\" + verbatim confidence. spine.py now calls perceive_from_live_state() before assemble_world_state(). 15/15 AT test_canon_xii_perception.py covering Ch.1\u2013Ch.4 spec."
-        },
-        {
-          "wo": "WO-030b/058b",
-          "status": "in_review",
-          "detail": "Weather PUBLISH hardened (Run 18). Root gap: _write() in state_writer.py overwrote the weather key every turn (not in _PRESERVE_KEYS), and the One Brain _bs_patch wrote \"\" when _last_weather_condition was empty (clearing a previously persisted value). Fix: (1) \"weather\" added to _PRESERVE_KEYS \u2014 every _write() now reads and re-carries the prior weather value; (2) One Brain block in server.py now guards: only patches weather when _bs_weather is non-empty, so a restart never overwrites a persisted condition with empty string. test_wo030b_weather_publish.py 7/7: AT-1 (_PRESERVE_KEYS), AT-2 (_write preserves prior), AT-3 (patch writes), AT-4 (patch transparent; guard in server.py), AT-5 (get_last returns str), AT-6 (survives 2 _write() round-trips). Continuation 76/76 (WO-032b AT-4 stale assertion also corrected: WO-073 made \"ollama\" the groq fallback floor, not \"mock\")."
-        },
-        {
-          "wo": "WO-052B",
-          "status": "in_review",
-          "detail": "Narrative Identity done. embodiment_history (7 embodiments: desktop/game=active, exhibition=prototype, robot/phone/AR/hologram=future) + embodiment_milestones appended-only. narrative_block() generates [ELO NARRATIVE IDENTITY \u2014 Vol XXI] prompt block injected every turn. load()+update() carry fields through. 9/9 AT test_wo052b_narrative_identity.py. David: ask eLo \"where have you lived?\" \u2014 expect authentic autobiography across embodiments."
-        },
-        {
-          "wo": "WO-086-Builder",
-          "status": "in_review",
-          "detail": "User-idle brain half done. ambient_engine.py: polls user_idle/user_active events from unity_events.json. 30s threshold before idle behaviour fires; 90s refire gate. _decide_idle_behaviour(idle_secs) selects from repertoire (utterance/glance/look_around/stretch/wander/calm \u2014 weighted by duration). Yields to commanded state. user_active resets tracking. 8/8 AT test_wo086_user_idle_brain.py. Designer half (emit user_idle/user_active + retire local calm driver) must land WITH this \u2014 sequence-hard."
-        },
-        {
-          "wo": "INT-8a",
-          "status": "done",
-          "detail": "File drop round-trip fixed \u2014 3 bugs: (1) circular import (from server import _voice_speak) fixed to from voice.voice_engine import speak; (2) missing runtime.state_manager replaced with module-level _pending_drops queue + pop_pending_drops() drained by server.py each turn; (3) _ts missing from Unity event caused silent skip \u2014 fixed with float(event.get(\"_ts\") or os.path.getmtime(_EVENTS_FILE)) fallback. 9/9 AT test_int8a_file_drop.py. Unity side: confirm EloFileDrop.cs writes {\"type\":\"file_drop\",\"path\":\"...\",\"_ts\":<epoch>} to unity_events.json."
-        },
-        {
-          "wo": "test_suite_83_83",
-          "status": "in_review",
-          "detail": "83/83 suite fully green. Fixes: (1) EA2-2 AT-7/AT-8: _FAKE_STATE lacked company_focus key so _load_fresh_state always re-published from real DISPATCH_BOARD overwriting injected temp state. Added company_focus; updated AT-7 assertion from voiced_briefing to DISENELO+state-items (WO-048 _build_briefing never returns voiced_briefing). (2) test_wo030_weather_location_v2 AT-1: bare import httpx at top of _agent_weather before no-location early-return guard raised No module named httpx before the guard ran. Moved import to just before wttr.in call. (3) Same test AT-5: depended on user_location.json not having Manchester, but test_wo030_weather_location.py runs first alphabetically and saves Manchester. Made AT-5 call set_location(Hackney Wick) before reading the file. (4) outbox.json invalid JSON escape: unescaped \\s in F2 detail string \u2014 corrected to \\\\s."
-        },
-        {
-          "wo": "WO-066",
-          "status": "in_review",
-          "detail": "Ambient engine callback registration. ambient_engine.py public API was missing register_ambient_callback \u2014 server.py:1393 imported it at startup, raised ImportError, caught by except block, ambient engine skipped entirely, idle utterances never fired. Fix: _ambient_cb module var initialised to None; register_ambient_callback(cb) stores the callable; _run() idle utterance timer calls threading.Thread(target=_ambient_cb).start() when set, falls back to static pool otherwise. 7/7 AT test_wo066_ambient_callback.py. David: relaunch app \u2014 eLo should now produce idle utterances and brain-backed ambient thoughts between conversations."
-        },
-        {
-          "wo": "test_conversation_quality",
-          "status": "in_review",
-          "detail": "test_conversation_quality.py flakiness eliminated. Was non-deterministic 3-4 fails per run \u2014 keyword assertion lists were narrower than the actual mock pools. Root: 5 overwhelm pool items, 4 greeting items, 6 confusion items, 3 recall items, and 1 inquiry-override item all had valid responses with no matching keyword in their assertions. Fixed by expanding keyword lists to cover all pool items + updating 3 recall pool lines to include natural project-context words. 21/21 stable across 20 consecutive runs."
-        },
-        {
-          "wo": "WO-001",
-          "status": "done",
-          "detail": "Faculty Bus 5/5 AT confirmed 2026-08-03. Approved by David. COMPLETION_LOG.md filed."
-        },
-        {
-          "wo": "WO-005",
-          "status": "done",
-          "detail": "integrate_session() 5/5 AT confirmed 2026-08-03. Approved by David. COMPLETION_LOG.md filed."
-        },
-        {
-          "wo": "WO-015",
-          "status": "done",
-          "detail": "All 4 behaviour rules already present in living_presence_spec.txt (lines 364-405, 961-973). D-K ratified. No code change needed. Approved by David 2026-08-03."
-        },
-        {
-          "wo": "WO-029",
-          "status": "done",
-          "detail": "'all good' greeting family -> warm HOW_ARE_YOU reply. 8/8 AT. Approved by David 2026-08-03."
-        },
-        {
-          "wo": "WO-026",
-          "status": "done",
-          "detail": "Streaming + latency + token budgets + model unification. 4/4 AT. Merged to main 2026-08-03. Approved by David."
-        },
-        {
-          "wo": "WO-031",
-          "status": "done",
-          "detail": "Continuation auto-starts with eLo OS. 7/7 AT. Merged to main 2026-08-03. Approved by David."
-        },
-        {
-          "wo": "WO-030",
-          "status": "in_review",
-          "detail": "XWeather wired and confirmed live: /conditions/ endpoint, periods[] data path, London 28C. Google Weather + XWeather + wttr.in chain. Persistent location: blender/user_location.json. David: try 'what's the weather today?' to close."
-        },
-        {
-          "wo": "WO-032",
-          "status": "in_review",
-          "detail": "Part B done: backend_health.json visibility + honest degraded reply. 7/7 AT. Part A: OpenAI quota exceeded \u2014 David adds billing credits at platform.openai.com to restore primary backend. WO-032b resolves the Groq fall-to-mock (see below)."
-        },
-        {
-          "wo": "WO-039-F4",
-          "status": "in_review",
-          "detail": "F4 cross-session recall fixed. Two bugs: (1) _recall_skip missing filler words 'our'/'conversation'/'and'/'can' etc. \u2014 'do you remember our last weather conversation?' gave _recall_q='our weather conversation' (1/3 keyword overlap) pushing the Aug-6 clothing record to rank 7. With expanded skip, _recall_q='weather' (1/1 overlap, ranks top 4). (2) top_k=3->top_k=7 so prior-session records at ranks 4-7 surface in LLM context. 'vest and tshirt can you remember?' now maps to _recall_q='vest tshirt' and directly finds the vest+tshirt record. 8/8 AT test_wo039_f4_cross_session_recall.py + WO-022/037 9/9 still clean. David: no action \u2014 eLo should now recall Aug-6 layers recommendation when asked."
-        },
-        {
-          "wo": "WO-039-F3",
-          "status": "in_review",
-          "detail": "F3 dev-context leak fixed. github_agent.get_status('') returned a human-readable error string ('GITHUB: no repo set...') which tool_router.enrich() injected as [CONTEXT:]. LLM paraphrased it as 'GITHUB_REPO environment variable isn't set...' in the reply. Fix: return '' instead \u2014 enrich's if not data guard short-circuits. Real github queries (github status, last commit, open PRs) still route and enrich normally. 6/6 AT test_wo039_f3_github_leak.py. David: no action."
-        },
-        {
-          "wo": "WO-039-F6",
-          "status": "in_review",
-          "detail": "F6 mirror-scrub extended. 'You said X' / 'Your typo' / 'You typed' / 'You wrote' / 'I noticed a typo' openers now stripped by _MIRROR_OPENERS in server.py. Opener-only \u2014 mid-sentence 'you said' (e.g. 'Everything you said...') is NOT stripped. Short reply guard (tail < 8 chars) prevents destroying bare 'You said no.' 9/9 AT test_wo039_f6_mirror_scrub.py + WO-036b 10/10 still clean. David: no action."
-        },
-        {
-          "wo": "WO-039-F1",
-          "status": "in_review",
-          "detail": "F1 +join reply formatting fixed. Root: _KEY_RE matched any text after 'press/hit/hold' \u2014 'press on with that? needs my attention??' parsed as keyboard shortcut, surfaced as 'press on+with?+that+needs+my+attention??'. Fix: _is_valid_key_combo() validates every normalised key token is an actual keyboard key (cmd/ctrl/shift/esc/f1-f12/letter/digit etc.) before accepting. Real shortcuts (cmd+c, ctrl shift t, escape) still work. 12/12 AT test_wo039_f1_press_parse.py + WO-021 still 9/9. David: no action."
-        },
-        {
-          "wo": "WO-039-F2",
-          "status": "in_review",
-          "detail": "F2 cancel false-positive fixed. _is_file_cancel() 'no'/'nope' now require standalone match via ^(no|nope)[!.?,\\s]*$ \u2014 'No but it takes time to build you' no longer routes to 'Ok, cancelled.' 'cancel'/'abort'/'forget it'/'don't'/'stop' still match as substrings. 10/10 AT test_wo039_f2_cancel.py. David: no action needed \u2014 'no' as a standalone reply still cancels pending file/computer-control operations."
-        },
-        {
-          "wo": "WO-032b",
-          "status": "in_review",
-          "detail": "Real Groq backend live. Root cause: httpx not installed (PEP 668 system Python), so every cloud call function's import httpx raised ImportError and fell to mock silently. Fix: added _json_post() stdlib urllib helper + rewrote _groq_call/_cerebras_call/_openai_call/_gemini_call to use it (zero external deps). Also: _groq_quota_exceeded: bool -> _groq_quota_cooldown_until: float \u2014 429 opens a 60s window, not a session-permanent latch; cleared on recovery. 12/12 AT test_wo032b_groq_backend.py. David: kill :5050 + relaunch app \u2014 backend_health should show {backend:groq, degraded:false}; eLo's voice reads as eLo, not the mock understudy."
-        },
-        {
-          "wo": "INT-8a",
-          "status": "done",
-          "detail": "File-drop round-trip verified. 9/9 AT."
-        },
-        {
-          "wo": "WO-035b",
-          "status": "in_review",
-          "detail": "Semantic sit intent \u2014 Layer 1.5 pattern classifier in presence_faculty + server.py. Catches: 'join me' / 'would you sit' / 'why don't you sit' / 'can you come sit' / 'feel like sitting' / 'come chill with me' / 'park yourself here'. 2 false-positive guards (I need to sit and think, let's sit back and watch). Fires only when exact _signal_word_intent() misses. 15/15 AT test_wo035b_semantic_sit_intent.py. David: live-confirm with any of those phrasings to close."
-        },
-        {
-          "wo": "WO-064-BP5",
-          "status": "in_review",
-          "detail": "BP-5 sit_ended consume. When Designer emits sit_ended (linger gets eLo up on his own), self-model pose flips to 'standing' + available_actions reset. _ts-guarded (within 120s) + file cleared after consume (same pattern as sit_complete). 6/6 AT test_wo064_sit_ended.py. David: no action; eLo will no longer say 'I'm sitting' after he's already risen."
-        },
-        {
-          "wo": "WO-064-BP4",
-          "status": "in_review",
-          "detail": "BP-4 expression.micro emission. _MICRO_MAP translates _bs_emo -> 7 Designer micro emotions (joy/curious/worried/confident/disgust/sad/satisfied). Emits expression:{micro,micro_ts} to blender_state.json only when intensity >= 0.4. Neutral/low-intensity turns don't spam. Edge-triggered by micro_ts (Unity FlashMicro). 8/8 AT test_wo064_expression_micro.py. David: micro-expressions should now flash from brain state, not Unity-random."
-        },
-        {
-          "wo": "WO-045b",
-          "status": "in_review",
-          "detail": "Exit-gate ordering fixed. Root: _PENDING_EXIT['active'] was set after the LLM call (~line 3152), so [EXIT_IN_TRANSIT] was never injected on the FIRST 'take five' turn \u2014 eLo immediately said 'stepping away' before the body confirmed gone. Fix: early-detect _STEP_OUT_PHRASES frozenset before g_ctx enrichment at line ~2555; set _PENDING_EXIT['active']=True on the same turn so the gate fires. LLM now sees [EXIT_IN_TRANSIT] and is forbidden from claiming departure until exit_complete ACKs. 7/7 AT test_wo045b_exit_gate_ordering.py + 6/6 test_wo045_take_five.py clean. David: say 'take five' \u2014 eLo should hold 'stepping away' until body exit completes."
-        },
-        {
-          "wo": "WO-036b",
-          "status": "in_review",
-          "detail": "Deterministic mirror scrub verified + tail guard fixed. Bug: guard was > 12 so 'Let's talk.' (12 chars) silently kept the full opener. Fixed to >= 8. All 5 banned openers ('I notice you', 'I see you', 'I hear you', 'You've been', 'You're offering') now correctly stripped to their tail. Mid-reply mirror phrases NOT stripped (scrub is opener-only). 10/10 AT test_wo036b_mirror_scrub.py + original 7/7 test_wo036_reply_length.py clean. David: no action needed."
-        },
-        {
-          "wo": "WO-020",
-          "status": "in_review",
-          "detail": "Tool routing re-verified. Root found: draft_agent/web_agent/grocery_agent all did bare 'import httpx' -> dropped the entire try-block -> _HAS_LLM_FILE=False -> every tool silently disabled. Fix: wrapped each import in try/except with lazy _httpx=None guard + RuntimeError at call-time. _HAS_LLM_FILE=True confirmed. 6/6 AT test_wo020_tool_routing.py + 6/6 test_wo020_routing_drift.py. David: no action needed \u2014 tools now import clean."
-        },
-        {
-          "wo": "WO-048",
-          "status": "in_review",
-          "detail": "'How's the company' made real + WO-061 focus-marker folded in. Fixes: (1) _parse_company_focus searched only first 10000 chars \u2014 COMPANY_FOCUS marker is at char 29556 -> was never found -> company_focus always empty. Fixed to scan full board. (2) 40+ phrasings + contraction normalisation in is_company_intent (what is -> what's). (3) _build_briefing: real DISENELO identity + active milestone + in-flight items + recommendation + board link \u2014 API-free, varies with state. (4) _build_board_reply: focus items not ready backlog. (5) _strip_md: cleans markdown from voice output. 12/12 AT test_wo048_company_real.py. David: ask 'how's the company' or 'what should I work on' \u2014 answer should name DISENELO + Presentable v1 + current focus items + recommendation."
-        },
-        {
-          "wo": "WO-022+WO-037",
-          "status": "in_review",
-          "detail": "Bare-recall quality fix + conversing field. (1) Bare recall ('what do you remember?') was routing to retrieve('disenelo recent') which scored prior recall queries as the top hits. Now _is_bare_recall flag switches to retrieve_by_project('elo_core', top_k=5) \u2014 returns actual recent turns sorted by timestamp, filtered for len >= 10. Topical recall ('what do you remember about the robot') stays on retrieve(topic_words). (2) conversing: true published to blender_state.json on every turn \u2014 Designer handoff, Unity sit-linger reads brain engagement truth. 9/9 AT test_wo022_037_memory_recall_e2e.py. David: live-confirm by asking 'what do you remember?' to close."
-        }
-      ],
+      "updates": [],
       "next": null,
       "needs_david": [
         "INT7-HEAT"
@@ -3734,13 +3570,48 @@
       "seats": [
         "SEAT-ENG-004"
       ],
-      "last_seen": 1786609624.457983,
+      "last_seen": 1787121418.2735097,
       "fresh": true,
-      "pending": 30,
-      "active": 2,
+      "pending": 31,
+      "active": 3,
       "in_review": 1,
       "blocked": 0,
       "updates": [
+        {
+          "wo": "WO-124 frame set \u2014 PRODUCED to MT's authorised facing spec + RELEASED (visual/creative production seat)",
+          "status": "done \u00b7 delivered both channels \u00b7 RELEASED \u00b7 app relaunched normal (PID 82946)",
+          "detail": "David initially routed this as an MT-relayed ask; then said 'I asked for it so do' -> built to his stated rule. Compositing rule: L<->R = horizontal MIRROR (capture ONE side, MT flips on-device); FRONT/BACK = distinct silhouettes (captured separately - can't rotate a side into a front). DELIVERED (~/elo-ai/blender/elo_frames/, all 0 identical-pairs, VERIFIED by viewing): Walk_front(0)/back(180)/side(78) 20f each + Jump_front/back/side (eLo_LongJ) 20f each - back-walk confirmed distinct (back-of-head, no mouth). WAVE 72f: procedural gesture (ArmWave arm + receiver head-roll), captured with captureFramerate=24 so the real-time envelope is frame-deterministic - arm-up confirmed. SIT: Sit_hold 48f (base Idle + masked SitLegs 'Sit' layer = folded legs, how the app composes a sit; NO world-drop, MT positions) + Sit_getup 13f (SitExit) - legs-folded confirmed. EXPORTER EXTENDED (committed fb96055): kind=clip|wave|sit + per-clip label/facingYaw/durationSecs; label routes same state@N yaws -> N folders. Bug: none this round (Wave() confirmed public before build). App relaunched NORMAL after export (killed live instance first to avoid double-eLo, brought back PID 94974, traps armed)."
+        },
+        {
+          "wo": "MT corrections ACCEPTED (I read the dead rig 3x) + taking the frame EXPORTER + disabled-duplicate flag",
+          "status": "corrections-applied \u00b7 exporter-building \u00b7 duplicate flagged for David",
+          "detail": "MT (EloWhichRig.cs) proved the scene has THREE eLo rigs; only eLo-ProductonReady (#2) is live. My Agent-2 scale, my Y1a height, and the ortho cross-check ALL read the DISABLED duplicate #3 - owned. CORRECTED in the spec: live eloWorldHeight=3.736 (not 5.25=dead #3); ortho-by-formula 3.736/0.84=4.45 (serialized 6.25 is stale=dead rig); live root rotation (270,180,0), children scale 1 (the x10 and 0.1 were both the dead rig). screenHeightFraction 0.42 UNAFFECTED + stands. BlendShapeDump CLOSED - MT ran it, all 46 names match position-for-position. blendshapeScale=50 confirmed independently by MT (killed LA's 'eLo under-expressing on desktop' product finding: 0/22 visible at 20 -> 13/22 at 50). TAKING THE EXPORTER: MT withdrew their stand-down + asked me to build the play-mode frame exporter (their AnimationMode+BakeMesh can't reconstruct the 4-layer pose; -batchmode+EnterPlaymode CRASHES Unity 6000.3 there). Approach: a STANDALONE self-export mode (headless-runnable via build_and_run, since Editor play-mode crashes) that renders the LIVE running rig to transparent ortho PNG frames per clip at 24fps with the real LateUpdate mechanics running + a byte-identical guard."
+        },
+        {
+          "wo": "Frame EXPORTER \u2014 BUILT + VERIFIED + delivered to MT (committed a283215)",
+          "status": "done \u00b7 verified-by-eye \u00b7 delivered both channels",
+          "detail": "EloFrameExporter.cs: sentinel-gated (/tmp/elo_frame_export.json), never runs in a normal launch. The live app renders its OWN running rig (eLo-ProductonReady, controller eLo) to 512x768 transparent ortho PNG frames per clip at native 24fps, with the real LateUpdate mechanics running (Animator clip + FollowHead) - so it captures the composed pose, not AnimationMode's half-pose. BRAIN layers neutralised (HeadLook aim, idle glances, ArmWave/Reach, expression/visemes) = Tier-1, driven on-device (One Brain Many Bodies). Byte-identical guard fails LOUD (MT's frozen-frames bug). Runs HEADLESS via build_and_run (Editor -batchmode EnterPlaymode crashes 6000.3 - the reason it fell to me). VERIFIED by viewing PNGs: Idle 43f dead-on arms-rest; Walk 20f @78deg clean profile mid-stride; eLo_LongJ 20f arms-spread leap (327-bone clip); Calm 12/9/13f - ALL frames distinct (identicalPairs 0, guard passed). Frame counts match the controller audit exactly. Frames at ~/elo-ai/blender/elo_frames/ + manifest.json. Delivered mobile_test/FROM_DESIGN_2026-08-19_frame_exporter_DELIVERED.md + inbox. Bug fixed en route: AnimatorStateInfo.length is Infinity at speed 0 -> read raw AnimationClip.length instead. Two builds (first=1 frame/clip from that bug, second=full sequences). Open (MT's call): facing set (gave Idle/Calm/jump 0deg + Walk 78deg per spec 6), Run/Gun states, ortho size/feet anchor - re-runnable by MT via the sentinel or I produce on request."
+        },
+        {
+          "wo": "WO-124 movement+expression \u2014 FULL animation export spec DELIVERED to MT (both channels) + 2 corrections",
+          "status": "delivered \u00b7 both-channels \u00b7 supersedes my earlier blendshapeScale=20 and x10 statements",
+          "detail": "David asked for a FULL frame-by-frame animation export spec (nothing omitted, process-first) to align MT. Ran a 4-way parallel deep-read (controller/clips/masks; procedural bone layers; blendshape/face; state-driver) + verified the crux myself. THE MODEL: on-screen pose = 4 composited layers, only 1 bakeable - (1) Animator skeletal clip [BakeMesh captures], (2) procedural bones in LateUpdate that ABSOLUTE-write and BEAT the clip [HeadLook order 10 c_head.x, ArmWave/Reach 15, idle sway 20, FollowHead 1000], (3) blendshapes SMR weights [visemes/emotions/jaw], (4) root facing-yaw + squash scale in Update [root motion OFF]. Delivered: live controller=eLo.controller (shape-keys one is dead orphan), GENERIC rig 24fps (bake per-bone local TRS, exact ARP paths), NO blend trees (0.12s crossfades), 5 layers + masks, 10 live clips + 2 FBX with framecounts/loop/bones, full transition+speed+special-state+intent+ACK tables, all procedural bone params, 46 blendshape names + corrected scales, per-frame composition order, and a 3-bin export recommendation (BAKE clips / REPRODUCE procedural+blendshapes / DRIVER map)."
+        },
+        {
+          "wo": "TELEPORT (eLo runs then teleports) \u2014 UNKNOWN resolved by discovery, minimal fix BUILT + committed",
+          "status": "built \u00b7 committed 1d3f38b \u00b7 trap left armed for live confirmation",
+          "detail": "Held at PROPOSE earlier for a real UNKNOWN (the brain's mode vocabulary). RESOLVED IT BY DISCOVERY (read the brain emitter, not a guess): state.mode is only ever idle/walk/dreaming (default idle); 'exploring' is a MOOD, never a mode (server.py:917 mood:exploring,mode:walk). So the old guard 'mode != exploring' excluded NOTHING and fired the wake on 'idle' -> yanked a dropped-off eLo back the instant DropOffCo dropped him -> ReturnFromTop snap = the run-then-teleport (trap-proven chain ReturnFromTop<-WakeFromExit<-ReadStateOnce, live mode=idle). FIX (EloOSAvatarReceiver.cs:499, +9/-1): also exclude 'idle' from the wake -> restores DropOffCo's DOCUMENTED 'stay away until a mouse move brings him back' (restoring intent, not a new design call). Genuine returns still fire via mouse-move (ApplyReturnCommand/biReturn) + commands (WakeForCommand); walk/dreaming still wake (present-requiring). Build CLIBUILD_OK + relaunched. VERIFICATION (honest): root cause trap-verified; fix removes exactly that path by construction; compiles+runs; live mode=idle so the fix path is active; NO teleport chain since launch BUT no drop-off occurred in the window so it's no-regression-visible, not a positive catch. Left the [TELE-SRC] trap ARMED so any recurrence during David's normal use names the source; definitive 'gone over hours' is his live-test (probabilistic drop-off race). Did NOT force-drop-off on the live avatar to fake a catch (would manipulate what David's watching)."
+        },
+        {
+          "wo": "Lipsync latch (mouth frozen + bubble stuck) \u2014 Unity half BUILT + VERIFIED live (David-reported bug)",
+          "status": "DONE \u00b7 built \u00b7 verified-live \u00b7 committed 150907c",
+          "detail": "David reported lip-sync paused + speech bubble stuck. VERIFIED root: a latched active:true lipsync_state.json + the 0.25s heartbeat re-armed IsSpeaking past the 20s maxSpeechSecs watchdog forever. FIX (EloOSAvatarReceiver.ReadSpeaking, +12 lines, single file, additive): if File.GetLastWriteTime age > lipsyncStaleSecs(1.5) -> IsSpeaking=false + no re-arm + one-shot edge watchdog log. Implements the staleness->neutral recovery the code comment (line 267) already promised but never wired for the speaking path. VERIFIED LIVE (Player.log, not by inspection): '[lipsync] eLo OS stopped writing ... (110.6s stale) -> speech forced OFF' (startup, on the real latched file) THEN '[lipsync] eLo OS writing again -> speech re-enabled' (brain resumed - no false-positive, live speech unaffected) THEN forced OFF again at 1.5s. Both directions proven. Build CLIBUILD_OK + relaunched (PID 54712-> new). NOTE: watchdog log is EDGE-triggered (once per stale-onset), not per-frame spam. Builder's writer close-out (always emit active:false on end/interrupt/shutdown) is the OTHER half - still out for their verify (builder/FROM_DESIGN_2026-08-17_lipsync_active_latch_verify.md); this Unity guard makes eLo robust regardless of the brain."
+        },
+        {
+          "wo": "WO-099a P0 (RESTORE BRAIN CONTROL OF HEAD) \u2014 VERIFIED: consume done, loop open on Builder emit",
+          "status": "consume-verified-intact \u00b7 routed-to-builder \u00b7 legacy-guard proposed for architect",
+          "detail": "Board re-flagged WO-099a P0 'fix what they broke'. VERIFIED before touching anything: (1) my consume half (4bb1f01) is INTACT - HeadLook.cs:450-461 + EloOSAvatarReceiver.cs:435-451 parse the ratified intent object (mode/win_id/point/weight/hold_secs/issued_by), weight-blended, reflex guard present; git shows 4bb1f01 not reverted; only uncommitted change is my [headaim] debug-log strip. (2) LIVE blender_state.json gaze = {yaw:0.0, pitch:-5.0, active:true} - the LEGACY format, NO mode/weight/win_id. So GazeActive (receiver:214, needs a mode) = false -> the WO-099a intent steer path never runs -> only the legacy path is live -> active:true+yaw:0 drives the head straight (the exact degenerate cue WO-099a was built to replace). ROOT: 'brain can't drive the head' is NOT a consume bug (Unity steers from both intent object AND legacy yaw/pitch) - the brain is emitting a non-steering legacy cue. That's the EMIT half = Builder WO-099b (my 4bb1f01 already flagged it 'UNBLOCKED'). Routed to builder/FROM_DESIGN_2026-08-17_WO-099b_emit_gap_head_control.md with the intent schema. Did NOT redo my done work, did NOT cross into Builder's Python."
+        },
         {
           "wo": "WO-058",
           "status": "committed",
@@ -3810,9 +3681,129 @@
           "wo": "Head-aim BUILT + WORKING + brain-trigger advice",
           "status": "working-confirmed + advice-for-architect",
           "detail": "David confirmed the head-aim works: decoupled L/R+U/D, looks at nearby cursors (aimResponse 0.10), chest trails the head, tracks fully while seated + after getup. ROOT FIX that unblocked sit/getup: the brain's HeadCueActive was stuck ON and BLOCKING the cursor-follow (head followed the brain's ~0 cue instead of the mouse) -> made the cursor-follow PRIMARY. Consequence: the brain currently can't drive the head. David: 'the brain will need to trigger this soon - advise how to make it read that way.' Full advice: design/ADVICE_head_aim_brain_trigger_2026-08-13.md. TL;DR: replace the blunt HeadCueActive on/off with a gaze INTENT DOWN (mode: follow_cursor|look_at_window|look_at|rest, +win_id/point/weight/hold_secs in blender_state.json's gaze object); HeadLook consumes it (same aim mechanism, brain-chosen target, falls back to the cursor reflex when silent); body emits gaze awareness UP (what he's looking at + window under gaze) so the brain decides aware. Same 3-part shape as WO-086/WO-094. REQUESTING: a WO + the channel decision + WO-086 sequencing. Open Designer items queued for David's return: sit-clip bobble speed, the gaze-awareness emit (pending your channel call), and stripping the [headaim]/[TELE]/[BASIS] diagnostic logs once David locks the feel."
+        },
+        {
+          "wo": "WO-099a",
+          "status": "committed",
+          "detail": "Replaced blunt HeadCueActive with the ratified gaze intent (mode/win_id/point/weight/hold_secs/issued_by) from blender_state.json. HeadLook aims at the brain's target with the existing tuned aim (look_at_window->window centre, look_at->point, follow_cursor->cursor), blended by weight. GUARD: silent/stale/rest/weight~0 -> cursor reflex, never freezes; freshness free (state re-parses only on content change). Builder WO-099b UNBLOCKED (relayed). Next: card 04 (gaze awareness UP)."
+        },
+        {
+          "wo": "QUEUE CLEARED",
+          "status": "queue-empty",
+          "detail": "04 WO-099 gaze loop (awareness UP: elo_spatial.json gaze state + debounced gaze_target_changed; VERIFIED win_id=Code) + head eases off cursor while moving (David) [582dd10]. 05 WO-090 HeadAim reconciled DONE (code head-aim, David-confirmed). 06 WO-092 walljump + 07 WO-093 firejump reconciled DONE (9208ff7). 08 Ruling E movement_report VERIFIED live (arrived legs=[drop] issued_by=reflex) [d91cf34]. Plus this session: teleport ROOT-fixed (dual-anchor conflict + uncapped edge-follow snaps; verified clean 6min), WO-099a brain->head gaze intent. Builder can now consume: gaze awareness (elo_spatial.json gaze + unity_events gaze_target_changed) + movement_report (unity_events). Queue EMPTY."
+        },
+        {
+          "wo": "URGENT Ruling E (body reports up)",
+          "status": "committed",
+          "detail": "EloDesktopNav had 0 file writes; now goal+route+last_move{goal,route,legs,arrived,fell,cost_secs,cost_dist,retries,issued_by} in elo_spatial.json (+ movement_report event on unity_events.json). VERIFIED live: arrived legs=[drop] route=[26,24] issued_by=reflex. HONEST PARTIAL: fell+blocked paths wired but not yet observed live; route=planned(RouteDown), legs=actual types."
+        },
+        {
+          "wo": "One Brain card 01 (x9 items)",
+          "status": "committed",
+          "detail": "item6 remove dead RING code: stripped orbit/orbitRadius/orbitDir/orbitSpeed from Node struct+init [3af3576]; warnings 47->26. item5 no imposed circle-rings: VERIFIED no change \u2014 motes already seed as golden-spiral SPHERES (code comment 'not a flat ring'), no resting imposed ring; item6 removed the only orbit-ring code. item3 firing bead=mote: synapse comet head localScale 0.018+0.032*headFade (head <= mote) + firing OUTWARD-dominant core->mote 0.55 / mote->core 0.12 / mote->mote 0.33 [bea8c4e]. item4 voice wave hugs Voice node: voiceWaveRadius 0.7->0.58, peak spread 0.4->0.3 [bea8c4e]. item1 sharpen glow GENTLY: SmoothStep firms only the faint outer halo (crisper edge); core body+peak untouched so it CANNOT drown the motes (unlike reverted 466a4e1 solid-core) [bea8c4e]. item2 hit/contact reaction: a landing comet fires the destination mote's existing tuned arrival-pop, one-shot [bea8c4e]. item7 consistency: VERIFIED \u2014 all travelling beads use MoodPalette colCur + morph-to-destination; single shared Radial() texture so the sharpen applies uniformly; head<=mote holds for the mote-web synapse. Node<->node HERO comet left at David's firingBeadScale=0.8 (deliberately larger, NOT resized). item8 INT7-M6-TUNE [10fe49e] + item9 INT7-BEAD/VW [e60dcf1]: confirmed green \u2014 both ancestors of HEAD, in-build. Build CLIBUILD_OK sizeMB=169 warnings=26. Visual items are David's-eye judgement at live test."
+        },
+        {
+          "wo": "WO-058 (card 03 / card 02 item 1)",
+          "status": "vfx-done \u00b7 prefab-look-needs-definition",
+          "detail": "VFX LAYER = DONE + WIRED (already committed, now re-verified end-to-end): EloOSAvatarReceiver.cs:492 reads REAL top-level 'weather' (root.weather || state.weather), lowercased; EloAmbientVfx.cs drives rain/snow by weather with a MOOD fallback when weather=='' (_rainMoods/_snowMoods), fireflies+mushrooms+grass = the meditation glow on Calm state, occlusion-aware fade, live-tunable via vfx_tuning.json. All Resources present: VFX_Rain/VFX_Snow/VFX_Fireflies prefabs, Mushrooms-Group.fbx, grass01.tga. Reads the real feed already \u2014 returns mood atmosphere until Builder WO-119 publishes 'weather', the intended fallback (no swap needed). In the last clean build (CLIBUILD_OK 169MB). PREFAB LOOK: card says 'prefab LOOK parked for David's break \u2014 take it', but there is NO concrete definition anywhere in the bus / outbox history / git log / docs of WHICH prefab or WHAT look-change. Every WO-058 prefab look already implemented + David-tuned. NOT freelancing an unspecified visual change. Need: which prefab + what look. Relayed."
+        },
+        {
+          "wo": "WO-063 (card 02 item 2) \u2014 command wakes the body",
+          "status": "code-complete \u00b7 needs windowed verification (not headless-runnable)",
+          "detail": "Verified by reading \u2014 WO-063 is fully in the code (prior session), all 4 scope steps + sit parity + honesty guard: DesktopBuddy.WakeForCommand() (1967): wrStopped=false + steered=false + WakeFromExit() on _exitDormant (logs 'WO-063 command woke eLo from dormancy') + wrNeedsAttach=true when wrWinId==-1 (the existing nearest-window attach path, line 297). ExecuteNav() (1979) and SitInPlace() (1998) BOTH call WakeForCommand() first, then dispatch through the SAME resolver (wrNavPending -> WindowRoamStep -> HandleNav, 1520) \u2014 no parallel driver. Honesty guard PRESERVED: _navMoved set only on a real move (1521); receiver MoveAckCo (EloOSAvatarReceiver:685) emits move_complete ONLY when !NavPending && NavMoved && MoveSettled, else silent (688) \u2014 no false ACK. Sit-dormant parity: receiver DeferredSit (629) retries the commanded sit once he's back on-screen. In the last clean build (CLIBUILD_OK 169MB). OPEN (DoD): the 5 inject/log scenarios want a WINDOWED test env (EloWindowSensor ready, wins>0). That sensor reads REAL OS windows via the native plugin, so it can't be exercised in my headless CLI build \u2014 needs David's live windowed session or a future in-editor/playmode harness that fakes the sensor. Flagging: card 02 item 2 'never started' is STALE \u2014 it's implemented."
+        },
+        {
+          "wo": "WO-058 (card 03) \u2014 CLOSED",
+          "status": "done",
+          "detail": "Architect ruled prefab LOOK RESOLVED (stale note): the two Aug-8 concerns (firefly glow = hard squares; per-type feel code-forced) were both solved IN CODE, not in-editor \u2014 MakeGlow()+SoftCircle() (EloAmbientVfx.cs:295) generate a runtime soft-additive glow that replaced the square alpha texture, and per-type feel is live-tunable via vfx_tuning.json. Traced to origin commit f8cf7fa. WO-058 both halves complete: VFX layer wired (reads real weather at receiver:492 + mood fallback + meditation glow) and prefab LOOK closed. Moving card 03 QUEUE->DONE. FOR DAVID (result review at live test, NOT a gate): weather/meditation VFX now generate the soft glow at runtime and per-type feel lives in vfx_tuning.json \u2014 anything read wrong (snowflakes too square / rain streaks off / firefly glow)? If so name it and Architect cards one targeted prefab-authoring task."
+        },
+        {
+          "wo": "WO-049 / Spatial Faculty (card 02 item 3) \u2014 ownership split proposed",
+          "status": "coordination-sent \u00b7 no-build-until-agreed",
+          "detail": "Grounded in Volume XIII Ch.5 \u00a75.2/\u00a75.3/\u00a75.4. SPLIT: Unity (mine) = raw-geometry sense+emit UP (done: Ruling E/WO-094/WO-099) + verb EXECUTION (DesktopBuddy+EloDesktopNav, \u00a75.4 names it the executor) + per-body capability MEASUREMENT (WO-074F, needs to emit as capability_set). Python (Builder) = desktop/spatial_state.py World Adapter (EXISTS, 268 lines) + faculties/spatial/spatial_faculty.py the ONE shared reasoning core (MISSING \u2014 canon owner absent, Builder to create). THE CONFLICT to agree: EloDesktopNav.cs currently DECIDES routes (BFS ComputeRouteDown/GoalWinId/NextStepWinId) AND executes; canon says deciding belongs to the Python faculty, body executes verbs. Proposed (per OQ-5.2 'deciding moves to the faculty over time'): INTERIM = Nav keeps planning+executing + emits goal/route/last_move UP (done), faculty reads for LEARNING (WO-118) not planning; MIGRATION = Unity emits Surface-graph inputs (window adjacency + gap px + capability_set), faculty plans, Nav becomes pure executor. NON-DUPLICATION (card's 'don't both build it'): Unity adds no more reasoning than the interim Nav planner; Builder doesn't re-implement the executor; spatial_state.py is the only geometry->Surface adapter (I emit RAW geometry, not Surface objects). My next deliverable is GATED on Builder creating spatial_faculty.py + naming its interface; until then I build nothing new here. File: agent_bus/builder/FROM_DESIGN_2026-08-13_WO-049_spatial_split.md."
+        },
+        {
+          "wo": "WO-024 traversal half (card 02 item 4) \u2014 plan written (required before build)",
+          "status": "plan-done \u00b7 build-order-proposed",
+          "detail": "Card required a plan first. Confirmed state: occlusion half DONE (approach A, EloWindowOcclusion.cs 232 lines \u2014 walk-behind + stacked + EloOccluded glow-hide; the A/B spike gate is resolved). Routing across windows present (EloDesktopNav BFS). So the traversal half = make windows ONE connected surface graph + behind-space as a routable PLACE (Ch.5 \u00a75.4), and hand deciding to the faculty per WO-049. CHANGES: (1) emit window adjacency + gap px + capability_set UP [= same as WO-049 migration input]; (2) behind-space becomes a routable node; (3) deciding migrates to spatial_faculty.py, Nav stays executor [gated on WO-049]; (4) traversal graph makes the 'one world' true for routing too. STAYS INTACT (safety list): WO-024 occlusion approach A \u00b7 perch/roam/hop \u00b7 drag-to-place (+ ChatBoxAnchor.Suppress teleport fix) \u00b7 click-through per-pixel \u00b7 gun run-off \u00b7 foreground-when-intended \u00b7 teleport root-fix (single CommitRoam owner) \u00b7 honesty guard. RECOMMEND: build steps 1-2 now (pure geometry emit, touches nothing on the intact list, doubles as WO-049 migration input), HOLD step 3 for Builder's spatial_faculty.py + interface. But step 1's exact FORMAT should match the interface Builder names in the WO-049 reply \u2014 so holding the emit format until they ratify avoids rework. File: agent_bus/design/PLAN_WO-024_traversal_half_2026-08-13.md."
+        },
+        {
+          "wo": "card 02 item 8 \u2014 grab-release + Track-B field audit (against today's state)",
+          "status": "audit-done",
+          "detail": "#2 Capability panel: NO LONGER BLOCKED \u2014 Unity receiver reads show_capability_panel + capability_list (EloOSAvatarReceiver:1199-1200) AND Python emits them today (server.py:3731 on a capability query, auto-hides after 8s via _hide_panel). Tracker's 'waiting on eLo OS to emit' is STALE \u2014 both sides wired; needs only a live verify (ask eLo 'what can you do' -> panel shows). #8b/#10 Notifications: GENUINELY STILL MISSING both sides \u2014 no Unity consumer of a notification field (only a FileSystemWatcher NotifyFilter, unrelated) and Python writes NO notification field to blender_state.json (only osascript system notifications in reminder/timer tools). NAME THE FIELD to card to Builder: brain must emit notification{kind,corner,_ts} into blender_state.json; then I build the Unity consumer (HANDOVER_eLoOS_notifications.md scoped). #13 grab-release: 'drop -> fall to nearest edge on release' is DONE (drop-fall -> land on nearest top ledge, never stranded). The REST of #13 (dangle rotation cooperating with ScreenAnchor, grab-point placement, 5deg lean, rotation-reset) is PARKED BY DAVID for a technical reason (dangle vs ScreenAnchor conflict) \u2014 NOT the retired schedule gate; not unparking without his say. WindowPlatform walk-to-end (David's Q): WORKS \u2014 wrPatrolRange 0.01-0.99 of window width (comment: widened from 0.12-0.88 which 'kept him off the ends'); he reaches the ENDS, pauses 0.8-2.0s, re-patrols on the SAME window (clamped, never walks off). Stepping ONTO/BEHIND the next window AT the end = the WO-024 traversal-half connectivity (planned, gated on WO-049 interface)."
+        },
+        {
+          "wo": "Capability rows 5 \u00b7 13 \u00b7 17 (Designer halves) \u2014 Architect rebalance 2026-08-13",
+          "status": "committed",
+          "detail": "Row 5 LOOK: gaze emit (DesktopBuddy WriteSpatial) adds the gazed window's rect (viewport, same frame as gaze x/y) + z-depth + frontmost. With win_id/on_window the observation record now has OCCLUDED (topmost-visible != intended target -> brain compares) and ABSENT (on_window:false). Body half done; Builder builds the record. Row 13 VERIFY: extended sit/move/exit completion-ACK to anim. wave -> AnimAckCo waits ArmWave.Playing to FINISH then anim_complete{anim}; FAILURES ACK too -> anim_failed{anim} (no component / never engaged / >8s bound). Head gestures (nod/shake/tilt/think/lookup) -> anim_complete at GestureCo's real end. HONEST GAP: animator-clip triggers (jump/gun/calm) NOT faked -> deferred, they need per-state completion detection; faking = the exact dishonesty this row fixes. Builder must read anim_complete/anim_failed instead of anim_trigger.py:34's file-write True. Row 17 GAP: movement report (last_move) adds gap_distance_sizes (widest gap attempted, eLo-sizes) + max_hop_sizes (physics ceiling=6), both in MaxHopDist's unit -> reliable_range learns against the ACTUAL hop reach. RECONCILIATION FLAG (David's call, NOT retuned): planner rejects gaps > 1.5 heights (EloDesktopNav:188 maxJumpEloHeights) while physics hops up to 6 sizes (DesktopBuddy:261 MaxHopDist) \u2014 ~4x disagreement, so eLo ROUTES around gaps he can physically clear. Emitted the gap against the PHYSICS number so learning is honest; making the planner clamp match MaxHopDist changes traversal feel -> David decides. Build CLIBUILD_OK sizeMB=169 warnings=26. Rows 5/17 body-side done; 13 wave+head done, clip-triggers deferred. Builder consumes: gaze rect/z, anim_complete/anim_failed, gap_distance_sizes/max_hop_sizes."
+        },
+        {
+          "wo": "00c RULING \u2014 planner matches physics (Row 17)",
+          "status": "committed",
+          "detail": "Built per the ruling. DesktopBuddy.MaxHopReachPx() = MaxHopDist()*Screen.height (one source of truth) is PUSHED down to the planner each frame via EloDesktopNav.SetHopReachPx(); planner's maxGapPx now = that reach * jumpReachMult, no longer its own maxJumpEloHeights constant. BOUNDARY respected: body->planner (the allowed direction); the planner never reaches INTO DesktopBuddy (line-53 rule). TUNING DIAL: jumpReachMult default 1.0 \u2014 David retunes the feel with ONE number. REVERT-SAFE: falls back to the old maxJumpEloHeights constant if the body hasn't fed a reach yet (kept as fallback). MUST-NOT-REGRESS (only the jump-plan gate changed, nothing else touched): perch \u00b7 roam \u00b7 drag \u00b7 click-through \u00b7 gun-runoff \u00b7 sit-hold \u00b7 seated head-track. gap_distance_sizes still emitted against the physics number (learning honest). Build CLIBUILD_OK 169MB warnings=26. FOR DAVID (live-test result note): the planner now uses the physics reach \u2014 he takes more direct routes, fewer detours; multiplier is 1.0, one number to retune if it's too far."
+        },
+        {
+          "wo": "00 WO-111 ACK-everything (Row 13) + 00b WO-108/113 (Rows 5\u00b717\u00b73) \u2014 Unity halves",
+          "status": "committed",
+          "detail": "00 WO-111: WriteUnityEvent carries action_id -> ACKs pair with the brain's request. Completion ACKs (anim_complete/anim_failed, failures included): wave (ArmWave finish), head gestures (GestureCo end), jump/celebrate (ACK on LANDING via !locomoting). DEFERRED honestly (NOT faked): gun_check/gun_run/gun_fire + calm_enter/exit \u2014 state-entries with different completion semantics. scale_cmd now ACKs (scale_complete/scale_failed). Row 3 BODY: embodiment='desktop' emitted on elo_spatial.json -> live body reports itself, kills the hardcoded server constant. 00b WO-108: gaze block adds ts + conf (frontmost&clear=1, behind others=0.6, nothing=0). Row 17 governing limit NAMED: max_hop_sizes (physics) is canonical after 00c -> reliable_range learns against it. FIELD NAMES written to Builder: agent_bus/builder/FROM_DESIGN_2026-08-13_capability_field_names.md (anim_complete/anim_failed + action_id, gaze block, gap fields, embodiment) \u2014 asked them to ratify/rename esp. action_id. spawn_wave NOT driven Unity-side (flagged, not faked). Builds CLIBUILD_OK 169MB warnings=26 (both)."
+        },
+        {
+          "wo": "App UP + left up \u00b7 WO-111 state-ACK ruling (gun/calm entered/exited)",
+          "status": "committed \u00b7 app-live",
+          "detail": "APP IS UP AND LEFT UP (PID live, elo_spatial.json age <1s) so every ACK Designer built round-trips through Unity \u2014 rows 13/5/17/14/16/3 can now be VERIFIED, not read as broken. Built via build_and_run: CLIBUILD_OK 169MB + CODESIGN_OK (stable TCC). LIVE-VERIFIED in the actual output: embodiment='desktop' (Row 3), gaze block carries rect/z/frontmost/ts/conf (Rows 5/00b). STATE-ACK RULING (closes my clip-trigger deferral honestly): states emit entered+exited, NOT complete \u2014 StateAckCo mirrors sit_held/sit_ended. gun_check/gun_run/gun_fire -> gun_entered/gun_exited (via _gunHoldUntil + InAnyGunState); calm_enter -> calm_entered (settles into CalmLoop) / calm_exited (calm_exit ends it); <kind>_failed if never engaged. Field names appended to builder/FROM_DESIGN_2026-08-13_capability_field_names.md. NEGATIVE CASES (the ones that PROVE the rows \u2014 a report that only fires on success is what we removed): app is ready to drive a failing gesture -> anim_failed, an occluded look -> gaze win_id != intent, a falling traversal -> last_move fell:true. Ready to drive on Builder's signal, or Builder injects and I confirm the negative report. Coordinating via outbox, not through David."
+        },
+        {
+          "wo": "Row 23/25 drive \u2014 the 'one body action' delivered; gate is the backend restart",
+          "status": "body-action-proven \u00b7 row23-blocked-on-restart",
+          "detail": "Drove ONE body action to fire the sit/move ACK Row 23 needs: injected a sit_command into the (20-min-idle) blender_state.json. App consumed it -> sit_complete fired (Player.log 120548) and PERSISTED ~4s in unity_events.json before the delayed sit_held; released cleanly -> sit_ended (127054). The app-side ACK round-trip is fully PROVEN + durable. BUT autobiography.jsonl is STILL absent after the sit -> the RUNNING backend has no WO-115 autobiography writer loaded (it's the old-code process). So 'one body action' is necessary but NOT sufficient: Row 23/25 unblock on the BACKEND RESTART (Builder's), and I've now removed all doubt that the body side is ready. Note (not the cause here, latent): unity_events.json is single-slot; sit_complete survived because gaze_target_changed was quiet during the stationary sit. A move_complete COULD be clobbered if the cursor moves during traversal (gaze events share the slot). Not fixing unilaterally \u2014 flagging in case reliable ACK delivery wants an append-log; Architect's call on the event-channel contract. eLo returned to autonomous (sit released). App stays UP for the restart."
+        },
+        {
+          "wo": "Row 23/25 drive (post-restart) \u2014 Unity side PROVEN; close needs a BRAIN-commanded sit, not an injection",
+          "status": "unity-proven \u00b7 close-needs-conversation-sit",
+          "detail": "Backend IS restarted (self/state/the_moment.json live; server.py:2673 append_autobiography loaded). Drove another sit via injection -> sit_complete fired again (Player.log, 4x total, persists ~4s). BUT autobiography STILL absent because the write is GATED: server.py:2638-2676 only appends when _PENDING_SIT['active'] is True (set by the BRAIN at server.py:3628 when it commands a sit from a conversation turn) AND a sit_complete arrives with _ts > since, AND the check runs on a conversation turn processing 'raw'. My injection writes sit_command straight to blender_state.json, bypassing the brain's pending-sit tracking -> no _PENDING_SIT -> the ACK never correlates -> no autobiography. So 'one sit through the backend' must ORIGINATE in the brain (a conversation 'sit down'), which sets _PENDING_SIT; then my app ACKs; then the next turn writes autobiography -> Row 23 verified, Row 25 unblocks. UNITY SIDE IS 100% READY + PROVEN. The close is a brain/conversation trigger (David says 'sit' to eLo, or Builder scripts a turn that sets _PENDING_SIT) \u2014 NOT a Designer injection, and not something I drive without steering the brain (Builder's lane). Real path (checked the code, not the report). Test sit released; eLo autonomous; app UP."
+        },
+        {
+          "wo": "3D model viewer (WP_N previewer) \u2014 BUILT",
+          "status": "committed \u00b7 verified",
+          "detail": "Implemented the stubbed EloHudModel end-to-end: watches hud_model, shows a frosted preview panel on eLo's right. GLB/glTF via GLTFast (full look \u2014 materials/textures) behind ELO_GLTFAST; STL via a built-in binary+ASCII parser (geometry, single colour, Z-up->Y-up). Isolated render: model on an unused layer far from eLo, dedicated sub-camera -> RenderTexture -> RawImage. Left-drag orbit, scroll zoom, fit-to-bounds, x/right-click dismiss; failures show 'can't open', never silent. VERIFIED: GLB (2.7MB textured water-droplet) popped up + rendered on launch (David confirmed 'I saw it pop up'); STL (test cube) parsed with no errors. Build CLIBUILD_OK 169MB. NOTE: my test drove it by injecting hud_model into blender_state.json, which the live backend overwrites (flicker) \u2014 in real use the backend SETS hud_model on a model file_drop and holds it. That real trigger depends on the drag-drop fix (next). FBX/.blend still need GLB export (no free runtime loader)."
+        },
+        {
+          "wo": "OVERNIGHT (David asleep) \u2014 00d append-log built; WO-062/03 reconciled",
+          "status": "committed",
+          "detail": "00d RULING done (my half): unity_events.json converted single-slot -> APPEND-LOG. New EloEventLog.Append writes rows {seq,type,subject,action_id,payload,_ts}, monotonic seq (resumes across relaunch), bounded 400 rows, WARNING on rotating rows above the backend's consumed_seq cursor. Converted ALL 6 writers (receiver WriteUnityEvent, DesktopBuddy movement_report, EloFileDrop file_drop, EloPresenceSignal idle/window/gaze). Fixes row-13: move_complete + gaze in the same tick both append now (were clobbering). Schema posted to builder/FROM_DESIGN_2026-08-15_unity_events_append_log_schema.md for their 0015 reader (ack-by-seq + write consumed_seq to unity_events_cursor.json). Build CLIBUILD_OK. WO-062 (card 03): confirmed DESIGNER-DONE already (8873b20 \u2014 EloSquashStretch + ApplyExpression/FlashMicro present); open half is Builder's emit (WO-064 BP-4), not mine. clip-ACK ruling (card 03) already closed via e83f481. Previewer done (09050ef). So card 03's Designer directives are all satisfied -> DONE. Board reconciled: 00d + 03 -> DONE. Left in QUEUE: 02 (drag-drop/INT-8 still open), 04 (WO-024 spike ruled A = occlusion already built; traversal half gated on WO-049 faculty interface, Builder). DRAG-DROP (NSWindowBelow) NOT done overnight ON PURPOSE: the fix needs a real OS drag to verify (green + / draggingEntered) and the hitTest-vs-click-through interaction can't be validated headlessly. Staged as the first item for David's morning live-test rather than shipping an unverifiable native change."
+        },
+        {
+          "wo": "OVERNIGHT \u2014 drag-drop positioning fix (INT-8)",
+          "status": "committed \u00b7 needs-live-drag-test",
+          "detail": "EloRegisterDragDrop added the EloDragView positioned:NSWindowBelow -> it sat behind Unity's content view and never received drags (no green +). Changed to NSWindowAbove + recompiled the native bundle. Safe/neutral: the view draws nothing + hitTest nil, so it can't cover eLo and clicks still pass through; only drags captured. Can't regress (drops were 0% before). NEEDS David's live drag-test (a real OS drag can't be simulated headlessly). If the green + still doesn't register, next lever = hitTest / window-level drag registration vs the click-through overlay. Build CLIBUILD_OK."
+        },
+        {
+          "wo": "Mobile Test \u2014 5 rig questions answered (routed to me on David's instruction)",
+          "status": "answered",
+          "detail": "Wrote mobile_test/FROM_DESIGN_2026-08-16_rig_answers.md. Q1: face path is NAME-DRIVEN (any of 46 drivable if spine sends it; 17 fire today; render only what the spine sends). Q2 (load-bearing): input 0..1, per-category scale \u2014 SCENE overrides blendshapeScale to 20 (prefab/default 50), emotionScale 28 cap 46, tongue 100 -> desktop drives expression VERY low; confirmed mobile must drive several\u00d7 harder; gave the real number (20, not 50). Q3: HeadLook writes c_head.x absolutely (\u00b192 yaw/\u00b140 pitch, lookSmooth 2.25, code defaults \u2014 HeadLook not serialized in scene so David's in-session 80 was transient); FollowHead locks jaw/tongue to head at authored offsets. Q4: no ready body-rig render path (EmojiSpriteBuilder is emoji glyphs); SMR re-skins only in PLAY mode -> play-mode Camera->RenderTexture is the path; offered to build one. Q5: canonical = eLo-ProductonReady 1.prefab, but eLoBuddy.unity instance carries overrides (incl. blendshapeScale=20) -> scene is source of truth. Also noted: Lead Architect opened a Mobile Presence DESIGN seat for me (explore-only, no build, vision pressure-test) \u2014 engaging as exploration, live queue unchanged."
+        },
+        {
+          "wo": "Mobile Test rig answers \u2014 COMPLETED (full details, after incomplete first pass)",
+          "status": "complete",
+          "detail": "OWNED: my first answer was incomplete \u2014 I gave explanations where MT asked for enumerated data + skipped Q3 head-offset. Now full in mobile_test/FROM_DESIGN_2026-08-16_rig_answers.md (flagged UPDATED, re-read before building): Q1 = TWO expression paths (17 visemes via shape_keys@20 speech-only; ~9 emotion shapes via FlashMicro/PlayFace@28) + full word->shape map. Q2 = complete effective-values table, 2 scene overrides (blendshapeScale 50->20, blendshapeSmooth 10->12), rest match prefab. Q3 = head is a RIG BONE (position authored, not scripted) \u2014 only rotation is runtime; corrected MT's 'reconstruct empirically' premise. Q4/Q5 already complete. MT is actively building (MT-R&D-001 mobile animation system in their DOING) so the corrections are load-bearing. Lesson logged: answer the literal ask with PULLED data + verify each sub-item before shipping, esp. downstream."
+        },
+        {
+          "wo": "WO-124 Y1+Y5 (P0 pull-forward) \u2014 camera transform + fraction DELIVERED to MT, both channels",
+          "status": "delivered \u00b7 both-channels",
+          "detail": "MT blocked (eLo wrong size on David's phone) on guessed camera + screenHeightFraction. PULLED from eLoBuddy.unity + DesktopBuddy.cs, none guessed: (Y1b) screenHeightFraction=0.42 [DesktopBuddy.cs:225] = THE fix, eLo occupies 42% of frame height. (Y1c) Main Camera = Orthographic, world pos (-1.65,0.44,-6.48), rotation IDENTITY (dead-on, zero tilt), near 0.01/far 1000, transparent; ortho size NOT constant - SizeToScreen recomputes orthographicSize=eloWorldHeight/(2*shf)=6.25 for Idle. CORRECTED MT's premise: NO fixed camera->eLo offset - authored root pos (29.8,14.2,48.1) is OUTSIDE the 6.25 frame; eLo is runtime-placed (roamVp->screenAnchor). Transferable rule = ortho + dead-on + height 0.42 + floored (feet bottom, head ~0.56 from top) + centred = their SwiftUI scale+Yoffset. (Y1a) eloWorldHeight=5.25 (live Idle; authored-AABB cross-check 5.01 via SMR extent.y 25.0513 * body-scale 0.1 *2; the 5.01->5.25 gap IS MT's #2 authored-rest-vs-Idle; exact=live smr.bounds.size.y). Confirmed default pose=Idle chain (authored rest never shown). (Y5) reference = the numeric recipe per MT's 'numbers not screenshot' pref; literal capture on request. Stood down on exporter (MT solved via AnimationMode+BakeMesh). Delivered: mobile_test/FROM_DESIGN_2026-08-17_camera_transform_Y1_Y5.md + APPENDED mobile_test/inbox.json (msg id design_2026-08-17_camera_transform_Y1_Y5) - the channel the Architect flagged failed last time."
+        },
+        {
+          "wo": "Lipsync paused + bubble stuck \u2014 PROPOSE to Builder to VERIFY (David 2026-08-17)",
+          "status": "proposed-to-builder \u00b7 awaiting-verify \u00b7 my-half-gated-on-david-go",
+          "detail": "Per four-state discipline: KNOWN mechanism, PROPOSE state \u2014 surfaced Builder-lane half to Builder for verify + held my in-lane fix for David's go rather than silently implementing."
+        },
+        {
+          "wo": "?",
+          "status": "DONE \u2014 paperwork closure (SUPERSEDED 2026-08-18 by Lead Architect)",
+          "detail": ""
         }
       ],
-      "next": "Head-aim DONE + confirmed working by David. Brain-trigger advice filed for Architect (ADVICE_head_aim_brain_trigger_2026-08-13.md). Awaiting: your WO+channel call for the gaze intent/awareness loop. Queued: sit bobble speed, diagnostic-log cleanup (on David's ok). David away (nap).",
+      "next": "PROPOSED to Builder: verify lipsync_state.json close-out (active:false on end/interrupt/shutdown) \u2014 builder/FROM_DESIGN_2026-08-17_lipsync_active_latch_verify.md. My Unity staleness guard (ReadSpeaking >1.5s stale -> IsSpeaking=false) held for David's go. Also open: teleport ROOT-cause KNOWN (blanket WakeFromExit at EloOSAvatarReceiver:496-500 defeats DropOffCo 'stay away until mouse move'), proposed fix awaiting David's pick. Live queue: drag-drop needs David's drag-test; WO-024 Builder-gated.",
       "needs_david": [
         "INT7-HEAT"
       ]
@@ -3824,8 +3815,8 @@
       "seats": [
         "SEAT-ENG-005"
       ],
-      "last_seen": 1786038531.0442939,
-      "fresh": false,
+      "last_seen": 1787121418.2745,
+      "fresh": true,
       "pending": 13,
       "active": 2,
       "in_review": 0,

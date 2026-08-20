@@ -1,8 +1,7 @@
 {
-  "owner": "orchestrator",
-  "pid": 58857,
-  "work_id": "0018_26_of_26_and_three_residuals",
-  "ts": 1787122842.303308,
-  "heartbeat": 1787122842.303308,
-  "state": "LOCKED"
+  "owner": null,
+  "pid": null,
+  "work_id": null,
+  "state": "RELEASED",
+  "released_ts": 1787199680.5622358
 }
