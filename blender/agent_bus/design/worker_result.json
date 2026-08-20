@@ -1,8 +1,8 @@
 {
-  "card": "10_RD_EXPRESSION_001_and_residual_render_kit.md",
+  "card": "02_UNPARKED_backlog_carded.md",
   "status": "DONE",
-  "commits": [],
+  "commits": ["cea8b42"],
   "acceptance_met": true,
-  "evidence": "Card was SUPERSEDED 2026-08-18 by the Lead Architect; header explicitly states 'CLOSED 2026-08-18 by the Lead Architect. Move to DONE/.' The only action required was the mv; no code change was requested. Performed: (1) mv DOING/10_RD_EXPRESSION_001_and_residual_render_kit.md -> DONE/; (2) appended Result section to card documenting closure; (3) appended entry to design/outbox.json (ts=2026-08-19T05:45:00, updates=45). All engineering deliverables the card previously asked for were already shipped by the design seat before closure (blendshapeScale=50 correction, no x10 root scale, orthographic camera transform, screenHeightFraction=0.42; see FROM_DESIGN_2026-08-19_FULL_animation_export_spec.md and prior outbox entries). Card files in this workflow tree are untracked workspace state; git commit not applicable for a mv-only closure.",
+  "evidence": "DUPLICATE close-out. All 8 items reconciled: (1) WO-058 VFX+prefab LOOK DONE via DONE/03_WO-058_weather_and_prefab_look.md + f133fee; (2) WO-063 DEFERRED post-Presentable per card 12; (3) Spatial Faculty split accepted, Python half exists at faculties/spatial/spatial_faculty.py (Builder-owned), Unity half backlog; (4) WO-024 SUPERSEDED by QUEUE/04 Option A ruling; (5) WO-062 designer-half DONE at 8873b20; (6) INT-8 drag-drop STAGED for David's live test (card 12 §4); (7) EloHudModel previewer DONE at 09050ef (David confirmed live); (8) Track-B audit done, only notifications field emit still open, carded to Builder. Per-item table appended to card body. Card sat in DOING since 2026-08-13 while work migrated to per-task cards.",
   "blocker": null
 }

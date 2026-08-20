@@ -54,7 +54,7 @@ row 14 ROUTE closes when they consume it.
 
 ---
 
-# CLOSE-OUT — 2026-08-20, SEAT-ENG-004
+# CLOSE-OUT — 2026-08-20, SEAT-ENG-004 · commit `cea8b42`
 
 **STATE: DONE — DUPLICATE close-out.** All 8 items in this card were already delivered by prior
 commits, superseded by newer task-specific cards, or explicitly deferred by card `12`. No new code

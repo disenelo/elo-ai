@@ -411,6 +411,29 @@
       "commits": [],
       "acceptance": "MET \u2014 the only action the card required (moving to DONE/) is complete.",
       "next": "card 12 (take-five killer first) + exporter offer remains open."
+    },
+    {
+      "wo": "card 02 UNPARKED backlog \u2014 DUPLICATE close-out",
+      "from_designer_seat": "SEAT-ENG-004",
+      "state": "DONE (DUPLICATE) \u00b7 commit cea8b42 \u00b7 card sat in DOING since 2026-08-13; reconciled per-item",
+      "title": "THE UNPARKED BACKLOG, NOW ACTUALLY CARDED \u2014 all 8 items delivered / superseded / deferred",
+      "commit": "cea8b42",
+      "status": "done \u00b7 card moved DOING\u2192DONE with per-item reconciliation appended",
+      "per_item": {
+        "1_WO-058_VFX_and_prefab_LOOK": "DONE \u2014 DONE/03_WO-058_weather_and_prefab_look.md + backend half f133fee",
+        "2_WO-063_command_wakes_body": "DEFERRED \u2014 card 12 \u00a73 (POST-Presentable, leave it)",
+        "3_WO-049_TrackB_Spatial_Faculty": "SPLIT ACCEPTED \u2014 faculties/spatial/spatial_faculty.py exists (Builder-owned Python half); Unity half is non-blocking backlog per card 12 \u00a73",
+        "4_WO-024_traversal": "SUPERSEDED \u2014 QUEUE/04 (Option A ruled 2026-08-14); occlusion built; traversal half Builder-gated on WO-049 faculty interface",
+        "5_WO-062_anticipation": "DESIGNER-DONE \u2014 8873b20 (EloSquashStretch + ApplyExpression/FlashMicro); open half is Builder emit WO-064 BP-4",
+        "6_INT-8_dragdrop": "STAGED \u2014 card 12 \u00a74 (David judges live), not gate-held",
+        "7_3D_previewer_EloHudModel": "DONE \u2014 09050ef (GLB rendered, David confirmed I saw it pop up)",
+        "8_presence_grabrelease_TrackB": "AUDITED \u2014 only Track-B block is notifications{kind,corner,_ts} emit (carded to Builder); Unity consumer will follow"
+      },
+      "detail": "Card 02 is a meta-backlog; its 8 items were unparked on the board but never issued as separate cards. Since 2026-08-13 the work has migrated into per-task cards (03 VFX, 04 WO-024 ruling, 09 WO-124, 11 WO-086 ruling, 12 the full list against acceptance test). Nothing in card 02 is a live block; nothing not already carded elsewhere remains. Closed as DUPLICATE \u2014 same pattern as prior close-outs (0018, 0014, 0011, 0010, 0004). No new code commit; only card + outbox + worker_result stamped.",
+      "residual_backlog_non_blocking": [
+        "Unity Track-B UI/nav consumers of the Spatial Faculty (item 3 Unity half)",
+        "Unity notifications consumer, awaiting Builder field emit (item 8b)"
+      ]
     }
   ],
   "new_board_item_for_architect": [
