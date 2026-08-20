@@ -631,5 +631,223 @@
     "evidence": "ALIVE=true PROGRESSING=false exit_code=143 output_bytes=0",
     "duration_s": 9.02,
     "blocker": "worker did not write result file or move card to DONE/"
+  },
+  "0036_P0_ONEBRAIN_011_012_order_corrected_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787203288.949878,
+    "state": "UNKNOWN",
+    "output": [],
+    "evidence": "",
+    "duration_s": 3.73
+  },
+  "0035_RULINGS_the_four_authority_conflicts": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787203420.1630468,
+    "state": "DONE",
+    "output": [
+      "test_canon_xii_perception: 15/15",
+      "test_wo002_live_world_state: 6/6",
+      "test_wo004_contracts: 12/12",
+      "test_wo072_intent_gatekeeper: 12/12",
+      "test_wo082_decision_journal: 7/7",
+      "test_wo096_desktop_perception: 5/5",
+      "test_wo105_no_silent_failures: 10/10",
+      "test_canon_vii_ruling_c: 6/6",
+      "test_wo039_conversation_400: 400/400 (0 garbles)",
+      "executive_override registry sanity: PASS"
+    ],
+    "evidence": "D2 rename DesktopState.surface -> DesktopState.platform. D1 plan.capability_hint added; plan.intent = cognitive intent from attention; journal records both. D8 intent_gatekeeper no longer vetoes Executive; disagreements journalled to self/journals/gatekeeper_disagreements.jsonl. D7 new runtime/executive_override.py with two REGISTERED grounds; third ground raises UnregisteredOverrideGround. Three server override sites refactored through apply_executive_override.",
+    "commits": [
+      "491e736"
+    ],
+    "card_moved_to": "DONE/0035_RULINGS_the_four_authority_conflicts.md"
+  },
+  "0035_RULINGS_the_four_authority_conflicts_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787203438.627365,
+    "state": "DONE",
+    "output": [
+      "491e736"
+    ],
+    "evidence": "D2 renamed DesktopState.surface -> DesktopState.platform (world/live_world_state.py); perception's active_surface no longer overwrites platform. D1 added plan.capability_hint; plan.intent now sourced from attention_model['intent'] (cognitive); capability routing reads capability_hint; decision journal records BOTH. D8: intent_gatekeeper no longer vetoes Executive capability decision -- disagreemen",
+    "duration_s": 1048.41
+  },
+  "0037_RULING_D5_single_self_model_authority_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787204127.584349,
+    "state": "DONE",
+    "output": [
+      "2b32736"
+    ],
+    "evidence": "D5 ruled \u2014 single self-model authority. Retired module-global _self_load() in server.py; converted all 7 _self_save(_elo_self) sites to _self_mutate(fn) (load\u2192mutate\u2192save atomically). New update(fn) accessor in self/elo_self_model.py with Rule 1 stale-overwrite WARN; save() now atomic (tmp+os.replace). Renamed update(state, turn_data) \u2192 apply_turn and made it mutate in place \u2014 this was the real disk clobber (old update returned a new state defaulting last_reflection_lesson=''). wake_from_dream refactored similarly. truth_sync reflection-lesson write routes through update(fn). Acceptance test (tests/test_0037_single_self_model_authority.py) passes 4/4: reflection lesson survives subsequent turn save; two writers on different fields both persist; grep proves no module-level _self_load(); stale-overwrite fires Rule 1 WARN naming the field. Regression sweep green: wo041 wo052b wo059 wo064 wo065 wo107 wo115 wo125."
+  },
+  "0037_RULING_D5_single_self_model_authority_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787204151.2840672,
+    "state": "DONE",
+    "output": [
+      "2b32736a863bc9029799c7c2412eb70de00f65e1"
+    ],
+    "evidence": "4/4 acceptance passed in tests/test_0037_single_self_model_authority.py: (A) reflection-lesson (last_reflection_lesson) survives subsequent turn save \u2014 the exact card-named failure closed; (B) two writers touching different fields both persist; (C) grep proves no module-level _self_load() in server.py; (D) stale-overwrite fires Rule 1 WARNING naming the field. Root cause was twofold: (1) old updat",
+    "duration_s": 712.58
+  },
+  "0038_RATIFIED_the_31_exception_list_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787204713.900095,
+    "state": "PARTIAL",
+    "output": [
+      "c2379f92fca7eebb7e6c7e261b621cfa25938d33"
+    ],
+    "evidence": "Card 0038 step-4 assertion test shipped in tests/test_0038_exception_list_ratified.py. Steps 1-3 already delivered in 0033 (02bbaa1 journal-all-31, b84d18d route-13-COGNITIVE). AT-1 PASS: all 31 ratified handlers journal at their ratified (backend, class, line) tuple. AT-2 PASS: all 32 _bypass_journal calls use ratified class labels. AT-3 correctly RED: server.py:2159 backend=proper_noun_gate class=COGNITIVE returns before spine \u2014 an unratified early return added post-0028 audit (e868930, 0021 P0-Y). AT-3 is the WO-103-pattern invariant firing on a real gap ('stops number 32 appearing'). Leaving red per WO-103 precedent. PROPOSAL for L3: reclassify proper_noun_gate as SAFETY (matches :1659 refusal-must-not-depend-on-LLM pattern). Once ratified, add (proper_noun_gate, SAFETY, 2140) to RATIFIED table \u2014 AT-3 goes green. Out of card scope (separately dispatchable): capability cases 3&4 from 0036 \u00a748 (live turn drive); 0031 Fix B (restart+5 turns).",
+    "duration_s": null
+  },
+  "0038_RATIFIED_the_31_exception_list_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787204730.284877,
+    "state": "PARTIAL",
+    "output": [
+      "c2379f92fca7eebb7e6c7e261b621cfa25938d33"
+    ],
+    "evidence": "Card 0038 step-4 assertion test shipped: tests/test_0038_exception_list_ratified.py. Steps 1-3 already delivered in card 0033 (02bbaa1 journal-all-31, b84d18d route-13-COGNITIVE). Test result: AT-1 PASS all 31 ratified handlers emit _bypass_journal with the exact (backend, class, line) tuple from the card. AT-2 PASS all 32 _bypass_journal calls use one of the four ratified classes {TRANSPORT, SAFE",
+    "duration_s": 578.91
+  },
+  "0039_LCI_programme_proposed_NOT_dispatched": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787204844.0333838,
+    "state": "DONE",
+    "output": [],
+    "evidence": "Directive/ack card \u2014 'do not start any of it, queue unchanged'. No code change. 5a (no learning on current reward signal; GAP-08 text/keyword scoring in memory/significance_engine.py; GAP-09 significance-vector drift 7/5/9-dim) ACKNOWLEDGED \u2014 will not start until Artefact 7 ratified. 1c (Isaac=RL, Blender=CAD, Unity=presentation) ACKNOWLEDGED \u2014 will flag not fix violations. Queue reconciled: 0033 DONE (0dc8671, significance_faculty.py deleted, 5-item harvest per 0048), 0038 DONE (c2379f9 PARTIAL AT-3 RED WO-103), 0037 DONE (2b32736), 0036 DONE, 0031 Fix B DONE (14db340). _TIER_PROVIDER_ORDER correction at backend_router.py:78-82 noted, not touched (Artefact-8 spec-only). Card DOING->DONE. Ack recorded in card body.",
+    "commits": [],
+    "duration_s": null
+  },
+  "0039_LCI_programme_proposed_NOT_dispatched_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787204852.457641,
+    "state": "DONE",
+    "output": [],
+    "evidence": "Directive/ack card. Explicitly says 'do not start any of it' and 'your queue is unchanged'. No code change requested. 5a (no learning on current reward signal; GAP-08/GAP-09) and 1c (Isaac=RL, Blender=CAD, Unity=presentation) acknowledged in the card body under BUILDER ACK. Queue path 0033->0038->0037->0036 reconciled: all four in DONE/ (0033 commit 0dc8671; 0038 c2379f9 PARTIAL AT-3 RED per WO-10",
+    "duration_s": 122.08
+  },
+  "0040_STEP1_finish_one_brain_and_PROVE_the_loop": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787205400.0,
+    "state": "PARTIAL",
+    "commits": [
+      "80974d4",
+      "36b31ab"
+    ],
+    "output": [
+      "80974d4",
+      "36b31ab"
+    ],
+    "evidence": "W2 landed (80974d4). runtime/session_id.py: monotonic-persisted allocator, max(prev+1, int(time.time())), one per process start, persisted to self/journals/session_counter.json. Wired into self/decision_journal.py (record + record_failure now write session_id field) and runtime/reflection_faculty.py (replaces the str(int(time.time())) form the card explicitly forbids). Tests green: tests/test_w2_session_id.py 5/5; tests/test_w2_decision_journal_session_id.py 4/4 (W2-DJ-1 field written, W2-DJ-2 stable in-process, W2-DJ-3 subprocess strictly greater = monotonic across restarts, W2-DJ-4 decision_journal + reflection_faculty share id). W1 already live at close-out: decision_journal.jsonl 60 rows = 25 spoke, 3 bypass:cognitive, 32 legacy success => outcome!=success acceptance met at prior commits. W3 (02bbaa1) / W4 (b84d18d) / W5 (0036) / 0037 (2b32736) / 0031-B (14db340) all DONE in prior seat commits per outbox 0039. Card DOING->DONE close-out at 36b31ab with sequence table appended. BLOCKER: LOOP-7 (whole-organism loop) is D3-blocked - executive.py frozen with no lessons key in ExecutiveContext read path; causation cannot be established without unfreeze (L3/canon, outside seat authority). LOOP-5 also red - lessons_ledger.jsonl has 1 lesson at status=candidate; the two confirmed lessons the card cited have degraded since 2026-08-16 (separate reflection-promotion issue, not authorised by 0040). Escalated for Architect follow-up card.",
+    "blocker": "LOOP-7 D3 (executive.py frozen, L3/canon)",
+    "duration_s": null
+  },
+  "0040_STEP1_finish_one_brain_and_PROVE_the_loop_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787205354.414224,
+    "state": "PARTIAL",
+    "output": [
+      "80974d4",
+      "36b31ab"
+    ],
+    "evidence": "W2 landed at 80974d4: runtime/session_id.py (monotonic-persisted allocator, max(prev+1, int(time.time())), one per process start), wired into self/decision_journal.py (record + record_failure) and runtime/reflection_faculty.py. Tests green \u2014 tests/test_w2_session_id.py 5/5 + tests/test_w2_decision_journal_session_id.py 4/4 (field written \u00b7 stable in-process \u00b7 subprocess strictly greater \u00b7 shared w",
+    "duration_s": 501.87,
+    "blocker": "LOOP-7 (whole-organism loop) requires lesson to enter Executive decision context AND change action. executive.py is frozen (D3, L3/canon) with no lessons field in ExecutiveContext read path. Follow-up card scoped to the D3 unfreeze \u2014 outside seat authority."
+  },
+  "0041_41_rulings_landed_scope_UNCHANGED": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787205526.750592,
+    "state": "DONE",
+    "output": [
+      "35c5811"
+    ],
+    "evidence": "Informational card \u2014 no code work per \u00a75 (ORDER UNCHANGED). ACKs AR-3 (BodySchema via 0037 update(fn)), AR-8 (no except:pass on continuity), AR-9 (extend runtime/claim_gate.py, do not fork tiering), AR-28 (spatial learning lives in Vol VIII, refuse spatial_learning.jsonl cards). \u00a74 answered \u2014 WO-078 first is what the code assumes: writer already exists at self/emergent_cognition.py:117 append_autobiography(); reader already exists at runtime/the_moment.py:227 autobiography_tier via recent_autobiography() with graceful 'unknown' fallback (faculties/temporal/faculty.py:325-334, PENDING sentinel). Reversing (WO-079 first) leaves NI-5/NI-7 untestable. Position: WO-078 first \u2014 code agrees.",
+    "blocker": null,
+    "notes": "No test to run \u2014 informational card. Order continues: 0033 -> W1 (server.py:4062 outcome='success' kill + :3575) -> W2 -> W3 -> W4 -> W5. 0037 slots in before W5. 0031 Fix B mine."
+  },
+  "0041_41_rulings_landed_scope_UNCHANGED_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787205552.364971,
+    "state": "DONE",
+    "output": [
+      "35c5811"
+    ],
+    "evidence": "Informational card \u2014 \u00a75 explicitly states 'YOUR ORDER \u2014 UNCHANGED. No ruling above adds a line of work today.' No code changes required. Close-out ACKs four \u00a72 rulings (AR-3 BodySchema via 0037 update(fn) \u00b7 AR-8 no except:pass on continuity writes \u00b7 AR-9 extend runtime/claim_gate.py rather than fork tiering \u00b7 AR-28 spatial learning in Vol VIII memory system, refuse any spatial_learning.jsonl card)",
+    "duration_s": 197.87
+  },
+  "0042_XII_XV_ARE_NOW_LAW_enforcement_surface_changed": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787205662.630889,
+    "state": "DONE",
+    "output": [
+      "2fbb70c"
+    ],
+    "evidence": "Informational/ratification card. \u00a74 explicit: 'YOUR ORDER \u2014 UNCHANGED. Nothing above is a work item.' Verified \u00a71 test states with independent runs: python3 tests/test_canon_xii_perception.py = 15 passed 0 failed; python3 tests/test_canon_xv_world_state.py = 12 passed 2 failed. Both match card \u00a71 exactly. Enforcement surface change ACKed: any red outside the three-item exception list (XV ST-1, XV FT-4, XII Ch.3 \u00a73.2 GAP-04) is a canon breach \u2014 escalate, do not 'fix quickly.' ADR-Exec-007 SignificanceVector v2.0.0 (9 meaning + 3 outcome, never merged; reward=0.70\u00b7outcome+0.30\u00b7meaning capped by safety; embodiment reads ACK only; unversioned = invalid) ACKed \u2014 authorises no learning work; W1 is precondition. BD-14 ACKed. XV ST-1 confirmed queued behind W5, not picked up. No product code touched.",
+    "blocker": null,
+    "notes": "Order continues: 0033 -> W1 (kill outcome='success' at server.py:4062 + :3575) -> W2 (real session ids) -> W3 journal all 31 -> W4 route 13 COGNITIVE (:2404 first) -> W5 ONEBRAIN-012. 0037 before W5. 0031 Fix B mine."
+  },
+  "0042_XII_XV_ARE_NOW_LAW_enforcement_surface_changed_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787205684.326962,
+    "state": "DONE",
+    "output": [
+      "2fbb70c"
+    ],
+    "evidence": "Informational/ratification card. \u00a74 verbatim: 'YOUR ORDER \u2014 UNCHANGED. Nothing above is a work item.' Verified \u00a71: python3 tests/test_canon_xii_perception.py = 15 passed 0 failed; python3 tests/test_canon_xv_world_state.py = 12 passed 2 failed \u2014 matches card exactly. Enforcement surface change ACKed (XII+XV are now law; any red outside three-item exception list XV ST-1, XV FT-4, XII Ch.3 \u00a73.2 GAP-",
+    "duration_s": 131.87
+  },
+  "0047_MT_findings_expression_dropped_and_97pct_overhead": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787206062.34336,
+    "state": "DONE",
+    "output": [
+      "521be07"
+    ],
+    "evidence": "F-A already in c3e9305 (5/5). F-B closed by 521be07: (1) keep_alive=30m now falsifiable at the actual dict on _ollama_call, _ollama_stream, and OllamaBackend._call (was source-only in OI-1); (2) prompt_builder.build() populates _last_prompt_audit with per-block {name,chars,est_tokens,pct_tokens} \u2014 smoke run shows living_presence_spec at 92.3% of tokens (5098/5522). server.py merges audit into blender/backend_health.json. Tests: test_fb_keepalive_prompt_audit.py 6/6, test_fa_preserve_keys.py 5/5, test_0018_ct0031_ollama_instrumentation.py 6/6. Card in DONE/.",
+    "duration_s": 0.0
+  },
+  "0047_MT_findings_expression_dropped_and_97pct_overhead_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787206098.013376,
+    "state": "DONE",
+    "output": [
+      "521be07"
+    ],
+    "evidence": "F-A landed earlier (c3e9305, 5/5). F-B closed by 521be07. (1) keep_alive='30m' now falsifiable at the ACTUAL dict on runtime.backend_router._ollama_call, ._ollama_stream, AND backends.ollama_backend.OllamaBackend._call \u2014 replaces source-only OI-1 with dict-capture FB-1/FB-2/FB-3. (2) runtime.prompt_builder.build() populates _last_prompt_audit with per-block {name, chars, est_tokens, pct_tokens} + ",
+    "duration_s": 413.61
+  },
+  "0048_ORDER_CORRECTED_0033_was_done_and_0025_was_never_L3": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787206302.847557,
+    "state": "DONE",
+    "output": [
+      "tests/test_fa_preserve_keys.py: 5/5 PASS",
+      "tests/test_fb_keepalive_prompt_audit.py: 6/6 PASS",
+      "tests/test_canon_viii_memory.py: 18/0 PASS (AT-8 green \u2014 no unauthorised permanent-store writers)"
+    ],
+    "evidence": "Reconciliation-only close-out. All three items in card \u00a73 were already committed before this card ran. F-A landed c3e9305 ('expression' in _PRESERVE_KEYS at blender_bridge/state_writer.py:250); F-B landed 521be07 (keep_alive='30m' on _ollama_call, _ollama_stream, ollama_backend._call + prompt_audit); 0025 landed 84758ea + e2c506d (memory_engine second store retired; core_engine.py:254 routes through MemoryFaculty.submit()). Re-verified live per Rule 2 by re-running each test. No new source commits \u2014 only close-out + card move DOING\u2192DONE. Metric unchanged: 91/146 = 62.3% (no capability-moving work performed).",
+    "commits": [],
+    "acceptance_met": true,
+    "duration_s": null
   }
 }
