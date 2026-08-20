@@ -1,8 +1,8 @@
 {
-  "card": "0048_ORDER_CORRECTED_0033_was_done_and_0025_was_never_L3.md",
+  "card": "0054_F4b_the_heartbeat_has_48_writers.md",
   "status": "DONE",
-  "commits": ["72afee0"],
+  "commits": ["a59ab1b"],
   "acceptance_met": true,
-  "evidence": "Reconciliation-only close-out. All three items in card §3 already committed before this card ran. F-A c3e9305 (blender_bridge/state_writer.py:250 has 'expression' in _PRESERVE_KEYS; test_fa_preserve_keys.py 5/5). F-B 521be07 (keep_alive='30m' on all three Ollama call paths + per-block prompt_audit; test_fb_keepalive_prompt_audit.py 6/6). 0025 84758ea + e2c506d (memory_engine second store retired; core_engine.py:254 routes through MemoryFaculty.submit(); test_canon_viii_memory.py 18/0, AT-8 whole-repo durable-write scan green). Re-ran each test live (Rule 2) instead of trusting board. Card moved DOING/ -> DONE/ with close-out block appended. 91/146=62.3% unchanged (no capability-moving work).",
+  "evidence": "Reconciliation card. All four required changes in card §2 already landed in commit a59ab1b (0054: heartbeat one owner — remove module-level call, wire to server.py only). Verified live per Rule 2: (1) no module-level heartbeat call in blender_bridge/state_writer.py — start_heartbeat() at line 322 is a function; (2) server.py:76-77 imports and invokes start_heartbeat() at spine startup; (3) _heartbeat_started guard (state_writer.py:313) + ELO_STATE_HEARTBEAT=0 env opt-out (state_writer.py:328); (4) tests/test_0054_heartbeat_owner.py — T2 is the falsifiable test that goes RED if the module-level call returns. Re-ran both tests 2026-08-20: test_0054_heartbeat_owner.py 4/4 PASS; test_f4_heartbeat.py 3/3 PASS. Card close-out §5 appended; card moved DOING→DONE. No new source commits — code already correct.",
   "blocker": null
 }

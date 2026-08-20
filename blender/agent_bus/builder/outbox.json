@@ -851,5 +851,32 @@
     ],
     "acceptance_met": true,
     "duration_s": null
+  },
+  "0048_ORDER_CORRECTED_0033_was_done_and_0025_was_never_L3_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787206349.983169,
+    "state": "DONE",
+    "output": [
+      "72afee0"
+    ],
+    "evidence": "Reconciliation-only close-out. All three items in card \u00a73 already committed before this card ran. F-A c3e9305 (blender_bridge/state_writer.py:250 has 'expression' in _PRESERVE_KEYS; test_fa_preserve_keys.py 5/5). F-B 521be07 (keep_alive='30m' on all three Ollama call paths + per-block prompt_audit; test_fb_keepalive_prompt_audit.py 6/6). 0025 84758ea + e2c506d (memory_engine second store retired; ",
+    "duration_s": 251.89
+  },
+  "0054_F4b_the_heartbeat_has_48_writers": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787206430.968128,
+    "state": "DONE",
+    "output": [
+      "tests/test_0054_heartbeat_owner.py: 4/4 PASS (T1 no thread on bare import, T2 _ts does not advance, T3 second call no-op, T4 ELO_STATE_HEARTBEAT=0 opt-out)",
+      "tests/test_f4_heartbeat.py: 3/3 PASS (T1 start_heartbeat spawns thread, T2 _ts advances on patch, T3 interval 30s)"
+    ],
+    "evidence": "Reconciliation-only close-out. All four required changes in card \u00a72 already landed in commit a59ab1b (0054: heartbeat one owner \u2014 remove module-level call, wire to server.py only): (1) module-level _start_heartbeat() removed from blender_bridge/state_writer.py; (2) server.py:76-77 imports start_heartbeat as _sw_start_heartbeat and invokes it at startup; (3) module-level _heartbeat_started guard + ELO_STATE_HEARTBEAT=0 env opt-out in state_writer.py:313,328; (4) falsifiable test tests/test_0054_heartbeat_owner.py \u2014 T2 goes RED if module-level call is put back. Re-verified live per Rule 2 by re-running both tests. No new source commits \u2014 code correct as of a59ab1b; only close-out + card move DOING\u2192DONE.",
+    "commits": [
+      "a59ab1b"
+    ],
+    "acceptance_met": true,
+    "duration_s": null
   }
 }
