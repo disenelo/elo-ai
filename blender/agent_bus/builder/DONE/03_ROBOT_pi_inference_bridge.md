@@ -75,3 +75,14 @@ The section below is an ORIENTATION SUMMARY ONLY — it is not a substitute for 
 
 ## Done when
 the vector definition + servo decision + module boundary are written to your outbox for Architect review.
+
+---
+
+## Close-out (builder · 2026-08-20)
+
+**Status:** DONE — design-only deliverable per card scope.
+**Deliverable:** `blender/agent_bus/builder/FROM_BUILDER_2026-08-20_03_ROBOT_pi_inference_bridge_DESIGN.md`
+**Acceptance:** vector definition (§1) + servo decision (§2, PROPOSE) + module boundary (§3) written to outbox for Architect review — matches card "Done when".
+**Reserved-lane compliance:** no hardware touched, no purchase, no power, no BOM substitution. LG-2 force-limiter gate still open (verified: `avatar/safety_controller.py` grep for force/soft_stop/limiter returns nothing).
+**State per SEAT_CONTRACT four-states:** vector schema + module boundary = PROPOSAL. Servo choice = PROPOSE, awaiting David L3. Nothing marked AUTHORISED or IMPLEMENT.
+**Commit:** to be stamped after commit lands.
