@@ -1,12 +1,8 @@
 {
-  "card": "03_ROBOT_pi_inference_bridge.md",
-  "wo": "WO-098",
+  "card": "05a_WO-111_ACK_on_everything.md",
   "status": "DONE",
-  "commits": ["234fc995a12bed71d328365dd437474d3ffa1ec3", "9e3994c"],
+  "commits": ["94c7ad5", "a71a36a"],
   "acceptance_met": true,
-  "evidence": "Design-only deliverable written to blender/agent_bus/builder/FROM_BUILDER_2026-08-20_03_ROBOT_pi_inference_bridge_DESIGN.md. Card moved QUEUE->DONE. Acceptance per card 'Done when': (1) canonical observation vector = 15 floats [3 IMU + 3 hip theta + 3 hip omega + 6 FSR] with single source-of-truth in proposed runtime/robot/obs_action_schema.py; action vector = 9 floats [6 hand + 3 hip velocity]. (2) Servo decision recorded as PROPOSE — Option A (serial-bus swap, BOM change requires David L3) vs Option B (keep MG90S, drop hand state, RECOMMENDED because respects spec + Ruling E). Neither authorised. (3) Module boundary sketched — runtime/robot/ speaks Faculty Bus DOWN/UP envelopes per Vol XI (motion_intent, safety_hold, emergency_stop, policy_swap DOWN; robot_state, verified_outcome, sensor_anomaly, safety_event UP), verified-outcome shape reuses runtime/ack_contract.py. Reserved-lane compliance: no code, no hardware, no BOM substitution. LG-2 force-limiter gate in avatar/safety_controller.py still open (grep returned no matches for force/soft_stop/limiter). All value-changes tagged [SPEC]/[VERIFIED]/[ESTIMATE]/[PROPOSAL] per CLAUDE.md Rule 4d.",
-  "blocker": null,
-  "next_gate": "David L3 to pick §2 Option A vs B, confirm §1 vector layout + §3 module boundary. LG-2 to open force-limiter/soft-stop scope in avatar/safety_controller.py. No IMPLEMENT until both authorisations recorded.",
-  "reserved_lane": true,
-  "state_per_four_states": "PROPOSE"
+  "evidence": "Row 13 VERIFY: every registry capability declares ack_source (48/48). runtime/capabilities/capability.py adds ACK_SYNC_RETURN | ACK_UNITY_ACK | ACK_NONE | ACK_UNKNOWN; registry.py declares ack_source on all 48 capabilities; capabilities_missing_ack_path() returns [] today. tests/test_wo111_ack_contract.py adds 4 new tests including test_new_capability_without_ack_source_fails_the_check which proves the guard by adding an orphan capability and asserting the coverage check flags it (Rule 5.3 disconnect check), and test_broken_executor_produces_didnt_work_sentence which is the row-13 VERIFIED criterion from card 0011 ('a broken executor makes him say so'). pytest tests/test_wo111_ack_contract.py tests/test_wo111_consume_ack.py -> 18 passed (14 baseline + 4 new); tests/test_0019_ct0032_capability_health.py -> 8 passed (no regression). The four sentences eLo produces: BROKEN -> 'That didn't work - <action> reported a failure.'; UNCONFIRMED -> 'I triggered <action> but can't confirm it happened.'; CONFIRMED -> 'Done - <action> confirmed.'; TIMEOUT -> 'That didn't work - <action> reported a failure.' Scope discipline: card explicitly forbids per-verb hand-wiring; the generic contract (ack_contract.ActionResult + make_result + honest_outcome) is the one from card 0011.",
+  "blocker": null
 }

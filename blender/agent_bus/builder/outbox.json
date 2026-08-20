@@ -962,5 +962,57 @@
       "David L3 confirm \u00a73 package location + envelope types",
       "LG-2 opens force-limiter/soft-stop scope in avatar/safety_controller.py"
     ]
+  },
+  "03_ROBOT_pi_inference_bridge_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787207671.475444,
+    "state": "DONE",
+    "output": [
+      "234fc995a12bed71d328365dd437474d3ffa1ec3",
+      "9e3994c"
+    ],
+    "evidence": "Design-only deliverable written to blender/agent_bus/builder/FROM_BUILDER_2026-08-20_03_ROBOT_pi_inference_bridge_DESIGN.md. Card moved QUEUE->DONE. Acceptance per card 'Done when': (1) canonical observation vector = 15 floats [3 IMU + 3 hip theta + 3 hip omega + 6 FSR] with single source-of-truth in proposed runtime/robot/obs_action_schema.py; action vector = 9 floats [6 hand + 3 hip velocity]. (",
+    "duration_s": 291.3
+  },
+  "05_WO-CANON-VI_attention_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787208048.882376,
+    "state": "DONE",
+    "output": [
+      "Renamed core/attention.py -> core/memory_relevance_filter.py (WO-CANON-VI ruling B)",
+      "Updated 3 real Python importers + 5 stale docstring/comment refs",
+      "Updated tests/test_canon_vi_working_memory.py (Ch.3/IT-1 + AT-8) to enforce the rename",
+      "Commit ba03271"
+    ],
+    "evidence": "python3 tests/test_canon_vi_working_memory.py -> 24 passed, 0 failed. Ch.3/IT-1 now asserts that core/attention.py path no longer exists (hard rename, no shim). Wiring from prior work unchanged: contracts.py has working_memory + attention_state slots; spine.py runs WM competition top-of-turn and freezes it into CognitiveState + plan.working_memory. Card DOING -> DONE (05_WO-CANON-VI_attention.md).",
+    "duration_s": 0
+  },
+  "05_WO-CANON-VI_attention_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787208076.964739,
+    "state": "DONE",
+    "output": [
+      "ba03271f9a8f08e73c218fdf8838b762df44025c"
+    ],
+    "evidence": "python3 tests/test_canon_vi_working_memory.py -> 24 passed, 0 failed. Ruling B rename complete: core/attention.py -> core/memory_relevance_filter.py via git mv (history preserved). All 3 real Python importers updated (runtime/backend_router.py, blender/blender_bridge.py, company_runtime/behaviour_eval.py); 5 stale docstring/comment references also updated (runtime/executive.py, runtime/state_machi",
+    "duration_s": 405.41
+  },
+  "05a_WO-111_ACK_on_everything": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787270400.0,
+    "state": "DONE",
+    "output": [
+      "94c7ad5",
+      "a71a36a",
+      "Registry-level ACK-path assertion is live: 48/48 capabilities declare ack_source.",
+      "Adding a capability without ack_source now fails the test (Rule 5.3 disconnect check proved by test_new_capability_without_ack_source_fails_the_check).",
+      "Broken executor produces 'That didn't work - <action> reported a failure.' via make_result + honest_outcome (row-13 VERIFIED criterion from card 0011)."
+    ],
+    "evidence": "pytest tests/test_wo111_ack_contract.py tests/test_wo111_consume_ack.py -> 18 passed (14 baseline + 4 new). tests/test_0019_ct0032_capability_health.py -> 8 passed. Sentences eLo now produces: BROKEN -> 'That didn't work - scale up reported a failure.'; UNCONFIRMED -> 'I triggered spawn wave but can't confirm it happened.'; CONFIRMED -> 'Done - sit confirmed.'; TIMEOUT (15.0s) -> 'That didn't work - wave reported a failure.' ACK sources by class: ACK_UNITY_ACK for sit/move/exit/wave/head gestures + desktop_presence + file_drop; ACK_SYNC_RETURN for every tool_router agent (time/calculator/weather/news/translate/timer/search/wikipedia/draft/obsidian/vault_write/file_read/clipboard/messages/calendar/reminders/notes/spotify/vision/github/computer_control/truth_sync/volume/brightness/dark_mode/app_launch/window_focus/screenshot/image_gen/model_gen); ACK_NONE for every future=True capability (email/camera/terminal/media_control/sleep/blender/unity/substance/window_observer/robot_runtime/robot_motion/robot_camera/3d_printer/plotter/heat_press/laser). Scope: no per-verb hand-wiring (card explicitly forbids it) - the generic contract is ack_contract.ActionResult + make_result + honest_outcome from card 0011. Card DOING -> DONE (05a_WO-111_ACK_on_everything.md).",
+    "duration_s": 0
   }
 }
