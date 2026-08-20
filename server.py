@@ -2557,7 +2557,11 @@ def _process_turn(raw: str) -> dict:
                 "momentum":      _plan.momentum,
                 "mode":          _plan.mode,
                 "register":      _plan.register,
-                "intent":        _plan.intent,
+                # D1 ruling (Card 0035): `intent` = COGNITIVE intent the Executive
+                # decided on; `capability_hint` = intent_engine's router hint. Two
+                # questions, two answers, two names. Journal captures both.
+                "intent":           _plan.intent,
+                "capability_hint":  getattr(_plan, "capability_hint", ""),
                 # WO-112: confidence threaded from exec_out via plan (was null in journal)
                 "confidence":    _plan.confidence,
                 # W6: lesson key that contributed this turn (or "")
@@ -2579,23 +2583,33 @@ def _process_turn(raw: str) -> dict:
         _state["energy_history"] = _eh
         _runtime_state  = sm.update(_runtime_state, attention_model, exec_decision, loop_signal=False)
 
+        # D7 ruling (Card 0035): post-Executive action rewrites must use the
+        # registered `executive_override` mechanism. Only two grounds are
+        # sanctioned: `safety-stabilisation` and `seam-a-routing`. A third
+        # ground would AssertionError until an Architect ruling registers it.
+        from runtime.executive_override import apply_executive_override as _apply_eo
+
         if sm.is_stabilisation_forced(_runtime_state):
-            # Extend, not replace — preserve Executive rationale and all original fields.
-            exec_decision = dict(exec_decision)
-            exec_decision.update({
-                "tone": "DIRECT", "max_sentences": 1, "stability": True,
-                "intent": exec_decision.get("intent", "conversation"),
-                "response_goal": "stabilise", "cognitive_load": "low",
-                "priority_order": ["stabilise", "simplify", "ignore"],
-                "overridden_by_safety": True,
-                "original_action": exec_decision.get("action"),
-                "original_tone": exec_decision.get("tone"),
-            })
+            # Ground: safety-stabilisation (loop protection)
+            _orig_tone = exec_decision.get("tone")
+            exec_decision = _apply_eo(
+                exec_decision,
+                ground="safety-stabilisation",
+                rule="loop-detected-forces-stabilise",
+                updates={
+                    "tone": "DIRECT", "max_sentences": 1, "stability": True,
+                    "intent": exec_decision.get("intent", "conversation"),
+                    "response_goal": "stabilise", "cognitive_load": "low",
+                    "priority_order": ["stabilise", "simplify", "ignore"],
+                    "original_tone": _orig_tone,
+                },
+            )
             _runtime_state = dict(_runtime_state)
             _runtime_state["loop_counter"] = max(0, _runtime_state["loop_counter"] - 2)
 
         # WO-020 Seam A: plain imperative override — executive.py is frozen, so we
         # post-process here. CONNECT/REFLECT/WITNESS must not fire on direct commands.
+        # Ground: seam-a-routing.
         _SEAM_A_DRIFT = {"connect", "reflect", "witness"}
         if exec_decision.get("action") in _SEAM_A_DRIFT and not raw.strip().endswith("?"):
             _sa_lower = raw.strip().lower()
@@ -2606,17 +2620,20 @@ def _process_turn(raw: str) -> dict:
                 "bring up ", "navigate ", "turn on", "turn off", "mute",
             )
             if any(_sa_lower.startswith(v) for v in _IMPERATIVE_PREFIXES):
-                exec_decision = dict(exec_decision)
-                exec_decision.update({
-                    "action": "answer",
-                    "confidence": 0.7,
-                    "reason": "seam-a-override: plain imperative → ANSWER",
-                    "original_action": exec_decision.get("action"),
-                    "overridden_by_routing": True,
-                })
+                exec_decision = _apply_eo(
+                    exec_decision,
+                    ground="seam-a-routing",
+                    rule="wo-020-plain-imperative",
+                    updates={
+                        "action": "answer",
+                        "confidence": 0.7,
+                        "reason": "seam-a-override: plain imperative → ANSWER",
+                    },
+                )
 
         # WO-029: "all good" greeting family — not in frozen _HOW_ARE_YOU set.
         # Short social check-ins only; guard against "you all good with X?" over-match.
+        # Ground: seam-a-routing (same guard-family as WO-020).
         _WO029_RE = _re.compile(
             r'^(?:(?:are\s+)?you(?:\'re|re)?\s+all\s+good'
             r'|we\s+all\s+good'
@@ -2629,14 +2646,16 @@ def _process_turn(raw: str) -> dict:
         _wo029_bare = raw.strip().lower().rstrip("?.!")
         _wo029_no_false_pos = " with " not in _wo029_bare and not _wo029_bare.startswith("is the ")
         if len(_wo029_bare) < 40 and _wo029_no_false_pos and _WO029_RE.match(_wo029_bare):
-            exec_decision = dict(exec_decision)
-            exec_decision.update({
-                "action":    "celebrate",
-                "cal_reason": "how are you",
-                "confidence": 0.85,
-                "original_action": exec_decision.get("action"),
-                "overridden_by_routing": True,
-            })
+            exec_decision = _apply_eo(
+                exec_decision,
+                ground="seam-a-routing",
+                rule="wo-029-greeting-gap",
+                updates={
+                    "action":     "celebrate",
+                    "cal_reason": "how are you",
+                    "confidence": 0.85,
+                },
+            )
 
         _action     = exec_decision.get("action", "reflect")
         _cal_reason = exec_decision.get("cal_reason", "")
@@ -3628,25 +3647,62 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
 
-                # WO-072: gatekeeper — prevent false-fire commands on conversational input.
-                # Rules-only (use_llm=False) keeps this zero-latency on the hot path.
-                # If gatekeeper is confident this is conversation, skip tool enrichment.
+                # WO-072 + D8 ruling (Card 0035): the gatekeeper is a rules-only
+                # classifier. It MAY NOT veto the Executive's capability decision
+                # (Runtime Invariant #2: the Executive is the sole decider). Its
+                # classification is a signal — when it disagrees with the Executive's
+                # choice, we JOURNAL the disagreement and defer to the Executive.
+                # Where the Executive picked NO capabilities and the gatekeeper says
+                # "conversation" @ high confidence, that is agreement (skip enrichment).
                 try:
                     from faculties.intent_gatekeeper import classify as _gk_classify
                     _gk = _gk_classify(raw, use_llm=False)
-                    _gk_force_conversation = (
-                        _gk["intent"] == "conversation" and _gk["confidence"] >= 0.85
-                    )
                 except Exception:
-                    _gk_force_conversation = False
+                    _gk = None
 
-                if _gk_force_conversation:
+                _plan_caps = (list(_plan.capabilities) if _plan and _plan.capabilities else [])
+                _gk_wants_conversation = (
+                    _gk is not None
+                    and _gk.get("intent") == "conversation"
+                    and _gk.get("confidence", 0.0) >= 0.85
+                )
+                _exec_wants_tools = bool(_plan_caps)
+                _gk_disagrees = _gk_wants_conversation and _exec_wants_tools
+
+                # D8: journal disagreements — captures the veto rate for the Board.
+                if _gk_disagrees:
+                    try:
+                        import json as _gk_json, os as _gk_os, time as _gk_time
+                        _gk_disagree_path = _gk_os.path.join(
+                            _here := _gk_os.path.dirname(_gk_os.path.abspath(__file__)),
+                            "self", "journals", "gatekeeper_disagreements.jsonl",
+                        )
+                        _gk_os.makedirs(_gk_os.path.dirname(_gk_disagree_path), exist_ok=True)
+                        _gk_entry = {
+                            "ts":              _gk_time.time(),
+                            "user_input":      _original_raw[:200],
+                            "gatekeeper":      {"intent": _gk.get("intent"),
+                                                "confidence": _gk.get("confidence")},
+                            "executive":       {"capabilities": [c[0] if isinstance(c, (list, tuple)) else str(c)
+                                                                  for c in _plan_caps],
+                                                "action": getattr(_plan, "conversation_action", "")},
+                            "outcome":         "deferred_to_executive",  # D8: Executive wins
+                            "ruling":          "0035_D8",
+                        }
+                        with open(_gk_disagree_path, "a", encoding="utf-8") as _gk_f:
+                            _gk_f.write(_gk_json.dumps(_gk_entry, ensure_ascii=False) + "\n")
+                    except Exception as _gk_j_err:
+                        _logging.debug("gatekeeper disagreement journal FAILED: %s", _gk_j_err)
+
+                # D8: never veto Executive's capability decision. Only skip enrichment
+                # when the Executive chose no capabilities AND the gatekeeper confirms
+                # conversation — i.e. both agree there is no tool to run.
+                if _gk_wants_conversation and not _exec_wants_tools:
                     _enriched, _agent = raw, "direct"
                 else:
                     # WO-118 Row 14 ROUTE: use Executive's capability choice when available.
                     # plan.capabilities = [(agent_name, query)] chosen by spine's capability
                     # faculty. Trust that over re-running keyword matching on the same raw input.
-                    _plan_caps = (list(_plan.capabilities) if _plan and _plan.capabilities else [])
                     _enriched, _agent = _tool_enrich_from_plan(raw, _plan_caps)
 
                 # WO-027 Seam A — inject relevant past corrections as few-shot ICL examples

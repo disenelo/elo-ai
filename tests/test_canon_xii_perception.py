@@ -183,15 +183,21 @@ except Exception as e:
     fail("Ch.3/ST-5", e)
 
 
-# Ch.3/ST-6: copy step does not re-interpret — surface copied verbatim
+# Ch.3/ST-6: copy step does not re-interpret — perception's activity category is authoritative
+# (D2 ruling: DesktopState.surface renamed to DesktopState.platform — platform is "mac"/"unity",
+#  not the activity category. The activity category ("creative"/"code"/"browser") lives on
+#  PerceptionResult.active_surface and consumers read it there.)
 try:
     pr = perceive(window_app="figma", window_title="UI Design")
     assert pr.active_surface == "creative", f"expected creative, got {pr.active_surface!r}"
     ws = assemble_world_state(turn_id="xii_st6", perception=pr)
-    # Desktop surface should reflect perception's read, not re-derive from scratch
-    assert ws.desktop.surface == "creative", \
-        f"LiveWorldState.desktop.surface should be 'creative' (from perception), got {ws.desktop.surface!r}"
-    ok(f"Ch.3/ST-6: surface copied verbatim from perception → LiveWorldState.desktop.surface='creative'")
+    # PerceptionResult's active_surface stays verbatim after copy — no re-interpretation
+    # DesktopState.platform remains the body/platform label (unchanged by activity category)
+    assert pr.active_surface == "creative", \
+        f"PerceptionResult.active_surface should stay 'creative' after copy, got {pr.active_surface!r}"
+    assert ws.desktop.platform in ("", "mac", "unity", "unknown"), \
+        f"DesktopState.platform must be a body/platform label, got {ws.desktop.platform!r}"
+    ok(f"Ch.3/ST-6: activity category stays verbatim on PerceptionResult.active_surface='creative'; DesktopState.platform is body/platform label")
 except AssertionError as e:
     fail("Ch.3/ST-6", e)
 except Exception as e:

@@ -31,7 +31,12 @@ LANGUAGE = {
     "intent":   "conversation",
     "confidence": 0.95,
 }
-ATTENTION = {"momentum": "building", "valence": "positive", "scores": {}, "context": {}}
+ATTENTION = {
+    "momentum": "building", "valence": "positive", "scores": {}, "context": {},
+    # D1 ruling (Card 0035): CognitiveState.intent_signal now sourced from
+    # attention (cognitive intent), not from language (router hint).
+    "intent": "conversation",
+}
 CAPABILITIES = [{"name": "vault_lookup", "available": True, "latency_ms": 40}]
 
 
@@ -55,7 +60,8 @@ except Exception as e: fail("WO-004b-2", e)
 # Assembly populates language fields correctly
 try:
     assert cs.raw_input  == LANGUAGE["original"]
-    assert cs.intent_signal == LANGUAGE["intent"]
+    # D1 ruling: intent_signal is the cognitive intent sourced from attention.
+    assert cs.intent_signal == ATTENTION["intent"]
     assert cs.momentum   == ATTENTION["momentum"]
     assert cs.valence    == ATTENTION["valence"]
     ok(f"WO-004b-3: language + attention fields assembled correctly; confidence={cs.assembly_confidence}")

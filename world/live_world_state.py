@@ -49,7 +49,7 @@ class DomainHealth:
 class DesktopState:
     active_app:    str  = ""
     active_window: str  = ""
-    surface:       str  = ""    # "mac" | "unity" | "unknown"
+    platform:      str  = ""    # "mac" | "unity" | "unknown"  (D2 ruling: renamed from surface — this is the body/platform label, NOT "where eLo is". Canonical "where eLo is" lives on EloSelfState.surface.)
     available:     bool = True  # False = lookup failed; distinguishable from "no window open"
 
 
@@ -213,7 +213,7 @@ def assemble_world_state(turn_id: str = "", perception=None) -> LiveWorldState:
         desktop = DesktopState(
             active_app=win.app,
             active_window=win.title,
-            surface="mac",
+            platform="mac",
         )
         _health("desktop", "live", "window_state", 1.0)
     except Exception as _desktop_err:
@@ -347,12 +347,15 @@ def assemble_world_state(turn_id: str = "", perception=None) -> LiveWorldState:
             papp = pwindow_parts[0] if pwindow_parts else ""
             ptitle = pwindow_parts[1] if len(pwindow_parts) > 1 else pscene
 
-            # Desktop — overwrite with perception surface + confidence from PerceptionFaculty
+            # Desktop — overwrite active_app / active_window + confidence from PerceptionFaculty.
+            # D2 ruling: perception's `active_surface` (creative|code|browser|...) is an
+            # activity category, NOT the platform label — it is NOT copied into DesktopState.
+            # Consumers wanting the activity category read PerceptionResult.active_surface directly.
             if psurface != "unknown" or papp:
                 desktop = DesktopState(
                     active_app=papp or desktop.active_app,
                     active_window=ptitle or desktop.active_window,
-                    surface=psurface if psurface != "unknown" else desktop.surface,
+                    platform=desktop.platform,
                 )
                 p_desk_status = phealth.get("window", {}).get("status", "absent")
                 domain_health["desktop"] = {

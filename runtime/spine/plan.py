@@ -23,7 +23,14 @@ class CognitivePlan:
     # ── Language ──────────────────────────────────────────────────────────────
     raw:                  str   = ""         # unchanged user input
     meaning:              str   = ""         # normalised + repaired
+    # D1 ruling (Card 0035): plan.intent is the COGNITIVE intent — the one the
+    # Executive decides on (stabilise|emotional|simplify|recall|creation|inquiry|conversation).
+    # Sourced from core/attention._classify_intent via attention_model["intent"].
     intent:               str   = "conversation"
+    # D1 ruling: capability_hint is the CAPABILITY-ROUTER hint from intent_engine
+    # (file_ops|memory|system|utility_*|...). It answers "which tool does this need?"
+    # — NOT the cognitive intent. Read by capability_faculty / agent_router.
+    capability_hint:      str   = ""
     intent_source:        str   = "david"    # WO-099b fix5: "david" | "self" | "reflex"
     # WO-114: full internal intent when source == "self" (kind, source, trigger, priority)
     internal_intent:      dict  = field(default_factory=dict)

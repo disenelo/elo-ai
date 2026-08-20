@@ -149,11 +149,14 @@ def build_executive_context(
     """
 
     # ── world ──────────────────────────────────────────────────────────────────
+    # D2 ruling (Card 0035): DesktopState.surface renamed to DesktopState.platform.
+    # The platform label is exposed as `platform` here; "where eLo is" lives on
+    # EloSelfState.surface (a different authority — Ruling D2).
     world_dict: dict = {}
     if world is not None:
         _desktop = getattr(world, "desktop", None)
         world_dict = {
-            "surface":       getattr(_desktop, "surface",    "") if _desktop else "",
+            "platform":      getattr(_desktop, "platform",   "") if _desktop else "",
             "active_app":    getattr(_desktop, "active_app", "") if _desktop else "",
             "available":     getattr(_desktop, "available",   True) if _desktop else False,
             "degraded":      list(getattr(world, "degraded", [])),

@@ -85,10 +85,26 @@ def record(
                       or "routing override")
             alternatives.append({"rejected": original, "reason": reason})
 
+        # D7 ruling (Card 0035): overrides are uniform — every executive_override
+        # journals its ground + rule + original action. Back-compat: also emit
+        # the legacy ground-name in `overrides` for existing readers.
         overrides: list = []
-        if exec_decision.get("overridden_by_safety"):
+        eo = exec_decision.get("executive_override")
+        if isinstance(eo, dict) and eo.get("ground"):
+            overrides.append({
+                "ground":          eo.get("ground"),
+                "rule":            eo.get("rule"),
+                "original_action": exec_decision.get("original_action"),
+                "new_action":      action,
+            })
+        # Legacy flags — still honoured so old journal entries stay readable.
+        if exec_decision.get("overridden_by_safety") and not any(
+            isinstance(o, dict) and o.get("ground") == "safety-stabilisation" for o in overrides
+        ):
             overrides.append("safety-stabilisation")
-        if exec_decision.get("overridden_by_routing"):
+        if exec_decision.get("overridden_by_routing") and not any(
+            isinstance(o, dict) and o.get("ground") == "seam-a-routing" for o in overrides
+        ):
             overrides.append("seam-a-routing")
 
         entry = {
@@ -96,7 +112,12 @@ def record(
             "turn":                  turn[:120],
             "action":                action,
             "trigger":               exec_decision.get("cal_reason") or "unknown",
+            # D1 ruling (Card 0035): `intent` = COGNITIVE intent (what the Executive
+            # decided on); `capability_hint` = intent_engine's router hint. Journal
+            # records BOTH so the "why did you do that?" answer names the intent that
+            # was actually decided on, not the router's disjoint vocabulary.
             "intent":                exec_decision.get("intent", ""),
+            "capability_hint":       exec_decision.get("capability_hint", ""),
             "tone":                  exec_decision.get("tone", ""),
             "confidence":            exec_decision.get("confidence"),
             "alternatives_rejected": alternatives,

@@ -60,10 +60,14 @@ def _language_faculty(raw: str) -> dict:
     try:
         from runtime.router.intent_engine import detect as detect_intent
         intent_result = detect_intent(result["meaning"])
-        result["intent"]      = intent_result["intent"]
-        result["intent_chain"]= intent_result.get("chain", [])
-        result["confidence"]  = min(result["confidence"],
-                                    intent_result.get("confidence", 0.8))
+        # D1 ruling (Card 0035): intent_engine outputs a CAPABILITY-ROUTER hint
+        # (file_ops|memory|system|utility_*|…), NOT the cognitive intent.
+        # Store it as `capability_hint`, not `intent`. `plan.intent` is filled
+        # from the cognitive classifier (core/attention._classify_intent) in run().
+        result["capability_hint"] = intent_result["intent"]
+        result["intent_chain"]    = intent_result.get("chain", [])
+        result["confidence"]      = min(result["confidence"],
+                                        intent_result.get("confidence", 0.8))
     except Exception as e:
         _log.debug("language_faculty/intent: %s", e)
 
@@ -174,10 +178,16 @@ def _executive_faculty(
     The Executive is the only entity permitted to make decisions.
     All other faculties contribute information. Only Executive decides.
     """
+    # D1 ruling (Card 0035): plan.intent = COGNITIVE intent (from core/attention),
+    # plan.capability_hint = router hint (from intent_engine). Two questions, two
+    # answers, two names. The journal records the cognitive intent — the one the
+    # Executive actually decides on.
+    _cognitive_intent = (attention or {}).get("intent") or "conversation"
     plan = CognitivePlan(
         raw=raw,
         meaning=language.get("meaning", raw),
-        intent=language.get("intent", "conversation"),
+        intent=_cognitive_intent,
+        capability_hint=language.get("capability_hint", ""),
         register=language.get("register", ""),
         social=language.get("social", ""),
         confidence=language.get("confidence", 0.7),
@@ -213,12 +223,12 @@ def _executive_faculty(
                 _attention_in["wm_winner"] = getattr(_attn_state, "winner", "")
                 _attention_in["wm_mode"]   = getattr(_attn_state, "mode",   "reactive")
                 _attention_in["wm_budget"] = getattr(_attn_state, "budget",  0.5)
-        # World state
+        # World state — D2 ruling (Card 0035): DesktopState.surface → platform.
         if world is not None:
             _desktop = getattr(world, "desktop", None)
             _route_hist = list(getattr(world, "route_history", ()) or ())
             _attention_in["world_state"] = {
-                "surface":       getattr(_desktop, "surface",    "") if _desktop else "",
+                "platform":      getattr(_desktop, "platform",   "") if _desktop else "",
                 "active_app":    getattr(_desktop, "active_app", "") if _desktop else "",
                 "available":     getattr(_desktop, "available",   True) if _desktop else False,
                 "degraded":      list(getattr(world, "degraded", [])),
@@ -558,7 +568,9 @@ def run(
         _log.warning("relationship_faculty FAILED: %s", e)
 
     # ── Capability Faculty ────────────────────────────────────────────────────
-    capabilities = _capability_faculty(language["meaning"], language["intent"])
+    # D1 ruling: capability routing reads the intent_engine's `capability_hint`,
+    # not the cognitive intent. The two answer different questions.
+    capabilities = _capability_faculty(language["meaning"], language.get("capability_hint", ""))
 
     # ── System Faculty ────────────────────────────────────────────────────────
     system_det = _system_faculty(language["meaning"])
@@ -712,9 +724,12 @@ def assemble_cognitive_state(
 
     _attn_state = getattr(working_memory, "attention", None) if working_memory else None
 
+    # D1 ruling (Card 0035): intent_signal is the COGNITIVE intent that the
+    # Executive decides on — sourced from core/attention (attention_model["intent"]).
+    # The intent_engine's router hint travels as `capability_hint`, elsewhere.
     return CognitiveState(
         raw_input=language.get("original", ""),
-        intent_signal=language.get("intent", "conversation"),
+        intent_signal=(attention or {}).get("intent") or language.get("intent") or "conversation",
         register=language.get("register", ""),
         social_signal=language.get("social", ""),
         momentum=(attention or {}).get("momentum", "stable"),
