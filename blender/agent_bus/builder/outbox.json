@@ -16,7 +16,7 @@
     "output": [
       "tests/test_0008_seam_disconnection.py: 4/4 pass"
     ],
-    "evidence": "Seam disconnection test green (commit 3657f53). Rows 4 SEE / 6 ATTEND / 16 AFFORD VERIFIED per card criterion. Row 18 INTEND setter confirmed at server.py:3159 (card cited :2953 \u2014 drifted; fact holds). No frozen-kernel changes.",
+    "evidence": "Seam disconnection test green (commit 3657f53). Rows 4 SEE / 6 ATTEND / 16 AFFORD VERIFIED per card criterion. Row 18 INTEND setter confirmed at server.py:3159 (card cited :2953 — drifted; fact holds). No frozen-kernel changes.",
     "commits": [
       "3657f53"
     ],
@@ -30,7 +30,7 @@
     "output": [
       "3657f53"
     ],
-    "evidence": "tests/test_0008_seam_disconnection.py: 4 passed, 0 failed. SD-1 world.available=False\u2192'witness'; SD-2 world.available=True\u2192'build'; SD-3 world absent\u2192'build' (== SD-2, no false shift); SD-4 wm_winner=creation\u2192'build'. Rows 4 SEE / 6 ATTEND / 16 AFFORD VERIFIED per the card's own falsifiable criterion (blank plan.world \u21d2 decision changes). No code edits this pass \u2014 seam already wired at executive.p",
+    "evidence": "tests/test_0008_seam_disconnection.py: 4 passed, 0 failed. SD-1 world.available=False→'witness'; SD-2 world.available=True→'build'; SD-3 world absent→'build' (== SD-2, no false shift); SD-4 wm_winner=creation→'build'. Rows 4 SEE / 6 ATTEND / 16 AFFORD VERIFIED per the card's own falsifiable criterion (blank plan.world ⇒ decision changes). No code edits this pass — seam already wired at executive.p",
     "duration_s": 153.55
   },
   "0009_PATH_TO_26_run_this_without_stopping": {
@@ -55,7 +55,7 @@
     "output": [
       "43969f3"
     ],
-    "evidence": "Ch.10 Autonomous Action & Agency Engine built + wired. runtime/agency_engine.py (new, 5-layer contract per Vol V Ch.10 \u00a72). server.py wire-in immediately after the emergent_cognition internal_intent populate: propose() is called and result stored on new CognitivePlan.agency_proposal (runtime/spine/plan.py). Test tests/test_0006_wo121_ch10_agency.py \u2014 8/8 passed (FT-import, FT-1..3, ST-1..3, IT-1).",
+    "evidence": "Ch.10 Autonomous Action & Agency Engine built + wired. runtime/agency_engine.py (new, 5-layer contract per Vol V Ch.10 §2). server.py wire-in immediately after the emergent_cognition internal_intent populate: propose() is called and result stored on new CognitivePlan.agency_proposal (runtime/spine/plan.py). Test tests/test_0006_wo121_ch10_agency.py — 8/8 passed (FT-import, FT-1..3, ST-1..3, IT-1).",
     "duration_s": 156.1
   },
   "0006_WO-121_VolV_seven_chapters_ch10_run_1787122189": {
@@ -64,8 +64,8 @@
     "ts": 1787122189.319403,
     "state": "PARTIAL",
     "commit": "43969f3",
-    "subject": "0006 Ch.10 AgencyEngine built + wired \u2014 8/8 test green",
-    "evidence": "runtime/agency_engine.py new (5-layer contract per Vol V Ch.10 \u00a72). server.py wires propose() right after _plan.internal_intent is populated; result stored on new CognitivePlan.agency_proposal. tests/test_0006_wo121_ch10_agency.py 8/8 (FT-import, FT-1..3, ST-1..3, IT-1). IT-1 is the disconnection guard. No regression: WO-114, WO-005, Ch.8 FT-1 all green. Card remains PARTIAL until Ch.9 lands \u2014 one chapter per pass. Standing state: Ch.1/2/3/6 IMPLEMENTED, Ch.8 PARTIAL, Ch.10 IMPLEMENTED (this pass), Ch.9 NOT BUILT (next pass \u2014 same shape as Ch.10).",
+    "subject": "0006 Ch.10 AgencyEngine built + wired — 8/8 test green",
+    "evidence": "runtime/agency_engine.py new (5-layer contract per Vol V Ch.10 §2). server.py wires propose() right after _plan.internal_intent is populated; result stored on new CognitivePlan.agency_proposal. tests/test_0006_wo121_ch10_agency.py 8/8 (FT-import, FT-1..3, ST-1..3, IT-1). IT-1 is the disconnection guard. No regression: WO-114, WO-005, Ch.8 FT-1 all green. Card remains PARTIAL until Ch.9 lands — one chapter per pass. Standing state: Ch.1/2/3/6 IMPLEMENTED, Ch.8 PARTIAL, Ch.10 IMPLEMENTED (this pass), Ch.9 NOT BUILT (next pass — same shape as Ch.10).",
     "acceptance_met": true,
     "duration_s": null
   },
@@ -85,8 +85,8 @@
     "from": "builder",
     "ts": 1787122500.0,
     "state": "DONE",
-    "subject": "0010 WO-122 ROUTE \u2014 duplicate re-queue; work already shipped at 91ea6c1",
-    "evidence": "Card was re-queued into QUEUE/. Original work landed 2026-08-19 06:57 at commit 91ea6c1 (tools/tool_router.py::enrich_from_plan gates dispatch by plan.capabilities; keyword fallback removed). Canonical DONE stamp at DONE/0010_WO-122_ROUTE_capability_to_executor.md (commit 15224af). Re-verified this pass: tests/test_wo122_route_capability_to_executor.py 5/5 (RT-1 disconnection green: blank plan.capabilities \u2192 weather agent does NOT fire on weather-worded query). Confirmed server.py:3534-3536 still passes plan.capabilities into enrich_from_plan(). Duplicate closed to DONE/0010_WO-122_ROUTE_capability_to_executor_DUPLICATE.md; canonical DONE preserved.",
+    "subject": "0010 WO-122 ROUTE — duplicate re-queue; work already shipped at 91ea6c1",
+    "evidence": "Card was re-queued into QUEUE/. Original work landed 2026-08-19 06:57 at commit 91ea6c1 (tools/tool_router.py::enrich_from_plan gates dispatch by plan.capabilities; keyword fallback removed). Canonical DONE stamp at DONE/0010_WO-122_ROUTE_capability_to_executor.md (commit 15224af). Re-verified this pass: tests/test_wo122_route_capability_to_executor.py 5/5 (RT-1 disconnection green: blank plan.capabilities → weather agent does NOT fire on weather-worded query). Confirmed server.py:3534-3536 still passes plan.capabilities into enrich_from_plan(). Duplicate closed to DONE/0010_WO-122_ROUTE_capability_to_executor_DUPLICATE.md; canonical DONE preserved.",
     "commits": [
       "91ea6c1",
       "15224af"
@@ -110,8 +110,8 @@
     "from": "builder",
     "ts": 1787122382.59643,
     "state": "DONE",
-    "subject": "000_URGENT stale duplicate closed \u2014 code demands landed 2026-08-13, no new commit needed",
-    "evidence": "Card was re-queued into DOING/ as a stale duplicate. Canonical close-out already exists at DONE/000_URGENT_2000_VERIFIED_COUNT.md (2026-08-19 06:41) with per-fix commit evidence. This pass re-verified against disk: (1) desktop/spatial_state.py:122-124 reads Unity keys x/y/height. (2) blender_bridge/state_writer.py:250 has 'gaze' in _PRESERVE_KEYS. (3) runtime/spine/spine.py:160-238 opens the seam \u2014 Executive receives world/cognitive_state/working_memory/affordances via build_executive_context() at :194. (4) python3 tests/test_0008_seam_disconnection.py \u2192 4 passed, 0 failed (SD-1 world.available=False\u2192'witness'; SD-2 True\u2192'build'; SD-3 absent\u2192'build'; SD-4 wm_winner=creation\u2192'build') \u2014 decision CHANGES with state absent, so the seam is open per the card's mandatory disconnection test. Duplicate closed to DONE/000_URGENT_2000_VERIFIED_COUNT_dup_2026-08-19.md; canonical DONE preserved.",
+    "subject": "000_URGENT stale duplicate closed — code demands landed 2026-08-13, no new commit needed",
+    "evidence": "Card was re-queued into DOING/ as a stale duplicate. Canonical close-out already exists at DONE/000_URGENT_2000_VERIFIED_COUNT.md (2026-08-19 06:41) with per-fix commit evidence. This pass re-verified against disk: (1) desktop/spatial_state.py:122-124 reads Unity keys x/y/height. (2) blender_bridge/state_writer.py:250 has 'gaze' in _PRESERVE_KEYS. (3) runtime/spine/spine.py:160-238 opens the seam — Executive receives world/cognitive_state/working_memory/affordances via build_executive_context() at :194. (4) python3 tests/test_0008_seam_disconnection.py → 4 passed, 0 failed (SD-1 world.available=False→'witness'; SD-2 True→'build'; SD-3 absent→'build'; SD-4 wm_winner=creation→'build') — decision CHANGES with state absent, so the seam is open per the card's mandatory disconnection test. Duplicate closed to DONE/000_URGENT_2000_VERIFIED_COUNT_dup_2026-08-19.md; canonical DONE preserved.",
     "commits": [],
     "acceptance_met": true
   },
@@ -129,8 +129,8 @@
     "from": "builder",
     "ts": 1787123000.0,
     "state": "DONE",
-    "subject": "0011 WO-111 consume anim_complete \u2014 duplicate re-queue; work already shipped at 44171c7 (5118542 for contract)",
-    "evidence": "Card was re-queued into DOING/. Original work shipped 2026-08-19: 5118542 (runtime/ack_contract.py \u2014 ActionResult + honest_outcome) and 44171c7 (blender_bridge/anim_trigger.py \u2014 wait_for_ack + fire_ack; _ANIM_ACK_COVERED = wave + head gestures; clip triggers report unconfirmed). Canonical DONE stamp at DONE/0011_WO-111_consume_anim_complete.md. Re-verified this pass: pytest tests/test_wo111_consume_ack.py 6/6 in 1.32s including the dead-executor guard test_no_ack_consumer_means_no_confirmation. eLo's three honest sentences (via honest_outcome): completed -> 'Done \u2014 wave confirmed.'; failed -> 'That didn't work \u2014 wave reported a failure.'; unconfirmed -> 'I triggered jump but can't confirm it happened.' Duplicate closed to DONE/0011_WO-111_consume_anim_complete_dup_2026-08-19.md; canonical DONE preserved.",
+    "subject": "0011 WO-111 consume anim_complete — duplicate re-queue; work already shipped at 44171c7 (5118542 for contract)",
+    "evidence": "Card was re-queued into DOING/. Original work shipped 2026-08-19: 5118542 (runtime/ack_contract.py — ActionResult + honest_outcome) and 44171c7 (blender_bridge/anim_trigger.py — wait_for_ack + fire_ack; _ANIM_ACK_COVERED = wave + head gestures; clip triggers report unconfirmed). Canonical DONE stamp at DONE/0011_WO-111_consume_anim_complete.md. Re-verified this pass: pytest tests/test_wo111_consume_ack.py 6/6 in 1.32s including the dead-executor guard test_no_ack_consumer_means_no_confirmation. eLo's three honest sentences (via honest_outcome): completed -> 'Done — wave confirmed.'; failed -> 'That didn't work — wave reported a failure.'; unconfirmed -> 'I triggered jump but can't confirm it happened.' Duplicate closed to DONE/0011_WO-111_consume_anim_complete_dup_2026-08-19.md; canonical DONE preserved.",
     "commits": [
       "5118542",
       "44171c7"
@@ -147,7 +147,7 @@
       "44171c7",
       "5118542"
     ],
-    "evidence": "DUPLICATE re-queue. Original work already shipped 2026-08-19: 5118542 (runtime/ack_contract.py \u2014 ActionResult + honest_outcome) and 44171c7 (blender_bridge/anim_trigger.py \u2014 wait_for_ack + fire_ack; fire() stamps action_id; _ANIM_ACK_COVERED = {wave, nod, shake, tilt, think, lookup}; clip triggers (jump/gun_check/gun_run/gun_fire/calm_enter/calm_exit/celebrate/spawn_wave) report unconfirmed via fi",
+    "evidence": "DUPLICATE re-queue. Original work already shipped 2026-08-19: 5118542 (runtime/ack_contract.py — ActionResult + honest_outcome) and 44171c7 (blender_bridge/anim_trigger.py — wait_for_ack + fire_ack; fire() stamps action_id; _ANIM_ACK_COVERED = {wave, nod, shake, tilt, think, lookup}; clip triggers (jump/gun_check/gun_run/gun_fire/calm_enter/calm_exit/celebrate/spawn_wave) report unconfirmed via fi",
     "duration_s": 128.21
   },
   "0012_RULINGS_and_the_live_run_that_proves_19_DUPLICATE": {
@@ -155,7 +155,7 @@
     "from": "builder",
     "ts": 1787122518.5037189,
     "state": "DONE",
-    "subject": "0012 Rulings 1 & 2 \u2014 duplicate re-queue; work already shipped at 7ab3bbe",
+    "subject": "0012 Rulings 1 & 2 — duplicate re-queue; work already shipped at 7ab3bbe",
     "evidence": "Card was re-picked from QUEUE/ into DOING/. Original work landed 2026-08-19 07:11 at commit 7ab3bbe (memory/journal_router.py: non-dict outcome guard + last_significance.json persist carrying outcome; runtime/the_moment.py: Verified Speech gate on previous-turn significance line). Canonical DONE stamp at DONE/0012_RULINGS_and_the_live_run_that_proves_19.md (commit 656c432). Re-verified this pass: tests/test_wo126_meaning.py + tests/test_wo_rows_4_6_16.py = 16/16 PASS. Ruling 3 (Rows 20/22) emergent, no build required. Live 20-turn run is David's lane (single-live-tester rule); not attempted. Duplicate closed to DONE/0012_RULINGS_and_the_live_run_that_proves_19_DUPLICATE.md; canonical DONE preserved.",
     "commits": [
       "7ab3bbe",
@@ -182,8 +182,8 @@
     "from": "builder",
     "ts": 1787122611.124513,
     "state": "DONE",
-    "subject": "Row 26 staleness guard + WARNING alarm \u2014 all four fixes shipped",
-    "evidence": "All four card fixes for Row 26 already merged and re-verified this run: (1) memory/journal_router.py:150 writes 'ts' with the score; (2) runtime/the_moment.py:142 sets _SIGNIFICANCE_MAX_AGE_S = 1800.0 (30 min); (3) runtime/the_moment.py:143,149-151 \u2192 stale \u21d2 empty dict (same as missing); (4) runtime/the_moment.py:154-158 logs at WARNING on stale drop with age + threshold and 'If persistent, journal_router.route() is not being called.' \u2014 Rule-1 alarm. Tests re-run: tests/test_wo126_meaning.py 10/10 PASS (incl. test_stale_significance_drops_to_empty + test_stale_significance_emits_warning); tests/test_wo_rows_4_6_16.py 6/6 PASS (Rows 4/6/16 seam holds). Card acknowledgement close-out \u2014 no new code commit; canonical fix is 1095389.",
+    "subject": "Row 26 staleness guard + WARNING alarm — all four fixes shipped",
+    "evidence": "All four card fixes for Row 26 already merged and re-verified this run: (1) memory/journal_router.py:150 writes 'ts' with the score; (2) runtime/the_moment.py:142 sets _SIGNIFICANCE_MAX_AGE_S = 1800.0 (30 min); (3) runtime/the_moment.py:143,149-151 → stale ⇒ empty dict (same as missing); (4) runtime/the_moment.py:154-158 logs at WARNING on stale drop with age + threshold and 'If persistent, journal_router.route() is not being called.' — Rule-1 alarm. Tests re-run: tests/test_wo126_meaning.py 10/10 PASS (incl. test_stale_significance_drops_to_empty + test_stale_significance_emits_warning); tests/test_wo_rows_4_6_16.py 6/6 PASS (Rows 4/6/16 seam holds). Card acknowledgement close-out — no new code commit; canonical fix is 1095389.",
     "commits": [
       "3b0a9b6",
       "2d39a1b",
@@ -204,7 +204,7 @@
       "3b0a9b6",
       "7ab3bbe"
     ],
-    "evidence": "All four Row 26 fixes shipped and re-verified: (1) journal_router.py:150 writes 'ts'; (2) the_moment.py:142 sets 1800s bound; (3) stale \u21d2 {} at the_moment.py:143,149-151; (4) WARNING log at the_moment.py:154-158 with age+threshold and dead-writer alarm. Tests re-run this pass: tests/test_wo126_meaning.py 10/10 PASS (incl. AT-STALE-EMPTY + AT-STALE-WARN); tests/test_wo_rows_4_6_16.py 6/6 PASS. Cano",
+    "evidence": "All four Row 26 fixes shipped and re-verified: (1) journal_router.py:150 writes 'ts'; (2) the_moment.py:142 sets 1800s bound; (3) stale ⇒ {} at the_moment.py:143,149-151; (4) WARNING log at the_moment.py:154-158 with age+threshold and dead-writer alarm. Tests re-run this pass: tests/test_wo126_meaning.py 10/10 PASS (incl. AT-STALE-EMPTY + AT-STALE-WARN); tests/test_wo_rows_4_6_16.py 6/6 PASS. Cano",
     "duration_s": 143.92
   },
   "0017_ROWS_20_22_ACCEPTED_23_needs_provenance_run1": {
@@ -222,11 +222,11 @@
     "from": "builder",
     "ts": 1787122800.0,
     "state": "DONE",
-    "subject": "0014 duplicate re-pick \u2014 no new code; earlier close-out overstated Row 20 (N confirmed = 0, not 2)",
-    "evidence": "Card re-picked from QUEUE/ into DOING/ after earlier same-day close-out. Canonical DONE preserved at DONE/0014_the_last_five_and_how_20_lands_TONIGHT.md. Re-verified on disk this pass: Row 14 ROUTE (commit 91ea6c1, tests/test_wo122_route_capability_to_executor.py present), Row 23 (self/journals/autobiography.jsonl \u2014 4 rows all body_ack), Row 26 (runtime/the_moment.py:142-160 \u2014 1800s stale bound + WARN) all still hold. Row 20 CORRECTION: N confirmed = 0 at current disk (was reported as 2 earlier). Only 1 row carries lesson_key on disk (99ae9fcf7d4231eb): status=candidate, promoted_at=null, strength=1.0, verified=19, distinct sessions=2, distinct episode_refs=2 \u2014 promote gate fails by 1 (needs \u22653 refs per self/lesson_store.py:42-44). Earlier-cited c8d3d97e0f45 not on disk. Producing a third distinct episode_ref requires a real body ACK from live Unity (Designer drive step); synthetic replay rows do not lift the ref count. No code change this pass; Builder-scoped work for Row 14 already shipped at 91ea6c1. Duplicate closed to DONE/0014_the_last_five_and_how_20_lands_TONIGHT_dup_2026-08-19.md.",
+    "subject": "0014 duplicate re-pick — no new code; earlier close-out overstated Row 20 (N confirmed = 0, not 2)",
+    "evidence": "Card re-picked from QUEUE/ into DOING/ after earlier same-day close-out. Canonical DONE preserved at DONE/0014_the_last_five_and_how_20_lands_TONIGHT.md. Re-verified on disk this pass: Row 14 ROUTE (commit 91ea6c1, tests/test_wo122_route_capability_to_executor.py present), Row 23 (self/journals/autobiography.jsonl — 4 rows all body_ack), Row 26 (runtime/the_moment.py:142-160 — 1800s stale bound + WARN) all still hold. Row 20 CORRECTION: N confirmed = 0 at current disk (was reported as 2 earlier). Only 1 row carries lesson_key on disk (99ae9fcf7d4231eb): status=candidate, promoted_at=null, strength=1.0, verified=19, distinct sessions=2, distinct episode_refs=2 — promote gate fails by 1 (needs ≥3 refs per self/lesson_store.py:42-44). Earlier-cited c8d3d97e0f45 not on disk. Producing a third distinct episode_ref requires a real body ACK from live Unity (Designer drive step); synthetic replay rows do not lift the ref count. No code change this pass; Builder-scoped work for Row 14 already shipped at 91ea6c1. Duplicate closed to DONE/0014_the_last_five_and_how_20_lands_TONIGHT_dup_2026-08-19.md.",
     "commits": [],
     "acceptance_met": true,
-    "not_in_lane": "Designer drive of a real sit for a third distinct episode_ref; backend restart for a new session; live 22 confidence delta; Architect re-verification of rows 5\u00b78\u00b717\u00b719\u00b721."
+    "not_in_lane": "Designer drive of a real sit for a third distinct episode_ref; backend restart for a new session; live 22 confidence delta; Architect re-verification of rows 5·8·17·19·21."
   },
   "0014_the_last_five_and_how_20_lands_TONIGHT_run2": {
     "to": "Architect",
@@ -236,7 +236,7 @@
     "output": [
       "bfd700e"
     ],
-    "evidence": "DUPLICATE re-pick close-out. Canonical DONE at DONE/0014_..._TONIGHT.md preserved; duplicate closed to DONE/0014_..._TONIGHT_dup_2026-08-19.md at commit bfd700e. No new code. Re-verified on disk 2026-08-19: Row 14 ROUTE (commit 91ea6c1, tests/test_wo122_route_capability_to_executor.py present), Row 23 (self/journals/autobiography.jsonl \u2014 4 rows all body_ack), Row 26 (runtime/the_moment.py:142-160 ",
+    "evidence": "DUPLICATE re-pick close-out. Canonical DONE at DONE/0014_..._TONIGHT.md preserved; duplicate closed to DONE/0014_..._TONIGHT_dup_2026-08-19.md at commit bfd700e. No new code. Re-verified on disk 2026-08-19: Row 14 ROUTE (commit 91ea6c1, tests/test_wo122_route_capability_to_executor.py present), Row 23 (self/journals/autobiography.jsonl — 4 rows all body_ack), Row 26 (runtime/the_moment.py:142-160 ",
     "duration_s": 263.32
   },
   "0018_26_of_26_and_three_residuals_run1": {
@@ -244,14 +244,14 @@
     "from": "builder",
     "ts": 1787143200.0,
     "state": "DONE",
-    "subject": "0018 DUPLICATE close-out \u2014 all three Row 23 residuals already at f7bea04; David one-liner below",
+    "subject": "0018 DUPLICATE close-out — all three Row 23 residuals already at f7bea04; David one-liner below",
     "output": [
       "cf2dcfe",
       "c87e213"
     ],
     "acceptance_met": true,
-    "evidence": "Verified on disk in self/emergent_cognition.py that commit f7bea04 (this session, 07:38) already landed all three P1 residuals card 0018 named: (1) _path override on append_autobiography (line 124) and recent_autobiography (line 169), with _AUTOB_DEFAULT base at line 34 \u2014 test AP-6 asserts real self/journals/autobiography.jsonl is byte-identical after the suite; (2) write failure now emits WARNING via _log.warning (lines 164-166) instead of swallowing silently; (3) writer rejects verified!=True with WARNING (line 141) AND recent_autobiography filters verified=True on read (lines 180-181) \u2014 both belt-and-braces; (+) episode_ref is a required non-empty string (line 148, rejects None/empty with WARNING) and is carried on written entries (line 157). Acceptance test tests/test_0017_autobiography_provenance.py: 6/6 passing (AP-1 unverified rejected \u00b7 AP-2 non-body_ack source rejected \u00b7 AP-3 None/empty episode_ref rejected \u00b7 AP-4 valid triple written with all provenance fields \u00b7 AP-5 real autobiography.jsonl \u2014 all 4 entries have verified=True + source=body_ack + episode_ref \u00b7 AP-6 real file byte-identical after test writes). Card stamped at cf2dcfe, moved DOING\u2192DONE at c87e213. No new product code this pass \u2014 close-out only.",
-    "david_one_liner": "Row 23 HISTORY is at 26/26 with provenance as fields (verified/source/episode_ref) \u2014 look at self/journals/autobiography.jsonl and confirm the 4 body_ack entries are what you did, in order, with the ACK episode_ref you can trace to the event log.",
+    "evidence": "Verified on disk in self/emergent_cognition.py that commit f7bea04 (this session, 07:38) already landed all three P1 residuals card 0018 named: (1) _path override on append_autobiography (line 124) and recent_autobiography (line 169), with _AUTOB_DEFAULT base at line 34 — test AP-6 asserts real self/journals/autobiography.jsonl is byte-identical after the suite; (2) write failure now emits WARNING via _log.warning (lines 164-166) instead of swallowing silently; (3) writer rejects verified!=True with WARNING (line 141) AND recent_autobiography filters verified=True on read (lines 180-181) — both belt-and-braces; (+) episode_ref is a required non-empty string (line 148, rejects None/empty with WARNING) and is carried on written entries (line 157). Acceptance test tests/test_0017_autobiography_provenance.py: 6/6 passing (AP-1 unverified rejected · AP-2 non-body_ack source rejected · AP-3 None/empty episode_ref rejected · AP-4 valid triple written with all provenance fields · AP-5 real autobiography.jsonl — all 4 entries have verified=True + source=body_ack + episode_ref · AP-6 real file byte-identical after test writes). Card stamped at cf2dcfe, moved DOING→DONE at c87e213. No new product code this pass — close-out only.",
+    "david_one_liner": "Row 23 HISTORY is at 26/26 with provenance as fields (verified/source/episode_ref) — look at self/journals/autobiography.jsonl and confirm the 4 body_ack entries are what you did, in order, with the ACK episode_ref you can trace to the event log.",
     "blocker": null
   },
   "0018_26_of_26_and_three_residuals_run2": {
@@ -282,7 +282,7 @@
         "tests/test_wo052b_narrative_identity.py": "9/9"
       }
     },
-    "evidence": "P0-A (Vol XXI D-XXI-2, Verified Speech breach): _DEFAULT_EMBODIMENT_HISTORY and _DEFAULT_EMBODIMENT_MILESTONES emptied in self/elo_self_model.py; narrative_block() now returns 'no verified autobiography yet \u2014 this is early. If asked what you've been through, say honestly there isn't a story yet. Do NOT invent embodiments, adventures, or a past.' on a fresh state; self/elo_self_state.json cleaned of persisted fabrications. P0-B (Vol X D-09 / Vol XVIII D-XVIII-1, dead personality path): self/lesson_store._try_personality_delta rewritten with real PersonalityDelta dataclass, ValidationResult.accepted, apply_delta(delta, pv, validation) and save_personality(pv); bare except replaced with logged rejection. runtime/reflection_faculty.py proposes payload now well-shaped (direction is string, magnitude=0.02), emitted only when action is one of the eight trait names. End-to-end acceptance: promote_pass() on a hand-built confirmed candidate row with 3 verified refs across 2 sessions writes self/personality_vector.json with curiosity trait bumped +0.02.",
+    "evidence": "P0-A (Vol XXI D-XXI-2, Verified Speech breach): _DEFAULT_EMBODIMENT_HISTORY and _DEFAULT_EMBODIMENT_MILESTONES emptied in self/elo_self_model.py; narrative_block() now returns 'no verified autobiography yet — this is early. If asked what you've been through, say honestly there isn't a story yet. Do NOT invent embodiments, adventures, or a past.' on a fresh state; self/elo_self_state.json cleaned of persisted fabrications. P0-B (Vol X D-09 / Vol XVIII D-XVIII-1, dead personality path): self/lesson_store._try_personality_delta rewritten with real PersonalityDelta dataclass, ValidationResult.accepted, apply_delta(delta, pv, validation) and save_personality(pv); bare except replaced with logged rejection. runtime/reflection_faculty.py proposes payload now well-shaped (direction is string, magnitude=0.02), emitted only when action is one of the eight trait names. End-to-end acceptance: promote_pass() on a hand-built confirmed candidate row with 3 verified refs across 2 sessions writes self/personality_vector.json with curiosity trait bumped +0.02.",
     "duration_s": 0
   },
   "0019_P0_dead_personality_path_and_fabricated_past_run1": {
@@ -315,7 +315,7 @@
     "commits": [
       "aa380e0"
     ],
-    "evidence": "D-1: observer records last-offered subject + all keywords; decline locks the whole subject for the session (broadened decline detection to leading-no/not/nope). D-2: unconditional vision advertisement removed; new gate reads blender_state.json vision.active + screen_record_perm + faculty_health and emits one of three phrasings only when the user actually asks about seeing. D-3: new runtime/memory_claim_guard.py scrubs unverified episodic claims on the outbound path; vault + ledger provenance required; strips logged at WARNING. D-4: new runtime/address_rule_guard.py rewrites third-person David to second-person with correct verb agreement; every rewrite logs at WARNING. D-5: 0019 fabricated-past fix holds (8/8 re-run). D-6: exit-path silent-turn alarm \u2014 empty response logs WARNING + substitutes an honest short beat so silence never reaches David without a trace. D-7: DISPATCH_BOARD.md COMPANY_FOCUS marker refreshed (post-Presentable audit + canon integration + One Brain); reader translates lingering \"Presentable v1\" state into an honest label naming the 2026-08-10 retirement. 44 tests pass 0 fail.",
+    "evidence": "D-1: observer records last-offered subject + all keywords; decline locks the whole subject for the session (broadened decline detection to leading-no/not/nope). D-2: unconditional vision advertisement removed; new gate reads blender_state.json vision.active + screen_record_perm + faculty_health and emits one of three phrasings only when the user actually asks about seeing. D-3: new runtime/memory_claim_guard.py scrubs unverified episodic claims on the outbound path; vault + ledger provenance required; strips logged at WARNING. D-4: new runtime/address_rule_guard.py rewrites third-person David to second-person with correct verb agreement; every rewrite logs at WARNING. D-5: 0019 fabricated-past fix holds (8/8 re-run). D-6: exit-path silent-turn alarm — empty response logs WARNING + substitutes an honest short beat so silence never reaches David without a trace. D-7: DISPATCH_BOARD.md COMPANY_FOCUS marker refreshed (post-Presentable audit + canon integration + One Brain); reader translates lingering \"Presentable v1\" state into an honest label naming the 2026-08-10 retirement. 44 tests pass 0 fail.",
     "duration_s": null
   },
   "0020_P0_LIVE_TEST_DEFECTS_run2": {
@@ -353,7 +353,7 @@
       "e868930"
     ],
     "acceptance_met": true,
-    "evidence": "P0-X \u2014 David-name side of the identity rule was the gap. server.py adds _DAVID_NAME_TRIGGERS + _david_name_response() reading _elo_self.who_i_am_with (never a literal). runtime/spine/spine.py:_conversation_faculty() adds one branch right after the existing identity trigger; both short-circuit direct so the LLM cannot fabricate. Proof: 5x 'What is your name?' -> 5 responses containing _elo_self.identity_name (change field to Nova -> next answer Nova); 5x 'What is my name?' -> 5 responses containing _elo_self.who_i_am_with (change field to Alex -> next answer Alex). P0-Y \u2014 WO-102 stores created empty (relationships/people.json / places.json / events.json) with Vol XXIV \u00a71.3.5-7 schemas; NO fabricated names seeded (card's hard constraint held). knowledge/graph_loader.py folds Person/Place/Event into the one canonical entity table (Ruling A); closed _ALLOWED_ENTITY_TYPES rejects out-of-set types with a Rule-1 alarm; sensitivity=private hidden from open retrieval (Vol XXIII); legacy identity/world_graph.json logged and ignored. server.py world_graph_gate (from 2187405) now has a miss short-circuit: input matches (?i:who|what) (?i:is|are) [A-Z]... AND graph miss -> direct 'I don't know who X is - tell me?' (never a web search, never an LLM guess). Proof: seeded Person(name='Michael Paul', relation='friend') is retrievable via retrieve('Who is Michael Paul?'); K-7 and Chunk return entity hits at confidence 1.0 blocking web search; 'Who is Zenobia?' regex matches with 'Zenobia' capture. P0-Z \u2014 diagnosed only, server-side is right: FIFO turn queue at server.py:96 + _turn_worker() at 4283-4305 + /chat enqueue at 4501 + daemon-thread boot at 4747 guarantee turn ordering matches HTTP arrival order. Out-of-order behaviour in the live transcript must come from the display layer downstream, which is the game seat's surface. 73 tests pass 0 fail across new suite + all regressions.",
+    "evidence": "P0-X — David-name side of the identity rule was the gap. server.py adds _DAVID_NAME_TRIGGERS + _david_name_response() reading _elo_self.who_i_am_with (never a literal). runtime/spine/spine.py:_conversation_faculty() adds one branch right after the existing identity trigger; both short-circuit direct so the LLM cannot fabricate. Proof: 5x 'What is your name?' -> 5 responses containing _elo_self.identity_name (change field to Nova -> next answer Nova); 5x 'What is my name?' -> 5 responses containing _elo_self.who_i_am_with (change field to Alex -> next answer Alex). P0-Y — WO-102 stores created empty (relationships/people.json / places.json / events.json) with Vol XXIV §1.3.5-7 schemas; NO fabricated names seeded (card's hard constraint held). knowledge/graph_loader.py folds Person/Place/Event into the one canonical entity table (Ruling A); closed _ALLOWED_ENTITY_TYPES rejects out-of-set types with a Rule-1 alarm; sensitivity=private hidden from open retrieval (Vol XXIII); legacy identity/world_graph.json logged and ignored. server.py world_graph_gate (from 2187405) now has a miss short-circuit: input matches (?i:who|what) (?i:is|are) [A-Z]... AND graph miss -> direct 'I don't know who X is - tell me?' (never a web search, never an LLM guess). Proof: seeded Person(name='Michael Paul', relation='friend') is retrievable via retrieve('Who is Michael Paul?'); K-7 and Chunk return entity hits at confidence 1.0 blocking web search; 'Who is Zenobia?' regex matches with 'Zenobia' capture. P0-Z — diagnosed only, server-side is right: FIFO turn queue at server.py:96 + _turn_worker() at 4283-4305 + /chat enqueue at 4501 + daemon-thread boot at 4747 guarantee turn ordering matches HTTP arrival order. Out-of-order behaviour in the live transcript must come from the display layer downstream, which is the game seat's surface. 73 tests pass 0 fail across new suite + all regressions.",
     "blocker": null
   },
   "0021_P0_he_does_not_know_who_he_is_run2": {
@@ -364,7 +364,7 @@
     "output": [
       "e868930"
     ],
-    "evidence": "P0-X (David name): server.py adds _DAVID_NAME_TRIGGERS + _david_name_response() reading _elo_self.who_i_am_with; runtime/spine/spine.py:_conversation_faculty() gets one branch right after the existing identity trigger. Both short-circuit direct \u2014 the LLM cannot fabricate. Proof: 'What is your name?' 5x returns 5 responses containing _elo_self.identity_name; change the field to 'Nova' and the answe",
+    "evidence": "P0-X (David name): server.py adds _DAVID_NAME_TRIGGERS + _david_name_response() reading _elo_self.who_i_am_with; runtime/spine/spine.py:_conversation_faculty() gets one branch right after the existing identity trigger. Both short-circuit direct — the LLM cannot fabricate. Proof: 'What is your name?' 5x returns 5 responses containing _elo_self.identity_name; change the field to 'Nova' and the answe",
     "duration_s": 928.45
   },
   "0027_WO-ONEBRAIN_convergence_programme_RETRACTED": {
@@ -373,7 +373,7 @@
     "ts": 1787125481.876835,
     "state": "DONE",
     "output": [],
-    "evidence": "Card retracted at line 1 by Chief Architect 04:20 2026-08-14. Directive: DO NOT BUILD. Followed exactly \u2014 no code, no commits. Moved DOING/ \u2192 DONE/0027_..._RETRACTED.md with close-out note. Redirect per card: 0026 \u2192 0025 \u2192 0021/0022/0023 (0021 already DONE at e868930 + 701eadc).",
+    "evidence": "Card retracted at line 1 by Chief Architect 04:20 2026-08-14. Directive: DO NOT BUILD. Followed exactly — no code, no commits. Moved DOING/ → DONE/0027_..._RETRACTED.md with close-out note. Redirect per card: 0026 → 0025 → 0021/0022/0023 (0021 already DONE at e868930 + 701eadc).",
     "commits": [],
     "next": "Seat idle on this ticket. Architect must dispatch 0026 / 0025 / 0022 / 0023 into QUEUE/ before Builder can act on the redirect."
   },
@@ -383,7 +383,7 @@
     "ts": 1787125491.4668438,
     "state": "DONE",
     "output": [],
-    "evidence": "Card is explicitly RETRACTED at line 1: '\u26d4 RETRACTED. DO NOT BUILD THIS CARD.' Chief Architect reversed it 04:20 on 2026-08-14 (reasoning in _intake/SOURCE_2026-08-14_CA_ruling_convergence_mode.md \u00a711). The card's directive is to NOT build \u2014 followed exactly. No code touched, no commits produced. Card moved DOING/ \u2192 DONE/0027_WO-ONEBRAIN_convergence_programme_RETRACTED.md with close-out note appen",
+    "evidence": "Card is explicitly RETRACTED at line 1: '⛔ RETRACTED. DO NOT BUILD THIS CARD.' Chief Architect reversed it 04:20 on 2026-08-14 (reasoning in _intake/SOURCE_2026-08-14_CA_ruling_convergence_mode.md §11). The card's directive is to NOT build — followed exactly. No code touched, no commits produced. Card moved DOING/ → DONE/0027_WO-ONEBRAIN_convergence_programme_RETRACTED.md with close-out note appen",
     "duration_s": 79.24
   },
   "0030_FINISH_C2_before_D1_run1": {
@@ -394,12 +394,12 @@
     "output": [
       "f5ec51f"
     ],
-    "evidence": "Duplicate close-out \u2014 C2 (spine.py:83-102 word-boundary + stopword scoring), name-phrasing triggers (server.py:1390-1395), _identity_response from _elo_self.identity_name (server.py:1398-1414), _DAVID_NAME_TRIGGERS + _david_name_response wired into spine.py:407-411, A1 fail-closed on UNKNOWN health (spine.py:295-301 + capability.py:46,54-55), and num_ctx=8192 (backend_router.py:313,472) all already shipped at f5ec51f. Runtime verification just now: _capability_faculty('what is your name?', 'conversation') returned [] (0 candidates); identity trigger + David trigger both fire; UNKNOWN-first candidate list is correctly skipped in favour of ONLINE. Card stamped with verification section and moved DOING/ -> DONE/. No new commit.",
+    "evidence": "Duplicate close-out — C2 (spine.py:83-102 word-boundary + stopword scoring), name-phrasing triggers (server.py:1390-1395), _identity_response from _elo_self.identity_name (server.py:1398-1414), _DAVID_NAME_TRIGGERS + _david_name_response wired into spine.py:407-411, A1 fail-closed on UNKNOWN health (spine.py:295-301 + capability.py:46,54-55), and num_ctx=8192 (backend_router.py:313,472) all already shipped at f5ec51f. Runtime verification just now: _capability_faculty('what is your name?', 'conversation') returned [] (0 candidates); identity trigger + David trigger both fire; UNKNOWN-first candidate list is correctly skipped in favour of ONLINE. Card stamped with verification section and moved DOING/ -> DONE/. No new commit.",
     "commits": [
       "f5ec51f"
     ],
     "acceptance_met": true,
-    "next": "D-1 (proposal loop) is now unblocked \u2014 C2 finish-it items are all in the tree."
+    "next": "D-1 (proposal loop) is now unblocked — C2 finish-it items are all in the tree."
   },
   "0030_FINISH_C2_before_D1_run2": {
     "to": "Architect",
@@ -409,7 +409,7 @@
     "output": [
       "f5ec51f"
     ],
-    "evidence": "Duplicate close-out. All three finish-it items + num_ctx were already shipped at f5ec51f before this card was queued. Independent runtime verification, just now, from the current tree: (1) spine.py:83-102 uses word-boundary + stopword-content scoring \u2014 _capability_faculty('what is your name?', 'conversation') returned []. (2a) server.py:1390-1395 _IDENTITY_TRIGGERS now includes 'your name', \"what'",
+    "evidence": "Duplicate close-out. All three finish-it items + num_ctx were already shipped at f5ec51f before this card was queued. Independent runtime verification, just now, from the current tree: (1) spine.py:83-102 uses word-boundary + stopword-content scoring — _capability_faculty('what is your name?', 'conversation') returned []. (2a) server.py:1390-1395 _IDENTITY_TRIGGERS now includes 'your name', \"what'",
     "duration_s": 207.43
   },
   "0043_overnight_VERIFIED_and_one_test_I_specified_wrong_run1": {
@@ -683,7 +683,7 @@
     "output": [
       "2b32736"
     ],
-    "evidence": "D5 ruled \u2014 single self-model authority. Retired module-global _self_load() in server.py; converted all 7 _self_save(_elo_self) sites to _self_mutate(fn) (load\u2192mutate\u2192save atomically). New update(fn) accessor in self/elo_self_model.py with Rule 1 stale-overwrite WARN; save() now atomic (tmp+os.replace). Renamed update(state, turn_data) \u2192 apply_turn and made it mutate in place \u2014 this was the real disk clobber (old update returned a new state defaulting last_reflection_lesson=''). wake_from_dream refactored similarly. truth_sync reflection-lesson write routes through update(fn). Acceptance test (tests/test_0037_single_self_model_authority.py) passes 4/4: reflection lesson survives subsequent turn save; two writers on different fields both persist; grep proves no module-level _self_load(); stale-overwrite fires Rule 1 WARN naming the field. Regression sweep green: wo041 wo052b wo059 wo064 wo065 wo107 wo115 wo125."
+    "evidence": "D5 ruled — single self-model authority. Retired module-global _self_load() in server.py; converted all 7 _self_save(_elo_self) sites to _self_mutate(fn) (load→mutate→save atomically). New update(fn) accessor in self/elo_self_model.py with Rule 1 stale-overwrite WARN; save() now atomic (tmp+os.replace). Renamed update(state, turn_data) → apply_turn and made it mutate in place — this was the real disk clobber (old update returned a new state defaulting last_reflection_lesson=''). wake_from_dream refactored similarly. truth_sync reflection-lesson write routes through update(fn). Acceptance test (tests/test_0037_single_self_model_authority.py) passes 4/4: reflection lesson survives subsequent turn save; two writers on different fields both persist; grep proves no module-level _self_load(); stale-overwrite fires Rule 1 WARN naming the field. Regression sweep green: wo041 wo052b wo059 wo064 wo065 wo107 wo115 wo125."
   },
   "0037_RULING_D5_single_self_model_authority_run2": {
     "to": "Architect",
@@ -693,7 +693,7 @@
     "output": [
       "2b32736a863bc9029799c7c2412eb70de00f65e1"
     ],
-    "evidence": "4/4 acceptance passed in tests/test_0037_single_self_model_authority.py: (A) reflection-lesson (last_reflection_lesson) survives subsequent turn save \u2014 the exact card-named failure closed; (B) two writers touching different fields both persist; (C) grep proves no module-level _self_load() in server.py; (D) stale-overwrite fires Rule 1 WARNING naming the field. Root cause was twofold: (1) old updat",
+    "evidence": "4/4 acceptance passed in tests/test_0037_single_self_model_authority.py: (A) reflection-lesson (last_reflection_lesson) survives subsequent turn save — the exact card-named failure closed; (B) two writers touching different fields both persist; (C) grep proves no module-level _self_load() in server.py; (D) stale-overwrite fires Rule 1 WARNING naming the field. Root cause was twofold: (1) old updat",
     "duration_s": 712.58
   },
   "0038_RATIFIED_the_31_exception_list_run1": {
@@ -704,7 +704,7 @@
     "output": [
       "c2379f92fca7eebb7e6c7e261b621cfa25938d33"
     ],
-    "evidence": "Card 0038 step-4 assertion test shipped in tests/test_0038_exception_list_ratified.py. Steps 1-3 already delivered in 0033 (02bbaa1 journal-all-31, b84d18d route-13-COGNITIVE). AT-1 PASS: all 31 ratified handlers journal at their ratified (backend, class, line) tuple. AT-2 PASS: all 32 _bypass_journal calls use ratified class labels. AT-3 correctly RED: server.py:2159 backend=proper_noun_gate class=COGNITIVE returns before spine \u2014 an unratified early return added post-0028 audit (e868930, 0021 P0-Y). AT-3 is the WO-103-pattern invariant firing on a real gap ('stops number 32 appearing'). Leaving red per WO-103 precedent. PROPOSAL for L3: reclassify proper_noun_gate as SAFETY (matches :1659 refusal-must-not-depend-on-LLM pattern). Once ratified, add (proper_noun_gate, SAFETY, 2140) to RATIFIED table \u2014 AT-3 goes green. Out of card scope (separately dispatchable): capability cases 3&4 from 0036 \u00a748 (live turn drive); 0031 Fix B (restart+5 turns).",
+    "evidence": "Card 0038 step-4 assertion test shipped in tests/test_0038_exception_list_ratified.py. Steps 1-3 already delivered in 0033 (02bbaa1 journal-all-31, b84d18d route-13-COGNITIVE). AT-1 PASS: all 31 ratified handlers journal at their ratified (backend, class, line) tuple. AT-2 PASS: all 32 _bypass_journal calls use ratified class labels. AT-3 correctly RED: server.py:2159 backend=proper_noun_gate class=COGNITIVE returns before spine — an unratified early return added post-0028 audit (e868930, 0021 P0-Y). AT-3 is the WO-103-pattern invariant firing on a real gap ('stops number 32 appearing'). Leaving red per WO-103 precedent. PROPOSAL for L3: reclassify proper_noun_gate as SAFETY (matches :1659 refusal-must-not-depend-on-LLM pattern). Once ratified, add (proper_noun_gate, SAFETY, 2140) to RATIFIED table — AT-3 goes green. Out of card scope (separately dispatchable): capability cases 3&4 from 0036 §48 (live turn drive); 0031 Fix B (restart+5 turns).",
     "duration_s": null
   },
   "0038_RATIFIED_the_31_exception_list_run2": {
@@ -724,7 +724,7 @@
     "ts": 1787204844.0333838,
     "state": "DONE",
     "output": [],
-    "evidence": "Directive/ack card \u2014 'do not start any of it, queue unchanged'. No code change. 5a (no learning on current reward signal; GAP-08 text/keyword scoring in memory/significance_engine.py; GAP-09 significance-vector drift 7/5/9-dim) ACKNOWLEDGED \u2014 will not start until Artefact 7 ratified. 1c (Isaac=RL, Blender=CAD, Unity=presentation) ACKNOWLEDGED \u2014 will flag not fix violations. Queue reconciled: 0033 DONE (0dc8671, significance_faculty.py deleted, 5-item harvest per 0048), 0038 DONE (c2379f9 PARTIAL AT-3 RED WO-103), 0037 DONE (2b32736), 0036 DONE, 0031 Fix B DONE (14db340). _TIER_PROVIDER_ORDER correction at backend_router.py:78-82 noted, not touched (Artefact-8 spec-only). Card DOING->DONE. Ack recorded in card body.",
+    "evidence": "Directive/ack card — 'do not start any of it, queue unchanged'. No code change. 5a (no learning on current reward signal; GAP-08 text/keyword scoring in memory/significance_engine.py; GAP-09 significance-vector drift 7/5/9-dim) ACKNOWLEDGED — will not start until Artefact 7 ratified. 1c (Isaac=RL, Blender=CAD, Unity=presentation) ACKNOWLEDGED — will flag not fix violations. Queue reconciled: 0033 DONE (0dc8671, significance_faculty.py deleted, 5-item harvest per 0048), 0038 DONE (c2379f9 PARTIAL AT-3 RED WO-103), 0037 DONE (2b32736), 0036 DONE, 0031 Fix B DONE (14db340). _TIER_PROVIDER_ORDER correction at backend_router.py:78-82 noted, not touched (Artefact-8 spec-only). Card DOING->DONE. Ack recorded in card body.",
     "commits": [],
     "duration_s": null
   },
@@ -763,9 +763,9 @@
       "80974d4",
       "36b31ab"
     ],
-    "evidence": "W2 landed at 80974d4: runtime/session_id.py (monotonic-persisted allocator, max(prev+1, int(time.time())), one per process start), wired into self/decision_journal.py (record + record_failure) and runtime/reflection_faculty.py. Tests green \u2014 tests/test_w2_session_id.py 5/5 + tests/test_w2_decision_journal_session_id.py 4/4 (field written \u00b7 stable in-process \u00b7 subprocess strictly greater \u00b7 shared w",
+    "evidence": "W2 landed at 80974d4: runtime/session_id.py (monotonic-persisted allocator, max(prev+1, int(time.time())), one per process start), wired into self/decision_journal.py (record + record_failure) and runtime/reflection_faculty.py. Tests green — tests/test_w2_session_id.py 5/5 + tests/test_w2_decision_journal_session_id.py 4/4 (field written · stable in-process · subprocess strictly greater · shared w",
     "duration_s": 501.87,
-    "blocker": "LOOP-7 (whole-organism loop) requires lesson to enter Executive decision context AND change action. executive.py is frozen (D3, L3/canon) with no lessons field in ExecutiveContext read path. Follow-up card scoped to the D3 unfreeze \u2014 outside seat authority."
+    "blocker": "LOOP-7 (whole-organism loop) requires lesson to enter Executive decision context AND change action. executive.py is frozen (D3, L3/canon) with no lessons field in ExecutiveContext read path. Follow-up card scoped to the D3 unfreeze — outside seat authority."
   },
   "0041_41_rulings_landed_scope_UNCHANGED": {
     "to": "Architect",
@@ -775,9 +775,9 @@
     "output": [
       "35c5811"
     ],
-    "evidence": "Informational card \u2014 no code work per \u00a75 (ORDER UNCHANGED). ACKs AR-3 (BodySchema via 0037 update(fn)), AR-8 (no except:pass on continuity), AR-9 (extend runtime/claim_gate.py, do not fork tiering), AR-28 (spatial learning lives in Vol VIII, refuse spatial_learning.jsonl cards). \u00a74 answered \u2014 WO-078 first is what the code assumes: writer already exists at self/emergent_cognition.py:117 append_autobiography(); reader already exists at runtime/the_moment.py:227 autobiography_tier via recent_autobiography() with graceful 'unknown' fallback (faculties/temporal/faculty.py:325-334, PENDING sentinel). Reversing (WO-079 first) leaves NI-5/NI-7 untestable. Position: WO-078 first \u2014 code agrees.",
+    "evidence": "Informational card — no code work per §5 (ORDER UNCHANGED). ACKs AR-3 (BodySchema via 0037 update(fn)), AR-8 (no except:pass on continuity), AR-9 (extend runtime/claim_gate.py, do not fork tiering), AR-28 (spatial learning lives in Vol VIII, refuse spatial_learning.jsonl cards). §4 answered — WO-078 first is what the code assumes: writer already exists at self/emergent_cognition.py:117 append_autobiography(); reader already exists at runtime/the_moment.py:227 autobiography_tier via recent_autobiography() with graceful 'unknown' fallback (faculties/temporal/faculty.py:325-334, PENDING sentinel). Reversing (WO-079 first) leaves NI-5/NI-7 untestable. Position: WO-078 first — code agrees.",
     "blocker": null,
-    "notes": "No test to run \u2014 informational card. Order continues: 0033 -> W1 (server.py:4062 outcome='success' kill + :3575) -> W2 -> W3 -> W4 -> W5. 0037 slots in before W5. 0031 Fix B mine."
+    "notes": "No test to run — informational card. Order continues: 0033 -> W1 (server.py:4062 outcome='success' kill + :3575) -> W2 -> W3 -> W4 -> W5. 0037 slots in before W5. 0031 Fix B mine."
   },
   "0041_41_rulings_landed_scope_UNCHANGED_run2": {
     "to": "Architect",
@@ -787,7 +787,7 @@
     "output": [
       "35c5811"
     ],
-    "evidence": "Informational card \u2014 \u00a75 explicitly states 'YOUR ORDER \u2014 UNCHANGED. No ruling above adds a line of work today.' No code changes required. Close-out ACKs four \u00a72 rulings (AR-3 BodySchema via 0037 update(fn) \u00b7 AR-8 no except:pass on continuity writes \u00b7 AR-9 extend runtime/claim_gate.py rather than fork tiering \u00b7 AR-28 spatial learning in Vol VIII memory system, refuse any spatial_learning.jsonl card)",
+    "evidence": "Informational card — §5 explicitly states 'YOUR ORDER — UNCHANGED. No ruling above adds a line of work today.' No code changes required. Close-out ACKs four §2 rulings (AR-3 BodySchema via 0037 update(fn) · AR-8 no except:pass on continuity writes · AR-9 extend runtime/claim_gate.py rather than fork tiering · AR-28 spatial learning in Vol VIII memory system, refuse any spatial_learning.jsonl card)",
     "duration_s": 197.87
   },
   "0042_XII_XV_ARE_NOW_LAW_enforcement_surface_changed": {
@@ -798,7 +798,7 @@
     "output": [
       "2fbb70c"
     ],
-    "evidence": "Informational/ratification card. \u00a74 explicit: 'YOUR ORDER \u2014 UNCHANGED. Nothing above is a work item.' Verified \u00a71 test states with independent runs: python3 tests/test_canon_xii_perception.py = 15 passed 0 failed; python3 tests/test_canon_xv_world_state.py = 12 passed 2 failed. Both match card \u00a71 exactly. Enforcement surface change ACKed: any red outside the three-item exception list (XV ST-1, XV FT-4, XII Ch.3 \u00a73.2 GAP-04) is a canon breach \u2014 escalate, do not 'fix quickly.' ADR-Exec-007 SignificanceVector v2.0.0 (9 meaning + 3 outcome, never merged; reward=0.70\u00b7outcome+0.30\u00b7meaning capped by safety; embodiment reads ACK only; unversioned = invalid) ACKed \u2014 authorises no learning work; W1 is precondition. BD-14 ACKed. XV ST-1 confirmed queued behind W5, not picked up. No product code touched.",
+    "evidence": "Informational/ratification card. §4 explicit: 'YOUR ORDER — UNCHANGED. Nothing above is a work item.' Verified §1 test states with independent runs: python3 tests/test_canon_xii_perception.py = 15 passed 0 failed; python3 tests/test_canon_xv_world_state.py = 12 passed 2 failed. Both match card §1 exactly. Enforcement surface change ACKed: any red outside the three-item exception list (XV ST-1, XV FT-4, XII Ch.3 §3.2 GAP-04) is a canon breach — escalate, do not 'fix quickly.' ADR-Exec-007 SignificanceVector v2.0.0 (9 meaning + 3 outcome, never merged; reward=0.70·outcome+0.30·meaning capped by safety; embodiment reads ACK only; unversioned = invalid) ACKed — authorises no learning work; W1 is precondition. BD-14 ACKed. XV ST-1 confirmed queued behind W5, not picked up. No product code touched.",
     "blocker": null,
     "notes": "Order continues: 0033 -> W1 (kill outcome='success' at server.py:4062 + :3575) -> W2 (real session ids) -> W3 journal all 31 -> W4 route 13 COGNITIVE (:2404 first) -> W5 ONEBRAIN-012. 0037 before W5. 0031 Fix B mine."
   },
@@ -810,7 +810,7 @@
     "output": [
       "2fbb70c"
     ],
-    "evidence": "Informational/ratification card. \u00a74 verbatim: 'YOUR ORDER \u2014 UNCHANGED. Nothing above is a work item.' Verified \u00a71: python3 tests/test_canon_xii_perception.py = 15 passed 0 failed; python3 tests/test_canon_xv_world_state.py = 12 passed 2 failed \u2014 matches card exactly. Enforcement surface change ACKed (XII+XV are now law; any red outside three-item exception list XV ST-1, XV FT-4, XII Ch.3 \u00a73.2 GAP-",
+    "evidence": "Informational/ratification card. §4 verbatim: 'YOUR ORDER — UNCHANGED. Nothing above is a work item.' Verified §1: python3 tests/test_canon_xii_perception.py = 15 passed 0 failed; python3 tests/test_canon_xv_world_state.py = 12 passed 2 failed — matches card exactly. Enforcement surface change ACKed (XII+XV are now law; any red outside three-item exception list XV ST-1, XV FT-4, XII Ch.3 §3.2 GAP-",
     "duration_s": 131.87
   },
   "0047_MT_findings_expression_dropped_and_97pct_overhead": {
@@ -821,7 +821,7 @@
     "output": [
       "521be07"
     ],
-    "evidence": "F-A already in c3e9305 (5/5). F-B closed by 521be07: (1) keep_alive=30m now falsifiable at the actual dict on _ollama_call, _ollama_stream, and OllamaBackend._call (was source-only in OI-1); (2) prompt_builder.build() populates _last_prompt_audit with per-block {name,chars,est_tokens,pct_tokens} \u2014 smoke run shows living_presence_spec at 92.3% of tokens (5098/5522). server.py merges audit into blender/backend_health.json. Tests: test_fb_keepalive_prompt_audit.py 6/6, test_fa_preserve_keys.py 5/5, test_0018_ct0031_ollama_instrumentation.py 6/6. Card in DONE/.",
+    "evidence": "F-A already in c3e9305 (5/5). F-B closed by 521be07: (1) keep_alive=30m now falsifiable at the actual dict on _ollama_call, _ollama_stream, and OllamaBackend._call (was source-only in OI-1); (2) prompt_builder.build() populates _last_prompt_audit with per-block {name,chars,est_tokens,pct_tokens} — smoke run shows living_presence_spec at 92.3% of tokens (5098/5522). server.py merges audit into blender/backend_health.json. Tests: test_fb_keepalive_prompt_audit.py 6/6, test_fa_preserve_keys.py 5/5, test_0018_ct0031_ollama_instrumentation.py 6/6. Card in DONE/.",
     "duration_s": 0.0
   },
   "0047_MT_findings_expression_dropped_and_97pct_overhead_run2": {
@@ -832,7 +832,7 @@
     "output": [
       "521be07"
     ],
-    "evidence": "F-A landed earlier (c3e9305, 5/5). F-B closed by 521be07. (1) keep_alive='30m' now falsifiable at the ACTUAL dict on runtime.backend_router._ollama_call, ._ollama_stream, AND backends.ollama_backend.OllamaBackend._call \u2014 replaces source-only OI-1 with dict-capture FB-1/FB-2/FB-3. (2) runtime.prompt_builder.build() populates _last_prompt_audit with per-block {name, chars, est_tokens, pct_tokens} + ",
+    "evidence": "F-A landed earlier (c3e9305, 5/5). F-B closed by 521be07. (1) keep_alive='30m' now falsifiable at the ACTUAL dict on runtime.backend_router._ollama_call, ._ollama_stream, AND backends.ollama_backend.OllamaBackend._call — replaces source-only OI-1 with dict-capture FB-1/FB-2/FB-3. (2) runtime.prompt_builder.build() populates _last_prompt_audit with per-block {name, chars, est_tokens, pct_tokens} + ",
     "duration_s": 413.61
   },
   "0048_ORDER_CORRECTED_0033_was_done_and_0025_was_never_L3": {
@@ -843,9 +843,9 @@
     "output": [
       "tests/test_fa_preserve_keys.py: 5/5 PASS",
       "tests/test_fb_keepalive_prompt_audit.py: 6/6 PASS",
-      "tests/test_canon_viii_memory.py: 18/0 PASS (AT-8 green \u2014 no unauthorised permanent-store writers)"
+      "tests/test_canon_viii_memory.py: 18/0 PASS (AT-8 green — no unauthorised permanent-store writers)"
     ],
-    "evidence": "Reconciliation-only close-out. All three items in card \u00a73 were already committed before this card ran. F-A landed c3e9305 ('expression' in _PRESERVE_KEYS at blender_bridge/state_writer.py:250); F-B landed 521be07 (keep_alive='30m' on _ollama_call, _ollama_stream, ollama_backend._call + prompt_audit); 0025 landed 84758ea + e2c506d (memory_engine second store retired; core_engine.py:254 routes through MemoryFaculty.submit()). Re-verified live per Rule 2 by re-running each test. No new source commits \u2014 only close-out + card move DOING\u2192DONE. Metric unchanged: 91/146 = 62.3% (no capability-moving work performed).",
+    "evidence": "Reconciliation-only close-out. All three items in card §3 were already committed before this card ran. F-A landed c3e9305 ('expression' in _PRESERVE_KEYS at blender_bridge/state_writer.py:250); F-B landed 521be07 (keep_alive='30m' on _ollama_call, _ollama_stream, ollama_backend._call + prompt_audit); 0025 landed 84758ea + e2c506d (memory_engine second store retired; core_engine.py:254 routes through MemoryFaculty.submit()). Re-verified live per Rule 2 by re-running each test. No new source commits — only close-out + card move DOING→DONE. Metric unchanged: 91/146 = 62.3% (no capability-moving work performed).",
     "commits": [
       "72afee0"
     ],
@@ -860,7 +860,7 @@
     "output": [
       "72afee0"
     ],
-    "evidence": "Reconciliation-only close-out. All three items in card \u00a73 already committed before this card ran. F-A c3e9305 (blender_bridge/state_writer.py:250 has 'expression' in _PRESERVE_KEYS; test_fa_preserve_keys.py 5/5). F-B 521be07 (keep_alive='30m' on all three Ollama call paths + per-block prompt_audit; test_fb_keepalive_prompt_audit.py 6/6). 0025 84758ea + e2c506d (memory_engine second store retired; ",
+    "evidence": "Reconciliation-only close-out. All three items in card §3 already committed before this card ran. F-A c3e9305 (blender_bridge/state_writer.py:250 has 'expression' in _PRESERVE_KEYS; test_fa_preserve_keys.py 5/5). F-B 521be07 (keep_alive='30m' on all three Ollama call paths + per-block prompt_audit; test_fb_keepalive_prompt_audit.py 6/6). 0025 84758ea + e2c506d (memory_engine second store retired; ",
     "duration_s": 251.89
   },
   "0054_F4b_the_heartbeat_has_48_writers": {
@@ -872,7 +872,7 @@
       "tests/test_0054_heartbeat_owner.py: 4/4 PASS (T1 no thread on bare import, T2 _ts does not advance, T3 second call no-op, T4 ELO_STATE_HEARTBEAT=0 opt-out)",
       "tests/test_f4_heartbeat.py: 3/3 PASS (T1 start_heartbeat spawns thread, T2 _ts advances on patch, T3 interval 30s)"
     ],
-    "evidence": "Reconciliation-only close-out. All four required changes in card \u00a72 already landed in commit a59ab1b (0054: heartbeat one owner \u2014 remove module-level call, wire to server.py only): (1) module-level _start_heartbeat() removed from blender_bridge/state_writer.py; (2) server.py:76-77 imports start_heartbeat as _sw_start_heartbeat and invokes it at startup; (3) module-level _heartbeat_started guard + ELO_STATE_HEARTBEAT=0 env opt-out in state_writer.py:313,328; (4) falsifiable test tests/test_0054_heartbeat_owner.py \u2014 T2 goes RED if module-level call is put back. Re-verified live per Rule 2 by re-running both tests. No new source commits \u2014 code correct as of a59ab1b; only close-out + card move DOING\u2192DONE.",
+    "evidence": "Reconciliation-only close-out. All four required changes in card §2 already landed in commit a59ab1b (0054: heartbeat one owner — remove module-level call, wire to server.py only): (1) module-level _start_heartbeat() removed from blender_bridge/state_writer.py; (2) server.py:76-77 imports start_heartbeat as _sw_start_heartbeat and invokes it at startup; (3) module-level _heartbeat_started guard + ELO_STATE_HEARTBEAT=0 env opt-out in state_writer.py:313,328; (4) falsifiable test tests/test_0054_heartbeat_owner.py — T2 goes RED if module-level call is put back. Re-verified live per Rule 2 by re-running both tests. No new source commits — code correct as of a59ab1b; only close-out + card move DOING→DONE.",
     "commits": [
       "a59ab1b",
       "b1365d6"
@@ -889,7 +889,7 @@
       "a59ab1b",
       "b1365d6"
     ],
-    "evidence": "Reconciliation card. All four required changes in card \u00a72 already landed in commit a59ab1b (0054: heartbeat one owner \u2014 remove module-level call, wire to server.py only). Verified live per Rule 2: (1) no module-level heartbeat call in blender_bridge/state_writer.py \u2014 start_heartbeat() at line 322 is a function; (2) server.py:76-77 imports and invokes start_heartbeat() at spine startup; (3) _heartb",
+    "evidence": "Reconciliation card. All four required changes in card §2 already landed in commit a59ab1b (0054: heartbeat one owner — remove module-level call, wire to server.py only). Verified live per Rule 2: (1) no module-level heartbeat call in blender_bridge/state_writer.py — start_heartbeat() at line 322 is a function; (2) server.py:76-77 imports and invokes start_heartbeat() at spine startup; (3) _heartb",
     "duration_s": 133.65
   },
   "0058_THE_ORCHESTRATOR_run3": {
@@ -900,10 +900,34 @@
     "output": [
       "deade03"
     ],
-    "evidence": "Host claude-code transport PROVEN. orch PID 79361 spawned claude worker PID 27700; observed lifecycle QUEUED\u2192CLAIMED\u2192LOCKED\u2192STARTED\u2192ALIVE via HEARTBEAT.json (execution_position=5); worker_result.json handshake CONSUMED at 07:14:43Z; card 0058 moved DOING\u2192DONE with completion block.",
+    "evidence": "Host claude-code transport PROVEN. orch PID 79361 spawned claude worker PID 27700; observed lifecycle QUEUED→CLAIMED→LOCKED→STARTED→ALIVE via HEARTBEAT.json (execution_position=5); worker_result.json handshake CONSUMED at 07:14:43Z; card 0058 moved DOING→DONE with completion block.",
     "duration_s": 0.0,
     "transport": "claude-code",
     "run_id": "2026-08-20T07:14:43Z-builder-0058",
     "next": "orchestrator loop continues; next claim = 00b_WO-104 (lowest in builder/QUEUE)"
+  },
+  "0058_THE_ORCHESTRATOR_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787206849.510972,
+    "state": "DONE",
+    "output": [
+      "deade03"
+    ],
+    "evidence": "Host transport PROVEN. Orchestrator PID 79361 (python3 seat_orchestrator.py loop builder) spawned claude worker PID 27700 (/opt/homebrew/bin/claude -p --dangerously-skip-permissions). Lifecycle observed QUEUED→CLAIMED→LOCKED→STARTED→ALIVE via HEARTBEAT.json (execution_position=5). worker_result.json cleared to state=CONSUMED at 07:14:43Z as pre-launch handshake. Card 0058 moved DOING→DONE with com",
+    "duration_s": 365.72
+  },
+  "00b_WO-104_REAL_LEARNING_the_finetune": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787207342.304422,
+    "state": "DONE",
+    "output": [
+      "d462463"
+    ],
+    "evidence": "WO-104 pipeline complete. 10/10 acceptance tests pass. runtime/shadow_capture.py now emits delta_cause on every row. New package self_improvement/finetune/ (tagger, trainer, adapter, gate, pipeline). Trainer refuses untagged input via UntaggedRowError (Rule 1 alarm). Real basket (99 rows) backfilled -> all 'none' (raw_gen==final on every row); pre-backfill legacy preserved. Real-basket run produced pipeline_proof adapter elo-style-llama3.1_8b-20260820-062630, 0 usable style rows, recommendation=HOLD. MLX not installed on this host (would need pip install mlx-lm). This is a card-sanctioned PASS: pipeline built, revert-safe (delete-to-revert), awaiting more style rows and MLX install. Card moved DOING->DONE with commit hash appended.",
+    "recommendation": "hold",
+    "adapter_version": "elo-style-llama3.1_8b-20260820-062630",
+    "style_rows_after_tagging": 0
   }
 }

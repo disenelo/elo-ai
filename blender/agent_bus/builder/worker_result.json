@@ -1,27 +1,20 @@
 {
-  "card": "0058_THE_ORCHESTRATOR.md",
-  "work_id": "0058_THE_ORCHESTRATOR",
-  "run_id": "2026-08-20T07:14:43Z-builder-0058",
+  "card": "00b_WO-104_REAL_LEARNING_the_finetune.md",
   "status": "DONE",
-  "transport": "claude-code",
+  "commits": ["d462463"],
   "acceptance_met": true,
-  "commits": ["deade03"],
-  "evidence": "Host transport PROVEN. Orchestrator PID 79361 (python3 seat_orchestrator.py loop builder) spawned claude worker PID 27700 (/opt/homebrew/bin/claude -p --dangerously-skip-permissions). Lifecycle observed QUEUED→CLAIMED→LOCKED→STARTED→ALIVE via HEARTBEAT.json (execution_position=5). worker_result.json cleared to state=CONSUMED at 07:14:43Z as pre-launch handshake. Card 0058 moved DOING→DONE with completion block; both processes visible in ps at close.",
-  "claims_vs_observations": {
-    "claims": {
-      "heartbeat_started_at_ts": 1787206483.791188,
-      "heartbeat_last_activity_ts": 1787206486.846341,
-      "lock_ts": 1787206483.791509
-    },
-    "observations": {
-      "heartbeat_mtime_utc": "2026-08-20T07:14:46Z",
-      "lock_mtime_utc": "2026-08-20T07:14:43Z",
-      "result_file_mtime_utc": "2026-08-20T07:14:43Z",
-      "wall_clock_utc_at_worker_start": "2026-08-20T07:16:02Z",
-      "orchestrator_ps": "PID 79361 python3 engineering/seat_orchestrator.py loop builder",
-      "claude_worker_ps": "PID 27700 /opt/homebrew/bin/claude -p --dangerously-skip-permissions"
-    }
+  "evidence": "Style-only fine-tune pipeline built end-to-end. runtime/shadow_capture.py record_turn() now writes delta_cause on every row (none|style|verification|l3_override|unknown). New package self_improvement/finetune/ with tagger (backfill), trainer (Rule 1 alarm — refuses on any untagged row via UntaggedRowError; filters to style only), adapter (versioned under Output/finetune_adapters/<version>/; delete-to-revert; activate refuses non-gated), gate (honesty_drop→reject, identity_drift→reject, style_direction!='toward'→reject), pipeline (end-to-end orchestrator writes last_run.json). tests/test_wo104_finetune_pipeline.py: 10/10 passing (AT-1..AT-10). WO-070 shadow_capture tests still 8/8. Real 99-row basket backfilled — all tagged 'none' (raw_gen==final on every legacy row); legacy preserved at understudy_shadow.jsonl.pre_delta_cause_backup. First run produced pipeline_proof adapter elo-style-llama3.1_8b-20260820-062630 with 0 style rows; recommendation HOLD (below 200 [ESTIMATE] threshold; mlx_lm not installed). This IS a PASS per the card's Done-When clause.",
+  "blocker": null,
+  "boundary_ack": "Ruling F boundary noted: style/phrasing weight-learning allowed; identity re-asserted from spine every turn (never from weights, ADR-Exec-006); honesty/verification layer MUST run after any tuned generation (never trained to sound-verified-without-checking).",
+  "style_rows_after_tagging": 0,
+  "adapter_version": "elo-style-llama3.1_8b-20260820-062630",
+  "adapter_status": "pipeline_proof",
+  "eval_deltas": {
+    "honesty_rate_delta": 0.0,
+    "identity_drift": 0,
+    "style_direction": "not-measured",
+    "verdict": "not-servable (pipeline_proof — no weights)"
   },
-  "next_action": "Orchestrator loop continues. Next claim: 00b_WO-104_REAL_LEARNING_the_finetune.md (lowest in builder/QUEUE).",
-  "blocker": null
+  "recommendation": "hold",
+  "reason": "0 usable style rows in the basket (all 99 rows have raw_gen==final). mlx_lm not installed. Pipeline is now standing — capture continues; re-run when >=200 [ESTIMATE] style rows accumulate AND MLX is installed. That is a David-facing decision (host-side dependency), not a builder-lane action."
 }

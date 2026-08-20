@@ -176,3 +176,5 @@ where `elo_raw_gen != elo_final` for a style reason (caller passes
 `delta_cause="style"`) will accumulate. Re-run the pipeline (idle/scheduled) when
 the tally shows ≥200 [ESTIMATE] style rows AND MLX is installed. Only then does
 run #2 attempt real weights.
+
+**Commit:** `d462463` — d46246368c0ee46301f46105dc05e1749ec32642
