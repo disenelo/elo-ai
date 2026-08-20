@@ -874,7 +874,8 @@
     ],
     "evidence": "Reconciliation-only close-out. All four required changes in card \u00a72 already landed in commit a59ab1b (0054: heartbeat one owner \u2014 remove module-level call, wire to server.py only): (1) module-level _start_heartbeat() removed from blender_bridge/state_writer.py; (2) server.py:76-77 imports start_heartbeat as _sw_start_heartbeat and invokes it at startup; (3) module-level _heartbeat_started guard + ELO_STATE_HEARTBEAT=0 env opt-out in state_writer.py:313,328; (4) falsifiable test tests/test_0054_heartbeat_owner.py \u2014 T2 goes RED if module-level call is put back. Re-verified live per Rule 2 by re-running both tests. No new source commits \u2014 code correct as of a59ab1b; only close-out + card move DOING\u2192DONE.",
     "commits": [
-      "a59ab1b"
+      "a59ab1b",
+      "b1365d6"
     ],
     "acceptance_met": true,
     "duration_s": null

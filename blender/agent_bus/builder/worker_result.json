@@ -1,7 +1,7 @@
 {
   "card": "0054_F4b_the_heartbeat_has_48_writers.md",
   "status": "DONE",
-  "commits": ["a59ab1b"],
+  "commits": ["a59ab1b", "b1365d6"],
   "acceptance_met": true,
   "evidence": "Reconciliation card. All four required changes in card §2 already landed in commit a59ab1b (0054: heartbeat one owner — remove module-level call, wire to server.py only). Verified live per Rule 2: (1) no module-level heartbeat call in blender_bridge/state_writer.py — start_heartbeat() at line 322 is a function; (2) server.py:76-77 imports and invokes start_heartbeat() at spine startup; (3) _heartbeat_started guard (state_writer.py:313) + ELO_STATE_HEARTBEAT=0 env opt-out (state_writer.py:328); (4) tests/test_0054_heartbeat_owner.py — T2 is the falsifiable test that goes RED if the module-level call returns. Re-ran both tests 2026-08-20: test_0054_heartbeat_owner.py 4/4 PASS; test_f4_heartbeat.py 3/3 PASS. Card close-out §5 appended; card moved DOING→DONE. No new source commits — code already correct.",
   "blocker": null
