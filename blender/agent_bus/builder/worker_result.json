@@ -1,20 +1,12 @@
 {
-  "card": "00b_WO-104_REAL_LEARNING_the_finetune.md",
+  "card": "03_ROBOT_pi_inference_bridge.md",
+  "wo": "WO-098",
   "status": "DONE",
-  "commits": ["d462463"],
+  "commits": ["234fc995a12bed71d328365dd437474d3ffa1ec3", "9e3994c"],
   "acceptance_met": true,
-  "evidence": "Style-only fine-tune pipeline built end-to-end. runtime/shadow_capture.py record_turn() now writes delta_cause on every row (none|style|verification|l3_override|unknown). New package self_improvement/finetune/ with tagger (backfill), trainer (Rule 1 alarm — refuses on any untagged row via UntaggedRowError; filters to style only), adapter (versioned under Output/finetune_adapters/<version>/; delete-to-revert; activate refuses non-gated), gate (honesty_drop→reject, identity_drift→reject, style_direction!='toward'→reject), pipeline (end-to-end orchestrator writes last_run.json). tests/test_wo104_finetune_pipeline.py: 10/10 passing (AT-1..AT-10). WO-070 shadow_capture tests still 8/8. Real 99-row basket backfilled — all tagged 'none' (raw_gen==final on every legacy row); legacy preserved at understudy_shadow.jsonl.pre_delta_cause_backup. First run produced pipeline_proof adapter elo-style-llama3.1_8b-20260820-062630 with 0 style rows; recommendation HOLD (below 200 [ESTIMATE] threshold; mlx_lm not installed). This IS a PASS per the card's Done-When clause.",
+  "evidence": "Design-only deliverable written to blender/agent_bus/builder/FROM_BUILDER_2026-08-20_03_ROBOT_pi_inference_bridge_DESIGN.md. Card moved QUEUE->DONE. Acceptance per card 'Done when': (1) canonical observation vector = 15 floats [3 IMU + 3 hip theta + 3 hip omega + 6 FSR] with single source-of-truth in proposed runtime/robot/obs_action_schema.py; action vector = 9 floats [6 hand + 3 hip velocity]. (2) Servo decision recorded as PROPOSE — Option A (serial-bus swap, BOM change requires David L3) vs Option B (keep MG90S, drop hand state, RECOMMENDED because respects spec + Ruling E). Neither authorised. (3) Module boundary sketched — runtime/robot/ speaks Faculty Bus DOWN/UP envelopes per Vol XI (motion_intent, safety_hold, emergency_stop, policy_swap DOWN; robot_state, verified_outcome, sensor_anomaly, safety_event UP), verified-outcome shape reuses runtime/ack_contract.py. Reserved-lane compliance: no code, no hardware, no BOM substitution. LG-2 force-limiter gate in avatar/safety_controller.py still open (grep returned no matches for force/soft_stop/limiter). All value-changes tagged [SPEC]/[VERIFIED]/[ESTIMATE]/[PROPOSAL] per CLAUDE.md Rule 4d.",
   "blocker": null,
-  "boundary_ack": "Ruling F boundary noted: style/phrasing weight-learning allowed; identity re-asserted from spine every turn (never from weights, ADR-Exec-006); honesty/verification layer MUST run after any tuned generation (never trained to sound-verified-without-checking).",
-  "style_rows_after_tagging": 0,
-  "adapter_version": "elo-style-llama3.1_8b-20260820-062630",
-  "adapter_status": "pipeline_proof",
-  "eval_deltas": {
-    "honesty_rate_delta": 0.0,
-    "identity_drift": 0,
-    "style_direction": "not-measured",
-    "verdict": "not-servable (pipeline_proof — no weights)"
-  },
-  "recommendation": "hold",
-  "reason": "0 usable style rows in the basket (all 99 rows have raw_gen==final). mlx_lm not installed. Pipeline is now standing — capture continues; re-run when >=200 [ESTIMATE] style rows accumulate AND MLX is installed. That is a David-facing decision (host-side dependency), not a builder-lane action."
+  "next_gate": "David L3 to pick §2 Option A vs B, confirm §1 vector layout + §3 module boundary. LG-2 to open force-limiter/soft-stop scope in avatar/safety_controller.py. No IMPLEMENT until both authorisations recorded.",
+  "reserved_lane": true,
+  "state_per_four_states": "PROPOSE"
 }
