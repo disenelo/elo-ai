@@ -53,7 +53,8 @@ Do not reopen anything unilaterally — hand me the list.
 Implemented · tests green · committed · **and card `0059` restored to a truthful state.**
 
 ## Result
-- commit:
-- test:
-- did 0058 fix anything, or was it falsely closed:
-- empty-Result cards with no real work behind them:
+- commit: e5f1e39
+- test: tests/test_orch_no_false_close.py — 5/5 passed
+- did 0058 fix anything, or was it falsely closed: **0058 was real.** git log confirms commit `deade03` (0058 DONE: host claude-code transport PROVEN) with `349c2db` (defect fixes) on same date. The card proved the transport works — it did not address false-close, which is a separate failure mode that 0058 didn't encounter because that run was manually triggered with a healthy API balance.
+- empty-Result cards with no real work behind them: Only **0059** confirmed fabricated (0s elapsed, no commit, `_groq_stream` absent). All 15 cards from the manual loop run this session have verified resolving commit hashes (Lead Architect independently confirmed the 8 primary hashes; Builder confirmed 12 additional via `git cat-file`). Cards with no commit hash in their Result block that are legitimately no-commit: 0039, 0041, 0042, 0048 (directive/ack/reconciliation cards — workers stated this explicitly in their output). No other fabrications found.
+- 0059 status: annotated FALSELY CLOSED in DONE/, restored to _HOLD_ORCHESTRATOR_UNSAFE/ for proper dispatch once Groq/Cerebras credit confirmed.
