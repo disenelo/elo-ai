@@ -1,11 +1,8 @@
 {
-  "card": "06_WO-CANON-XII_XV_perception_world.md",
+  "card": "08_WO-CANON-IV_ordering_invariants.md",
   "status": "DONE",
-  "commits": [
-    "5f92954",
-    "b520767"
-  ],
+  "commits": ["ab0ef87"],
   "acceptance_met": true,
-  "evidence": "python3 tests/test_card_0006_perception_world.py -> 7 passed, 0 failed. AT-1: DesktopState populated from PerceptionResult (Vol XII Ch.3 §3.2 copy). AT-2: Temporal faculty reads world.time from carrier (no double-read). AT-3: PerceptionResult.partial fires structurally on truncated reads (Vol XII Ch.4 §4.3). AT-4: PerceptionResult.relations = () default (no fabricated links, Vol XII Ch.4 §4.1.3). AT-5: perception.partial propagates to LiveWorldState.domain_health.desktop.partial (carrier-side fidelity flag). AT-6: claim_gate._vision_gate reads world.environment.vision_active when passed (single-read discipline; falls back to blender_state.json only when no carrier). AT-7: py_compile clean on all edited files. Files changed: faculties/perception/perception_faculty.py (relations field, tag_partial helper, truncation-aware partial), world/live_world_state.py (partial stamped into domain_health.desktop), runtime/claim_gate.py (world-first _vision_gate + classify_and_gate signature), runtime/spine/spine.py (passes plan.world into gate), docs/architecture/Volume_XV/00_Metadata.md (implementation PENDING -> WIRED with 3 new DoD checkboxes), tests/test_card_0006_perception_world.py (new). Regression: WO-076 8/8, WO-096 5/5, WO-009 7/7 all still green. Pre-existing FT-4/ST-1 failures in test_canon_xv_world_state.py patch the removed get_active_window symbol and are unrelated to this card. No rival spatial model built (Vol XIII spatial faculty untouched, per scope item 5).",
+  "evidence": "tests/test_canon_iv_ordering_invariants.py created; python3 tests/test_canon_iv_ordering_invariants.py -> 21 passed 0 failed. Coverage of Vol IV/02 invariants I-1..I-6: perception<world (FT-IV-1a/b), world<attention<first-faculty (FT-IV-2a/c), assembly<decision at RUN-flow AND cross-module (FT-IV-3a/a-nested/b/c/d - closes the Vol IV §2.3 trap by asserting against BOTH server.py and spine.py; uses ast to walk _executive_faculty body so signature comments cannot pollute), memory read-before/write-after (FT-IV-4a/b), pending_sit-through-assembly + belief-from-ACK (FT-IV-5a/b), _conversation_faculty<build_embodiment_state + utterance carried into published EmbodimentState (FT-IV-6a/b). Sensitivity guarantee: every ordering-sensitive test has an inline ·swap self-test that mutates a copy of the source, re-runs the check on the mutated copy and asserts it fails - proves the test is testing SEQUENCE, not PRESENCE (the trap Vol IV §2.3 named). Regression: test_canon_vii_ruling_c.py 6/6, test_canon_xii_perception.py 15/15 unchanged.",
   "blocker": null
 }
