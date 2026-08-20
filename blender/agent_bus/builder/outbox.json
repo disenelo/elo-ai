@@ -1014,5 +1014,29 @@
     ],
     "evidence": "pytest tests/test_wo111_ack_contract.py tests/test_wo111_consume_ack.py -> 18 passed (14 baseline + 4 new). tests/test_0019_ct0032_capability_health.py -> 8 passed. Sentences eLo now produces: BROKEN -> 'That didn't work - scale up reported a failure.'; UNCONFIRMED -> 'I triggered spawn wave but can't confirm it happened.'; CONFIRMED -> 'Done - sit confirmed.'; TIMEOUT (15.0s) -> 'That didn't work - wave reported a failure.' ACK sources by class: ACK_UNITY_ACK for sit/move/exit/wave/head gestures + desktop_presence + file_drop; ACK_SYNC_RETURN for every tool_router agent (time/calculator/weather/news/translate/timer/search/wikipedia/draft/obsidian/vault_write/file_read/clipboard/messages/calendar/reminders/notes/spotify/vision/github/computer_control/truth_sync/volume/brightness/dark_mode/app_launch/window_focus/screenshot/image_gen/model_gen); ACK_NONE for every future=True capability (email/camera/terminal/media_control/sleep/blender/unity/substance/window_observer/robot_runtime/robot_motion/robot_camera/3d_printer/plotter/heat_press/laser). Scope: no per-verb hand-wiring (card explicitly forbids it) - the generic contract is ack_contract.ActionResult + make_result + honest_outcome from card 0011. Card DOING -> DONE (05a_WO-111_ACK_on_everything.md).",
     "duration_s": 0
+  },
+  "05a_WO-111_ACK_on_everything_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787208680.650034,
+    "state": "DONE",
+    "output": [
+      "94c7ad5",
+      "a71a36a"
+    ],
+    "evidence": "Row 13 VERIFY: every registry capability declares ack_source (48/48). runtime/capabilities/capability.py adds ACK_SYNC_RETURN | ACK_UNITY_ACK | ACK_NONE | ACK_UNKNOWN; registry.py declares ack_source on all 48 capabilities; capabilities_missing_ack_path() returns [] today. tests/test_wo111_ack_contract.py adds 4 new tests including test_new_capability_without_ack_source_fails_the_check which prove",
+    "duration_s": 603.6
+  },
+  "06_WO-CANON-XII_XV_perception_world": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787347200.0,
+    "state": "DONE",
+    "output": [
+      "5f92954",
+      "b520767"
+    ],
+    "evidence": "Card 0006 (WO-CANON-XII + XV finish) DONE. Scope: (1) perception->world copy verified live in assemble_world_state (Vol XII Ch.3 §3.2); (2) single-read discipline: claim_gate._vision_gate(world=...) reads world.environment.vision_active first (fallback to blender_state.json only when no carrier), spine._conversation_faculty threads plan.world through; (3) fidelity guard structural: PerceptionResult.relations: tuple = () added, PerceptionResult.partial now fires structurally when ANY modality_read ends with ellipsis or en-dash (generalises the WO-076 Chrome-only tagger via new module-level tag_partial() helper), and perception.partial propagates to domain_health.desktop.partial so consumers enforce pre-prompt; (4) Volume_XV/00_Metadata implementation: PENDING -> WIRED with 3 new DoD checkboxes; (5) no rival spatial model built. Acceptance: python3 tests/test_card_0006_perception_world.py -> 7 passed 0 failed (AT-1 desktop populated from carrier, AT-2 temporal reads world.time from carrier, AT-3 partial structural on truncated reads, AT-4 relations tuple default (), AT-5 partial propagates to domain_health, AT-6 claim_gate reads carrier, AT-7 py_compile clean). Regression: WO-076 8/8, WO-096 5/5, WO-009 7/7 all green. Pre-existing FT-4/ST-1 failures in test_canon_xv_world_state.py patch a removed get_active_window symbol - unrelated to this card.",
+    "duration_s": 0
   }
 }
