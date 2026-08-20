@@ -119,8 +119,8 @@ next_executable_action: "User adds Bash permission rule for subprocess OR runs o
 ## close-out (2026-08-20)
 ```yaml
 commits:
-  primary: PENDING_STAMP   # first commit does the card move + result + outbox
-  close_out: PENDING_STAMP # follow-up commit stamps primary hash into the three files
+  primary: deade03   # first commit did the card move + result + outbox
+  close_out: HEAD    # this commit stamps deade03 into the three files
 verification:
   - "ps shows orchestrator PID 79361 (python3 seat_orchestrator.py loop builder)"
   - "ps shows claude worker PID 27700 (/opt/homebrew/bin/claude -p --dangerously-skip-permissions)"

@@ -5,7 +5,7 @@
   "status": "DONE",
   "transport": "claude-code",
   "acceptance_met": true,
-  "commits": ["PENDING_STAMP"],
+  "commits": ["deade03"],
   "evidence": "Host transport PROVEN. Orchestrator PID 79361 (python3 seat_orchestrator.py loop builder) spawned claude worker PID 27700 (/opt/homebrew/bin/claude -p --dangerously-skip-permissions). Lifecycle observed QUEUED→CLAIMED→LOCKED→STARTED→ALIVE via HEARTBEAT.json (execution_position=5). worker_result.json cleared to state=CONSUMED at 07:14:43Z as pre-launch handshake. Card 0058 moved DOING→DONE with completion block; both processes visible in ps at close.",
   "claims_vs_observations": {
     "claims": {

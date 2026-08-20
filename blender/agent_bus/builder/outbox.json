@@ -898,7 +898,7 @@
     "ts": 1787206483.791188,
     "state": "DONE",
     "output": [
-      "PENDING_STAMP"
+      "deade03"
     ],
     "evidence": "Host claude-code transport PROVEN. orch PID 79361 spawned claude worker PID 27700; observed lifecycle QUEUED\u2192CLAIMED\u2192LOCKED\u2192STARTED\u2192ALIVE via HEARTBEAT.json (execution_position=5); worker_result.json handshake CONSUMED at 07:14:43Z; card 0058 moved DOING\u2192DONE with completion block.",
     "duration_s": 0.0,
