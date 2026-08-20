@@ -16,6 +16,17 @@ UNAVAILABLE   = "UNAVAILABLE"
 FAILED        = "FAILED"
 UNKNOWN       = "UNKNOWN"
 
+# ── ACK sources (WO-111 card 05a) ─────────────────────────────────────────────
+# Every capability declares which ACK path proves it happened. "unknown" is the
+# sentinel default that forces authors to think about it — the registry-level
+# test fails if any capability ships with ack_source == ACK_UNKNOWN.
+ACK_UNKNOWN     = "unknown"       # not declared — test failure
+ACK_SYNC_RETURN = "sync_return"   # agent function returns str on success / raises on failure
+ACK_UNITY_ACK   = "unity_ack"     # Unity emits an event to unity_events.json
+ACK_NONE        = "none"          # no ACK path yet — executor must report unconfirmed
+ACK_SOURCES = frozenset({ACK_SYNC_RETURN, ACK_UNITY_ACK, ACK_NONE})
+
+
 # ── Capability categories ─────────────────────────────────────────────────────
 CAT_UTILITY       = "utility"
 CAT_KNOWLEDGE     = "knowledge"
@@ -50,6 +61,11 @@ class Capability:
     agent_module:           str                 = ""        # importable path for health check
     # WO-111: ACK contract — physical actions require confirmation; utilities don't
     ack_required:           bool                = False     # True = must ACK or report failure
+    # WO-111 (card 05a): declared ACK path — the source of truth for how this
+    # capability's outcome is confirmed. Must be one of ACK_SOURCES below.
+    # Default "unknown" so any newly-added capability that forgets to declare
+    # this fails the registry-level test in test_wo111_ack_contract.
+    ack_source:             str                 = ACK_UNKNOWN
 
     def is_available(self) -> bool:
         return self.enabled and not self.future and self.health_state in (ONLINE,)
