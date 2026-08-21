@@ -1,10 +1,104 @@
 {
-  "ts": 1786038531.0442939,
+  "ts": 1787291108.92399,
   "updates": [
     {
       "wo": "GM-2b",
       "status": "progress",
-      "detail": "ROOT CAUSE FOUND + FIX LANDED (code, no bridge). Proof chain: Walk's only outgoing transitions = →Jump (needs jump) + →Run (IsSprinting==true, HasExitTime=0, unmuted, no competitor) → transition is provably clean → therefore Animator IsSprinting was FALSE when stuck in Walk (b). Drive bug: PlayerController:276 `IsSprinting = running && moveX != 0f` counts ONLY horizontal (A/D); moving at run speed in DEPTH (W/S, moveX==0) left IsSprinting false → Walk cycle while gliding fast = exactly (b). FIX: `IsSprinting = running && (moveX != 0f || moveY != 0f)` — sprint on any-direction movement. TEST: focus Unity (recompile) → Play → run (esp. W/S) → Run should now fire. If David runs A/D and it STILL fails, next lever = the IsSprinting dual-write (OnSprint:847 vs :276) — 1 more line."
+      "detail": "ROOT CAUSE FOUND + FIX LANDED (code, no bridge). Proof chain: Walk's only outgoing transitions = \u2192Jump (needs jump) + \u2192Run (IsSprinting==true, HasExitTime=0, unmuted, no competitor) \u2192 transition is provably clean \u2192 therefore Animator IsSprinting was FALSE when stuck in Walk (b). Drive bug: PlayerController:276 `IsSprinting = running && moveX != 0f` counts ONLY horizontal (A/D); moving at run speed in DEPTH (W/S, moveX==0) left IsSprinting false \u2192 Walk cycle while gliding fast = exactly (b). FIX: `IsSprinting = running && (moveX != 0f || moveY != 0f)` \u2014 sprint on any-direction movement. TEST: focus Unity (recompile) \u2192 Play \u2192 run (esp. W/S) \u2192 Run should now fire. If David runs A/D and it STILL fails, next lever = the IsSprinting dual-write (OnSprint:847 vs :276) \u2014 1 more line."
+    },
+    {
+      "work_id": "GAP-run-direction",
+      "state": "DONE",
+      "output": "eLo runs the right way: removed PlayerController old-eLo root LookRotation(moveX) that compounded with PlayerAnimator child facing (D:90x270=0, A:270x90=0 -> both cancelled to face-camera). Child owns all 2.5D facing now.",
+      "commits": [
+        "93a323e"
+      ],
+      "test_status": "COMPILE-UNVERIFIED",
+      "runtime_status": "PLAY-UNVERIFIED",
+      "evidence": "PlayerController.cs ~288; nothing reads player-root rotation/forward (all .forward = camera).",
+      "dependencies": "none",
+      "unknowns": "play-confirm A/D turn eLo left/right."
+    },
+    {
+      "work_id": "GAP-seat-position",
+      "state": "MECHANISM-DONE",
+      "output": "Tunable seatPositionOffset+seatEulerOffset on VehicleController (default 0 = no change), applied over the seat socket so eLo_v2 dials onto each seat without editor socket surgery. Values = David's per-vehicle dial (rig data, headless-unknowable).",
+      "commits": [
+        "527e9dd"
+      ],
+      "test_status": "COMPILE-UNVERIFIED",
+      "runtime_status": "PLAY-UNVERIFIED",
+      "evidence": "VehicleController.cs Seat header + Enter.",
+      "dependencies": "per-vehicle offset values = David; seated POSE layer water-gate is intentional (comment), NOT changed.",
+      "unknowns": "whether land vehicles should use a seated pose at all (intentional water-gate \u2014 flagged, not touched)."
+    },
+    {
+      "card": "0002_WHAT_ARE_YOU_ON.md",
+      "state": "REPORT",
+      "output": "One-line game state + ownership rulings on CT4V-06 / WO-050 / WO-074C \u2014 none of the three are eLo-Planet. Filed FROM_GAME_2026-08-21_what_i_am_on.md.",
+      "on_now": "vehicle-seat feel-loop (waiting on David per-vehicle offsets) + A/D turn play-confirm; GM-2b sprint-on-any-direction fix landed",
+      "recent_commits": {
+        "GAP-run-direction": "93a323e (DONE)",
+        "GAP-seat-position": "527e9dd (MECHANISM-DONE)"
+      },
+      "ownership_rulings": {
+        "CT4V-06": "NOT game \u2014 capability-ladder audit, Architect/Builder canon lane",
+        "WO-050": "NOT game \u2014 frontmatter owner_seat=SEAT-ENG-001 (Builder / eLo OS)",
+        "WO-074C": "NOT game \u2014 WO-074 \u00a7C body reads \u25b6 DESIGNER (DesktopBuddy.cs window-edge nav)"
+      },
+      "evidence": "FROM_GAME_2026-08-21_what_i_am_on.md; WO-050 header; WO-074 \u00a7C; DISPATCH_BOARD.md L177/L190/L1000/L1090"
     }
-  ]
+  ],
+  "items": [
+    {
+      "wo": "GM-2b",
+      "status": "progress",
+      "detail": "ROOT CAUSE FOUND + FIX LANDED (code, no bridge). Proof chain: Walk's only outgoing transitions = \u2192Jump (needs jump) + \u2192Run (IsSprinting==true, HasExitTime=0, unmuted, no competitor) \u2192 transition is provably clean \u2192 therefore Animator IsSprinting was FALSE when stuck in Walk (b). Drive bug: PlayerController:276 `IsSprinting = running && moveX != 0f` counts ONLY horizontal (A/D); moving at run speed in DEPTH (W/S, moveX==0) left IsSprinting false \u2192 Walk cycle while gliding fast = exactly (b). FIX: `IsSprinting = running && (moveX != 0f || moveY != 0f)` \u2014 sprint on any-direction movement. TEST: focus Unity (recompile) \u2192 Play \u2192 run (esp. W/S) \u2192 Run should now fire. If David runs A/D and it STILL fails, next lever = the IsSprinting dual-write (OnSprint:847 vs :276) \u2014 1 more line."
+    },
+    {
+      "work_id": "GAP-run-direction",
+      "state": "DONE",
+      "output": "eLo runs the right way: removed PlayerController old-eLo root LookRotation(moveX) that compounded with PlayerAnimator child facing (D:90x270=0, A:270x90=0 -> both cancelled to face-camera). Child owns all 2.5D facing now.",
+      "commits": [
+        "93a323e"
+      ],
+      "test_status": "COMPILE-UNVERIFIED",
+      "runtime_status": "PLAY-UNVERIFIED",
+      "evidence": "PlayerController.cs ~288; nothing reads player-root rotation/forward (all .forward = camera).",
+      "dependencies": "none",
+      "unknowns": "play-confirm A/D turn eLo left/right."
+    },
+    {
+      "work_id": "GAP-seat-position",
+      "state": "MECHANISM-DONE",
+      "output": "Tunable seatPositionOffset+seatEulerOffset on VehicleController (default 0 = no change), applied over the seat socket so eLo_v2 dials onto each seat without editor socket surgery. Values = David's per-vehicle dial (rig data, headless-unknowable).",
+      "commits": [
+        "527e9dd"
+      ],
+      "test_status": "COMPILE-UNVERIFIED",
+      "runtime_status": "PLAY-UNVERIFIED",
+      "evidence": "VehicleController.cs Seat header + Enter.",
+      "dependencies": "per-vehicle offset values = David; seated POSE layer water-gate is intentional (comment), NOT changed.",
+      "unknowns": "whether land vehicles should use a seated pose at all (intentional water-gate \u2014 flagged, not touched)."
+    },
+    {
+      "card": "0002_WHAT_ARE_YOU_ON.md",
+      "state": "REPORT",
+      "output": "One-line game state + ownership rulings on CT4V-06 / WO-050 / WO-074C \u2014 none of the three are eLo-Planet. Filed FROM_GAME_2026-08-21_what_i_am_on.md.",
+      "on_now": "vehicle-seat feel-loop (waiting on David per-vehicle offsets) + A/D turn play-confirm; GM-2b sprint-on-any-direction fix landed",
+      "recent_commits": {
+        "GAP-run-direction": "93a323e (DONE)",
+        "GAP-seat-position": "527e9dd (MECHANISM-DONE)"
+      },
+      "ownership_rulings": {
+        "CT4V-06": "NOT game \u2014 capability-ladder audit, Architect/Builder canon lane",
+        "WO-050": "NOT game \u2014 frontmatter owner_seat=SEAT-ENG-001 (Builder / eLo OS)",
+        "WO-074C": "NOT game \u2014 WO-074 \u00a7C body reads \u25b6 DESIGNER (DesktopBuddy.cs window-edge nav)"
+      },
+      "evidence": "FROM_GAME_2026-08-21_what_i_am_on.md; WO-050 header; WO-074 \u00a7C; DISPATCH_BOARD.md L177/L190/L1000/L1090"
+    }
+  ],
+  "git_head": "527e9dd",
+  "seat": "SEAT-ENG-005",
+  "repo": "eLo-Planet"
 }
