@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# .githooks/pre-commit — WO-CANON-XXVII §C
+# Version-controlled pre-commit hook. Activated via:
+#   git config core.hooksPath .githooks
+#
+# Runs the secret check on the staged diff. Rejects the commit if secrets found.
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+SCRIPT="$REPO_ROOT/scripts/check_secrets.py"
+
+if [[ ! -f "$SCRIPT" ]]; then
+    echo "pre-commit: check_secrets.py not found at $SCRIPT — skipping secret check" >&2
+    exit 0
+fi
+
+python3 "$SCRIPT"
+exit $?
