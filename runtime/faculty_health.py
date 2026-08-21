@@ -117,3 +117,43 @@ def _persist() -> None:
         os.replace(tmp, _HEALTH_PATH)
     except Exception as e:
         _log.debug("faculty_health persist failed: %s", e)
+
+
+# ── Genome-aware health surface (WO-CANON-XXII) ───────────────────────────────
+# Per-faculty health keyed by genome name (e.g. "PerceptionFaculty").
+# Supplements the four coarse buckets above; does not replace them.
+# Health values mirror GenomeRegistry: CONNECTED | DEGRADED | OFFLINE | UNKNOWN.
+
+import threading as _threading
+
+_genome_registry: dict = {}
+_genome_lock = _threading.Lock()
+
+
+def genome_health_status(faculty_name: str) -> str:
+    """Return CONNECTED | DEGRADED | OFFLINE | UNKNOWN for a genome-registered faculty."""
+    with _genome_lock:
+        return _genome_registry.get(faculty_name, {}).get("status", "UNKNOWN")
+
+
+def mark_genome_degraded(faculty_name: str, reason: str = "") -> None:
+    """Mark a genome-registered faculty as DEGRADED."""
+    with _genome_lock:
+        _genome_registry.setdefault(faculty_name, {"status": "CONNECTED", "last_error": ""})
+        _genome_registry[faculty_name]["status"]     = "DEGRADED"
+        _genome_registry[faculty_name]["last_error"] = reason
+    _log.warning("Genome DEGRADED: %s — %s", faculty_name, reason)
+
+
+def mark_genome_recovered(faculty_name: str) -> None:
+    """Mark a genome-registered faculty as CONNECTED (recovered)."""
+    with _genome_lock:
+        _genome_registry.setdefault(faculty_name, {"status": "CONNECTED", "last_error": ""})
+        _genome_registry[faculty_name]["status"]     = "CONNECTED"
+        _genome_registry[faculty_name]["last_error"] = ""
+
+
+def genome_health_summary() -> dict:
+    """Return {faculty_name: status} for all genome-registered faculties."""
+    with _genome_lock:
+        return {k: v.get("status", "UNKNOWN") for k, v in _genome_registry.items()}
