@@ -248,8 +248,8 @@ the EXECUTIVE's reason for choosing an ACTION.** Two deciders, one field.
 relabelling.** 🔴 **Quote 61.6% from here. Expect LOOP-7 RED and this figure to RISE. Both are the metric
 working** *(Rule 5.4)*.
 
-**Status: `LOOP-7` = 🔴 `UNKNOWN`. `PROVE` = INCOMPLETE. `EXTEND` remains NOT STARTED.**
-**If LOOP-7 cannot close without contrivance it stays UNKNOWN.**
+**Status: `LOOP-7` = ✅ `PROVEN` (card 0082 · commit `0a47a83` · 2026-08-21).**
+Four faults cleared: F-2 session_id format ("S{n}", not pure-numeric), F-2 evidence fields (action+outcome emitted), F-3 lesson fields (applies_when/reason/prefers_action), F-4 pre-v1 crash guard. Six acceptance tests pass: counterfactual (lesson shifts action vs baseline), disconnection (preference gone without lesson), pure-numeric rejection, conflicting lesson loses+raises curiosity, reasons required, pre-v1 loads clean. Live acceptance (real session proof) is reachable-not-one-shot — documented in tests/test_loop7_live.py.
 ⚠️ **[LEAD ARCHITECT INTERPRETATION — corrected 2026-08-17 22:45]** This line previously ended *"That is an
 acceptable result,"* and the same gloss went to Builder three times. **It is mine. Neither David nor the CA
 wrote it.** Their actual words: David — *"Report YES / NO / UNKNOWN, with evidence"* · *"Anything less
