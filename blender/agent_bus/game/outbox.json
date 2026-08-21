@@ -1,5 +1,5 @@
 {
-  "ts": 1787291108.92399,
+  "ts": 1787291168.325808,
   "updates": [
     {
       "wo": "GM-2b",
@@ -47,6 +47,16 @@
         "WO-074C": "NOT game \u2014 WO-074 \u00a7C body reads \u25b6 DESIGNER (DesktopBuddy.cs window-edge nav)"
       },
       "evidence": "FROM_GAME_2026-08-21_what_i_am_on.md; WO-050 header; WO-074 \u00a7C; DISPATCH_BOARD.md L177/L190/L1000/L1090"
+    },
+    {
+      "card": "0002_WHAT_ARE_YOU_ON.md",
+      "state": "DONE",
+      "commits": [
+        "7822748",
+        "8f6e7ec"
+      ],
+      "output": "Report card closed. On now: vehicle-seat feel-loop + A/D turn play-confirm. CT4V-06 / WO-050 / WO-074C all ruled NOT game \u2014 routed to Architect/Builder / Builder / Designer respectively.",
+      "acceptance_met": true
     }
   ],
   "items": [
@@ -96,9 +106,19 @@
         "WO-074C": "NOT game \u2014 WO-074 \u00a7C body reads \u25b6 DESIGNER (DesktopBuddy.cs window-edge nav)"
       },
       "evidence": "FROM_GAME_2026-08-21_what_i_am_on.md; WO-050 header; WO-074 \u00a7C; DISPATCH_BOARD.md L177/L190/L1000/L1090"
+    },
+    {
+      "card": "0002_WHAT_ARE_YOU_ON.md",
+      "state": "DONE",
+      "commits": [
+        "7822748",
+        "8f6e7ec"
+      ],
+      "output": "Report card closed. On now: vehicle-seat feel-loop + A/D turn play-confirm. CT4V-06 / WO-050 / WO-074C all ruled NOT game \u2014 routed to Architect/Builder / Builder / Designer respectively.",
+      "acceptance_met": true
     }
   ],
-  "git_head": "527e9dd",
+  "git_head": "8f6e7ec",
   "seat": "SEAT-ENG-005",
   "repo": "eLo-Planet"
 }

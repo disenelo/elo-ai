@@ -1,0 +1,8 @@
+{
+  "card": "0002_WHAT_ARE_YOU_ON.md",
+  "status": "DONE",
+  "commits": ["7822748", "8f6e7ec"],
+  "acceptance_met": true,
+  "evidence": "FROM_GAME_2026-08-21_what_i_am_on.md filed; outbox.json appended (items=4, last card=0002); card moved DOING->DONE with Result block; three unassigned rows ruled — CT4V-06 (Architect/Builder capability audit), WO-050 (SEAT-ENG-001 Builder per frontmatter), WO-074C (Designer per WO-074 §C body). On now: vehicle-seat feel-loop + A/D turn play-confirm; recent commits 93a323e (GAP-run-direction DONE), 527e9dd (GAP-seat-position MECHANISM-DONE), GM-2b sprint-on-any-direction fix landed.",
+  "blocker": null
+}
