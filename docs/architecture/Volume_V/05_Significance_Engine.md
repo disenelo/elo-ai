@@ -2,7 +2,7 @@
 chapter: 5
 title: "The Significance Engine — Emotion Decides What Becomes Memory"
 volume: V
-status: DRAFT
+status: IMPLEMENTATION READY (ratified L3 2026-08-03)
 version: 0.1.0
 received: 2026-07-26
 implementation: PENDING

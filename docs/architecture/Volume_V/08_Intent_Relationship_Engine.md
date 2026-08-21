@@ -2,7 +2,7 @@
 chapter: 8
 title: "The Intent & Relationship Engine — Understanding Not Only What Is Said, But What Is Being Created Together"
 volume: V
-status: DRAFT
+status: IMPLEMENTATION READY (ratified L3 2026-08-03)
 version: 0.1.0
 received: 2026-07-26
 implementation: PENDING
