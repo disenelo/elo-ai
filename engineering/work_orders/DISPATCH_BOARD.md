@@ -24,9 +24,9 @@ number existed. It is a **signup** target — the funding goal still sits behind
 
 ---
 
-## TRACK B — BUILDER · 2026-08-22 B-DRIFT complete ✅
+## TRACK B — BUILDER · 2026-08-22 B-DRIFT complete ✅ · DRIFT AUDIT NOT YET CLOSED
 
-All 27 WO-CANON volumes built and verified. B-DRIFT-01..04 done. 3 cards remain legitimately blocked:
+All 27 WO-CANON volumes built and verified. B-DRIFT-01..04 done. Provenance audit complete. 1 new open item found (U-trait-vector-injection). 3 cards remain legitimately blocked:
 
 | Card | State | Block |
 |---|---|---|
@@ -43,6 +43,24 @@ All 27 WO-CANON volumes built and verified. B-DRIFT-01..04 done. 3 cards remain 
 | B-DRIFT-03 | R-08 frontmatter: `canonical: false, derived: true, source: R-04`; `obsidian_loader.py` labels R-08 as [REFERENCE] in context_block | AC-08, AC-09 |
 | B-DRIFT-04 | `_PERSONA` fallback: ANTI-MIRRORING RULE section added with "you mentioned…" prohibition | AC-10 |
 | Tests | `tests/test_b_drift_identity_pipeline.py` — 33 AT · AC-01..AC-10 + F-3/F-4/F-5/F-6 regression | 33/33 PASS |
+
+### PROVENANCE AUDIT ✅ COMPLETE — 2026-08-22 · DRIFT AUDIT NOT YET CLOSED
+
+| Item | Result |
+|---|---|
+| 1. canonical_identity.md sole source (personality_block path) | ✅ CONFIRMED |
+| 2. DAVID_RELATIONSHIP_MODEL fields cannot enter personality_block | ✅ CONFIRMED |
+| 3. 100 imperatives cannot modify canonical identity | ✅ CONFIRMED |
+| 4. R-08 cannot independently inject values | ✅ CONFIRMED |
+| 5. R-04 qualifying clauses survive to model input | ✅ CONFIRMED |
+| 6. _PERSONA fallback conflict (degraded path only) | ⚠️ CONDITIONAL — flat Core traits list in _PERSONA not updated to two-layer model; normal-operation path is clean |
+| 7. _PERSONA is a fallback derivative, not authoritative | ✅ CONFIRMED |
+| 8. Assembled prompt block provenance | ✅ DOCUMENTED |
+| 9. `prompt_block(_elo_self)` = inner state, CLEAR | ✅ CLEAR |
+| **9.** `identity_block(_elo_self)` = competing representation | 🔴 **U-trait-vector-injection CONFIRMED ACTIVE** |
+| **10.** Volume X trait vector | 🔴 **Volume X UNRATIFIED — pre-canon artifact active** |
+
+**U-trait-vector-injection:** `EloSelfState.core_values` = `[calm, observant, playful, emotionally aware, curious, grounded]` injected via `identity_block()` at server.py:3262 EVERY TURN. Contains non-canonical traits ("observant", "emotionally aware" — canonical is "emotionally present") and UNKNOWN trait ("grounded" — U-grounded). Bypasses DR-4 chain entirely. `check_identity_drift()` defined but never called (dead function). Cannot be closed by Builder — requires David L3 ruling on canonical provenance of core_values.
 
 ## TRACK B — DESIGN + MT
 Design `DOING 0 / QUEUE 0` · MT `DOING 2 / QUEUE 6`. **Design feeds MT.** One open ask: the single
