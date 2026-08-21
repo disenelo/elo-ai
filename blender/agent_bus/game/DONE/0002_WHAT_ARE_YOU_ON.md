@@ -20,7 +20,7 @@ queue will no longer be marked DONE by a crashing worker.
 ---
 
 ## Result — game, 2026-08-21
-- **commit:** none (reporting card — no code change; markdown-only report)
+- **commit:** `7822748` (markdown-only report — no product code touched)
 - **filed:** `blender/agent_bus/game/FROM_GAME_2026-08-21_what_i_am_on.md`
 - **outbox:** appended (`ts=2026-08-21T…`, `items` grew to 4 with `card: 0002` entry)
 - **on now:** vehicle-seat feel-loop (per-vehicle offsets = David dial) + A/D turn play-confirm; last real commits `93a323e` (GAP-run-direction DONE) and `527e9dd` (GAP-seat-position MECHANISM-DONE); GM-2b sprint-on-any-direction fix landed.
