@@ -273,3 +273,6 @@ WO-010 (Architect UPHELD UI/Avatar — IN_PROGRESS, Unity wiring fallback layer)
 *Append-only. Maintained by every agent on completion; reviewed by David. — 2026-07-27.*
 
 - **2026-08-10 David L3 batch-approval:** WO-035, WO-036, WO-037, WO-038, WO-039, WO-041, WO-042, WO-043 — green + confirmed, closed to DONE.
+
+| WO-CANON-XI §B/§E/§F | Motor Contract — UP envelope, §1.7 audit rule, verb parity | Builder | ⏳ IN_REVIEW 2026-08-21 | `runtime/motor_contract.py` (new): MOVEMENT_VERBS(12), BOUNDED_REFLEXES, validate_up_event(), ack_is_fresh(), audit_motor_behaviour(), is_valid_verb(), validate_route_verbs(), assert_bone_present(). `tests/test_canon_xi_motor.py` 31/31 pass. commit `31c9421`. §A/§D blocked David L3 (OQ-1.2). |
+| WO-CANON-III | System Architecture — four runtime contracts + Ruling E + DOWN/UP boundary | Builder | ⏳ IN_REVIEW 2026-08-21 | Fix: `runtime/spine/spine.py` _EMBODIMENT_SEQUENCE counter — sequence_id now strictly increases (was always 0). `tests/test_canon_iii_system_arch.py` 26 pass / 3 known-gaps / 0 fail. commit `94feda2`. Known gaps: E6 Unity reflexes (Designer lane), body_route in ExecutionReport, CognitivePlan mutability (III-1). |
