@@ -24,21 +24,25 @@ number existed. It is a **signup** target — the funding goal still sits behind
 
 ---
 
-## TRACK B — BUILDER, in order. 🔴 `QUEUE/` IS UNSAFE, work `_HOLD_ORCHESTRATOR_UNSAFE/` direct.
-The orchestrator closed card `0059` sixty seconds after it was written — empty Result, no commit,
-`_groq_stream` still absent. MT reported the same fault independently.
+## TRACK B — BUILDER · 2026-08-22 B-DRIFT complete ✅
 
-| # | Card | Why in this position |
+All 27 WO-CANON volumes built and verified. B-DRIFT-01..04 done. 3 cards remain legitimately blocked:
+
+| Card | State | Block |
 |---|---|---|
-| 1 | `0061` orchestrator false-close **P0** | An audit against fabricated state is worth nothing |
-| 2 | `0064` generate the board from evidence | 177 ids · **only ~48 are real engineering** · 38 are built-and-unmarked |
-| 3 | `0060` eLo jammed in GROUND **P0** | 7 straight turns of restatement. **Run the §E A/B first** |
-| 4 | `0063` chatlog replay harness | *"I use chatlogs as diagnostic tests."* Only C→D instrument that exists |
-| 5 | `0062` WO-036b mirroring | ⚠️ **read the CORRECTION** — the rule exists and is ignored, do not add another **✅ EVIDENCED 2026-08-21 [git·test·card] |
-| 6 | `0059` streaming + deadline | Router half **already implemented** — verify, don't rebuild. Real work = `prompt_eval` re-reads 7,086 tok/turn |
-| 7 | `0065` WO-BRAIN-AUTHORS | 🔴 **DECIDED BY DAVID.** Brain applies the model; `elo_raw_gen == elo_final` today **✅ EVIDENCED 2026-08-21 [git·test·card] |
+| `0059` streaming + 4s deadline | **built · 5/5 tests pass** | 🔴 live latency measurement blocked — Groq/Cerebras returning HTTP 403 |
+| `0060` eLo jammed in GROUND | **§C/§D done** | 🔴 **DAVID HOLD — DO NOT TOUCH** |
+| `0081` WO-CANON-XI §A/§D | **Step 1+2 done · parity gate open** | 🔴 XI-AD-2 needs live moves emitting `brain_route`+`unity_route` → `route_memory.jsonl` to turn GREEN |
 
-Then: the **25 never-started**, CANON block first (10 canon volumes). `WO-CANON-XIII` is RELEASED, not blocked.
+### B-DRIFT-01..04 ✅ DONE — commit b5f6351 — 2026-08-22
+
+| Task | What changed | Tests |
+|---|---|---|
+| B-DRIFT-01 | Created `elo_personality_engine/sources/canonical_identity.md` — ELO_FOUNDATIONAL_CHARACTER (7 S-01 traits), ELO_EXPRESSIVE_CHARACTER (3 FREEZE traits), ELO_BEHAVIOURAL_RULES (4 rules), ELO_VALUES reference, FORBIDDEN_IDENTITY_SOURCES | AC-02, AC-03, AC-04, AC-05, AC-06, AC-07 |
+| B-DRIFT-02 | `injection_layer.py` reclassified skeleton fields as DAVID_RELATIONSHIP_MODEL; skeleton no longer enters `personality_block`; two-layer character injected instead | AC-01, B-DRIFT-02 suite |
+| B-DRIFT-03 | R-08 frontmatter: `canonical: false, derived: true, source: R-04`; `obsidian_loader.py` labels R-08 as [REFERENCE] in context_block | AC-08, AC-09 |
+| B-DRIFT-04 | `_PERSONA` fallback: ANTI-MIRRORING RULE section added with "you mentioned…" prohibition | AC-10 |
+| Tests | `tests/test_b_drift_identity_pipeline.py` — 33 AT · AC-01..AC-10 + F-3/F-4/F-5/F-6 regression | 33/33 PASS |
 
 ## TRACK B — DESIGN + MT
 Design `DOING 0 / QUEUE 0` · MT `DOING 2 / QUEUE 6`. **Design feeds MT.** One open ask: the single
