@@ -123,7 +123,8 @@ _last_pp         = None   # last known presence_plan — survives tool-call turn
 # cleared on timeout or when Unity ACKs completion (or a new intent replaces it).
 # WO-054: "queued" holds an intent that arrived while sit is in-flight; emitted once sit clears.
 _PENDING_SIT:  dict = {"active": False, "since": 0.0, "queued": None}
-_PENDING_MOVE: dict = {"active": False, "since": 0.0, "direction": "", "sub_type": ""}  # IO contract UP/DOWN
+_PENDING_MOVE: dict = {"active": False, "since": 0.0, "direction": "", "sub_type": "",
+                       "route_timeout_s": 8.0}  # OQ-1.3: timeout derived from route expected_ms sum
 _PENDING_EXIT: dict = {"active": False, "since": 0.0}                     # IO contract UP/DOWN exit_complete ACK
 _pscheduler      = _PresenceScheduler()
 _behaviour_gate  = _BehaviourGate()
@@ -146,7 +147,8 @@ _UNITY_EVENTS_PATH   = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 _ACK_QUEUE: list[dict] = []   # append-only in-memory event log; drained by ACK checks
 _ACK_QUEUE_LOCK = threading.Lock()
 _ACK_BODY_TYPES = frozenset({"sit_complete", "sit_held", "move_complete", "exit_complete",
-                               "stand_complete", "wave_complete"})
+                               "stand_complete", "wave_complete",
+                               "arrived"})  # OQ-1.4: terminal route-complete ACK
 _ack_last_ts: float = 0.0     # last _ts seen — prevents re-appending the same event
 
 
@@ -3055,8 +3057,10 @@ def _process_turn(raw: str) -> dict:
             _mv_ev: dict = {}
             with _ACK_QUEUE_LOCK:
                 for _qmv in _ACK_QUEUE:
+                    _qmv_type = _qmv.get("type", "")
+                    # OQ-1.4: prefer terminal `arrived`; also accept legacy `move_complete`
                     if (
-                        _qmv.get("type") == "move_complete"
+                        _qmv_type in ("arrived", "move_complete")
                         and float(_qmv.get("_ts", 0)) > _PENDING_MOVE["since"]
                     ):
                         _move_acked = True
@@ -3085,7 +3089,7 @@ def _process_turn(raw: str) -> dict:
                     )
                 except Exception:
                     pass
-            elif _move_age < 8.0:
+            elif _move_age < _PENDING_MOVE.get("route_timeout_s", 8.0):  # OQ-1.3
                 _mv_dir = _PENDING_MOVE.get("sub_type", "") or _PENDING_MOVE.get("direction", "")
                 _move_transit = (
                     f"[MOVEMENT IN TRANSIT] You issued a move command ({_mv_dir or 'unknown direction'}). "
@@ -4131,6 +4135,12 @@ def _process_turn(raw: str) -> dict:
                     _PENDING_MOVE["since"]     = _now54
                     _PENDING_MOVE["direction"] = _mv_intent.get("direction", "")
                     _PENDING_MOVE["sub_type"]  = _mv_intent.get("sub_type", "")
+                    # OQ-1.3: derive timeout from route expected_ms sum + 50% slack; floor at 8s
+                    _rt_legs = _mv_intent.get("route") or []
+                    _rt_exp_ms = sum(
+                        leg.get("expected_ms", 0) for leg in _rt_legs if isinstance(leg, dict)
+                    )
+                    _PENDING_MOVE["route_timeout_s"] = max(8.0, _rt_exp_ms / 1000.0 * 1.5) if _rt_exp_ms else 8.0
                 elif _mv_intent == "step_out":
                     # Exit intent — activate pending tracker; gate "stepping away" on exit_complete
                     _PENDING_EXIT["active"] = True
