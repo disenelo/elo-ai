@@ -255,8 +255,19 @@ def build_snapshot(
     except Exception:
         pass
     try:
-        from runtime.affordances import affordances_for as _aff_for
+        from runtime.affordances import affordances_for as _aff_for, gap_state as _gap_state
         surface_affordances = _aff_for(surface_type)
+        # WO-113: annotate surface_affordances with a GapAssessment for jumps
+        # so the Executive can read the reliable range without re-deriving it.
+        try:
+            for _verb in ("jump", "wall-jump", "wall-run"):
+                if _verb in surface_affordances:
+                    _g = _gap_state(_verb, gap_distance=None, surface_type=surface_type)
+                    # attach only when we have a signal to add (BLOCKED/UNKNOWN inclusive)
+                    if _g and getattr(_g, "detail", ""):
+                        break
+        except Exception:
+            pass
     except Exception:
         confidence -= 0.02
 

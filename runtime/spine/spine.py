@@ -139,6 +139,20 @@ def _capability_faculty(meaning: str, intent: str) -> list[dict]:
     except Exception as e:
         _log.debug("capability_faculty/agent_route: %s", e)
 
+    # WO-055: penalise capabilities that have failed repeatedly this session.
+    # A cap with an active failure streak should sink in the ranking so the
+    # Executive stops choosing it while it's still broken.
+    try:
+        from runtime.capability_learning import failure_streak as _fail_streak
+        for cap in candidates:
+            _streak = _fail_streak(cap["id"])
+            if _streak >= 2:
+                cap["score"] -= _streak * 2
+                cap["failure_streak"] = _streak
+        candidates.sort(key=lambda x: x["score"], reverse=True)
+    except Exception as e:
+        _log.debug("capability_faculty/failure_streak: %s", e)
+
     return candidates[:4]  # top 4 max
 
 
@@ -487,8 +501,19 @@ def run(
     try:
         from faculties.perception.perception_faculty import perceive_from_live_state as _perceive
         _perception = _perceive()
+        # WO-CANON-XXII: faculty succeeded — mark its genome recovered.
+        try:
+            from runtime.faculty_health import mark_genome_recovered as _gh_recovered
+            _gh_recovered("PerceptionFaculty")
+        except Exception:
+            pass
     except Exception as _perc_err:
         _log.warning("perceive_from_live_state FAILED: %s", _perc_err)
+        try:
+            from runtime.faculty_health import mark_genome_degraded as _gh_degraded
+            _gh_degraded("PerceptionFaculty", str(_perc_err)[:120])
+        except Exception:
+            pass
 
     # ── WO-CANON-XV: LiveWorldState — assembled FIRST, frozen, read by all faculties ─
     # Copies PerceptionResult fields into domain slices (Ch.3 §3.2 copy step).
@@ -586,6 +611,57 @@ def run(
     except Exception as _cs_err:
         _log.warning("assemble_cognitive_state FAILED: %s", _cs_err)
 
+    # ── WO-CANON-VII Ch.5: Personality vector — trait values + affect baseline ─
+    # Read on the response path (never mutated). Feeds the Emotion faculty's
+    # baseline and lets the ExecutionReport carry an identity fingerprint.
+    _personality_traits = {}
+    _personality_baseline = {}
+    _identity_hash = ""
+    try:
+        from faculties.personality.personality_evolution_faculty import (
+            load_personality as _pv_load,
+            get_trait_values as _pv_traits,
+            get_affect_baseline as _pv_baseline,
+            compute_identity_hash as _pv_hash,
+        )
+        _pv = _pv_load()
+        _personality_traits = _pv_traits(_pv)
+        _personality_baseline = _pv_baseline(_pv)
+        _identity_hash = _pv_hash()
+    except Exception as _pv_err:
+        _log.debug("personality read FAILED: %s", _pv_err)
+
+    # ── WO-006 Vol V Ch.4: Emotional Processing — AffectState BEFORE Executive ─
+    # process_emotion reads CognitiveState + self-model, returns (AffectState, EmotionalTag).
+    # Never raises; falls back to neutral. Attached to plan below.
+    _affect_state = None
+    _emotional_tag = None
+    try:
+        from faculties.emotion.emotional_processing_faculty import process_emotion as _process_emotion
+        _prior_arousal = 0.20
+        if isinstance(state, dict):
+            _prior_affect = state.get("_prior_affect")
+            if isinstance(_prior_affect, dict):
+                _prior_arousal = float(_prior_affect.get("arousal", 0.20))
+        _self_model = state.get("self_model_state") if isinstance(state, dict) else None
+        _affect_state, _emotional_tag = _process_emotion(
+            _cognitive_state,
+            self_model_state=_self_model,
+            prior_arousal=_prior_arousal,
+        )
+        try:
+            from runtime.faculty_health import mark_genome_recovered as _gh_recovered
+            _gh_recovered("EmotionFaculty")
+        except Exception:
+            pass
+    except Exception as _emo_err:
+        _log.warning("process_emotion FAILED: %s", _emo_err)
+        try:
+            from runtime.faculty_health import mark_genome_degraded as _gh_degraded
+            _gh_degraded("EmotionFaculty", str(_emo_err)[:120])
+        except Exception:
+            pass
+
     # ── Executive Faculty — ONE DECISION ─────────────────────────────────────
     # WO-106: pass assembled state so the Executive decides from real context
     plan = _executive_faculty(
@@ -604,6 +680,13 @@ def run(
     plan.world = _world
     # ── WO-CANON-VI: Store frozen WorkingMemory on plan ───────────────────────
     plan.working_memory = _wm
+    # ── WO-006: Pin AffectState + EmotionalTag on plan (readable downstream) ──
+    plan.affect_state  = _affect_state
+    plan.emotional_tag = _emotional_tag
+    # ── WO-CANON-VII Ch.5: Pin personality read on plan for downstream + report
+    plan.personality_traits   = _personality_traits
+    plan.personality_baseline = _personality_baseline
+    plan.identity_hash        = _identity_hash
 
     # ── WO-CANON-XXV: Temporal Cognition Faculty ─────────────────────────────
     _temporal_frame = None
@@ -674,6 +757,33 @@ def run(
     except Exception as e:
         _log.warning("build_embodiment_state FAILED: %s", e)
         plan.embodiment_state = None
+
+    # ── Vol III §Metadata: ExecutionReport — produced at end of every turn ────
+    # The report is the honesty record for what happened this turn: completion
+    # state, planned action, backend used. Attached to the plan and published
+    # on the Faculty Bus so downstream honesty/learning gates can read the
+    # same authoritative record instead of re-deriving from log tails.
+    try:
+        _completion = "delivered" if getattr(plan, "direct_response", None) or getattr(
+            plan, "conversation_action", ""
+        ) else "partial"
+        plan.execution_report = build_execution_report(
+            plan,
+            completion_state=_completion,
+            llm_backend_used=getattr(plan, "direct_backend", ""),
+        )
+        try:
+            from core.faculty_bus import get_bus as _get_bus
+            _get_bus().publish("Spine", "execution_report", {
+                "planned_action":   plan.execution_report.planned_action,
+                "completed":        plan.execution_report.completed,
+                "completion_state": plan.execution_report.completion_state,
+                "llm_backend_used": plan.execution_report.llm_backend_used,
+            })
+        except Exception:
+            pass
+    except Exception as _er_err:
+        _log.warning("build_execution_report FAILED: %s", _er_err)
 
     return plan
 

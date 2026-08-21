@@ -1795,12 +1795,25 @@ def _process_turn(raw: str) -> dict:
         # ── Animation play commands — instant, no LLM needed ─────────────────
         _anim_name = _detect_anim_cmd(raw)
         if _anim_name:
+            _anim_ok = None
             try:
                 from blender_bridge.anim_trigger import fire as _anim_fire
-                _anim_fire(_anim_name)
+                _anim_ret = _anim_fire(_anim_name)
+                _anim_ok = _anim_ret
             except Exception:
-                pass
+                _anim_ok = False
+            # WO-111 ADR-Exec-001: never announce anim as done without an ACK.
+            # anim_trigger.fire currently returns UNCONFIRMED (file write with no
+            # ACK), so this honesty beat is appended to the reply the user hears.
+            try:
+                from runtime.ack_contract import make_result, honest_outcome
+                _res = make_result(_anim_name, _anim_ok, source="tool_return")
+                _honest_line = honest_outcome(_res, action_label=f"{_anim_name} animation")
+            except Exception:
+                _honest_line = ""
             _anim_reply = random.choice(_ANIM_REPLIES)
+            if _honest_line and _honest_line.startswith("That didn't"):
+                _anim_reply = _honest_line
             try:
                 if not _is_user_away():
                     _voice_speak(_anim_reply)
@@ -3323,6 +3336,7 @@ def _process_turn(raw: str) -> dict:
                 capture as _tk_capture,
                 prepare_invoice as _tk_prepare,
                 recall_thread as _tk_recall,
+                record_state as _tk_record_state,
             )
             _tk_routed = False
             if _is_hold(raw):
@@ -3337,6 +3351,12 @@ def _process_turn(raw: str) -> dict:
                 response     = _tk_capture(raw)
                 backend_used = "direct"
                 _tk_routed   = True
+                # WO-068 §Ch.7: after a capture, snapshot thread state so a later
+                # hold_recall can produce a resumable summary rather than a stub.
+                try:
+                    _tk_record_state(topic="last_capture", summary=raw[:180])
+                except Exception:
+                    pass
             elif _is_prepare(raw):
                 response     = _tk_prepare(raw)
                 backend_used = "direct"
@@ -3344,6 +3364,24 @@ def _process_turn(raw: str) -> dict:
         except Exception as _tk_err:
             _tk_routed = False
             import sys as _sys_tk; print(f"[thread_keeper] {_tk_err}", file=_sys_tk.stderr)
+
+        # ── WO-CANON-XXV Ch.6: David-stated cadence directive ───────────────────
+        # eLo never infers cadence from silence (Ch.1 §1.8); only accepts explicit
+        # statements ("we're on sprint cadence", "let's slow the cadence").
+        try:
+            _CADENCE_RE = _re.compile(
+                r"\bwe(?:'?re)?\s+(?:on|doing)\s+(sprint|slow|steady|maintenance|hiatus)\s+cadence\b",
+                _re.I,
+            )
+            _cad_m = _CADENCE_RE.search(raw)
+            if _cad_m and not _tk_routed:
+                from faculties.temporal.faculty import set_stated_cadence as _tf_cadence
+                _tf_cadence(_cad_m.group(1).lower())
+                response     = f"Cadence noted: {_cad_m.group(1).lower()}."
+                backend_used = "direct"
+                _tk_routed   = True
+        except Exception:
+            pass
 
         # ── Multilingual "how are you" (WO-069 — before greeting check) ─────────
         _ml_hau    = _detect_multilingual_how_are_you(_raw_lower)
@@ -3578,7 +3616,14 @@ def _process_turn(raw: str) -> dict:
                         # WO-022: extract topic words; skip pure question/filler words so
                         # the vault query is focused. Fall back to broad lookup if empty.
                         try:
-                            from memory.vault_layer import lookup as _vlookup
+                            # WO-053: recall_context wraps lookup with a status envelope
+                            # (live/absent + confidence + source) so the response path
+                            # knows when memory is offline vs merely empty. We keep the
+                            # existing _vault_hits shape below for downstream code.
+                            from memory.vault_layer import (
+                                lookup as _vlookup,
+                                recall_context as _vrc,
+                            )
                             # WO-039-F4: expanded skip set removes filler words that dilute
                             # topic scoring. "our weather conversation" → "weather" (1/1
                             # overlap) beats "our weather conversation" (1/3 overlap), so
@@ -3597,7 +3642,8 @@ def _process_turn(raw: str) -> dict:
                                 if w not in _recall_skip and len(w) >= 3
                             ]
                             _recall_q = " ".join(_topic_words) if _topic_words else "disenelo recent"
-                            _vault_hits = _vlookup(_recall_q, max_results=5)
+                            _recall_pack = _vrc(_recall_q, max_results=5)
+                            _vault_hits = _recall_pack.get("results", []) if _recall_pack.get("status") == "live" else _vlookup(_recall_q, max_results=5)
                             if not _vault_hits:
                                 _vault_hits = _vlookup("disenelo", max_results=5)
                             # P0-3: collect spots for integration-window reinforce (post-response daemon).
@@ -4297,8 +4343,12 @@ def _process_turn(raw: str) -> dict:
         #   runtime/memory_claim_guard.py  (module doc + patterns)
         #   docs/architecture/adr/ADR-Exec-001  (Verified Speech is the floor)
         try:
-            from runtime.memory_claim_guard import scrub_unverified_memory_claims as _mcg
+            from runtime.memory_claim_guard import (
+                scrub_unverified_memory_claims as _mcg,
+                scrub_unverified_look_claims as _mcg_look,
+            )
             response = _mcg(response)
+            response = _mcg_look(response)
         except Exception:
             pass
 
@@ -4529,6 +4579,13 @@ class _Handler(BaseHTTPRequestHandler):
                 })
             except Exception as e:
                 self._send_json(500, {"error": str(e)})
+        elif self.path == "/capabilities":
+            # WO-CANON-XXIII §A — Audit's single view of authority scopes.
+            try:
+                from runtime.capabilities.registry import permission_manifest
+                self._send_json(200, {"capabilities": permission_manifest()})
+            except Exception as e:
+                self._send_json(500, {"error": str(e)})
         else:
             self._send_json(404, {"error": "not found"})
 
@@ -4722,6 +4779,19 @@ def _shutdown_cleanly(server: ThreadingHTTPServer) -> None:
             )
     except Exception:
         pass
+    # WO-CANON-VIII §7 hippocampal replay — consolidate this session at close.
+    # Runs off the response path (session teardown). Never blocks shutdown; errors
+    # are absorbed. This is the only legitimate caller for consolidate().
+    try:
+        if _state:
+            from memory.consolidation_faculty import consolidate as _mem_consolidate
+            _mem_consolidate(
+                session_summaries=list(_state.get("session_summaries", []) or []),
+                execution_reports=list(_state.get("execution_reports", []) or []),
+                project="elo-os",
+            )
+    except Exception:
+        pass
     server.shutdown()
 
 
@@ -4846,6 +4916,37 @@ if __name__ == "__main__":
         _cap_health_refresh()
     except Exception as _hp_err:
         _logging.warning("CT0032 capability health producer failed: %s", _hp_err)
+
+    # WO-070 Phase C: register ShadowCapture on the Faculty Bus so L3 ratings that
+    # arrive as envelopes get folded into the shadow log with everything else.
+    # One-shot at boot; no-op if the bus is unavailable in this deployment.
+    try:
+        from runtime.shadow_capture import subscribe_to_bus as _sc_subscribe_bus, flush_sync as _sc_flush_sync
+        _sc_subscribe_bus()
+        # WO-070: on process shutdown, drain the shadow write queue so the last
+        # turns' capture blocks survive a Ctrl-C. Non-blocking during normal
+        # operation — only runs when Python is tearing down.
+        try:
+            import atexit as _atexit
+            _atexit.register(_sc_flush_sync, 2.0)
+        except Exception:
+            pass
+    except Exception as _sc_sub_err:
+        _logging.warning("shadow_capture subscribe_to_bus failed: %s", _sc_sub_err)
+
+    # WO-CANON-XX capability governance: at boot, warn about any capability
+    # that lacks a declared ack path. Missing ack = executed action with no
+    # verifiable outcome — the honesty gate cannot form.
+    try:
+        from runtime.capabilities.registry import capabilities_missing_ack_path as _caps_no_ack
+        _missing_ack = _caps_no_ack()
+        if _missing_ack:
+            _logging.warning(
+                "boot: %d capability/ies missing ack_source: %s",
+                len(_missing_ack), _missing_ack,
+            )
+    except Exception as _cap_ack_err:
+        _logging.debug("capabilities_missing_ack_path check failed: %s", _cap_ack_err)
 
     # Warm the embedding cache at startup (non-blocking — runs in background)
     try:

@@ -104,6 +104,15 @@ class CognitivePlan:
     # ── Assembled AFTER decision (S3/S6 — post-plan contracts) ───────────────
     cognitive_state:      object = None    # CognitiveState | None
     embodiment_state:     object = None    # EmbodimentState | None
+    # ── WO-006: Emotion faculty — AffectState + EmotionalTag, computed pre-Executive
+    affect_state:         object = None    # AffectState | None (frozen, Vol V Ch.4)
+    emotional_tag:        object = None    # EmotionalTag | None (advisory to Ch.5)
+    # ── Vol III §Metadata: ExecutionReport produced at end of spine.run() ────
+    execution_report:     object = None    # ExecutionReport | None
+    # ── WO-CANON-VII Ch.5 Personality — read-only response-path snapshot ─────
+    personality_traits:   dict   = field(default_factory=dict)
+    personality_baseline: dict   = field(default_factory=dict)
+    identity_hash:        str    = ""
 
     def needs_llm(self) -> bool:
         return not self.direct_response and not self.system_immediate and not self.system_pending

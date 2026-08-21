@@ -214,6 +214,23 @@ def evaluate(
         sum(scores[dim] * weight for dim, weight in _WEIGHTS.items())
     )
 
+    # WO-006 Ch.5: emotion weight from the affect state, if the plan carries one.
+    # Emotion determines significance — a joy/identity/distress event weighs more
+    # than a neutral one. This is the Ch.5 Emotion Weight term (a multiplier on
+    # `overall` for downstream memory-routing decisions).
+    if plan is not None:
+        _affect = getattr(plan, "affect_state", None)
+        if _affect is not None:
+            try:
+                from faculties.emotion.emotional_processing_faculty import (
+                    compute_emotion_weight,
+                )
+                _ew = compute_emotion_weight(_affect)
+                scores["emotion_weight"] = _ew
+                scores["overall"] = _clamp(scores["overall"] * (0.7 + 0.6 * _ew))
+            except Exception:
+                pass
+
     # WO-095: outcome dims — scored from ACK only, never from text
     if outcome is not None:
         emb   = _score_embodiment(outcome)

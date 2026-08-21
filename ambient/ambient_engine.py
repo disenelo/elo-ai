@@ -314,6 +314,18 @@ def _handle_window_event(data: dict, user_is_idle: bool) -> None:
     if decision is None:
         return
 
+    # WO-CANON-XIII §B: shadow route planning. If the decision picks a target
+    # surface, plan (and log-only) a route to it so the spatial faculty is
+    # observed on real events before it ever drives motion.
+    _target = decision.get("goal_surface")
+    if _target:
+        try:
+            from faculties.spatial.spatial_faculty import shadow_plan
+            from world.live_world_state import get_live_world_state
+            shadow_plan(get_live_world_state(), windows=[data], target_surface_id=_target)
+        except Exception:
+            pass
+
     # Route decision as a low-priority action intent to the outbox
     try:
         _outbox_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
@@ -332,13 +344,83 @@ def _handle_window_event(data: dict, user_is_idle: bool) -> None:
         pass
 
 
+def _handle_gaze_events(user_is_idle: bool) -> None:
+    """
+    WO-099: Consume any pending gaze_target_changed events (non-destructive read)
+    and publish a verified-speech note into blender_state so the next turn's
+    prompt block can quote it without fabrication.
+    """
+    if _is_commanded():
+        return
+    try:
+        from faculties.window_event_faculty import consume_gaze_events, describe_gaze
+    except Exception:
+        return
+    try:
+        for ev in consume_gaze_events():
+            line = describe_gaze(ev)
+            if not line:
+                continue
+            _state_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                       "blender", "blender_state.json")
+            try:
+                try:
+                    with open(_state_path, encoding="utf-8") as _f:
+                        _st = json.load(_f)
+                except Exception:
+                    _st = {}
+                _st["gaze_note"] = line
+                _st["gaze_note_ts"] = time.time()
+                _tmp = _state_path + ".tmp"
+                with open(_tmp, "w", encoding="utf-8") as _f:
+                    json.dump(_st, _f, indent=2)
+                os.replace(_tmp, _state_path)
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+
+def _peek_window_events() -> list[dict]:
+    """
+    WO-094 diagnostic read — non-destructive snapshot of pending window events.
+    Used by the idle tick to notice batched activity when the dispatch loop is
+    quiet. Never truncates the events file; server.py's ACK poller owns that.
+    """
+    try:
+        from faculties.window_event_faculty import consume_window_events
+        return consume_window_events()
+    except Exception:
+        return []
+
+
 def _decide_idle_behaviour(idle_secs: float) -> None:
     """
     WO-086: Brain-side idle decision. Called when user_idle event received
     and conditions met (threshold, yield, refire). Selects from the idle repertoire
     based on how long the user has been idle — never always 'calm'.
+
+    WO-006: relax eLo's AffectState toward baseline one step per idle tick — the
+    only place between-turn decay legitimately runs.
     """
     import random as _rand
+
+    # WO-006 Ch.4 §4.7 — between-turn decay toward eLo's resting affect.
+    try:
+        from faculties.emotion.emotional_processing_faculty import decay_toward_baseline
+        from self import elo_self_model as _sm_mod
+        _sm = getattr(_sm_mod, "_elo_self_state", None)
+        _prior = getattr(_sm, "affect", None) if _sm is not None else None
+        if _prior is not None:
+            _sm.affect = decay_toward_baseline(_prior, steps=1)
+    except Exception:
+        pass
+
+    # WO-099 gaze notes and WO-094 window-event peek — cheap, non-destructive.
+    _handle_gaze_events(user_is_idle=True)
+    _pending_windows = _peek_window_events()
+    if _pending_windows:
+        _log.debug("ambient idle: %d pending window event(s) noticed", len(_pending_windows))
 
     # Yield to commanded state
     if _is_commanded():

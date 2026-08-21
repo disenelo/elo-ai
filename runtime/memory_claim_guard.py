@@ -138,7 +138,7 @@ def scrub_unverified_memory_claims(response: str) -> str:
     """
     if not response or not response.strip():
         return response
-    if not _EPISODIC_PATTERN.search(response):
+    if not has_episodic_claim(response):
         return response
 
     sentences = _split_sentences(response)
@@ -166,3 +166,41 @@ def scrub_unverified_memory_claims(response: str) -> str:
 def has_episodic_claim(text: str) -> bool:
     """Public predicate — for tests and outside consumers."""
     return bool(text) and bool(_EPISODIC_PATTERN.search(text))
+
+
+# WO-108 ADR-Exec-001: for a "I looked at X" claim to survive verified speech,
+# there must be a directed_look observation on record for X. This is a second
+# guard behind scrub_unverified_memory_claims — the vault covers "I remember";
+# this covers "I saw/looked/watched".
+_LOOK_PATTERN = re.compile(
+    r"\bI\s+(looked at|saw|watched|glanced at|noticed)\s+([A-Za-z][A-Za-z0-9_\- ]{2,40})",
+    re.IGNORECASE,
+)
+
+
+def scrub_unverified_look_claims(response: str) -> str:
+    """Rewrite outbound "I looked at X" claims that lack a directed_look record.
+
+    Rule 1 alarm — every rewrite is logged, so silent look-fabrications leave a trace.
+    """
+    if not response:
+        return response
+    try:
+        from runtime.directed_look import observation_for
+    except Exception:
+        return response
+    changed = False
+    def _repl(m: re.Match) -> str:
+        nonlocal changed
+        verb = m.group(1)
+        target = m.group(2).strip()
+        if observation_for(target) is not None:
+            return m.group(0)
+        changed = True
+        _log.warning(
+            "memory_claim_guard: stripped unverified look claim: %r on %r",
+            verb, target[:60],
+        )
+        return f"I don't have a record of directly {verb} {target}"
+    out = _LOOK_PATTERN.sub(_repl, response)
+    return out if changed or out != response else response

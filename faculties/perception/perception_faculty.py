@@ -254,7 +254,7 @@ def perceive(
 
     # ── Window (authoritative surface/activity source) ────────────────────────
     if window_app is not None:
-        modality_reads["window"] = f"{window_app}: {window_title or ''}".strip(": ")
+        modality_reads["window"] = tag_partial(f"{window_app}: {window_title or ''}".strip(": "))
         source_health["window"] = _source_health("live", now_ts)
     else:
         source_health["window"] = _source_health("absent", 0.0)
@@ -265,7 +265,7 @@ def perceive(
         source_health["vision"] = _source_health("absent", 0.0)
         confidence_penalties.append(0.1)
     elif vision_text is not None:
-        modality_reads["vision"] = vision_text[:300]
+        modality_reads["vision"] = tag_partial(vision_text[:300])
         source_health["vision"] = _source_health("live", now_ts)
     else:
         source_health["vision"] = _source_health("absent", 0.0)
@@ -273,14 +273,14 @@ def perceive(
 
     # ── Voice ─────────────────────────────────────────────────────────────────
     if voice_transcript is not None:
-        modality_reads["voice"] = voice_transcript[:200]
+        modality_reads["voice"] = tag_partial(voice_transcript[:200])
         source_health["voice"] = _source_health("live", now_ts)
     else:
         source_health["voice"] = _source_health("absent", 0.0)
 
     # ── Files ─────────────────────────────────────────────────────────────────
     if file_context is not None:
-        modality_reads["files"] = file_context[:200]
+        modality_reads["files"] = tag_partial(file_context[:200])
         source_health["files"] = _source_health("live", now_ts)
     else:
         source_health["files"] = _source_health("absent", 0.0)

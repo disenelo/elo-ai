@@ -1100,7 +1100,14 @@ def route(
         except Exception as e:
             _logger.warning("Ollama failed, falling to mock: %s", e)
 
-    _fh_degraded("reasoning", "all providers failed — mock fallback")  # WO-042
+    # WO-042: all providers exhausted → reasoning bucket is OFFLINE, not merely
+    # degraded. mock_fallback is a stub, not a working reasoning path — the
+    # Executive should treat this as no-reasoning-available for downstream gates.
+    try:
+        from runtime.faculty_health import mark_offline as _fh_offline
+        _fh_offline("reasoning", "all providers failed — mock fallback only")
+    except Exception:
+        _fh_degraded("reasoning", "all providers failed — mock fallback")
     return _mock_fallback(user_input), "mock"
 
 

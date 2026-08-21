@@ -92,6 +92,19 @@ def _derive_one(cap, agents: frozenset[str]) -> str:
         except Exception:
             pass   # faculty health unreadable → stay ONLINE
 
+    # WO-CANON-XXII genome gate: per-capability faculty binding (if declared)
+    # takes precedence over the coarse reasoning bucket. Read the genome status
+    # by the capability's declared faculty_binding attribute if present.
+    _faculty_bind = getattr(cap, "faculty_binding", "") or ""
+    if _faculty_bind:
+        try:
+            from runtime.faculty_health import genome_health_status as _gh_status
+            _genome_st = _gh_status(_faculty_bind)
+            if _genome_st == "OFFLINE":
+                return OFFLINE
+        except Exception:
+            pass
+
     return ONLINE
 
 

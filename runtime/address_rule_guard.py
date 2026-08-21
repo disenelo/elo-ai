@@ -61,7 +61,7 @@ def enforce_second_person_to_david(response: str) -> str:
     the whole system in this build — Volume I §Personal_Scope). Every rewrite
     is logged.
     """
-    if not response or "David" not in response:
+    if not has_third_person_david(response):
         return response
     original = response
     hits = 0

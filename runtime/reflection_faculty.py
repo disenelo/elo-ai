@@ -326,6 +326,29 @@ def integrate_session(
     except Exception:
         lesson = None
 
+    # WO-CANON-VII §7.4 preference update: only confirmed preference-scope lessons
+    # promote to the PersonalityVector.preferences map. Trait deltas stay behind
+    # the §7.5 validate_delta gate (identity-continuity) — this path is preferences
+    # only, which are PATCH-versioned and independent from trait vectors.
+    if lesson and lesson.get("scope") == "preference" and lesson.get("cause") == "met":
+        try:
+            from faculties.personality.personality_evolution_faculty import (
+                load_personality as _pv_load,
+                update_preference as _pv_update_pref,
+                save_personality as _pv_save,
+            )
+            _pv = _pv_load()
+            _pv2, _ver = _pv_update_pref(
+                _pv,
+                key=lesson.get("statement", "")[:64] or lesson.get("lesson_key", "unknown"),
+                value=(lesson.get("evidence") or [None])[0] or "confirmed",
+                strength=float(lesson.get("strength", 0.7)),
+                evidence=lesson.get("id", ""),
+            )
+            _pv_save(_pv2)
+        except Exception:
+            pass
+
     # ── 4. Journal synthesis ───────────────────────────────────────────────────
     try:
         _write_journal_entry(

@@ -8,6 +8,12 @@ On the desktop, perception reads the screen; on the robot, it reads the room.
 The same PerceptionResult contract applies — one frozen result per snapshot,
 each modality independently degradable, no fabrication.
 
+STATUS 2026-08-21 — PENDING-RESERVED (card 0072). The two public entry points
+`robot_perceive()` and `sensor_health()` are AUTHORISED specs but have no live
+caller: robot magnetics/force/hardware is RESERVED (David L3 + LG-2 per
+CLAUDE.md §Standing facts). Runtime callers land only after the robot lane is
+authorised — until then, this file is a spec-in-code, not dead code.
+
 Hardware path (Pi only):
   picamera2 → JPEG bytes → vision_agent.describe() → perceive()
 

@@ -197,7 +197,8 @@ def drain_bus_ratings() -> None:
 
 def flush_sync(timeout: float = 2.0) -> None:
     """
-    Block until the write queue is empty (used in tests only).
+    Block until the write queue is empty.
+    Test hook AND server-shutdown hook (see server.py atexit hook — WO-070).
     Does NOT drain bus — call drain_bus_ratings() first if needed.
     """
     try:
