@@ -112,7 +112,8 @@ def run(raw: str, session: dict | None = None) -> dict:
                 detected = sys_detect(query)
                 if detected:
                     action, arg = detected
-                    gate_result = gate(action, arg)
+                    from runtime.capabilities.registry import get_scope
+                    gate_result = gate(action, arg, scope=get_scope(action))
                     if not gate_result["execute"]:
                         system_pending = True
                         system_desc    = gate_result["confirmation"]

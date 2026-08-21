@@ -12,6 +12,7 @@ from runtime.capabilities.capability import (
     CAT_MEDIA, CAT_SYSTEM, CAT_CREATIVE, CAT_DEVELOPMENT,
     CAT_DESKTOP, CAT_ROBOT, CAT_STUDIO,
     ACK_SYNC_RETURN, ACK_UNITY_ACK, ACK_NONE, ACK_UNKNOWN, ACK_SOURCES,
+    SCOPE_PERSON, SCOPE_COMPANY, SCOPE_RESERVED,
 )
 
 # ── UTILITY ───────────────────────────────────────────────────────────────────
@@ -113,6 +114,7 @@ _MEMORY: list[Capability] = [
                "add this to my notes", "save that"],
         execution_priority=2, agent_module="tools.vault_writer",
         ack_source=ACK_SYNC_RETURN,
+        authority_scope=SCOPE_COMPANY,  # sole writer D-F; routes through Executive + David L3
     ),
     Capability(
         id="file_read", display_name="File Reader", category=CAT_MEMORY,
@@ -196,6 +198,7 @@ _MEDIA: list[Capability] = [
         description="Physical camera input",
         verbs=["camera", "take photo", "capture", "look at this"],
         future=True,
+        requires_authentication=True,   # macOS camera OS grant (D-PRESENCE gating)
         ack_source=ACK_NONE,
     ),
 ]
@@ -390,6 +393,7 @@ _ROBOT: list[Capability] = [
         verbs=["robot", "elo robot", "physical elo"],
         future=True,
         ack_source=ACK_NONE,
+        authority_scope=SCOPE_RESERVED,  # hardware RESERVED: David L3 + separate LG-2 required
     ),
     Capability(
         id="robot_motion", display_name="Robot Motion", category=CAT_ROBOT,
@@ -397,6 +401,7 @@ _ROBOT: list[Capability] = [
         verbs=["walk", "move", "servo", "wave", "look", "turn"],
         future=True,
         ack_source=ACK_NONE,
+        authority_scope=SCOPE_RESERVED,  # force/motion = RESERVED per LAW-017 B4 hardware split
     ),
     Capability(
         id="robot_camera", display_name="Robot Camera", category=CAT_ROBOT,
@@ -404,6 +409,7 @@ _ROBOT: list[Capability] = [
         verbs=["robot camera", "what does the robot see"],
         future=True,
         ack_source=ACK_NONE,
+        authority_scope=SCOPE_RESERVED,  # hardware lane — RESERVED
     ),
 ]
 
@@ -475,3 +481,33 @@ def capabilities_missing_ack_path() -> list[str]:
     return [c.id for c in ALL_CAPABILITIES
             if c.ack_source == ACK_UNKNOWN
             or c.ack_source not in ACK_SOURCES]
+
+
+# ── WO-CANON-XXIII §A: authority scope helpers ─────────────────────────────────
+
+def get_scope(capability_id: str) -> str:
+    """
+    Return the authority scope for a capability ID.
+    Defaults to SCOPE_PERSON if capability is not in the registry.
+    Router calls this before offering to act.
+    """
+    cap = _BY_ID.get(capability_id)
+    return cap.authority_scope if cap else SCOPE_PERSON
+
+
+def permission_manifest() -> list[dict]:
+    """
+    Return the permission manifest — one row per capability with its authority scope.
+    Emitted by the registry as the Audit's single view of what eLo can do and at what scope.
+    """
+    return [
+        {
+            "id":              c.id,
+            "display_name":    c.display_name,
+            "category":        c.category,
+            "authority_scope": c.authority_scope,
+            "available":       c.is_available(),
+            "future":          c.future,
+        }
+        for c in ALL_CAPABILITIES
+    ]

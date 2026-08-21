@@ -7,6 +7,13 @@ The registry never executes — it only advertises.
 from __future__ import annotations
 from dataclasses import dataclass, field
 
+# ── Authority scopes (WO-CANON-XXIII §A, LAW-017 B2) ─────────────────────────
+# Computed by the router before offering to act. Scope never self-promotes.
+SCOPE_PERSON   = "PERSON"    # in-flow confirmation; _IMMEDIATE_SAFE allowed
+SCOPE_COMPANY  = "COMPANY"   # read-only for eLo; routes through Executive + David L3
+SCOPE_RESERVED = "RESERVED"  # structural denial; David is sole L3+LG-2 (software lane)
+AUTHORITY_SCOPES = frozenset({SCOPE_PERSON, SCOPE_COMPANY, SCOPE_RESERVED})
+
 # ── Health states ─────────────────────────────────────────────────────────────
 ONLINE        = "ONLINE"
 OFFLINE       = "OFFLINE"
@@ -66,6 +73,9 @@ class Capability:
     # Default "unknown" so any newly-added capability that forgets to declare
     # this fails the registry-level test in test_wo111_ack_contract.
     ack_source:             str                 = ACK_UNKNOWN
+    # WO-CANON-XXIII §A: authority scope (LAW-017 B2). Router computes this
+    # before offering to act; a PERSON "yes" never executes COMPANY or RESERVED.
+    authority_scope:        str                 = SCOPE_PERSON
 
     def is_available(self) -> bool:
         return self.enabled and not self.future and self.health_state in (ONLINE,)
