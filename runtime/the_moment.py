@@ -15,6 +15,7 @@ import json
 import logging
 import os
 import time
+from dataclasses import dataclass, field
 
 _log = logging.getLogger(__name__)
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -73,6 +74,78 @@ def tier_fact(
         return "inferred"
     # Default: if we have a value but uncertain provenance, treat as last-known
     return "last-known"
+
+
+# ── Speech Licence (WO-CANON-VII §B) ─────────────────────────────────────────
+
+# Tier priority order: best → worst (highest index = most uncertain)
+_TIER_RANK = ["observed", "verified", "live", "inferred", "remembered", "last-known", "unknown", "absent"]
+
+
+@dataclass
+class SpeechLicence:
+    """
+    Epistemic gate computed from the_moment tier snapshot.
+
+    The Executive emits this alongside the plan; it governs what eLo may assert
+    vs. what he must hedge or withhold.
+
+    allow          — always True (eLo can always speak)
+    hedge_required — True if any field is last-known/unknown; eLo must use hedging language
+    violations     — fields where tier is "unknown" or "absent"; eLo must NOT assert facts here
+    min_tier       — the worst tier across all snapshot fields
+    notes          — human-readable summary for prompt injection
+    """
+    tier_snapshot: dict
+    allow: bool
+    hedge_required: bool
+    violations: tuple   # field names where eLo must not assert
+    min_tier: str
+    notes: str
+
+
+def verify_response_tiers(tier_snapshot: dict) -> SpeechLicence:
+    """
+    WO-CANON-VII §B: Wire tier markers to a runtime gate.
+
+    Args:
+        tier_snapshot: {field_name: tier_key} — e.g. {"pose": "last-known", ...}
+
+    Returns a SpeechLicence the Executive uses to annotate and constrain output.
+    """
+    violations = tuple(
+        k for k, v in tier_snapshot.items()
+        if v in ("unknown", "absent")
+    )
+    hedge_required = any(
+        v in ("unknown", "last-known", "absent")
+        for v in tier_snapshot.values()
+    )
+
+    def _rank(t: str) -> int:
+        try:
+            return _TIER_RANK.index(t)
+        except ValueError:
+            return len(_TIER_RANK)
+
+    all_tiers = list(tier_snapshot.values())
+    min_tier = max(all_tiers, key=_rank) if all_tiers else "unknown"
+
+    if violations:
+        notes = f"GATE: eLo must not assert facts for unknown fields: {', '.join(violations)}"
+    elif hedge_required:
+        notes = "GATE: some fields are last-known — hedge uncertain claims"
+    else:
+        notes = "GATE: all fields at observed/live — no hedge required"
+
+    return SpeechLicence(
+        tier_snapshot=tier_snapshot,
+        allow=True,
+        hedge_required=hedge_required,
+        violations=violations,
+        min_tier=min_tier,
+        notes=notes,
+    )
 
 
 def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity

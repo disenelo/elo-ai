@@ -140,6 +140,39 @@ def record(
         _log.debug("decision_journal.record failed (non-critical): %s", e)
 
 
+def record_intent_abandoned(
+    intent_id: str,
+    kind: str,
+    content: str,
+    reason: str,
+    lane: str = "external",
+) -> None:
+    """
+    WO-CANON-VII §C: Journal a losing or abandoned intent from the IntentQueue.
+
+    Called by the Executive when an Intent was in the queue but was not admitted
+    (out-competed) or was abandoned (no longer feasible/boundary-safe).
+
+    Silent on failure — never blocks a turn.
+    """
+    try:
+        entry = {
+            "ts":         time.time(),
+            "session_id": _SESSION_ID,
+            "record_type": "intent_abandoned",
+            "intent_id":  intent_id,
+            "lane":       lane,
+            "kind":       kind,
+            "content":    content,
+            "reason":     reason,
+        }
+        os.makedirs(os.path.dirname(_JOURNAL), exist_ok=True)
+        with open(_JOURNAL, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    except Exception as e:
+        _log.debug("decision_journal.record_intent_abandoned failed (non-critical): %s", e)
+
+
 def record_failure(action: str, condition_desc: str) -> None:
     """
     Record a known failure condition and drop per-action reliability by 0.15.

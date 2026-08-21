@@ -21,7 +21,41 @@ Usage:
 from __future__ import annotations
 
 import time
+import uuid
 from dataclasses import dataclass, field
+
+
+# ── Intent (WO-CANON-VII §C) ──────────────────────────────────────────────────
+
+@dataclass(frozen=True)
+class Intent:
+    """One proposed or committed intention in eLo's intent queue."""
+    id: str                     # uuid4 short hex, unique per construction
+    lane: str                   # "external" (user/world) | "internal" (faculty-proposed)
+    kind: str                   # e.g. "sit", "move", "speak"
+    content: str                # target / payload (e.g. "cursor", "window_corner")
+    origin: str                 # "user_command" | "faculty_propose" | "ambient"
+    pressure: float             # 0.0..1.0 urgency
+    feasible: bool              # can this be satisfied right now?
+    boundary_ok: bool           # respects action-boundary rules?
+    status: str                 # "proposed" | "committed" | "abandoned" | "satisfied"
+    created_ts: float
+    expires: float              # 0.0 = never; else epoch deadline
+
+
+@dataclass(frozen=True)
+class IntentQueue:
+    """
+    Two-lane intent queue: external (world/user) and internal (faculty-proposed).
+
+    Faculty-propose, Executive-admits flow:
+      - Faculties write proposed Intents into external/internal lanes.
+      - The Executive reads the queue and admits exactly one per turn → committed.
+      - Losing intents are journalled (see self/decision_journal.py).
+    """
+    external: tuple = field(default_factory=tuple)   # tuple[Intent]
+    internal: tuple = field(default_factory=tuple)   # tuple[Intent]
+    committed: object = None                          # Intent | None
 
 
 # ── Body schema ───────────────────────────────────────────────────────────────
@@ -71,6 +105,12 @@ class CognitiveSnapshot:
 
     # ── Pending intentions ─────────────────────────────────────────────────────
     pending_intentions: tuple = field(default_factory=tuple)   # ((name, target), ...)
+
+    # ── WO-CANON-VII §C: Intent queue (replaces hard-coded sit tuple) ──────────
+    intent_queue: IntentQueue = field(default_factory=IntentQueue)
+
+    # ── WO-CANON-VII §B: Speech licence (tier gate — Written Not Connected → Connected)
+    speech_licence: object = None   # SpeechLicence | None; built from the_moment tiers
 
     # ── WO-056: Affordances — surface → possible actions ──────────────────────
     surface_type: str = "unknown"
@@ -145,8 +185,30 @@ def build_snapshot(
     fac_health: dict = {}
     fac_summary = ""
     try:
-        from runtime.faculty_health import all_statuses, health_summary as _fac_summary
+        from runtime.faculty_health import (
+            all_statuses,
+            health_summary as _fac_summary,
+            genome_health_summary as _genome_summary,
+            genome_health_status as _genome_status,
+        )
         fac_health = all_statuses()
+        # WO-CANON-XXII: overlay genome-aware per-faculty health onto coarse buckets.
+        # Coarse (reasoning|memory|tools|embodiment) stays authoritative for the
+        # summary line; genome_health_summary() adds Faculty-name granularity
+        # so the Snapshot exposes both.
+        try:
+            _genomes = _genome_summary()
+            if _genomes:
+                fac_health = {**fac_health, **_genomes}
+            # Explicit single-faculty read for the Executive's speech-licensing
+            # code (Vol VII Ch.3) — an Emotion or Perception genome that has
+            # gone OFFLINE forces the "verified only" epistemic tier this turn.
+            _perc = _genome_status("PerceptionFaculty")
+            _emo  = _genome_status("EmotionFaculty")
+            if _perc == "OFFLINE" or _emo == "OFFLINE":
+                fac_health["_critical_offline"] = True
+        except Exception:
+            confidence -= 0.02
         fac_summary = _fac_summary()
     except Exception:
         confidence -= 0.05
@@ -154,13 +216,34 @@ def build_snapshot(
     # ── Body schema (from server.py _PENDING_SIT, passed in) ──────────────────
     body = BodySchema()
     pending_intentions: list = []
+    _intent_queue = IntentQueue()
     if pending_sit and pending_sit.get("active"):
         body = BodySchema(
             pending_sit=True,
             sit_pending_since=float(pending_sit.get("since", 0.0)),
             queued_intent=str(pending_sit.get("queued") or ""),
         )
-        pending_intentions.append(("sit", "cursor"))
+        # §C: Build a real Intent instead of the hard-coded ("sit", "cursor") tuple.
+        # Parity: pending_intentions still carries the legacy tuple for existing readers.
+        _sit_intent = Intent(
+            id=uuid.uuid4().hex[:12],
+            lane="external",
+            kind="sit",
+            content="cursor",
+            origin="user_command",
+            pressure=1.0,
+            feasible=True,
+            boundary_ok=True,
+            status="committed",
+            created_ts=float(pending_sit.get("since", assembled_ts)),
+            expires=0.0,   # persists until ACK'd
+        )
+        pending_intentions.append(("sit", "cursor"))   # legacy readers
+        _intent_queue = IntentQueue(
+            external=(_sit_intent,),
+            internal=(),
+            committed=_sit_intent,
+        )
 
     # ── WO-056: Affordances ────────────────────────────────────────────────────
     surface_type = "unknown"
@@ -220,6 +303,23 @@ def build_snapshot(
     except Exception:
         pass
 
+    # ── WO-CANON-VII §B: Speech licence — wire tier markers to runtime gate ────
+    _speech_licence = None
+    try:
+        from runtime.the_moment import verify_response_tiers as _vrt
+        _tier_snap = {
+            "self_mood":    "observed" if self_model_block else "last-known",
+            "pose":         "last-known",    # conservative; pose_acked not available here
+            "surface":      "last-known",    # conservative; perch_fresh not available here
+            "locomotion":   "live"  if fac_health else "last-known",
+            "capabilities": "live"  if gated_capabilities else "unknown",
+            "nearby":       "unknown",
+            "recent_behaviour": "observed" if surface_type != "unknown" else "last-known",
+        }
+        _speech_licence = _vrt(_tier_snap)
+    except Exception:
+        confidence -= 0.01
+
     # ── WO-095: Recalled confirmed lessons (≤3, ≤240 chars) ──────────────────
     recalled_lessons: tuple = ()
     try:
@@ -248,6 +348,8 @@ def build_snapshot(
         action=att.get("action", ""),
         body=body,
         pending_intentions=tuple(pending_intentions),
+        intent_queue=_intent_queue,
+        speech_licence=_speech_licence,
         surface_type=surface_type,
         surface_affordances=surface_affordances,
         chrome_open=chrome_open,
