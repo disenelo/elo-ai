@@ -131,6 +131,12 @@ def write(
                       "up": "jump_top", "down": "jump_bottom", "over": "shift"}
             _nav_type = intent.get("sub_type") or _D2NAV.get(intent.get("direction", ""), intent.get("direction", ""))
             payload["move_command"] = {"type": _nav_type, "_ts": round(time.time(), 3)}
+            # WO-CANON-XIII §A: additive route/issued_by fields (Vol XI Ch.1 §1.4 envelope)
+            # Present only when the caller supplies them; Unity ignores absent fields harmlessly.
+            if intent.get("route"):
+                payload["move_command"]["route"] = intent["route"]
+            if intent.get("issued_by"):
+                payload["move_command"]["issued_by"] = intent["issued_by"]
         elif intent == "step_out":
             payload["leave_command"] = {"_ts": round(time.time(), 3)}
         elif intent == "return_elo":
@@ -219,6 +225,11 @@ def write_with_presence(
                       "up": "jump_top", "down": "jump_bottom", "over": "shift"}
             _nav_type = intent.get("sub_type") or _D2NAV.get(intent.get("direction", ""), intent.get("direction", ""))
             payload["move_command"] = {"type": _nav_type, "_ts": round(time.time(), 3)}
+            # WO-CANON-XIII §A: additive route/issued_by fields (Vol XI Ch.1 §1.4 envelope)
+            if intent.get("route"):
+                payload["move_command"]["route"] = intent["route"]
+            if intent.get("issued_by"):
+                payload["move_command"]["issued_by"] = intent["issued_by"]
         elif intent == "step_out":
             payload["leave_command"] = {"_ts": round(time.time(), 3)}
         elif intent == "return_elo":
