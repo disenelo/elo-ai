@@ -1647,6 +1647,8 @@ def _init_session():
         global _ack_last_ts
         import time as _pt
         _poller_log = _logging.getLogger(__name__ + ".ack_poller")
+        # INT-8 Bug 2: cursor replaces truncation so file_drop_handler reads the same log
+        _ack_consumed_seq: int = -1
         while True:
             try:
                 events, skipped = _parse_unity_events_tolerant(_UNITY_EVENTS_PATH)
@@ -1654,20 +1656,21 @@ def _init_session():
                     _poller_log.warning(
                         "W0: unity_events.json — %d unparseable fragment(s) skipped", skipped
                     )
+                _new_seq = _ack_consumed_seq
                 for _ev in events:
+                    _ev_seq  = _ev.get("seq", None)
+                    if _ev_seq is not None and _ev_seq <= _ack_consumed_seq:
+                        continue  # already consumed this row
+                    if _ev_seq is not None:
+                        _new_seq = max(_new_seq, _ev_seq)
                     _ev_type = _ev.get("type", "")
                     _ev_ts   = float(_ev.get("_ts", 0))
                     if _ev_type in _ACK_BODY_TYPES and _ev_ts > _ack_last_ts:
                         with _ACK_QUEUE_LOCK:
                             _ACK_QUEUE.append(dict(_ev))
                         _ack_last_ts = _ev_ts
-                # consume after read — contract: discrete events, CONSUMED after read
-                if events or skipped:
-                    try:
-                        with open(_UNITY_EVENTS_PATH, "w", encoding="utf-8") as _pf:
-                            pass  # truncate
-                    except Exception as _te:
-                        _poller_log.warning("W0: failed to truncate unity_events.json: %s", _te)
+                _ack_consumed_seq = _new_seq
+                # never truncate — file_drop_handler reads the same append-log via its own cursor
             except Exception as _pe:
                 _poller_log.warning("W0: _poll_unity_events error: %s", _pe)
             _pt.sleep(0.10)

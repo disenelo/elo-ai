@@ -36,6 +36,7 @@ _EVENTS_FILE = os.path.join(
 )
 _POLL_INTERVAL = 0.5   # seconds
 _last_ts: float = 0.0
+_last_seq: int = -1   # seq cursor; -1 = nothing consumed yet
 _lock = threading.Lock()
 # Module-level queue — populated by _process(), drained by pop_pending_drops()
 # so server.py can inject file drop context into the next turn without a circular import.
@@ -194,21 +195,47 @@ def _process(event: dict) -> None:
 # ── Poll loop ─────────────────────────────────────────────────────────────────
 
 def _poll_loop() -> None:
-    global _last_ts
+    # INT-8 Bug 1: read NDJSON line-by-line; seq cursor; path from payload.path
+    global _last_ts, _last_seq
     while True:
         time.sleep(_POLL_INTERVAL)
         try:
             with open(_EVENTS_FILE, encoding="utf-8") as f:
-                event = json.load(f)
-            if event.get("type") == "file_drop" or event.get("event") == "file_drop":
-                # Use _ts if present; fall back to file mtime so missing _ts doesn't silently skip
-                ts = float(event.get("_ts") or os.path.getmtime(_EVENTS_FILE))
-                with _lock:
-                    if ts > _last_ts:
-                        _last_ts = ts
-                        threading.Thread(target=_process, args=(event,), daemon=True).start()
+                lines = f.readlines()
         except Exception:
-            pass
+            continue
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            ev_type = event.get("type", "") or event.get("event", "")
+            if ev_type != "file_drop":
+                continue
+            # Seq-based dedup preferred; ts fallback for events without seq field
+            ev_seq = event.get("seq")
+            if ev_seq is not None:
+                with _lock:
+                    if ev_seq <= _last_seq:
+                        continue
+                    _last_seq = ev_seq
+            else:
+                ts = float(event.get("_ts") or 0) or os.path.getmtime(_EVENTS_FILE)
+                with _lock:
+                    if ts <= _last_ts:
+                        continue
+                    _last_ts = ts
+            # Path: payload.path first (append-log schema), fall back to top-level path
+            raw_path = (event.get("payload") or {}).get("path") or event.get("path", "")
+            if raw_path:
+                threading.Thread(
+                    target=_process,
+                    args=({"path": raw_path},),
+                    daemon=True,
+                ).start()
 
 
 def start(interval: float = _POLL_INTERVAL) -> None:
