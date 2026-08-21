@@ -217,8 +217,10 @@ _groq_quota_cooldown_until: float = 0.0
 # singleton mock backend — preserves anti-repetition buffer across all mock calls this session
 _mock_backend_instance = None
 
-# WO-032: session-level OpenAI quota flag — set on first 429, skip OpenAI for the rest of the session
-_openai_quota_exceeded = False
+# card 0069: time-boxed OpenAI 429 cooldown — mirrors WO-032b's Groq pattern.
+# Was _openai_quota_exceeded (bool) which permanently snubbed OpenAI after one 429.
+# David 2026-08-21: "do not snub them out — use what is available to feel out failsafes."
+_openai_quota_cooldown_until: float = 0.0
 
 def _strip_trailing_question(text: str) -> str:
     """Remove trailing question sentence(s). Returns empty string if all sentences are questions."""
@@ -997,8 +999,12 @@ def route(
         _fh_degraded = lambda *a, **k: None  # noqa: E731
         _fh_recovered = lambda *a, **k: None  # noqa: E731
 
-    global _openai_quota_exceeded
-    if _openai_available() and not _openai_quota_exceeded:
+    global _openai_quota_cooldown_until
+    # card 0069: cooldown replaces the session-permanent bool — clears after 60 s so one transient
+    # 429 doesn't permanently snub OpenAI. David: "feel out the failsafes."
+    _openai_in_cooldown = (_openai_quota_cooldown_until
+                          and time.monotonic() < _openai_quota_cooldown_until)
+    if _openai_available() and not _openai_in_cooldown:
         try:
             raw = _openai_call(system_prompt, user_input, max_tokens=_budget)
             if _has_lore_drift(raw, user_input):
@@ -1009,13 +1015,15 @@ def route(
                     normalised = _strip_trailing_question(normalised) or normalised
                 if not _is_duplicate(normalised, _last_responses.get(action, "")):
                     _last_responses[action] = normalised
+                    _openai_quota_cooldown_until = 0.0  # clear any stale cooldown on success
+                    _fh_recovered("reasoning")
                     return normalised, "openai"
         except _urllib_err.HTTPError as e:
-            # WO-032: 429 = quota exceeded — flag it so we don't retry every turn
             if e.code == 429:
-                _openai_quota_exceeded = True
-                _fh_degraded("reasoning", "OpenAI quota exceeded")  # WO-042
-                _logger.warning("OpenAI quota exceeded — skipping for this session, routing to Groq")
+                # card 0069: 60 s cooldown, same as Groq (WO-032b). Reported, not removed.
+                _openai_quota_cooldown_until = time.monotonic() + 60.0
+                _fh_degraded("reasoning", "OpenAI quota exceeded (60s cooldown)")
+                _logger.warning("OpenAI 429 — 60s cooldown, routing to Gemini/Groq/Claude")
             else:
                 _logger.warning("OpenAI HTTP %s, trying Gemini: %s", e.code, e)
         except Exception as e:
