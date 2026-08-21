@@ -130,6 +130,8 @@ def record_outcome(
     verified: bool,
     contradicting: bool = False,
     session_id: str = "",
+    action: str = "",       # CAL action executed — required by D1 gate (card 0082 F-2)
+    outcome: str = "",      # what actually happened — required by D1 gate (card 0082 F-2)
     ledger_path: str | None = None,
 ) -> dict:
     """
@@ -140,6 +142,9 @@ def record_outcome(
     Returns the updated row, or {} if lesson not found.
 
     This does NOT create new lesson rows — reflection_faculty creates them.
+
+    card 0082 F-2: evidence entries must carry action + outcome so the D1 gate
+    (_evidence_is_verified in faculties/learning/faculty.py) can verify them.
     """
     rows = _load_ledger(ledger_path)
     now_iso = _now_iso()
@@ -153,12 +158,17 @@ def record_outcome(
 
         # Append episode_ref
         evidence = row.setdefault("evidence", [])
-        evidence.append({
+        ev_entry: dict = {
             "episode_ref": episode_ref,
             "verified": verified,
             "ts": time.time(),          # float epoch — unambiguous for _last_any_ts
             "session_id": session_id,
-        })
+        }
+        if action:
+            ev_entry["action"] = action
+        if outcome:
+            ev_entry["outcome"] = outcome
+        evidence.append(ev_entry)
         row["last_seen"] = now_iso
 
         if verified:

@@ -60,10 +60,12 @@ def test_w2_dj_1_session_id_written(tmp_journal: str) -> str:
         err("W2-DJ-1: decision_journal.record() wrote no session_id field")
     if not isinstance(sid, str):
         err(f"W2-DJ-1: session_id is not a string (got {type(sid).__name__})")
-    if not sid.isdigit():
-        err(f"W2-DJ-1: session_id={sid!r} is not numeric (contract with promote_pass)")
-    if len(sid) < 9:
-        err(f"W2-DJ-1: session_id={sid!r} shorter than 9 digits — cannot be a real unix epoch")
+    # card 0082 F-2: format is now "S{n}" — NOT pure-numeric (required by D1 gate).
+    # promote_pass() counts distinct_sessions by comparing the full string, not int-parsing.
+    if not (sid.startswith("S") and sid[1:].isdigit()):
+        err(f"W2-DJ-1: session_id={sid!r} does not match 'S{{n}}' format (card 0082 F-2)")
+    if len(sid[1:]) < 9:
+        err(f"W2-DJ-1: session_id={sid!r} numeric part shorter than 9 digits — not a real unix epoch")
     ok(f"W2-DJ-1: decision_journal.record() writes session_id={sid!r}")
     return sid
 
@@ -96,9 +98,10 @@ def test_w2_dj_3_subprocess_is_monotonic(first_sid: str) -> None:
         [sys.executable, "-c", script], capture_output=True, text=True, check=True,
     )
     fresh_sid = result.stdout.strip()
-    if not fresh_sid.isdigit():
-        err(f"W2-DJ-3: subprocess produced non-numeric session_id={fresh_sid!r}")
-    if int(fresh_sid) <= int(first_sid):
+    # card 0082 F-2: format is "S{n}" — check prefix then compare numeric parts
+    if not (fresh_sid.startswith("S") and fresh_sid[1:].isdigit()):
+        err(f"W2-DJ-3: subprocess produced unexpected session_id format={fresh_sid!r}")
+    if int(fresh_sid[1:]) <= int(first_sid[1:]):
         err(f"W2-DJ-3: subprocess session_id={fresh_sid} not strictly greater than "
             f"parent {first_sid} — monotonicity broken")
     ok(f"W2-DJ-3: subprocess session_id={fresh_sid} > parent {first_sid} — monotonic")

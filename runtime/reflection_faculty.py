@@ -124,23 +124,39 @@ def _form_lesson(
             "magnitude": 0.02,  # MAX_STEP — bounded step per §7.5
         }
 
+    # card 0082 F-3: applies_when, reason, prefers_action — required for consult()
+    # to generate preferences, and for the D1 gate's _fit() to score the lesson.
+    _cal_map = {
+        "build": "build", "design": "build", "fix": "build",
+        "connect": "connect", "remember": "reflect", "reflect": "reflect",
+        "answer": "answer", "prefer": "answer", "choose": "answer",
+        "enjoy": "celebrate", "like": "celebrate", "celebrate": "celebrate",
+        "ground": "ground", "challenge": "challenge",
+        "witness": "witness", "silence": "silence",
+    }
+    prefers_action = _cal_map.get(action.lower(), "")
+    applies_when   = [x for x in [scope, action.lower()] if x]
+    reason         = f"{delta} outcome during '{action}' ({scope}) — {statement}"
+
     return {
-        "id":         f"L-{_ts_compact()}",
-        "lesson_key": lkey,
-        "statement":  statement,
-        "evidence":   [],     # filled by lesson_store.record_outcome() with SPOT codes
-        "scope":      scope,
-        "cause":      cause,
-        "strength":   0.3,
-        "delta":      delta,
-        "status":     "candidate",
-        "first_seen": _now_iso(),
-        "last_seen":  _now_iso(),
-        "promoted_at": None,
-        "retired_at":  None,
-        "reason":      None,
-        "proposes":    proposes,
-        "ts":          _now_iso(),
+        "id":            f"L-{_ts_compact()}",
+        "lesson_key":    lkey,
+        "statement":     statement,
+        "evidence":      [],     # filled by lesson_store.record_outcome() with SPOT codes
+        "scope":         scope,
+        "cause":         cause,
+        "strength":      0.3,
+        "delta":         delta,
+        "status":        "candidate",
+        "first_seen":    _now_iso(),
+        "last_seen":     _now_iso(),
+        "promoted_at":   None,
+        "retired_at":    None,
+        "reason":        reason,       # card 0082 F-3 — the why travels with the lesson
+        "applies_when":  applies_when, # card 0082 F-3 — context for _fit() scoring
+        "prefers_action": prefers_action,  # card 0082 F-3 — CAL action to prefer
+        "proposes":      proposes,
+        "ts":            _now_iso(),
     }
 
 
@@ -203,6 +219,8 @@ def _write_journal_entry(
                     episode_ref=str(time.time()),   # unique per invocation; spot is verification, not episode ID
                     verified=bool(spot),             # vault-backed = verified
                     session_id=_SESSION_ID,
+                    action=action,                   # card 0082 F-2 — D1 gate requires executed action
+                    outcome=completion_state,        # card 0082 F-2 — D1 gate requires verified outcome
                     contradicting=(lesson.get("delta") in ("failed", "partial")),
                 )
                 # Only append to ledger if this lesson_key is new

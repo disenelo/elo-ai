@@ -13,11 +13,13 @@ Design:
       started in the same second do not collide; a clock rollback does not
       break monotonicity.
     - Persisted: writes back to self/journals/session_counter.json atomically.
-    - Numeric string (>= 10 digits from ~2001 onward): keeps compatibility
-      with promote_pass()'s distinct_sessions counting and with the existing
-      test_w2_session_id.py isdigit() format check.
-    - Silent-safe: any I/O failure falls back to int(time.time()) — a still-
-      unique-in-practice value that never breaks the record path.
+    - Format: "S{n}" where n is the monotonic integer — NOT pure-numeric so
+      the D1 gate (faculties/learning/faculty.py _evidence_is_verified) can
+      distinguish a real session ID from a process ID (card 0082 F-2). The
+      monotonic integer n is still stored as a plain int in session_counter.json
+      so promote_pass() distinct_sessions counting is unaffected.
+    - Silent-safe: any I/O failure falls back to "S" + str(int(time.time())) —
+      a still-unique-in-practice value that never breaks the record path.
 
 Acceptance test: tests/test_w2_decision_journal_session_id.py
 """
@@ -48,7 +50,7 @@ def _allocate() -> str:
         os.replace(tmp, _COUNTER_PATH)
     except OSError:
         pass
-    return str(new_id)
+    return "S" + str(new_id)
 
 
 SESSION_ID: str = _allocate()
