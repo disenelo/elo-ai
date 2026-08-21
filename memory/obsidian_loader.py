@@ -100,15 +100,19 @@ def _scan_vault() -> list:
                 meta, body = _parse_frontmatter(content)
                 if not meta.get("type"):
                     continue  # skip untyped notes
+                # B-DRIFT-03: track whether this note is a canonical source.
+                # canonical=false notes are non-authoritative derivatives — they must
+                # not enter prompt injection as identity/value material.
                 notes.append({
-                    "title":   fname[:-3],
-                    "folder":  os.path.relpath(dirpath, _VAULT),
-                    "type":    meta.get("type",    ""),
-                    "domain":  meta.get("domain",  ""),
-                    "tags":    meta.get("tags",    []),
-                    "version": str(meta.get("version", "0.1")),
-                    "summary": _first_paragraph(body),
-                    "links":   _extract_links(body),
+                    "title":     fname[:-3],
+                    "folder":    os.path.relpath(dirpath, _VAULT),
+                    "type":      meta.get("type",    ""),
+                    "domain":    meta.get("domain",  ""),
+                    "tags":      meta.get("tags",    []),
+                    "version":   str(meta.get("version", "0.1")),
+                    "summary":   _first_paragraph(body),
+                    "links":     _extract_links(body),
+                    "canonical": meta.get("canonical", True),   # B-DRIFT-03
                 })
             except Exception:
                 continue  # bad file — skip silently
@@ -129,6 +133,9 @@ def _build_pack(notes: list) -> dict:
         by_domain.setdefault(n["domain"], []).append(n)
 
     # context block — what gets injected into the system prompt
+    # B-DRIFT-03: identity-domain notes marked canonical=false are non-authoritative
+    # derivatives and must not enter prompt injection as canonical identity material.
+    # They are included as reference-only, clearly labelled.
     context_lines = []
     for domain in ("identity", "universe", "ai-os", "game", "robot"):
         domain_notes = by_domain.get(domain, [])
@@ -136,7 +143,14 @@ def _build_pack(notes: list) -> dict:
             context_lines.append(f"[{domain.upper()}]")
             for note in domain_notes[:6]:
                 if note["summary"]:
-                    context_lines.append(f"**{note['title']}**: {note['summary']}")
+                    is_canonical = note.get("canonical", True)
+                    if domain == "identity" and not is_canonical:
+                        # B-DRIFT-03: non-canonical derivative — label as reference only
+                        context_lines.append(
+                            f"**{note['title']}** [REFERENCE — derived, not canonical]: {note['summary']}"
+                        )
+                    else:
+                        context_lines.append(f"**{note['title']}**: {note['summary']}")
             context_lines.append("")
 
     return {
