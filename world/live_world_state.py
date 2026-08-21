@@ -208,8 +208,8 @@ def assemble_world_state(turn_id: str = "", perception=None) -> LiveWorldState:
     # ── Desktop ───────────────────────────────────────────────────────────────
     desktop = DesktopState()
     try:
-        from desktop.window_state import get as _ws_get
-        win = _ws_get()
+        import desktop.window_state as _ws_mod   # module-style so test patches propagate
+        win = _ws_mod.get()
         desktop = DesktopState(
             active_app=win.app,
             active_window=win.title,
@@ -219,7 +219,7 @@ def assemble_world_state(turn_id: str = "", perception=None) -> LiveWorldState:
     except Exception as _desktop_err:
         import logging as _lg
         _lg.getLogger(__name__).warning("desktop domain unavailable: %s", _desktop_err)
-        _health("desktop", "error", str(_desktop_err)[:80], 0.0)
+        _health("desktop", "absent", "absent", 0.0)
         _degrade("desktop")
         desktop = DesktopState(available=False)  # distinguishable from "no window open"
 

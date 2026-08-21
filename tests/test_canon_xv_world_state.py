@@ -40,6 +40,7 @@ from world.live_world_state import (
 _ALL_DOMAINS = [
     "desktop", "user", "unity", "browser", "files",
     "internet", "music", "calendar", "environment", "time", "weather",
+    "gaze", "route",   # added when gaze + route history domains were wired
 ]
 
 
@@ -107,10 +108,10 @@ except Exception as e:
 # ST-1: one domain failing never blocks the turn
 try:
     import desktop.window_state as _wst
-    # Patch get_active_window to raise — simulates a broken desktop sensor
-    orig_get = getattr(_wst, "get_active_window", None)
+    # Patch get() to raise — simulates a broken desktop sensor
+    orig_get = getattr(_wst, "get", None)
     def _broken_get(): raise RuntimeError("sensor down")
-    _wst.get_active_window = _broken_get
+    _wst.get = _broken_get
     try:
         ws = assemble_world_state(turn_id="st1")
         # Must still return LiveWorldState (other domains not blocked)
@@ -124,9 +125,9 @@ try:
         ok("ST-1: broken desktop sensor → absent (not crash); other domains unaffected")
     finally:
         if orig_get is not None:
-            _wst.get_active_window = orig_get
+            _wst.get = orig_get
         else:
-            del _wst.get_active_window
+            del _wst.get
 except AssertionError as e:
     fail("ST-1", e)
 except Exception as e:
