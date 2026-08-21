@@ -10,8 +10,8 @@ source: >
   _intake/SOURCE_2026-08-08_self_model_becoming.md (VERBATIM) +
   _intake/SOURCE_2026-08-10_brain_body_brain_loop.md (VERBATIM) +
   SITUATED_SELF_v1_assembly.md + CANON_RULINGS_2026-08-10.md (Ruling C)
-implementation: PARTIAL (runtime/executive.py live + FROZEN; the_moment.py + decision_journal.py live; assembly ORDER and dual-intent queue PENDING)
-audit_status: OPEN
+implementation: PARTIAL (runtime/executive.py live + FROZEN; the_moment.py + decision_journal.py live; assembly ORDER and dual-intent queue PENDING; live branch order + ingress boundary CANONIZED 2026-08-21 via card 0074)
+audit_status: POSITION_STATED (branch order + ingress boundary canonized 2026-08-21 in Ch.1 §1.3.1/§1.3.2/§1.6.1; L3 ratification pending David per card 0074 DOD; behaviour changes remain separate ruled cards)
 canonical_path: docs/architecture/Volume_VII/
 dependencies:
   - Volume V (CONTRACTS.md — envelope/lifecycle/base contract; Ch.1 — Cognitive Core, the eight laws, CognitiveState/CognitivePlan)
@@ -21,7 +21,7 @@ dependencies:
   - ADR-Exec-001 (Verified Executive Authority) · ADR-Exec-002 (Single Cognitive Truth) · ADR-Exec-003 (Embodied Truth / Situated Cognition / Affordance Before Action) · ADR-Exec-004 (Situated Self) · ADR-Exec-005 (Learning Through Verified Consequences) · ADR-Exec-006 (Executive Assembly)
   - CANON_RULINGS_2026-08-10.md Ruling C (assemble BEFORE decide; one name `UnifiedCognitiveState`)
 priority: "Audit finding: THE hole — three volumes cite Vol VII as an authority that did not exist (AUDIT_INTENT_core_brain_2026-08-10.md §VOLUME VII)"
-last_review: 2026-08-10
+last_review: 2026-08-21
 next_review: TBD
 ---
 
@@ -141,7 +141,10 @@ rather than inventing David's calls now.
 - [x] Dual-intent queue + arbitration + the decision journal (Ch.4)
 - [x] `brain > body > brain` canonised out of WO-086 so it survives that WO's closure (Ch.5)
 - [x] Faculty contract + lifecycle + envelope + acceptance tests per chapter
-- [ ] Open questions answered by CA / David (see below)
+- [x] **Live A/B/C/D branch order (28 dispatch points) enumerated in Ch.1 §1.3.1** (card 0074 test #1)
+- [x] **Position on the routing order stated in Ch.1 §1.3.2** — live order IS canon; docstring priority retired (card 0074 test #3)
+- [x] **Ingress-boundary rule stated in Ch.1 §1.6.1** — the three-part legitimacy test for pre-Executive early returns (card 0074 test #2, rule form)
+- [ ] Open questions answered by CA / David (see below) — specifically OQ-VII-8 (David L3 ratifies §1.3.2 position)
 - [ ] `WO-CANON-VII` authored and dispatched
 - [ ] Architecture Agent can implement without inventing (pending REVIEW)
 - [ ] Audit can mark COMPLETE
@@ -183,6 +186,22 @@ OQ-VII-6  (Metadata) Volume XVI Ch.2 §2.3 now reads FALSE against the code ("as
 OQ-VII-7  (Scope) Thinking modes · interruptions · goal management · scheduling/resource
           allocation are Bible-scoped to VII and unwritten. Confirm they belong in Vol VII
           chapters 6–8 rather than being absorbed by XVI/XX, before anyone drafts them.
+
+OQ-VII-8  (Ch.1 §1.3.2) The live A/B/C/D branch order (§1.3.1) has been stated as the
+          canonical dispatch order; docstring priority at executive.py:149 retired from
+          canon. Card 0074 DOD calls for a single David L3 ratification of this position.
+          Awaiting David's rule — behaviour does not change until then, canon description
+          holds now.
+
+OQ-VII-9  (Ch.1 §1.3.1 B20) The `:227` duplicate `_SHORT_AFFIRM` branch is verified
+          unreachable dead code. Behaviour-neutral cleanup card required; NOT authorised
+          by 0074. Owner: David to authorise the cleanup card.
+
+OQ-VII-10 (Ch.1 §1.6.1) The ingress-boundary rule (three-part legitimacy test) is stated.
+          The classification of the 29 specific pre-Executive early returns as
+          (a)/(b)/(c) is FINDING C1 audit work and remains NOT AUTHORISED as of 2026-08-21
+          (David 2026-08-18: "Audit first. Correction second."). This OQ tracks the
+          finding's own gate; VII does not re-open the finding here.
 ```
 
 ## Implementation status (grounded — do not overstate)
@@ -203,3 +222,10 @@ OQ-VII-7  (Scope) Thinking modes · interruptions · goal management · scheduli
   no arbitration); a normative epistemic gate on *speech* (tiers annotate the prompt block; nothing
   blocks a claim); the `brain > body > brain` UP-relay rule as an enforced invariant (WO-086 is
   OPEN and awaiting David's greenlight); thinking modes; interruption policy; goal management.
+
+- **CANONIZED 2026-08-21 (card 0074):** the live A/B/C/D branch order of `_conversation_action()`
+  + pre-CAL + post-CAL + loop-guard (28 dispatch points) enumerated in Ch.1 §1.3.1 with
+  source-line anchors; docstring priority at `executive.py:149` retired from canonical status in
+  §1.3.2; B20 (`:227`) verified unreachable dead code; the three-part ingress-boundary legitimacy
+  test stated in §1.6.1 as a corollary of ADR-Exec-001. **Behaviour unchanged** by this
+  ratification (0074 boundary); L3 ratification of §1.3.2 position remains OQ-VII-8.

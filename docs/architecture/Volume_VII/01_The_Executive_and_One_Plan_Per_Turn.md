@@ -128,6 +128,108 @@ health, affordances, world, or the intent queue are not inputs to `_conversation
 the Ch.2 ordering fix stated behaviourally: today the Executive decides *how to talk*; canon requires
 it to decide *what to do, situated*. Marked PENDING, not claimed.
 
+## 1.3.1 The verified live branch order (grounded — read from source 2026-08-21)
+
+The nine-action set §1.3 lists a **priority order** (`ANSWER > BUILD > CONNECT > CELEBRATE > REFLECT
+> GROUND > CHALLENGE > WITNESS > SILENCE`). That order is the docstring inside `_conversation_action()`
+at `runtime/executive.py:149`. **It does not describe the dispatch order.** [VERIFIED — full read of
+`runtime/executive.py` L138–235 today.] The dispatch is precondition-triggered: whichever branch's
+guard matches first wins. Canon has never named the branches, so `:219` (the last-ditch negative-valence
+→ GROUND fallback) drifted unnoticed against the POSITIVE EMOTION RULE for months. This subsection
+closes that omission by naming every branch, in the exact order it fires.
+
+**Phase A — pre-CAL, inside `decide()` before `_conversation_action()` runs:**
+
+| # | Guard (verified) | Action · confidence | Anchor |
+|---|---|---|---|
+| A1 | input chars ⊆ `.,…- ` OR input in `{"...", "..", "…", "--", "—"}` | SILENCE · 1.0 | `executive.py:288` |
+| A2 | `emo.closure == "closed"` AND any closure phrase in input (`"good session"`, `"done for today"`, `"i'm done"`, `"that's enough for today"`, `"signing off"`, `"finished for today"`, `"wrapping up"`, `"that's all for now"`) | WITNESS · 0.9 | `executive.py:291` |
+
+**Phase B — `_conversation_action()` branches, in the exact order they fire:**
+
+| # | Guard (verified) | Action · confidence | Anchor |
+|---|---|---|---|
+| B1 | bare input ∈ `_PURE_GREETINGS` (whole-input match: `hey · hello · hi · hiya · yo · hey there · hi there · hello there · heya · sup · helo · ciao · ciao bello · ciao bella · ello · alright · hola · bonjour · salut · hallo · oi · wagwan · morning · good morning · afternoon · evening`) | CELEBRATE · 0.85 | `:155` |
+| B2 | bare-q OR bare ∈ `_HOW_ARE_YOU` (15 variants of "how are you") | CELEBRATE · 0.85 | `:160` |
+| B3 | any `_SOCIAL_PHRASES` match AND not ends-with `?` AND `len < 60` | CELEBRATE · 0.8 | `:164` |
+| B4 | any `_DEMO_PHRASES` match (`"i want to see you"`, `"show me you"`, `"show me what you"`, `"can i see you"`, `"i'd like to see you"`, `"let me see you"`) | ANSWER · 0.88 | `:170` |
+| B5 | ends-with `?` AND any `_CAPABILITY_PHRASES` match (`"can you"`, `"are you"`, `"do you"`, `"will you"`, `"can elo"`, `"does elo"`, `"are you able"`, `"is elo able"`) | ANSWER · 0.92 | `:174` |
+| B6 | any `_SHORT_AFFIRM` match AND `len < 35` | CELEBRATE · 0.8 | `:178` |
+| B7 | any `_BUILD_PHRASES` match (≈35 phrases including `"build on that"`, `"expand on"`, `"i want to make elo"`, `"i think it's essentially"`) | BUILD · 0.9 | `:182` |
+| B8 | any `_CONNECT_PHRASES` match (≈20 phrases including `"how do they connect"`, `"same idea"`, `"all connected"`, `"the game and"`) | CONNECT · 0.9 | `:184` |
+| B9 | `intent ∈ ("inquiry","recall")` AND (ends-with `?` OR starts-with `what/how/why/who/when/where `) | ANSWER · 0.95 | `:188` |
+| B10 | `intent == "creation"` AND `valence ∉ ("negative_low","negative_high")` | BUILD · 0.8 | `:195` |
+| B11 | any `_CHALLENGE_PHRASES` match (`"is this too"`, `"maybe it's too"`, `"scope too"`, …) | CHALLENGE · 0.75 | `:199` |
+| B12 | `valence == "positive_high"` AND `momentum == "building"` | CELEBRATE · 0.85 | `:203` |
+| B13 | any `_CELEBRATE_PHRASES` match (`"i finally"`, `"it clicked"`, `"came alive"`, …) | CELEBRATE · 0.8 | `:205` |
+| B14 | `valence ∈ ("positive_high","positive_low")` AND `intent ∈ ("conversation","emotional")` | CELEBRATE · 0.7 | `:207` |
+| B15 | `intent == "emotional"` AND `valence == "neutral"` | REFLECT · 0.7 | `:211` |
+| B16 | `intent ∈ ("emotional","stabilise")` AND `valence ∈ ("negative_low","negative_high")` | GROUND · 0.9 | `:215` |
+| B17 | `momentum == "stuck"` OR `intent == "stabilise"` | GROUND · 0.85 | `:217` |
+| B18 | `valence ∈ ("negative_low","negative_high")` (**the `:219` last-ditch**) | GROUND · 0.8 | `:219` |
+| B19 | any `_WITNESS_PHRASES` match (`"i miss"`, `"i wish i"`, `"part of me"`, `"sometimes i wonder"`, `"i don't know why i feel"`, `"i feel like i've lost"`) | WITNESS · 0.8 | `:223` |
+| B20 | any `_SHORT_AFFIRM` match AND `len < 35` — **DUPLICATE of B6; UNREACHABLE** | CELEBRATE · 0.75 | `:227` |
+| B21 | `momentum == "building"` AND `valence ∉ ("negative_low","negative_high")` | BUILD · 0.65 | `:231` |
+| B22 | default | REFLECT · 0.5 | `:235` |
+
+**Phase C — post-CAL overrides inside `decide()` (WO-106):**
+
+| # | Guard (verified) | Effect | Anchor |
+|---|---|---|---|
+| C1 | `world_state.available == False` AND action ∈ (build, connect, celebrate) | → WITNESS · 0.7 | `:306` |
+| C2 | `wm_winner ∈ ("creation","build")` AND action == "reflect" | → BUILD · 0.7 | `:313` |
+| C3 | `route_history[-1].arrived == False` AND `.fell == True` AND action ∈ (build, connect, celebrate) | → WITNESS · 0.7 | `:322` |
+
+**Phase D — final override:**
+
+| # | Guard (verified) | Effect | Anchor |
+|---|---|---|---|
+| D1 | `loop_detected` OR `intent == "stabilise"` | GROUND · DIRECT · `max_sentences=1` · `stability=True` · confidence 1.0 (returned before goal/tone derivation) | `:330` |
+
+**Total live dispatch surface:** 2 pre-CAL + 22 CAL branches + 3 post-CAL + 1 loop-guard = **28 decision
+points per turn.** Every branch in `_conversation_action()` is named above. [VERIFIED — 1:1 against
+`runtime/executive.py:138-406`.]
+
+## 1.3.2 Position on the routing order (canon, stated 2026-08-21)
+
+The card `0074` directive is *"Canonise the order, or canonise that the order is deliberately
+unspecified — but say which."* [SPEC — 0074 §2.]
+
+**Position (stated here, awaiting David's L3 ratification per card DOD):**
+
+1. **The nine-action set is canon and FROZEN** (§1.3). Confirmed.
+2. **The docstring priority at `runtime/executive.py:149`** (`ANSWER > BUILD > ... > SILENCE`) **is
+   retired from canonical status.** [SPEC — 0074 §2.] It was descriptive of action *importance* if
+   multiple branches matched, not of *dispatch* order, and its presence next to a precondition-triggered
+   dispatch is the drift that hid `:219` (B18). It stands as a code comment; it is not law.
+3. **The live branch order (A1–A2, B1–B22, C1–C3, D1) as enumerated in §1.3.1 IS the canonical
+   dispatch order** until superseded by a David-ruled behaviour-change card. [SPEC — 0074 §2.]
+   Rationale: the card explicitly forbids behaviour change on this card (`🔴 Boundaries`); canon
+   describes what is live; the description IS the ratification of "this is what eLo does now."
+4. **B20 (`:227`) is verified unreachable** — every string matching `_SHORT_AFFIRM` at length < 35 is
+   already caught by B6 (`:178`) before B7–B19 could re-route it, so B20 can never fire. [VERIFIED —
+   both branches guard on the identical predicate.] Named here as canon-tagged **dead code**; removal
+   is a separate behaviour-neutral cleanup card, not authorised on `0074`.
+5. **`:219` (B18 — "any negative valence → GROUND") is verified live and does NOT contradict the
+   POSITIVE EMOTION RULE**, because positive valences (`positive_high`, `positive_low`, `neutral`)
+   are excluded by the guard itself. What `:219` risks is masking B15 (emotional + neutral →
+   REFLECT) and B12–B14 (positive routes) if they are ever weakened. Named here so any future edit
+   near B18 must weigh against the POSITIVE EMOTION RULE explicitly.
+6. **Adding a new branch requires a canon change** (the closed-vocabulary rule from §1.3), AND its
+   position in the A/B/C/D order must be stated in §1.3.1 at the same time. A branch without a
+   named position is a hidden decider and is forbidden.
+
+**What this position does NOT do:** it does not reorder anything, does not remove B20, does not touch
+B18. Behaviour change is a separate ruled card (`🔴 Boundaries`).
+
+**Consequence for the pending "CAL routing-order" decision brief:** rewritten to sit here. The
+question *"in what order should the CAL branches fire?"* had no canonical ground for four days
+because Volume VII was `status: REVIEW`. It has ground now: the answer is A1→A2→B1..B22→C1..C3→D1
+as of `runtime/executive.py` today, verifiable line-by-line against §1.3.1. Any future ruling that
+changes this must (a) name which branch numbers move, (b) state the invariant it preserves
+(POSITIVE EMOTION RULE, closed vocabulary, loop protection wins), and (c) update §1.3.1 in the
+same commit.
+
 ## 1.4 The One Plan
 
 ```
@@ -244,6 +346,66 @@ imperative routing) are genuinely Executive concerns and belong inside the one d
 registered here as Executive policy. Anything meeting all four is *the Executive deciding*, wherever
 the lines physically sit. Anything not meeting all four is a second decider and is forbidden.
 Whether to fold them back into `decide()` when the freeze lifts is `OQ-VII-2`.
+
+## 1.6.1 The Ingress Boundary — what may reach David without passing the Executive
+
+The card `0074` directive is *"Authority boundary: what may reach David without passing the
+Executive. C1 says 29 paths currently do. VII should state whether that is ever legitimate."*
+[SPEC — 0074 §3.]
+
+**Grounded fact.** `Output/ONE_BRAIN_CONVERGENCE_AUDIT.md` finding C1 (2026-08-14) counted 31
+`INPUT → local helper → OUTPUT` handlers above `spine.run()` in `server.py`. On 2026-08-20 the
+Architect re-verified: `spine.run()` sits at `server.py:2549` and **29 pre-Executive early returns
+still sit above it** — a two-in-twelve-days movement. **Zero decision-journal rows exist for any of
+the 29 backends.** [VERIFIED — `docs/architecture/findings/FINDING_C1_29_PRE_EXECUTIVE_EARLY_RETURNS.md`
+2026-08-20 measurement, unmodified.]
+
+**Position (canon, stated 2026-08-21):**
+
+A pre-Executive early return is legitimate **only if all three of these hold** [SPEC — 0074 §3;
+corollary of ADR-Exec-001 Executive Authority]:
+
+- **(a) It does not produce user-facing text that eLo authors.** Health probes, `/metrics`, static
+  asset serving, protocol-level JSON APIs consumed by another program are fine — none is a claim
+  eLo is making. A handler that returns a string David reads *as if eLo said it* is not fine.
+- **(b) It does not touch state a subsequent Executive decision would need to reconcile.** No
+  session updates, no memory writes, no self-model reads whose result would drift from what the
+  Executive later sees, no capability invocation. Read-only telemetry on infrastructure is fine.
+- **(c) It is not a query about eLo's own state, self, reasoning, or decisions.** Anything about
+  eLo — his mood, his history, his capabilities, why he did something — goes through the Executive.
+  This is the sharpest test.
+
+**Anything failing any one of (a)/(b)/(c) is a second decider** and is forbidden by ADR-Exec-001
+principle 2 (single decider) and Runtime Invariant #2 (Executive Authority). "It works today"
+is not a defence — the finding names 29 such handlers and none is currently authorised.
+
+**Paradigmatic violation.** The *"why did you do that?"* handler answered by a file reader eleven
+lines above `spine.run()` fails test (c) unambiguously — it is a query about eLo's decisions
+answered without the Executive. FINDING C1 names it as *"the sharpest example in the audit."*
+[VERIFIED — `FINDING_C1_29_PRE_EXECUTIVE_EARLY_RETURNS.md` step 3.]
+
+**What this section does NOT do.** It does **not** classify the specific 29 handlers as
+(a)-legitimate / (b)-should-route / (c)-unclear. That classification is FINDING C1 audit work,
+which David has NOT AUTHORISED as of 2026-08-21 (the finding banner: *"THIS IS A FINDING, NOT A
+CARD. NOTHING HERE IS AUTHORISED."* — David 2026-08-18: *"Audit first. Correction second. No
+correction is authorised merely because a discrepancy has been discovered."*). VII states the rule;
+FINDING C1 applies it when David rules the finding into a card. [SPEC — 0074 boundary "Do NOT
+change routing behaviour on this card. Canonise first."]
+
+**Journal-row invariant (ratchet).** The measurement that will prove this section's rule is not
+being violated: **every path that produces a reply to David emits a decision-journal row.** Zero
+rows for 29 backends is the counter-measurement today. The ratchet-test is FINDING C1 test #2.
+
+**Cross-references.**
+- The single-decision boundary in §1.6 governs overrides *after* the Executive has decided; §1.6.1
+  governs paths that never reach the Executive at all. Together they close the surface: nothing
+  outward can happen without the Executive deciding, and nothing after the Executive can silently
+  re-decide.
+- ADR-Exec-001 principle 6 (Speech is a sensor; actions create reality) — a pre-Executive text
+  reply fails this by making speech-shaped output without any Executive action having occurred.
+- Card `0065` (WO-BRAIN-AUTHORS) and this section share the same root fault (D-8): 0065 says the
+  model must not author; §1.6.1 says local helpers must not author either. Same violation,
+  different bypass.
 
 ## 1.7 Deliberately unwritten (the Bible's remaining VII scope)
 
@@ -362,6 +524,17 @@ FT-5  Plan immutability
 FT-6  Override discipline (§1.6)
   Given any post-decision override, Then it preserves original_action, sets a typed
   overridden_by_* reason, and appears in the decision journal. Otherwise: FAIL.
+
+FT-7  Live branch order coverage (§1.3.1)
+  Given every conditional branch in _conversation_action() + the pre-CAL and post-CAL
+  branches in decide(), Then each is named in §1.3.1 with its guard, action, confidence,
+  and source-line anchor. An undocumented branch in `runtime/executive.py` = FAIL.
+
+FT-8  Ingress boundary (§1.6.1)
+  Given any user-visible response emitted before spine.run() is reached, Then it satisfies
+  all three of §1.6.1(a)(b)(c); otherwise it is a second decider and FAILS by ADR-Exec-001.
+  Enumeration of the 29 handlers cataloged by FINDING C1 is out of scope for this test —
+  it verifies the rule, not the classification.
 ```
 
 ### Stability
@@ -439,6 +612,16 @@ REQUIRES DECISION
   Q1-b      Should an advisory LLM faculty ever be permitted to CONTRIBUTE to the assembled
             state (§1.5)? Recommend: permitted as a faculty with normal verification rules,
             never as a decider. Confirm before anyone builds it.
+  OQ-VII-8  (§1.3.2) The live branch-order canon POSITION is stated; David's L3 ratification
+            is the card 0074 DOD ("Then David rules — once, with ground under it"). This is
+            the single-line ratify that closes VII on routing.
+  OQ-VII-9  (§1.3.1 B20) The `:227` duplicate `_SHORT_AFFIRM` branch is verified unreachable.
+            Behaviour-neutral cleanup card required — not authorised on 0074. Confirm scope
+            before dispatch.
+  OQ-VII-10 (§1.6.1) The classification of the 29 pre-Executive early returns as
+            (a)-legitimate / (b)-should-route / (c)-unclear is FINDING C1 audit work,
+            NOT AUTHORISED as of 2026-08-21. This OQ tracks the finding's own gate; it
+            does not re-open it here.
 ```
 
 ## 1.14 References
@@ -459,11 +642,14 @@ Chapter 1 — The Executive and One Plan Per Turn
 Status: READY FOR REVIEW
 Grounded in live code: nine-action Conversation Action Layer · POSITIVE EMOTION RULE · loop
   protection · five tones + per-tone sentence caps · SILENCE on explicit pause · one plan
-  (executive_faculty) · plan-pinned snapshot/world/WM · three audited override sites
+  (executive_faculty) · plan-pinned snapshot/world/WM · three audited override sites ·
+  full A/B/C/D live branch order (§1.3.1) · ingress boundary rule (§1.6.1)
 Flagged PENDING: the action layer does not yet read the assembled state (§1.3)
 Flagged INVENTION: the four-part override legitimacy rule (§1.6); closed-vocabulary rule (§1.3)
-Faculty Contract: Included · Lifecycle/Envelope: Included · Acceptance Tests: FT×6 ST×4 IT×2
-Open Questions: 4 (OQ-VII-2, OQ-VII-7, Q1-a, Q1-b)
+Ratified position (2026-08-21, awaiting David L3): live branch order §1.3.1 IS canon (§1.3.2);
+  docstring priority at executive.py:149 is retired from canon; ingress-boundary rule §1.6.1
+Faculty Contract: Included · Lifecycle/Envelope: Included · Acceptance Tests: FT×8 ST×4 IT×2
+Open Questions: 7 (OQ-VII-2, OQ-VII-7, Q1-a, Q1-b, OQ-VII-8, OQ-VII-9, OQ-VII-10)
 Implementation: PARTIAL
 ```
 
