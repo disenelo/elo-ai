@@ -82,6 +82,17 @@ class ExecutiveContext:
     #         Plus CognitiveSnapshot.self_mood / self_curiosity (eLo's own state)
     identity: dict = field(default_factory=dict)
 
+    # ── lessons ────────────────────────────────────────────────────────────────
+    # Card 0075 (D3 · Option A · David L3 2026-08-21).
+    # Source: self.lesson_store.recall() — CONFIRMED lessons only, filtered at
+    # the gate to ADR-Exec-005 D1: only lessons with at least one VERIFIED
+    # evidence entry (executed action with verified outcome). Language-only
+    # lessons and pure-numeric process-id session evidence are rejected here.
+    # Compliance with ADR-Exec-005 D6: this is a value READ by whichever
+    # consumer chooses to consult it; no learning logic lives inside the
+    # Executive. Empty list is the honest default when nothing clears the bar.
+    lessons: list = field(default_factory=list)
+
     # ── agency ─────────────────────────────────────────────────────────────────
     # NEW ASSUMPTION — not in any current contract.
     # CA: "don't build autonomous agency yet — otherwise we'll create another orphan"
@@ -122,12 +133,46 @@ class ExecutiveContext:
             "ec_capabilities": self.capabilities,
             "ec_memory":       self.memory,
             "ec_identity":     self.identity,
+            # Card 0075 (D3 · Option A): lessons exposed at TOP-LEVEL key
+            # `lessons` so the frozen executive.decide() would find it if it
+            # were written to read it. The frozen file currently contains zero
+            # references to "lesson" (verified: grep -c lesson runtime/executive.py = 0),
+            # so the empirical answer to "does executive.py read this key?" is NO.
+            # That is the honest, useful result — LOOP-7 stays UNKNOWN until the
+            # Executive is unfrozen behind a Learning Faculty consult (ADR-Exec-005 D6).
+            "lessons":         self.lessons,
             # NEW ASSUMPTION placeholders — not yet populated
             "ec_agency":            None,
             "ec_significance":      None,
             "ec_epistemic_state":   None,
         }
         return d
+
+
+def _filter_lesson_for_executive(row: dict) -> bool:
+    """
+    Card 0075 D1 gate (ADR-Exec-005 D1 verbatim):
+      "Language alone is never evidence. Only executed actions with verified
+       consequences influence future policy."
+
+    A lesson may only enter ExecutiveContext.lessons when at least ONE evidence
+    entry is BOTH:
+      - verified == True   (executed action reached a verified outcome), AND
+      - session_id is non-empty and NOT a pure-numeric string
+        (pure numbers = process IDs — a promotion artefact, not evidence
+         of a real session; called out explicitly in card 0075).
+    """
+    ev = row.get("evidence", []) or []
+    for e in ev:
+        if not e.get("verified"):
+            continue
+        sid = str(e.get("session_id", "") or "")
+        if not sid:
+            continue
+        if sid.isdigit():
+            continue
+        return True
+    return False
 
 
 def build_executive_context(
@@ -139,6 +184,7 @@ def build_executive_context(
     cognitive_state, # CognitiveState | None (contracts.py)
     affordances,    # surface_affordances sequence | None
     attention:      dict,  # raw attention_model from server.py
+    lessons:        list | None = None,  # Card 0075 D3 · Option A: filtered lessons
 ) -> ExecutiveContext:
     """
     Assemble ExecutiveContext from the canonical sources available at the
@@ -213,6 +259,12 @@ def build_executive_context(
             "register":           getattr(cognitive_state, "register",            ""),
         }
 
+    # ── lessons ────────────────────────────────────────────────────────────────
+    # Card 0075 D3 · Option A · D1 gate: caller passes recall() output; we apply
+    # the ADR-Exec-005 D1 verified-evidence filter here so no path skips it.
+    lessons_in: list = list(lessons) if lessons else []
+    lessons_out: list = [r for r in lessons_in if _filter_lesson_for_executive(r)]
+
     return ExecutiveContext(
         intent=intent,
         emotion=emotional_context,
@@ -222,5 +274,6 @@ def build_executive_context(
         capabilities=caps,
         memory=mem_dict,
         identity=identity_dict,
+        lessons=lessons_out,
         # agency, significance, epistemic_state remain None — NEW ASSUMPTION
     )

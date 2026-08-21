@@ -214,6 +214,28 @@ def _executive_faculty(
     # receive ExecutiveContext directly. New fields (ec_*) are available then.
     # NEW ASSUMPTIONS (flagged to CA): agency · epistemic_state · significance.
     _attention_in = dict(attention) if attention else {}
+
+    # ── W6/Card 0075: lesson recall BEFORE ExecutiveContext assembly ─────────
+    # Card 0075 D3 · Option A · David L3 2026-08-21: lessons must reach
+    # ExecutiveContext (frozen executive.decide reads a flat dict, so the key
+    # is available). The D1 verified-evidence filter is applied inside
+    # build_executive_context — the raw recall() output is passed through.
+    # No cal_reason amendment or lesson_id assignment happens here: those
+    # are gated on the counterfactual proof below (identical input, different
+    # action WITH vs WITHOUT lessons). Until that holds, lesson_id stays "".
+    _recalled_lessons: list = []
+    try:
+        from self.lesson_store import recall as _ls_recall
+        _recalled_lessons = _ls_recall(
+            context={
+                "focal_thread": getattr(cognitive_state, "focal_thread", "") if cognitive_state else "",
+                "topic":        _attention_in.get("intent", ""),
+            },
+            k=3,
+        ) or []
+    except Exception as _lr_err:
+        _log.debug("lesson recall failed (non-critical): %s", _lr_err)
+
     try:
         from runtime.executive_context import build_executive_context as _build_ec
         _ec = _build_ec(
@@ -225,6 +247,7 @@ def _executive_faculty(
             cognitive_state=cognitive_state,
             affordances=affordances,
             attention=_attention_in,
+            lessons=_recalled_lessons,
         )
         _attention_in = _ec.as_dict()
     except Exception as _ec_err:
@@ -276,28 +299,16 @@ def _executive_faculty(
     except Exception as e:
         _log.warning("executive_faculty/exec_decide FAILED: %s", e)
 
-    # ── W6: lesson recall (prompt enrichment only — card 0051 D1/D2/D3) ─────────
-    # Lessons reach the prompt via prompt_builder [LEARNED HEURISTICS] block.
-    # Attribution (cal_reason amendment + lesson_id) is withheld: executive.py
-    # (FROZEN) has no lessons key — no lesson enters the Executive's decision
-    # context, so no causal attribution is possible (D3 → L3/canon question).
-    # D1 reverted: post-hoc cal_reason rename on defaults is removed.
-    # D2 applied: lesson_id stays "" until Executive receives lessons and a
-    # counterfactual difference in action can be demonstrated.
-    try:
-        from self.lesson_store import recall as _ls_recall
-        _ls_recall(
-            context={
-                "focal_thread": getattr(cognitive_state, "focal_thread", "") if cognitive_state else "",
-                "topic":        _attention_in.get("intent", ""),
-            },
-            k=1,
-        )
-        # Recall runs so lesson_store's internal state is fresh each turn.
-        # No attribution derived here — prompt injection is prompt_builder's job.
-    except Exception as _w6_err:
-        _log.debug("W6 lesson recall failed (non-critical): %s", _w6_err)
-    plan.lesson_id = ""  # D3 BLOCKED: attribution withheld until Executive unfreezes
+    # ── W6/Card 0075: lesson_id attribution gate ────────────────────────────
+    # Card 0075 D3 · Option A: ExecutiveContext.lessons is now populated
+    # BEFORE the exec_decide call above. The counterfactual proof required
+    # to promote lesson_id off "" is: identical input, action WITH lesson
+    # present differs from action WITHOUT. Because runtime/executive.py has
+    # zero references to "lesson" (grep -c lesson runtime/executive.py = 0),
+    # the counterfactual is FALSE by construction: the frozen logic does not
+    # consult the key. Therefore lesson_id stays "" — LOOP-7 remains UNKNOWN.
+    # This is the honest, useful result the card asked for.
+    plan.lesson_id = ""
 
     # ── System action decision ────────────────────────────────────────────────
     if system_det:
