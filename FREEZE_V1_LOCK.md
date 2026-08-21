@@ -91,7 +91,9 @@ To unlock a frozen element:
 
 ## Unlock Log
 
-*(empty — no unlocks recorded)*
+| Date | Element changed | File | Why | Authority |
+|------|----------------|------|-----|-----------|
+| 2026-08-21 | Added `"You mentioned…"` to the existing anti-mirroring example list | `prompts/living_presence_spec.txt` lines 243-248 | Genuine phrase gap — `"I notice"` and `"it feels like you're"` were listed; `"You mentioned"` was absent. This is NOT one of the 9 CAL actions or the positive momentum rule (§5 frozen). Extends an existing rule, no new list or new action. | AUTHORISED card 0062, task 2 |
 
 ---
 

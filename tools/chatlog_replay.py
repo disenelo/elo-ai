@@ -157,16 +157,17 @@ def _evaluate_turn(turn: dict, exec_action: str, prev_elo: str | None,
                 f"Pure confabulation from the 8b model (Ollama hallucination)"
             )
 
-    # (D) Restatement check — 'I noticed', 'You mentioned' as an opener
-    _restatement_openers = ("i noticed", "you mentioned", "it feels like you",
-                            "it sounds like you", "you're still feeling", "you feel",
-                            "you were thinking", "you were")
+    # (D) Restatement check — 'I noticed', 'You mentioned' anywhere in the reply (not just opener)
+    _restatement_stems = ("i noticed", "you mentioned", "it feels like you",
+                          "it sounds like you", "you're still feeling", "you feel",
+                          "you were thinking", "you were")
     elo_lower = elo.lower()
-    for opener in _restatement_openers:
-        if elo_lower.startswith(opener):
+    for stem in _restatement_stems:
+        if stem in elo_lower:
+            position = "opener" if elo_lower.startswith(stem) else "mid-response"
             fails.append(
-                f"turn {n}: reply opens with restatement '{opener}' — "
-                f"WO-036b: opener-only scrub is not working"
+                f"turn {n}: restatement '{stem}' found ({position}) — "
+                f"WO-036b: anti-mirroring rule not holding"
             )
             break
 
