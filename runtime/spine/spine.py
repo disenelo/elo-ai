@@ -17,6 +17,11 @@ import logging
 from runtime.spine.plan import CognitivePlan
 
 _log = logging.getLogger(__name__)
+
+# WO-CANON-III: session-level sequence counter for EmbodimentState staleness detection.
+# Monotonically increasing per session (never resets within one server.py lifetime).
+# Vol III §1.4 / ST-III-1g: subscribers use published_at + sequence_id to detect staleness.
+_EMBODIMENT_SEQUENCE = 0
 _log.addHandler(logging.NullHandler())
 _log.propagate = False
 
@@ -758,7 +763,9 @@ def run(
     # WO-097: runs AFTER conversation so response_text / display_text / tts_text
     # are populated when the body reads them.
     try:
-        plan.embodiment_state = build_embodiment_state(plan)
+        global _EMBODIMENT_SEQUENCE
+        _EMBODIMENT_SEQUENCE += 1
+        plan.embodiment_state = build_embodiment_state(plan, sequence_id=_EMBODIMENT_SEQUENCE)
         if getattr(plan, "direct_response", None) and not getattr(
             plan.embodiment_state, "response_text", None
         ):
