@@ -58,8 +58,28 @@ class PluginRegistry:
                 )
                 return   # refuse to register unsafe plugin
 
-        # 0026: RESERVED capability gate — propose-only mode for physical/hardware output
-        reserved = [cap for cap in getattr(plugin, "CAPABILITIES", []) if cap in _RESERVED_CAPABILITIES]
+        # WO-CANON-XIV / ADR-XIV-001: RESERVED gate now consults runtime/capabilities/registry
+        # (the canonical policy layer — Vol XXIII). A declared capability is a REQUEST, not a GRANT.
+        # plugins.base._RESERVED_CAPABILITIES remains as a fast local check; the runtime registry
+        # is the authoritative source and may flag capabilities _RESERVED_CAPABILITIES doesn't know.
+        declared = list(getattr(plugin, "CAPABILITIES", []))
+        reserved = [cap for cap in declared if cap in _RESERVED_CAPABILITIES]
+
+        # Ask the XXIII policy layer — any capability with SCOPE_RESERVED is also propose-only.
+        try:
+            from runtime.capabilities.registry import get_scope as _cap_scope
+            from runtime.capabilities.capability import SCOPE_RESERVED as _SCOPE_RESERVED
+            for cap in declared:
+                if cap not in reserved and _cap_scope(cap) == _SCOPE_RESERVED:
+                    reserved.append(cap)
+                    logger.warning(
+                        "Plugin %r: capability %r has SCOPE_RESERVED in runtime policy "
+                        "(not in plugins.base set) — adding to propose-only list.",
+                        name, cap,
+                    )
+        except Exception as _cap_err:
+            logger.debug("runtime capabilities registry unavailable during plugin register: %s", _cap_err)
+
         if reserved:
             plugin.propose_only = True
             logger.warning(
