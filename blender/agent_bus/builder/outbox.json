@@ -1061,5 +1061,67 @@
     ],
     "evidence": "python3 tests/test_canon_iv_ordering_invariants.py -> 21 passed 0 failed. Covers I-1..I-6 per Vol IV/02. Cross-module (I-3, I-4) asserted across both server.py and runtime/spine/spine.py to close the Vol IV \u00a72.3 trap. Each ordering-sensitive test carries an inline swap-proof self-test (_assert_swap_fails) that mutates a copy of the source and re-runs the check on the mutated copy, asserting it fails - proves the test is testing SEQUENCE not PRESENCE. FT-IV-3a\u00b7nested uses ast (not regex) to walk _executive_faculty body so mentions of assemble_cognitive_state() in signature COMMENTS cannot pollute the result. Regression: test_canon_vii_ruling_c.py 6/6, test_canon_xii_perception.py 15/15 unchanged.",
     "duration_s": 0
+  },
+  "08_WO-CANON-IV_ordering_invariants_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787209826.550036,
+    "state": "DONE",
+    "output": [
+      "ab0ef87"
+    ],
+    "evidence": "tests/test_canon_iv_ordering_invariants.py created; python3 tests/test_canon_iv_ordering_invariants.py -> 21 passed 0 failed. Coverage of Vol IV/02 invariants I-1..I-6: perception<world (FT-IV-1a/b), world<attention<first-faculty (FT-IV-2a/c), assembly<decision at RUN-flow AND cross-module (FT-IV-3a/a-nested/b/c/d - closes the Vol IV \u00a72.3 trap by asserting against BOTH server.py and spine.py; uses",
+    "duration_s": 599.04
+  },
+  "0059_SPEED_stream_the_pinned_route_and_give_it_a_deadline_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787251923.8202162,
+    "state": "UNKNOWN",
+    "output": [],
+    "evidence": "",
+    "duration_s": 4.47
+  },
+  "0070_DISPATCH_your_six_never_started": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": "2026-08-21T06:29:00Z",
+    "state": "DONE",
+    "output": [
+      "WO-004b verified green 12/12 + disconnection-falsifiable",
+      "XXVIII spec-gap report filed",
+      "XVII/XVIII NOT-RATIFIED (PROPOSE state); CT4V-08 + 049-B1 lack formal WO files"
+    ],
+    "evidence": "tests/test_wo004_contracts.py 12/12; DONE/0070_DISPATCH_your_six_never_started.md Result block; FROM_BUILDER_2026-08-21_XXVIII_spec_gap_and_XVII_XVIII_not_ratified.md; commit 73598b9 + 8a5490e",
+    "duration_s": 0,
+    "note": "Architect: DISPATCH_BOARD.md:1562 shows WO-004b OPEN; completion log 225 shows DONE \u2014 please reconcile."
+  },
+  "0070_DISPATCH_your_six_never_started_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787290205.679955,
+    "state": "DONE",
+    "output": [
+      "73598b9",
+      "8a5490e"
+    ],
+    "evidence": "WO-004b: 12/12 tests pass (tests/test_wo004_contracts.py); disconnection-falsifiability verified (broken assemble_cognitive_state -> WO-004b-3/4 RED; broken build_embodiment_state -> WO-004b-8 RED). XXVIII: spec-gap report filed at FROM_BUILDER_2026-08-21_XXVIII_spec_gap_and_XVII_XVIII_not_ratified.md \u2014 Volume_XXVIII/ has 1 file, no Metadata, self-labels Scaffold. XVII/XVIII: NOT RATIFIED per 00_M",
+    "duration_s": 465.99
+  },
+  "0071_WIRE_rows_24_26_then_116_117": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": "2026-08-21T07:00:00Z",
+    "state": "DONE",
+    "output": [
+      "e84572a",
+      "0565d76"
+    ],
+    "evidence": "Row 24 wired at server.py:4406-4412 (_apply_end_of_turn calls record_behaviour on every turn); live disk recent_behavior = 7 verbs/217 events; simulated sit turn: 5->6. Row 26 wired at server.py:3875 -> journal_router.py:127; disconnection cut drops verified-sit reward 0.7321825 -> 0. update_habits refactored to delegate to record_behaviour (was dead duplicate). WO-116 acceptance MET: store non-empty, derive_tendencies returns 7 real statements, delta = +1. WO-117 EMERGENTLY TRUE (prereqs 21/23/24/101 all wired; situated_with_epistemic surfaces significance + outcome). Tests: test_wo126_meaning 10/10, test_wave2_body_selfobserve 5/5, test_wo125_self_interpret 6/6, test_wo083_identity_meaning 5/5. Card claims of '0 callers' and 'outcome= absent' were stale; underlying wires landed at c93dab8 (WO-101, 2026-08-13) and 2b32736 (ADR-0037).",
+    "commits": [
+      "e84572a",
+      "0565d76"
+    ],
+    "note": "Architect: card's 'Verified now' table was stale by 8 days. Row 24/26 wires already landed in WO-101/ADR-0037. This close records evidence + cleans one dead duplicate."
   }
 }
