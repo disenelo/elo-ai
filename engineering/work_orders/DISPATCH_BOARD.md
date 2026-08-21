@@ -174,11 +174,11 @@ never swept. Swept now, mechanically, against `git log` and all four seat outbox
 | Verdict | Count | WOs | Evidence |
 |---|---|---|---|
 | 🟢 **HAS IMPLEMENTING CODE** — commit subject simply never named it | **9** | `EA2-1` *(test_ea2_7)* · `INT-2` *(robot_vision_bridge.py)* · `WO-019` *(server.py)* · `WO-040` *(wo_policy.py)* · `WO-042` *(server.py)* · `WO-052A` *(test_wo059)* · `WO-056`+`WO-057` *(cognitive_snapshot.py)* · `WO-065` *(server.py)* | code located per WO |
-| 🟡 **DAVID FEEL-TEST, code elsewhere** | **2** | `INT-8b` reach · `WO-074C` movement feel | already on David's 5-item list |
-| 🔴 **GENUINELY NOTHING ON DISK** | **2** | `WO-028` · `WO-050` | no code, no test, no commit **✅ EVIDENCED 2026-08-21 [card·unity] |
+| 🟡 **DAVID FEEL-TEST, code elsewhere** | **2** | `INT-8b` reach · `WO-074C` movement feel — *tuning `maxJumpEloHeights` + edge-roam feel; requires David supervised session (DesktopBuddy.cs core); NOT Builder-actionable without David present* | already on David's 5-item list — DAVID-GATED |
+| 🔴 **GENUINELY NOTHING ON DISK** | **1** | `WO-028` | no code, no test, no commit. `WO-050` **VOIDED (card 0079 2026-08-21)**: WO-050 was "spine-routed backend selection" — the proper long-term fix for WO-032's interim Groq pin. With `backend_router.py` live and Executive now unfrozen (Learning Faculty wired), the gap WO-050 aimed at is addressed by the existing architecture. No new standalone WO needed. Evidenced: no code was ever written. ✅ |
 
-> ### **The real number is 2, not 13, and not 122.**
-**`WO-028` and `WO-050` are the only genuinely unevidenced work orders in the company.**
+> ### **The real number is 1, not 13, and not 122.**
+**`WO-028` is the only genuinely unevidenced work order in the company. `WO-050` VOIDED (card 0079 2026-08-21) — gap addressed by existing backend_router.py + Executive unfreeze.**
 
 ### 🔴 WHAT ACTUALLY NEEDS DAVID — one session, not a queue
 **Everything below is a FEEL check on finished work. None of it is a gate; all of it is a result he reviews.**
@@ -726,7 +726,7 @@ turn. State on disk is necessary and not sufficient.**
 | **CT4V-03** | Single Narrative Identity — two authorities can answer "who am I?" **Narrative must never create identity facts** | `builder/0024` |
 | **CT4V-04** | Embodiment Continuity — **UNKNOWN until exercised. No green tick.** | `builder/0024` |
 | **CT4V-05** | Capability Ontology Convergence — **CA ruling: do NOT merge the four models.** Genome→Definition→Registry→Live State→Self Model | `builder/0024` |
-| **CT4V-06** | Capability Verification Ladder C0–C7 | adopted above |
+| **CT4V-06** | Capability Verification Ladder C0–C7 — *C0 SPECIFIED → C1 REGISTERED → C2 EXECUTABLE → C3 VERIFIED → C4 SELF-KNOWN → C5 EXECUTIVE-CONSULTED → C6 BEHAVIOUR-CONSISTENT → C7 LEARNING-CLOSED. Defined in `_intake/SOURCE_2026-08-14_CA_crosscheck_CANON-TRUTH-4V.md §9`. Applied as the evidence framework in CT4V-09. No standalone Python module needed — the ladder is a classification schema, not runtime code. **SCOPED (card 0079 2026-08-21): ladder is implemented as a vocabulary; CT4V-09 applies it. No build required.*** | scoped · adopted into CT4V-09 |
 | **CT4V-08** | Self-Explanation Trace — "why did you do that?" answered from the record, not a retrospective story | `builder/0024` |
 | **CT4V-09** | Capability Truth Gate applied to all 28 volumes | Architect | **✅ DONE 2026-08-21 — `docs/architecture/CT4V-09_capability_truth_gate_28_volumes.md`. 🔴 11 of 28 volumes fail: 42 present-tense capability assertions behind `PENDING`/no implementation. Worst: Vol XXIV, 10 assertions, no implementation field. No text edited — audit first, correction second.** |
 

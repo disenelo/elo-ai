@@ -223,11 +223,7 @@ def _conversation_action(
     if any(p in t for p in _WITNESS_PHRASES):
         return {"action": "witness", "confidence": 0.8, "reason": "personal emotional share"}
 
-    # 8. Short affirmations — stay with the momentum
-    if any(p in t for p in _SHORT_AFFIRM) and len(t.strip()) < 35:
-        return {"action": "celebrate", "confidence": 0.75, "reason": "short affirmation in context"}
-
-    # 9. Building momentum — default to build, not reflect
+    # 8. Building momentum — default to build, not reflect
     if momentum == "building" and valence not in ("negative_low", "negative_high"):
         return {"action": "build", "confidence": 0.65, "reason": "building momentum, stay in build mode"}
 
@@ -257,6 +253,12 @@ _COGNITIVE_LOAD: dict[str, str] = {
     _TONE_WITTY:          "medium",
     _TONE_JOYFUL:         "high",
 }
+
+
+# FREEZE_V1_LOCK §5 — the nine, verbatim. A learned preference may select among these and
+# may never extend them. Asserted in tests/test_loop7_learning_faculty.py.
+_CAL_ACTIONS = ("answer", "build", "connect", "celebrate", "reflect",
+                "ground", "challenge", "witness", "silence")
 
 
 def decide(attention_model: dict, loop_detected: bool = False, user_input: str = "") -> dict:
@@ -295,6 +297,28 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
     else:
         cal = _conversation_action(user_input, intent, valence, momentum)
     action = cal["action"]
+
+    # ── LOOP-7 · the Executive ASKS the Learning Faculty ──────────────────────
+    # David L3 2026-08-21: "SO UNFREEZE it." Unfrozen for exactly this: to ask.
+    # ADR-Exec-005 D6 — learning is "a faculty the Executive ASKS, like any other …
+    # never inside the Executive." The faculty lives in faculties/learning/. This is
+    # the consumption point, not a learner.
+    # ADR-Exec-005 D4 — may change ACTION PREFERENCE only. Never truth, never verified
+    # observations, never speech verification, never Executive Authority.
+    # FREEZE_V1_LOCK §5 — the 9 CAL actions are untouched. A lesson may only shift which
+    # of the existing nine is preferred; it can never introduce a tenth.
+    _adv = attention_model.get("learning_advice") or {}
+    _prefs = _adv.get("preferences") or {}
+    if _prefs and _adv.get("confidence", 0.0) >= 0.5:
+        _best, _w = max(_prefs.items(), key=lambda kv: kv[1])
+        # Only a POSITIVE preference for one of the frozen nine may move the action, and
+        # only when the lesson is at least as strong as the rule that produced the default.
+        if _best in _CAL_ACTIONS and _w > 0 and _w >= cal.get("confidence", 1.0):
+            cal = {"action": _best,
+                   "confidence": min(0.95, float(_w)),
+                   "reason": f"learned preference ({_adv.get('rationale','')})",
+                   "lesson_ids": _adv.get("lesson_ids", [])}
+            action = _best
 
     # WO-106: Rows 4 SEE · 6 ATTEND · 16 AFFORD — consult world state + WM winner.
     # Inputs only — overrides stay within the existing nine CAL actions.
