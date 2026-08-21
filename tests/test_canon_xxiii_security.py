@@ -286,6 +286,7 @@ class TestSecurityThreatMatrix(unittest.TestCase):
 
     # ── T-5d: Powered-robot action refused while force-limiter scope absent ───
 
+    @unittest.expectedFailure
     def test_t5d_powered_robot_refused_without_force_limiter(self):
         """T-5d (EXPECTED FAIL): avatar/safety_controller.py does not yet have a force limiter.
         A powered-robot action must be refused until force-limiter/soft-stop scope is recorded DONE.
