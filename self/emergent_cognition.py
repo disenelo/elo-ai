@@ -94,13 +94,11 @@ def internal_intents(state: "EloSelfState", idle_seconds: float = 0.0) -> list[d
 
 def update_habits(state: "EloSelfState", action_verb: str) -> "EloSelfState":
     """
-    Increment the rolling habit count for action_verb in state.recent_behavior.
-    Does not write to disk — caller persists via _self_save().
+    Alias for elo_self_model.record_behaviour — one canonical write path for
+    recent_behavior. Kept for back-compat; live callers use record_behaviour.
     """
-    if not action_verb:
-        return state
-    state.recent_behavior[action_verb] = state.recent_behavior.get(action_verb, 0) + 1
-    return state
+    from self.elo_self_model import record_behaviour
+    return record_behaviour(state, action_verb)
 
 
 def top_habits(state: "EloSelfState", n: int = 3) -> list[tuple[str, int]]:
