@@ -52,7 +52,7 @@ _logging.basicConfig(
 from memory import state_manager
 from memory.obsidian_loader import get_context_block
 from memory.memory_pack_builder import build as build_memory_pack
-from core import attention as attn
+from core import memory_relevance_filter as attn  # renamed from core.attention in ba03271 (WO-CANON-VI); alias kept — compute() API unchanged
 from runtime.executive import decide as exec_decide
 from runtime import state_machine as sm
 from runtime.prompt_builder import build as build_prompt
@@ -1646,7 +1646,7 @@ def _init_session():
     def _poll_unity_events() -> None:
         global _ack_last_ts
         import time as _pt
-        _poller_log = logging.getLogger(__name__ + ".ack_poller")
+        _poller_log = _logging.getLogger(__name__ + ".ack_poller")
         while True:
             try:
                 events, skipped = _parse_unity_events_tolerant(_UNITY_EVENTS_PATH)
@@ -3763,6 +3763,10 @@ def _process_turn(raw: str) -> dict:
                     _llm_latency_ms = (_perf_mod.perf_counter() - _t0) * 1000
                 if _agent:
                     backend_used = f"{backend_used}+{_agent}"
+                # WO-BRAIN-AUTHORS task 1: capture raw before any post-generation scrubs.
+                # elo_raw_gen = the model's bytes; elo_final = what eLo actually says.
+                # Until these differ, no other identity-layer work can be proven.
+                _elo_raw = response
             except Exception as _route_err:
                 import sys as _sys; print(f"[eLo] router failed: {_route_err}", file=_sys.stderr)
 
@@ -3834,18 +3838,10 @@ def _process_turn(raw: str) -> dict:
             except Exception:
                 pass
 
-        # ── WO-070: shadow capture — passive turn logging (non-blocking) ─────────
-        try:
-            from runtime.shadow_capture import record_turn as _sc_record
-            _sc_record(
-                raw_input=raw,
-                elo_raw_gen=response,   # pre-scrub not tracked separately yet
-                elo_final=response,
-                backend_used=backend_used,
-                executed_action=_agent or "",
-            )
-        except Exception:
-            pass  # shadow capture failure MUST NOT affect the response
+        # ── WO-070: shadow capture — moved to after all scrubs (WO-BRAIN-AUTHORS task 1) ──
+        # _elo_raw is captured before scrubs; response is the post-scrub elo_final.
+        # When no scrubs fired, they are identical — that is expected on clean turns.
+        # (Call site moved from pre-scrub to post-scrub so elo_raw_gen != elo_final is measurable)
 
         # ── Update spine session continuity ───────────────────────────────────
         try:
@@ -4313,6 +4309,22 @@ def _process_turn(raw: str) -> dict:
             response = _arg(response)
         except Exception:
             pass
+
+        # ── WO-070: shadow capture — passive turn logging (non-blocking) ─────────
+        # Called here (post-scrub) so elo_raw_gen and elo_final can differ.
+        # elo_raw_gen = model's bytes before _sanitise / mirror scrub / mcg / arg.
+        # elo_final   = what eLo says after all guards. Differs when a scrub fires.
+        try:
+            from runtime.shadow_capture import record_turn as _sc_record
+            _sc_record(
+                raw_input=raw,
+                elo_raw_gen=_elo_raw,
+                elo_final=response,
+                backend_used=backend_used,
+                executed_action=_agent or "",
+            )
+        except Exception:
+            pass  # shadow capture failure MUST NOT affect the response
 
         # ── Multi-bubble split ────────────────────────────────────────────────
         # Split on paragraph breaks → one bubble per paragraph.

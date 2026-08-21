@@ -37,11 +37,22 @@ _logger.addHandler(logging.NullHandler())
 _logger.propagate = False
 
 
-def _json_post(url: str, payload: dict, headers: dict, timeout: float = 30.0) -> dict:
+def _cloud_timeout_s() -> float:
+    """Per-attempt cloud timeout. 2026-08-20: was a hardcoded 30.0, and the pinned chain tries Groq THEN
+    Cerebras THEN Ollama sequentially — so a stalled cloud leg could cost 60s of silence before the local
+    brain was even asked. David's rule: "if it is taking longer than 4s it should figure out a quicker
+    route." Env-tunable; the default now fits inside a single turn budget."""
+    try:
+        return max(1.0, float(os.environ.get("ELO_CLOUD_TIMEOUT_MS", "8000")) / 1000.0)
+    except Exception:
+        return 8.0
+
+
+def _json_post(url: str, payload: dict, headers: dict, timeout: float = None) -> dict:
     """POST JSON to url, return parsed response dict. Raises urllib.error.HTTPError on 4xx/5xx."""
     data = _json.dumps(payload).encode()
     req = _urllib_req.Request(url, data=data, headers=headers, method="POST")
-    with _urllib_req.urlopen(req, timeout=timeout) as resp:
+    with _urllib_req.urlopen(req, timeout=(timeout if timeout is not None else _cloud_timeout_s())) as resp:
         return _json.loads(resp.read().decode())
 
 # ── routing thresholds ─────────────────────────────────────────────────────────
@@ -376,6 +387,209 @@ def _openai_call(system_prompt: str, user_input: str, max_tokens: int = None) ->
                  "Content-Type":  "application/json"},
     )
     return result["choices"][0]["message"]["content"].strip()
+
+
+def _finish(raw: str, action: str, max_sentences: int, backend: str) -> str:
+    """The voice guards, in ONE place, applied identically to EVERY backend.
+
+    2026-08-20 — before this existed, the Groq branch ran normalise -> _strip_trailing_question ->
+    _last_responses[action] = ..., while the Cerebras and Ollama fallback branches ran only normalise and
+    returned. So `_is_duplicate` was never consulted and `_last_responses` was never updated on a
+    fall-through, and eLo repeated himself verbatim on consecutive turns exactly when the weaker backend was
+    answering. (David, live 2026-08-20: "Okay doubling up?")
+
+    Guards and their ORDER are unchanged — they are eLo's voice, not performance code. This only makes them
+    unskippable. Raises ValueError on a duplicate so the caller can try the next backend.
+    """
+    out = normalise(raw, max_sentences)
+    if action in ("build", "celebrate"):
+        out = _strip_trailing_question(out) or out
+    if _is_duplicate(out, _last_responses.get(action, "")):
+        raise ValueError(f"duplicate response from {backend}")
+    _last_responses[action] = out
+    _identity_assert(out, action)  # WO-BRAIN-AUTHORS: detection only, never blocks
+    return out
+
+
+# ── WO-BRAIN-AUTHORS: identity assertion (detection only) ────────────────────
+
+# Patterns that indicate the model is narrating David's state instead of being eLo.
+# This list mirrors the living_presence_spec anti-mirroring rule — update both together.
+_IDENTITY_FAIL_PATTERNS: tuple[str, ...] = (
+    "it feels like you",
+    "i notice you",
+    "i hear you",
+    "i see you",
+    "you mentioned",
+    "you've been",
+    "you seem to be",
+    "it sounds like you",
+    "you said ",
+    "you typed ",
+    "you were feeling",
+    "you were thinking",
+    "you feel ",           # "you feel overwhelmed" — space prevents "how do you feel"
+    "you're still",        # "you're still feeling" — state narration
+    "you're feeling",
+    "you're checking",
+)
+
+
+def _identity_assert(text: str, action: str) -> list[str]:
+    """Detection-only identity assertion.  Returns matched patterns (empty = clean).
+    Logs at WARNING. Does NOT rewrite the response. Does NOT block.
+    v1: pattern-based. Future: voice-state embedding similarity.
+
+    RED when this function is removed: tests/test_brain_authors.py test 3 goes RED.
+    """
+    found = []
+    text_lower = text.lower()
+    for pattern in _IDENTITY_FAIL_PATTERNS:
+        if pattern in text_lower:
+            found.append(pattern)
+    if found:
+        _logger.warning(
+            "identity-assert: action=%s patterns=%s",
+            action, found,
+        )
+    return found
+
+
+# ── WO-BRAIN-AUTHORS: tier-aware routing ─────────────────────────────────────
+
+def _route_by_tier(
+    system_prompt: str,
+    user_input: str,
+    tier: int,
+    action: str,
+    max_sentences: int,
+) -> tuple[str, str] | None:
+    """Try providers in _TIER_PROVIDER_ORDER[tier] order.
+    Returns (text, backend) or None if tier is not mapped or all providers fail.
+
+    ELO_BACKEND is an override — only call this when ELO_BACKEND is NOT set (mode == "auto").
+    Conversational → local-first (Ollama); Reasoning → Groq-first; Deep → OpenAI-first.
+
+    RED when _TIER_PROVIDER_ORDER is removed: tests/test_brain_authors.py test 2 goes RED.
+    """
+    if tier not in _TIER_PROVIDER_ORDER:
+        return None
+    _budget = _token_budget(action, tier)
+    for provider in _TIER_PROVIDER_ORDER[tier]:
+        try:
+            if provider == "ollama" and _ollama_available():
+                raw = _ollama_call(system_prompt, user_input)
+                return _finish(raw, action, max_sentences, "ollama"), f"ollama(tier{tier})"
+            elif provider == "groq" and _groq_available():
+                raw = _groq_call(system_prompt, user_input, max_tokens=_budget)
+                if _has_lore_drift(raw, user_input):
+                    continue
+                return _finish(raw, action, max_sentences, "groq"), f"groq(tier{tier})"
+            elif provider == "openai" and _openai_available():
+                raw = _openai_call(system_prompt, user_input, max_tokens=_budget)
+                if _has_lore_drift(raw, user_input):
+                    continue
+                return _finish(raw, action, max_sentences, "openai"), f"openai(tier{tier})"
+            elif provider == "claude" and _claude_available():
+                raw = _claude_call(system_prompt, user_input, max_tokens=_budget)
+                return _finish(raw, action, max_sentences, "claude"), f"claude(tier{tier})"
+            elif provider == "cerebras" and _cerebras_available():
+                raw = _cerebras_call(system_prompt, user_input, max_tokens=_budget)
+                if _has_lore_drift(raw, user_input):
+                    continue
+                return _finish(raw, action, max_sentences, "cerebras"), f"cerebras(tier{tier})"
+            elif provider == "gemini" and _gemini_available():
+                raw = _gemini_call(system_prompt, user_input)
+                if _has_lore_drift(raw, user_input):
+                    continue
+                return _finish(raw, action, max_sentences, "gemini"), f"gemini(tier{tier})"
+        except ValueError:
+            _logger.debug("Tier routing: duplicate from %s, trying next", provider)
+        except Exception as e:
+            _logger.debug("Tier routing: %s failed: %s", provider, e)
+    return None
+
+
+def _groq_stream(
+    system_prompt: str,
+    user_input: str,
+    max_tokens: int = None,
+    on_first_sentence=None,
+) -> tuple[str, float]:
+    """Stream Groq tokens. Mirrors _openai_stream exactly; same SSE shape (OpenAI-compatible endpoint).
+
+    2026-08-20 — eLo runs ELO_BACKEND=groq, and route_streaming() gated streaming behind
+    `mode in ("auto","cloud")`, so his everyday configuration NEVER streamed: he waited for the whole
+    generation before speaking a word, and on_first_sentence early-TTS never fired.
+
+    stdlib urllib, NOT httpx — WO-032b deliberately removed the SDK/httpx dependency from the Groq path
+    ("zero external dependencies"). That decision is kept.
+
+    Same model, same prompt, same temperature 0.7, same max_tokens as _groq_call. The assembled string is
+    byte-identical to the non-streaming call; only ARRIVAL changes. Nothing of eLo is traded for speed.
+    Returns (full_assembled_text, first_token_latency_ms).
+    """
+    import urllib.request as _ureq, json as _json, time as _t
+    api_key = os.environ.get("GROQ_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("GROQ_API_KEY not set")
+    model = os.environ.get("ELO_GROQ_MODEL", "llama-3.3-70b-versatile")
+    payload = _json.dumps({
+        "model":       model,
+        "stream":      True,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user",   "content": user_input},
+        ],
+        "max_tokens":  max_tokens or 400,
+        "temperature": 0.7,
+    }).encode()
+    req = _ureq.Request(
+        "https://api.groq.com/openai/v1/chat/completions",
+        data=payload,
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        method="POST",
+    )
+    t_start = _t.monotonic()
+    first_token_ms = 0.0
+    buffer, first_sent_fired = [], False
+    # first-token deadline: David's rule — "if it is taking longer than 4s it should figure out a quicker
+    # route". Connect/read timeout is the floor; the caller enforces the wall-clock budget.
+    with _ureq.urlopen(req, timeout=_first_token_budget_s()) as resp:
+        for raw_line in resp:
+            line = raw_line.decode("utf-8", "replace").strip()
+            if not line or not line.startswith("data: "):
+                continue
+            chunk_s = line[6:]
+            if chunk_s.strip() == "[DONE]":
+                break
+            try:
+                delta = _json.loads(chunk_s)["choices"][0]["delta"].get("content", "")
+            except Exception:
+                continue
+            if not delta:
+                continue
+            if not buffer:
+                first_token_ms = (_t.monotonic() - t_start) * 1000
+            buffer.append(delta)
+            if not first_sent_fired and on_first_sentence:
+                assembled = "".join(buffer)
+                m = _SENTENCE_END_RE.search(assembled)
+                if m:
+                    first_sent_fired = True
+                    try:
+                        on_first_sentence(assembled[:m.end()].strip())
+                    except Exception:
+                        pass
+    return "".join(buffer).strip(), first_token_ms
+
+
+def _first_token_budget_s() -> float:
+    """Seconds to wait for a first token before handing off. Env-tunable, never hardcoded downstream."""
+    try:
+        return max(0.5, float(os.environ.get("ELO_FIRST_TOKEN_MS", "2500")) / 1000.0)
+    except Exception:
+        return 2.5
 
 
 def _openai_stream(
@@ -748,19 +962,31 @@ def route(
         if _cerebras_available():
             try:
                 raw = _cerebras_call(system_prompt, user_input, max_tokens=_budget)
-                normalised = normalise(raw, max_sentences)
-                return normalised, "cerebras"
+                # 2026-08-20: was `normalise(...)` then return — skipping _is_duplicate and never updating
+                # _last_responses. _finish() applies the SAME guards the Groq branch already used.
+                return _finish(raw, action, max_sentences, "cerebras"), "cerebras"
             except Exception as e:
                 _logger.warning("Cerebras failed in pinned mode: %s", e)
         # WO-073: Ollama local floor — never drop to mute mock while a local brain is running
         if _ollama_available():
             try:
                 raw = _ollama_call(system_prompt, user_input)
-                normalised = normalise(raw, max_sentences)
-                return normalised, "ollama"
+                # 2026-08-20: same omission as the Cerebras branch above. This is the path David was on when
+                # eLo answered him twice with the same sentence.
+                return _finish(raw, action, max_sentences, "ollama"), "ollama"
             except Exception as e:
                 _logger.warning("Ollama failed in pinned mode: %s", e)
         return _mock_fallback(user_input), "mock"
+
+    # WO-BRAIN-AUTHORS: tier-aware routing — Brain applies the model.
+    # When ELO_BACKEND is NOT set (mode == "auto"), use the Executive's action tier
+    # to choose the provider order from _TIER_PROVIDER_ORDER instead of the static chain.
+    # ELO_BACKEND in .env is an explicit override and wins unconditionally.
+    _derived_tier = tier or _action_default_tier(action)
+    if _derived_tier and not os.environ.get("ELO_BACKEND", ""):
+        _tier_result = _route_by_tier(system_prompt, user_input, _derived_tier, action, max_sentences)
+        if _tier_result is not None:
+            return _tier_result
 
     # auto mode: OpenAI → Gemini → Claude → Groq → Cerebras → Ollama → Mock
     # WO-032: skip OpenAI for the rest of the session once quota is confirmed exceeded
@@ -897,6 +1123,7 @@ def route_streaming(
     Falls back to route() with 0.0 latency if streaming fails or OpenAI unavailable.
     """
     import time as _t
+    global _groq_quota_cooldown_until
     _budget = _token_budget(action, tier=tier)
     _env_mode = os.environ.get("ELO_BACKEND", "")
     _env_mode = _env_mode or "auto"
@@ -927,6 +1154,37 @@ def route_streaming(
             text, backend = route(system_prompt, user_input, mode=mode,
                                   max_sentences=max_sentences, action=action, tier=tier)
             return text, backend, 0.0
+
+    # ── PINNED GROQ — stream it. 2026-08-20 ──────────────────────────────────────────────────
+    # This branch did not exist. `"groq"` is not in ("auto","cloud"), so eLo's everyday configuration fell
+    # straight through to the non-streaming route() below and returned 0.0 latency — which is why
+    # routing_trace.json has always shown "llm_latency_ms": 0.0, and why early-TTS never fired.
+    # Order is unchanged from route(): Groq -> Cerebras -> Ollama -> mock. Same prompts, same guards.
+    if mode == "groq":
+        _in_cd = _groq_quota_cooldown_until and _t.monotonic() < _groq_quota_cooldown_until
+        if _groq_available() and not _in_cd:
+            try:
+                raw, first_ms = _groq_stream(system_prompt, user_input,
+                                             max_tokens=_budget, on_first_sentence=on_first_sentence)
+                if not raw:
+                    raise ValueError("empty stream response")
+                if _has_lore_drift(raw, user_input):
+                    raise ValueError("lore drift")
+                return _finish(raw, action, max_sentences, "groq"), "groq(stream)", first_ms
+            except Exception as _ge:
+                _logger.warning("Groq streaming failed (%s) — handing off", _ge)
+        # Ollama can stream too; _ollama_stream already exists but was reachable only when mode=="local".
+        if _ollama_available():
+            try:
+                raw, first_ms = _ollama_stream(system_prompt, user_input,
+                                               max_tokens=_budget, on_first_sentence=on_first_sentence)
+                if raw and not _has_lore_drift(raw, user_input):
+                    return _finish(raw, action, max_sentences, "ollama"), "ollama(stream)", first_ms
+            except Exception as _oe:
+                _logger.warning("Ollama streaming failed in pinned mode (%s)", _oe)
+        text, backend = route(system_prompt, user_input, mode=mode,
+                              max_sentences=max_sentences, action=action, tier=tier)
+        return text, backend, 0.0
 
     if mode not in ("auto", "cloud") or not _openai_available():
         # Non-streaming path — latency not measured
