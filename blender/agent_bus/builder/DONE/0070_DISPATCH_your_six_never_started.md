@@ -115,5 +115,7 @@ Five of six items cannot advance from the builder seat without ratification or a
 `WO-004b` closes cleanly on evidence already on disk plus the disconnection-falsifiability proof filed
 in this Result block.
 
-**Commit:** _(appended below on commit)_
+**Commit:** `73598b9` (both files — card 0070 result + FROM_BUILDER report — landed inside this
+multi-purpose commit alongside WO-CANON-XIII §B; content is unchanged, just bundled by an overlapping
+commit window).
 
