@@ -160,6 +160,9 @@ class CognitiveState:
     working_memory:       object = None       # WorkingMemory | None — frozen, updated top-of-turn
     attention_state:      object = None       # AttentionState | None — competition result
 
+    # ── Temporal Cognition Faculty (WO-CANON-XXV) ────────────────────────────
+    temporal_frame:       object = None       # TemporalOutput | None — frozen, assembled top-of-turn
+
     # ── Assembly Confidence ───────────────────────────────────────────────────
     assembly_confidence:  float = 1.0         # 0.0 if faculties partially failed
 

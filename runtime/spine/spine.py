@@ -605,6 +605,21 @@ def run(
     # ── WO-CANON-VI: Store frozen WorkingMemory on plan ───────────────────────
     plan.working_memory = _wm
 
+    # ── WO-CANON-XXV: Temporal Cognition Faculty ─────────────────────────────
+    _temporal_frame = None
+    try:
+        from faculties.temporal import compute as _temporal_compute
+        _last_ts = getattr(_world, "last_interaction_ts", 0.0) if _world else 0.0
+        _idle_s  = getattr(_world, "idle_seconds", 0.0) if _world else 0.0
+        _temporal_frame = _temporal_compute(
+            world_state=_world,
+            last_interaction_ts=_last_ts,
+            idle_seconds=_idle_s,
+        )
+    except Exception as _tf_err:
+        _log.warning("temporal_faculty FAILED: %s", _tf_err)
+    plan.temporal_frame = _temporal_frame
+
     # ── v1.5 Executive Faculty enrichment (relationship + emotional vector) ───
     try:
         from runtime.spine.executive_faculty import enrich

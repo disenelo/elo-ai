@@ -203,15 +203,18 @@ except Exception as e:
     fail("Ch.1/FT-3", e)
 
 
-# ── Ch.1/ST-6: expires always True ───────────────────────────────────────────
+# ── Ch.1/ST-6: expires is float timestamp (now_ts + _TURN_TTL), never bool ───
+# WO-CANON-XXV reopened: bool contract was wrong — expires is a perishable timestamp.
 try:
     assert _import_ok
     out = compute(_World())
-    assert out.expires is True
-    assert out.temporal_state.expires is True
-    assert out.future_frame.expires is True
-    assert out.retrospection.expires is True
-    ok("Ch.1/ST-6: expires=True on all slices (perishable per turn)")
+    assert isinstance(out.expires, float), f"TemporalOutput.expires is {type(out.expires)}"
+    assert out.expires > 0, f"TemporalOutput.expires={out.expires} not > 0"
+    assert isinstance(out.temporal_state.expires, float), "temporal_state.expires not float"
+    assert out.temporal_state.expires > 0, f"temporal_state.expires={out.temporal_state.expires}"
+    assert isinstance(out.future_frame.expires, float), "future_frame.expires not float"
+    assert isinstance(out.retrospection.expires, float), "retrospection.expires not float"
+    ok("Ch.1/ST-6: expires is float > 0 on all slices (perishable timestamp, not bool)")
 except AssertionError as e:
     fail("Ch.1/ST-6", e)
 except Exception as e:
@@ -371,6 +374,222 @@ except py_compile.PyCompileError as e:
     fail("AT-10", e)
 except Exception as e:
     fail("AT-10", e)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WO-CANON-XXV REOPENED: Wiring Tests (WT), Envelope Tests (ET),
+# Lifecycle Tests (LT), Anticipation Tests (AT-new), Cadence Tests (CT),
+# Thread Tests (XXI)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── WT-1: at least one non-test module imports faculties.temporal ─────────────
+try:
+    import ast, pathlib
+    _search_dirs = [
+        pathlib.Path("runtime"),
+        pathlib.Path("faculties"),
+        pathlib.Path("ambient"),
+    ]
+    _found = False
+    for _sd in _search_dirs:
+        for _py in _sd.rglob("*.py"):
+            if "test" in _py.name:
+                continue
+            try:
+                _src = _py.read_text()
+                if "faculties.temporal" in _src or "from faculties import temporal" in _src:
+                    _found = True
+                    break
+            except Exception:
+                pass
+        if _found:
+            break
+    # Also check server.py
+    if not _found:
+        for _srv in pathlib.Path(".").glob("server.py"):
+            if "faculties.temporal" in _srv.read_text():
+                _found = True
+    assert _found, "no non-test module under runtime/faculties/ambient or server.py imports faculties.temporal"
+    ok("WT-1: faculties.temporal imported by a non-test production module")
+except AssertionError as e:
+    fail("WT-1", e)
+except Exception as e:
+    fail("WT-1", e)
+
+
+# ── WT-2: spine.py calls temporal compute() somewhere in its source ───────────
+try:
+    import pathlib
+    _spine = pathlib.Path("runtime/spine/spine.py").read_text()
+    assert "temporal_compute" in _spine or "faculties.temporal" in _spine, \
+        "spine.py has no reference to temporal compute"
+    ok("WT-2: spine.py references temporal faculty compute")
+except AssertionError as e:
+    fail("WT-2", e)
+except Exception as e:
+    fail("WT-2", e)
+
+
+# ── WT-3: ambient_engine consults temporal_appropriateness ────────────────────
+try:
+    import pathlib
+    _ae = pathlib.Path("ambient/ambient_engine.py").read_text()
+    assert "temporal_appropriateness" in _ae, \
+        "ambient_engine.py does not call temporal_appropriateness"
+    ok("WT-3: ambient_engine.py calls temporal_appropriateness")
+except AssertionError as e:
+    fail("WT-3", e)
+except Exception as e:
+    fail("WT-3", e)
+
+
+# ── ET-1: TemporalOutput has all Vol V CONTRACTS §2 envelope fields ───────────
+try:
+    assert _import_ok
+    out = compute(_World())
+    assert hasattr(out, "sender"),      "missing: sender"
+    assert hasattr(out, "receiver"),    "missing: receiver"
+    assert hasattr(out, "priority"),    "missing: priority"
+    assert hasattr(out, "payload_type"),"missing: payload_type"
+    assert hasattr(out, "confidence"),  "missing: confidence"
+    assert hasattr(out, "expires"),     "missing: expires"
+    assert hasattr(out, "trace"),       "missing: trace"
+    assert hasattr(out, "memory_instruction_store"), "missing: memory_instruction_store"
+    assert out.sender == "TemporalCognitionFaculty", f"sender={out.sender!r}"
+    assert out.memory_instruction_store is False, "memory_instruction_store must be False"
+    assert len(out.trace) > 0, "trace must be non-empty"
+    ok("ET-1: TemporalOutput carries full Vol V CONTRACTS §2 envelope")
+except AssertionError as e:
+    fail("ET-1", e)
+except Exception as e:
+    fail("ET-1", e)
+
+
+# ── ET-2: expires is float, not bool, on all three slices ────────────────────
+try:
+    assert _import_ok
+    out = compute(_World())
+    assert isinstance(out.expires, float) and not isinstance(out.expires, bool), \
+        f"TemporalOutput.expires type={type(out.expires)}"
+    assert isinstance(out.temporal_state.expires, float) and not isinstance(out.temporal_state.expires, bool), \
+        "temporal_state.expires is bool"
+    assert isinstance(out.future_frame.expires, float) and not isinstance(out.future_frame.expires, bool), \
+        "future_frame.expires is bool"
+    assert isinstance(out.retrospection.expires, float) and not isinstance(out.retrospection.expires, bool), \
+        "retrospection.expires is bool"
+    ok("ET-2: expires is float (timestamp) not bool on all slices")
+except AssertionError as e:
+    fail("ET-2", e)
+except Exception as e:
+    fail("ET-2", e)
+
+
+# ── LT-1: compute() enters ERROR_RECOVERY lifecycle state on fault ────────────
+try:
+    from faculties.temporal.faculty import get_lifecycle_state
+    import faculties.temporal.faculty as _tf
+    # Trigger a fault by corrupting world_state (non-object that causes attribute errors)
+    class _BadWorld:
+        @property
+        def time(self):
+            raise RuntimeError("injected fault")
+    _prev = _tf._faculty_lifecycle
+    try:
+        _out = compute(_BadWorld())
+    except Exception:
+        pass  # compute() must not re-raise; if it did this test would catch it
+    # After a fault, lifecycle should have passed through ERROR_RECOVERY
+    # (it resets to ACTIVE at end, but _FAULT_TEMPORAL.expires == 0.0 proves fault path ran)
+    assert _out.temporal_state.expires == 0.0, \
+        f"fault path not taken: temporal_state.expires={_out.temporal_state.expires}"
+    ok("LT-1: fault path produces temporal_state.expires==0.0 (ERROR_RECOVERY path triggered)")
+except AssertionError as e:
+    fail("LT-1", e)
+except Exception as e:
+    fail("LT-1", e)
+
+
+# ── AT-new-1: Anticipation with empty statement is dropped ───────────────────
+try:
+    from faculties.temporal.faculty import Anticipation
+    _baseless = Anticipation(statement="", basis="", confidence=0.0)
+    assert _baseless.statement == "", "fixture: statement must be empty"
+    assert _baseless.confidence == 0.0, "fixture: confidence must be 0.0"
+    # The build function should not include a zero-confidence empty anticipation in the frame
+    class _WorldWithAgentic(_World):
+        def __init__(self):
+            super().__init__()
+            self.agentic = type("A", (), {"next_event": None, "deadlines": [], "active_goals": []})()
+    out = compute(_WorldWithAgentic())
+    for ant in out.future_frame.anticipations:
+        assert ant.statement != "", f"empty-statement Anticipation leaked into output: {ant}"
+    ok("AT-new-1: baseless / empty-statement Anticipation not included in FutureFrame")
+except AssertionError as e:
+    fail("AT-new-1", e)
+except Exception as e:
+    fail("AT-new-1", e)
+
+
+# ── AT-new-2: PlanningHorizon is a lens over Agency tiers, not a second enum ─
+try:
+    from faculties.temporal.faculty import PlanningHorizon
+    # PlanningHorizon must NOT define its own tier values — it reads Agency's
+    h = PlanningHorizon(tier="short_term", priority="normal", nearest_deadline=None)
+    assert h.tier == "short_term"
+    # Must not have a nested Enum attribute
+    import inspect
+    for _name, _val in inspect.getmembers(PlanningHorizon):
+        if isinstance(_val, type) and issubclass(_val, __import__("enum").Enum):
+            raise AssertionError(f"PlanningHorizon defines its own Enum: {_name}")
+    ok("AT-new-2: PlanningHorizon is a plain dataclass lens, no second tier enum")
+except AssertionError as e:
+    fail("AT-new-2", e)
+except Exception as e:
+    fail("AT-new-2", e)
+
+
+# ── CT-1: stated cadence outranks learned ────────────────────────────────────
+try:
+    from faculties.temporal.faculty import (
+        set_stated_cadence, effective_cadence,
+    )
+    import faculties.temporal.faculty as _tf
+    _tf._stated_cadence = ""
+    _tf._learned_cadence = "slow_build"
+    assert effective_cadence() == "slow_build", "learned cadence not returned when stated absent"
+    set_stated_cadence("sprint")
+    assert effective_cadence() == "sprint", "stated cadence did not outrank learned"
+    # Cleanup
+    _tf._stated_cadence = ""
+    _tf._learned_cadence = ""
+    ok("CT-1: stated cadence outranks learned cadence")
+except AssertionError as e:
+    fail("CT-1", e)
+except Exception as e:
+    fail("CT-1", e)
+
+
+# ── XXI-1: retrospect() reads IdentityState, returns thread_arc, gaps stated ─
+try:
+    assert _import_ok
+    out = compute(_World())
+    ret = out.retrospection
+    # thread_arc is a string (may be empty if continuity unavailable in test env)
+    assert isinstance(ret.thread_arc, str), f"thread_arc is {type(ret.thread_arc)}"
+    # window is a string
+    assert isinstance(ret.window, str), f"window is {type(ret.window)}"
+    # gaps are honest strings, none fabricated (each gap must be a non-empty string)
+    for g in ret.gaps:
+        assert isinstance(g, str) and len(g) > 0, f"gap is empty or not string: {g!r}"
+    # memory_instruction_store must be False — never writes LTM
+    assert ret.memory_instruction_store is False, "retrospection must not write LTM"
+    # autobiography_path is a string
+    assert isinstance(ret.autobiography_path, str)
+    ok("XXI-1: retrospection has thread_arc+window strings, honest gaps, no LTM write")
+except AssertionError as e:
+    fail("XXI-1", e)
+except Exception as e:
+    fail("XXI-1", e)
 
 
 # ── Final summary ─────────────────────────────────────────────────────────────

@@ -503,22 +503,32 @@ def _run(unity_present: bool) -> None:
         if not _is_away():
             if _last_ambient > 0:
                 if now - _last_ambient >= random.uniform(_AMBIENT_MIN, _AMBIENT_MAX) and not _is_speaking():
-                    # WO-066: prefer brain-backed callback; fall back to static pool.
-                    if _ambient_cb is not None:
-                        threading.Thread(target=_ambient_cb, daemon=True).start()
+                    # WO-CANON-XXV: check temporal appropriateness before firing.
+                    try:
+                        from faculties.temporal import temporal_appropriateness as _temporal_ok
+                        _tap = _temporal_ok("idle_utterance")
+                    except Exception:
+                        _tap = {"allow": True, "reason": ""}
+                    if not _tap.get("allow", True):
+                        # quiet hours — skip this tick, retard timer slightly to reduce re-checks
+                        _last_ambient = now - _AMBIENT_MAX + 60
                     else:
-                        # 30% chance: draw from quirk bank if it has content
-                        line = None
-                        if random.random() < 0.30:
-                            try:
-                                from memory.quirk_bank import draw as _quirk_draw
-                                drawn = _quirk_draw(1)
-                                if drawn:
-                                    line = drawn[0]
-                            except Exception:
-                                pass
-                        _speak(line or random.choice(_AMBIENT_LINES))
-                    _last_ambient = now
+                        # WO-066: prefer brain-backed callback; fall back to static pool.
+                        if _ambient_cb is not None:
+                            threading.Thread(target=_ambient_cb, daemon=True).start()
+                        else:
+                            # 30% chance: draw from quirk bank if it has content
+                            line = None
+                            if random.random() < 0.30:
+                                try:
+                                    from memory.quirk_bank import draw as _quirk_draw
+                                    drawn = _quirk_draw(1)
+                                    if drawn:
+                                        line = drawn[0]
+                                except Exception:
+                                    pass
+                            _speak(line or random.choice(_AMBIENT_LINES))
+                        _last_ambient = now
             elif _greeted:
                 _last_ambient = now
 
