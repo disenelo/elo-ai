@@ -241,6 +241,45 @@ def _executive_faculty(
     except Exception as _lr_err:
         _log.debug("lesson recall failed (non-critical): %s", _lr_err)
 
+    # ── LOOP-7 / ADR-Exec-005 D6: the Executive ASKS the Learning Faculty ──────
+    # David 2026-08-21: "why is this still there?" — because nobody had built it.
+    # D6 (ratified David L3 2026-08-06): "a Learning Faculty — a faculty the Executive
+    # ASKS, like any other ... never inside the Executive."
+    # It ADVISES on action preference only (D4). It never returns truth, never returns
+    # speech permission, never decides. executive.py stays FROZEN and untouched.
+    _learning_advice = None
+    try:
+        from faculties.learning import consult as _learn_consult
+        _learning_advice = _learn_consult(
+            lessons=_recalled_lessons,
+            candidate_action="",          # asked before the action is chosen — advice, not override
+            context={"intent": _attention_in.get("intent", ""),
+                     "focal_thread": getattr(cognitive_state, "focal_thread", "") if cognitive_state else ""},
+        )
+        if _learning_advice and _learning_advice.preferences:
+            _log.info("LOOP-7 learning advice: %s", _learning_advice.rationale)
+    except Exception as _lf_err:
+        _log.debug("learning faculty consult failed (non-critical): %s", _lf_err)
+
+    # LOOP-7: hand the advice to the Executive on the channel it already reads.
+    # It ASKS — this is the answer waiting for it. ADR-Exec-005 D6.
+    if _learning_advice is not None:
+        _attention_in["learning_advice"] = _learning_advice.as_dict()
+
+    # WO-117 SELF-INTERPRET (card 0083): eLo reads his own record and says something
+    # true about himself — assembly, not invention. ADR-Exec-005 D1: every claim
+    # carries the count it came from. CT4V-03: reads only, never writes EloSelfState.
+    _self_interpretation = None
+    try:
+        from self.elo_self_model import load as _load_self_state
+        from runtime.self_interpret import interpret as _self_interpret
+        _elo_self_state = _load_self_state()
+        _self_interpretation = _self_interpret(_elo_self_state)
+        if _self_interpretation and not _self_interpretation.is_empty():
+            _log.info("WO-117 self-interpret: %s", _self_interpretation.text[:120])
+    except Exception as _si_err:
+        _log.debug("self_interpret failed (non-critical): %s", _si_err)
+
     try:
         from runtime.executive_context import build_executive_context as _build_ec
         _ec = _build_ec(
@@ -718,6 +757,8 @@ def run(
     except Exception as _tf_err:
         _log.warning("temporal_faculty FAILED: %s", _tf_err)
     plan.temporal_frame = _temporal_frame
+    # ── WO-117 SELF-INTERPRET: pin to plan (observable by card 0083 test) ───────
+    plan.self_interpretation = _self_interpretation.as_dict() if _self_interpretation else None
 
     # ── v1.5 Executive Faculty enrichment (relationship + emotional vector) ───
     try:
