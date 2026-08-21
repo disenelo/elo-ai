@@ -38,7 +38,7 @@ generators; Ch.3 evaluation + dream integration (`IT-1 Full creative loop`).
 - Nothing publishes. Outward-facing output stops at `03_ready/`.
 
 ## Result
-- commit: <pending>
+- commit: 8ff4a6f
 - test: `tests/test_0073_creative_intelligence.py` → 9 passed, 0 failed
 - **caller (file+line):** `tools/creative_drop_runner.py:65` (`process_drop` → `run_creative_loop(..., executive_select_fn=executive_select)`). Trigger: file in `Output/DROP/<campaign>/00_inbox/`. Observable: Executive-selected metaphor written to `03_ready/<slug>.md` (never publishes).
 - **exercised on:** real drop `Output/DROP/kickstarter_build_in_public/00_inbox/2026-08-21_hero_moon_plushie.md` → observable at `Output/DROP/kickstarter_build_in_public/03_ready/kickstarter_hero_plushie_of_the_moon_phase_garden_book.md` (metaphor: *"Garden in a book — presence for 'kickstarter hero — plushie of the moon phase'"*, epistemic_status=imagined, sig.overall=0.280).
