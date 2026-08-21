@@ -7,6 +7,7 @@ owner: David Charles
 architect: Claude (Lead Architect)
 source: "Cognitive Plan Architecture (19_*) Layer 4 + Consolidation + live code (memory/*)"
 implementation: PARTIAL (tiered vault + facts + consolidation faculty + forgetting curve LIVE via WO-011; single logical Memory Faculty / candidate submission + reinforce-on-retrieval PENDING)
+Provenance: [ENGINEERING][CREATIVE]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_VIII/
 dependencies:

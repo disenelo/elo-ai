@@ -7,6 +7,7 @@ owner: David Charles
 architect: Claude (Architecture Agent)
 source: "Canonicalised from ChatGPT brain/dream design chat (2026-07-26) + live code"
 implementation: PARTIAL (faculties/dream/ live: cycle, symbol engine, phases, trigger, wake, journal; DeepDream image + consolidation-reinforce wire + creative-spark emit + Executive-invoked entry PENDING)
+Provenance: [CREATIVE]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_IX/
 dependencies:

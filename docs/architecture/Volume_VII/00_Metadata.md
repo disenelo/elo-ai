@@ -11,6 +11,7 @@ source: >
   _intake/SOURCE_2026-08-10_brain_body_brain_loop.md (VERBATIM) +
   SITUATED_SELF_v1_assembly.md + CANON_RULINGS_2026-08-10.md (Ruling C)
 implementation: PARTIAL (runtime/executive.py live + FROZEN; the_moment.py + decision_journal.py live; assembly ORDER and dual-intent queue PENDING; live branch order + ingress boundary CANONIZED 2026-08-21 via card 0074)
+Provenance: [ENGINEERING]
 audit_status: POSITION_STATED (branch order + ingress boundary canonized 2026-08-21 in Ch.1 §1.3.1/§1.3.2/§1.6.1; L3 ratification pending David per card 0074 DOD; behaviour changes remain separate ruled cards)
 canonical_path: docs/architecture/Volume_VII/
 dependencies:

@@ -9,6 +9,7 @@ implementation: PENDING — principles are not yet a typed object (verified 2026
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_II/
 tier: FOUNDATION
+Provenance: [ENGINEERING][CREATIVE]
 origin_text: docs/architecture/17_cognitive_principles.md (189 lines, v1.0, 2026-07-05 — David Charles · Claude · Systems Architect Agent)
 dependencies:
   - docs/architecture/17_cognitive_principles.md (ORIGIN TEXT — cited and expanded, never replaced)

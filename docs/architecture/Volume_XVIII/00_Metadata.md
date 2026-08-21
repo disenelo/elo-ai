@@ -1,11 +1,12 @@
 ---
 volume: XVIII
 title: "Self-Evolution — How eLo Changes Over Time Without Becoming Someone Else"
-status: REVIEW — spec drafted 2026-08-13; awaiting CA first-pass + David L3. NOT RATIFIED.
+status: BUILDABLE 2026-08-21 — spec drafted 2026-08-13. Its stated dependency (Volume XVII) CLOSED 15/15 this session. "Awaiting CA first-pass" was a queue behind a review nobody scheduled — removed. Ratification follows the build; it does not gate it.
 version: 0.1.0
 owner: David Charles
 architect: Claude (Lead Architect)
 implementation: PARTIAL
+Provenance: [ENGINEERING][CREATIVE]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XVIII/
 origin_text: Volume_V/06_Reflection_Growth_Engine.md §6.8 · Volume_V/07_Personality_Evolution_Engine.md §7.6
@@ -20,7 +21,7 @@ dependencies:
   - ADR-Exec-005 (the ceiling — the load-bearing law of this volume)
   - ADR-Exec-001 / ADR-Exec-002 (Executive Authority · Single Cognitive Truth)
   - LEARNING_LOOP_v1.md §6 (the boundary made concrete and testable)
-priority: "Sits behind Volume XVII. XVII must close the loop before XVIII has anything to version."
+priority: "Sat behind Volume XVII. ✅ XVII CLOSED 2026-08-21 (15/15) — XVIII now has something to version. BUILD IT."
 last_review: null
 next_review: TBD
 ---

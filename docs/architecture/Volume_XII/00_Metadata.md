@@ -7,6 +7,7 @@ owner: David Charles
 architect: Claude (Lead Architect)
 source: "Cognitive Plan Architecture (19_*) Layer 2 + live code"
 implementation: PARTIAL (sensors + fidelity rail live; unified Perception Faculty + World-State wiring pending)
+Provenance: [ENGINEERING][CREATIVE]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XII/
 dependencies:

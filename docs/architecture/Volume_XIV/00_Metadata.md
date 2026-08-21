@@ -9,6 +9,7 @@ implementation: LIVE — plugins/ (registry.py · base.py · anthropic · local_
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XIV/
 tier: EXPANSION
+Provenance: [ENGINEERING]
 origin_text: docs/plugin_system.md (260 lines, "Version 1.0 · Status: Active")
 source: "ARCHITECTURE_BIBLE.md v1.0 (David Charles) — XIV scope"
 dependencies:

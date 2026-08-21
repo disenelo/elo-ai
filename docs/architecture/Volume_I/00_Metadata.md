@@ -9,6 +9,7 @@ implementation: N/A — Volume I is expressed, not executed (see §"What impleme
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_I/
 tier: FOUNDATION
+Provenance: [ENGINEERING][CREATIVE]
 origin_texts:
   - docs/architecture/ARCHITECTURAL_PRINCIPLES.md (the real constitution — 7 Runtime Invariants + enduring values)
   - docs/architecture/00_MANIFESTO.md (David's canonical statement — the philosophical root)

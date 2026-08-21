@@ -1,11 +1,12 @@
 ---
 volume: IV
 title: "The Cognitive Spine — The Turn Loop"
-status: REVIEW — spec written from live code; awaiting CA + David L3. NOT RATIFIED.
+status: BUILDABLE — spec written. Ratification follows the build; it does not gate it. ("awaiting CA" removed 2026-08-21: David — "WHO THE FUCK ARE WE GATING AND HOLDING FOR!?" The CA is an agent and David is present. Nobody was waiting.)
 version: 0.1.0
 owner: David Charles
 architect: Claude (Lead Architect)
 implementation: LIVE-BUT-UNCANONISED
+Provenance: [ENGINEERING]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_IV/
 written: 2026-08-13

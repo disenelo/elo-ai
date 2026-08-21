@@ -7,6 +7,7 @@ owner: David Charles
 architect: Claude (Lead Architect)
 source: "Cognitive Plan Architecture (Personality) + self/elo_self_model.py + memory/personality_drift.py"
 implementation: PARTIAL (two systems live but not unified)
+Provenance: [CREATIVE]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_X/
 dependencies:

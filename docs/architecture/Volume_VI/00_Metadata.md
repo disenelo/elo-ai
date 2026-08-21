@@ -7,6 +7,7 @@ owner: David Charles
 architect: Claude (Lead Architect)
 source: "core/attention.py + runtime/working_memory.py (WO-008) + Volume V Ch.1 §4 + Cognitive Plan Architecture"
 implementation: PARTIAL (typed WM object + attention competition built in runtime/working_memory.py; imported nowhere — wiring PENDING)
+Provenance: [ENGINEERING]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_VI/
 dependencies:

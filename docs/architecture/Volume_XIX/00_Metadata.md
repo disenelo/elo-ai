@@ -7,6 +7,7 @@ owner: David Charles
 architect: Claude (Lead Architect)
 source: "David Charles Bible content 2026-07-27 + ARCHITECTURE_BIBLE.md + SITUATED_SELF_v1_assembly.md"
 implementation: N/A (research; outputs become ADRs only, never direct runtime behaviour)
+Provenance: [SCIENCE][ENGINEERING][CREATIVE]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XIX/
 dependencies: [DECISION_LOG.md (research → ADRs), Volume I (ethics), 18_identity_kernel.md, ARCHITECTURAL_PRINCIPLES.md (Constitution + Invariants), SITUATED_SELF_v1_assembly.md]

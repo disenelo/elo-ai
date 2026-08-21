@@ -9,6 +9,7 @@ source: "ARCHITECTURE_BIBLE.md v1.0 (David Charles)"
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XXIV/
 tier: GOVERNANCE
+Provenance: [ENGINEERING][CREATIVE]
 last_review: 2026-08-10
 ---
 
@@ -39,4 +40,4 @@ evidence · citation · reasoning support.
 
 **Status: REVIEW** — all three deep chapters drafted READY FOR REVIEW; scope locked; pairs
 closely with Vol VIII Memory. Blocking decision for CA/David: canonical world graph
-(`relationships/` vs `identity/`), Ch.1 §1.6. Not RATIFIED — awaiting review.
+(`relationships/` vs `identity/`), Ch.1 §1.6. Not yet ratified — build proceeds.

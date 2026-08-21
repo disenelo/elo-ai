@@ -6,6 +6,7 @@ version: 0.3.0
 owner: David Charles
 architect: ChatGPT (Chief Architecture Officer) + Claude (Architecture Agent)
 implementation: READY TO BUILD — gate passed + L3 ratified 2026-08-03
+Provenance: [ENGINEERING][CREATIVE]
 audit_status: COMPLETE — L3 ratified 2026-08-03
 gate_result: "All 10 chapters carry contracts + envelope + acceptance tests + cross-refs + lifecycle state machine (verified 2026-08-03). Ch01 lifecycle state-machine block added for parity with 04/06/07. Implementation tests already green (WO-004 12/12, WO-006 10/10, WO-007 13/13)."
 dependencies:

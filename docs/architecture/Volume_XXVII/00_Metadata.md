@@ -9,6 +9,7 @@ source: "ARCHITECTURE_BIBLE.md v1.0 (David Charles)"
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XXVII/
 tier: GOVERNANCE (the constitution of the Canon)
+Provenance: [ENGINEERING]
 last_review: 2026-08-10
 ---
 

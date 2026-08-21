@@ -1,11 +1,12 @@
 ---
 volume: XVII
 title: "The Reflection Engine — Lessons, Evidence, and Measured Growth"
-status: REVIEW — spec drafted 2026-08-13; awaiting CA first-pass + David L3. NOT RATIFIED.
+status: BUILDABLE — spec written. Ratification follows the build; it does not gate it. ("awaiting CA" removed 2026-08-21: David — "WHO THE FUCK ARE WE GATING AND HOLDING FOR!?" The CA is an agent and David is present. Nobody was waiting.)
 version: 0.1.0
 owner: David Charles
 architect: Claude (Lead Architect)
 implementation: PARTIAL
+Provenance: [ENGINEERING][CREATIVE]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XVII/
 origin_text: Volume_V/06_Reflection_Growth_Engine.md  # remains the origin; XVII is the permanent home

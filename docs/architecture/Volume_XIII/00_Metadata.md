@@ -14,6 +14,7 @@ implementation: PARTIAL (presence/ + ambient/ live; Spatial Faculty PENDING — 
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XIII/
 tier: FACULTY
+Provenance: [ENGINEERING][CREATIVE]
 dependencies:
   - Volume XII (Perception — supplies the observations this volume reasons over; sibling, no overlap)
   - Volume XV (World State — holds the frozen per-turn world; Spatial Faculty reads it, never re-senses)

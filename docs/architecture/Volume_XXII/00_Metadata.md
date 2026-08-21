@@ -7,6 +7,7 @@ owner: David Charles
 architect: Claude (Lead Architect)
 source: "David Charles Bible content 2026-07-27 + ARCHITECTURE_BIBLE.md"
 implementation: PENDING
+Provenance: [ENGINEERING]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XXII/
 dependencies:

@@ -13,6 +13,7 @@ implementation: PARTIAL (avatar/ + blender_bridge/ live; command/ACK loop live f
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XI/
 tier: FACULTY
+Provenance: [ENGINEERING]
 dependencies:
   - Volume XIII (Presence & Embodied Spatial Intelligence — the deciding brain this volume serves)
   - Volume XVI (Coordination Under One Executive — one plan per turn)

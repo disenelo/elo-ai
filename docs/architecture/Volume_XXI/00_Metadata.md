@@ -1,11 +1,12 @@
 ---
 volume: XXI
 title: "Narrative Identity Engine"
-status: REVIEW — spec complete; awaiting CA + David L3 (flipped 2026-08-10)
+status: BUILDABLE — spec written. Ratification follows the build; it does not gate it. ("awaiting CA" removed 2026-08-21: David — "WHO THE FUCK ARE WE GATING AND HOLDING FOR!?" The CA is an agent and David is present. Nobody was waiting.)
 version: 0.1.0
 owner: David Charles
 architect: Claude (Lead Architect)
 implementation: PENDING
+Provenance: [ENGINEERING][CREATIVE]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XXI/
 dependencies:

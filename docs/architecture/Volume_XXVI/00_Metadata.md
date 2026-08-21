@@ -9,6 +9,7 @@ source: "ARCHITECTURE_BIBLE.md v1.0 (David Charles)"
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XXVI/
 tier: GOVERNANCE
+Provenance: [CREATIVE]
 last_review: 2026-08-10
 ---
 
@@ -55,4 +56,4 @@ symbolic synthesis · integration with the Dream Faculty.
 Honors One Brain (creativity is eLo's, via the Executive) · Verified Speech (imagined vs asserted,
 `epistemic_status: imagined`) · creative evaluation in the loop. David's aesthetic direction
 governs via the `AestheticProfile`; the architecture carries his taste — it does not invent it
-(see D-XXVI-A). Nothing here is RATIFIED — awaiting CA/David review.
+(see D-XXVI-A). Not yet ratified. **Ratification follows the build, it does not gate it.**

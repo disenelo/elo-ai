@@ -4,6 +4,7 @@
 **Author:** David Charles · **Captured / reconciled by:** Lead / Chief Co-Architect (Claude) · **2026-07-29**
 **Status: CANONICAL — companion to `00_MANIFESTO.md`.** The Manifesto is the *what & why* (the vision);
 this is the *how we stay disciplined* (methodology + provenance). Same philosophy, one granularity down.
+**Provenance:** [SCIENCE][ENGINEERING][CREATIVE]
 
 > **Explore. Connect. Understand. Create. Continue.** eLo is a persistent creative intelligence — a
 > collaborator, not a tool — built to make **meaning from experience**. Central design question:

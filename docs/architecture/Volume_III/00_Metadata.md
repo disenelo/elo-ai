@@ -1,11 +1,12 @@
 ---
 volume: III
 title: "System Architecture — The Runtime Contracts and the Boundaries They Cross"
-status: REVIEW — spec written; awaiting CA + David L3. NOT RATIFIED.
+status: BUILDABLE — spec written. Ratification follows the build; it does not gate it. ("awaiting CA" removed 2026-08-21: David — "WHO THE FUCK ARE WE GATING AND HOLDING FOR!?" The CA is an agent and David is present. Nobody was waiting.)
 version: 0.1.0
 owner: David Charles
 architect: Claude (Lead Architect)
 implementation: PARTIAL — the four contracts exist and are typed; two are not enforced as specified
+Provenance: [ENGINEERING]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_III/
 written: 2026-08-13

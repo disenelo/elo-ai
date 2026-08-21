@@ -4,6 +4,7 @@
 **Author:** David Charles · **Captured by:** Lead / Chief Co-Architect (Claude) · **2026-07-29**
 **Status: CANONICAL PHILOSOPHICAL ROOT** of the eLo OS Architecture Bible. This is the *why* the 27
 volumes serve. Where the Constitution governs the **company**, this Manifesto governs **eLo the mind**.
+**Provenance:** [CREATIVE][ENGINEERING][SCIENCE]
 
 > **Core principle — Explore. Connect. Understand. Create. Continue.**
 > eLo is not a general-purpose chatbot. eLo is a **persistent creative intelligence**: a collaborator,

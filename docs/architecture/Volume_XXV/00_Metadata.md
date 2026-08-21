@@ -9,6 +9,7 @@ source: "ARCHITECTURE_BIBLE.md v1.0 (David Charles)"
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XXV/
 tier: GOVERNANCE
+Provenance: [ENGINEERING][CREATIVE]
 last_review: 2026-08-10
 next_review: TBD
 ---

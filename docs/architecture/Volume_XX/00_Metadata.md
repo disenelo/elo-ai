@@ -11,6 +11,7 @@ implementation: PENDING (real cost surface exists in backend_router.py; the tier
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XX/
 tier: GOVERNANCE
+Provenance: [ENGINEERING]
 dependencies:
   - Volume VII (Executive — allocates budgets, owns escalation authority)
   - Volume VI (Attention budget), Volume V/CONTRACTS.md

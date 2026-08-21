@@ -241,3 +241,57 @@ Open: 5 unnamed volumes need titles/scope
 READY FOR REVIEW
 
 > **Planned faculty:** Spatial Faculty (desktop/world navigation, body-fit, path planning; Executive asks "how do I get there?") — agreed architecture for WO-049 Track B; authored as a Volume-V faculty chapter when scheduled (post-Presentable v1). — 2026-08-04
+
+---
+
+## PROVENANCE REGISTER — WO-PRIN-1 (Architect, 2026-08-21)
+
+**Scheme:** `01_PRINCIPLES.md` §Validation Philosophy —
+> *"every component is traceable to one origin — `[SCIENCE]` (neuroscience/psychology) · `[ENGINEERING]`
+> (system-design decision) · `[CREATIVE]` (intentional choice for eLo). Recommend each Volume/faculty
+> carries this tag **so future editors never mistake a chosen value for an empirical claim.**"*
+
+**`[DECLARED]` — applied to all Volume metadata headers + the two philosophical roots (2026-08-21, WO-PRIN-1).**
+Method: term-frequency over each volume's full chapter text against the three origin vocabularies, tagged
+where a class holds ≥22% of the signal. **A volume author overriding a tag is correct and expected —
+this register reflects what was applied, not a final ruling.**
+
+🔴 **The finding this exposes is the point of the exercise:**
+**Only Volume XIX carries meaningful `[SCIENCE]` signal.** Across the other 27 volumes the empirical
+signal is effectively zero — they are **engineering decisions and creative choices**. That is legitimate,
+and it is exactly what the tag exists to make visible. **Nothing in the canon should be cited as an
+empirical claim about cognition unless it is Volume XIX or carries its own citation.**
+
+| Vol | Title | Provenance `[DECLARED]` |
+|---|---|---|
+| **I** | Philosophy | [ENGINEERING][CREATIVE] |
+| **II** | Cognitive Principles | [ENGINEERING][CREATIVE] |
+| **III** | System Architecture — The Runtime Contra | [ENGINEERING] |
+| **IV** | The Cognitive Spine — The Turn Loop | [ENGINEERING] |
+| **V** | The Living Cognitive Architecture | [ENGINEERING][CREATIVE] |
+| **VI** | Working Memory & Attention | [ENGINEERING] |
+| **VII** | Executive Cortex | [ENGINEERING] |
+| **VIII** | Memory Architecture — Biological Memory, | [ENGINEERING][CREATIVE] |
+| **IX** | Dream Architecture — Offline Symbolic Re | [CREATIVE] |
+| **X** | Personality Engine — Unifying eLo's Self | [CREATIVE] |
+| **XI** | Motor Cortex | [ENGINEERING] |
+| **XII** | Perception System — From Sensation to Un | [ENGINEERING][CREATIVE] |
+| **XIII** | Presence & Embodied Spatial Intelligence | [ENGINEERING][CREATIVE] |
+| **XIV** | Plugin Architecture | [ENGINEERING] |
+| **XV** | The World Model — Unified Live World Sta | [ENGINEERING] |
+| **XVI** | Multi-Faculty Coordination — One Mind, S | [ENGINEERING] |
+| **XVII** | The Reflection Engine — Lessons, Evidenc | [ENGINEERING][CREATIVE] |
+| **XVIII** | Self-Evolution — How eLo Changes Over Ti | [ENGINEERING][CREATIVE] |
+| **XIX** | Artificial Consciousness Research — An O | [SCIENCE][ENGINEERING][CREATIVE] |
+| **XX** | Cognitive Economy — Thinking Has a Cost | [ENGINEERING] |
+| **XXI** | Narrative Identity Engine | [ENGINEERING][CREATIVE] |
+| **XXII** | Faculty Genome — The Architectural DNA o | [ENGINEERING] |
+| **XXIII** | Security & Trust Architecture | [ENGINEERING][CREATIVE] |
+| **XXIV** | Knowledge Architecture | [ENGINEERING][CREATIVE] |
+| **XXV** | Temporal Cognition | [ENGINEERING][CREATIVE] |
+| **XXVI** | Creative Intelligence Architecture | [CREATIVE] |
+| **XXVII** | Engineering Standards & Canon Governance | [ENGINEERING] |
+| **XXVIII** | — | ⚠️ stub — not yet tagged |
+| **00_MANIFESTO** | eLo Cognitive Architecture Manifesto | [CREATIVE][ENGINEERING][SCIENCE] |
+| **01_PRINCIPLES** | Architecture Principles | [SCIENCE][ENGINEERING][CREATIVE] |
+

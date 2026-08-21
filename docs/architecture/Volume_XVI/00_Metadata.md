@@ -7,6 +7,7 @@ owner: David Charles
 architect: Claude (Lead Architect)
 source: "David Charles Bible content (2026-07-27) + One Brain Principle"
 implementation: PARTIAL (single Executive live; faculty-bus coordination pending)
+Provenance: [ENGINEERING]
 audit_status: OPEN
 canonical_path: docs/architecture/Volume_XVI/
 dependencies:
