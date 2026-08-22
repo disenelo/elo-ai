@@ -44,11 +44,13 @@ _concepts:   dict = {}
 _viewpoints: dict = {}
 
 # WKG Phase 1 — sections within _graph (Amendment C: no separate store/loader)
-# Populated by _load_all() from world_graph.json → wkg_claims / wkg_sources / wkg_proposed_claims.
-# Empty until Phase 2 corpus ingestion.  retrieve_wkg() reads these directly from _graph.
+# Populated by _load_all() from world_graph.json.  retrieve_wkg() reads these directly from _graph.
 _WKG_CLAIMS_KEY:          str = "wkg_claims"
 _WKG_SOURCES_KEY:         str = "wkg_sources"
 _WKG_PROPOSED_CLAIMS_KEY: str = "wkg_proposed_claims"
+# WKG Phase 2 — additional sections
+_WKG_ENTITIES_KEY:        str = "wkg_entities"
+_WKG_CLAIM_RELS_KEY:      str = "wkg_claim_relationships"
 
 
 def _load_json(path: str) -> dict:
@@ -155,16 +157,19 @@ def _load_all():
     if os.path.exists(_legacy):
         _log.warning("Ruling A: legacy identity/world_graph.json present but IGNORED — canonical graph is relationships/")
 
-    # WKG Phase 1 (Amendment C): WKG sections are part of the same world_graph.json.
-    # No separate file or loader. _graph now holds wkg_claims / wkg_sources /
-    # wkg_proposed_claims alongside the existing entities + relationships.
+    # WKG (Amendment C): WKG sections are part of the same world_graph.json.
+    # No separate file or loader. _graph holds wkg_claims / wkg_sources /
+    # wkg_proposed_claims / wkg_entities / wkg_claim_relationships alongside
+    # the existing eLo-universe entities + relationships.
     _wkg_count = (
         len(_graph.get(_WKG_CLAIMS_KEY, [])) +
         len(_graph.get(_WKG_SOURCES_KEY, [])) +
-        len(_graph.get(_WKG_PROPOSED_CLAIMS_KEY, []))
+        len(_graph.get(_WKG_PROPOSED_CLAIMS_KEY, [])) +
+        len(_graph.get(_WKG_ENTITIES_KEY, [])) +
+        len(_graph.get(_WKG_CLAIM_RELS_KEY, []))
     )
     if _wkg_count:
-        _log.info("WKG Phase 1: loaded %d WKG nodes from world_graph.json", _wkg_count)
+        _log.info("WKG: loaded %d WKG nodes from world_graph.json", _wkg_count)
 
 
 # ── entity matching ────────────────────────────────────────────────────────────
@@ -273,7 +278,7 @@ def retrieve(user_input: str, top_k: int = 3) -> list[dict]:
     return results[:top_k]
 
 
-# ── context assembly ───────────────────────────────────────────────────────────
+# ── context assembly ──────────────────────────────────────────────────────────
 
 def build_context(user_input: str, max_chars: int = 800) -> str:
     """
@@ -387,3 +392,19 @@ def retrieve_wkg(user_input: str, top_k: int = 3) -> list[dict]:
 
     results.sort(key=lambda x: (x["score"], x["confidence"]), reverse=True)
     return results[:top_k]
+
+
+# ── WKG Phase 2: claim relationship accessor ──────────────────────────────────
+
+def get_wkg_claim_relationships(rel_type: str | None = None) -> list[dict]:
+    """
+    Return WKG claim-to-claim relationships from wkg_claim_relationships[].
+
+    Pass rel_type to filter by relationship type (e.g. "CONTRADICTS").
+    Returns all relationships when rel_type is None.
+    """
+    _load_all()
+    rels = _graph.get(_WKG_CLAIM_RELS_KEY, [])
+    if rel_type is not None:
+        return [r for r in rels if r.get("type") == rel_type]
+    return list(rels)

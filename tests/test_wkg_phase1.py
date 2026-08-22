@@ -411,17 +411,14 @@ try:
     assert isinstance(gdata.get("wkg_claims"),          list), "wkg_claims must be a list"
     assert isinstance(gdata.get("wkg_sources"),         list), "wkg_sources must be a list"
     assert isinstance(gdata.get("wkg_proposed_claims"), list), "wkg_proposed_claims must be a list"
-    # Phase 1: corpus sections are empty
-    assert gdata["wkg_claims"]          == [], "Phase 1: wkg_claims must be empty (corpus not yet ingested)"
-    assert gdata["wkg_sources"]         == [], "Phase 1: wkg_sources must be empty"
-    assert gdata["wkg_proposed_claims"] == [], "Phase 1: wkg_proposed_claims must be empty"
+    # Phase 2 supersedes empty-corpus assertions: corpus may be populated
     # Existing eLo-universe data unchanged
     assert len(gdata.get("entities", [])) == 17, \
         f"existing entities count changed — WKG extension should not modify eLo-universe data"
     assert len(gdata.get("relationships", [])) == 17, \
         "existing relationships count changed"
 
-    ok("AT-W11: world_graph.json carries WKG sections (empty Phase 1); eLo-universe data unchanged")
+    ok("AT-W11: world_graph.json carries WKG sections; eLo-universe data unchanged")
 except Exception as e:
     fail("AT-W11", e)
 

@@ -62,22 +62,20 @@ All 27 WO-CANON volumes built and verified. B-DRIFT-01..04 + BDRIFT-U done. Prov
 
 **U-trait-vector-injection:** ✅ CLOSED — BDRIFT-U commit `dd258c7`. `identity_block()` no longer renders `core_values`. Constitutional baseline = name/with/invariants only. `core_values` field preserved in `EloSelfState` for future experiential use. 18/18 tests pass.
 
-### WKG PHASE 1 ✅ IN_REVIEW — 2026-08-22
+### WKG PHASE 1 ✅ APPROVED — 2026-08-22 · PHASE 2 ✅ DONE — 2026-08-22
 
 | Deliverable | Status |
 |---|---|
 | `knowledge/wkg_schema.py` — 8 epistemic classes, 19 rel types, dual-class mapping, write gate, Claim/Source/Provenance | ✅ |
-| `knowledge/graph_loader.py` — `retrieve_wkg()` + WKG section loading in `_load_all()` | ✅ |
-| `relationships/world_graph.json` — WKG sections (`wkg_claims`, `wkg_sources`, `wkg_proposed_claims`) | ✅ |
+| `knowledge/graph_loader.py` — `retrieve_wkg()` + `get_wkg_claim_relationships()` + WKG section loading | ✅ |
+| `relationships/world_graph.json` — 20 wkg_entities, 3 wkg_sources, 18 wkg_claims, 3 wkg_claim_relationships | ✅ |
 | `tests/test_wkg_phase1.py` — 20/20 AT-W1..AT-W13 | ✅ |
-| `docs/architecture/findings/WKG_PHASE1_AUDIT_2026-08-22.md` — A/B/C/D compliance report | ✅ |
-| Amendment A: dual-classification mapping (wkg_epistemic_class → kind+confidence) | ✅ |
-| Amendment B: write gate — 4-condition, HYPOTHESIS/SPECULATIVE → proposed_claim | ✅ |
-| Amendment C: single canonical graph — no wkg_graph.json, no wkg_loader.py | ✅ |
-| Amendment D: FREEZE carve-out recorded in _wkg_meta + module docstring | ✅ |
-| Vol XXIV regression: 5/5 ✅ · BDRIFT-U regression: 18/18 ✅ | ✅ |
-
-Phase 2 (corpus ingestion) is BLOCKED pending David APPROVE on Phase 1.
+| `tests/test_wkg_phase2.py` — 82/82 all §18 acceptance tests (Tests 1–8) | ✅ |
+| All 8 §18 contract acceptance tests: SOURCE_ATTRIBUTED, symbolic/causal distinction, math VERIFIED, 28≠lunar, axial tilt, Joseph seasons, 12 symbolic, no syncretic collapse | ✅ |
+| CONTRADICTS pairs: joseph_seasonal_mechanism ↔ axial_tilt_causes_seasons · joseph_28day_lunar_rhythm ↔ 28_days_not_exact_lunar_month | ✅ |
+| Provenance integrity: all claims wkg: prefixed, source-linked, VERIFIED evidence-backed | ✅ |
+| Write-gate enforcement: SOURCE_ATTRIBUTED/SYMBOLIC → WRITE_AS_PERSPECTIVE · VERIFIED + evidence → WRITE | ✅ |
+| Phase 1 regression: 20/20 ✅ · Vol XXIV regression: 5/5 ✅ · BDRIFT-U regression: 18/18 ✅ | ✅ |
 
 ## TRACK B — DESIGN + MT
 Design `DOING 0 / QUEUE 0` · MT `DOING 2 / QUEUE 6`. **Design feeds MT.** One open ask: the single

@@ -380,14 +380,645 @@
   "_wkg_meta": {
     "namespace": "wkg:",
     "schema_version": "1.0",
-    "phase": "Phase 1 — schema only, no corpus data",
+    "phase": "Phase 2 — Joseph corpus ingested 2026-08-22",
     "authority": "David L3, 2026-08-22",
     "contract": "docs/architecture/WKG_BUILD_CONTRACT_AMENDED_2026-08-22.md",
     "carve_out": "docs/architecture/FREEZE_V1_CARVEOUT_WKG_2026-08-22.md",
     "freeze_status": "wkg: namespace is a governed FREEZE V1 carve-out (Amendment D). eLo-universe namespace remains frozen.",
     "note": "WKG-originated nodes carry wkg: prefix. Cross-namespace promotion to eLo-universe requires explicit governance approval."
   },
-  "wkg_claims": [],
-  "wkg_sources": [],
+  "wkg_entities": [
+    {
+      "id": "wkg:Sun",
+      "canonical_name": "Sun",
+      "aliases": ["solar", "Sol"],
+      "domain": "astronomy",
+      "type": "celestial_body",
+      "description": "The star at the centre of our solar system, producing light and heat through nuclear fusion. Primary driver of Earth's seasons via axial tilt and orbital position.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["sun", "solar", "sol"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:Moon",
+      "canonical_name": "Moon",
+      "aliases": ["Luna", "lunar"],
+      "domain": "astronomy",
+      "type": "celestial_body",
+      "description": "Earth's only natural satellite, orbiting with a synodic period of approximately 29.53 days. Exerts gravitational influence on tides.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["moon", "luna", "lunar", "satellite"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:ConsciousMind",
+      "canonical_name": "Conscious Mind",
+      "aliases": ["conscious", "waking mind", "awareness"],
+      "domain": "psychology",
+      "type": "concept",
+      "description": "Mental activity the individual is aware of and can deliberately direct. In Joseph's symbolic framework, associated with the Sun.",
+      "epistemic_status": "SOURCE_ATTRIBUTED",
+      "keywords": ["conscious", "consciousness", "waking", "awareness", "conscious mind"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:SubconsciousMind",
+      "canonical_name": "Subconscious Mind",
+      "aliases": ["subconscious", "unconscious", "dreaming mind"],
+      "domain": "psychology",
+      "type": "concept",
+      "description": "Mental processes occurring outside conscious awareness. In Joseph's symbolic framework, associated with the Moon. No established causal mechanism links the Moon to subconscious activity.",
+      "epistemic_status": "SOURCE_ATTRIBUTED",
+      "keywords": ["subconscious", "unconscious", "dreaming", "intuition", "subconscious mind"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:SeasonWinter",
+      "canonical_name": "Winter",
+      "aliases": ["winter season"],
+      "domain": "astronomy",
+      "type": "season",
+      "description": "Astronomical season of minimum solar altitude. In Joseph's framework symbolises reflection, mental clarity, introspective ideation.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["winter", "winter season"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:SeasonSpring",
+      "canonical_name": "Spring",
+      "aliases": ["spring season"],
+      "domain": "astronomy",
+      "type": "season",
+      "description": "Astronomical season of increasing daylight. In Joseph's framework symbolises emergence, embodiment, manifestation.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["spring", "spring season"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:SeasonSummer",
+      "canonical_name": "Summer",
+      "aliases": ["summer season"],
+      "domain": "astronomy",
+      "type": "season",
+      "description": "Astronomical season of maximum solar altitude. In Joseph's framework symbolises action, expression, energy.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["summer", "summer season"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:SeasonAutumn",
+      "canonical_name": "Autumn",
+      "aliases": ["fall", "autumn season"],
+      "domain": "astronomy",
+      "type": "season",
+      "description": "Astronomical season of decreasing daylight. In Joseph's framework symbolises emotional processing, release, integration.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["autumn", "fall", "autumn season"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:Number13",
+      "canonical_name": "13",
+      "aliases": ["thirteen"],
+      "domain": "mathematics",
+      "type": "number",
+      "description": "The integer 13. Key in the 13-Moon calendar system (13 × 28 = 364).",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["13", "thirteen"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:Number28",
+      "canonical_name": "28",
+      "aliases": ["twenty-eight"],
+      "domain": "mathematics",
+      "type": "number",
+      "description": "The integer 28. Used as a symbolic lunar month in the 13-Moon calendar. Not equal to the actual synodic lunar month (~29.53 days).",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["28", "twenty-eight"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:Number364",
+      "canonical_name": "364",
+      "aliases": ["three hundred sixty-four"],
+      "domain": "mathematics",
+      "type": "number",
+      "description": "The product 13 × 28 = 364. Used in the 13-Moon symbolic calendar.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["364", "three hundred sixty-four"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:Number365",
+      "canonical_name": "365",
+      "aliases": ["three hundred sixty-five"],
+      "domain": "mathematics",
+      "type": "number",
+      "description": "Approximate days in a tropical solar year. Gregorian calendar uses 365 days (365.25-day mean year via leap days).",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["365", "three hundred sixty-five"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:Number12",
+      "canonical_name": "12",
+      "aliases": ["twelve"],
+      "domain": "mathematics",
+      "type": "number",
+      "description": "The integer 12. Appears independently in multiple traditions: 12 zodiac signs, 12 disciples, 12 cranial nerve pairs in anatomy. No established common origin.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["12", "twelve"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:SynodicLunarMonth",
+      "canonical_name": "Synodic Lunar Month",
+      "aliases": ["lunar month", "synodic month"],
+      "domain": "astronomy",
+      "type": "calendar",
+      "description": "Time between successive identical Moon phases (e.g. full moon to full moon). Approximately 29.53 days. Not equal to 28 days.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["synodic month", "lunar month", "29.53", "synodic lunar month"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:TropicalSolarYear",
+      "canonical_name": "Tropical Solar Year",
+      "aliases": ["solar year", "tropical year"],
+      "domain": "astronomy",
+      "type": "calendar",
+      "description": "Time for Earth to orbit the Sun relative to the vernal equinox. Approximately 365.25 days. Basis of the Gregorian calendar.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["solar year", "tropical year", "365"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:EarthAxialTilt",
+      "canonical_name": "Earth's Axial Tilt",
+      "aliases": ["axial tilt", "obliquity"],
+      "domain": "astronomy",
+      "type": "concept",
+      "description": "Earth's rotational axis tilted approximately 23.5 degrees relative to its orbital plane. Combined with orbital position, produces the four seasons.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["axial tilt", "earth tilt", "obliquity"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:FourSeasons",
+      "canonical_name": "Four Seasons",
+      "aliases": ["seasons"],
+      "domain": "astronomy",
+      "type": "concept",
+      "description": "The four divisions of the year (winter, spring, summer, autumn) caused by Earth's axial tilt and orbital position relative to the Sun.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["seasons", "four seasons", "seasonal cycle"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:TwelveCranialNerves",
+      "canonical_name": "Twelve Cranial Nerves",
+      "aliases": ["cranial nerves", "12 cranial nerves"],
+      "domain": "anatomy",
+      "type": "anatomy",
+      "description": "The 12 pairs of cranial nerves in human anatomy (I through XII), each serving specific sensory and/or motor functions.",
+      "epistemic_status": "VERIFIED",
+      "keywords": ["cranial nerves", "12 cranial nerves", "cranial"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:TwelveDisciples",
+      "canonical_name": "Twelve Disciples",
+      "aliases": ["disciples", "twelve apostles", "apostles"],
+      "domain": "tradition",
+      "type": "tradition",
+      "description": "The twelve disciples of Jesus in Christian tradition. Joseph proposes a symbolic correspondence with 12 cranial nerves — interpretive, not anatomical equivalence.",
+      "epistemic_status": "SOURCE_ATTRIBUTED",
+      "keywords": ["disciples", "twelve disciples", "apostles"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:TwelveZodiacSigns",
+      "canonical_name": "Twelve Zodiac Signs",
+      "aliases": ["zodiac signs", "zodiac"],
+      "domain": "tradition",
+      "type": "tradition",
+      "description": "The 12 zodiac signs in astrological tradition, originating in ancient Babylon. Divides the ecliptic into 12 equal segments.",
+      "epistemic_status": "HISTORICAL",
+      "keywords": ["zodiac", "zodiac signs", "astrological signs"],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    }
+  ],
+  "wkg_sources": [
+    {
+      "id": "wkg:source:joseph_book_of_wisdom",
+      "author": "Harry B. Joseph",
+      "title": "The Book of Wisdom",
+      "source_type": "esoteric_text",
+      "created_at": "2026-08-22T00:00:00Z",
+      "reliability_notes": "Modern esoteric work. Claims attributed to this source are SOURCE_ATTRIBUTED unless independently verified by a separate domain."
+    },
+    {
+      "id": "wkg:source:astronomy_consensus",
+      "author": "Scientific consensus",
+      "title": "Modern astronomy — established solar system science",
+      "source_type": "scientific_consensus",
+      "created_at": "2026-08-22T00:00:00Z",
+      "reliability_notes": "VERIFIED facts supported by direct observation, mathematical modelling, peer review, and scientific consensus."
+    },
+    {
+      "id": "wkg:source:anatomy_consensus",
+      "author": "Scientific consensus",
+      "title": "Human anatomy — cranial nerve science",
+      "source_type": "scientific_consensus",
+      "created_at": "2026-08-22T00:00:00Z",
+      "reliability_notes": "VERIFIED facts supported by anatomical research, dissection, neurological study, and medical consensus."
+    }
+  ],
+  "wkg_claims": [
+    {
+      "id": "wkg:claim:joseph_moon_subconscious",
+      "subject": "wkg:Moon",
+      "predicate": "REPRESENTS",
+      "object": "wkg:SubconsciousMind",
+      "source": "wkg:source:joseph_book_of_wisdom",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Joseph proposes the Moon symbolically represents the subconscious mind — the receptive, nocturnal, dreaming layer of consciousness.",
+      "notes": "This is Joseph's symbolic framework. No causal mechanism between Moon and subconscious mental activity is established by modern science.",
+      "evidence": [],
+      "provenance": {
+        "author": "Harry B. Joseph",
+        "title": "The Book of Wisdom",
+        "extraction_date": "2026-08-22",
+        "source_type": "esoteric_text"
+      }
+    },
+    {
+      "id": "wkg:claim:joseph_sun_conscious",
+      "subject": "wkg:Sun",
+      "predicate": "REPRESENTS",
+      "object": "wkg:ConsciousMind",
+      "source": "wkg:source:joseph_book_of_wisdom",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Joseph proposes the Sun symbolically represents the conscious mind — the active, directive, waking layer of consciousness.",
+      "evidence": [],
+      "provenance": {
+        "author": "Harry B. Joseph",
+        "title": "The Book of Wisdom",
+        "extraction_date": "2026-08-22",
+        "source_type": "esoteric_text"
+      }
+    },
+    {
+      "id": "wkg:claim:moon_subconscious_symbolic_not_causal",
+      "subject": "wkg:Moon",
+      "predicate": "OBSERVED_AS",
+      "object": "symbolic_correspondence_not_causal_mechanism",
+      "source": "wkg:source:astronomy_consensus",
+      "wkg_epistemic_class": "VERIFIED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "No established causal mechanism links the Moon to subconscious mental activity. The Moon-subconscious correspondence is symbolic (SOURCE_ATTRIBUTED per Joseph), not causal.",
+      "notes": "Distinct from Joseph's symbolic claim (wkg:claim:joseph_moon_subconscious). This VERIFIED claim records the absence of causal mechanism.",
+      "evidence": ["wkg:source:astronomy_consensus"],
+      "provenance": {
+        "author": "Scientific consensus",
+        "title": "Modern astronomy",
+        "extraction_date": "2026-08-22",
+        "source_type": "scientific_consensus"
+      }
+    },
+    {
+      "id": "wkg:claim:math_13_times_28_equals_364",
+      "subject": "wkg:Number364",
+      "predicate": "IS",
+      "object": "product_of_13_and_28",
+      "source": "wkg:source:astronomy_consensus",
+      "wkg_epistemic_class": "VERIFIED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "13 multiplied by 28 equals 364: 13 × 28 = 364. Mathematical fact. Foundation of the 13-Moon calendar system.",
+      "evidence": ["mathematical derivation: 13 × 28 = 364"],
+      "confidence": 1.0,
+      "provenance": {
+        "author": "Mathematical derivation",
+        "title": "Arithmetic",
+        "extraction_date": "2026-08-22",
+        "source_type": "mathematical_fact"
+      }
+    },
+    {
+      "id": "wkg:claim:math_364_plus_1_equals_365",
+      "subject": "wkg:Number365",
+      "predicate": "IS",
+      "object": "sum_of_364_and_1",
+      "source": "wkg:source:astronomy_consensus",
+      "wkg_epistemic_class": "VERIFIED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "364 + 1 = 365. One additional day bridges the 13-Moon calendar (13 × 28 = 364) to the approximate tropical solar year (365 days).",
+      "evidence": ["mathematical derivation: 364 + 1 = 365"],
+      "confidence": 1.0,
+      "provenance": {
+        "author": "Mathematical derivation",
+        "title": "Arithmetic",
+        "extraction_date": "2026-08-22",
+        "source_type": "mathematical_fact"
+      }
+    },
+    {
+      "id": "wkg:claim:synodic_lunar_month_29_53_days",
+      "subject": "wkg:SynodicLunarMonth",
+      "predicate": "IS",
+      "object": "approximately_29.53_days",
+      "source": "wkg:source:astronomy_consensus",
+      "wkg_epistemic_class": "VERIFIED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "The synodic lunar month — time between successive full moons — is approximately 29.53 days, not 28.",
+      "evidence": ["wkg:source:astronomy_consensus"],
+      "confidence": 0.99,
+      "provenance": {
+        "author": "Scientific consensus",
+        "title": "Modern astronomy",
+        "extraction_date": "2026-08-22",
+        "source_type": "scientific_consensus"
+      }
+    },
+    {
+      "id": "wkg:claim:28_days_not_exact_lunar_month",
+      "subject": "wkg:Number28",
+      "predicate": "IS",
+      "object": "not_equal_to_synodic_lunar_month",
+      "source": "wkg:source:astronomy_consensus",
+      "wkg_epistemic_class": "VERIFIED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "28 days is not equal to the exact synodic lunar month (~29.53 days). A 28-day month is a calendar convention, not a measured astronomical period.",
+      "notes": "Do not encode '28 days = lunar month' as a verified astronomical fact.",
+      "evidence": ["wkg:source:astronomy_consensus"],
+      "confidence": 0.99,
+      "provenance": {
+        "author": "Scientific consensus",
+        "title": "Modern astronomy",
+        "extraction_date": "2026-08-22",
+        "source_type": "scientific_consensus"
+      }
+    },
+    {
+      "id": "wkg:claim:joseph_28day_lunar_rhythm",
+      "subject": "wkg:Moon",
+      "predicate": "CORRESPONDS_TO",
+      "object": "wkg:Number28",
+      "source": "wkg:source:joseph_book_of_wisdom",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Joseph uses a 28-day lunar rhythm as a symbolic calendar unit in the 13-Moon system. This is an interpretive convention, not a claim that 28 equals the exact synodic month.",
+      "notes": "The actual synodic month is ~29.53 days (wkg:claim:synodic_lunar_month_29_53_days). Joseph's 28-day usage is symbolic.",
+      "evidence": [],
+      "provenance": {
+        "author": "Harry B. Joseph",
+        "title": "The Book of Wisdom",
+        "extraction_date": "2026-08-22",
+        "source_type": "esoteric_text"
+      }
+    },
+    {
+      "id": "wkg:claim:axial_tilt_causes_seasons",
+      "subject": "wkg:EarthAxialTilt",
+      "predicate": "CAUSES",
+      "object": "wkg:FourSeasons",
+      "source": "wkg:source:astronomy_consensus",
+      "wkg_epistemic_class": "VERIFIED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Earth's 23.5-degree axial tilt, combined with orbital position around the Sun, produces the four seasons. This is the established astronomical explanation.",
+      "evidence": ["wkg:source:astronomy_consensus"],
+      "confidence": 0.99,
+      "provenance": {
+        "author": "Scientific consensus",
+        "title": "Modern astronomy",
+        "extraction_date": "2026-08-22",
+        "source_type": "scientific_consensus"
+      }
+    },
+    {
+      "id": "wkg:claim:joseph_seasonal_mechanism",
+      "subject": "wkg:Sun",
+      "predicate": "CAUSES",
+      "object": "wkg:FourSeasons",
+      "source": "wkg:source:joseph_book_of_wisdom",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Joseph's framework presents seasonal change through a solar-centric symbolic model. This is his interpretive framework, not the established astronomical causal explanation (Earth's axial tilt + orbital position).",
+      "notes": "Contradicts wkg:claim:axial_tilt_causes_seasons if taken as a physical causal claim. See wkg_claim_relationships.",
+      "evidence": [],
+      "provenance": {
+        "author": "Harry B. Joseph",
+        "title": "The Book of Wisdom",
+        "extraction_date": "2026-08-22",
+        "source_type": "esoteric_text"
+      }
+    },
+    {
+      "id": "wkg:claim:joseph_winter_reflection",
+      "subject": "wkg:SeasonWinter",
+      "predicate": "SYMBOLISES",
+      "object": "reflection_mental_clarity_introspective_ideation",
+      "source": "wkg:source:joseph_book_of_wisdom",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Joseph's seasonal framework: Winter symbolises reflection, mental clarity, and introspective ideation.",
+      "evidence": [],
+      "provenance": {
+        "author": "Harry B. Joseph",
+        "title": "The Book of Wisdom",
+        "extraction_date": "2026-08-22",
+        "source_type": "esoteric_text"
+      }
+    },
+    {
+      "id": "wkg:claim:joseph_spring_emergence",
+      "subject": "wkg:SeasonSpring",
+      "predicate": "SYMBOLISES",
+      "object": "emergence_embodiment_manifestation",
+      "source": "wkg:source:joseph_book_of_wisdom",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Joseph's seasonal framework: Spring symbolises emergence, embodiment, and manifestation.",
+      "evidence": [],
+      "provenance": {
+        "author": "Harry B. Joseph",
+        "title": "The Book of Wisdom",
+        "extraction_date": "2026-08-22",
+        "source_type": "esoteric_text"
+      }
+    },
+    {
+      "id": "wkg:claim:joseph_summer_action",
+      "subject": "wkg:SeasonSummer",
+      "predicate": "SYMBOLISES",
+      "object": "action_expression_energy",
+      "source": "wkg:source:joseph_book_of_wisdom",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Joseph's seasonal framework: Summer symbolises action, expression, and energy.",
+      "evidence": [],
+      "provenance": {
+        "author": "Harry B. Joseph",
+        "title": "The Book of Wisdom",
+        "extraction_date": "2026-08-22",
+        "source_type": "esoteric_text"
+      }
+    },
+    {
+      "id": "wkg:claim:joseph_autumn_release",
+      "subject": "wkg:SeasonAutumn",
+      "predicate": "SYMBOLISES",
+      "object": "emotional_processing_release_integration",
+      "source": "wkg:source:joseph_book_of_wisdom",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Joseph's seasonal framework: Autumn symbolises emotional processing, release, and integration.",
+      "evidence": [],
+      "provenance": {
+        "author": "Harry B. Joseph",
+        "title": "The Book of Wisdom",
+        "extraction_date": "2026-08-22",
+        "source_type": "esoteric_text"
+      }
+    },
+    {
+      "id": "wkg:claim:joseph_12disciples_cranial_correspondence",
+      "subject": "wkg:TwelveDisciples",
+      "predicate": "CORRESPONDS_TO",
+      "object": "wkg:TwelveCranialNerves",
+      "source": "wkg:source:joseph_book_of_wisdom",
+      "wkg_epistemic_class": "SYMBOLIC",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Joseph proposes a symbolic correspondence between the 12 disciples and the 12 cranial nerves. This is an interpretive correspondence — not anatomical equivalence, not historical derivation, not VERIFIED.",
+      "notes": "The 12 cranial nerve pairs are anatomically established (wkg:claim:anatomy_12_cranial_nerve_pairs). The symbolic correspondence is Joseph's framework. These must not be conflated.",
+      "evidence": [],
+      "provenance": {
+        "author": "Harry B. Joseph",
+        "title": "The Book of Wisdom",
+        "extraction_date": "2026-08-22",
+        "source_type": "esoteric_text"
+      }
+    },
+    {
+      "id": "wkg:claim:anatomy_12_cranial_nerve_pairs",
+      "subject": "wkg:TwelveCranialNerves",
+      "predicate": "IS",
+      "object": "12_pairs_in_human_anatomy",
+      "source": "wkg:source:anatomy_consensus",
+      "wkg_epistemic_class": "VERIFIED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Human anatomy has exactly 12 cranial nerve pairs (I through XII), each serving specific sensory and/or motor functions. Established anatomical fact.",
+      "evidence": ["wkg:source:anatomy_consensus"],
+      "confidence": 0.99,
+      "provenance": {
+        "author": "Scientific consensus",
+        "title": "Human anatomy",
+        "extraction_date": "2026-08-22",
+        "source_type": "scientific_consensus"
+      }
+    },
+    {
+      "id": "wkg:claim:zodiac_12_signs_historical_tradition",
+      "subject": "wkg:TwelveZodiacSigns",
+      "predicate": "IS",
+      "object": "historically_attested_astrological_tradition",
+      "source": "wkg:source:astronomy_consensus",
+      "wkg_epistemic_class": "HISTORICAL",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "The 12 zodiac signs are a historically attested astrological tradition, originating in ancient Babylon and adapted across cultures. Independent from 12 disciples and 12 cranial nerves.",
+      "evidence": ["historical astronomical and astrological records"],
+      "provenance": {
+        "author": "Historical record",
+        "title": "History of astronomy and astrology",
+        "extraction_date": "2026-08-22",
+        "source_type": "historical_record"
+      }
+    },
+    {
+      "id": "wkg:claim:twelve_no_established_common_origin",
+      "subject": "wkg:Number12",
+      "predicate": "CORRESPONDS_TO",
+      "object": "multiple_independent_traditions",
+      "source": "wkg:source:astronomy_consensus",
+      "wkg_epistemic_class": "VERIFIED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "The number 12 appears independently in multiple systems: 12 zodiac signs (astrological), 12 disciples (Christian tradition), 12 cranial nerve pairs (anatomy). No established evidence of common origin, shared derivation, or causal connection across these uses. They are structurally analogous without being historically related.",
+      "notes": "Anti-syncretic claim. Do not collapse these into one explanation. Each use of 12 carries its own provenance and domain.",
+      "evidence": ["absence of cross-domain derivation evidence"],
+      "provenance": {
+        "author": "Cross-domain analysis",
+        "title": "WKG Phase 2 ingestion",
+        "extraction_date": "2026-08-22",
+        "source_type": "cross_domain_analysis"
+      }
+    }
+  ],
+  "wkg_claim_relationships": [
+    {
+      "id": "wkg:rel:seasonal_mechanism_contradicts_axial_tilt",
+      "from": "wkg:claim:joseph_seasonal_mechanism",
+      "to": "wkg:claim:axial_tilt_causes_seasons",
+      "type": "CONTRADICTS",
+      "created_at": "2026-08-22T00:00:00Z",
+      "notes": "Joseph's symbolic solar-seasonal framework, if read as physical causation, contradicts the established explanation: Earth's axial tilt + orbital position produce seasons. Both claims preserved: SOURCE_ATTRIBUTED (Joseph) and VERIFIED (astronomy)."
+    },
+    {
+      "id": "wkg:rel:lunar_rhythm_contradicts_synodic_month",
+      "from": "wkg:claim:joseph_28day_lunar_rhythm",
+      "to": "wkg:claim:28_days_not_exact_lunar_month",
+      "type": "CONTRADICTS",
+      "created_at": "2026-08-22T00:00:00Z",
+      "notes": "Joseph's 28-day lunar rhythm, if taken as an astronomical period, contradicts the measured synodic month (~29.53 days). Both claims preserved: SOURCE_ATTRIBUTED (Joseph's calendar convention) and VERIFIED (astronomy)."
+    },
+    {
+      "id": "wkg:rel:disciples_cranial_analogous_to_zodiac",
+      "from": "wkg:claim:joseph_12disciples_cranial_correspondence",
+      "to": "wkg:claim:zodiac_12_signs_historical_tradition",
+      "type": "ANALOGOUS_TO",
+      "created_at": "2026-08-22T00:00:00Z",
+      "notes": "Both claims involve the number 12 across different domains. Structural analogy only — no derivation or common origin established. See wkg:claim:twelve_no_established_common_origin."
+    }
+  ],
   "wkg_proposed_claims": []
 }
