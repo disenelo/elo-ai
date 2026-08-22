@@ -93,21 +93,58 @@ All 27 WO-CANON volumes built and verified. B-DRIFT-01..04 + BDRIFT-U done. Prov
 **Phase 2 card:** `blender/agent_bus/builder/QUEUE/BWKG_02_phase2_corpus_ingestion.md`
 **Hard boundary (CA):** write gate is law, not a suggestion. No autobiographical Memory writes. No SPG. No new CAL. No second graph. HYPOTHESIS/SPECULATIVE claims need David L3 to promote. STOP and return if corpus exposes a gap not covered by the ratified contract.
 
-## PROGRAMME ROADMAP — CONFIRMED 2026-08-22
-**Authority:** `_intake/SOURCE_2026-08-22_DAVID_roadmap_confirmed_WKG_SPG.md`
+## PROGRAMME PIPELINE — REORDERED 2026-08-22
+**Authority:** `_intake/SOURCE_2026-08-22_DAVID_board_priority_reorder.md`
 
-| # | Workstream | State | Gate |
+| Priority | Workstream | State | Gate / Constraint |
 |---|---|---|---|
-| 1 | **Drift Audit** | ✅ CLOSED | — |
-| 2 | **WKG** Phase 1 | ✅ RATIFIED | — |
-| 2 | **WKG** Phase 2 | ▶️ AUTHORISED — BWKG-02 queued | Ratified contract + write gate |
-| 2 | **WKG** Phase 3+ | ⬜ NOT STARTED | Each phase requires its own phase gate |
-| 3 | **Retrieval precision** | ⬜ NOT STARTED | Prerequisite for SPG reconsideration |
-| 4 | **SPG** | 🔴 PARKED — E-1 RED | Retrieval precision must be fixed/audited first. No Builder WO. No traversal build. |
+| 1 | **Latency** — BLATENCY-01 | ✅ DONE 2026-08-22 | Diagnostic complete. 4 OPT paths identified — no action until David approves. |
+| 2 | **Routing / Response Ordering** | ✅ DONE 2026-08-22 | Full audit complete. Ordering NOT the problem. See `ROUTING_ORDER_AUDIT_2026-08-22.md`. |
+| 3 | **Review State** | 🟡 UNBLOCKED — ready to run | Full behavioural test suite. Routing confirmed clean. Produce GREEN/AMBER/RED/UNKNOWN. |
+| 4 | **WKG Phase 2** | 🟡 QUEUED — BWKG-02 | Inside Amendments A/B/C/D + ratified Phase 1 schema/gate only. |
+| 5 | **SPG** | 🔴 INERT — retrieval-first | No Builder WO. Integrates into existing cognitive/knowledge architecture — not a competing pathway. |
 
-**David (verbatim):** *"For WKG, we're inside the authorised build lane now. For SPG, we're not yet inside a build lane — we're waiting for the prerequisite retrieval decision."*
+**David (verbatim):** *"WKG and SPG shouldn't be allowed to become distractions from establishing whether the current One Brain is actually routing and responding correctly. Once routing is clean, the Review State gives us the baseline."*
 
-**SPG gate:** E-1 negative control proved the graph did not outperform random traversal. No SPG card issues until retrieval precision is a closed problem with its own audit. SPG reconsidered under its own phase gates at that point — not before.
+**Standing orders:**
+- Drift Audit ✅ CLOSED — not reopened
+- WKG Phase 2 queued but does not start until Routing/Ordering diagnostic is clean
+- SPG: no card issued, retrieval precision prerequisite unresolved
+
+---
+
+## TRACK B — ROUTING / RESPONSE ORDERING AUDIT — 2026-08-22 ✅ DONE
+
+**Authority:** David L3 work order — diagnostic only  
+**Output:** `docs/architecture/findings/ROUTING_ORDER_AUDIT_2026-08-22.md`
+
+**Answer to A/B/C/D/E: A + D (cognitive/routing failures — not ordering failures)**
+
+| Dimension | Classification | Detail |
+|---|---|---|
+| FIFO queue (generation order) | **GREEN** | Single-threaded worker, `queue.Queue()`, cannot reorder |
+| Mutual exclusion (`_lock`) | **GREEN** | New turn cannot start until prior turn fully completes |
+| Streaming to client | **GREEN** | Server-internal only (for TTS); client gets complete JSON |
+| HTTP response delivery | **GREEN** | Each HTTP handler thread bound to its own socket |
+| State mutation ordering | **GREEN** | `_lock` protects all state changes |
+| Unity UI concurrent requests | **GREEN** | `_busy=true` flag prevents concurrent HTTP sends (`EloConversationUI.cs:112`) |
+| Per-request ID (none) | **AMBER** | Ordering guaranteed structurally but not provable at application layer |
+| True-concurrent HTTP entry order | **AMBER** | Under simultaneous external connections, queue entry order is OS-dependent; sub-millisecond in practice |
+
+**Actual root causes of observed chatlog anomalies:**
+
+- **RO-A1** `web_search.py:205` — `"what is "` substring in `_SEARCH_TRIGGERS` fires on ANY "what is X" question. "What is the relationship between us?" → searched DuckDuckGo → US-UK "special relationship" result. Routing failure, not ordering.
+- **RO-A2** Executive selecting `vault_write` capability for reflective/review questions → `enrich_from_plan()` calls `_agent_vault_writer()` unconditionally → review questions written to Obsidian. Source: RS-1 (Review State finding — Executive's capability selection logic).
+- **RO-D1** Mock backend fallback at 15:57:22 — Ollama unavailable, canned response returned for "What did you learn from this conversation?".
+- **RO-A3** `_identity_response()` / `_david_name_response()` short-circuit for "Who are you?" and "Who am I?" — pre-baked responses, no LLM. Correct behavior, explains brevity.
+
+**Proposed cards (awaiting Architect/David authority):**
+
+| Card | Description |
+|---|---|
+| `RO-FIX-01` | Add per-turn `turn_id` to HTTP response envelope — makes association provable |
+| `RO-FIX-02` | Guard `is_search_intent` against introspective/relational "what is X" questions |
+| `RO-FIX-03` | Add `is_save_intent()` check inside `enrich_from_plan()` before calling vault_write |
 
 ---
 
