@@ -3262,6 +3262,14 @@ def _process_turn(raw: str) -> dict:
         system = system + "\n\n" + _self_identity_block(_elo_self)
         # WO-052B: narrative identity — eLo's autobiography across embodiments
         system = system + "\n\n" + _self_narrative_block(_elo_self)
+        # F-7: self-interpretation — grounded in verified autobiography events (spine wire)
+        if _plan is not None:
+            _si_data = getattr(_plan, "self_interpretation", None)
+            if _si_data and isinstance(_si_data, dict):
+                _si_text = _si_data.get("text", "").strip()
+                if _si_text:
+                    system = (system + "\n\n[ELO SELF-RECORD — grounded in verified events]\n"
+                              + _si_text)
         # WO-083: identity & meaning — who I'm becoming (convergence layer)
         try:
             from self.identity_meaning import identity_block as _im_identity_block
@@ -4294,8 +4302,13 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # F-5 remediation 2026-08-21: was `raw` (enriched with [WORLD_KNOWLEDGE...] or other
+        # injection prefixes). `_original_raw` is David's actual words, captured at :1687 before
+        # any context enrichment. session_summaries must record what David said, not what the
+        # pipeline prepended for the model. Source: _intake/SOURCE_2026-08-21_DAVID_drift_remediation_execution.md §F-5
+        # Evidence: 0060 §D; elo_state.json[12] stored "[WORLD_KNOWLEDGE...]" as user turn 3.
         _state = state_manager.update(
-            _state, raw, response,
+            _state, _original_raw, response,
             intent=exec_decision.get("intent", ""),
             loop_signal=sm.is_stabilisation_forced(_runtime_state),
         )

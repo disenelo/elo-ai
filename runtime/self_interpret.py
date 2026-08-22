@@ -145,11 +145,25 @@ def interpret(state: "EloSelfState",
         claims.append(f"My last reflection: {lesson}")
         derived_from.append({"source": "last_reflection_lesson", "key": lesson, "count": 1})
 
-    # ── Verified autobiography events ────────────────────────────────────────────
+    # ── Verified autobiography events (F-7 wire) ─────────────────────────────────
+    # Surface the most recent verified entry's event text as a grounded claim.
+    # D1: every claim cites a reference that exists in derived_from — episode_ref is the key.
+    # Falsifiable: cutting _load_autobiography() makes this claim disappear.
     verified_count = len(auto_entries)
-    if verified_count:
-        derived_from.append({"source": "autobiography", "key": "verified_events",
-                             "count": verified_count})
+    if verified_count and auto_entries:
+        latest     = auto_entries[-1]
+        event_text = str(latest.get("event", "")).strip()
+        ep_ref     = str(latest.get("episode_ref", "")).strip()
+        if event_text:
+            claims.append(f"My most recent verified experience: {event_text}")
+            derived_from.append({
+                "source": "autobiography",
+                "key":    ep_ref or "verified_event",
+                "count":  verified_count,
+            })
+        else:
+            derived_from.append({"source": "autobiography", "key": "verified_events",
+                                 "count": verified_count})
 
     # Nothing derived — still no claims despite the record (very thin data)
     if not claims:

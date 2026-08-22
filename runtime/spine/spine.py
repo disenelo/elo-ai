@@ -757,7 +757,19 @@ def run(
     except Exception as _tf_err:
         _log.warning("temporal_faculty FAILED: %s", _tf_err)
     plan.temporal_frame = _temporal_frame
-    # ── WO-117 SELF-INTERPRET: pin to plan (observable by card 0083 test) ───────
+    # ── F-7 SELF-INTERPRET: compute in run() scope and pin to plan ───────────────
+    # _self_interpretation is defined inside _executive_faculty() (local scope only).
+    # Re-run here so run() has the result. interpret() is idempotent and cheap.
+    _self_interpretation = None
+    try:
+        from self.elo_self_model import load as _load_self_state
+        from runtime.self_interpret import interpret as _self_interpret_fn
+        _si_state = _load_self_state()
+        _self_interpretation = _self_interpret_fn(_si_state)
+        if _self_interpretation and not _self_interpretation.is_empty():
+            _log.info("F-7 self-interpret: %s", _self_interpretation.text[:120])
+    except Exception as _si_run_err:
+        _log.debug("self_interpret (run scope) failed (non-critical): %s", _si_run_err)
     plan.self_interpretation = _self_interpretation.as_dict() if _self_interpretation else None
 
     # ── v1.5 Executive Faculty enrichment (relationship + emotional vector) ───
