@@ -213,17 +213,8 @@ def _write_journal_entry(
         lkey = lesson.get("lesson_key")
         if lkey:
             try:
-                from self.lesson_store import record_outcome as _ls_record
-                _ls_record(
-                    lkey=lkey,
-                    episode_ref=str(time.time()),   # unique per invocation; spot is verification, not episode ID
-                    verified=bool(spot),             # vault-backed = verified
-                    session_id=_SESSION_ID,
-                    action=action,                   # card 0082 F-2 — D1 gate requires executed action
-                    outcome=completion_state,        # card 0082 F-2 — D1 gate requires verified outcome
-                    contradicting=(lesson.get("delta") in ("failed", "partial")),
-                )
-                # Only append to ledger if this lesson_key is new
+                # F-8: append the lesson row FIRST so record_outcome() can find it by lkey.
+                # (record_outcome silently discards evidence when the key is missing.)
                 _existing_keys: set = set()
                 try:
                     with open(_LESSON_LOG, encoding="utf-8") as _lf:
@@ -236,6 +227,17 @@ def _write_journal_entry(
                     pass
                 if lkey not in _existing_keys:
                     _append_jsonl(_LESSON_LOG, lesson)
+                # Now the row exists — add evidence entry with action + outcome (D1 gate).
+                from self.lesson_store import record_outcome as _ls_record
+                _ls_record(
+                    lkey=lkey,
+                    episode_ref=str(time.time()),   # unique per invocation; spot is verification, not episode ID
+                    verified=bool(spot),             # vault-backed = verified
+                    session_id=_SESSION_ID,          # stable non-numeric id (ADR-Exec-005 D1)
+                    action=action,                   # CAL action executed — D1 gate requires this
+                    outcome=completion_state,        # verified outcome — D1 gate requires this
+                    contradicting=(lesson.get("delta") in ("failed", "partial")),
+                )
             except Exception:
                 _append_jsonl(_LESSON_LOG, lesson)
         else:
