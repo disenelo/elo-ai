@@ -62,7 +62,18 @@ All 27 WO-CANON volumes built and verified. B-DRIFT-01..04 + BDRIFT-U done. Prov
 
 **U-trait-vector-injection:** ✅ CLOSED — BDRIFT-U commit `dd258c7`. `identity_block()` no longer renders `core_values`. Constitutional baseline = name/with/invariants only. `core_values` field preserved in `EloSelfState` for future experiential use. 18/18 tests pass.
 
-### WKG PHASE 1 ✅ APPROVED — 2026-08-22 · PHASE 2 ✅ DONE — 2026-08-22
+### BDRIFT-F7 / BDRIFT-F8 — CA IN_REVIEW · 2026-08-22
+
+**Authority:** `_intake/SOURCE_2026-08-22_CA_F7_F8_D3_review.md`
+
+| Card | CA Status | CA Ruling |
+|---|---|---|
+| `BDRIFT-F8` — reflection write-ordering | 🟡 **IN_REVIEW** | Write-ordering defect real. 7/7 tests confirm evidence path works structurally. Not yet proof eLo learns — proves evidence can now be preserved for D1 verification. |
+| `BDRIFT-F7` — autobiography retrieval | 🟡 **IN_REVIEW** | Remains separate. Do not bundle with F-8. |
+
+**CA on D3:** *"A lesson subsequently changed an Executive decision"* is the actual D3 test. LOOP-7 is wired. The evidence path can now carry what D1 requires. The architectural boundary — proof of executive-influencing learning — is still unmet and is D3's governing question.
+
+### WKG PHASE 1 ✅ RATIFIED — CA 2026-08-22 · PHASE 2 🟡 QUEUED
 
 | Deliverable | Status |
 |---|---|
@@ -76,6 +87,56 @@ All 27 WO-CANON volumes built and verified. B-DRIFT-01..04 + BDRIFT-U done. Prov
 | Provenance integrity: all claims wkg: prefixed, source-linked, VERIFIED evidence-backed | ✅ |
 | Write-gate enforcement: SOURCE_ATTRIBUTED/SYMBOLIC → WRITE_AS_PERSPECTIVE · VERIFIED + evidence → WRITE | ✅ |
 | Phase 1 regression: 20/20 ✅ · Vol XXIV regression: 5/5 ✅ · BDRIFT-U regression: 18/18 ✅ | ✅ |
+
+**CA ratification ruling 2026-08-22:** Phase 1 contract satisfied. `wkg:` namespace · 8-class epistemic model · write gate · `KnowledgeContext` integration · no second store · no new CAL — all confirmed. Schema and governance mechanism authorised. **Corpus contents are NOT pre-approved** — every ingested claim still passes `evaluate_write_gate()`.
+
+**Phase 2 card:** `blender/agent_bus/builder/QUEUE/BWKG_02_phase2_corpus_ingestion.md`
+**Hard boundary (CA):** write gate is law, not a suggestion. No autobiographical Memory writes. No SPG. No new CAL. No second graph. HYPOTHESIS/SPECULATIVE claims need David L3 to promote. STOP and return if corpus exposes a gap not covered by the ratified contract.
+
+## PROGRAMME ROADMAP — CONFIRMED 2026-08-22
+**Authority:** `_intake/SOURCE_2026-08-22_DAVID_roadmap_confirmed_WKG_SPG.md`
+
+| # | Workstream | State | Gate |
+|---|---|---|---|
+| 1 | **Drift Audit** | ✅ CLOSED | — |
+| 2 | **WKG** Phase 1 | ✅ RATIFIED | — |
+| 2 | **WKG** Phase 2 | ▶️ AUTHORISED — BWKG-02 queued | Ratified contract + write gate |
+| 2 | **WKG** Phase 3+ | ⬜ NOT STARTED | Each phase requires its own phase gate |
+| 3 | **Retrieval precision** | ⬜ NOT STARTED | Prerequisite for SPG reconsideration |
+| 4 | **SPG** | 🔴 PARKED — E-1 RED | Retrieval precision must be fixed/audited first. No Builder WO. No traversal build. |
+
+**David (verbatim):** *"For WKG, we're inside the authorised build lane now. For SPG, we're not yet inside a build lane — we're waiting for the prerequisite retrieval decision."*
+
+**SPG gate:** E-1 negative control proved the graph did not outperform random traversal. No SPG card issues until retrieval precision is a closed problem with its own audit. SPG reconsidered under its own phase gates at that point — not before.
+
+---
+
+## TRACK B — LATENCY DIAGNOSTIC — 2026-08-22 ✅ DONE
+
+**Authority:** `_intake/SOURCE_2026-08-22_DAVID_latency_diagnostic_instruction.md`
+
+| Card | State | Output |
+|---|---|---|
+| `BLATENCY-01` Ollama latency baseline | ✅ DONE 2026-08-22 | `docs/architecture/findings/LATENCY_DIAGNOSTIC_2026-08-22.md` |
+
+**Findings (summary):**
+- Model residency **confirmed as major culprit** — REQUEST 1 (cold) = 6.69s total, REQUEST 2 (warm, 30s later) = 0.35s. **19× speedup.** `keep_alive` is working; the problem is the model is not preloaded when the first conversation request arrives after idle.
+- Prompt eval rate (warm model): **457 t/s**. At 7,281 tokens: ~17s — matches LA's baseline.
+- `living_presence_spec` = **~4,465 tokens = 61%** of total prompt. Re-evaluated every turn.
+- Static prefix total (~4,930 tokens) = **68%** of the assembled context. Unchanged between turns.
+- `num_ctx: 8192` hardcoded. At 89% full, ~900 tokens headroom.
+- No confirmed lessons yet (0 tokens from lesson block — D1 gate working correctly).
+- Generation (17 tokens, 0.8s) is **not the bottleneck**.
+
+**Proposed optimisations (not implemented — each needs a separate decision):**
+- OPT-1: Extend `keep_alive` to 2–5h — eliminates 6-11s cold start. Zero identity change. Low risk.
+- OPT-2: Preload heartbeat every 20 min — keeps model warm during active hours.
+- OPT-3: Raise `num_ctx` to 16384–32768 — prevents truncation risk. Moderate RAM cost.
+- OPT-4: Static identity prefix KV-cache reuse — most impactful: drops prompt eval from ~17s to ~4s if Ollama reuses the KV cache for identical prefix bytes. Architecture question.
+
+**Constraint: no code changes. Measurement only. `living_presence_spec` is identity, not overhead.**
+
+---
 
 ## TRACK B — DESIGN + MT
 Design `DOING 0 / QUEUE 0` · MT `DOING 2 / QUEUE 6`. **Design feeds MT.** One open ask: the single
