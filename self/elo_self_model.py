@@ -275,18 +275,17 @@ def identity_block(state: EloSelfState) -> str:
     """
     WO-107: Render an [IDENTITY] block from EloSelfState fields.
 
-    This is the constitutional baseline — rendered FROM state, not from a separate
-    hardcoded string. Change a field, the block changes. One source.
-
-    Readable by the Executive via the assembled cognitive state.
+    BDRIFT-U (David L3 ruling 2026-08-22): core_values removed from this block.
+    core_values is experiential self-state, not canonical identity. Canonical
+    character traits come from canonical_identity.md via the personality_block.
+    Constitutional baseline retains: identity_name, who_i_am_with, invariants.
+    core_values field is preserved in EloSelfState for future experiential use.
     """
-    values_str    = ", ".join(state.core_values)   if state.core_values   else "unknown"
-    invariants_str = "; ".join(state.invariants)   if state.invariants    else ""
+    invariants_str = "; ".join(state.invariants) if state.invariants else ""
     lines = [
-        f"[IDENTITY — constitutional baseline, asserted from self-model every turn]",
+        "[IDENTITY — constitutional baseline, asserted from self-model every turn]",
         f"name: {state.identity_name}",
         f"with: {state.who_i_am_with}",
-        f"core traits: {values_str}",
     ]
     if invariants_str:
         lines.append(f"invariants: {invariants_str}")
