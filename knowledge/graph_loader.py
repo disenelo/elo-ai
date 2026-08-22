@@ -43,6 +43,13 @@ _graph:      dict = {}
 _concepts:   dict = {}
 _viewpoints: dict = {}
 
+# WKG Phase 1 — sections within _graph (Amendment C: no separate store/loader)
+# Populated by _load_all() from world_graph.json → wkg_claims / wkg_sources / wkg_proposed_claims.
+# Empty until Phase 2 corpus ingestion.  retrieve_wkg() reads these directly from _graph.
+_WKG_CLAIMS_KEY:          str = "wkg_claims"
+_WKG_SOURCES_KEY:         str = "wkg_sources"
+_WKG_PROPOSED_CLAIMS_KEY: str = "wkg_proposed_claims"
+
 
 def _load_json(path: str) -> dict:
     try:
@@ -147,6 +154,17 @@ def _load_all():
     _legacy = os.path.join(_ROOT, "identity", "world_graph.json")
     if os.path.exists(_legacy):
         _log.warning("Ruling A: legacy identity/world_graph.json present but IGNORED — canonical graph is relationships/")
+
+    # WKG Phase 1 (Amendment C): WKG sections are part of the same world_graph.json.
+    # No separate file or loader. _graph now holds wkg_claims / wkg_sources /
+    # wkg_proposed_claims alongside the existing entities + relationships.
+    _wkg_count = (
+        len(_graph.get(_WKG_CLAIMS_KEY, [])) +
+        len(_graph.get(_WKG_SOURCES_KEY, [])) +
+        len(_graph.get(_WKG_PROPOSED_CLAIMS_KEY, []))
+    )
+    if _wkg_count:
+        _log.info("WKG Phase 1: loaded %d WKG nodes from world_graph.json", _wkg_count)
 
 
 # ── entity matching ────────────────────────────────────────────────────────────
@@ -306,3 +324,66 @@ def build_context(user_input: str, max_chars: int = 800) -> str:
 
     context = "\n".join(lines)
     return context[:max_chars]
+
+
+# ── WKG Phase 1: retrieve_wkg() ───────────────────────────────────────────────
+
+def retrieve_wkg(user_input: str, top_k: int = 3) -> list[dict]:
+    """
+    WKG Phase 1 (Amendment C): retrieve WKG claims from the canonical graph.
+
+    Results carry the same envelope as retrieve(), plus wkg_epistemic_class.
+    Amendment A dual-classification: Vol XXIV kind + confidence are computed at
+    the retrieval boundary from wkg_epistemic_class — not stored in the graph.
+
+    Returns [] when no WKG data matches (Phase 1: corpus is empty).
+    Never backfills from LLM (same guarantee as retrieve()).
+
+    Phase 7 will extend this into a structured KnowledgeQuery interface.
+    """
+    from knowledge.wkg_schema import map_to_vol_xxiv
+    _load_all()
+    claims = _graph.get(_WKG_CLAIMS_KEY, [])
+    if not claims:
+        return []
+
+    text = user_input.strip().lower()
+    results: list[dict] = []
+
+    for claim in claims:
+        searchable = " ".join(str(v) for v in [
+            claim.get("subject",        ""),
+            claim.get("object",         ""),
+            claim.get("predicate",      ""),
+            claim.get("notes",          "") or "",
+            claim.get("interpretation", "") or "",
+        ]).lower()
+
+        score = sum(1 for word in text.split() if word and word in searchable)
+        if score == 0:
+            continue
+
+        cls       = claim.get("wkg_epistemic_class", "UNKNOWN")
+        vol_xxiv  = map_to_vol_xxiv(cls)
+        # claim-level confidence overrides schema default when explicitly set
+        confidence = claim.get("confidence")
+        if confidence is None:
+            confidence = vol_xxiv["confidence"]
+
+        results.append({
+            "label":               claim.get("id", ""),
+            "content":             (
+                claim.get("interpretation")
+                or f"{claim.get('subject')} {claim.get('predicate')} {claim.get('object')}"
+            ),
+            "confidence":          float(confidence) if confidence is not None else 0.5,
+            "kind":                vol_xxiv["kind"],
+            "evidence":            list(claim.get("evidence") or []),
+            "score":               score,
+            "wkg_epistemic_class": cls,
+            "provisional":         vol_xxiv.get("provisional", False),
+            "source":              claim.get("source", ""),
+        })
+
+    results.sort(key=lambda x: (x["score"], x["confidence"]), reverse=True)
+    return results[:top_k]

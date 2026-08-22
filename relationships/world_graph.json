@@ -376,5 +376,18 @@
       "meaning": "Chunk is eLo's modular transport in the game — the companion whose body becomes the vehicle for crossing different terrain types. Movement is collaborative.",
       "connection": "In eLo-Planet, Chunk is how eLo moves through the world's different zones. eLo doesn't move alone — Chunk is the vehicle layer."
     }
-  ]
+  ],
+  "_wkg_meta": {
+    "namespace": "wkg:",
+    "schema_version": "1.0",
+    "phase": "Phase 1 — schema only, no corpus data",
+    "authority": "David L3, 2026-08-22",
+    "contract": "docs/architecture/WKG_BUILD_CONTRACT_AMENDED_2026-08-22.md",
+    "carve_out": "docs/architecture/FREEZE_V1_CARVEOUT_WKG_2026-08-22.md",
+    "freeze_status": "wkg: namespace is a governed FREEZE V1 carve-out (Amendment D). eLo-universe namespace remains frozen.",
+    "note": "WKG-originated nodes carry wkg: prefix. Cross-namespace promotion to eLo-universe requires explicit governance approval."
+  },
+  "wkg_claims": [],
+  "wkg_sources": [],
+  "wkg_proposed_claims": []
 }
