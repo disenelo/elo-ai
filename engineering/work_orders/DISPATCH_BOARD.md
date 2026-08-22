@@ -24,9 +24,9 @@ number existed. It is a **signup** target — the funding goal still sits behind
 
 ---
 
-## TRACK B — BUILDER · 2026-08-22 B-DRIFT complete ✅ · DRIFT AUDIT NOT YET CLOSED
+## TRACK B — BUILDER · 2026-08-22 B-DRIFT + BDRIFT-U complete ✅ · DRIFT AUDIT CLOSED
 
-All 27 WO-CANON volumes built and verified. B-DRIFT-01..04 done. Provenance audit complete. 1 new open item found (U-trait-vector-injection). 3 cards remain legitimately blocked:
+All 27 WO-CANON volumes built and verified. B-DRIFT-01..04 + BDRIFT-U done. Provenance audit complete. F6 remnant fixed. 3 cards remain legitimately blocked:
 
 | Card | State | Block |
 |---|---|---|
@@ -60,7 +60,7 @@ All 27 WO-CANON volumes built and verified. B-DRIFT-01..04 done. Provenance audi
 | **9.** `identity_block(_elo_self)` = competing representation | 🔴 **U-trait-vector-injection CONFIRMED ACTIVE** |
 | **10.** Volume X trait vector | 🔴 **Volume X UNRATIFIED — pre-canon artifact active** |
 
-**U-trait-vector-injection:** `EloSelfState.core_values` = `[calm, observant, playful, emotionally aware, curious, grounded]` injected via `identity_block()` at server.py:3262 EVERY TURN. Contains non-canonical traits ("observant", "emotionally aware" — canonical is "emotionally present") and UNKNOWN trait ("grounded" — U-grounded). Bypasses DR-4 chain entirely. `check_identity_drift()` defined but never called (dead function). Cannot be closed by Builder — requires David L3 ruling on canonical provenance of core_values.
+**U-trait-vector-injection:** ✅ CLOSED — BDRIFT-U commit `dd258c7`. `identity_block()` no longer renders `core_values`. Constitutional baseline = name/with/invariants only. `core_values` field preserved in `EloSelfState` for future experiential use. 18/18 tests pass.
 
 ## TRACK B — DESIGN + MT
 Design `DOING 0 / QUEUE 0` · MT `DOING 2 / QUEUE 6`. **Design feeds MT.** One open ask: the single

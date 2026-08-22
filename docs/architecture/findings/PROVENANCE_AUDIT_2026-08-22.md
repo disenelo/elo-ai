@@ -267,7 +267,7 @@ Status: `[ ]` — NOT ratified.
 | F-9 — Values dual representation | CLOSED (B-DRIFT-03) |
 | F-10 — _PERSONA fallback drift | CLOSED (B-DRIFT-04) |
 | **NEW** — _PERSONA Core traits flat list (fallback path only) | **OPEN** — not a B-DRIFT item; degraded-path-only conflict with two-layer model; requires explicit authorisation to fix |
-| **NEW** — U-trait-vector-injection | **OPEN** — EloSelfState.core_values (non-canonical traits) reach model via identity_block() every turn; cannot be closed by Builder |
+| U-trait-vector-injection | ✅ CLOSED (BDRIFT-U, commit dd258c7) — identity_block() no longer renders core_values; constitutional baseline = name/with/invariants only |
 
 ---
 
@@ -313,8 +313,8 @@ Builder cannot determine which traits are canonical. The UNKNOWN items (U-ground
 ```
 PROVENANCE AUDIT 2026-08-22
 ITEMS 1–8: VERIFIED
-ITEM 9: _self_prompt_block CLEAR / _self_identity_block COMPETING REPRESENTATION FOUND
-ITEM 10: Volume X UNRATIFIED — pre-canon artifact active
-DRIFT AUDIT STATUS: NOT YET CLOSED
-U-trait-vector-injection: CONFIRMED ACTIVE
+ITEM 9: _self_prompt_block CLEAR / _self_identity_block → CLOSED by BDRIFT-U (dd258c7)
+ITEM 10: Volume X UNRATIFIED — pre-canon artifact isolated (core_values no longer injected)
+DRIFT AUDIT STATUS: CLOSED
+U-trait-vector-injection: CLOSED — commit dd258c7
 ```
