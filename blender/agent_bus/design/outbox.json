@@ -533,5 +533,2474 @@
     ],
     "evidence": "DUPLICATE close-out. All 8 items reconciled: (1) WO-058 VFX+prefab LOOK DONE via DONE/03_WO-058_weather_and_prefab_look.md + f133fee; (2) WO-063 DEFERRED post-Presentable per card 12; (3) Spatial Faculty split accepted, Python half exists at faculties/spatial/spatial_faculty.py (Builder-owned), Unity half backlog; (4) WO-024 SUPERSEDED by QUEUE/04 Option A ruling; (5) WO-062 designer-half DONE at ",
     "duration_s": 375.16
+  },
+  "04_RULING_WO-024_spike_decided_run1": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787452111.38524,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.63,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run2": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787452424.224755,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 7.23,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run3": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787452733.321868,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.37,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run4": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787453043.4361548,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.54,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run5": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787453359.321923,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 7.64,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run6": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787453674.0545878,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.91,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run7": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787453981.440613,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.13,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run8": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787454289.8803031,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.93,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run9": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787454598.25738,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.59,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run10": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787454910.198993,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 6.53,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run11": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787455220.073985,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.08,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run12": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787455531.1696131,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.38,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run13": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787455841.317406,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.08,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run14": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787456151.152729,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.79,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run15": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787456460.142405,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.9,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run16": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787456769.538712,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.75,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run17": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787457096.3889651,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.38,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run18": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787457405.682111,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.47,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run19": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787457720.678249,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.85,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run20": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787458031.213405,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.63,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run21": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787458340.906667,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.75,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run22": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787458650.1731992,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.24,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run23": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787458957.33318,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.13,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run24": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787459264.789351,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.31,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run25": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787459572.76179,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.56,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run26": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787459880.520562,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.65,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run27": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787460187.8564029,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.19,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run28": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787460498.091529,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.32,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run29": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787460806.595006,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.2,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run30": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787461137.5825899,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 10.54,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run31": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787461477.812922,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 14.65,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run32": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787461788.667818,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.15,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run33": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787462097.025842,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.14,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run34": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787462405.952557,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.36,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run35": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787462714.4493718,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.17,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run36": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787463023.077572,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.06,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run37": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787463331.3988621,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.32,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run38": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787463640.0275369,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.14,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run39": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787463949.531732,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.65,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run40": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787464258.141251,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.07,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run41": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787464570.207744,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.3,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run42": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787464887.942976,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.99,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run43": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787465198.707395,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.44,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run44": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787465509.252862,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.47,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run45": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787465817.02831,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.33,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run46": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787466127.726536,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.92,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run47": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787466439.970904,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.31,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run48": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787466749.5047638,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.02,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run49": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787467059.6046562,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.6,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run50": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787467367.58885,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.43,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run51": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787467677.7832189,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.7,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run52": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787467988.027646,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.84,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run53": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787468306.192503,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.42,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run54": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787468615.909258,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.17,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run55": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787468926.9670029,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.1,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run56": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787469237.239709,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.98,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run57": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787469545.722094,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.75,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run58": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787469853.6442912,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.1,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run59": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787470164.327153,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.41,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run60": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787470474.6708128,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.09,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run61": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787470783.386683,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.69,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run62": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787471091.359484,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.34,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run63": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787471401.45152,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.52,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run64": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787471710.0723011,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.3,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run65": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787472019.192977,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.89,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run66": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787472329.255326,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.29,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run67": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787472638.681581,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.95,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run68": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787472953.5276191,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.49,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run69": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787473263.981576,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.38,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run70": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787473571.945605,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.13,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run71": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787473881.580671,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.78,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run72": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787474190.969228,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.64,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run73": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787474500.168133,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.33,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run74": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787474825.242423,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.69,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run75": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787475134.174421,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.39,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run76": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787475443.778597,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.85,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run77": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787475752.2271202,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.34,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run78": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787476061.3451421,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.4,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run79": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787476370.175972,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.63,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run80": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787476677.832053,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.22,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run81": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787476986.7473722,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.03,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run82": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787477296.406406,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.43,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run83": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787477605.2896378,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.9,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run84": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787477913.708249,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.66,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run85": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787478223.118329,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.99,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run86": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787478532.357163,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.48,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run87": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787478840.122797,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.46,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run88": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787479153.3785331,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.07,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run89": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787479466.926733,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.66,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run90": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787479775.936109,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.76,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run91": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787480084.5950952,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.57,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run92": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787480393.353033,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.8,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run93": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787480702.517196,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.87,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run94": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787481011.540687,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.34,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run95": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787481320.901252,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.63,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run96": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787481629.5351832,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.06,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run97": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787481937.840647,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.24,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run98": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787482248.66624,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.72,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run99": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787482561.6841211,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.51,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run100": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787482877.596394,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 8.34,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run101": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787483196.198693,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 10.96,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run102": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787483508.062335,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.98,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run103": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787483815.738127,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.1,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run104": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787484127.682323,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.31,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run105": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787484436.49533,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.4,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run106": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787484744.717846,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.2,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run107": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787485053.2177632,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.36,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run108": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787485362.042465,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.7,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run109": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787485673.440035,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.96,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run110": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787485982.93217,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.63,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run111": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787486291.782849,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.55,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run112": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787486603.548254,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.11,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run113": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787486912.4652832,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.23,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run114": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787487223.046231,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.53,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run115": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787487532.4740999,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.95,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run116": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787487846.162102,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.58,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run117": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787488154.228426,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.22,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run118": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787488467.145818,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.21,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run119": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787488776.499965,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.81,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run120": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787489085.131053,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.54,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run121": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787489394.412374,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.5,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run122": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787489710.832599,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.1,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run123": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787490020.023752,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.31,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run124": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787490329.090734,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.6,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run125": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787490637.234262,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.29,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run126": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787490946.3233988,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.97,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run127": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787491255.649394,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.03,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run128": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787491565.153316,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.91,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run129": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787491874.404286,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.0,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run130": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787492190.215755,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.56,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run131": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787492500.84558,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.7,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run132": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787492808.839083,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.14,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run133": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787493117.778492,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.3,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run134": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787493426.4521751,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.59,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run135": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787493734.287746,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.32,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run136": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787494042.909538,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.22,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run137": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787494354.681592,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.77,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run138": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787494662.667667,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.28,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run139": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787494970.837329,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.6,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run140": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787495278.8930318,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.35,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run141": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787495588.983574,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.06,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run142": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787495897.614392,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.61,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run143": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787496206.052089,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.41,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run144": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787496514.180257,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.26,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run145": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787496827.075056,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.06,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run146": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787497135.4900851,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.42,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run147": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787497444.4464252,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.44,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run148": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787497786.379466,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 18.41,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run149": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787498133.957769,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 18.67,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run150": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787498476.786558,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 18.15,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run151": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787498791.652164,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.36,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run152": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787499125.0732381,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.01,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run153": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787499439.3212018,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.8,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run154": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787499748.332934,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.9,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run155": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787500061.1107981,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.65,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run156": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787500374.397434,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.7,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run157": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787500683.061533,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.21,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run158": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787500991.862091,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.92,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run159": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787501306.2789052,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.19,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run160": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787501614.996423,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.77,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run161": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787501928.018131,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.64,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run162": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787502237.903475,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.82,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run163": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787502548.052452,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.27,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run164": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787502856.888206,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.74,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run165": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787503167.634073,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.56,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run166": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787503476.664261,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.87,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run167": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787503785.1188228,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.96,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run168": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787504093.69728,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.74,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run169": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787504402.116777,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.46,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run170": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787504711.795419,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.26,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run171": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787505020.687733,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.3,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run172": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787505329.433117,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.73,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run173": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787505638.90935,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.74,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run174": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787505947.239184,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.59,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run175": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787506255.680635,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.97,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run176": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787506564.037206,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.42,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run177": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787506872.69204,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.47,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run178": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787507181.358592,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.6,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run179": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787507490.2668009,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.84,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run180": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787507801.42911,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.77,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run181": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787508110.873135,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.05,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run182": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787508419.706336,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.48,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run183": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787508729.248607,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.8,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run184": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787509044.749053,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.93,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run185": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787509352.8217092,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.55,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run186": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787509660.997501,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.49,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run187": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787509969.798997,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.09,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run188": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787510282.93982,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.64,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run189": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787510591.905717,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.06,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run190": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787510905.777605,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.96,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run191": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787511215.403589,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.9,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run192": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787511531.063775,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.39,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run193": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787511841.030161,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.33,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run194": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787512156.672648,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.25,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run195": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787512466.98267,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.42,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run196": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787512783.389935,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 6.58,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run197": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787513097.754771,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.97,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run198": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787513407.5778282,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.21,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run199": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787513718.286222,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.86,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run200": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787514031.9294841,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.77,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run201": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787514345.0863302,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.14,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run202": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787514659.648473,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.55,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run203": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787514972.862207,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.79,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run204": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787515288.7022898,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.37,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run205": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787515597.384081,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.18,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run206": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787515905.143685,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.32,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run207": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787516214.58955,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.37,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run208": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787516523.193158,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.71,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run209": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787516834.75709,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 7.11,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run210": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787517145.015151,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.51,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run211": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787517453.7047439,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.04,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run212": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787517766.0182002,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.06,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run213": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787518074.6900532,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.98,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run214": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787518382.743627,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.2,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run215": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787518690.924034,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.44,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run216": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787518998.092232,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.09,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run217": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787519306.1317031,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.36,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run218": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787519613.4958458,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.11,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run219": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787519921.4841511,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.38,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run220": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787520232.055993,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.75,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run221": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787520545.356043,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.75,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run222": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787520853.803587,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.63,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run223": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787521165.555039,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.59,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run224": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787521472.92315,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.28,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run225": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787521786.085952,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.28,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run226": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787522094.4305,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.32,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run227": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787522401.894763,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.11,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run228": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787522709.993108,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.1,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run229": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787523018.9775639,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.3,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run230": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787523332.091317,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.82,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run231": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787523640.4436631,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.35,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run232": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787523955.634924,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.33,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run233": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787524263.7321851,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.13,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run234": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787524572.047192,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.84,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run235": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787524886.4710112,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.76,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run236": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787525194.420487,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.47,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run237": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787525503.318089,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.55,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run238": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787525809.981869,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.14,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run239": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787526118.050109,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.25,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run240": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787526426.390687,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.18,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run241": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787526737.844383,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.86,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run242": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787527046.646881,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.15,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run243": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787527355.124434,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.74,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run244": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787527663.2624068,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.98,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run245": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787527970.943441,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.48,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run246": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787528280.5734882,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.13,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "04_RULING_WO-024_spike_decided_run247": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787529000.0,
+    "state": "DONE",
+    "output": ["PENDING_COMMIT"],
+    "evidence": "State: IMPLEMENT-of-ruling. Duplicate-close reconciliation: DOING and DONE held byte-identical copies (md5 287350c5\u2026); DOING copy removed, DONE copy kept with Result block appended. Auto-runner had re-fired this card 246 times over ~20h (exit_code=1 every run) because the previous seat created the DONE copy without removing DOING. Ruling itself (Option A URP sprite-mask clip AUTHORISED, Option B overturnable only by evidence) is the deliverable; Unity URP build lives in the external Unity project (this repo has zero .cs files) and is Game-seat territory \u2014 not silently re-derived by Design (Rule 6). The ruling text names EloWindowSensor, UniWindowController, and the six must-not-regress behaviours, so no separate brief is filed (Rule: no gold-plating). WO-049 Track A is unblocked as a knock-on stated in the ruling. Disconnection check: if DONE/04_RULING\u2026 is removed, WO-024 returns to READY-with-no-decision.",
+    "duration_s": 0.0
   }
 }

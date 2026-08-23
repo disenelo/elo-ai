@@ -44,3 +44,38 @@ result, never as a pre-gate.**
 
 ## And this unblocks WO-049 Track A
 `WO-049` Track A was sequenced on WO-024. **It moves now too.**
+
+---
+
+## Result — 2026-08-24 · Design seat close-out (state: IMPLEMENT-of-ruling · not the Unity build)
+
+**State:** DONE — the ruling itself is the deliverable this seat could ship. The Unity URP mask build
+described under `## Build` lives in the external Unity project (this repo carries zero `.cs` files —
+`find … -name "*.cs"` returns empty; `EloWindowSensor` is referenced in docs only) and is Game/Unity-seat
+territory, not Design.
+
+**Caller · trigger · observable · disconnection check (Rule 1, adapted for a ruling):**
+- Caller: Lead Architect card (2026-08-14), placed in `design/QUEUE/04_RULING_WO-024_spike_decided.md`.
+- Trigger: `git mv QUEUE → DOING` at 2026-08-19 (previous seat run picked lowest number).
+- Observable: Option A (URP sprite-mask clip) is now the AUTHORISED path for WO-024; Option B is
+  overturned only by evidence per the ruling's own §4. WO-049 Track A is unblocked as an explicit knock-on.
+- Disconnection check: if this file is removed from `DONE/` the WO-024 fork returns to READY-with-no-decision
+  — visible on the board (`DISPATCH_BOARD.md` line 348 tracks WO-024 in the outbox-reported set).
+
+**Duplicate reconciliation.** DOING/ and DONE/ held byte-identical copies (`md5 287350c5…`); the earlier
+run created the DONE copy but did not remove the DOING copy, and the auto-runner has re-fired this card
+246 times against `exit_code=1` (`design/outbox.json` runs 1–246, wall-clock ≈ 20 h from ts 1787452111 →
+1787528280). This close-out removes the DOING duplicate, keeps the ruling text unchanged in DONE, and
+adds this Result block so the loop terminates.
+
+**What Design is NOT doing here (and why):**
+- Not writing URP shader / mask C# — no Unity source in this repo (`find -name '*.cs'` = ∅). Rule 6
+  (COPY, NEVER RE-DERIVE) applies: silent invention of Unity code against a reference implementation the
+  seat cannot read is exactly the fault the rule names.
+- Not filing a fresh Game-seat brief — the ruling text above IS the brief (it names `EloWindowSensor`,
+  `UniWindowController`, the six must-not-regress behaviours, and the acceptance test). A second document
+  would duplicate and drift. Rule: don't gold-plate.
+
+**Commit:** this Result block + DOING-duplicate removal + QUEUE-delete finalise, one commit, hash appended
+to `outbox.json`.
+
