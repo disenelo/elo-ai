@@ -81,13 +81,15 @@ def _lowest_card(seat_dir: pathlib.Path) -> pathlib.Path | None:
 
 
 def _is_reserved(card: pathlib.Path) -> bool:
-    """Card is restricted only if its frontmatter explicitly declares reserved=true.
+    """Card is restricted only if its frontmatter explicitly declares reserved=true,
+    or if the very first line of the card contains the token 'RESERVED'.
     Never scan body prose — a card that discusses a restricted topic is not itself restricted.
     """
     fm = _read_frontmatter(card)
     if "reserved" in fm:
         return fm["reserved"].strip().lower() in ("true", "yes", "1")
-    return False
+    first_line = card.read_text().split("\n", 1)[0]
+    return "RESERVED" in first_line
 
 
 def _read_frontmatter(card: pathlib.Path) -> dict:
