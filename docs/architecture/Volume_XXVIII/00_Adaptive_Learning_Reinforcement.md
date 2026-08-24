@@ -32,7 +32,7 @@ reports confidence. It **never** rewrites code, the Constitution, or the Executi
 3. **Presence timing** — learns *when* to approach / observe / disappear from David's state (coding →
    quiet; idle → approach; focused → vanish). Timing learned, not scripted. (Vol XIII Presence.)
 4. **Robot locomotion** — balance · walking · recovery · obstacle avoidance · arm positioning. **This is
-   RD-3 (Isaac Lab RL pipeline) — the robot instance of this volume.** Sim-only until L3 + LG-2.
+   RD-3 (Isaac Lab RL pipeline) — the robot instance of this volume.** **RESERVED — sim-only until L3 + LG-2 (legal review required before any real-robot actuation).**
 
 ## Reward = a VECTOR, via the EXISTING Significance Engine (not a scalar)
 Reuse `memory/significance_engine.py` + Vol V Ch.5 Significance — do NOT invent a reward scalar. The

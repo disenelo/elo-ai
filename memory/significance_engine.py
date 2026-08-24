@@ -231,12 +231,7 @@ def evaluate(
             except Exception:
                 pass
 
-    # WO-101 Part B: outcome dims always present — zeroed when no verified outcome.
-    # Shape is constant across all call sites so learning can compare vectors across turns.
-    emb  = 0.0
-    eff  = 0.0
-    safe = 0.0
-    outcome_terms = 0.0
+    # WO-101 Part B: outcome dims only present when outcome is supplied (backwards compat).
     if outcome is not None:
         emb  = _score_embodiment(outcome)
         eff  = _score_efficiency(outcome, action)
@@ -245,10 +240,10 @@ def evaluate(
         # Hard rule 1: verified==False → outcome_terms = 0
         if not outcome.get("verified", False):
             outcome_terms = 0.0
-    scores["embodiment"] = emb
-    scores["efficiency"] = eff
-    scores["safety"]     = safe
-    scores["reward"]     = _clamp(0.70 * outcome_terms + 0.30 * scores["overall"])
+        scores["embodiment"] = emb
+        scores["efficiency"] = eff
+        scores["safety"]     = safe
+        scores["reward"]     = _clamp(0.70 * outcome_terms + 0.30 * scores["overall"])
 
     return scores
 
