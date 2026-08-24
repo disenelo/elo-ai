@@ -207,6 +207,8 @@ def build_executive_context(
             "available":     getattr(_desktop, "available",   True) if _desktop else False,
             "degraded":      list(getattr(world, "degraded", [])),
             "route_history": list(getattr(world, "route_history", ()) or ()),
+            # SP-6 (WO-NAV-003): live gaze target — win_id from GazeState via elo_spatial.json
+            "gaze_win_id":   getattr(getattr(world, "gaze", None), "win_id", 0),
         }
 
     # ── attention (wm competition + raw attention) ─────────────────────────────

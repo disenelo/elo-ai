@@ -212,6 +212,14 @@ _INTENT_PATTERNS: list[tuple[str, list[str]]] = [
         r"\bi\s+(?:want|need)\s+to\s+(?:build|make|create|design)\b",
         r"\btime\s+to\s+(?:build|make|ship|launch)\b",
     ]),
+    # SP-16 (WO-NAV-003): spatial navigation intent — BEFORE catch-all
+    ("navigation", [
+        r"\b(?:go|head|move)\s+to\s+(?:that|the|this)\b",
+        r"\bjump\s+to\b",
+        r"\bnavigate\s+to\b",
+        r"\btake\s+me\s+to\b",
+        r"\bgo\s+(?:over\s+)?there\b",
+    ]),
     ("conversation", [
         r".*",  # catch-all — always matches
     ]),
@@ -254,6 +262,7 @@ _CATEGORY_MAP: dict[str, tuple[str, str]] = {
     "social":             ("Connect", "sharing a moment"),
     "planning":           ("Decide",  "charting a path forward"),
     "creation":           ("Build",   "making something new"),
+    "navigation":         ("Decide",  "navigating to a destination"),
     "conversation":       ("Connect", "being present together"),
 }
 
