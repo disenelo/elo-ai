@@ -382,6 +382,7 @@ try:
         if "_executive_faculty(" in ln
         and "def _executive_faculty" not in ln
         and "import" not in ln
+        and not ln.strip().startswith("#")
     ]
     # Expect exactly one call to _executive_faculty from spine.run().
     assert len(ef_calls) == 1, (
