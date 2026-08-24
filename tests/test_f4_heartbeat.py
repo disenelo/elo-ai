@@ -89,6 +89,28 @@ def test_t3_heartbeat_interval():
     ok(f"T3: _HEARTBEAT_INTERVAL={interval}s (≤ 60s)")
 
 
+# ── T4: bare import does NOT start the heartbeat thread (0054 guard) ─────────
+def test_t4_import_without_call_does_not_start_heartbeat():
+    import subprocess
+    script = (
+        "import sys, threading, time; sys.path.insert(0, '.'); "
+        "import os; os.environ.pop('ELO_STATE_HEARTBEAT', None); "
+        "import blender_bridge.state_writer; "
+        "time.sleep(0.05); "
+        "names = {t.name for t in threading.enumerate()}; "
+        "assert 'state_writer_heartbeat' not in names, f'heartbeat thread started on bare import: {names}'; "
+        "print('T4_PASS')"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        capture_output=True, text=True, timeout=10,
+        cwd=ROOT,
+    )
+    if "T4_PASS" not in result.stdout or result.returncode != 0:
+        err(f"T4: bare import started heartbeat thread — stdout={result.stdout!r} stderr={result.stderr!r}")
+    ok("T4: bare import does NOT start the state_writer_heartbeat thread — guard confirmed")
+
+
 # ── runner ───────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     print("F4 HEARTBEAT TEST")
@@ -96,5 +118,6 @@ if __name__ == "__main__":
     test_t1_heartbeat_thread_starts()
     test_t2_patch_empty_advances_ts()
     test_t3_heartbeat_interval()
+    test_t4_import_without_call_does_not_start_heartbeat()
     print()
     print("F4 DONE: _ts advances on heartbeat independently of state changes.")

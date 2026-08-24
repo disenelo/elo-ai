@@ -3942,16 +3942,36 @@ def _process_turn(raw: str) -> dict:
                 _bh_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                         "blender", "backend_health.json")
                 _bh_tmp  = _bh_path + ".tmp"
+                _bh_ts   = _bh_time.time()
+                _bh_payload = {
+                    "backend":  backend_used,
+                    "expected": _bh_expected,
+                    "degraded": _bh_degraded,
+                    "_ts":      _bh_ts,
+                    **_bh_ollama,
+                    **_bh_prompt,
+                }
                 with open(_bh_tmp, "w", encoding="utf-8") as _bh_f:
-                    _bh_json.dump({
-                        "backend":  backend_used,
-                        "expected": _bh_expected,
-                        "degraded": _bh_degraded,
-                        "_ts":      _bh_time.time(),
-                        **_bh_ollama,
-                        **_bh_prompt,
-                    }, _bh_f, ensure_ascii=False)
+                    _bh_json.dump(_bh_payload, _bh_f, ensure_ascii=False)
                 os.replace(_bh_tmp, _bh_path)
+                # card 0057 R1: per-turn history — rolling JSONL so latency trend exists
+                try:
+                    _bh_hist = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                            "blender", "backend_health_history.jsonl")
+                    _bh_entry = {
+                        "_ts":              _bh_ts,
+                        "backend":          backend_used,
+                        "load_ms":          _bh_ollama.get("load_ms"),
+                        "prompt_eval_ms":   _bh_ollama.get("prompt_eval_ms"),
+                        "prompt_eval_tokens": _bh_ollama.get("prompt_eval_tokens"),
+                        "gen_ms":           _bh_ollama.get("gen_ms"),
+                        "gen_tokens":       _bh_ollama.get("gen_tokens"),
+                        "degraded":         _bh_degraded,
+                    }
+                    with open(_bh_hist, "a", encoding="utf-8") as _bh_hf:
+                        _bh_hf.write(_bh_json.dumps(_bh_entry, ensure_ascii=False) + "\n")
+                except Exception:
+                    pass
                 if _bh_degraded and _agent is None:
                     response = ("Can't reach my thinking right now — running on backup. "
                                 "Give me a sec and try again.")
