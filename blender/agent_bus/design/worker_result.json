@@ -1,4 +1,13 @@
 {
-  "state": "CONSUMED",
-  "consumed_ts": 1787199680.567586
+  "card": "12_YOUR_LIST_take_five_first.md",
+  "status": "DONE",
+  "commits": [],
+  "acceptance_met": false,
+  "acceptance_target": "eLo leaves on take-five and stays gone until the mouse moves",
+  "evidence": "Card 12 asks packaged: (1) TWO OPTIONS for the take-five killer delivered to LA in one line each (FROM_DESIGN_2026-08-24_take_five_two_options_for_ruling.md) - Option A widen blocklist [add attentive,walk,run,look_around,stretch,glance,dreaming to EloOSAvatarReceiver.cs:507] · Option B retire the mode-based wake [delete lines 499-511] · ambiguity flagged (ambient-run vs commanded-run collision Option A cannot resolve by mode-name); (2) MT FOUR VALUES all delivered across earlier sessions - eloWorldHeight=3.736 [outbox 2026-08-19] · screenHeightFraction=0.42 [outbox 2026-08-19] · camera transform=ortho size 6.25 rotation identity position (-1.65,0.44,-6.48) looks down +Z [mobile_test/FROM_DESIGN_2026-08-21_camera_reference_frame_head_pose.md] · reference frame=Unity Y-up camera dead-on +Z facingYaw 0 = eLo front-on + Idle_seamless_1period/frame_000 = neutral head pose [same relay]; (3) Card 11 already in DONE from 2026-08-24 commit 2831875 - no move needed; (4) rest status listed against acceptance line not WO numbers (card 10 amplitude chain not blocking · lipsync design half DONE commit 150907c awaiting Builder writer close-out · WO-024 RULED Option A commit 951ac2c · backlog items 02 · WO-063 post-Presentable). Root cause independently re-verified 2026-08-24: EloOSAvatarReceiver.cs:507 excludes only ''/exploring/idle · mode at line 428 = state.mode OR motion.mode · passive-mode leaks confirmed in ambient_engine.py:209/246/273/282/291. No product code touched per card constraint 'Not a fix yet'. [TELE-SRC] trap remains armed for live confirmation on David's next observation. Acceptance NOT MET YET - block IS the LA ruling ask (card §1 explicit). On LA one-line pick Design implements EloOSAvatarReceiver.cs in-lane, rebuilds Unity binary, verifies against David acceptance line.",
+  "deliverables": [
+    "blender/agent_bus/design/FROM_DESIGN_2026-08-24_take_five_two_options_for_ruling.md",
+    "blender/agent_bus/design/DONE/12_YOUR_LIST_take_five_first.md (Result block appended)"
+  ],
+  "blocker": "LA ruling on Option A vs Option B (card §1 explicit) - one-line pick unblocks implementation"
 }
