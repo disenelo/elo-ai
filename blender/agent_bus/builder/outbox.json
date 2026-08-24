@@ -3882,5 +3882,88 @@
     "evidence": "tests/test_card_0021_p0_identity_and_world.py = 10/10 PASS; word-boundary regex confirmed spine.py:110; _IDENTITY_TRIGGERS at server.py:1400-1405; _DAVID_NAME_TRIGGERS at server.py:1430-1459; capability.is_available() gated on ONLINE (capability.py:80-81); num_ctx=8192 in backend_router.py:326,688.",
     "note": "Re-fire close-out only \u2014 work already landed 2026-08-19. Original DONE record: 0030_FINISH_C2_before_D1.md.",
     "closeout_commit": "1734bfc"
+  },
+  "0030_FINISH_C2_before_D1_run4": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787538388.352298,
+    "state": "DONE",
+    "output": [
+      "f5ec51f",
+      "e868930",
+      "91c56ba",
+      "1734bfc"
+    ],
+    "evidence": "Card re-materialised in QUEUE (auto-refire). Fix already in tree from 2026-08-19 wave. Re-verified against current tree: (1) spine.py:110 uses \\b regex word-boundary matching; (2) _IDENTITY_TRIGGERS server.py:1400-1405 includes 'your name'/'what's your name'/'what are you called'/'tell me your name'/'what do i call you'; (3) _identity_response server.py:1408-1424 renders from _elo_self.identity_na",
+    "duration_s": 269.8
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787538960.9772758,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 272.09,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787539273.237207,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 11.52,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run3": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787539585.735289,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 11.54,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run4": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787539892.2397928,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 6.09,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run5": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787540198.1043751,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.62,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run6": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787540505.6180449,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 6.98,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "WO-WKG-001_wisdom_knowledge_graph_phase1_schema": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787540636.4352262,
+    "state": "DONE",
+    "output": [],
+    "evidence": "commit b9e26f9 \u2014 6 files, AT-1 through AT-10 10/10 PASS; card moved to DONE/",
+    "duration_s": null
   }
 }
