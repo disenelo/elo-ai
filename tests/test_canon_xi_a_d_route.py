@@ -137,8 +137,8 @@ def test_xi_ad3_oq13_oq14_wiring() -> None:
     if "_ACK_BODY_TYPES" in src:
         if "arrived" not in src[src.index("_ACK_BODY_TYPES"):src.index("_ACK_BODY_TYPES") + 300]:
             err("OQ-1.4: 'arrived' not in _ACK_BODY_TYPES")
-    # The move ACK check accepts arrived
-    if '"arrived"' not in src[src.find("_PENDING_MOVE[\"active\"]"):src.find("_PENDING_MOVE[\"active\"]") + 600]:
+    # The move ACK check accepts arrived (window 800 chars — arrived is ~620 chars into block)
+    if '"arrived"' not in src[src.find("_PENDING_MOVE[\"active\"]"):src.find("_PENDING_MOVE[\"active\"]") + 800]:
         err("OQ-1.4: arrived not checked in move ACK block")
 
     ok('OQ-1.4: arrived accepted as terminal ACK alongside legacy move_complete')
