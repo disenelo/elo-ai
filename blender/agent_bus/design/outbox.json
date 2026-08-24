@@ -2999,8 +2999,36 @@
     "from": "design",
     "ts": 1787529000.0,
     "state": "DONE",
-    "output": ["PENDING_COMMIT"],
+    "output": [
+      "951ac2c"
+    ],
     "evidence": "State: IMPLEMENT-of-ruling. Duplicate-close reconciliation: DOING and DONE held byte-identical copies (md5 287350c5\u2026); DOING copy removed, DONE copy kept with Result block appended. Auto-runner had re-fired this card 246 times over ~20h (exit_code=1 every run) because the previous seat created the DONE copy without removing DOING. Ruling itself (Option A URP sprite-mask clip AUTHORISED, Option B overturnable only by evidence) is the deliverable; Unity URP build lives in the external Unity project (this repo has zero .cs files) and is Game-seat territory \u2014 not silently re-derived by Design (Rule 6). The ruling text names EloWindowSensor, UniWindowController, and the six must-not-regress behaviours, so no separate brief is filed (Rule: no gold-plating). WO-049 Track A is unblocked as a knock-on stated in the ruling. Disconnection check: if DONE/04_RULING\u2026 is removed, WO-024 returns to READY-with-no-decision.",
+    "duration_s": 0.0
+  },
+  "04_RULING_WO-024_spike_decided_run248": {
+    "to": "Architect",
+    "from": "design",
+    "ts": 1787529102.237029,
+    "state": "DONE",
+    "output": [
+      "951ac2c"
+    ],
+    "evidence": "Duplicate-close reconciliation. DOING and DONE held byte-identical copies of the Architect's Option-A ruling (md5 287350c5\u2026); DOING copy removed, DONE copy kept with Result block appended (state IMPLEMENT-of-ruling, caller/trigger/observable/disconnection-check filled). Autorun had re-fired this card 246\u00d7 (~20h, exit_code=1 every run) because the previous seat created the DONE copy without removin",
+    "duration_s": 304.32
+  },
+  "09_WO-124_FULL_MOVEMENT_EXPRESSION_AUDIT_for_MT_2026-08-24": {
+    "to": "mobile_test + Architect",
+    "from": "design",
+    "seat": "SEAT-ENG-004",
+    "ts": 1787529900.0,
+    "wo": "WO-124",
+    "state": "DONE",
+    "title": "FULL MOVEMENT & EXPRESSION AUDIT \u2014 consolidated manifest delivered to MT (60/60 rows, no blanks)",
+    "artefact": "mobile_test/FROM_DESIGN_2026-08-17_movement_expression_audit.md",
+    "acceptance_met": true,
+    "evidence": "Manifest written to mobile_test/FROM_DESIGN_2026-08-17_movement_expression_audit.md per Architect card template (\u00a7A blendshapes 7/7 \u00b7 \u00a7B lipsync 6/6 \u00b7 \u00a7C head 6/6 \u00b7 \u00a7D gaze 5/5 \u00b7 \u00a7E body 7/7 \u00b7 \u00a7F locomotion 5/5 \u00b7 \u00a7G emotion 5/5 \u00b7 \u00a7H timing 4/4 \u00b7 \u00a7I render kit 10/10 \u00b7 \u00a7J gaps 5/5). Anti-omission rule honoured: every row has a value; UNKNOWNs (I5 lighting + 10 items in J5) each name the measurement that would settle them; no prose substituted for enumerations. Consolidation not re-derivation: indexed against 14 prior verified deliverables (R, P, C1, F, X, U, I1, B1, C2, I2, M, L, W, LP). Standing invariants carried through: Tier-2 screenHeightFraction=0.42, Tier-3 world-height 3.736, RETIRED 5.25/5.01/5.093/x10 (dead duplicate), David amplitude override viseme weight = 100 (M 2026-08-22). MT inbox notified (design_2026-08-24_WO-124_full_movement_expression_audit_manifest). READ-ONLY audit per card \u00a74; no product code touched.",
+    "output": [],
+    "blocker": null,
     "duration_s": 0.0
   }
 }

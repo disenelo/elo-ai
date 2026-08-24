@@ -167,3 +167,6 @@ and the whole point of the mobile surface is that it is **the same eLo**, not an
 
 **Deliver to MT's `FROM_DESIGN_*` file, append a line to their `inbox.json`, and report in your outbox.**
 **Ask me if a row is ambiguous — do not guess and do not skip.**
+
+
+--- DONE (SEAT-ENG-004) 2026-08-20: reconciled ---
