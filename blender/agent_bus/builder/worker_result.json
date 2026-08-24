@@ -1,8 +1,8 @@
 {
-  "card": "0071_WIRE_rows_24_26_then_116_117.md",
+  "card": "0015_RESTART_is_the_gate_PROVEN_plus_event_log.md",
   "status": "DONE",
-  "commits": ["e84572a", "0565d76"],
+  "commits": ["2805f57"],
   "acceptance_met": true,
-  "evidence": "Row 24 wired at server.py:4406-4412 (_apply_end_of_turn calls record_behaviour on every turn); live disk shows recent_behavior populated with 7 verbs / 217 events; simulated sit turn: recent_behavior[sit] 5 -> 6. Row 26 wired at server.py:3875 (route(...outcome=_w1_outcome)) and journal_router.py:127 (evaluate(...outcome=_outcome_for_scoring)); disconnection check drops verified-sit reward 0.7321825 -> 0. update_habits refactored to delegate to record_behaviour (was dead duplicate, 0 callers). WO-116 acceptance MET: store non-empty, derive_tendencies returns 7 real statements, before/after delta = +1. WO-117 EMERGENTLY TRUE. Tests green: test_wo126_meaning 10/10, test_wave2_body_selfobserve 5/5, test_wo125_self_interpret 6/6, test_wo083_identity_meaning 5/5. Card claims of '0 callers' and 'outcome= absent' were stale; underlying wires landed at c93dab8 (WO-101, 2026-08-13) and 2b32736 (ADR-0037 single-authority mutator).",
+  "evidence": "runtime/unity_events_cursor.py (read/write cursor + iter_events_from + max_seq). server.py::_poll_unity_events loads persisted cursor on start and writes unity_events_cursor.json after each read batch. tests/test_0015_unity_events_append_log_cursor.py 5/5: same-tick move_complete+gaze_target_changed both arrive; 25-row backlog queues without loss; cursor persistence roundtrip; head-rotation trim; atomic cursor write. Non-regression: test_int8_event_consumers 2/2 + test_int8a_file_drop_roundtrip 9/9 + test_wo099b_gaze_consume 7/7 + test_wo111_consume_ack 6/6.",
   "blocker": null
 }

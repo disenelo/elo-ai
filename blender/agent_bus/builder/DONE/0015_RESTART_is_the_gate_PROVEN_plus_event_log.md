@@ -42,3 +42,48 @@ arrive. Write it as a failing test first; under the current single slot one is l
 4. **`0010_WO-122`** ⇒ row **14** — still open, still a One-Brain violation
 
 **Count: 16 of 26.** Steps 1 and 2 are ~20 minutes of driving and take it to 20.
+
+---
+
+## Result — Builder half of the event-log ruling (step 3)
+
+**Commit:** `2805f57` — *0015 builder: unity_events append-log cursor — Builder half of RULING 00d*
+
+### What changed
+- **`runtime/unity_events_cursor.py`** (new). `read_cursor` / `write_cursor` for
+  `unity_events_cursor.json`; `iter_events_from(seq_after, path)` yields NDJSON rows with
+  `seq > seq_after`; `max_seq(path)` returns the highest seq in the file. Cursor write is
+  atomic (`mkstemp` + `os.replace`); no straggler temp files on failure.
+- **`server.py::_poll_unity_events`** — loads the persisted cursor at start (survives
+  restart because Designer keeps `seq` monotonic across relaunch, per
+  `FROM_DESIGN_2026-08-15_unity_events_append_log_schema.md`) and writes it after each
+  read batch. Designer now has a live watermark and won't need to warn conservatively on
+  every rotation.
+- **`tests/test_0015_unity_events_append_log_cursor.py`** (5/5).
+
+### Test — the row-13 hardening
+- **AT-0015-1** — same-tick `move_complete` + `gaze_target_changed` both arrive. Under the
+  old single slot one was lost; under the append-log both rows land and both are visible
+  to the cursor consumer.
+- **AT-0015-2** — consume nothing for 25 rows: all 25 are visible (backlog queues, none
+  vanish). This is the "delivery buffer, not state slot" property.
+- **AT-0015-3** — persistence roundtrip: after writing `consumed_seq`, a fresh reader
+  loads it and sees nothing already-consumed; only new rows are yielded.
+- **AT-0015-4** — head-rotation trim: reader with cursor at N still sees every surviving
+  row above N (discarded-above-cursor is Designer's WARNING; the reader stays sane).
+- **AT-0015-5** — cursor write is atomic; no `.cursor.*` stragglers, valid JSON on read.
+
+### Non-regression
+- `test_int8_event_consumers.py` 2/2 · `test_int8a_file_drop_roundtrip.py` 9/9 ·
+  `test_wo099b_gaze_consume.py` 7/7 · `test_wo111_consume_ack.py` 6/6.
+
+### Handshake state
+Cursor file will appear at `blender/unity_events_cursor.json` on the next backend restart
+(the ACK poller writes it after the first read batch). Once present, Designer's rotation
+warns only when a truly unread row would be discarded.
+
+### Not in scope (deliberately)
+- Step 1 (backend restart → rows 23/25) — mechanical, not code-shaped.
+- Step 2 (three actions across two sessions → row 20/22) — belongs to card `0014`.
+- Step 4 (`0010_WO-122` → row 14) — its own card.
+
