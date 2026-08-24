@@ -3751,5 +3751,134 @@
     "commits": [
       "2805f57"
     ]
+  },
+  "0015_RESTART_is_the_gate_PROVEN_plus_event_log_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787535702.35837,
+    "state": "DONE",
+    "output": [
+      "2805f57"
+    ],
+    "evidence": "runtime/unity_events_cursor.py (read/write cursor + iter_events_from + max_seq). server.py::_poll_unity_events loads persisted cursor on start and writes unity_events_cursor.json after each read batch. tests/test_0015_unity_events_append_log_cursor.py 5/5: same-tick move_complete+gaze_target_changed both arrive; 25-row backlog queues without loss; cursor persistence roundtrip; head-rotation trim; ",
+    "duration_s": 481.91
+  },
+  "0017_ROWS_20_22_ACCEPTED_23_needs_provenance_DUPLICATE_refire_2026-08-24T01-48Z": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787536147.367106,
+    "state": "DONE",
+    "output": [
+      "f7bea04"
+    ],
+    "evidence": "Card 0017 re-materialised in QUEUE and claimed to DOING; fix already landed at commit f7bea04 (2026-08-19). Re-verified on this re-fire: self/emergent_cognition.py:append_autobiography() write-gate rejects unless verified is True AND source == 'body_ack' AND episode_ref is a non-empty string. self/journals/autobiography.jsonl = 4 rows, every row carries verified=true, source='body_ack', episode_ref. tests/test_0017_autobiography_provenance.py 6/6 passing (AP-1/2/3 rejections + AP-4 happy path + AP-5 real file provenance + AP-6 byte-identical 626 bytes, sha256 3b032c927eb4). tests/test_0013_wave5_reflect_history_look_selfchoose.py 12/12 passing. No new commit \u2014 closeout note only.",
+    "commits": [
+      "f7bea04"
+    ]
+  },
+  "0017_ROWS_20_22_ACCEPTED_23_needs_provenance_run3": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787536154.560288,
+    "state": "DONE",
+    "output": [
+      "f7bea04"
+    ],
+    "evidence": "Re-fire of card 0017. Fix already landed at commit f7bea04 (2026-08-19). Re-verified: self/emergent_cognition.py append_autobiography() gate present; autobiography.jsonl clean (4 body_ack rows w/ provenance fields); test_0017_autobiography_provenance.py 6/6 pass; test_0013_wave5 12/12 pass. No new commit \u2014 closeout note only. See DONE/0017_ROWS_20_22_ACCEPTED_23_needs_provenance_DUPLICATE_refire_2",
+    "duration_s": 151.65
+  },
+  "0019_P0_dead_personality_path_and_fabricated_past_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787536610.5197701,
+    "state": "DONE",
+    "output": [
+      "8143a44"
+    ],
+    "evidence": "Re-fire of card 0019. Fix already landed at commit 8143a44 (2026-08-19). Re-verified on this re-fire (read-only, no code changes): self/elo_self_model.py:126-127 _DEFAULT_EMBODIMENT_HISTORY = [] and _DEFAULT_EMBODIMENT_MILESTONES = []; narrative_block() on empty state returns the honest 'no verified autobiography yet ... Do NOT invent embodiments, adventures, or a past' block; self/lesson_store._try_personality_delta builds real PersonalityDelta, reads ValidationResult.accepted, calls apply_delta(delta, pv, validation=result) + save_personality(pv), bare except replaced with logged rejection (Vol XVIII \u00a71.7); runtime/reflection_faculty.py proposes payload uses string direction and magnitude=MAX_STEP. Acceptance re-run: tests/test_card_0019_dead_personality_and_past.py 8/8 passing; tests/test_wo052b_narrative_identity.py 9/9 passing. No new commit \u2014 closeout note only. See DONE/0019_P0_dead_personality_path_and_fabricated_past_DUPLICATE_refire_2026-08-24T01-56Z.md.",
+    "commits": [
+      "8143a44"
+    ]
+  },
+  "0019_P0_dead_personality_path_and_fabricated_past_run3": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787536622.694125,
+    "state": "DONE",
+    "output": [
+      "8143a44"
+    ],
+    "evidence": "Re-fire of card 0019. Fix already landed at commit 8143a44 (2026-08-19). Re-verified read-only: self/elo_self_model.py:126-127 _DEFAULT_EMBODIMENT_HISTORY and _DEFAULT_EMBODIMENT_MILESTONES are both []; narrative_block() on empty state returns 'no verified autobiography yet ... Do NOT invent embodiments, adventures, or a past. Silence is the correct answer.'; self/lesson_store._try_personality_del",
+    "duration_s": 167.81
+  },
+  "0024_CT4V_01_02_03_04_05_08_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787537160.0,
+    "state": "PARTIAL",
+    "output": [
+      "8143a44"
+    ],
+    "evidence": "Re-fire. Identical DONE/0024 already sat untracked with no close-out; card is a 6-sub-directive architectural batch. Re-verified read-only, no code edited. CT4V-02 four defects (self/lesson_store.py:398-433) + malformed payload (runtime/reflection_faculty.py:119-125) fixed at 8143a44 (card 0019 P0-B); CT4V-03 fabricated defaults empty at self/elo_self_model.py:126-127 per 8143a44. NOT built and not covered by 8143a44: CT4V-02 EVOLUTION_FAILED explicit type + CI-source-write assertion; CT4V-03 authority retirement + projection contract + provenance (L3 required); CT4V-01 ACK->Reflection integration event contract (0 refs in code); CT4V-05 confidence split into declared_ceiling/observed_reliability/self_confidence (grep returns 0 in runtime/self); CT4V-08 decision-journal writer never populates confidence/alternatives_rejected (journal rows 1-9 all null/[]) despite upstream 05b_WO-112 DONE. CT4V-04 explicitly do-not-tick per card. Close-out block on DONE/0024_CT4V_01_02_03_04_05_08_DUPLICATE_refire_2026-08-24T0206Z.md proposes 5 follow-up cards for LA dispatch. No new commit.",
+    "commits": [
+      "8143a44"
+    ],
+    "blocker": "Card is a 6-sub-task architectural batch; CT4V-01 canon amendment (Vol XVII \u00a71.6) + CT4V-03 identity-authority retirement are L3 territory; CT4V-05 is a cross-cutting rename; CT4V-08 needs a live-turn diagnostic. Cannot honestly close as one autorun batch without breaching Four States rule (UNKNOWN != ASSUMPTION) and the card's own C6-transcript standard."
+  },
+  "0024_CT4V_01_02_03_04_05_08_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787537393.935689,
+    "state": "PARTIAL",
+    "output": [
+      "8143a44"
+    ],
+    "evidence": "Re-fire. An identical DONE/0024 already sat untracked with no close-out. Card spans six architectural sub-directives; single autorun cannot honestly reach C6 on all six. Re-verified read-only, no code edited: CT4V-02 four defects at self/lesson_store.py:398-433 + malformed payload at runtime/reflection_faculty.py:119-125 are fixed at commit 8143a44 (card 0019 P0-B, 2026-08-19); CT4V-03 fabricated ",
+    "duration_s": 471.01,
+    "blocker": "Card is a 6-sub-task architectural batch. CT4V-01 requires canon amendment (Vol XVII \u00a71.6) = L3. CT4V-03 requires One Brain ruling on identity authority = L3. CT4V-05 is a cross-cutting rename that should not ride inside a batch card. CT4V-08 live wiring needs a diagnostic card, not a design card. Cannot honestly close as one autorun batch without breaching Four States rule (UNKNOWN != ASSUMPTION) and card's own C6-transcript standard. Five follow-up cards proposed."
+  },
+  "0027_WO-ONEBRAIN_convergence_programme_refire_2026-08-24_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787545800.0,
+    "state": "DONE",
+    "output": [
+      "2e04e18",
+      "b936b21"
+    ],
+    "evidence": "Re-fire of card 0027, previously closed as RETRACTED on 2026-08-19 (DONE/0027_WO-ONEBRAIN_convergence_programme_RETRACTED.md). Card body unchanged; first line still reads: RETRACTED. DO NOT BUILD THIS CARD. Followed exactly. No code touched. Close-out block appended and card moved DOING->DONE with re-fire suffix so the seat loop is not blocked by a stale DOING entry (Autorun Protocol: DOING older than a day = dead seat). Two commits: 2e04e18 adds DONE close-out; b936b21 removes the QUEUE stub.",
+    "commits": [
+      "2e04e18",
+      "b936b21"
+    ],
+    "blocker": null
+  },
+  "0027_WO-ONEBRAIN_convergence_programme_run4": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787537818.293729,
+    "state": "DONE",
+    "output": [
+      "2e04e18",
+      "b936b21"
+    ],
+    "evidence": "Re-fire of card 0027, previously closed as RETRACTED on 2026-08-19 (DONE/0027_WO-ONEBRAIN_convergence_programme_RETRACTED.md). Card's first line: 'RETRACTED. DO NOT BUILD THIS CARD.' Followed exactly. No code touched. Close-out block appended to card; moved DOING->DONE with re-fire suffix (0027_WO-ONEBRAIN_convergence_programme_DUPLICATE_refire_2026-08-24T04-30Z.md) so seat loop is not blocked by ",
+    "duration_s": 124.06
+  },
+  "0030_FINISH_C2_before_D1_DUPLICATE_refire_2026-08-24T02-24Z": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787538316.66764,
+    "card": "0030_FINISH_C2_before_D1.md",
+    "status": "DONE",
+    "kind": "duplicate_refire",
+    "commits": [
+      "f5ec51f",
+      "e868930",
+      "91c56ba"
+    ],
+    "acceptance_met": true,
+    "evidence": "tests/test_card_0021_p0_identity_and_world.py = 10/10 PASS; word-boundary regex confirmed spine.py:110; _IDENTITY_TRIGGERS at server.py:1400-1405; _DAVID_NAME_TRIGGERS at server.py:1430-1459; capability.is_available() gated on ONLINE (capability.py:80-81); num_ctx=8192 in backend_router.py:326,688.",
+    "note": "Re-fire close-out only \u2014 work already landed 2026-08-19. Original DONE record: 0030_FINISH_C2_before_D1.md."
   }
 }

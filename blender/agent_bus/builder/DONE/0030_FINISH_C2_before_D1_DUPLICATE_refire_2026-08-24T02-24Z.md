@@ -63,3 +63,44 @@ experienced. **Then D-1** (the proposal loop — the thing that makes him feel b
 Ollama** — so the prompt is now ~4.5k tokens plus eight appended blocks against an unknown default window.
 **If the window truncates, the identity block P0-X just added may not survive to the model.**
 Check it while you're in there. **Do not upgrade this to "fixed" without evidence.**
+
+---
+
+## ✅ DUPLICATE — re-fire closed 2026-08-24T02-24Z
+
+Card re-materialised in QUEUE (auto-refire on today's autorun tick) and was claimed to DOING.
+**Fix already landed** in the 2026-08-19 wave and remains in tree — see
+`DONE/0030_FINISH_C2_before_D1.md` for the original close-out.
+
+### Independent Runtime Verification (Rule #2) — re-run just now against the current tree
+
+| Card item | Current site | Verification |
+|---|---|---|
+| 1. Word-boundary scoring | `runtime/spine/spine.py:87-161` (`_verb_score` at :100-111) | `\b` regex confirmed at line 110; `_CAP_STOPWORDS` strips `"what"/"is"/"your"/"my"` etc; all-stopword phrases require near-exact match |
+| 2a. Name triggers present | `server.py:1400-1405` | `_IDENTITY_TRIGGERS` includes `"your name"`, `"what's your name"`, `"what are you called"`, `"tell me your name"`, `"what do i call you"` |
+| 2b. Pool renders from state | `server.py:1408-1424` | `_identity_response()` reads `_elo_self.identity_name`; pool built inline; hardcoded `_IDENTITY_POOL` retired |
+| 2c. David-name path | `server.py:1430-1459` | `_DAVID_NAME_TRIGGERS` + `_david_name_response()` reads `_elo_self.who_i_am_with` |
+| 3. Fail-closed on UNKNOWN health | `runtime/capabilities/capability.py:80-81` | `is_available()` returns `enabled and not future and health_state in (ONLINE,)` — UNKNOWN falls through |
+| num_ctx open unknown | `runtime/backend_router.py:326, 688` | `"num_ctx": 8192` set in both non-streaming and streaming Ollama call sites |
+
+### Acceptance test — re-run just now, 10/10 PASS
+
+```
+$ python3 tests/test_card_0021_p0_identity_and_world.py
+P0-X — identity + David-name resolve from state
+  ✅ P0-X.a: 'What is your name?' → 'eLo' 5×, backend=direct
+  ✅ P0-X.b: 'What is my name?' → 'David' 5×, backend=direct
+  ✅ P0-X.c: field change reaches the answer (Nova / Alex)
+  ✅ P0-X.d: 6 identity variants all route direct
+...
+10 passed  0 failed
+```
+
+**Both acceptance clauses** of the card met (no web search in trace for *"What is your name?"*; David-name path returns *"You're David."* / same-family from `who_i_am_with`).
+
+### Reference commits (already in tree)
+- `f5ec51f` — *"C2/A1/triggers: fix name routing — zero candidates for 'what is your name?'"* (word-boundary scoring + trigger + pool changes)
+- `e868930` — *"0021: P0-X eLo/David names from state · P0-Y WO-102 stores + proper-noun routing · P0-Z queue diagnosed"*
+- `91c56ba` — *"CT0032: Capability health producer — join real signals to health_state"* (fail-closed enforcement)
+
+**Status: DONE — DUPLICATE re-fire.** No new code commit — the re-fire adds no code changes; only this closeout note.

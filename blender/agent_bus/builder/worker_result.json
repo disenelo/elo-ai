@@ -1,8 +1,9 @@
 {
-  "card": "0015_RESTART_is_the_gate_PROVEN_plus_event_log.md",
+  "card": "0030_FINISH_C2_before_D1.md",
   "status": "DONE",
-  "commits": ["2805f57"],
+  "kind": "duplicate_refire",
+  "commits": ["f5ec51f", "e868930", "91c56ba"],
   "acceptance_met": true,
-  "evidence": "runtime/unity_events_cursor.py (read/write cursor + iter_events_from + max_seq). server.py::_poll_unity_events loads persisted cursor on start and writes unity_events_cursor.json after each read batch. tests/test_0015_unity_events_append_log_cursor.py 5/5: same-tick move_complete+gaze_target_changed both arrive; 25-row backlog queues without loss; cursor persistence roundtrip; head-rotation trim; atomic cursor write. Non-regression: test_int8_event_consumers 2/2 + test_int8a_file_drop_roundtrip 9/9 + test_wo099b_gaze_consume 7/7 + test_wo111_consume_ack 6/6.",
+  "evidence": "Card re-materialised in QUEUE (auto-refire). Fix already in tree from 2026-08-19 wave. Re-verified against current tree: (1) spine.py:110 uses \\b regex word-boundary matching; (2) _IDENTITY_TRIGGERS server.py:1400-1405 includes 'your name'/'what's your name'/'what are you called'/'tell me your name'/'what do i call you'; (3) _identity_response server.py:1408-1424 renders from _elo_self.identity_name; (4) _DAVID_NAME_TRIGGERS + _david_name_response server.py:1430-1459 read _elo_self.who_i_am_with; (5) capability.is_available() capability.py:80-81 fail-closed on UNKNOWN (only ONLINE); (6) num_ctx=8192 set in backend_router.py:326 and :688. Acceptance test tests/test_card_0021_p0_identity_and_world.py = 10/10 PASS just now.",
   "blocker": null
 }
