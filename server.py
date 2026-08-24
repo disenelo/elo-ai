@@ -4909,8 +4909,8 @@ def _maybe_run_reinforce_vault() -> None:
 def _startup_faculty_check() -> None:
     """
     WO-105: Assert each live-path faculty can be imported at boot.
-    Logs WARNING for any unexpected absence. faculties.temporal is expected
-    to be absent (WO-CANON-XXV dead code — its failure is the correct signal).
+    Logs WARNING for any unexpected absence.
+    WO-CANON-XXV: faculties.temporal is now WIRED (spine.py:796) — no longer expected MISSING.
     """
     import importlib
     _checks = [
@@ -4925,7 +4925,7 @@ def _startup_faculty_check() -> None:
         ("light_engine",   "runtime.light_engine.light_engine",       "translate"),
         ("presence",       "runtime.spine.presence_faculty",          "compute"),
         ("lesson_store",   "self.lesson_store",                       "recall"),
-        ("temporal",       "faculties.temporal",                      None),   # expected MISSING
+        ("temporal",       "faculties.temporal",                      "compute"),  # WO-CANON-XXV: WIRED
     ]
     print("[eLo faculty check]")
     for name, mod_path, attr in _checks:
@@ -4937,11 +4937,8 @@ def _startup_faculty_check() -> None:
             else:
                 print(f"  {name:<18} WIRED")
         except Exception as _e:
-            if name == "temporal":
-                print(f"  {name:<18} EXPECTED-MISSING (WO-CANON-XXV): {_e}")
-            else:
-                _logging.warning("faculty MISSING at startup — %s: %s", name, _e)
-                print(f"  {name:<18} MISSING: {_e}")
+            _logging.warning("faculty MISSING at startup — %s: %s", name, _e)
+            print(f"  {name:<18} MISSING: {_e}")
 
 
 if __name__ == "__main__":
