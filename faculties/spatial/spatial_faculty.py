@@ -96,7 +96,7 @@ SURF_DESKTOP_FLOOR = "desktop_floor"
 @dataclass(frozen=True)
 class BodySchema:
     """eLo's physical parameters — determines which routes are possible."""
-    max_jump_d: "int | None" = 75    # max gap crossable with LEAP (px); None = LEAP disabled
+    jump_px: "int | None" = 0        # SP-8: max horizontal gap crossable with LEAP (px); read from capability_set.jump_px; None = LEAP disabled
     width_px: int = 40               # body width — landing must be at least this wide
     height_px: int = 120             # body height
 
@@ -107,7 +107,7 @@ class Reachability:
     direct_ok: bool     # True = direct route viable
     verdict: str        # REACHABLE | UNREACHABLE
     margin: int         # positive = slack, negative = how far over the limit
-    blocked_by: str     # human-readable: "gap_px=82, max_jump_d=75"
+    blocked_by: str     # human-readable: "gap_px=82, jump_px=572"
 
 
 @dataclass(frozen=True)
@@ -203,23 +203,23 @@ def check_reachability(gap_px: int, body: BodySchema) -> Reachability:
     """
     Reachability arithmetic — "can eLo cross this gap?"
 
-    No guessing, no defaults. If max_jump_d is None, LEAP is disabled entirely.
+    No guessing, no defaults. If jump_px is None, LEAP is disabled entirely.
     margin is the signed distance from the limit: +5 = 5px of slack, -7 = 7px over.
     """
-    if body.max_jump_d is None:
+    if body.jump_px is None:
         return Reachability(
             direct_ok=False,
             verdict=VERDICT_UNREACHABLE,
             margin=0,
-            blocked_by="GAP_LEAP disabled (max_jump_d=None)",
+            blocked_by="GAP_LEAP disabled (jump_px=None)",
         )
-    margin = body.max_jump_d - gap_px
+    margin = body.jump_px - gap_px
     ok = margin >= 0
     return Reachability(
         direct_ok=ok,
         verdict=VERDICT_REACHABLE if ok else VERDICT_UNREACHABLE,
         margin=margin,
-        blocked_by="" if ok else f"gap_px={gap_px}, max_jump_d={body.max_jump_d}",
+        blocked_by="" if ok else f"gap_px={gap_px}, jump_px={body.jump_px}",
     )
 
 

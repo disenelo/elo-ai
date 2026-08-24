@@ -7,7 +7,7 @@ tests/test_canon_xiii_spatial.py — WO-CANON-XIII (Spatial Faculty)
   A-2   no route → no extras.
 
 §B (Spatial Faculty data model + core logic — WO-CANON-XIII §B):
-  FT-1  82px gap vs max_jump_d=75 → UNREACHABLE, margin=-7, blocked_by has numbers.
+  FT-1  82px gap vs jump_px=75 → UNREACHABLE, margin=-7, blocked_by has numbers.
   FT-2  Unreachable gap → detour route (SLIDE → APPROACH → CLIMB).
   FT-3  PEEK precondition: every LEAP must be immediately preceded by PEEK.
   FT-4  GO_BEHIND affordance exists on window_body surface.
@@ -15,7 +15,7 @@ tests/test_canon_xiii_spatial.py — WO-CANON-XIII (Spatial Faculty)
   FT-6  PERIPHERAL presence → NoRoute("peripheral_presence"), no planning.
   FT-7  NoRoute has reason string; not a Route; no movement or arrival claim.
   ST-1  Stale desktop domain → map confidence drops; no cross-surface route.
-  ST-2  max_jump_d=None → UNREACHABLE, blocked_by says disabled.
+  ST-2  jump_px=None → UNREACHABLE, blocked_by says disabled.
   SQ-3  world/live_world_state.py has no competing spatial planning symbols.
 """
 from __future__ import annotations
@@ -227,21 +227,21 @@ class TestCanonXIIISpatialB(unittest.TestCase):
     # ── FT-1 ─────────────────────────────────────────────────────────────────
 
     def test_ft1_gap_unreachable_margin_named(self):
-        """82px gap vs max_jump_d=75 → UNREACHABLE, margin=-7, blocked_by names both numbers."""
-        body = BodySchema(max_jump_d=75)
+        """82px gap vs jump_px=75 → UNREACHABLE, margin=-7, blocked_by names both numbers."""
+        body = BodySchema(jump_px=75)
         r = check_reachability(82, body)
 
         self.assertEqual(r.verdict, VERDICT_UNREACHABLE)
         self.assertEqual(r.margin, -7)
         self.assertIn("82", r.blocked_by, "gap_px absent from blocked_by")
-        self.assertIn("75", r.blocked_by, "max_jump_d absent from blocked_by")
+        self.assertIn("75", r.blocked_by, "jump_px absent from blocked_by")
         self.assertFalse(r.direct_ok)
 
     # ── FT-2 ─────────────────────────────────────────────────────────────────
 
     def test_ft2_unreachable_routes_around(self):
         """Unreachable direct gap → detour: SLIDE → APPROACH → CLIMB."""
-        body = BodySchema(max_jump_d=75)
+        body = BodySchema(jump_px=75)
         # gap between: floor right edge=2560, target starts at 2560+82=2642 → gap=82
         from_surf = self._top("window_A_top", x=0, y=0, w=400)
         to_surf   = self._top("window_B_top", x=482, y=0, w=400)  # 82px gap
@@ -275,7 +275,7 @@ class TestCanonXIIISpatialB(unittest.TestCase):
 
     def test_ft3_plan_route_reachable_includes_peek_before_leap(self):
         """A reachable plan_route produces PEEK immediately before LEAP."""
-        body = BodySchema(max_jump_d=75)
+        body = BodySchema(jump_px=75)
         from_surf = self._top("A", x=0, y=0, w=400)
         to_surf   = self._top("B", x=460, y=0, w=400)  # 60px gap — reachable
 
@@ -326,7 +326,7 @@ class TestCanonXIIISpatialB(unittest.TestCase):
 
     def test_ft6_peripheral_no_route(self):
         """PERIPHERAL presence → NoRoute(reason='peripheral_presence'), not planned-then-cancelled."""
-        body = BodySchema(max_jump_d=75)
+        body = BodySchema(jump_px=75)
         from_surf = self._top("A", x=0, y=0, w=400)
         to_surf   = self._top("B", x=410, y=0, w=400)  # adjacent — would be reachable
 
@@ -389,20 +389,20 @@ class TestCanonXIIISpatialB(unittest.TestCase):
 
     # ── ST-2 ─────────────────────────────────────────────────────────────────
 
-    def test_st2_max_jump_d_none_all_leaps_unreachable(self):
-        """max_jump_d=None → every gap is UNREACHABLE; blocked_by says 'disabled'."""
-        body = BodySchema(max_jump_d=None)
+    def test_st2_jump_px_none_all_leaps_unreachable(self):
+        """jump_px=None → every gap is UNREACHABLE; blocked_by says 'disabled'."""
+        body = BodySchema(jump_px=None)
 
         for gap in (1, 10, 50, 100, 500):
             r = check_reachability(gap, body)
             self.assertEqual(r.verdict, VERDICT_UNREACHABLE,
-                             f"Gap {gap}px should be UNREACHABLE when max_jump_d=None")
+                             f"Gap {gap}px should be UNREACHABLE when jump_px=None")
             self.assertIn("None", r.blocked_by,
                           f"blocked_by should mention None for gap {gap}")
 
-    def test_st2_max_jump_d_none_no_gap_leap_in_plan(self):
-        """With max_jump_d=None, plan_route never produces a LEAP leg."""
-        body = BodySchema(max_jump_d=None)
+    def test_st2_jump_px_none_no_gap_leap_in_plan(self):
+        """With jump_px=None, plan_route never produces a LEAP leg."""
+        body = BodySchema(jump_px=None)
         from_surf = self._top("A", x=0, y=0, w=400)
         to_surf   = self._top("B", x=450, y=0, w=400)  # 50px gap
 
@@ -411,7 +411,7 @@ class TestCanonXIIISpatialB(unittest.TestCase):
         if isinstance(result, Route):
             verbs = [l.verb for l in result.legs]
             self.assertNotIn(VERB_LEAP, verbs,
-                             "LEAP appeared in route even with max_jump_d=None")
+                             "LEAP appeared in route even with jump_px=None")
 
     # ── SQ-3 ─────────────────────────────────────────────────────────────────
 

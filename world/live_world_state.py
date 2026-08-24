@@ -202,6 +202,8 @@ class LiveWorldState:
     degraded:      tuple  = field(default_factory=tuple)
     route_history:      tuple  = field(default_factory=tuple)  # WO-118: recent route outcomes
     capability_results: tuple  = field(default_factory=tuple)  # WO-CAP-001: last capability results
+    surfaces:           tuple  = field(default_factory=tuple)  # WO-NAV-004 SP-7: surface_graph nodes, Y-flipped
+    jump_px:            int    = 0                             # WO-NAV-004 SP-8: capability_set.jump_px (authoritative)
 
 
 # ── Assembly ──────────────────────────────────────────────────────────────────
@@ -445,6 +447,30 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
     except Exception:
         _health("gaze", "absent", "absent", 0.0)
 
+    # WO-NAV-004 SP-7/SP-10/SP-8: surface_graph from elo_spatial.json + Y-flip + jump_px
+    _surfaces: tuple = ()
+    _jump_px: int = 0
+    try:
+        with open(_SPATIAL_PATH, encoding="utf-8") as _sf2:
+            _sd2 = json.load(_sf2)
+        _screen_h2 = int(_sd2.get("screen_h", 1440))
+        _sg2 = _sd2.get("surface_graph", {})
+        _cap_set2 = _sg2.get("capability_set", {})
+        _jump_px = int(_cap_set2.get("jump_px", 0))
+        _surfaces = tuple(
+            {
+                "win_id":  n["id"],
+                "kind":    n.get("kind", "window"),
+                "rect_px": n["rect_px"],
+                "py_y":    _screen_h2 - n["rect_px"][1],  # SP-10: Y-flip at Unity→Python boundary (once only)
+            }
+            for n in _sg2.get("nodes", [])
+        )
+        _health("surfaces", "live" if _surfaces else "absent",
+                "elo_spatial.json", 0.9 if _surfaces else 0.0)
+    except Exception:
+        _health("surfaces", "absent", "absent", 0.0)
+
     # ── Ch.3 §3.2: copy PerceptionResult into domain slices (verbatim, no re-interpret) ──
     # Overrides direct-sensor reads only where perception provides richer data.
     # Confidence carried verbatim — never inflated.
@@ -555,6 +581,8 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
         degraded=tuple(degraded),
         route_history=_route_hist,
         capability_results=_cap_results,
+        surfaces=_surfaces,    # WO-NAV-004 SP-7
+        jump_px=_jump_px,      # WO-NAV-004 SP-8
     )
 
 
