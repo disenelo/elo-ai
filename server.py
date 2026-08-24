@@ -633,6 +633,16 @@ def _movement_intent(
     if _sw:
         return _sw
 
+    # SP-18 (WO-NAV-013): Executive navigate decision → movement intent
+    if action == "navigate":
+        try:
+            from runtime.backend_router import handle_navigate as _hnd_nav
+            _nav_intent = _hnd_nav(exec_decision)
+            if _nav_intent:
+                return _nav_intent
+        except Exception:
+            pass
+
     # Silence / give-space — but NOT on short affirmatives (user is still here, just agreeing)
     if tone == "SILENCE-AWARE" or action == "silence":
         _affirm = {"yes", "yep", "yeah", "yh", "yea", "sure", "okay", "ok",
@@ -3233,6 +3243,21 @@ def _process_turn(raw: str) -> dict:
                             move_duration_s = _mout.duration_s,
                             move_issued_by  = _mout.issued_by,
                         )
+                except Exception:
+                    pass
+
+                # SP-21 (WO-NAV-013): navigate outcome → executive_context on this turn
+                # Deliberate navigation (goal_win_id set) gets an explicit outcome block so
+                # the Executive observes the result before generating a response.
+                try:
+                    if _mout is not None and _mout.goal_win_id is not None:
+                        _nav_status = "ARRIVED" if _mout.arrived else ("FELL" if _mout.fell else "FAILED")
+                        _nav_outcome_block = (
+                            f"[NAVIGATE_OUTCOME] goal_win_id={_mout.goal_win_id} "
+                            f"status={_nav_status} arrived={_mout.arrived} fell={_mout.fell} "
+                            f"duration_s={_mout.duration_s} issued_by={_mout.issued_by}"
+                        )
+                        g_ctx = f"{g_ctx}\n{_nav_outcome_block}" if g_ctx else _nav_outcome_block
                 except Exception:
                     pass
             elif _move_age < _PENDING_MOVE.get("route_timeout_s", 8.0):  # OQ-1.3

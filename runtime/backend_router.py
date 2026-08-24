@@ -120,6 +120,53 @@ _ACTION_PRIORITY: dict[str, int] = {
     "optimise":   9,
 }
 
+# ── WO-NAV-013 SP-18: Navigate action handler ────────────────────────────────
+
+def handle_navigate(exec_decision: dict) -> "dict | None":
+    """
+    SP-18 (WO-NAV-013): translate an Executive navigate decision into a
+    movement intent dict that the consequence chain dispatches as move_command.
+
+    Args:
+        exec_decision: Executive decision dict. Consumed keys:
+            goal_win_id  — deliberate navigation target (int); absent on directional
+            type         — navigate type hint ("jump_left" / "jump_right" / …)
+            direction    — directional hint ("left"|"right"|"up"|"down")
+
+    Returns:
+        Movement intent dict suitable for _state_write / move_command emission,
+        or None when no actionable navigate signal is present (AT-5 case).
+    """
+    goal_win_id = exec_decision.get("goal_win_id") or exec_decision.get("navigate_goal_win_id")
+    nav_type    = exec_decision.get("type", "")
+    direction   = exec_decision.get("direction", "")
+
+    if not goal_win_id and not direction and not nav_type:
+        return None
+
+    intent: dict = {"name": "move", "issued_by": "self_initiation"}
+
+    if goal_win_id is not None:
+        try:
+            intent["goal_win_id"] = int(goal_win_id)
+        except (TypeError, ValueError):
+            pass
+
+    if direction:
+        intent["direction"] = direction
+    elif nav_type:
+        _type_to_dir = {
+            "jump_left":   "left",
+            "jump_right":  "right",
+            "jump_top":    "up",
+            "jump_bottom": "down",
+            "shift":       "over",
+        }
+        intent["direction"] = _type_to_dir.get(nav_type, nav_type)
+
+    return intent
+
+
 # Tier each action defaults to when no Executive tier is provided
 _ACTION_DEFAULT_TIER: dict[str, int] = {
     "build":     _TIER_REASONING,
