@@ -1,0 +1,26 @@
+[
+  {
+    "source_id": "SOURCE-001",
+    "source_type": "BOOK",
+    "title": "The Book of Wisdom Vol I",
+    "author": "Harry B. Joseph",
+    "date": null,
+    "notes": "Primary corpus — Phase 2 ingestion"
+  },
+  {
+    "source_id": "SOURCE-002",
+    "source_type": "EXPERIENCE",
+    "title": "eLo experience chain",
+    "author": null,
+    "date": null,
+    "notes": "Ongoing — every experience_id is a source"
+  },
+  {
+    "source_id": "SOURCE-003",
+    "source_type": "DERIVED",
+    "title": "David L3 design directives",
+    "author": "David Charles",
+    "date": null,
+    "notes": "Architectural source — not world knowledge"
+  }
+]
