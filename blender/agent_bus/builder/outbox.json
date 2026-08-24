@@ -6113,5 +6113,26 @@
     "acceptance_met": true,
     "blocker": "0056 items 4-6 need live stack with real ELO_BACKEND. David must fix .env (DO NOT EDIT).",
     "duration_s": 8.0
+  },
+  "0057_4_SECOND_RULE_partial_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787595234.767336,
+    "state": "PARTIAL",
+    "subject": "0057 §2A/§2B/§3/R1 complete — R2 + policy proposal blocked on live Groq",
+    "output": [
+      "§2A: RESOLVED — only llama3.1:8b present in Ollama (70b was never installed; card premise incorrect)",
+      "§2B: keep_alive=30m working — load_ms on warm turn = 0.7ms (not 4.6s cold). Model stays resident.",
+      "§3: Tier routing wired at backend_router.py:1034-1038. _TIER_PROVIDER_ORDER has callers (_route_by_tier). GATED by ELO_BACKEND — fires only when ELO_BACKEND is unset (David must fix .env)",
+      "R1: llm_latency_ms added to backend_health_history.jsonl entry (commit bce1369). Per-turn trend now has: backend, llm_latency_ms, load_ms, prompt_eval_ms, prompt_eval_tokens, gen_ms, gen_tokens",
+      "R2: UNKNOWN — ELO_BACKEND=mock blocks real provider testing. Needs Groq key active + live stack."
+    ],
+    "evidence": "§2A: `ollama list` shows only llama3.1:8b (4.9 GB). 70b was never downloaded. Card premise '0056 item A: Ollama serving 70b' was incorrect — already resolved before this session. §2B: Direct Ollama timing — turn 1 (cold start): load_ms=2.9, prompt_eval_ms=178, wall=491ms. Turn 2 (keep_alive warm): load_ms=0.7ms, prompt_eval_ms=82ms, wall=127ms. Model stays resident between turns — the 4.6s cold-load penalty reported in the card is not firing for back-to-back turns. Primary latency bottleneck is prompt_eval (~6,700ms at full 7,394-token context). §3: backend_router.py:1034-1038 fires _route_by_tier(system_prompt, user_input, _derived_tier, action, max_sentences) when _derived_tier is set AND ELO_BACKEND not set. _derived_tier = tier or _action_default_tier(action). _action_default_tier defaults to _TIER_CONVERSATIONAL (1) for unknown actions → all actions use Ollama-first provider order. Currently gated: ELO_BACKEND=mock in .env prevents tier routing from firing. David fixes .env → tier routing live. R1: commit bce1369 adds llm_latency_ms=round(_llm_latency_ms,1) to _bh_entry in server.py:4073. backend_health_history.jsonl now records total LLM wall-clock per turn alongside Ollama phase breakdown. R2: cannot measure what routes are available at >4s until Groq key is active. With ELO_BACKEND=mock all turns go to mock regardless. Measurement requires live stack (David's .env fix) + Groq key. POLICY PROPOSAL: blocked on R2. Will bring shape of rule once R2 is measured.",
+    "commits": [
+      "bce1369"
+    ],
+    "acceptance_met": false,
+    "blocker": "R2 + policy proposal gated on live Groq measurement. David must fix .env first (DO NOT EDIT).",
+    "duration_s": null
   }
 }
