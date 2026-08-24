@@ -5127,6 +5127,10 @@ def _startup_faculty_check() -> None:
 
 
 if __name__ == "__main__":
+    # 0056 §2: print effective ELO_BACKEND at startup so the active config is visible in logs
+    _elo_backend_env = os.environ.get("ELO_BACKEND", "")
+    print(f"[eLo startup] ELO_BACKEND={_elo_backend_env!r}  active_backend()={active_backend()!r}")
+
     _startup_faculty_check()
     _init_session()
 
