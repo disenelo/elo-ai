@@ -225,6 +225,8 @@ def _executive_faculty(
     # receive ExecutiveContext directly. New fields (ec_*) are available then.
     # NEW ASSUMPTIONS (flagged to CA): agency · epistemic_state · significance.
     _attention_in = dict(attention) if attention else {}
+    # SP-30 (WO-NAV-006): trigger_source annotation — default "user_message" for all turns
+    _attention_in.setdefault("trigger_source", "user_message")
 
     # ── W6/Card 0075: lesson recall BEFORE ExecutiveContext assembly ─────────
     # Card 0075 D3 · Option A · David L3 2026-08-21: lessons must reach

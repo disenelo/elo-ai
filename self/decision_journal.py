@@ -78,6 +78,7 @@ def record(
     backend: str,
     outcome: str = "success",
     learning: str = "",
+    trigger_source: str = "user_message",  # SP-30 (WO-NAV-006): what triggered this decision
 ) -> None:
     """Append one decision trace entry. Silent on failure — never blocks a turn."""
     try:
@@ -112,9 +113,17 @@ def record(
         ):
             overrides.append("seam-a-routing")
 
+        # WO-XDNA-001: carry the turn's Experience DNA on every journal row.
+        try:
+            from runtime.experience_id import get as _get_xid
+            _xid = _get_xid()
+        except Exception:
+            _xid = ""
+
         entry = {
             "ts":                    time.time(),
             "session_id":            _SESSION_ID,
+            "experience_id":         _xid,
             "turn":                  turn[:120],
             "action":                action,
             "trigger":               exec_decision.get("cal_reason") or "unknown",
@@ -132,6 +141,7 @@ def record(
             "outcome":               outcome,
             "backend":               backend,
             "learning":              learning,
+            "trigger_source":        trigger_source,   # SP-30 (WO-NAV-006)
         }
         os.makedirs(os.path.dirname(_JOURNAL), exist_ok=True)
         with open(_JOURNAL, "a", encoding="utf-8") as f:
@@ -156,15 +166,22 @@ def record_intent_abandoned(
     Silent on failure — never blocks a turn.
     """
     try:
+        # WO-XDNA-002: abandoned intents must carry experience_id per canon rationale.
+        try:
+            from runtime.experience_id import get as _get_xid
+            _xid = _get_xid()
+        except Exception:
+            _xid = ""
         entry = {
-            "ts":         time.time(),
-            "session_id": _SESSION_ID,
-            "record_type": "intent_abandoned",
-            "intent_id":  intent_id,
-            "lane":       lane,
-            "kind":       kind,
-            "content":    content,
-            "reason":     reason,
+            "ts":            time.time(),
+            "session_id":    _SESSION_ID,
+            "experience_id": _xid,
+            "record_type":   "intent_abandoned",
+            "intent_id":     intent_id,
+            "lane":          lane,
+            "kind":          kind,
+            "content":       content,
+            "reason":        reason,
         }
         os.makedirs(os.path.dirname(_JOURNAL), exist_ok=True)
         with open(_JOURNAL, "a", encoding="utf-8") as f:

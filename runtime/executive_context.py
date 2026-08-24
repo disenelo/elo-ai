@@ -208,6 +208,15 @@ def build_executive_context(
             _current_embodiment = getattr(_load_self_emb(), "embodiment", "desktop") or "desktop"
         except Exception:
             pass
+        # SP-27/SP-28/SP-29 (WO-NAV-006): load previous world + compute delta before assembly
+        _previous_world: dict = {}
+        _world_delta: dict = {}
+        try:
+            from runtime.world_delta import load_previous_world as _lpw
+            _previous_world = _lpw()
+        except Exception:
+            pass
+
         world_dict = {
             "platform":           getattr(_desktop, "platform",   "") if _desktop else "",
             "active_app":         getattr(_desktop, "active_app", "") if _desktop else "",
@@ -218,7 +227,35 @@ def build_executive_context(
             "gaze_win_id":        getattr(getattr(world, "gaze", None), "win_id", 0),
             # SP-37 (WO-NAV-005): embodiment scope filter input
             "current_embodiment": _current_embodiment,
+            # SP-27 (WO-NAV-006): previous turn's world summary (read-only for Executive)
+            "previous_world":     _previous_world,
+            # SP-7 (WO-NAV-004): surfaces count for delta computation
+            "surfaces_count":     len(getattr(world, "surfaces", ()) or ()),
         }
+
+        # SP-28 (WO-NAV-006): compute world delta comparing previous and current
+        try:
+            from runtime.world_delta import compute_delta as _cdelta
+            _world_delta = _cdelta(_previous_world, world_dict)
+        except Exception:
+            pass
+        world_dict["world_delta"] = _world_delta
+
+        # SP-29 schema layer (WO-NAV-006): compute significance score from delta
+        _significance_score: dict = {}
+        try:
+            from runtime.significance_faculty import compute_significance as _csig
+            _significance_score = _csig(_world_delta)
+        except Exception:
+            pass
+        world_dict["significance_score"] = _significance_score
+
+        # SP-27 (WO-NAV-006): save current world summary for next turn's delta
+        try:
+            from runtime.world_delta import save_world_summary as _sws
+            _sws(world)
+        except Exception:
+            pass
 
     # ── attention (wm competition + raw attention) ─────────────────────────────
     attn_dict: dict = dict(attention) if attention else {}

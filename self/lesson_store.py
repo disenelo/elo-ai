@@ -133,6 +133,7 @@ def record_outcome(
     action: str = "",       # CAL action executed — required by D1 gate (card 0082 F-2)
     outcome: str = "",      # what actually happened — required by D1 gate (card 0082 F-2)
     ledger_path: str | None = None,
+    trigger_source: str = "user_message",  # SP-30 (WO-NAV-006): what triggered the learning event
 ) -> dict:
     """
     Register an outcome against a known lesson.
@@ -158,11 +159,19 @@ def record_outcome(
 
         # Append episode_ref
         evidence = row.setdefault("evidence", [])
+        # WO-XDNA-001: carry the turn's Experience DNA on each evidence entry.
+        try:
+            from runtime.experience_id import get as _get_xid
+            _ev_xid = _get_xid()
+        except Exception:
+            _ev_xid = ""
         ev_entry: dict = {
-            "episode_ref": episode_ref,
-            "verified": verified,
-            "ts": time.time(),          # float epoch — unambiguous for _last_any_ts
-            "session_id": session_id,
+            "episode_ref":    episode_ref,
+            "verified":       verified,
+            "ts":             time.time(),   # float epoch — unambiguous for _last_any_ts
+            "session_id":     session_id,
+            "experience_id":  _ev_xid,      # WO-XDNA-001
+            "trigger_source": trigger_source,  # SP-30 (WO-NAV-006)
         }
         if action:
             ev_entry["action"] = action
