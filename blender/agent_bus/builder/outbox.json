@@ -3965,5 +3965,1114 @@
     "output": [],
     "evidence": "commit b9e26f9 \u2014 6 files, AT-1 through AT-10 10/10 PASS; card moved to DONE/",
     "duration_s": null
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run7": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787540811.100981,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.22,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run8": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787541116.564964,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.2,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run9": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787541421.703532,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.93,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run10": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787541726.77424,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.82,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run11": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787542032.5183208,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.5,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run12": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787542337.766536,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.01,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run13": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787542643.159411,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.18,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run14": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787542948.554653,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.15,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run15": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787543254.1686342,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.35,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run16": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787543559.9250429,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.54,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run17": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787543869.328991,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 8.94,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run18": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787544175.031005,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.09,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run19": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787544480.8549492,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.53,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run20": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787544786.598763,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.48,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run21": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787545095.1773949,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 8.06,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run22": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787545400.8615072,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.28,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run23": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787545706.293133,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.21,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run24": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787546011.225573,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.71,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run25": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787546316.819166,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.36,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run26": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787546622.699153,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.38,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run27": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787546928.134211,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.19,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run28": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787547233.988221,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.63,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run29": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787547539.318369,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.06,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run30": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787547845.7978702,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 6.25,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run31": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787548150.8891368,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.57,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run32": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787548456.207995,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.11,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run33": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787548762.041259,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.62,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run34": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787549070.980406,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 8.42,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run35": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787549376.674613,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.05,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run36": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787549682.329207,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.42,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run37": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787549987.6152902,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.03,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run38": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787550292.6934211,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.81,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run39": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787550598.821823,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.88,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run40": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787550908.7603798,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 9.26,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run41": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787551214.4406168,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.15,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run42": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787551519.715529,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.06,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run43": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787551824.994816,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.06,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run44": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787552130.6112242,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.34,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run45": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787552436.222807,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.39,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run46": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787552741.4632142,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.03,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run47": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787553046.754723,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.06,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run48": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787553352.8248,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.85,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run49": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787553658.3686452,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.96,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run50": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787553964.305151,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.7,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run51": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787554269.852291,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.32,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run52": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787554574.606255,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.52,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run53": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787554880.074282,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.24,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run54": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787555185.5366101,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.17,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run55": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787555493.879781,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 7.84,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run56": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787555799.9445739,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.63,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run57": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787556110.108174,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 9.63,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run58": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787556415.61293,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.94,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run59": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787556721.291172,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.45,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run60": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787557027.3851678,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.86,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run61": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787557332.507079,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.9,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run62": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787557638.210577,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.46,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run63": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787557944.706018,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 6.25,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run64": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787558254.4461062,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 9.21,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run65": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787558560.3963678,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.31,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run66": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787558865.795865,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.19,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run67": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787559171.0593762,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.01,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run68": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787559476.3848362,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.12,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run69": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787559782.259846,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.65,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run70": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787560087.299839,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.81,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run71": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787560393.057008,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.55,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run72": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787560698.458254,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.18,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run73": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787561004.213558,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.54,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run74": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787561313.11339,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 8.45,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run75": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787561619.724519,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 6.14,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run76": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787561925.001257,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.04,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run77": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787562231.292774,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 6.02,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run78": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787562536.530029,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.02,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run79": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787562842.832426,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 6.05,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run80": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787563148.6387131,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.58,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run81": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787563454.158463,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.28,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run82": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787563759.4128928,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.04,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run83": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787564064.8874712,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.2,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run84": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787564370.510634,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.41,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run85": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787564675.9373481,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.2,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run86": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787564981.499003,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.01,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run87": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787565288.7987142,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 7.05,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run88": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787565594.281803,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.19,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run89": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787565903.4062111,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 8.69,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run90": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787566209.705584,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.72,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run91": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787566515.035907,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.1,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run92": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787566823.106851,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 7.84,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run93": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787567129.066027,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.55,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run94": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787567435.479784,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 6.16,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run95": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787567740.857928,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.13,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run96": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787568046.4453871,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.35,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run97": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787568351.266162,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.6,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run98": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787568660.032861,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 8.29,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run99": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787568965.840769,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.37,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run100": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787569271.662019,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.58,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run101": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787569577.168863,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.27,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run102": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787569882.572902,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.17,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run103": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787570187.568202,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.73,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run104": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787570492.9567308,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.15,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run105": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787572603.364393,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 9.4,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run106": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787572940.510514,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 34.9,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run107": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787573272.747117,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 27.69,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run108": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787573907.209815,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 24.69,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run109": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787574707.576271,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.38,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run110": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787575014.7657988,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.63,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run111": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787575322.754656,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 6.23,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run112": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787575628.279598,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.26,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run113": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787575933.769013,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.86,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run114": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787576239.176438,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.16,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run115": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787576567.365011,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 27.83,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run116": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787576871.648163,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.0,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "WO-NAV-003_gaze_referent_nav_intent": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787577145.085618,
+    "state": "DONE",
+    "output": [],
+    "evidence": "commit 86fb000 \u2014 4 files, AT-1 through AT-5 13/13 PASS; RTR-044/045/046 updates required (Architect lane)",
+    "duration_s": null
   }
 }
