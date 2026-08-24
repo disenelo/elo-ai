@@ -188,9 +188,13 @@ def test_loop_8_session_id():
     from runtime import reflection_faculty as rf
     if not hasattr(rf, "_SESSION_ID"):
         err("LOOP-8: reflection_faculty._SESSION_ID missing — W2 not applied")
-    if not rf._SESSION_ID.isdigit():
-        err(f"LOOP-8: _SESSION_ID={rf._SESSION_ID!r} not numeric — wrong format")
-    ok(f"LOOP-8: reflection_faculty._SESSION_ID={rf._SESSION_ID!r} (stable, numeric)")
+    # Format: "S{n}" where n is a monotonic integer (card 0082 F-2: "S" prefix
+    # distinguishes from process IDs; pure-numeric was an earlier draft).
+    _sid = rf._SESSION_ID
+    _ok_format = (_sid.startswith("S") and _sid[1:].isdigit()) or _sid.isdigit()
+    if not _ok_format:
+        err(f"LOOP-8: _SESSION_ID={_sid!r} — expected S{{n}} or pure-numeric")
+    ok(f"LOOP-8: reflection_faculty._SESSION_ID={_sid!r} (stable, W2 wired)")
 
 
 # ── LOOP-9: spine builds ExecutiveContext (W5 live-confirmed) ─────────────────

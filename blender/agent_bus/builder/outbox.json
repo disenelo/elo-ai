@@ -5833,7 +5833,8 @@
     "card": "FROM_DESIGN_2026-08-24_take_five_split_by_phrase_dispatch.md",
     "status": "PARTIAL \u2014 Builder lane done. Design lane (EloOSAvatarReceiver.cs) pending.",
     "commits": [
-      "pending"
+      "83d4955 (elo-ai)",
+      "DesktopBuddy.cs modified \u2014 not yet committed (separate Unity project)"
     ],
     "tests": "tests/test_take_five_split.py 4/4 PASS",
     "note": "Builder implemented: (1) server.py _STEP_OUT_BRIEF frozenset + _step_out_is_brief() helper + leave_command emits privacy=True|False. (2) DesktopBuddy.cs LeaveForPrivacy(bool privacy=true) \u2014 default=true preserves existing PRIVACY behaviour; BRIEF callers pass privacy=false to allow mouse-move return. EloOSAvatarReceiver.cs change (read lc['privacy'] ?? true, pass to LeaveForPrivacy) is Design's lane \u2014 Unity project compiles safely with current state (default param means old call-site db.LeaveForPrivacy() still works without argument)."
