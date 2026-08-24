@@ -120,6 +120,12 @@ class CognitivePlan:
     # Remains None for all non-navigate turns. Shape: {goal_win_id, candidates, route}
     spatial_plan:         "dict | None" = None
 
+    # ── WO-SC-NEW-001: storytelling style — inferred from voice/mode context ───
+    # Set by _conversation_faculty before LLM call. Shapes how eLo frames action.
+    # Values: "collaborative" | "imaginative" | "reflective" | "playful" |
+    #         "exploratory" | "direct" | None (no mode signal)
+    storytelling_style:   "str | None"  = None
+
     def needs_llm(self) -> bool:
         return not self.direct_response and not self.system_immediate and not self.system_pending
 

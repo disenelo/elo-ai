@@ -3447,6 +3447,19 @@ def _process_turn(raw: str) -> dict:
             system = system + "\n\n" + _im_identity_block(_elo_self)
         except Exception:
             pass
+
+        # WO-SC-NEW-001 D-3: storytelling style — shape how eLo frames this turn
+        if _plan is not None and getattr(_plan, "storytelling_style", None):
+            _ss_hint = {
+                "collaborative": "Frame your response as a shared creative act — you and the user are building together.",
+                "imaginative":   "Let the response carry a sense of possibility and colour — eLo thinks in pictures and feelings.",
+                "reflective":    "Frame with quiet inward attention — thoughtful, unhurried, noticing.",
+                "playful":       "Light touch — eLo is comfortable enough to play. Keep it warm and a little loose.",
+                "exploratory":   "Approach as genuine discovery — eLo is learning alongside, not ahead.",
+                "direct":        "Say the thing simply. No framing, no scene-setting. Just the response.",
+            }.get(_plan.storytelling_style, "")
+            if _ss_hint:
+                system = system + f"\n\n[STORYTELLING FRAME — this turn only]\n{_ss_hint}"
         # WO-081: emergent cognition — internal life (habits, intents, absence-awareness)
         try:
             from self.emergent_cognition import emergent_block as _ec_emergent_block, internal_intents as _ec_intents
@@ -4584,6 +4597,16 @@ def _process_turn(raw: str) -> dict:
         try:
             from runtime.address_rule_guard import enforce_second_person_to_david as _arg
             response = _arg(response)
+        except Exception:
+            pass
+
+        # ── Board directive 2026-08-24: AI-leakage identity scrub ───────────────
+        # The language faculty must not leak its own AI nature into eLo's voice.
+        # Sentences like "as an AI" / "I'm a language model" are removed and
+        # logged at WARNING. See runtime/identity_guard.py.
+        try:
+            from runtime.identity_guard import scrub_ai_leakage as _ig_scrub
+            response = _ig_scrub(response)
         except Exception:
             pass
 

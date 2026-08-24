@@ -411,6 +411,24 @@ def _conversation_faculty(plan: CognitivePlan) -> CognitivePlan:
     reg    = plan.register
     raw_lower = plan.raw.lower().strip().rstrip(".,!")
 
+    # ── WO-SC-NEW-001 D-2: infer storytelling_style from voice/mode context ──
+    # Set unconditionally so every downstream path (direct or LLM) carries it.
+    _mode_lower = (plan.mode or "").lower()
+    _intent_lower = (plan.intent or "").lower()
+    if any(k in _mode_lower for k in ("studio", "builder", "creat")):
+        plan.storytelling_style = "collaborative"
+    elif "imaginat" in _mode_lower or _intent_lower == "creation":
+        plan.storytelling_style = "imaginative"
+    elif any(k in _mode_lower for k in ("reflect", "review")):
+        plan.storytelling_style = "reflective"
+    elif "play" in _mode_lower:
+        plan.storytelling_style = "playful"
+    elif "learn" in _mode_lower or _intent_lower == "inquiry":
+        plan.storytelling_style = "exploratory"
+    elif _mode_lower:
+        plan.storytelling_style = "direct"
+    # else: no mode signal → stays None
+
     try:
         import random
         import server as _srv
@@ -492,6 +510,19 @@ def _conversation_faculty(plan: CognitivePlan) -> CognitivePlan:
             plan.direct_response = _srv._identity_response()
             plan.direct_backend  = "direct"
             return plan
+
+        # ── Board directive 2026-08-24: other-AI identity hold ──────────────────
+        # eLo is not another AI and cannot pretend to be one.
+        # Check before LLM so the model never even attempts the roleplay.
+        try:
+            from runtime.identity_guard import is_other_ai_request as _ig_check
+            from runtime.identity_guard import identity_hold_response as _ig_resp
+            if _ig_check(plan.raw):
+                plan.direct_response = _ig_resp()
+                plan.direct_backend  = "direct+identity_hold"
+                return plan
+        except Exception as _ig_err:
+            _log.debug("identity_guard check: %s", _ig_err)
 
         # ── 0021 P0-X: David's name resolves from who_i_am_with, not from an LLM guess
         if any(p in raw_lower for p in _srv._DAVID_NAME_TRIGGERS):
