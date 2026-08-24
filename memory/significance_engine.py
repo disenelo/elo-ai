@@ -231,20 +231,24 @@ def evaluate(
             except Exception:
                 pass
 
-    # WO-095: outcome dims — scored from ACK only, never from text
+    # WO-101 Part B: outcome dims always present — zeroed when no verified outcome.
+    # Shape is constant across all call sites so learning can compare vectors across turns.
+    emb  = 0.0
+    eff  = 0.0
+    safe = 0.0
+    outcome_terms = 0.0
     if outcome is not None:
-        emb   = _score_embodiment(outcome)
-        eff   = _score_efficiency(outcome, action)
-        safe  = _score_safety(outcome)
-        # Hard rule: safety is a floor — low safety caps the reward
+        emb  = _score_embodiment(outcome)
+        eff  = _score_efficiency(outcome, action)
+        safe = _score_safety(outcome)
         outcome_terms = _clamp(0.5 * emb + 0.3 * eff + 0.2 * safe) * safe
         # Hard rule 1: verified==False → outcome_terms = 0
         if not outcome.get("verified", False):
             outcome_terms = 0.0
-        scores["embodiment"]    = emb
-        scores["efficiency"]    = eff
-        scores["safety"]        = safe
-        scores["reward"]        = _clamp(0.70 * outcome_terms + 0.30 * scores["overall"])
+    scores["embodiment"] = emb
+    scores["efficiency"] = eff
+    scores["safety"]     = safe
+    scores["reward"]     = _clamp(0.70 * outcome_terms + 0.30 * scores["overall"])
 
     return scores
 

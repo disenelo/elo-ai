@@ -118,9 +118,12 @@ def test_server_sit_ack_session_id_not_constant():
 # ── AT-109-1: vault_layer.lookup() calls reinforce() for each hit ─────────────
 
 def test_lookup_reinforces_hits(tmp_path, monkeypatch):
+    # P0-3 ruling (Vol VIII §4.70/§4.03): reinforce() was removed from vault_layer.lookup().
+    # Retrieval runs in the response path — reading only. Reinforce fires in the
+    # post-response integration window (server.py daemon thread) keyed on hits actually used.
+    # This test verifies lookup() does NOT call reinforce() — the inverse of WO-109's original intent.
     import memory.vault_layer as vl
 
-    # Build a minimal in-memory vault structure
     mem_dir  = tmp_path / "09 Memory"
     sum_dir  = mem_dir / "summary"
     deep_dir = mem_dir / "deep"
@@ -143,17 +146,16 @@ def test_lookup_reinforces_hits(tmp_path, monkeypatch):
 
     reinforced = []
 
+    import sys
     mock_cf = types.ModuleType("memory.consolidation_faculty")
     mock_cf.reinforce = lambda spot: reinforced.append(spot)
-
-    import sys
     sys.modules["memory.consolidation_faculty"] = mock_cf
     try:
         results = vl.lookup("route memory", max_results=5)
         assert len(results) > 0, "Expected at least one hit"
-        assert len(reinforced) == len(results), \
-            f"reinforce() called {len(reinforced)} times for {len(results)} results — mismatch"
-        assert "EO·BL·2607·5" in reinforced or any(r in reinforced for r in [h["spot"] for h in results])
+        # P0-3: lookup() must NOT call reinforce() — that belongs in the post-response window
+        assert len(reinforced) == 0, \
+            f"P0-3 violation: lookup() called reinforce() {len(reinforced)} times — must be 0"
     finally:
         sys.modules.pop("memory.consolidation_faculty", None)
 
