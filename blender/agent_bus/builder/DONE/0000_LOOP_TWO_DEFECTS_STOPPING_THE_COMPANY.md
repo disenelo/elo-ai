@@ -106,3 +106,5 @@ already state-based; the result path was missed. **Assume there are others.**
 
 ### Files touched
 - `engineering/seat_orchestrator.py` — 4-line change to `_is_reserved()` title-line fallback.
+
+**Commit:** `93fd346` — 0000 builder: title-line RESERVED fallback + card close-out

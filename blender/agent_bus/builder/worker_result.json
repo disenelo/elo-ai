@@ -1,15 +1,4 @@
 {
-  "card": "0030_FINISH_C2_before_D1.md",
-  "status": "DONE",
-  "kind": "duplicate_refire",
-  "commits": [
-    "f5ec51f",
-    "e868930",
-    "91c56ba",
-    "1734bfc"
-  ],
-  "acceptance_met": true,
-  "evidence": "Card re-materialised in QUEUE (auto-refire). Fix already in tree from 2026-08-19 wave. Re-verified against current tree: (1) spine.py:110 uses \\b regex word-boundary matching; (2) _IDENTITY_TRIGGERS server.py:1400-1405 includes 'your name'/'what's your name'/'what are you called'/'tell me your name'/'what do i call you'; (3) _identity_response server.py:1408-1424 renders from _elo_self.identity_name; (4) _DAVID_NAME_TRIGGERS + _david_name_response server.py:1430-1459 read _elo_self.who_i_am_with; (5) capability.is_available() capability.py:80-81 fail-closed on UNKNOWN (only ONLINE); (6) num_ctx=8192 set in backend_router.py:326 and :688. Acceptance test tests/test_card_0021_p0_identity_and_world.py = 10/10 PASS just now.",
-  "blocker": null,
-  "closeout_commit": "1734bfc"
+  "state": "CONSUMED",
+  "consumed_ts": 1787585705.424462
 }

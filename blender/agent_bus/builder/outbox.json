@@ -5741,5 +5741,13 @@
     "state": "PARTIAL",
     "output": [],
     "evidence": "R1 done: backend_health_history.jsonl appended per turn (commit f352fe9); tier wiring: test_brain_authors.py 4/4; R2 finding: only ollama available \u2014 groq/cerebras/openai absent (no keys). No faster route exists on current stack. Proposal: when >4s and no faster provider live, report it rather than silently slow. Awaiting David ruling before wiring the >4s policy"
+  },
+  "0060_drift_register_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787585921.7933922,
+    "state": "DONE",
+    "output": [],
+    "evidence": "commit b522bfc \u2014 test_wo_drift001_register.py 6/6 PASS; T1: F-3 fix confirmed (not all routes to ground); T2: food question \u2192 answer; T3-T6: duplicate guard (_finish/_is_duplicate) confirmed; T5: shopping sentence NOT negative_low; CARD contains routing table for all 8 David turns (BEFORE/AFTER F-3); poisoned memory entry count: 1 (cleaned 2026-08-23); NOTE: T_LIVE_7 (yo through pipeline) not tested \u2014 requires live Ollama"
   }
 }

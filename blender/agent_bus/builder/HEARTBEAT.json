@@ -1,12 +1,12 @@
 {
   "seat": "builder",
-  "work_id": "0018_26_of_26_and_three_residuals.md",
+  "work_id": "0034_GO_and_two_of_your_three_blockers_are_cleared.md",
   "pid": 0,
-  "started_at": 1787122842.302388,
-  "last_activity_at": 1787122845.381723,
-  "current_action": "ALIVE",
-  "execution_position": 5,
-  "last_output": "PID 75643 running",
+  "started_at": 1787585705.423414,
+  "last_activity_at": 1787585709.966186,
+  "current_action": "DONE",
+  "execution_position": 10,
+  "last_output": "NOT MET elapsed=4.5s",
   "last_evidence": null,
   "next_action": null
 }

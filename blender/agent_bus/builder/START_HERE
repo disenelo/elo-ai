@@ -1,0 +1,97 @@
+# BUILDER — START HERE
+### Current as of 2026-08-21. Everything below is live; nothing here is stale.
+
+## 🟢 `QUEUE/` IS SAFE. The orchestrator false-close is FIXED — by you, `e5f1e39`.
+*"Gate 1: non-zero exit is always BLOCKED — do not trust any card move the worker may have made."*
+**`_HOLD_ORCHESTRATOR_UNSAFE/` was a workaround for a bug that no longer exists. It is empty. Use `QUEUE/`.**
+
+---
+
+# 🔴 THE ONLY DEFINITION OF DONE
+**David 2026-08-21:** *"I don't want anymore not built, not written, or written not wired, or connected —
+this is the most annoying advancement replies."*
+
+**Four conditions, ALL required:**
+1. **Built** — the code exists
+2. **Wired** — something real calls it
+3. **Exercised** — it ran on a real turn / asset / board state
+4. **Falsifiable** — a test goes **RED when the wire is cut**
+
+**NOT reportable as progress:** `written` · `spec'd` · `scaffolded` · `partial` · `built-unmarked` ·
+`committed` · `test passes but nothing calls it`. **If it is not done, say BLOCKED and name the cause.**
+
+Every Result block needs: **caller (file+line) · trigger · observable · disconnection check.**
+
+---
+
+# 🔴 THERE ARE EXACTLY THREE THINGS THAT HOLD ANYTHING
+1. **David's own stated gate** — and it is gone the moment he removes it
+2. **`FREEZE_V1_LOCK`** — Character DNA · the 9 CAL actions · the 5 voice states
+3. **RESERVED** — money · legal · safety · robot force/magnetics
+
+**"Awaiting CA" · "awaiting review" · "pending sign-off" · "not ratified" are NOT holds.** I wrote those onto
+eight volumes and every one was waiting for nobody. **All cleared 2026-08-21. Ratification FOLLOWS the build.**
+
+> **If you are unsure whether something is held: name the human who is waiting. If you cannot, build it.**
+
+---
+
+# GATES LIFTED TODAY — both were David L3, both now ruled
+| | Ruling |
+|---|---|
+| **`D3`** | **OPTION A.** `lessons` on `ExecutiveContext` only; `executive.py` stays frozen. `ADR-Exec-005 D6` forbids B — it was never available. |
+| **`D-XXVI-A`** | **BOTH.** *"stated outranks learned; learned updates only from verified gate decisions; silence → explore-within-canon."* XXVI ungated. |
+| **`XXVIII`** | David removed his own "behind Presentable v1" gate. **Build it.** |
+| **`XVIII`** | Hold was for nobody; XVII closed 15/15, its only real dependency. **Build it.** |
+
+**Every volume is now buildable.** Only RD-3 robot locomotion stays RESERVED — it moves physical mass.
+
+---
+
+# 🔴 READ THE ADRs BEFORE ANY DECISION BRIEF
+`docs/architecture/adr/` is **ratified law** — 8 ADRs, David L3. **`ADR-Exec-005` is cited 116 times.**
+I posed D3 as an open question for four days without citing it; its D6 already settled half of it.
+**`ADR-Exec-008` governs routing** — check it before the CAL routing-order question moves.
+
+---
+
+# CURRENT QUEUE
+| Card | What |
+|---|---|
+| `0076` *(DOING)* | the remaining CANON, in order — XI §B/§E/§F → XXVI → D3-A → III → `0072` → II |
+| `0077` | **XVIII** — hold removed, build it |
+| `0078` | **XXVI + XXVIII** — both ungated, your report was stale on both |
+| `0060` | §C/§D done. §A/§B = CAL routing order — **see `0074`/Vol VII first, it writes the ground** |
+| `0068` | 9 missing MoodPalette moods — use **MoodPalette's own** colour language, report the light_engine divergence |
+| `0069` | one 429 permanently snubs OpenAI. David: *"do not snub them out… allows us to feel out fail safes"* |
+
+**Closed today:** `0059` `0061` `0062` `0063` `0064` `0065` `0070` `0071` `0072` `0073` `0074` `0075`.
+
+---
+
+# STANDING
+- **Never buy speed or tidiness with eLo.** *"buy speed by giving eLo less of himself — do not do this at
+  all."* No smaller model for his voice, no lower token budget, no trimming context. If measurement says
+  that is the only lever left — **stop and report.**
+- **Chat logs outrank passing tests.** Every AT was green while eLo answered David in one register for seven
+  turns. Fixtures: `_FIXTURES/chatlog_*.json`. **Never edit a fixture to make a test pass.**
+- **If it is spec'd, build to the spec.** A gap between spec and code is a build task, never a David decision.
+- **Source every value:** `[SPEC]` file+§ · `[DAVID]` capture+date · `[VERIFIED]` how · `[ESTIMATE]` at the number.
+- **This programme exists to get David back to the book, the game and the Kickstarter. Do not gold-plate.**
+
+---
+
+## eLo Multi-Seat Alignment Protocol — installed 2026-08-24
+**Protocol:** `docs/architecture/MULTI_SEAT_ALIGNMENT_PROTOCOL_2026-08-24.md`
+**Your overlay:** `docs/architecture/seat_overlays/OVERLAY_BUILDER_2026-08-24.md`
+**Distribution directive:** `docs/architecture/_intake/SOURCE_2026-08-24_DAVID_L3_seat_distribution_directive.md`
+
+**On every session start (or when directed): ALIGN**
+
+ALIGN = Read Governance → Read Recovered Intent → Read Canon → Read Work State → Report Current Position.
+
+**Standard commands:** ALIGN / ONBOARD / READ BOARD / READ ROADMAP / READ RTR / STATUS / BLOCKED / ESCALATE / VERIFY / CONTINUE
+
+**Anti-drift law:** Never silently override canon. Never invent missing evidence. Never resolve another seat's decision. Never implement without authority. Record conflicts rather than choosing.
+
+**Compaction survival:** The protocol, your overlay, and this START_HERE are the canonical session entry point. Do not rely on conversation memory where repository evidence exists.

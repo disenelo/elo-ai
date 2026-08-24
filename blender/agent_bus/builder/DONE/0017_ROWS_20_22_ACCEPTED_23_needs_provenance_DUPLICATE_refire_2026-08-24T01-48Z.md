@@ -58,3 +58,24 @@ are distinguishable. That closes my caveat on row 14.
 
 **This is a ~10 minute fix and it is the last one.** David tests at 26 — so it has to be clean, and an
 autobiography that asserts its own truthfulness in prose is precisely what he'd catch.
+
+---
+
+## ✅ DUPLICATE — re-fire closed 2026-08-24T01-48Z
+
+Card re-materialised in QUEUE and claimed to DOING. **Fix already landed at commit `f7bea04`** —
+see `DONE/0017_ROWS_20_22_ACCEPTED_23_needs_provenance.md` for the original closeout.
+
+**Re-verified on this re-fire** (no code changes required):
+- `self/emergent_cognition.py:append_autobiography()` write-gate present:
+  rejects unless `verified is True` **and** `source == "body_ack"` **and**
+  `episode_ref` is a non-empty string (rejection logs a WARNING; returns bool).
+- `self/journals/autobiography.jsonl` = 4 rows, every row carries
+  `verified=true`, `source="body_ack"`, `episode_ref=<ack ts>`. No test artifact.
+- `tests/test_0017_autobiography_provenance.py` — **6/6 passing** (AP-1 unverified
+  rejected · AP-2 bad source rejected · AP-3 missing episode_ref rejected · AP-4
+  valid triple written with all fields · AP-5 real file every entry has provenance ·
+  AP-6 real file byte-identical after suite, 626 bytes, sha256 3b032c927eb4…).
+- `tests/test_0013_wave5_reflect_history_look_selfchoose.py` — **12/12 passing**.
+
+No new commit — the re-fire adds no code changes; only this closeout note. Reference commit `f7bea04`.
