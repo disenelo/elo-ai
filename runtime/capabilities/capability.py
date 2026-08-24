@@ -76,6 +76,11 @@ class Capability:
     # WO-CANON-XXIII §A: authority scope (LAW-017 B2). Router computes this
     # before offering to act; a PERSON "yes" never executes COMPANY or RESERVED.
     authority_scope:        str                 = SCOPE_PERSON
+    # WO-NAV-005 SP-35: embodiment scope — which embodiments this capability is valid for.
+    # Canonical identifiers: "desktop" · "robot" · "phone" · "game" · "ar" · "any"
+    # Default: frozenset({"desktop"}) — existing capabilities are desktop-only unless overridden.
+    # Use frozenset({"any"}) for capabilities valid in all embodiments (e.g. language, time).
+    embodiment_scope:       frozenset           = field(default_factory=lambda: frozenset({"desktop"}))
 
     def is_available(self) -> bool:
         return self.enabled and not self.future and self.health_state in (ONLINE,)

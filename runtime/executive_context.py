@@ -201,14 +201,23 @@ def build_executive_context(
     world_dict: dict = {}
     if world is not None:
         _desktop = getattr(world, "desktop", None)
+        # SP-37 (WO-NAV-005): current embodiment — try EloSelfState, default "desktop"
+        _current_embodiment = "desktop"
+        try:
+            from self.elo_self_model import load as _load_self_emb
+            _current_embodiment = getattr(_load_self_emb(), "embodiment", "desktop") or "desktop"
+        except Exception:
+            pass
         world_dict = {
-            "platform":      getattr(_desktop, "platform",   "") if _desktop else "",
-            "active_app":    getattr(_desktop, "active_app", "") if _desktop else "",
-            "available":     getattr(_desktop, "available",   True) if _desktop else False,
-            "degraded":      list(getattr(world, "degraded", [])),
-            "route_history": list(getattr(world, "route_history", ()) or ()),
+            "platform":           getattr(_desktop, "platform",   "") if _desktop else "",
+            "active_app":         getattr(_desktop, "active_app", "") if _desktop else "",
+            "available":          getattr(_desktop, "available",   True) if _desktop else False,
+            "degraded":           list(getattr(world, "degraded", [])),
+            "route_history":      list(getattr(world, "route_history", ()) or ()),
             # SP-6 (WO-NAV-003): live gaze target — win_id from GazeState via elo_spatial.json
-            "gaze_win_id":   getattr(getattr(world, "gaze", None), "win_id", 0),
+            "gaze_win_id":        getattr(getattr(world, "gaze", None), "win_id", 0),
+            # SP-37 (WO-NAV-005): embodiment scope filter input
+            "current_embodiment": _current_embodiment,
         }
 
     # ── attention (wm competition + raw attention) ─────────────────────────────

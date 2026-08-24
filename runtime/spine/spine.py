@@ -84,10 +84,12 @@ def _language_faculty(raw: str) -> dict:
 # Never chooses which capability to use. Lists candidates.
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _capability_faculty(meaning: str, intent: str) -> list[dict]:
+def _capability_faculty(meaning: str, intent: str, current_embodiment: str = "desktop") -> list[dict]:
     """
-    Returns candidate capabilities that could handle this input.
+    Returns candidate capabilities that could handle this input, filtered to the current embodiment.
     The Executive decides which (if any) to invoke.
+    SP-36 (WO-NAV-005): capabilities whose embodiment_scope does not include current_embodiment
+    or 'any' are silently excluded before reaching the Executive.
     """
     # C2: word-boundary + content-word scoring. Stopwords stripped from multi-word verbs;
     # if no content words remain (e.g. "what is"), require near-exact phrase match.
@@ -116,6 +118,10 @@ def _capability_faculty(meaning: str, intent: str) -> list[dict]:
         lower = meaning.lower()
         for cap in ALL_CAPABILITIES:
             if cap.future or not cap.enabled:
+                continue
+            # SP-36 (WO-NAV-005): embodiment scope filter — applied before Executive sees list
+            _scope = getattr(cap, "embodiment_scope", frozenset({"desktop"}))
+            if "any" not in _scope and current_embodiment not in _scope:
                 continue
             score = sum(_verb_score(v, lower) for v in cap.verbs)
             if score > 0:
@@ -681,7 +687,14 @@ def run(
     # ── Capability Faculty ────────────────────────────────────────────────────
     # D1 ruling: capability routing reads the intent_engine's `capability_hint`,
     # not the cognitive intent. The two answer different questions.
-    capabilities = _capability_faculty(language["meaning"], language.get("capability_hint", ""))
+    # SP-36/SP-37 (WO-NAV-005): read current embodiment for scope filter
+    _current_embodiment = "desktop"
+    try:
+        from self.elo_self_model import load as _load_self_emb
+        _current_embodiment = getattr(_load_self_emb(), "embodiment", "desktop") or "desktop"
+    except Exception:
+        pass
+    capabilities = _capability_faculty(language["meaning"], language.get("capability_hint", ""), current_embodiment=_current_embodiment)
 
     # ── System Faculty ────────────────────────────────────────────────────────
     system_det = _system_faculty(language["meaning"])
