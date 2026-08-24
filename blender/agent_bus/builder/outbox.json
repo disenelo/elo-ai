@@ -5239,5 +5239,34 @@
     "acceptance_met": true,
     "sp24_note": "Schema JSON-serialisable (AT-4 PASS). Live Unity acceptance = David lane. Board to issue WO-NAV-013 after confirmation.",
     "evidence": "AT-1 spatial_plan field 3/3. AT-2 goal_win_id in move_command when set, absent otherwise 3/3. AT-3 existing type field unaffected 2/2. AT-4 SP-24 schema valid 1/1. RTR-052: WO-NAV-007 commit 821e711, AT-1 through AT-3 PASS."
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run127": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787580224.541342,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 — non-zero exit, card NOT closed",
+    "duration_s": 4.21,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "WO-NAV-001_ACK_fix_MovementOutcome": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787580244.887861,
+    "state": "DONE",
+    "subject": "WO-NAV-001 — ACK fix + MovementOutcome (SP-1, SP-2, SP-22)",
+    "output": [
+      "server.py:151 — movement_report in _ACK_BODY_TYPES (pre-existing, verified SP-1)",
+      "server.py:3067-3072 — payload[report][arrived] matcher (pre-existing, verified SP-2)",
+      "runtime/movement_outcome.py (new) — MovementOutcome dataclass + from_ack()",
+      "tests/test_wo_nav_001.py — 11/11 PASS"
+    ],
+    "commits": [
+      "b70916a"
+    ],
+    "acceptance_met": true,
+    "evidence": "AT-1 movement_report in _ACK_BODY_TYPES PASS. AT-2 report.arrived path confirmed in source PASS. AT-3 matcher logic: arrived=True resolves, arrived=False does not, legacy arrived type still resolves PASS. AT-4 MovementOutcome importable PASS. AT-5 all 8 fields present; from_ack() populates correctly PASS. D-1/D-2 were pre-existing. D-3 is new this commit. WO-NAV-002 HELD per forbidden scope. RTR-008f: b70916a AT-1/2/3. RTR-022: b70916a AT-4/5.",
+    "board_signal": "BUILT + VERIFIED. Board may issue WO-NAV-002 and WO-NAV-008."
   }
 }
