@@ -1,0 +1,39 @@
+{
+  "_ts": 1787597944.816774,
+  "date": "2026-08-24",
+  "backend_effective": "mock",
+  "backend_config_note": "5 uncommented ELO_BACKEND lines in .env, last-wins=mock. David must fix.",
+  "ollama_model": "llama3.1:8b",
+  "server_port": 5050,
+  "test_results": {
+    "WO-048_061_company": {
+      "suite": "test_wo048_company_real.py",
+      "result": "12/12 PASS"
+    },
+    "WO-022_memory_recall": {
+      "suite": "test_wo022_memory_recall.py",
+      "result": "5/5 PASS"
+    },
+    "WO-037_concrete_recall": {
+      "suite": "test_wo037_memory_concrete_recall.py",
+      "result": "8/8 PASS"
+    },
+    "WO-037_writeback": {
+      "suite": "test_wo037_memory_writeback.py",
+      "result": "1/5 FAIL",
+      "root_cause": "store_interaction removed from core.memory_engine in 0025 refactor. interactions.json stale 41h. Writeback path dead."
+    },
+    "WO-022_037_e2e": {
+      "suite": "test_wo022_037_memory_recall_e2e.py",
+      "result": "5/9 PASS (same store_interaction + stale interactions.json)"
+    },
+    "WO-045_take_five": {
+      "suite": "test_wo045_take_five.py + test_wo045b_exit_gate_ordering.py",
+      "result": "13/13 PASS"
+    }
+  },
+  "prompt_tokens": 7394,
+  "num_ctx": 8192,
+  "capacity_pct": 90.3,
+  "headroom_tokens": 798
+}
