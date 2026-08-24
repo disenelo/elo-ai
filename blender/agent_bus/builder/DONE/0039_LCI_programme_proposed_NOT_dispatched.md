@@ -75,34 +75,3 @@ anything unique, report what you harvested or "nothing" · Ruling 3: journal all
 the **vector it computes**. Retiring the file is still correct — but **harvest before you delete, and put
 what you harvest in the outbox.** If it scores a dimension `significance_engine.py` doesn't, that
 dimension is evidence for Artefact 7. **Don't lose it.**
-
----
-
-## BUILDER ACK — 2026-08-20
-
-**Card class: directive/acknowledgment. No code change requested (card explicitly says "do not start any of it").**
-
-State recorded from this card:
-
-- **5a (P0 blocker) ACKNOWLEDGED.** No learning/reinforcement implementation begins on the current reward
-  signal. GAP-08 (`memory/significance_engine.py` scores from text/keywords) and GAP-09 (three incompatible
-  significance vectors: 7-dim / 5-dim / 9-dim) noted. Waiting on ratification of Artefact 7 before any
-  dimensioning/versioning work. Will not touch on my own initiative.
-- **1c (sim separation is law) ACKNOWLEDGED.** Isaac Lab + PhysX = RL/training; Blender = authoring/CAD;
-  Unity = presentation/embodiment. Will flag (not fix) any card, spec, or comment that implies Unity or
-  Blender *trains* a policy.
-- **Queue reconciled against DONE/:**
-  - `0033` — DONE (per `QUEUE/0048_ORDER_CORRECTED_...`: commit `0dc8671`; `significance_faculty.py` deleted;
-    5-item harvest justification recorded).
-  - `0038` — DONE (my last run: commit `c2379f9`, PARTIAL — AT-1/AT-2 green, AT-3 RED per WO-103 precedent).
-  - `0037` — DONE (commit `2b32736`).
-  - `0036` — DONE (per `DONE/0036_P0_ONEBRAIN_011_012_order_corrected.md`).
-  - `0031` Fix B — DONE (per `0048`: committed `14db340` 08-16 05:47).
-  - The queue path stated in this card (`0033 → 0038 → 0037 → 0036`) is superseded by `0048` and closed.
-- **Correction re `_TIER_PROVIDER_ORDER` at `backend_router.py:78-82` noted.** Not touching — the wiring
-  fix is Artefact-8 spec-only until ratified.
-- **`ADR-Exec-005 D1` violation (`O-5.1`), significance-vector drift (`O-5.2`), tactile stream RESERVED
-  (David L3 + LG-2), `avatar/safety_controller.py` force-limiter still missing — all recorded, none
-  dispatched, none touched.**
-
-**Filed to DONE/. No commit (no code change). Ack line in outbox.json.**

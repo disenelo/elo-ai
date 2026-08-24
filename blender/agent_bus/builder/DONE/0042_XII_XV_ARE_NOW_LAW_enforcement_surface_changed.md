@@ -73,37 +73,3 @@ made it lawful to fix; it did not make it next. **Do not pick it up.**
 implementation beyond W1–W5.
 
 **Nothing in your queue waits on David, on me, or on the Chief Architect.** His only open item is Groq billing.
-
----
-
-## Close-out — Builder, 2026-08-20
-
-**Card state:** informational/ratification. §4 is unambiguous: *"YOUR ORDER — UNCHANGED. Nothing above
-is a work item."* No product code touched.
-
-### §1 — enforcement surface change, ACKED
-- **[VERIFIED]** `python3 tests/test_canon_xii_perception.py` → `15 passed  0 failed` — matches §1.
-- **[VERIFIED]** `python3 tests/test_canon_xv_world_state.py` → `12 passed  2 failed` — matches §1.
-- **Recorded exception list** (three items only) internalised: `XV ST-1` · `XV FT-4` · `XII Ch.3 §3.2 GAP-04`.
-  Anything else red in those two files = canon breach → STOP and tell the Architect. Not "fix quickly."
-
-### §2 — `SignificanceVector v2.0.0` (`ADR-Exec-007`), ACKED
-9 meaning + 3 outcome, never merged. `reward = 0.70·outcome + 0.30·meaning`, capped by `safety` (floor,
-not bonus). `embodiment` reads ACK only. Unversioned vectors = invalid data.
-**Authorises no learning work** — W1 is the precondition; `server.py:4062` still hardcodes
-`outcome="success"` so all three OUTCOME dims return `0.0` today.
-
-### §3 — BD-14, ACKED
-Canon defines architecture; code does not. Three recorded exceptions remain exceptions, never precedent.
-Any new *"code is the truth here"* claim requires an explicit L3 designation.
-
-### §4 — order confirmed unchanged
-`0033` → **W1** (kill `outcome="success"` at `server.py:4062` + `:3575`, journal row where
-`outcome != "success"` from a real turn goes to outbox) → **W2** (real session ids) → **W3** journal all
-31 → **W4** route the 13 COGNITIVE (`:2404` first) → **W5** ONEBRAIN-012. `0037` before W5. `0031` Fix B
-mine. **`XV ST-1` queues behind W5 — lawful, not next. Not picked up.**
-
-**Not authorised, not touched:** Vol XXVIII · Capability Graph · Tactile · any LCI stream · any RL work ·
-Batch 1 beyond W1–W5.
-
-**Files changed:** this card only (close-out ACK footer).

@@ -60,35 +60,3 @@ Ruling 1 *(retire `significance_faculty.py` — diff, harvest anything unique, t
 
 **Nothing in your queue is waiting on David or on the Chief Architect.** The only genuine David item is
 Groq billing.
-
----
-
-## Close-out — 2026-08-20 · Builder
-
-**Status:** DONE
-**Commit:** `2b32736a863bc9029799c7c2412eb70de00f65e1`
-**Acceptance:** met (4/4)
-
-**Test:** `tests/test_0037_single_self_model_authority.py`
-- ✅ A: reflection-lesson (`last_reflection_lesson`) survives a subsequent turn save — the exact card-named failure closed.
-- ✅ B: two writers touching different fields (reflection lesson + pose) both persist.
-- ✅ C: no module-level `_self_load()` in `server.py` (grep, indentation-0 filter, comments excluded).
-- ✅ D: stale-overwrite fires Rule 1 `WARNING` naming the field.
-
-**Root cause (fixed):** the old `update(state, turn_data)` in `self/elo_self_model.py`
-constructed a **new** `EloSelfState` with defaults for `identity_name`, `core_values`,
-`invariants`, `who_i_am_with`, and `last_reflection_lesson` on every turn — silently
-wiping the last four every time the server saved. The stale in-memory cache made it
-worse (also wrote a snapshot from process start), but the field-loss was the primary
-disk clobber. Both defects are closed.
-
-**Changes:**
-- `self/elo_self_model.py` — atomic `save()` (tmp + `os.replace`), new `update(fn)` single-authority mutator with Rule 1 stale-overwrite WARN, rename `update`→`apply_turn` (mutate in place, preserves all fields).
-- `faculties/dream/dream_faculty.py` — `wake_from_dream` mutates in place (same partial-state defect).
-- `server.py` — retire module-global `_self_load()`; refresh per-turn; convert all seven `_self_save(_elo_self)` sites (dream wake, sit ACK, sit_ended, sit_held, exit_complete, perch update, end-of-turn apply) to `_self_mutate(fn)`; drop redundant shutdown save.
-- `tools/truth_sync.py` — reflection-lesson write routes through `update(fn)` mutator.
-- `tests/test_wo052b_narrative_identity.py` + `tests/test_wo059_situated_self.py` — downstream rename (`apply_turn`).
-
-**Regression sweep — all green:** wo041, wo052b, wo059, wo064, wo065, wo107, wo115, wo125.
-
-**Not done (out of scope, next cards):** 0033 significance_faculty retire + journal-all-31 · 0036 ONEBRAIN-011 ingress routing.
