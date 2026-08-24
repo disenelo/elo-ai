@@ -6245,5 +6245,35 @@
     "acceptance_met": true,
     "blocker": "WO-037 writeback dead (store_interaction removed in 0025). 0056 items 4-6 verified against code logic; live LLM quality test requires David's .env fix.",
     "duration_s": null
+  },
+  "0057_THE_4_SECOND_RULE_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787598031.5570931,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 — non-zero exit, card NOT closed",
+    "duration_s": 11.0,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0057_4_SECOND_RULE_R2_proposal_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787598113.471863,
+    "state": "PARTIAL",
+    "subject": "0057 §4 R2 analytical finding + policy proposal filed for David's ruling",
+    "output": [
+      "R2: Every turn at current context size (7394/8192=90.3%) exceeds 4s. Not an outlier — steady state.",
+      "R2: Available routes when >4s: Ollama (the cause), Groq (unknown — ELO_BACKEND=mock blocks test)",
+      "PROPOSAL: docs/architecture/_proposals/PROPOSAL_0057_4s_latency_rule.md — shape of rule for David's eye",
+      "Policy: if llm_latency_ms>4000 AND faster provider available in tier order, retry on next provider",
+      "Policy: if no faster route, log condition and continue — do NOT truncate context",
+      "David rulings needed: rule shape correct? retry transparent or reported? silent continue or tell David?"
+    ],
+    "evidence": "R2 analytical: at 7,394 tok context, every Ollama turn takes ~7,300ms — threshold already crossed. Conversational tier order: ollama → groq → cerebras → gemini → openai → claude. Groq is next in order and typically <1s for this token count. Cannot confirm Groq availability without live stack (ELO_BACKEND=mock). Proposal filed at docs/architecture/_proposals/PROPOSAL_0057_4s_latency_rule.md. Trigger: llm_latency_ms > 4000 on Ollama. Condition: faster provider alive in tier order. Action: retry on Groq. Fallback: log + continue on Ollama. Excluded: context trimming, spec reduction, model-decides-more. Measurement gate before implementation: confirm Groq turn latency <4000ms at this context size.",
+    "commits": [],
+    "acceptance_met": false,
+    "blocker": "David ruling required on proposal shape. Groq live measurement gated on .env fix.",
+    "duration_s": null
   }
 }
