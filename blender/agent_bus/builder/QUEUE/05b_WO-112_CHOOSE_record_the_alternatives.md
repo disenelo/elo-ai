@@ -38,3 +38,9 @@ Replace the early-return with a candidate set:
 
 ## Done when
 Committed. **Outbox: paste one real journal entry showing options + utilities + reason + confidence.**
+
+## BLOCKED — 2026-08-24
+`executive.py` is frozen at L3/canon level (D3 ruling — FREEZE_V1_LOCK). This WO requires replacing the
+early-return in `runtime/executive.py:156-235` with a candidate set. Builder cannot touch executive.py.
+Needs Architect ruling to either: (a) unfreeze executive.py for this specific change, or (b) reroute the
+candidate-set responsibility to a different file outside the freeze boundary.

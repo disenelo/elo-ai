@@ -1,5 +1,10 @@
 # 05d_WO-115 — **REFLECT + HISTORY (rows 21, 23).** He reflects into a journal nobody is.
 
+## Result
+- commit: bbeeef1 (test fixes) — implementation was already in place
+- tests: 6/6 AT (apply_lesson updates state, apply_lesson idempotent, autobiography creates/grows, chronological order, only explicit writes, compile includes autobiography key)
+- Fixed: monkeypatch _AUTOB_DEFAULT (not _AUTOB); verified=True + episode_ref required by write gate at emergent_cognition.py:140,147
+
 **Seat:** builder · **Priority:** P1 · **Gate?** none · **Rows:** 21, 23 → VERIFIED
 **Unblocks:** 25 SELF-INTERPRET (currently BLOCKED on exactly these two).
 

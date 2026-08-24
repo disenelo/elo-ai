@@ -1,5 +1,10 @@
 # 05h_WO-107 — **IDENTITY (row 1).** The only VERIFIED-adjacent row, and the Executive can't read it.
 
+## Result
+- commit: bbeeef1 (test fixes) — implementation was already in place
+- tests: 6/6 AT (fields exist, defaults non-empty, block renders from state, drift clean, drift catches missing, absence statable)
+- BDRIFT-U ruling (David L3 2026-08-22): core_values removed from identity_block() output; drift guard still checks core_values against prompt separately — tests updated to match
+
 **Seat:** builder · **Priority:** P1 · **Gate?** none · **Row:** 1 → VERIFIED
 
 ## Finding [VERIFIED]
