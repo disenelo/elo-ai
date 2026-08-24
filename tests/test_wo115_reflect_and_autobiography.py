@@ -51,14 +51,14 @@ def test_apply_lesson_idempotent():
 def test_autobiography_creates_and_grows(tmp_path, monkeypatch):
     import self.emergent_cognition as ec
     test_file = str(tmp_path / "autobiography.jsonl")
-    monkeypatch.setattr(ec, "_AUTOB", test_file)
+    monkeypatch.setattr(ec, "_AUTOB_DEFAULT", test_file)
 
     assert not os.path.exists(test_file), "file should not exist before first append"
 
-    ec.append_autobiography("sat — body ACK confirmed", kind="action")
+    ec.append_autobiography("sat — body ACK confirmed", kind="action", verified=True, source="body_ack", episode_ref="test-ep-1")
     assert os.path.exists(test_file), "append_autobiography should create the file"
 
-    ec.append_autobiography("moved (right) — body ACK confirmed", kind="action")
+    ec.append_autobiography("moved (right) — body ACK confirmed", kind="action", verified=True, source="body_ack", episode_ref="test-ep-2")
     entries = ec.recent_autobiography(10)
     assert len(entries) == 2, f"expected 2 entries, got {len(entries)}"
 
@@ -69,11 +69,11 @@ def test_autobiography_chronological_order(tmp_path, monkeypatch):
     import self.emergent_cognition as ec
     import time
     test_file = str(tmp_path / "autobiography.jsonl")
-    monkeypatch.setattr(ec, "_AUTOB", test_file)
+    monkeypatch.setattr(ec, "_AUTOB_DEFAULT", test_file)
 
-    ec.append_autobiography("first event", kind="action")
-    ec.append_autobiography("second event", kind="action")
-    ec.append_autobiography("third event", kind="action")
+    ec.append_autobiography("first event", kind="action", verified=True, source="body_ack", episode_ref="test-ep-1")
+    ec.append_autobiography("second event", kind="action", verified=True, source="body_ack", episode_ref="test-ep-2")
+    ec.append_autobiography("third event", kind="action", verified=True, source="body_ack", episode_ref="test-ep-3")
 
     entries = ec.recent_autobiography(10)
     assert len(entries) == 3
@@ -91,9 +91,9 @@ def test_autobiography_chronological_order(tmp_path, monkeypatch):
 def test_autobiography_only_explicit_writes(tmp_path, monkeypatch):
     import self.emergent_cognition as ec
     test_file = str(tmp_path / "autobiography.jsonl")
-    monkeypatch.setattr(ec, "_AUTOB", test_file)
+    monkeypatch.setattr(ec, "_AUTOB_DEFAULT", test_file)
 
-    ec.append_autobiography("verified: sat — ACK confirmed", kind="action")
+    ec.append_autobiography("verified: sat — ACK confirmed", kind="action", verified=True, source="body_ack", episode_ref="test-ep-1")
     entries = ec.recent_autobiography(10)
     assert len(entries) == 1, f"expected exactly 1 entry, got {len(entries)}"
     assert entries[0]["event"] == "verified: sat — ACK confirmed"

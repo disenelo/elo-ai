@@ -42,25 +42,24 @@ def test_identity_defaults_are_non_empty():
 def test_identity_block_renders_from_fields():
     from self.elo_self_model import EloSelfState, identity_block
     s1 = EloSelfState()
-    s2 = EloSelfState(identity_name="eLo-test", core_values=["silent", "watchful"])
+    s2 = EloSelfState(identity_name="eLo-test")
     block1 = identity_block(s1)
     block2 = identity_block(s2)
     assert block1 != block2, "identity_block should change when fields change"
     assert "eLo-test" in block2, "identity_name change not reflected in block"
-    assert "silent" in block2, "core_values change not reflected in block"
-    # Proof: change field → change prompt (one source)
+    # BDRIFT-U (David L3, 2026-08-22): core_values removed from identity_block output
     assert s1.identity_name in block1, "identity_name not rendered in block"
-    assert all(v in block1 for v in s1.core_values), "not all core_values in block"
 
 
 # ── AT-107-3/4: drift guard ───────────────────────────────────────────────────
 
 def test_drift_guard_clean_when_all_values_present():
-    from self.elo_self_model import EloSelfState, identity_block, check_identity_drift
+    from self.elo_self_model import EloSelfState, check_identity_drift
     s = EloSelfState()
-    block = identity_block(s)  # block contains all core_values by construction
-    missing = check_identity_drift(s, block)
-    assert not missing, f"Drift guard fires on own output: {missing}"
+    # BDRIFT-U: identity_block() no longer includes core_values, so build a prompt manually
+    prompt = " ".join(s.core_values) + " — all values present in context."
+    missing = check_identity_drift(s, prompt)
+    assert not missing, f"Drift guard fires when all values present: {missing}"
 
 
 def test_drift_guard_catches_missing_values():
