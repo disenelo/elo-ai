@@ -148,7 +148,7 @@ _ACK_QUEUE: list[dict] = []   # append-only in-memory event log; drained by ACK 
 _ACK_QUEUE_LOCK = threading.Lock()
 _ACK_BODY_TYPES = frozenset({"sit_complete", "sit_held", "move_complete", "exit_complete",
                                "stand_complete", "wave_complete",
-                               "arrived"})  # OQ-1.4: terminal route-complete ACK
+                               "arrived", "movement_report"})  # SP-1: movement_report enters ACK path
 _ack_last_ts: float = 0.0     # last _ts seen — prevents re-appending the same event
 
 
@@ -1645,12 +1645,16 @@ def _init_session():
     # WO-ACK-1: discrete event capture thread — polls unity_events.json every 0.1s
     # and enqueues body ACK events before gaze events can overwrite them.
     # W0: uses tolerant raw_decode parser; logs skipped fragments; consumes file after read.
+    # 0015: cursor persisted to unity_events_cursor.json so Designer's rotation can warn
+    # (Rule 1) if it would discard a row above consumed_seq. Cursor also survives restart.
     def _poll_unity_events() -> None:
         global _ack_last_ts
         import time as _pt
+        from runtime.unity_events_cursor import read_cursor as _rc, write_cursor as _wc
         _poller_log = _logging.getLogger(__name__ + ".ack_poller")
         # INT-8 Bug 2: cursor replaces truncation so file_drop_handler reads the same log
-        _ack_consumed_seq: int = -1
+        # 0015: resume from persisted cursor across restarts (Designer keeps seq monotonic)
+        _ack_consumed_seq: int = _rc()
         while True:
             try:
                 events, skipped = _parse_unity_events_tolerant(_UNITY_EVENTS_PATH)
@@ -1671,7 +1675,9 @@ def _init_session():
                         with _ACK_QUEUE_LOCK:
                             _ACK_QUEUE.append(dict(_ev))
                         _ack_last_ts = _ev_ts
-                _ack_consumed_seq = _new_seq
+                if _new_seq > _ack_consumed_seq:
+                    _ack_consumed_seq = _new_seq
+                    _wc(_ack_consumed_seq)
                 # never truncate — file_drop_handler reads the same append-log via its own cursor
             except Exception as _pe:
                 _poller_log.warning("W0: _poll_unity_events error: %s", _pe)
@@ -3058,11 +3064,14 @@ def _process_turn(raw: str) -> dict:
             with _ACK_QUEUE_LOCK:
                 for _qmv in _ACK_QUEUE:
                     _qmv_type = _qmv.get("type", "")
-                    # OQ-1.4: prefer terminal `arrived`; also accept legacy `move_complete`
-                    if (
-                        _qmv_type in ("arrived", "move_complete")
-                        and float(_qmv.get("_ts", 0)) > _PENDING_MOVE["since"]
-                    ):
+                    # SP-2: movement_report carries arrived inside report.arrived (verified payload).
+                    # Keep legacy arrived/move_complete for backwards compatibility.
+                    _qmv_arrived = (
+                        _qmv_type == "movement_report"
+                        and bool(_qmv.get("report", {}).get("arrived", False))
+                    ) or _qmv_type in ("arrived", "move_complete")
+                    _qmv_ts = float(_qmv.get("_ts") or _qmv.get("report", {}).get("_ts", 0))
+                    if _qmv_arrived and _qmv_ts > _PENDING_MOVE["since"]:
                         _move_acked = True
                         _mv_ev = _qmv
                         break
@@ -3085,7 +3094,7 @@ def _process_turn(raw: str) -> dict:
                         kind="action",
                         verified=True,
                         source="body_ack",
-                        episode_ref=str(_mv_ev.get("_ts", "")),
+                        episode_ref=str(_mv_ev.get("_ts") or _mv_ev.get("report", {}).get("_ts", "")),
                     )
                 except Exception:
                     pass
@@ -3943,6 +3952,11 @@ def _process_turn(raw: str) -> dict:
             _mem_registry    = _load_registry()
             _mem_project_tag = _resolve_project(raw, _mem_registry)
             _content = (raw + " " + response)[:1000]
+            try:
+                from runtime.experience_id import get as _get_xid
+                _mem_xid = _get_xid()
+            except Exception:
+                _mem_xid = ""
             _MemFac().submit(_MemCand(
                 source_faculty="interaction",
                 content=_content,
@@ -3952,6 +3966,7 @@ def _process_turn(raw: str) -> dict:
                 project=_mem_project_tag,
                 summary=(raw[:180] + "…" if len(raw) > 180 else raw),
                 tags=("interaction", _action),
+                experience_id=_mem_xid,
             ))
         except Exception:
             pass
@@ -4260,6 +4275,7 @@ def _process_turn(raw: str) -> dict:
                     "self_mood":         round(_bs_self_mood, 3),
                     "self_curiosity":    round(_bs_self_cur, 3),
                     "self_satisfaction": round(_bs_self_sat, 3),
+                    "pose":              getattr(_elo_self, "pose", "standing"),
                 },
                 "show_one_brain": True,
                 "intent":         _bs_intent,
