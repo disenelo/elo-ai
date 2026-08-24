@@ -5749,5 +5749,41 @@
     "state": "DONE",
     "output": [],
     "evidence": "commit b522bfc \u2014 test_wo_drift001_register.py 6/6 PASS; T1: F-3 fix confirmed (not all routes to ground); T2: food question \u2192 answer; T3-T6: duplicate guard (_finish/_is_duplicate) confirmed; T5: shopping sentence NOT negative_low; CARD contains routing table for all 8 David turns (BEFORE/AFTER F-3); poisoned memory entry count: 1 (cleaned 2026-08-23); NOTE: T_LIVE_7 (yo through pipeline) not tested \u2014 requires live Ollama"
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run146": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787586013.947828,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.75,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run147": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787586319.045013,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.89,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "ingress32_ambient_retirement_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787586587.941154,
+    "card": "FROM_BOARD_2026-08-23_ambient_thought_AUTHORISED.md / 0044_INGRESS_32",
+    "status": "DONE",
+    "commits": [
+      "pending \u2014 to be filled after git commit"
+    ],
+    "tests": "tests/test_ingress32_ambient_retirement.py 6/6 PASS",
+    "measurement": "T2 confirmed: spine.run(raw='\u2026', intent_source='self', internal_intent=...) \u2192 Executive produces conversation_action='silence' (Vol VII AT :288 silence-signal check \u2014 empty-set subset of punctuation). AMBIENT SPEAK CAPABILITY GATED: Executive requires intent_source='self' consumer to enable SPEAK on ambient ticks. Silence is now a journaled Executive decision (decision_journal row with trigger_source='ambient_daemon'), not an invisible absence.",
+    "changes": [
+      "runtime/spine/spine.py: run() gains intent_source + internal_intent params; plan.intent_source + plan.internal_intent pinned when supplied.",
+      "server.py ambient_thought(): DECIDER \u2192 PROPOSER. internal_intents() is gate; spine.run() is Executive consul; _rt() LLM call moves to post-Executive SPEAK path. raw='\u2026' bug in synthesis observer (NameError-as-silent-except) also removed. Dream faculty unchanged."
+    ]
   }
 }

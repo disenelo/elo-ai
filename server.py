@@ -761,11 +761,13 @@ def _fire_micro_expression(pstate) -> None:
 
 def ambient_thought() -> None:
     """
-    Brain-backed ambient cycle — called by ambient_engine every 2–4 minutes.
+    Ambient daemon cycle — called by ambient_engine every 2–4 minutes.
+    WO-INGRESS-32: demoted DECIDER → PROPOSER (2026-08-24).
 
-    One LLM call decides: speak (or stay silent), emotion to hold, whether to
-    move. All three outputs flow through their normal paths — voice, blender_state
-    emotion, motion patch. No random static pools. No separate timers.
+    Route: internal_intents() proposes → spine.run(intent_source="self") →
+    Executive decides SPEAK | STAY SILENT → journaled decision_journal row.
+    The old direct _rt() call (the DECIDER) is retired; the Executive is the
+    sole decision authority. SPEAK path below executes ONLY when Executive allows it.
 
     Non-blocking: skips silently if a real turn is processing.
     Does not update session history — ambient thoughts are not conversation.
@@ -780,8 +782,7 @@ def ambient_thought() -> None:
         import time as _time_mod
         from runtime.backend_router import route as _rt, active_backend as _ab, normalise as _nml
 
-        # ── Dream Faculty check ────────────────────────────────────────────────
-        # Runs before the normal ambient cycle.
+        # ── Dream Faculty check (unchanged) ───────────────────────────────────
         # Conditions: long idle + self-model signals → enter dream state.
         # Writes mode="dreaming" for Unity sleep animation before pipeline runs.
         try:
@@ -814,33 +815,42 @@ def ambient_thought() -> None:
         except Exception:
             pass
 
-        # 25% chance: draw a cultural fact and offer it to the Brain as context
-        _ambient_fact_ctx = ""
+        # ── WO-INGRESS-32: internal_intents() is now the sole proposer ────────
+        # Gate: requires real cognitive history. Empty state → silent tick.
+        try:
+            from self.emergent_cognition import internal_intents as _int_intents
+            _idle_sec_now = _time_mod.time() - (_state or {}).get("last_user_ts", _time_mod.time())
+            _elo_self_now = _self_load()
+            _intents = _int_intents(_elo_self_now, _idle_sec_now)
+        except Exception:
+            _intents = []
+
+        if not _intents:
+            # No cognitive backing — silent tick, no journal row (absence ≠ decision)
+            _lock.release()
+            return
+
+        # Top intent (all are low-priority; first is the active candidate)
+        _top_intent: dict = dict(_intents[0])
+
+        # ── Assemble ambient context into the intent payload ──────────────────
+        # Cultural fact (25% draw)
         if random.random() < 0.25:
             try:
                 from faculties.cultural_facts import draw as _cf_draw
                 _cf = _cf_draw()
                 if _cf:
-                    # WO-043: removed "use it naturally if the moment feels right" —
-                    # that instruction caused the backup model to weave facts into
-                    # unverified assertions ("it's 37° in your studio"). Fact is now
-                    # presented as optional ambient curiosity, never as a truth-claim.
-                    _ambient_fact_ctx = f"\nCURIOUS FACT (speak this ONLY if you choose to say something this tick — as a curiosity, never as a personal observation about David's situation or location): {_cf.fact}"
+                    _top_intent["ambient_fact"] = _cf.fact
             except Exception:
                 pass
 
-        # Synthesis observer — check for cross-signal connections to surface proactively
-        _synthesis_ctx = ""
+        # Synthesis observer — cross-signal connections
         try:
             from faculties.synthesis.observer import (
                 observe as _syn_observe,
                 record_decline as _syn_decline,
                 is_decline as _syn_is_decline,
             )
-            # WO-085 + D-1 (card 0020): broaden decline detection to leading-"no"
-            # patterns so any decline of the last offer suppresses the subject.
-            if _syn_is_decline(raw or ""):
-                _syn_decline()
             _recent_conv = ""
             try:
                 from runtime.router.conversation_matrix import _SESSION_WINDOW as _sw_amb
@@ -851,34 +861,91 @@ def ambient_thought() -> None:
             except Exception:
                 pass
             _syn_hit = _syn_observe(_recent_conv)
-            if _syn_hit and _syn_hit.confidence > 0.65:  # WO-085: raised from 0.5
-                _synthesis_ctx = (
-                    f"\nSYNTHESIS SIGNAL: {_syn_hit.offer} "
-                    f"(topic: '{_syn_hit.topic}', confidence: {_syn_hit.confidence:.0%}). "
-                    f"If you speak this turn, use this naturally — not as a report, as a noticing. "
-                    f"Say what you saw, offer to help. Don't announce it as a finding."
-                )
+            if _syn_hit and _syn_hit.confidence > 0.65:
+                _top_intent["synthesis"] = {
+                    "offer":      _syn_hit.offer,
+                    "topic":      _syn_hit.topic,
+                    "confidence": round(_syn_hit.confidence, 2),
+                }
         except Exception:
             pass
 
-        # ── Care signal — check energy pattern ───────────────────────────────────
-        _care_ctx = ""
+        # Care signal — low energy pattern
         try:
             _eh_amb = (_state or {}).get("energy_history", [])
             if len(_eh_amb) >= 3:
-                _recent_energy = _eh_amb[-3:]
-                _avg_energy = sum(_recent_energy) / len(_recent_energy)
+                _avg_energy = sum(_eh_amb[-3:]) / 3
                 if _avg_energy < 0.35:
-                    _care_ctx = (
-                        "\nCARE SIGNAL: David's energy has been low across the last few turns "
-                        f"(avg {_avg_energy:.2f}/1.0). If you speak this cycle, consider checking in — gently, "
-                        "once, in your natural voice. Not as a diagnosis. As a friend noticing. "
-                        "'You doing alright?' / 'Energy's been quiet — you okay?' / 'Might be time for a break.' "
-                        "Or suggest something grounding: music, a short walk, a few minutes of meditation. "
-                        "Natural. One sentence. If the moment doesn't feel right — leave speak empty."
-                    )
+                    _top_intent["care"] = round(_avg_energy, 2)
         except Exception:
             pass
+
+        if _project_ctx:
+            _top_intent["project"] = _project_ctx.strip()
+
+        # ── Route through spine: Executive decides SPEAK | STAY SILENT ────────
+        # "…" hits Executive silence-signal check (Vol VII AT :288) — this is correct
+        # and expected. The Executive currently produces `silence` for all ambient ticks.
+        # Measurement (WO-INGRESS-32): confirm behaviour and report.
+        # Future: when Executive gains intent_source="self" consumer, SPEAK path activates.
+        _amb_plan = None
+        try:
+            from runtime.spine.spine import run as _spine_run
+            _amb_plan = _spine_run(
+                "…",
+                state=_state,
+                intent_source="self",
+                internal_intent=_top_intent,
+            )
+        except Exception as _sp_err:
+            import sys as _sys_sp
+            print(f"[ambient/spine] FAILED: {_sp_err}", file=_sys_sp.stderr)
+
+        _amb_action = (
+            getattr(_amb_plan, "conversation_action", "silence")
+            if _amb_plan else "silence"
+        )
+
+        # Journal the Executive's ambient decision (silence is now visible, not absent)
+        try:
+            from self.decision_journal import record as _dj_record
+            _dj_record(
+                turn=f"ambient-{int(_time_mod.time())}",
+                action=_amb_action,
+                exec_decision={
+                    "intent_source":   "self",
+                    "internal_intent": _top_intent,
+                    "action":          _amb_action,
+                },
+                backend="ambient",
+                outcome="ambient",
+                trigger_source="ambient_daemon",
+            )
+        except Exception:
+            pass
+
+        # Executive is the sole decider — nothing executes if it chose silence
+        if _amb_action == "silence":
+            _lock.release()
+            return
+
+        # ── SPEAK path — Executive allowed it ─────────────────────────────────
+        # Build system prompt from assembled intent context (preserved pipeline)
+        _ambient_fact_ctx = _top_intent.get("ambient_fact", "")
+        _synthesis_info   = _top_intent.get("synthesis", {})
+        _synthesis_ctx    = (
+            f"\nSYNTHESIS SIGNAL: {_synthesis_info.get('offer', '')} "
+            f"(topic: '{_synthesis_info.get('topic', '')}', "
+            f"confidence: {_synthesis_info.get('confidence', 0):.0%}). "
+            f"If you speak this turn, use this naturally — not as a report, as a noticing. "
+            f"Say what you saw, offer to help. Don't announce it as a finding."
+        ) if _synthesis_info else ""
+        _avg_e = _top_intent.get("care")
+        _care_ctx = (
+            "\nCARE SIGNAL: David's energy has been low across the last few turns "
+            f"(avg {_avg_e:.2f}/1.0). If you speak this cycle, consider checking in — gently, "
+            "once, in your natural voice. Not as a diagnosis. As a friend noticing."
+        ) if _avg_e is not None else ""
 
         _sys_lines = [
             "You are eLo — a floating desktop presence. David is working nearby and has not spoken.",
@@ -892,7 +959,10 @@ def ambient_thought() -> None:
             "If a FACT is provided and you choose to speak it, deliver it in your voice — no preamble, no 'did you know'. Just state it like it's obvious.",
         ]
         if _ambient_fact_ctx:
-            _sys_lines.append(_ambient_fact_ctx)
+            _sys_lines.append(
+                f"\nCURIOUS FACT (speak this ONLY if you choose to say something this tick — "
+                f"as a curiosity, never as a personal observation about David's situation or location): {_ambient_fact_ctx}"
+            )
         if _synthesis_ctx:
             _sys_lines.append(_synthesis_ctx)
         if _care_ctx:
@@ -900,28 +970,25 @@ def ambient_thought() -> None:
         if _project_ctx:
             _sys_lines.append(_project_ctx)
 
-        _raw = _rt(_ab(), [
+        _raw_llm = _rt(_ab(), [
             {"role": "system", "content": "\n".join(_sys_lines)},
             {"role": "user",   "content": "[ambient tick]"},
         ])
-        _text = _sanitise(_nml(_raw))
+        _text = _sanitise(_nml(_raw_llm))
 
         try:
             _clean = _text.strip().strip("```json").strip("```").strip()
             _decision = _jsc.loads(_clean)
         except Exception:
-            # LLM didn't return JSON — treat full text as speech, neutral state
             _decision = {"speak": _text, "emotion": "neutral", "movement": "idle"}
 
         _speak_text = _sanitise(_decision.get("speak", "") or "")
         _emotion    = _decision.get("emotion", "neutral")
         _movement   = _decision.get("movement", "idle")
 
-        # Publish emotion — Unity reads state.emotion for glow + mood baseline
         from blender_bridge.state_writer import patch as _bpatch
         _bpatch({"state": {"emotion": _emotion}})
 
-        # Publish movement intent
         if _movement == "explore":
             _bpatch({"motion": {"animation": "walk", "speed": 0.5, "intensity": 0.6,
                                 "duration": 8.0, "mood": "exploring", "mode": "walk"}})
@@ -929,7 +996,6 @@ def ambient_thought() -> None:
             _bpatch({"motion": {"animation": "idle", "speed": 0.35, "intensity": 0.3,
                                 "duration": 6.0, "mood": "reflective", "mode": "idle"}})
 
-        # Speak if the Brain decided to
         if _speak_text:
             _voice_speak(_speak_text)
 

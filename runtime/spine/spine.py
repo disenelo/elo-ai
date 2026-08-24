@@ -530,11 +530,13 @@ def _conversation_faculty(plan: CognitivePlan) -> CognitivePlan:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def run(
-    raw:         str,
-    state:       dict | None = None,
-    memory_pack: dict | None = None,
-    attention:   dict | None = None,
-    pending_sit: dict | None = None,
+    raw:             str,
+    state:           dict | None = None,
+    memory_pack:     dict | None = None,
+    attention:       dict | None = None,
+    pending_sit:     dict | None = None,
+    intent_source:   str         = "david",   # WO-INGRESS-32: "david"|"self"|"reflex"
+    internal_intent: dict | None = None,       # WO-INGRESS-32: cognitive proposal from internal_intents()
 ) -> CognitivePlan:
     """
     The Cognitive Spine. One call. One plan.
@@ -789,6 +791,10 @@ def run(
     plan.identity_hash        = _identity_hash
     # ── WO-XDNA-001: Pin minted experience_id to plan ────────────────────────────
     plan.experience_id        = _turn_xid
+    # ── WO-INGRESS-32: Pin caller-supplied intent provenance ─────────────────────
+    plan.intent_source        = intent_source
+    if internal_intent:
+        plan.internal_intent  = internal_intent
 
     # ── WO-CANON-XXV: Temporal Cognition Faculty ─────────────────────────────
     _temporal_frame = None
