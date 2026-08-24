@@ -41,6 +41,8 @@ _ALL_DOMAINS = [
     "desktop", "user", "unity", "browser", "files",
     "internet", "music", "calendar", "environment", "time", "weather",
     "gaze", "route",   # added when gaze + route history domains were wired
+    "location",        # WO-WORLD-001 E-1: always present; source="absent" when unresolved
+    "surfaces",        # live_world_state.py:469 — surface topology domain
 ]
 
 
