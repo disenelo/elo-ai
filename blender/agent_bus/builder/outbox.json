@@ -3875,10 +3875,12 @@
     "commits": [
       "f5ec51f",
       "e868930",
-      "91c56ba"
+      "91c56ba",
+      "1734bfc"
     ],
     "acceptance_met": true,
     "evidence": "tests/test_card_0021_p0_identity_and_world.py = 10/10 PASS; word-boundary regex confirmed spine.py:110; _IDENTITY_TRIGGERS at server.py:1400-1405; _DAVID_NAME_TRIGGERS at server.py:1430-1459; capability.is_available() gated on ONLINE (capability.py:80-81); num_ctx=8192 in backend_router.py:326,688.",
-    "note": "Re-fire close-out only \u2014 work already landed 2026-08-19. Original DONE record: 0030_FINISH_C2_before_D1.md."
+    "note": "Re-fire close-out only \u2014 work already landed 2026-08-19. Original DONE record: 0030_FINISH_C2_before_D1.md.",
+    "closeout_commit": "1734bfc"
   }
 }
