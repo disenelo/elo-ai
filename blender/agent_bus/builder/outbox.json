@@ -5637,5 +5637,109 @@
     "output": [],
     "evidence": "executive.py is frozen at L3/canon (D3 ruling, FREEZE_V1_LOCK); WO-112 requires replacing the early-return in executive.py:156-235 with a candidate set \u2014 Builder cannot touch this file",
     "blocker": "executive.py frozen (D3/FREEZE_V1_LOCK) \u2014 needs Architect ruling to unfreeze or reroute"
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run138": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787583577.5294101,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.73,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run139": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787583881.222924,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.52,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run140": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787584185.483365,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.08,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run141": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787584490.002162,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.31,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run142": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787584796.529902,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.24,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run143": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787585100.572866,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.79,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run144": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787585405.2369359,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.43,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run145": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787585709.970422,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.54,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0053_F0_F2_F4_reconcile_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787585733.757911,
+    "state": "DONE",
+    "output": [],
+    "evidence": "F0: test_f0_outbox_atomic.py 3/3; F2 LOOP-7: test_loop7_live.py 6/6 (CF1 counterfactual + DC1 disconnection \u2014 causation proven); F4: T4 subprocess test added, bare import does not start heartbeat, commit f352fe9"
+  },
+  "0054_F4b_heartbeat_guard_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787585733.757911,
+    "state": "DONE",
+    "output": [],
+    "evidence": "test_f4_heartbeat.py 4/4; T4 subprocess test proves guard holds; commit f352fe9"
+  },
+  "0057_4s_rule_R1_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787585733.757911,
+    "state": "PARTIAL",
+    "output": [],
+    "evidence": "R1 done: backend_health_history.jsonl appended per turn (commit f352fe9); tier wiring: test_brain_authors.py 4/4; R2 finding: only ollama available \u2014 groq/cerebras/openai absent (no keys). No faster route exists on current stack. Proposal: when >4s and no faster provider live, report it rather than silently slow. Awaiting David ruling before wiring the >4s policy"
   }
 }
