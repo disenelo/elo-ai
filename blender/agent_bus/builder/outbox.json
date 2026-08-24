@@ -5838,5 +5838,41 @@
     ],
     "tests": "tests/test_take_five_split.py 4/4 PASS",
     "note": "Builder implemented: (1) server.py _STEP_OUT_BRIEF frozenset + _step_out_is_brief() helper + leave_command emits privacy=True|False. (2) DesktopBuddy.cs LeaveForPrivacy(bool privacy=true) \u2014 default=true preserves existing PRIVACY behaviour; BRIEF callers pass privacy=false to allow mouse-move return. EloOSAvatarReceiver.cs change (read lc['privacy'] ?? true, pass to LeaveForPrivacy) is Design's lane \u2014 Unity project compiles safely with current state (default param means old call-site db.LeaveForPrivacy() still works without argument)."
+  },
+  "0056_BOTH_LISTS_convergence_and_presentable_run2": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787587946.881824,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 7.01,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0056_BOTH_LISTS_convergence_and_presentable_run3": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787588251.614141,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.43,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "WO-NAV-013_python_navigate_handler_run1": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787670000.0,
+    "state": "DONE",
+    "commits": ["26f10e9"],
+    "output": [
+      "AT-1 PASS: handle_navigate({goal_win_id:5}) \u2192 {name:move,goal_win_id:5,issued_by:self_initiation} \u2192 move_command.goal_win_id=5",
+      "AT-2 PASS: arrived=True ACK \u2192 MovementOutcome.arrived=True \u2192 autobiography logged (existing path)",
+      "AT-3 PASS: arrived=False ACK \u2192 NAVIGATE_OUTCOME status=FAILED in g_ctx, no retry",
+      "AT-4 PASS: [NAVIGATE_OUTCOME] block injected into g_ctx on ACK turn \u2192 Executive context",
+      "AT-5 PASS: no goal_win_id/direction \u2192 handle_navigate returns None, no crash"
+    ],
+    "evidence": "SP-18: handle_navigate() added to runtime/backend_router.py. _movement_intent() in server.py detects action=='navigate', calls handle_navigate(exec_decision), returns {name:move,...} intent. Flows through existing PENDING_MOVE \u2192 state_writer.py emits move_command with goal_win_id (state_writer.py:141-142 already supported). SP-20: covered by existing MovementOutcome.from_ack() + PENDING_MOVE ACK drain \u2014 navigate issues name==move, so ACK handler processes arrived=T/F identically. SP-21: [NAVIGATE_OUTCOME] context block injected into g_ctx when goal_win_id ACK arrives. Result card: DONE/FROM_BUILDER_WO-NAV-013_result.md",
+    "acceptance_met": true
   }
 }
