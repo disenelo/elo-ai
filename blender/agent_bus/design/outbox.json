@@ -3095,7 +3095,9 @@
     "acceptance_met": false,
     "acceptance_target": "eLo leaves on take-five and stays gone until the mouse moves",
     "acceptance_status": "NOT MET YET - blocked on LA ruling (card §1 explicitly reserves fix for LA one-line ruling; Design shipped the two options)",
-    "output": [],
+    "output": [
+      "fe546bd"
+    ],
     "deliverables": {
       "FROM_DESIGN_LA": "blender/agent_bus/design/FROM_DESIGN_2026-08-24_take_five_two_options_for_ruling.md",
       "card_result_block": "blender/agent_bus/design/DONE/12_YOUR_LIST_take_five_first.md (Result appended · State: IMPLEMENT-of-card · Rule 1/2/3/4d compliance stated)",

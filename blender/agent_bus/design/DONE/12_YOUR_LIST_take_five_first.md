@@ -125,5 +125,5 @@ Also delivered (bonus): 73-frame phase-aligned `Idle_seamless_1period/` (RMSE 0.
 ❌ WO-jargon report avoided.
 ✅ Against the acceptance line: **"eLo does not yet reliably stay gone on 'take five' — root cause is candidate 3 (passive-mode leak in the WakeFromExit guard), two fix options in Design's hand, awaiting LA ruling before Design implements. All other blockers on this card cleared or backlogged."**
 
-**Commit:** appended below on merge.
+**Commit:** `fe546bd` — 2026-08-24 · 5 files changed · 698+/481− · touches: `DONE/12_YOUR_LIST_take_five_first.md` (this Result) · `FROM_DESIGN_2026-08-24_take_five_two_options_for_ruling.md` · `QUEUE/` delete · `outbox.json` · `worker_result.json`. **No product code files touched** (`git show fe546bd --stat` = markdown + JSON only).
 
