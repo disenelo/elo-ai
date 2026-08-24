@@ -4073,6 +4073,7 @@ def _process_turn(raw: str) -> dict:
                     _bh_entry = {
                         "_ts":              _bh_ts,
                         "backend":          backend_used,
+                        "llm_latency_ms":   round(_llm_latency_ms, 1) if _llm_latency_ms else None,
                         "load_ms":          _bh_ollama.get("load_ms"),
                         "prompt_eval_ms":   _bh_ollama.get("prompt_eval_ms"),
                         "prompt_eval_tokens": _bh_ollama.get("prompt_eval_tokens"),
