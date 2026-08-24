@@ -308,12 +308,14 @@ def _executive_faculty(
         if world is not None:
             _desktop = getattr(world, "desktop", None)
             _route_hist = list(getattr(world, "route_history", ()) or ())
+            _cap_results = list(getattr(world, "capability_results", ()) or ())
             _attention_in["world_state"] = {
-                "platform":      getattr(_desktop, "platform",   "") if _desktop else "",
-                "active_app":    getattr(_desktop, "active_app", "") if _desktop else "",
-                "available":     getattr(_desktop, "available",   True) if _desktop else False,
-                "degraded":      list(getattr(world, "degraded", [])),
-                "route_history": _route_hist,
+                "platform":           getattr(_desktop, "platform",   "") if _desktop else "",
+                "active_app":         getattr(_desktop, "active_app", "") if _desktop else "",
+                "available":          getattr(_desktop, "available",   True) if _desktop else False,
+                "degraded":           list(getattr(world, "degraded", [])),
+                "route_history":      _route_hist,
+                "capability_results": _cap_results,  # WO-CAP-001
             }
         else:
             _log.warning("executive_faculty: plan.world absent — deciding without world context")
@@ -551,6 +553,15 @@ def run(
     if attention is None:
         attention = {}
 
+    # WO-XDNA-001: mint Experience DNA at turn start — before any faculty processing.
+    try:
+        from runtime.experience_id import mint as _mint_xid
+        _turn_xid = _mint_xid()
+    except Exception as _xid_err:
+        _turn_xid = ""
+        import logging as _logging
+        _logging.getLogger(__name__).debug("experience_id.mint FAILED (non-critical): %s", _xid_err)
+
     # ── WO-CANON-XII: perceive() first — sensation caches → frozen PerceptionResult ─
     _perception = None
     try:
@@ -570,12 +581,31 @@ def run(
         except Exception:
             pass
 
+    # ── WO-WORLD-001: Fast capability verb pre-sniff (Option A) ─────────────────
+    # Keyword match against registry verbs — no LLM, no language faculty pass.
+    # Produces capability_hint for assemble_world_state() so world-capability
+    # domains (e.g. sun_events) are populated before the Executive reads world.
+    _early_capability_hint = ""
+    try:
+        from runtime.capabilities.registry import all_enabled as _cap_all_enabled
+        _raw_lower = raw.lower() if raw else ""
+        for _cap in _cap_all_enabled():
+            if any(_v in _raw_lower for _v in (_cap.verbs or [])):
+                _early_capability_hint = _cap.id
+                break
+    except Exception:
+        pass  # hint failure is non-critical; world assembles without it
+
     # ── WO-CANON-XV: LiveWorldState — assembled FIRST, frozen, read by all faculties ─
     # Copies PerceptionResult fields into domain slices (Ch.3 §3.2 copy step).
     _world = None
     try:
         from world.live_world_state import assemble_world_state as _assemble_world
-        _world = _assemble_world(turn_id=raw[:32] if raw else "", perception=_perception)
+        _world = _assemble_world(
+            turn_id=raw[:32] if raw else "",
+            perception=_perception,
+            capability_hint=_early_capability_hint,
+        )
     except Exception as _world_err:
         _log.warning("assemble_world_state FAILED: %s", _world_err)
 
@@ -742,6 +772,8 @@ def run(
     plan.personality_traits   = _personality_traits
     plan.personality_baseline = _personality_baseline
     plan.identity_hash        = _identity_hash
+    # ── WO-XDNA-001: Pin minted experience_id to plan ────────────────────────────
+    plan.experience_id        = _turn_xid
 
     # ── WO-CANON-XXV: Temporal Cognition Faculty ─────────────────────────────
     _temporal_frame = None

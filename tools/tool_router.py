@@ -1509,8 +1509,38 @@ def enrich_from_plan(
                     "WO-122 ROUTE: executor=%r ran for Executive-selected capability %r",
                     ag_name, ag_name,
                 )
+                # WO-CAP-001: record capability result for Executive world state next turn
+                try:
+                    from self.capability_memory import record_capability_result as _rcr
+                    from runtime.experience_id import get as _get_xid
+                    _result_typed = data if isinstance(data, dict) else {"value": str(data)[:500]}
+                    _rcr(
+                        capability=ag_name,
+                        experience_id=_get_xid(),
+                        goal_surface=str(ag_query or user_input)[:200],
+                        result_summary=str(data)[:200],
+                        result_typed=_result_typed,
+                        succeeded=True,
+                    )
+                except Exception:
+                    pass
         except Exception as _e:
             _logger.debug("WO-122 ROUTE: plan capability %s failed: %s", ag_name, _e)
+            # WO-CAP-001: record failure — failures are informative world state
+            try:
+                from self.capability_memory import record_capability_result as _rcr
+                from runtime.experience_id import get as _get_xid
+                _rcr(
+                    capability=ag_name,
+                    experience_id=_get_xid(),
+                    goal_surface=str(ag_query or user_input)[:200],
+                    result_summary="",
+                    result_typed={},
+                    succeeded=False,
+                    failure_reason=str(_e)[:200],
+                )
+            except Exception:
+                pass
 
     if context_parts:
         global _last_agent, _last_arg

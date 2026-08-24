@@ -207,6 +207,14 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
     except Exception:
         pass
 
+    # WO-CAP-001: last 3 capability results — readable by Executive
+    _cap_results: tuple = ()
+    try:
+        from self.capability_memory import recent_capability_results as _rcr
+        _cap_results = tuple(_rcr(3))
+    except Exception:
+        pass
+
     # WO-126 Row 26 MEANING: last turn's significance profile.
     # evaluate() runs AFTER the response is sent, so this is the PREVIOUS turn's score.
     # eLo must never attribute this score to the sentence he is currently producing.
@@ -300,6 +308,8 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
         "autobiography_tier":   "observed" if _autobiography else "unknown",
         # WO-118 Row 14 ROUTE: last 5 route records — Executive can consult history
         "route_history":        _route_history,
+        # WO-CAP-001: last 3 capability results
+        "capability_results":   list(_cap_results),
         # WO-113: gap assessment — one GapResult per jump-class action
         "gap_assessment":       _gap_results,
         # WO-108: last directed-look observation record (for Executive verified-speech gate)
