@@ -3085,17 +3085,67 @@ def _process_turn(raw: str) -> dict:
                     _elo_self = _rb_mv(_elo_self, "move")
                 except Exception:
                     pass
-                # WO-115: autobiography — verified events only (body ACK = confirmed)
+                # SP-22/SP-3/SP-4/SP-23: build typed MovementOutcome once; share across consumers
+                try:
+                    from runtime.movement_outcome import MovementOutcome as _MO
+                    _mout = _MO.from_ack(_mv_ev, since=_PENDING_MOVE.get("since", 0.0))
+                except Exception:
+                    _mout = None
+
+                # WO-115 + SP-3: autobiography — verified events only (body ACK = confirmed)
                 try:
                     from self.emergent_cognition import append_autobiography as _ab_mv
                     _mv_desc = _PENDING_MOVE.get("sub_type", "") or _PENDING_MOVE.get("direction", "unknown")
+                    if _mout is not None:
+                        _mv_ab_desc = (
+                            f"moved ({_mout.goal or _mv_desc}) — body ACK confirmed"
+                            f" | arrived={_mout.arrived} fell={_mout.fell}"
+                            f" goal_win_id={_mout.goal_win_id} duration_s={_mout.duration_s}"
+                            f" route_nodes={_mout.route_nodes} issued_by={_mout.issued_by}"
+                        )
+                        _mv_episode_ref = _mout.ack_id
+                    else:
+                        _mv_ab_desc = f"moved ({_mv_desc}) — body ACK confirmed"
+                        _mv_episode_ref = str(_mv_ev.get("_ts") or _mv_ev.get("report", {}).get("_ts", ""))
                     _ab_mv(
-                        f"moved ({_mv_desc}) — body ACK confirmed",
+                        _mv_ab_desc,
                         kind="action",
                         verified=True,
                         source="body_ack",
-                        episode_ref=str(_mv_ev.get("_ts") or _mv_ev.get("report", {}).get("_ts", "")),
+                        episode_ref=_mv_episode_ref,
                     )
+                except Exception:
+                    pass
+
+                # SP-4 (WO-NAV-008): route memory — ACK-confirmed movements only
+                try:
+                    from self.route_memory import remember_route as _rr
+                    if _mout is not None:
+                        _rr(
+                            goal_surface=_mout.goal or _PENDING_MOVE.get("sub_type", "") or "",
+                            legs=_mout.route_nodes,
+                            arrived=_mout.arrived,
+                            fell=_mout.fell,
+                            duration_s=_mout.duration_s,
+                            smoothness=1.0 if _mout.arrived and not _mout.fell else 0.0,
+                            ack_id=_mout.ack_id,
+                            ack_received=True,
+                        )
+                except Exception:
+                    pass
+
+                # SP-23 (WO-NAV-002 D-2): wire MovementOutcome → ExecutionReport movement fields
+                try:
+                    import dataclasses as _dc
+                    if _plan is not None and _mout is not None and _plan.execution_report is not None:
+                        _plan.execution_report = _dc.replace(
+                            _plan.execution_report,
+                            move_arrived    = _mout.arrived,
+                            move_fell       = _mout.fell,
+                            move_goal_win_id= _mout.goal_win_id,
+                            move_duration_s = _mout.duration_s,
+                            move_issued_by  = _mout.issued_by,
+                        )
                 except Exception:
                     pass
             elif _move_age < _PENDING_MOVE.get("route_timeout_s", 8.0):  # OQ-1.3

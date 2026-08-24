@@ -397,6 +397,13 @@ class ExecutionReport:
     completed:          bool  = True          # False if interrupted or aborted
     completion_state:   str   = "delivered"   # delivered | interrupted | failed | partial
 
+    # ── Navigation / Movement Outcome (SP-23) ────────────────────────────────
+    move_arrived:       bool          = False   # True when eLo reached the intended platform
+    move_fell:          bool          = False   # True when eLo fell or missed
+    move_goal_win_id:   "int | None"  = None    # Commanded destination node id
+    move_duration_s:    float         = 0.0     # Travel time in seconds
+    move_issued_by:     str           = ""      # Who issued the move ("user_message" | ...)
+
     # ── For Reflection Faculty ────────────────────────────────────────────────
     response_length:    int   = 0             # characters actually spoken/displayed
     llm_backend_used:   str   = ""            # which backend generated the response
