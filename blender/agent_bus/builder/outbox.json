@@ -5777,7 +5777,7 @@
     "card": "FROM_BOARD_2026-08-23_ambient_thought_AUTHORISED.md / 0044_INGRESS_32",
     "status": "DONE",
     "commits": [
-      "pending \u2014 to be filled after git commit"
+      "d87c578"
     ],
     "tests": "tests/test_ingress32_ambient_retirement.py 6/6 PASS",
     "measurement": "T2 confirmed: spine.run(raw='\u2026', intent_source='self', internal_intent=...) \u2192 Executive produces conversation_action='silence' (Vol VII AT :288 silence-signal check \u2014 empty-set subset of punctuation). AMBIENT SPEAK CAPABILITY GATED: Executive requires intent_source='self' consumer to enable SPEAK on ambient ticks. Silence is now a journaled Executive decision (decision_journal row with trigger_source='ambient_daemon'), not an invisible absence.",
@@ -5785,5 +5785,57 @@
       "runtime/spine/spine.py: run() gains intent_source + internal_intent params; plan.intent_source + plan.internal_intent pinned when supplied.",
       "server.py ambient_thought(): DECIDER \u2192 PROPOSER. internal_intents() is gate; spine.run() is Executive consul; _rt() LLM call moves to post-Executive SPEAK path. raw='\u2026' bug in synthesis observer (NameError-as-silent-except) also removed. Dream faculty unchanged."
     ]
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run148": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787586623.436276,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.21,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run149": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787587005.003815,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 81.31,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run150": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787587316.373939,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 11.11,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run151": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787587639.625956,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 22.9,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "take_five_split_phrase_dispatch_run1": {
+    "to": "Design",
+    "from": "builder",
+    "ts": 1787587700.408173,
+    "card": "FROM_DESIGN_2026-08-24_take_five_split_by_phrase_dispatch.md",
+    "status": "PARTIAL \u2014 Builder lane done. Design lane (EloOSAvatarReceiver.cs) pending.",
+    "commits": [
+      "pending"
+    ],
+    "tests": "tests/test_take_five_split.py 4/4 PASS",
+    "note": "Builder implemented: (1) server.py _STEP_OUT_BRIEF frozenset + _step_out_is_brief() helper + leave_command emits privacy=True|False. (2) DesktopBuddy.cs LeaveForPrivacy(bool privacy=true) \u2014 default=true preserves existing PRIVACY behaviour; BRIEF callers pass privacy=false to allow mouse-move return. EloOSAvatarReceiver.cs change (read lc['privacy'] ?? true, pass to LeaveForPrivacy) is Design's lane \u2014 Unity project compiles safely with current state (default param means old call-site db.LeaveForPrivacy() still works without argument)."
   }
 }

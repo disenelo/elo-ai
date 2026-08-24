@@ -499,6 +499,9 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "i need a minute":    "step_out",
     "i need some space":  "step_out",
     # WO-045 — return from step-out
+    # David ruling 2026-08-24: BRIEF phrases → mouse-move returns (privacy=false);
+    # PRIVACY phrases → stays until "come back" (privacy=true, current behaviour).
+
     "come back":      "return_elo",
     "you there":      "return_elo",
     "where are you":  "return_elo",
@@ -529,12 +532,30 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "stuck in a loop":   "idle",
 }
 
+# David ruling 2026-08-24 (FROM_DESIGN card 12 §1): step_out phrases split by mode.
+# BRIEF → mouse-move returns eLo (privacy=False in leave_command DOWN payload).
+# PRIVACY → stays gone until "come back" or 600s timeout (privacy=True, prior behaviour).
+_STEP_OUT_BRIEF: frozenset = frozenset({
+    "take 5", "take five", "brb",
+    "give me a minute", "give me a moment", "give me a mo", "give me a sec",
+    "give us a minute", "give us a sec",
+    "i need a minute", "need a break", "taking a break",
+    "pop off", "heading out",
+})
+
+
 def _signal_word_intent(raw: str) -> "str | dict | None":
     raw_l = raw.lower()
     for phrase, directive in _SIGNAL_WORDS.items():
         if phrase in raw_l:
             return directive
     return None
+
+
+def _step_out_is_brief(raw: str) -> bool:
+    """Return True when the matched step_out phrase is a BRIEF leave (mouse-move returns)."""
+    raw_l = raw.lower()
+    return any(p in raw_l for p in _STEP_OUT_BRIEF)
 
 
 # ── Layer 1.5: Semantic sit intent ───────────────────────────────────────────
@@ -4222,7 +4243,9 @@ def _process_turn(raw: str) -> dict:
                     _PENDING_EXIT["active"] = True
                     _PENDING_EXIT["since"]  = _now_sp
                     from blender_bridge.state_writer import patch as _sw_patch
-                    _sw_patch({"leave_command": {"_ts": _now_sp}})
+                    # David ruling 2026-08-24: brief phrases → privacy=false (mouse-move returns);
+                    # privacy phrases → privacy=true (stays until "come back").
+                    _sw_patch({"leave_command": {"_ts": _now_sp, "privacy": not _step_out_is_brief(raw)}})
             else:
                 # ── Legacy fallback: compute movement intent independently ─────
                 _vision      = _state.get("vision") if isinstance(_state, dict) else None
