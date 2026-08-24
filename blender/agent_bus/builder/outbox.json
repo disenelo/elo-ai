@@ -5074,5 +5074,34 @@
     "output": [],
     "evidence": "commit 86fb000 \u2014 4 files, AT-1 through AT-5 13/13 PASS; RTR-044/045/046 updates required (Architect lane)",
     "duration_s": null
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run117": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787577177.0233548,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.07,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run118": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787577482.263513,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.0,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "WO-CAP-001_capability_result_feedback": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787577515.591089,
+    "state": "AWAITING_BOARD_CLOSURE",
+    "output": [],
+    "evidence": "commit 7ec57bf \u2014 6 files, AT-1 through AT-8 9/9 PASS. xid source: experience_id.get(). Board/LA validates production call chain before closure.",
+    "duration_s": null
   }
 }
