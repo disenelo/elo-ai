@@ -137,6 +137,9 @@ def write(
                 payload["move_command"]["route"] = intent["route"]
             if intent.get("issued_by"):
                 payload["move_command"]["issued_by"] = intent["issued_by"]
+            # SP-19 (WO-NAV-007): goal_win_id — deliberate navigation target; absent on directional moves
+            if intent.get("goal_win_id") is not None:
+                payload["move_command"]["goal_win_id"] = intent["goal_win_id"]
         elif intent == "step_out":
             payload["leave_command"] = {"_ts": round(time.time(), 3)}
         elif intent == "return_elo":
@@ -230,6 +233,9 @@ def write_with_presence(
                 payload["move_command"]["route"] = intent["route"]
             if intent.get("issued_by"):
                 payload["move_command"]["issued_by"] = intent["issued_by"]
+            # SP-19 (WO-NAV-007): goal_win_id — deliberate navigation target; absent on directional moves
+            if intent.get("goal_win_id") is not None:
+                payload["move_command"]["goal_win_id"] = intent["goal_win_id"]
         elif intent == "step_out":
             payload["leave_command"] = {"_ts": round(time.time(), 3)}
         elif intent == "return_elo":

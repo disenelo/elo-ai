@@ -113,6 +113,12 @@ class CognitivePlan:
     personality_traits:   dict   = field(default_factory=dict)
     personality_baseline: dict   = field(default_factory=dict)
     identity_hash:        str    = ""
+    # ── WO-XDNA-001: Experience DNA — unique event identity minted at turn start ─
+    experience_id:        str    = ""
+
+    # ── SP-15 (WO-NAV-007): planned navigation route, populated by SP-18 navigate handler ─
+    # Remains None for all non-navigate turns. Shape: {goal_win_id, candidates, route}
+    spatial_plan:         "dict | None" = None
 
     def needs_llm(self) -> bool:
         return not self.direct_response and not self.system_immediate and not self.system_pending

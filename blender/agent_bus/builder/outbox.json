@@ -5103,5 +5103,123 @@
     "output": [],
     "evidence": "commit 7ec57bf \u2014 6 files, AT-1 through AT-8 9/9 PASS. xid source: experience_id.get(). Board/LA validates production call chain before closure.",
     "duration_s": null
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run119": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787577786.819345,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.33,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run120": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787578091.719777,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.5,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run121": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787578395.415746,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 3.5,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run122": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787578700.5911858,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.96,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "WO-NAV-004_surface_graph_reader_BodySchema": {
+    "to": "Board",
+    "from": "builder",
+    "ts": 1787578948.1324959,
+    "state": "DONE",
+    "output": [],
+    "evidence": "commit 3789ec6; AT-1 through AT-5 \u2014 7/7 PASS; surfaces + jump_px in LiveWorldState; max_jump_d retired from spatial_faculty.py; card in DONE/",
+    "duration_s": 0.0
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run123": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787579005.654973,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.73,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "WO-NAV-005_embodiment_capability_safety": {
+    "to": "Board",
+    "from": "builder",
+    "ts": 1787579260.64781,
+    "state": "DONE",
+    "output": [],
+    "evidence": "commit f3f5ff7; AT-1 through AT-5 \u2014 10/10 PASS; embodiment_scope on Capability; current_embodiment in world_dict; filter in _capability_faculty(); card in DONE/"
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run124": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787579310.026137,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.17,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run125": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787579614.580127,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 4.36,
+    "blocker": "worker exited 1; stderr: "
+  },
+  "WO-NAV-006_world_change_detection_significance_schema": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787579761.6547892,
+    "state": "DONE",
+    "subject": "WO-NAV-006 \u2014 world-change detection + significance faculty schema",
+    "output": [
+      "runtime/world_delta.py (new): save_world_summary, load_previous_world, compute_delta",
+      "runtime/significance_faculty.py (new): compute_significance 14-dim, all [ESTIMATE]",
+      "runtime/executive_context.py: previous_world, world_delta, significance_score wired",
+      "runtime/spine/spine.py: trigger_source setdefault on _attention_in",
+      "self/decision_journal.py: trigger_source param on record()",
+      "self/lesson_store.py: trigger_source param on record_outcome()",
+      "tests/test_wo_nav_006.py: 15/15 PASS"
+    ],
+    "commits": [
+      "5257fa5"
+    ],
+    "acceptance_met": true,
+    "evidence": "AT-1 previous_world in world_dict PASS. AT-2 compute_delta 6-field dict, gaze/platform change detection PASS (4 sub). AT-3 significance 14-dim dict, all float 0-1, novelty responds to any_change PASS (3 sub). AT-4 significance_score in world_dict PASS. AT-5 trigger_source in decision_journal/lesson_store signatures + default user_message PASS (4 sub). AT-6 [ESTIMATE] markers in significance_faculty.py PASS. RTR updates required: RTR-048 AT-3/4/6, RTR-050 AT-1/2/5, RTR-051 AT-2."
+  },
+  "0034_GO_and_two_of_your_three_blockers_are_cleared_run126": {
+    "to": "Architect",
+    "from": "builder",
+    "ts": 1787579920.09902,
+    "state": "BLOCKED",
+    "output": [],
+    "evidence": "exit_code=1 \u2014 non-zero exit, card NOT closed",
+    "duration_s": 5.3,
+    "blocker": "worker exited 1; stderr: "
   }
 }
