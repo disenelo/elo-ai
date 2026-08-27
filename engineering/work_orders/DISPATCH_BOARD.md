@@ -1,7 +1,19 @@
 # DISENELO DISPATCH BOARD
-### LIVE STATE — 2026-08-20, rebuilt from evidence. Everything below the line is the historical board.
+### LIVE STATE — 2026-08-27, updated from verified execution evidence.
 
 **David: *"Lets get the board done."*** This header is the board. Read it and you know the company.
+
+---
+
+## PROGRAMME FOCUS — 2026-08-27
+
+**company_focus:** Navigation + Verification + Embodiment Alignment + Game Phase 1
+
+**voiced_briefing:** Navigation wave complete — WO-NAV-001 through WO-NAV-013 DONE (Builder), Unity-WO-B1/B2 DONE (Design), WO-CAP-001 architecturally closed, WO-SP31-SP32/SP38 DONE. MT verification running: Batch 1 (WO-NAV-013 + WO-EA2-1) and Batch 2 (navigation wave) dispatched. Game Phase 1 animation in progress (WO-GAME-001 issued). CA ruling pending: post-LLM guard gaps + mobile embodiment design points. Board issued WO-EA2-NEW-A (company_state → cognitive spine wiring). Board governance loops: Board Governance Loop + Master Alignment Loop canonical. One Brain confirmed. Zero F-class items.
+
+**phase:** Stage 2 R&D COMPLETE — implementation wave in verification + governance closing
+
+**board_next:** MT verify WO-NAV-013 + WO-EA2-1 → Board closes Wave 3 / dispatches WO-EA2-2
 
 ---
 
@@ -18,6 +30,7 @@
 Audit: `docs/architecture/findings/INITIATIVE_01_BOARD_AUDIT_2026-08-27.md`  
 Open gaps: A (company_state→spine wiring) · B (company.* intents) · C (WO-EA2-2 panel) · E (stale voiced_briefing)  
 Gap D (post-LLM gate): CLOSED — commit `4688685`  
+**Gap A CLOSED 2026-08-27** (WO-EA2-NEW-A ⏳ IN_REVIEW): `company_state.json` → `LiveWorldState.company_state` → `attention_in["world_state"]["company_state"]` wired. 7/7 AT PASS. Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-EA2-NEW-A_company_state_wiring_result.md`. Regressions clean: live_world_state 6/6 · spine_wiring 5/5. Awaiting Board/LA architectural close.  
 Next item: **MT verify WO-EA2-1** (`test_ea2_1_company_state.py` + `test_ea2_2_company_intents.py`)  
 **Builder governance gap CLOSED 2026-08-27** (commit `5548a30`): WO-EA2-1 implementation predated result-card convention. COMPLETION_LOG.md entry filed; `FROM_BUILDER_WO-EA2-1_company_state_writer_result.md` filed to DONE/. Tests confirmed: `test_ea2_1_company_state.py` 6/5 PASS · `test_ea2_2_company_intents.py` 11/11 PASS. Evidence now available for MT formal verification.
 
@@ -35,7 +48,7 @@ Governance constitution in force. No implementation required. All seats operate 
 ### PROGRAMME STATE SUMMARY
 
 **DONE — no further action required from Builder:**
-WO-NAV-001 · WO-NAV-002 · WO-NAV-003 · WO-NAV-004 · WO-NAV-005 · WO-NAV-006 · WO-NAV-007 · WO-NAV-008 · WO-NAV-009 · WO-NAV-010 · WO-NAV-011 · WO-NAV-012 · WO-NAV-013 · WO-SP31-SP32 · WO-SP38 · WO-WORLD-001 (+ defect) · WO-CAP-001 (Board/LA gate) · WO-SC-NEW-001 · WO-WKG-001/002/003 · WO-SPINE-001/002/003
+WO-NAV-001 · WO-NAV-002 · WO-NAV-003 · WO-NAV-004 · WO-NAV-005 · WO-NAV-006 · WO-NAV-007 · WO-NAV-008 · WO-NAV-009 · WO-NAV-010 · WO-NAV-011 · WO-NAV-012 · WO-NAV-013 · WO-SP31-SP32 · WO-SP38 · WO-WORLD-001 (+ defect) · WO-CAP-001 (Board/LA gate) · WO-SC-NEW-001 · WO-WKG-001/002/003 · WO-SPINE-001/002/003 · **WO-EA2-NEW-A** (Gap A — ⏳ IN_REVIEW, Board/LA close pending)
 
 **Board maintenance done this session:** COMPANY_FOCUS marker refreshed (commit `d8d0764`). Gap E voiced_briefing staleness deferred — requires full WO table audit (NEW-C).
 
@@ -52,7 +65,7 @@ WO-NAV-001 · WO-NAV-002 · WO-NAV-003 · WO-NAV-004 · WO-NAV-005 · WO-NAV-006
 | WO-CANON-XI parity gate | Live Unity move data (brain_route + unity_route) | Design → live run |
 | 0081 parity step 2 | Live Unity sessions with current code | — |
 | 05b/WO-112 | FREEZE_V1_LOCK (executive.py) | David L3 unfreeze |
-| NEW-A (cognitive wiring WO) | Board to scope + issue WO → Builder | Board |
+| WO-EA2-NEW-A architectural close | Board/LA verify `company_state` in `attention_in["world_state"]` after live turn + `executive.py` diff empty | Board/LA |
 | Gap B (company.* intents) | WO-EA2-2 scope (covers partial) | Board → Design/Builder |
 | ELO-HISTORY recovery | David ChatGPT exports | David L3 |
 | CP-003 Planetary Layer WO | Board to issue (depends on SP-29 weights D-gate) | Board |

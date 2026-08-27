@@ -324,6 +324,7 @@ def _executive_faculty(
                 "degraded":           list(getattr(world, "degraded", [])),
                 "route_history":      _route_hist,
                 "capability_results": _cap_results,  # WO-CAP-001
+                "company_state":      dict(getattr(world, "company_state", {})),  # WO-EA2-NEW-A D-3
             }
         else:
             _log.warning("executive_faculty: plan.world absent — deciding without world context")

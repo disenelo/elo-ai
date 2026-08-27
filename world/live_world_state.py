@@ -28,8 +28,9 @@ from datetime import datetime, timezone
 from typing import Literal
 
 _ROOT               = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_BLENDER_STATE_PATH = os.path.join(_ROOT, "blender", "blender_state.json")
-_SPATIAL_PATH       = os.path.join(_ROOT, "blender", "elo_spatial.json")
+_BLENDER_STATE_PATH    = os.path.join(_ROOT, "blender", "blender_state.json")
+_SPATIAL_PATH          = os.path.join(_ROOT, "blender", "elo_spatial.json")
+_COMPANY_STATE_PATH    = os.path.join(_ROOT, "blender", "company_state.json")  # WO-EA2-NEW-A
 _DOMAIN_STATUS      = Literal["live", "cached", "stale", "absent"]
 
 # WO-NAV-009 SP-9 D-3: last confirmed body position (L3-NAV-3).
@@ -234,6 +235,7 @@ class LiveWorldState:
     body_win_id:        int    = -1                            # WO-NAV-009 SP-9: eLo body position from elo_spatial.json; -1 = mid-hop / unknown
     surface_edges:      tuple  = field(default_factory=tuple)  # WO-NAV-010 SP-11: surface_graph edges for candidate generation
     win_id_to_surface:  dict   = field(default_factory=dict)   # WO-NAV-010 SP-12: int win_id → surface dict bridge
+    company_state:      dict   = field(default_factory=dict)   # WO-EA2-NEW-A: live company state from company_state.json
 
 
 # ── Assembly ──────────────────────────────────────────────────────────────────
@@ -603,6 +605,18 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
     except Exception:
         pass
 
+    # WO-EA2-NEW-A D-1: company_state.json → world state
+    # Only programme-state fields exposed to LLM layer; money + seats_sample excluded (Board ruling required).
+    _company_state: dict = {}
+    try:
+        with open(_COMPANY_STATE_PATH, encoding="utf-8") as _csf:
+            _cs_raw = json.load(_csf)
+        _EXPOSED_KEYS = ("today_priorities", "waiting_for_approval", "blocked",
+                         "roadmap", "board", "voiced_briefing")
+        _company_state = {k: _cs_raw[k] for k in _EXPOSED_KEYS if k in _cs_raw}
+    except Exception:
+        pass
+
     return LiveWorldState(
         desktop=desktop,
         user=user,
@@ -629,6 +643,7 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
         body_win_id=_body_win_id,       # WO-NAV-009 SP-9
         surface_edges=_surface_edges,   # WO-NAV-010 SP-11
         win_id_to_surface=_win_id_to_surface,  # WO-NAV-010 SP-12
+        company_state=_company_state,   # WO-EA2-NEW-A D-1
     )
 
 
