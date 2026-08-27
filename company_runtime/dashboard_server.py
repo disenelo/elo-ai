@@ -14,10 +14,28 @@ from __future__ import annotations
 import json, os, sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+import logging
+
 from company_runtime import company_state_writer as csw
+
+_log = logging.getLogger(__name__)
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _STATE = os.path.join(_ROOT, "blender", "company_state.json")
+_BOARD_STATE = os.path.join(_ROOT, "blender", "board_state.json")  # WO-BOARD-001
+
+
+def _read_board_state() -> dict:
+    """WO-BOARD-001 D-1/D-2: read board_state.json; warn + return {} on missing/malformed."""
+    if not os.path.exists(_BOARD_STATE):
+        _log.warning("board_state.json missing at %s — dashboard will show empty board state", _BOARD_STATE)
+        return {}
+    try:
+        with open(_BOARD_STATE, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as exc:
+        _log.warning("board_state.json malformed (%s) — dashboard will show empty board state", exc)
+        return {}
 # dashboard HTML lives in the user's Output folder (the prototype we built)
 _HTML_CANDIDATES = [
     os.path.expanduser("~/Desktop/Output/DISENELO_Presence_Dashboard.html"),
@@ -58,6 +76,15 @@ class Handler(BaseHTTPRequestHandler):
             csw.publish()  # regenerate from the live board every fetch → always current
             with open(_STATE, "rb") as f:
                 return self._send(200, f.read())
+        # WO-BOARD-001: board_state endpoint — same cadence as company_state
+        if self.path.startswith("/board_state.json") or self.path.startswith("/board_state"):
+            bs = _read_board_state()
+            payload = {
+                "board_state": bs,
+                "overdue_count": len(bs.get("overdue", [])),   # D-3
+                "needs_david_count": len(bs.get("needs_david", [])),  # D-4
+            }
+            return self._send(200, json.dumps(payload))
         return self._send(404, "not found", "text/plain")
 
     def do_POST(self):
