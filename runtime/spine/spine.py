@@ -288,6 +288,9 @@ def _executive_faculty(
     except Exception as _si_err:
         _log.debug("self_interpret failed (non-critical): %s", _si_err)
 
+    if world is None:
+        _log.warning("executive_faculty: plan.world absent — deciding without world context")
+
     try:
         from runtime.executive_context import build_executive_context as _build_ec
         _ec = _build_ec(

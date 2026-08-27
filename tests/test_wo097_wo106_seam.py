@@ -37,9 +37,9 @@ def _run_func_node(src, name="run"):
 def test_conversation_before_embodiment_static():
     src = _src("runtime/spine/spine.py")
     idx_conv = src.find("_conversation_faculty(plan)")
-    idx_emb  = src.find("build_embodiment_state(plan)")
+    idx_emb  = src.find("build_embodiment_state(plan")
     assert idx_conv != -1, "_conversation_faculty(plan) not found in spine.py"
-    assert idx_emb  != -1, "build_embodiment_state(plan) not found in spine.py"
+    assert idx_emb  != -1, "build_embodiment_state(plan...) not found in spine.py"
     assert idx_conv < idx_emb, (
         "ORDERING DEFECT: build_embodiment_state runs before _conversation_faculty — "
         "WO-097 reorder not applied"
@@ -54,7 +54,7 @@ def test_embodiment_ordering_regression_guard():
     assert "WO-097" in src, "WO-097 reorder comment missing from spine.py"
     # And the comment for conversation-before-embodiment must appear before embodiment call
     idx_wo097_note = src.find("WO-097: conversation runs FIRST")
-    idx_emb        = src.find("build_embodiment_state(plan)")
+    idx_emb        = src.find("build_embodiment_state(plan")
     assert idx_wo097_note != -1, "WO-097 ordering comment not found"
     assert idx_wo097_note < idx_emb, "WO-097 comment must appear before embodiment call"
 
