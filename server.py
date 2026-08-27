@@ -790,6 +790,90 @@ def _fire_micro_expression(pstate) -> None:
         pass
 
 
+def _world_event_thought() -> None:
+    """
+    SP-31: World-event triggered spine call (WO-SP31-SP32).
+
+    Reads world significance score, checks SP-32 gate (ATTENDING + HARD-QUIET).
+    Only fires when ELO_SELF_INITIATION=1 (David L3) AND gate permits a verbal turn.
+    Fail-quiet on any exception — never blocks the ambient cycle.
+
+    trigger_source="world_event" distinguishes this from user turns ("user")
+    and ambient self-thoughts ("self" / "ambient_daemon").
+    """
+    try:
+        from runtime.self_initiation import may_self_initiate as _si_gate, record_self_init as _si_rec
+        from runtime.significance_faculty import compute_significance as _sig_compute
+
+        # World delta for significance (reuse last-assembled world state if available)
+        _world_delta: dict = {}
+        try:
+            from world.world_delta import compute_delta as _wd_compute
+            _world_delta = _wd_compute() or {}
+        except Exception:
+            pass
+
+        _sig = _sig_compute(_world_delta, {})
+        _score = _sig.get("overall", 0.0)
+
+        gate = _si_gate(_score)
+        if not gate.allowed:
+            return
+
+        # Gate passed — fire world-event spine call
+        if not _lock.acquire(blocking=False):
+            return  # user turn in progress — skip this cycle
+
+        try:
+            import time as _time_mod
+            from runtime.spine.spine import run as _spine_run
+            _we_plan = _spine_run(
+                "…",
+                state=_state,
+                intent_source="world_event",
+                internal_intent={
+                    "trigger":          "world_event",
+                    "significance_score": round(_score, 4),
+                    "gate_tier":        gate.tier,
+                    "gate_reason":      gate.reason,
+                },
+            )
+            _we_action = (
+                getattr(_we_plan, "conversation_action", "silence")
+                if _we_plan else "silence"
+            )
+
+            try:
+                from self.decision_journal import record as _dj_record
+                _dj_record(
+                    turn=f"world-event-{int(_time_mod.time())}",
+                    action=_we_action,
+                    exec_decision={
+                        "intent_source":      "world_event",
+                        "significance_score": round(_score, 4),
+                        "gate_tier":          gate.tier,
+                        "action":             _we_action,
+                    },
+                    backend="world_event",
+                    outcome="world_event",
+                    trigger_source="world_event",
+                )
+            except Exception:
+                pass
+
+            if _we_action != "silence":
+                _si_rec()  # start Q4a cooldown
+
+        finally:
+            try:
+                _lock.release()
+            except Exception:
+                pass
+
+    except Exception:
+        pass
+
+
 def ambient_thought() -> None:
     """
     Ambient daemon cycle — called by ambient_engine every 2–4 minutes.
@@ -803,6 +887,9 @@ def ambient_thought() -> None:
     Non-blocking: skips silently if a real turn is processing.
     Does not update session history — ambient thoughts are not conversation.
     """
+    # SP-31: world-event check runs first, fail-quiet, non-blocking
+    _world_event_thought()
+
     if _is_user_away() or _is_calm_mode():
         return
     if not _lock.acquire(blocking=False):
@@ -1797,6 +1884,12 @@ def _process_turn(raw: str) -> dict:
         import time as _time_mod
         if _state is not None:
             _state["last_user_ts"] = _time_mod.time()
+        # SP-31/SP-32: A1 signal — every user turn counts as a conversing pulse
+        try:
+            from runtime.self_initiation import record_conversation_pulse as _si_pulse
+            _si_pulse()
+        except Exception:
+            pass
 
         # hard loop guard
         _last_inputs.append(raw)
@@ -4603,9 +4696,11 @@ def _process_turn(raw: str) -> dict:
             from runtime.memory_claim_guard import (
                 scrub_unverified_memory_claims as _mcg,
                 scrub_unverified_look_claims as _mcg_look,
+                scrub_unverified_emotion_claims as _mcg_emo,
             )
             response = _mcg(response)
             response = _mcg_look(response)
+            response = _mcg_emo(response)   # §18/ADR-Exec-001: soften unverified assertions of David's state
         except Exception:
             pass
 
