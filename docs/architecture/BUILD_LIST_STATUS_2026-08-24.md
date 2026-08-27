@@ -22,8 +22,8 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 | Agency | ✅ DONE | Agency Engine Vol V Ch.10 built (card 0009); authority invariants enforced |
 | Reflection / Growth | 🔴 NOT STARTED | No WO; not in current execution queue |
 | Personality Evolution | 🔴 NOT STARTED | No WO |
-| Verify Executive receives assembled state correctly | 🟡 IN PROGRESS | SP-1+SP-2 (WO-NAV-001) in Builder QUEUE — ACK fix is the key verification gate |
-| Verify no second cognitive authority exists | 🟡 IN PROGRESS | One Brain invariant enforced; SP-1+SP-2 still pending |
+| Verify Executive receives assembled state correctly | 🟡 PARTIAL | WO-NAV-001 MT VERIFIED 2026-08-27; seam tests (test_wo097_wo106_seam.py) have 3 pre-existing failures — reported to Board; need separate investigation WO |
+| Verify no second cognitive authority exists | ✅ DONE | `tests/test_one_brain_no_second_authority.py` 6/6 PASS 2026-08-27; RD_P0_REVIEW_2026-08-23.md verdict confirmed: Executive is sole decision-maker, no competing decide() elsewhere |
 
 ---
 
