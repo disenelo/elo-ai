@@ -4734,6 +4734,22 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # ── WO-GUARD-001: Response Authority Guards (D-1 / D-2 / D-3) ──────────
+        # D-1: current-user-reality override — suppress contradictions of in-session statements
+        # D-2: tool provenance — correct tool-action claims masquerading as eLo personal actions
+        # D-3: contradiction/resurrection — prevent resurrected claims denied in current session
+        # Authority: CA ruling 2026-08-27 + David L3 Convergence Directive
+        try:
+            from runtime.response_authority_guards import apply_authority_guards as _rag
+            _rag_summaries = _state.get("session_summaries", []) if isinstance(_state, dict) else []
+            _rag_tool      = _agent or ""
+            response = _rag(response, session_summaries=_rag_summaries, tool_agent=_rag_tool)
+        except Exception as _rag_err:
+            import logging as _rag_log
+            _rag_log.getLogger("response_authority_guards").warning(
+                "response_authority_guards failed (non-fatal): %s", _rag_err
+            )
+
         # ── WO-070: shadow capture — passive turn logging (non-blocking) ─────────
         # Called here (post-scrub) so elo_raw_gen and elo_final can differ.
         # elo_raw_gen = model's bytes before _sanitise / mirror scrub / mcg / arg.
