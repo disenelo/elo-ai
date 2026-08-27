@@ -3242,3 +3242,32 @@ D-1–D-4 committed at `2c9eefc`; 3/4 ATs PASS; XI-AD-2 (parity check) RED — c
 ### Continuing Build List loop — next scan underway
 
 *Board / Lead Architect · 2026-08-27*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-27 (WP_F sweep continued — defect discovered)
+**Authority:** Builder execution.
+
+### Additional WP_F gaps closed
+
+| Module | ATs | Result | Commit |
+|---|---|---|---|
+| `core/cognitive_journal.py` | 6 | 6/6 PASS | `ccae6a4` |
+| `core/project_engine.py` | 8 | 8/8 PASS | `d7369fc` |
+| `core/state_bus.py` | 8 | 8/8 PASS | `df0906d` |
+
+### Defect discovered: core/avatar_bridge.py — broken import (WP_F probe)
+
+**File:** `core/avatar_bridge.py:19`
+**Import:** `from core.emotion_engine import from_state, orb_intensity`
+**Actual exports in emotion_engine.py:** `detect_emotion()`, `get_tone_modifier()` — neither `from_state` nor `orb_intensity` exists.
+
+**Effect:** `avatar_bridge.py` cannot be imported. Any code path that imports it will fail at runtime. This is a pre-existing defect — module was implemented against an older or planned emotion_engine API that was never built.
+
+**Builder action:** Defect recorded. Builder cannot fix without a WO (requires determining the correct emotion_engine API and either implementing `from_state/orb_intensity` there or rewriting avatar_bridge.py).
+
+**Board action required:** Authorize fix WO. Options: (a) implement `from_state()` + `orb_intensity()` in emotion_engine.py to match avatar_bridge.py's expectations, or (b) rewrite avatar_bridge.py to use `detect_emotion()` + `get_tone_modifier()`.
+
+**Test suite:** 1243 collected, 0 errors (avatar_bridge excluded — cannot be collected due to import error; file not in test suite).
+
+*Board / Lead Architect · 2026-08-27*
