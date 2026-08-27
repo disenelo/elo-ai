@@ -39,7 +39,7 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 | Inner Child / Curiosity | 🟡 SPEC'D | ambient_thought() = SP-33 SPEC'D+RATIFIED; WO-SPINE-001 ISSUED |
 | Builder / Creative mode | 🔴 NOT STARTED | In RTR (RTR-020) but no SPEC/WO |
 | Personality / speech / relationship style | 🟡 PARTIAL | SC-NEW-001 storytelling_style SPEC'D+RATIFIED; relationship style = WP_F gap |
-| Storytelling style | ✅ SPEC'D+RATIFIED | SC-NEW-001 2026-08-24; not yet implemented |
+| Storytelling style | ✅ DONE | WO-SC-NEW-001 DONE (commit `8d86743`); storytelling_style in CognitivePlan, inferred in spine.py, [STORYTELLING FRAME] injected in server.py; 5/5 ATs PASS 2026-08-27 |
 | CCM integration | ✅ RECONCILED | CCM_RECONCILIATION_2026-08-23.md; 19 covered, 3 gaps (storytelling, cultural, street language) |
 | WKG integration | ✅ Phase 1 DONE | WO-WKG-001 DONE 2026-08-24 |
 | ELO-HISTORY recovery | 🟡 PARTIAL | HIST-001–006 in RTR; HIST-007–012 = ChatGPT exports missing (David to export) |
@@ -91,7 +91,7 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 | Item | Status | Authority |
 |---|---|---|
 | Voice | 🔴 NOT STARTED | CE-008 in Capability Ecosystem R&D; no implementation authorised |
-| Speaking style | 🟡 SPEC'D | SC-NEW-001 storytelling_style SPEC'D+RATIFIED; not implemented |
+| Speaking style | ✅ DONE | WO-SC-NEW-001 DONE; storytelling_style computed + [STORYTELLING FRAME] injected into system prompt per turn |
 | Relationship style | 🔴 NOT STARTED | WP_F gap; no WO |
 | Storytelling | ✅ SPEC'D+RATIFIED | SC-NEW-001; implementation pending |
 | Personality registers | 🟡 SPEC'D | CP-003 (11 planetary registers) SPEC'D+RATIFIED; not implemented |
