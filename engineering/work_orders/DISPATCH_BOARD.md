@@ -40,6 +40,30 @@ Governance constitution in force. No implementation required. All seats operate 
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-27 (WO-GUARD-001 · WO-MOBILE-001 · pytest collection fixes · WO-NAV-013 AT)
+**Authority:** Builder execution under SEAT protocol. Alignment loop sweep — all newly authorised WOs executed.
+
+| WO | Description | State | Evidence |
+|---|---|---|---|
+| **WO-GUARD-001 — Response Authority Guards** | D-1 (current-user-reality qualifier) · D-2 (tool provenance rewrite) · D-3 (contradiction resurrection qualify) | ✅ DONE — Builder 2026-08-27 | `runtime/response_authority_guards.py` NEW. 6 guard functions (`guard_d1_current_user_reality`, `guard_d2_tool_provenance`, `guard_d3_contradiction_resurrection`, `apply_authority_guards`). Guard chain inserted in `server.py` after `identity_guard`, before `shadow_capture`. 6/6 ATs PASS. Commit `d621ee1`. Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-GUARD-001_response_authority_guards_result.md`. Awaiting Board/LA independent verification of production guard chain. |
+| **WO-MOBILE-001 — Mobile Embodiment (spine side)** | D-SPINE-1 (foreground→phone embodiment) · D-SPINE-2 (background lifecycle) · D-SPINE-3 (nearby_surfaces clear) | ✅ DONE — Builder 2026-08-27 | `runtime/mobile_embodiment.py` NEW (`apply_mobile_foreground`, `apply_mobile_background`). `EloSelfState` extended: `mobile_lifecycle: str` + `embodiment_transitions: list` fields. `server.py` `_poll_unity_events` wired for `mobile_foreground` / `mobile_background` event types. 5/5 ATs PASS. Commit `5d982a5`. Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-MOBILE-001_mobile_embodiment_result.md`. MT mobile end: fire `{"type":"mobile_foreground","_ts":<ts>}` through unity_events.json — verify AT-1..5 against live spine. Awaiting Board/LA + MT close. |
+| **WO-NAV-013 AT defect** | AT file: 5 pytest-style acceptance tests for navigate handler | ✅ DONE — Builder 2026-08-27 | `tests/test_wo_nav013_navigate_handler.py` NEW. 5/5 PASS. `handle_navigate()` at `runtime/backend_router.py:125`. Commit `fe89023`. Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-NAV-013_AT_defect_result.md`. |
+| **pytest collection fixes** | test_0005 + test_0009 `sys.exit()` blocker · programme-wide `conftest.py` guard | ✅ DONE — Builder 2026-08-27 | `tests/test_0005_wo120_spatial_faculty.py` — `sys.exit` guarded inside `if __name__ == "__main__"`. Commit `34246cb`. `tests/test_0009_row1_identity.py` — same pattern. `tests/conftest.py` NEW — `pytest_ignore_collect` skips script-style files (no `def test_`). 1112 pytest-style tests now collect cleanly. Commit `3805d3e`. Pre-existing ImportError: `test_basic_loop.py` references `store_interaction` removed in commit `84758ea` — reported to Board; not caused by this session. |
+
+**BLOCKED — unchanged:**
+- WO-NAV-013 close: MT verification gate
+- PRES-004 WO: WO-NAV-013 MT verify + DM-2/DM-3
+- WO-GUARD-001 close: Board/LA independent production guard-chain verification
+- WO-MOBILE-001 close: Board/LA + MT mobile-end verification
+- 05b/WO-112: FREEZE_V1_LOCK (executive.py)
+
+**Pre-existing defect dispatched to Board (diagnosis only — no fix authorised):**
+- `test_wo096_desktop_perception` AT-2: import style mismatch — fixture uses module-style `import` vs function-style `from ... import get`. Fix is one-line.
+- `test_card_0006_perception_world` AT-3/AT-5: `_is_truncated()` called on already-tagged `[PARTIAL: …]` strings ending in `]` not `…`.
+- `test_basic_loop.py` ImportError: `store_interaction` no longer exported from `core/memory_engine.py` (removed commit `84758ea`).
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-27 (L3 faculty routing / response ownership directive · 0065 task 3/4 reactivated)
 **Authority:** David L3 directive 2026-08-27 — Faculty Routing, Response Ownership & Drift Correction.
 
