@@ -4528,6 +4528,26 @@ def _process_turn(raw: str) -> dict:
         )
         state_manager.save(_state)
 
+        # ── L3 Convergence 2026-08-27: eLo response ownership gate ──────────────
+        # eLo evaluates the candidate result BEFORE it becomes speech.
+        # Checks: (1) explicit correction hold, (2) tool claim provenance,
+        # (3) ungrounded action claims. See runtime/response_ownership.py.
+        try:
+            from runtime.response_ownership import check_candidate as _ro_check
+            _ro_move_ack = locals().get("_move_acked", False)
+            _ro_tool     = _agent or ""
+            response = _ro_check(
+                response,
+                raw_input=_original_raw,
+                tool_agent=_ro_tool,
+                move_ack_confirmed=bool(_ro_move_ack),
+            )
+        except Exception as _ro_err:
+            import logging as _ro_log
+            _ro_log.getLogger("response_ownership").warning(
+                "response_ownership gate failed (non-fatal): %s", _ro_err
+            )
+
         response = _sanitise(response)
 
         # WO-043: scrub leaked control markers from LLM response.
