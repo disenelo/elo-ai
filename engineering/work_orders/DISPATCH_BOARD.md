@@ -1706,7 +1706,7 @@ _Last updated: 2026-08-10 (auto-reconcile #28) — **NO NEW SEAT MOVEMENT since 
 >
 > **Bank now (already shipped — need David live-confirm, NOT build): WO-030 · WO-036 · WO-039 · WO-042 · WO-043 · WO-044 + merge branches WO-031 · WO-026.**
 >
-<!-- COMPANY_FOCUS: post-Presentable audit + canon integration + One Brain | items: audit-fix-landings(CT4V-01-08), canon-volume-integration(WO-CANON-I..XXVIII), one-brain(INT7-HEAT), live-test-defect-triage(builder/0019+0020+0021), spatial-faculty(WO-049 Track B), ruling-G-address(WO-CANON-I) | note: Presentable v1 was RETIRED by David L3 on 2026-08-10 — do not surface it as the milestone. today_priorities must surface the CURRENT audit-fix + canon-integration workstream (see board §"UNPARKED BY THIS DIRECTIVE"). D-7 (card 0020, 2026-08-19). -->
+<!-- COMPANY_FOCUS: Initiative 01 — Presence + Embodied Navigation | items: WO-EA2-1(MT-verify), WO-NAV-013(MT-verify), PRES-001..006(held-pending-DM), gap-A-cognitive-wiring(WO-TBD), WO-EA2-2(held-on-EA2-1) | note: Navigation waves 1–5 DONE 2026-08-27 (WO-NAV-001..013, WO-SP31/32/38). WO-WORLD-001 defect DONE. WO-CAP-001 DONE awaiting Board/LA. Next gates: MT verify WO-EA2-1 + WO-NAV-013; Design DM-2/DM-3 geometry measurements; David L3 0057 latency policy. Initiative 01 audit complete 2026-08-27 — gaps A/B/C/E open; gap D closed (commit 4688685). Updated 2026-08-27. -->
 
 > **Done bar (experience test):** one working session where eLo keeps one voice · finishes his sentences · remembers what you told him · routes a tool truthfully · never false-alarms "can't reach my thinking" · knows itself (where/how big/what it can do) · and sits AND moves when asked. All true → Presentable v1 is real.
 
