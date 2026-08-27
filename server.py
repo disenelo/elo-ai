@@ -3324,6 +3324,14 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
 
+                # WO-NAV-009 SP-9 D-3 / L3-NAV-3: update confirmed body position (arrived=True only)
+                try:
+                    from world.live_world_state import update_confirmed_body_win_id as _ubwi
+                    if _mout is not None:
+                        _ubwi(arrived=_mout.arrived, goal_win_id=_mout.goal_win_id)
+                except Exception:
+                    pass
+
                 # SP-23 (WO-NAV-002 D-2): wire MovementOutcome → ExecutionReport movement fields
                 try:
                     import dataclasses as _dc

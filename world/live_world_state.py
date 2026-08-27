@@ -32,6 +32,33 @@ _BLENDER_STATE_PATH = os.path.join(_ROOT, "blender", "blender_state.json")
 _SPATIAL_PATH       = os.path.join(_ROOT, "blender", "elo_spatial.json")
 _DOMAIN_STATUS      = Literal["live", "cached", "stale", "absent"]
 
+# WO-NAV-009 SP-9 D-3: last confirmed body position (L3-NAV-3).
+# Updated ONLY when movement_report.arrived=True (departure node stays authoritative mid-hop).
+# Callers: navigate handler (departure anchor), SelfCapabilitySnapshot (current position).
+_confirmed_body_win_id: int = -1
+
+
+def update_confirmed_body_win_id(arrived: bool, goal_win_id: "int | None") -> None:
+    """
+    SP-9 / L3-NAV-3: update the confirmed body position from a movement outcome.
+
+    Call this in server.py when a movement_report ACK is processed:
+    - arrived=True + goal_win_id: update confirmed position.
+    - arrived=False (in-flight / fell): no-op — departure node stays authoritative.
+    Fail-quiet: any bad input is silently ignored.
+    """
+    global _confirmed_body_win_id
+    if arrived and goal_win_id is not None:
+        try:
+            _confirmed_body_win_id = int(goal_win_id)
+        except (TypeError, ValueError):
+            pass
+
+
+def get_confirmed_body_win_id() -> int:
+    """Return the last confirmed body position. -1 if never confirmed."""
+    return _confirmed_body_win_id
+
 
 # ── Domain health container ───────────────────────────────────────────────────
 
@@ -204,6 +231,7 @@ class LiveWorldState:
     capability_results: tuple  = field(default_factory=tuple)  # WO-CAP-001: last capability results
     surfaces:           tuple  = field(default_factory=tuple)  # WO-NAV-004 SP-7: surface_graph nodes, Y-flipped
     jump_px:            int    = 0                             # WO-NAV-004 SP-8: capability_set.jump_px (authoritative)
+    body_win_id:        int    = -1                            # WO-NAV-009 SP-9: eLo body position from elo_spatial.json; -1 = mid-hop / unknown
 
 
 # ── Assembly ──────────────────────────────────────────────────────────────────
@@ -448,8 +476,10 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
         _health("gaze", "absent", "absent", 0.0)
 
     # WO-NAV-004 SP-7/SP-10/SP-8: surface_graph from elo_spatial.json + Y-flip + jump_px
+    # WO-NAV-009 SP-9: body_win_id — eLo body position (raw; -1 = mid-hop/unknown)
     _surfaces: tuple = ()
     _jump_px: int = 0
+    _body_win_id: int = -1
     try:
         with open(_SPATIAL_PATH, encoding="utf-8") as _sf2:
             _sd2 = json.load(_sf2)
@@ -457,6 +487,7 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
         _sg2 = _sd2.get("surface_graph", {})
         _cap_set2 = _sg2.get("capability_set", {})
         _jump_px = int(_cap_set2.get("jump_px", 0))
+        _body_win_id = int(_sd2.get("body_win_id", -1))  # WO-NAV-009 D-1: raw position; -1 = mid-hop
         _surfaces = tuple(
             {
                 "win_id":  n["id"],
@@ -581,8 +612,9 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
         degraded=tuple(degraded),
         route_history=_route_hist,
         capability_results=_cap_results,
-        surfaces=_surfaces,    # WO-NAV-004 SP-7
-        jump_px=_jump_px,      # WO-NAV-004 SP-8
+        surfaces=_surfaces,       # WO-NAV-004 SP-7
+        jump_px=_jump_px,         # WO-NAV-004 SP-8
+        body_win_id=_body_win_id, # WO-NAV-009 SP-9
     )
 
 
