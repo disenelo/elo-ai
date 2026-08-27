@@ -40,6 +40,24 @@ Governance constitution in force. No implementation required. All seats operate 
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-27 (L3 faculty routing / response ownership directive · 0065 task 3/4 reactivated)
+**Authority:** David L3 directive 2026-08-27 — Faculty Routing, Response Ownership & Drift Correction.
+
+**Drift trace filed:** `docs/architecture/findings/FACULTY_ROUTING_DRIFT_TRACE_2026-08-27.md`
+
+**D-4 fixed (commit pending):** Infrastructure language "running on backup" replaced with eLo-voice equivalent in `server.py:4204`. Compile clean.
+
+**0065 WO-BRAIN-AUTHORS status after L3 directive:**
+Tasks 1/2 ✅ DONE. Task 3 (eLo response gate — execution owns the language) and Task 4 (identity assertion acts, not just detects) are NOW ACTIVATED by L3 2026-08-27 directive. Previously deferred pending "spine authority not yet established" (0065 result card). **Awaiting CA review + Board scoping of mechanism** (constraint: 4s latency rule from 0057 means full second-LLM-pass gate requires David L3 ruling on acceptable latency; rule-based gate does not).
+
+**D-1 (ELO_BACKEND=groq unconditional pin):** Cannot change `.env` — standing rule. Requires David L3 instruction to change production pin.
+
+**D-3 (current-conversation authority):** Blocked on same gate as task 3 — no implementation possible without cognitive gate in place.
+
+**CA action required:** Audit D-1 through D-6 against canon (CANON-I, CANON-VII, Vol VII executive, 0065 v1 boundary). Determine whether task 3 gate is LLM-based (blocked by 0057) or rule-based (unblocked). Issue governed WOs.
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-27 (Builder sweep COMPLETE · all authorised WOs done · gates documented)
 **Authority:** Alignment loop sweep — all Builder execution queue items exhausted. No new implementation without Board WO.
 

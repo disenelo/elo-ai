@@ -4201,8 +4201,8 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
                 if _bh_degraded and _agent is None:
-                    response = ("Can't reach my thinking right now — running on backup. "
-                                "Give me a sec and try again.")
+                    # L3 2026-08-27: no infrastructure language to David.
+                    response = "I'm having trouble getting there right now — give me a moment."
             except Exception:
                 pass
 
