@@ -29,7 +29,7 @@ Governance constitution in force. No implementation required. All seats operate 
 ## BOARD STATE UPDATE — 2026-08-27 (Builder sweep COMPLETE · all authorised WOs done · gates documented)
 **Authority:** Alignment loop sweep — all Builder execution queue items exhausted. No new implementation without Board WO.
 
-**Full test regression (2026-08-27):** 103/103 PASS across WO-NAV-001..012, WO-WORLD-001, WO-SP31/32/38 test suites.
+**Full test regression (2026-08-27):** 126/126 PASS across WO-NAV-001..012 + WO-WORLD-001 + SP31/32/38 test suites (corrected count — full 14-file suite; earlier "103" was partial). **Test runner:** use `~/miniconda3/bin/python3 -m pytest` — Homebrew python3 lacks `astral` (PEP 668 block).
 
 ### PROGRAMME STATE SUMMARY
 
