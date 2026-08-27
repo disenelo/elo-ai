@@ -54,19 +54,19 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 | Q-NAV remaining SPEC consequences | 🟡 IN PROGRESS | Wave 1 WOs; SP-8–SP-14 SPEC'D+RATIFIED (amendment 2026-08-23) |
 | Q-BODY remaining SPEC consequences | 🟡 IN PROGRESS | WO-NAV-004 DONE (surface graph reader + BodySchema) |
 | Q-MOVEMENT WHERE I AM | ✅ SPEC'D | L3-NAV-3 ratified; departure node authoritative |
-| Q-MOVEMENT WANT TO GO | 🟡 IN PROGRESS | SP-18; awaits SP-24 D-3 ruling → WO-NAV-013 (D-3 now ruled 2026-08-24) |
+| Q-MOVEMENT WANT TO GO | ✅ DONE | WO-NAV-013 DONE (commit `26f10e9`+`fe89023`); 5/5 ATs PASS 2026-08-27 |
 | Q-MOVEMENT AM MOVING | ✅ SPEC'D | SP-2: movement_report issued_by="brain" |
 | Q-MOVEMENT ARRIVED | ✅ SPEC'D | SP-2: arrived=True confirms new surface |
-| Q-MOVEMENT WHAT HAPPENED | 🟡 IN PROGRESS | Consequence consumers; WO-NAV-002/008 held pending WO-NAV-001 verification |
-| Q-CUR ambient_thought() self intent One Brain | ✅ SPEC'D+RATIFIED | SP-33; WO-SPINE-001 ISSUED |
-| SP-1 | 🟡 IN PROGRESS | WO-NAV-001 in Builder QUEUE — most critical item in programme |
-| SP-2 | 🟡 IN PROGRESS | WO-NAV-001 in Builder QUEUE |
+| Q-MOVEMENT WHAT HAPPENED | ✅ DONE | WO-NAV-002/008 MT verified PASS 2026-08-27; consequence consumers live |
+| Q-CUR ambient_thought() self intent One Brain | ✅ DONE | SP-31/SP-32/SP-33: WO-SP31-SP32 DONE, 13/13 MT PASS 2026-08-27; behind ELO_SELF_INITIATION=OFF (David L3 to activate) |
+| SP-1 | ✅ DONE | WO-NAV-001 MT VERIFIED 2026-08-27 |
+| SP-2 | ✅ DONE | WO-NAV-001 MT VERIFIED 2026-08-27 |
 | SP-8–SP-14 | ✅ SPEC'D+RATIFIED | Amendment 2026-08-23 |
-| SP-33 | ✅ SPEC'D+RATIFIED | WO-SPINE-001 ISSUED |
-| Remaining dependencies | 🟡 IN PROGRESS | SP-24 D-3 now ruled; SP-18 unblocked pending WO-NAV-013 |
+| SP-33 | ✅ DONE | WO-SP31-SP32 DONE; SP-33 = SP-31 self-initiation spine call (same WO) |
+| Remaining dependencies | ✅ RESOLVED | SP-24 D-3 ruled; WO-NAV-013 DONE; Wave 1 complete |
 | L3 ratification where required | ✅ DONE | David L3 ratified 2026-08-23 (Wave 1 full batch) |
-| Builder implementation | 🟡 IN PROGRESS | Wave 1 underway; WO-NAV-001 = immediate |
-| Verification | 🟡 IN PROGRESS | Pending WO-NAV-001 completion |
+| Builder implementation | ✅ DONE | Navigation wave WOs all complete + MT verified 2026-08-27 |
+| Verification | 🟡 PARTIAL | MT Wave 1+2 verified; seam test regressions (build_embodiment_state removed) reported to Board |
 
 ---
 
