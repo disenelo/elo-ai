@@ -22,6 +22,11 @@ _log = logging.getLogger(__name__)
 # Monotonically increasing per session (never resets within one server.py lifetime).
 # Vol III §1.4 / ST-III-1g: subscribers use published_at + sequence_id to detect staleness.
 _EMBODIMENT_SEQUENCE = 0
+
+# WO-SPINE-002: prior-turn state carriers — updated after each turn completes.
+_prev_embodiment_state = None   # EmbodimentState from the prior turn
+_prev_execution_report = None   # ExecutionReport from the prior turn
+
 _log.addHandler(logging.NullHandler())
 _log.propagate = False
 
@@ -198,6 +203,8 @@ def _executive_faculty(
     cognitive_state = None,  # CognitiveState from assemble_cognitive_state()
     working_memory  = None,  # WorkingMemory (competition result) from WM faculty
     affordances     = None,  # surface_affordances from CognitiveSnapshot
+    embodiment_state = None, # WO-SPINE-002: prior-turn EmbodimentState | None
+    execution_report = None, # WO-SPINE-002: prior-turn ExecutionReport | None
 ) -> CognitivePlan:
     """
     The Executive is the only entity permitted to make decisions.
@@ -645,12 +652,17 @@ def run(
     # Copies PerceptionResult fields into domain slices (Ch.3 §3.2 copy step).
     _world = None
     try:
-        from world.live_world_state import assemble_world_state as _assemble_world
+        from world.live_world_state import assemble_world_state as _assemble_world, write_unified_state as _write_unified
         _world = _assemble_world(
             turn_id=raw[:32] if raw else "",
             perception=_perception,
             capability_hint=_early_capability_hint,
         )
+        # WO-SPINE-003: publish world state to brain_state.json (Unity reads this)
+        try:
+            _write_unified(_world)
+        except Exception as _wus_err:
+            _log.warning("write_unified_state FAILED: %s", _wus_err)
     except Exception as _world_err:
         _log.warning("assemble_world_state FAILED: %s", _world_err)
 

@@ -199,6 +199,7 @@ def compress_session(
     tags: list[str] | None = None,
 ) -> str:
     """
+    DEPRECATED — route through MemoryFaculty.submit() (Vol VIII §4 Invariant 7).
     Compress a session string into a tiered memory record.
 
     Call from offline_engine.integrate_session() at session end.

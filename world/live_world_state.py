@@ -31,6 +31,7 @@ _ROOT               = os.path.dirname(os.path.dirname(os.path.abspath(__file__))
 _BLENDER_STATE_PATH    = os.path.join(_ROOT, "blender", "blender_state.json")
 _SPATIAL_PATH          = os.path.join(_ROOT, "blender", "elo_spatial.json")
 _COMPANY_STATE_PATH    = os.path.join(_ROOT, "blender", "company_state.json")  # WO-EA2-NEW-A
+_BRAIN_STATE_PATH      = os.path.join(_ROOT, "blender", "brain_state.json")   # WO-SPINE-003
 _DOMAIN_STATUS      = Literal["live", "cached", "stale", "absent"]
 
 # WO-NAV-009 SP-9 D-3: last confirmed body position (L3-NAV-3).
@@ -92,8 +93,15 @@ class UserState:
 
 @dataclass(frozen=True)
 class UnityState:
-    avatar_online:  bool = False
-    presence_mode:  str  = ""     # "present" | "away" | "unknown"
+    avatar_online:  bool  = False
+    presence_mode:  str   = ""     # "present" | "away" | "unknown"
+    pos_x:          float = 0.0
+    pos_y:          float = 0.0
+    pos_height:     float = 0.0
+    edge:           str   = ""
+    on_window:      bool  = False
+    embodiment:     str   = ""
+    route:          tuple = ()
 
 
 @dataclass(frozen=True)
@@ -336,15 +344,16 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
         _health("music", "absent", "absent", 0.0)
         _degrade("music")
 
-    # ── Unity (from blender_state.json) ──────────────────────────────────────
-    unity = UnityState()
+    # ── Unity (from blender_state.json + elo_spatial.json) ───────────────────
+    # WO-SPINE-003: bstate-derived fields saved as temps; UnityState constructed
+    # after _spatial_raw is populated (single read below).
+    _unity_avatar_online = False
+    _unity_presence_mode = ""
     try:
         if bstate:
-            mode = bstate.get("mode", "")
-            unity = UnityState(
-                avatar_online=bool(bstate.get("_ts")),
-                presence_mode="present" if mode else "unknown",
-            )
+            _mode = bstate.get("mode", "")
+            _unity_avatar_online = bool(bstate.get("_ts"))
+            _unity_presence_mode = "present" if _mode else "unknown"
             _health("unity", "cached", "blender_state.json", 0.7)
         else:
             _health("unity", "absent", "absent", 0.0)
@@ -461,12 +470,18 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
     for domain in ("browser", "files", "internet", "calendar", "weather"):
         _health(domain, "absent", "absent", 0.0)
 
+    # ── Single spatial read (WO-SPINE-003: _SPATIAL_PATH opened once per turn) ──
+    _spatial_raw: dict = {}
+    try:
+        with open(_SPATIAL_PATH, encoding="utf-8") as _sf:
+            _spatial_raw = json.load(_sf)
+    except Exception:
+        pass
+
     # ── Gaze (WO-099 UP channel — from elo_spatial.json, written by Unity) ────
     gaze_state: "GazeState | None" = None
     try:
-        with open(_SPATIAL_PATH, encoding="utf-8") as _sf:
-            _sd = json.load(_sf)
-        _gd = _sd.get("gaze")
+        _gd = _spatial_raw.get("gaze")
         if isinstance(_gd, dict):
             gaze_state = GazeState(
                 x=float(_gd.get("x", 0.5)),
@@ -490,13 +505,11 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
     _surface_edges: tuple = ()
     _win_id_to_surface: dict = {}
     try:
-        with open(_SPATIAL_PATH, encoding="utf-8") as _sf2:
-            _sd2 = json.load(_sf2)
-        _screen_h2 = int(_sd2.get("screen_h", 1440))
-        _sg2 = _sd2.get("surface_graph", {})
+        _screen_h2 = int(_spatial_raw.get("screen_h", 1440))
+        _sg2 = _spatial_raw.get("surface_graph", {})
         _cap_set2 = _sg2.get("capability_set", {})
         _jump_px = int(_cap_set2.get("jump_px", 0))
-        _body_win_id = int(_sd2.get("body_win_id", -1))  # WO-NAV-009 D-1: raw position; -1 = mid-hop
+        _body_win_id = int(_spatial_raw.get("body_win_id", -1))  # WO-NAV-009 D-1: raw position; -1 = mid-hop
         _surfaces = tuple(
             {
                 "win_id":  n["id"],
@@ -518,6 +531,20 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
                 "elo_spatial.json", 0.9 if _surfaces else 0.0)
     except Exception:
         _health("surfaces", "absent", "absent", 0.0)
+
+    # WO-SPINE-003: construct UnityState now that _spatial_raw is available.
+    # elo_spatial.json keys: x→pos_x, y→pos_y, height→pos_height, last_move.route→route.
+    unity = UnityState(
+        avatar_online=_unity_avatar_online,
+        presence_mode=_unity_presence_mode,
+        pos_x=float(_spatial_raw.get("x", 0.0)),
+        pos_y=float(_spatial_raw.get("y", 0.0)),
+        pos_height=float(_spatial_raw.get("height", 0.0)),
+        edge=str(_spatial_raw.get("edge", "")),
+        on_window=bool(_spatial_raw.get("on_window", False)),
+        embodiment=str(_spatial_raw.get("embodiment", "")),
+        route=tuple(_spatial_raw.get("last_move", {}).get("route", ())),
+    )
 
     # ── Ch.3 §3.2: copy PerceptionResult into domain slices (verbatim, no re-interpret) ──
     # Overrides direct-sensor reads only where perception provides richer data.
@@ -715,3 +742,59 @@ def _calculate_sun_events(lat: float, lon: float, date_iso: str) -> dict:
         "sunset":  _s["sunset"].isoformat(timespec="minutes"),
         "date":    date_iso,
     }
+
+
+def write_unified_state(world: "LiveWorldState") -> bool:
+    """
+    WO-SPINE-003: Atomically write world_state section into brain_state.json.
+
+    Reads existing brain_state.json (if present), merges the world_state key,
+    writes via os.replace() for atomicity. Preserves all existing keys (vortex, etc.).
+    Returns True on success, False on any failure. Never raises.
+    """
+    import json as _json
+    try:
+        _unity = getattr(world, "unity", None)
+        _desktop = getattr(world, "desktop", None)
+        _time = getattr(world, "time", None)
+        world_state = {
+            "turn_id":    getattr(world, "turn_id", ""),
+            "assembled_ts": getattr(world, "assembled_ts", 0.0),
+            "degraded":   list(getattr(world, "degraded", [])),
+            "unity": {
+                "pos_x":        getattr(_unity, "pos_x", 0.0),
+                "pos_y":        getattr(_unity, "pos_y", 0.0),
+                "pos_height":   getattr(_unity, "pos_height", 0.0),
+                "edge":         getattr(_unity, "edge", ""),
+                "on_window":    getattr(_unity, "on_window", False),
+                "embodiment":   getattr(_unity, "embodiment", ""),
+                "route":        list(getattr(_unity, "route", ())),
+                "avatar_online":getattr(_unity, "avatar_online", False),
+                "presence_mode":getattr(_unity, "presence_mode", ""),
+            },
+            "desktop": {
+                "active_app":   getattr(_desktop, "active_app", "") if _desktop else "",
+                "active_window":getattr(_desktop, "active_window", "") if _desktop else "",
+                "platform":     getattr(_desktop, "platform", "") if _desktop else "",
+            },
+            "time": {
+                "now_iso":      getattr(_time, "now_iso", "") if _time else "",
+                "part_of_day":  getattr(_time, "part_of_day", "") if _time else "",
+                "day_of_week":  getattr(_time, "day_of_week", "") if _time else "",
+            },
+        }
+        existing: dict = {}
+        if os.path.exists(_BRAIN_STATE_PATH):
+            try:
+                with open(_BRAIN_STATE_PATH, encoding="utf-8") as _bf:
+                    existing = _json.load(_bf)
+            except Exception:
+                existing = {}
+        existing["world_state"] = world_state
+        _tmp = _BRAIN_STATE_PATH + ".tmp"
+        with open(_tmp, "w", encoding="utf-8") as _tf:
+            _json.dump(existing, _tf, indent=2)
+        os.replace(_tmp, _BRAIN_STATE_PATH)
+        return True
+    except Exception:
+        return False

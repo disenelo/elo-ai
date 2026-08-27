@@ -111,6 +111,11 @@ class ExecutiveContext:
     # CA ruling required before adding a field.
     epistemic_state: None = None
 
+    # ── WO-SPINE-002: structured objects passed through from spine assembly ──────
+    cognitive_state:  Any = None
+    embodiment_state: Any = None
+    execution_report: Any = None
+
     def as_dict(self) -> dict:
         """
         Flatten to the dict format exec_decide() currently reads.
@@ -145,6 +150,10 @@ class ExecutiveContext:
             "ec_agency":            None,
             "ec_significance":      None,
             "ec_epistemic_state":   None,
+            # WO-SPINE-002: structured objects from spine assembly
+            "ec_cognitive_state":   self.cognitive_state,
+            "ec_embodiment_state":  self.embodiment_state,
+            "ec_execution_report":  self.execution_report,
         }
         return d
 
@@ -185,6 +194,8 @@ def build_executive_context(
     affordances,    # surface_affordances sequence | None
     attention:      dict,  # raw attention_model from server.py
     lessons:        list | None = None,  # Card 0075 D3 · Option A: filtered lessons
+    embodiment_state = None,  # WO-SPINE-002: prior-turn EmbodimentState | None
+    execution_report = None,  # WO-SPINE-002: prior-turn ExecutionReport | None
 ) -> ExecutiveContext:
     """
     Assemble ExecutiveContext from the canonical sources available at the
@@ -353,4 +364,7 @@ def build_executive_context(
         identity=identity_dict,
         lessons=lessons_out,
         # agency, significance, epistemic_state remain None — NEW ASSUMPTION
+        cognitive_state=cognitive_state,
+        embodiment_state=embodiment_state,
+        execution_report=execution_report,
     )
