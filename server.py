@@ -1859,6 +1859,21 @@ def _init_session():
                         with _ACK_QUEUE_LOCK:
                             _ACK_QUEUE.append(dict(_ev))
                         _ack_last_ts = _ev_ts
+                    # WO-MOBILE-001 D-SPINE-1/2: mobile foreground/background events
+                    # G4: events arrive only through this authenticated window process
+                    elif _ev_type in ("mobile_foreground", "mobile_background"):
+                        try:
+                            from runtime.mobile_embodiment import (
+                                apply_mobile_foreground as _mob_fg,
+                                apply_mobile_background as _mob_bg,
+                            )
+                            _mob_ts = float(_ev.get("_ts", 0)) or _pt.time()
+                            if _ev_type == "mobile_foreground":
+                                _elo_self = _self_mutate(lambda s: _mob_fg(s, ts=_mob_ts))
+                            else:
+                                _elo_self = _self_mutate(lambda s: _mob_bg(s, ts=_mob_ts))
+                        except Exception as _mob_err:
+                            _poller_log.warning("WO-MOBILE-001: event handler error: %s", _mob_err)
                 if _new_seq > _ack_consumed_seq:
                     _ack_consumed_seq = _new_seq
                     _wc(_ack_consumed_seq)

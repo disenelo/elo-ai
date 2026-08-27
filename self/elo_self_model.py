@@ -172,6 +172,9 @@ class EloSelfState:
     who_i_am_with: str = "David"
     # WO-115: last lesson formed from a real reflection cycle (integrate_session output)
     last_reflection_lesson: str = ""
+    # WO-MOBILE-001: mobile embodiment lifecycle
+    mobile_lifecycle: str = ""                   # "" | "foreground" | "background"
+    embodiment_transitions: list = field(default_factory=list)  # [{ts, from_, to, event}]
 
 
 # ── Persistence ───────────────────────────────────────────────────────────────
@@ -216,6 +219,8 @@ def load() -> EloSelfState:
             ])),
             who_i_am_with=str(data.get("who_i_am_with", "David")),
             last_reflection_lesson=str(data.get("last_reflection_lesson", "")),
+            mobile_lifecycle=str(data.get("mobile_lifecycle", "")),
+            embodiment_transitions=list(data.get("embodiment_transitions", [])),
         )
     except (FileNotFoundError, json.JSONDecodeError, Exception):
         return EloSelfState()
