@@ -3271,3 +3271,37 @@ D-1–D-4 committed at `2c9eefc`; 3/4 ATs PASS; XI-AD-2 (parity check) RED — c
 **Test suite:** 1243 collected, 0 errors (avatar_bridge excluded — cannot be collected due to import error; file not in test suite).
 
 *Board / Lead Architect · 2026-08-27*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-27 (WP_F sweep COMPLETE — session 2)
+**Authority:** Builder execution.
+
+### WP_F sweep final tally
+
+| Module | File | ATs | Result | Commit |
+|---|---|---|---|---|
+| `core/visual_memory.py` | `test_visual_memory.py` | 8 | 8/8 PASS | `b882861` |
+| `core/backend_manager.py` | `test_backend_manager.py` | 9 | 9/9 PASS | `b882861` |
+| `core/api_layer.py` | `test_api_layer.py` | 11 | 11/11 PASS | `b882861` |
+| `company_runtime/agent_poll.py` | `test_agent_poll_refresh.py` | 7 | 7/7 PASS | `b882861` |
+| `company_runtime/behaviour_eval.py` | `test_behaviour_eval.py` | 11 | 11/11 PASS | `b882861` |
+| `company_runtime/company_brain_state_writer.py` | `test_company_brain_state_writer.py` | 13 | 13/13 PASS | `b882861` |
+
+**New ATs this session:** 59. **Session 1+2 total new ATs:** ~125.
+
+**Remaining open coverage items after WP_F sweep:**
+- `core/avatar_bridge.py` — DEFECT (broken import, not a coverage gap). Board fix WO required.
+- `core/api_layer.py LocalLLMAdapter.is_available()` — excluded from ATs (live network call, 2s timeout); not appropriate for CI AT level.
+
+**Pre-existing suite failures:** 160 failures in the broader test suite pre-exist this session. Source: stash note at `c8453fd` — "Routing/ordering audit — architecture is sound, failures are cognitive/routing." Not introduced by WP_F sweep.
+
+### Builder queue status
+
+All independently executable WP_F coverage items are now DONE. Builder queue is EMPTY pending:
+- Board fix WO for `avatar_bridge.py` defect
+- WO-112 Architect ruling (executive.py freeze)
+- WO-CANON-XI Design dispatch (live Unity parity)
+- L3 decisions: SP-29, PE-037, CCM reconciliation
+
+*Board / Lead Architect — close WO-BOARD-001, action avatar_bridge WO · 2026-08-27*
