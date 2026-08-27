@@ -3188,3 +3188,36 @@ Final verification pass (2026-08-27): 18/18 PASS across test_wo_sc_new001, test_
 Builder has inspected the entire Build List (§1–§10) and the current Board queue. All WOs with ISSUED status are DONE. No unfinished Builder-executable work exists without a Board WO or David L3 decision. Builder is IDLE pending Board dispatch.
 
 *Board / Lead Architect · 2026-08-27*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-27 (WO-BOARD-001 DONE)
+**Authority:** Builder execution.
+
+### WO-BOARD-001 — ✅ DONE (commit `23ea717`, 5/5 ATs PASS)
+
+`board_state.json` wired into dashboard backend:
+- GET `/board_state.json` returns `{"board_state": {...}, "overdue_count": N, "needs_david_count": N}`
+- Missing file → WARNING logged, returns `{"board_state": {}, "overdue_count": 0, "needs_david_count": 0}`
+- `company_state_writer.py` and `executive.py` untouched
+- 1182 tests collected, 0 errors
+
+**Result card:** `builder/DONE/FROM_BUILDER_WO-BOARD-001_board_state_dashboard_result.md`
+
+**Board action:** Close WO-BOARD-001. Design may now consume `/board_state.json` to render overdue + needs_david badges.
+
+**Builder continues loop — returning to Build List / QUEUE for next item.**
+
+### WO-112 — ⏳ BLOCKED (filed for Board)
+
+`executive.py:156-235` early-return prevents candidate set formation — `confidence` and `alternatives_rejected` are always null/empty in all 35 live journal entries. Fix requires touching `executive.py` (FREEZE_V1_LOCK). Needs Architect ruling: (a) unfreeze for this specific change, or (b) reroute candidate-set responsibility to a non-frozen file.
+
+**Board action required:** Issue ruling before WO-112 can proceed.
+
+### WO-CANON-XI — ⏳ PARITY GATE OPEN (Design required)
+
+D-1–D-4 committed at `2c9eefc`; 3/4 ATs PASS; XI-AD-2 (parity check) RED — correct, not a failure. Parity gate requires live Unity moves emitting `brain_route` + `unity_route` to `route_memory.jsonl`. Builder cannot unilaterally generate live Unity moves.
+
+**Board action required:** Dispatch Design to run live moves and collect parity data. Until then Builder cannot complete XI-AD-2.
+
+*Board / Lead Architect · 2026-08-27*

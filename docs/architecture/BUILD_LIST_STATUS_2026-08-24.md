@@ -130,7 +130,7 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 
 | Item | Status | Authority |
 |---|---|---|
-| Disenelo Presence | ✅ LIVE | Unity DesktopBuddy.cs running |
+| Disenelo Presence | ✅ LIVE | Unity DesktopBuddy.cs running; board_state.json wired to dashboard backend (WO-BOARD-001 DONE 2026-08-27) |
 | Unity body | ✅ LIVE | — |
 | UI | ✅ LIVE | — |
 | Gaze | ✅ DONE | WO-099b: gaze consume + describe live; 7/7 ATs PASS (`test_wo099b_gaze_consume.py`) |
