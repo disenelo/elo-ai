@@ -3066,3 +3066,36 @@ _Updated 2026-08-10 (reconcile #26) — **DESIGN MOVEMENT (seat-reported, UNVERI
 | **Builder lane correction** | Board → Builder | ✅ FILED | `FROM_ARCHITECT_2026-08-24_Unity-WO-B1_lane_correction.md`. Skip Unity-WO-B1. WO-NAV-013 → WORLD-001 → WO-CAP-001. WO-CONV-001 parked. |
 
 *Board / Lead Architect · 2026-08-24*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-27 (§4 CCM gate + Build List STATUS sync)
+**Authority:** Builder execution · Build List loop advance.
+
+### CCM §4 Full Read — Gate Determination
+
+`docs/architecture/CCM_RECONCILIATION_2026-08-23.md` fully read 2026-08-27.
+
+| Category | Count | Finding |
+|---|---|---|
+| Category A — fully covered by existing canon | 19 dimensions | No action. Already implemented. |
+| Category B — partial, implementation gap | 4 dimensions (emotion, conversation energy, humour style, uncertainty) | Deferred to Language Faculty WO. Not a blocking gap. |
+| Category C — genuinely missing | 3 dimensions (storytelling style, cultural context, street language) | Implementation path defined: Meaning Object + WKG. **GATED: David L3 ratification of reconciliation doc required before any WO can be issued.** |
+
+**Reconciliation verdict:** CCM is not a faculty. It is a specification of what the Meaning Object should carry. No new subsystem needed. No YAML files. No new pipeline node.
+
+**`CCM One Brain integration` Build List item:** 🟡 NO WO → ⏳ GATED (L3 ratification required)
+**`Context CCM` Build List item:** 🔴 NO WO → ⏳ GATED (same L3 gate — Meaning Object enrichment in Language Faculty WO)
+
+**Board action required:** When David L3 ratifies CCM_RECONCILIATION_2026-08-23.md, issue WO to Language Faculty (storytelling_mode + cultural_register fields on Meaning Object) and WKG WO (cultural context + street language as WKG claim nodes). Until then: no Builder action.
+
+### Build List STATUS sync — 2026-08-27
+
+| Item | Section | Previous | Now |
+|---|---|---|---|
+| Intent / Relationship | §1 | 🟡 PARTIAL (WP_F gap) | ✅ DONE (WO-REL-001) |
+| Verify recovered knowledge cannot silently disappear | §4 | 🔴 NO WO | ✅ DONE (WO-WKG-004) |
+| CCM One Brain integration | §4 | 🟡 NO WO | ⏳ GATED (L3 ratification) |
+| Context CCM | §4 | 🔴 NO WO | ⏳ GATED (same L3 gate) |
+
+*Board / Lead Architect · 2026-08-27*
