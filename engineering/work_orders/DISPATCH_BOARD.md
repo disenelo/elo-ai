@@ -3069,6 +3069,53 @@ _Updated 2026-08-10 (reconcile #26) — **DESIGN MOVEMENT (seat-reported, UNVERI
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-27 (MT verification batch + Active Queue completion + §1 One Brain invariant)
+**Authority:** Builder execution + MT verification results.
+
+### MT Verification Results — Batch 1 + Batch 2
+
+| WO | MT Result | Notes |
+|---|---|---|
+| **WO-EA2-1** | ✅ 6/5 PASS (6 passed, 0 failed, 6/5 counter — flagged, not failed) | Gate cleared → WO-EA2-NEW-A unblocked |
+| **WO-EA2-2** | ✅ 11/11 PASS | |
+| **WO-NAV-013** | ⚠️ MT ran BEFORE AT commit `fe89023` — AT file was present on disk but MT could not see it | Builder confirms: `test_wo_nav013_navigate_handler.py` EXISTS, 5/5 PASS (miniconda3, confirmed this session) |
+| **WO-WORLD-001** | ✅ 8/8 PASS | MT retracted astral escalation — astral was in miniconda since 2026-08-23; escalation was interpreter error |
+| **WO-NAV-009** | ✅ 6/6 PASS | |
+| **WO-NAV-010** | ✅ 10/10 PASS | |
+| **WO-NAV-011** | ✅ 7/7 PASS | |
+| **WO-NAV-012** | ✅ 7/7 PASS | |
+| **WO-SP31-SP32** | ✅ 13/13 PASS | `ELO_SELF_INITIATION` NOT activated — David L3 only |
+| **WO-SP38** | ✅ 10/10 PASS | |
+
+**MT finding: two-interpreter hazard confirmed.** miniconda3 = runtime; homebrew python3 ≠ runtime. All verification must state interpreter used.
+
+### WO-EA2-NEW-A — ✅ DONE (all deliverables pre-existing)
+
+D-1 (`_COMPANY_STATE_PATH` + read block in `assemble_world_state()`), D-2 (`company_state: dict` in `LiveWorldState`), D-3 (spine.py:327 `company_state` in `attention_in["world_state"]`) — all committed at `16a1b4c`. 7/7 ATs PASS. Result card: `builder/DONE/FROM_BUILDER_WO-EA2-NEW-A_company_state_wiring_result.md`. Awaiting Board/LA architectural close.
+
+### §1 One Brain Invariant — ✅ VERIFIED
+
+`tests/test_one_brain_no_second_authority.py` — 6/6 PASS (commit `ad0b713`).
+- AT-1: `executive.py` is sole owner of top-level `decide()` across all runtime modules
+- AT-2: spine.py calls `_executive_faculty` as terminal decision point
+- AT-3: governance invariant docstring present in `_executive_faculty`
+- AT-4: `FREEZE_V1_LOCK` / `LAW-017` marker present in `executive.py`
+- AT-5: no competing `exec_decision` pattern in other faculties
+- AT-6: `RD_P0_REVIEW_2026-08-23.md` verdict on disk — "sole decision-maker" confirmed
+
+**Build List §1 'Verify no second cognitive authority exists': 🟡 IN PROGRESS → ✅ DONE**
+
+### Pre-existing defects — reported
+
+| Defect | File | Description | Status |
+|---|---|---|---|
+| Seam test failures | `test_wo097_wo106_seam.py` | 3 failures: conversation_before_embodiment_static, embodiment_ordering_regression_guard, world_absent_logs_warning | Board to investigate — may relate to spine changes during nav wave |
+| `test_basic_loop.py` ImportError | `tests/test_basic_loop.py` | `store_interaction` removed in commit `84758ea`; test still imports it | Board authorize fix |
+
+*Board / Lead Architect · 2026-08-27*
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-27 (§4 CCM gate + Build List STATUS sync)
 **Authority:** Builder execution · Build List loop advance.
 
