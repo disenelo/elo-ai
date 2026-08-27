@@ -4,7 +4,7 @@ title: "Memory wired but NOT learning — interaction write-back dead since 2026
 owner_seat: SEAT-ENG-001 (Builder / eLo OS)
 priority: P1
 review_required: L3 (tell eLo something new; he recalls it a day later)
-status: OPEN — grounded
+status: DONE — 2026-08-27 (store_interaction() implemented; e2e 9/9 PASS)
 created: 2026-08-03
 ---
 

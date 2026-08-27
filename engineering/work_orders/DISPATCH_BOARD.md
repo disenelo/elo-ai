@@ -3305,3 +3305,45 @@ All independently executable WP_F coverage items are now DONE. Builder queue is 
 - L3 decisions: SP-29, PE-037, CCM reconciliation
 
 *Board / Lead Architect — close WO-BOARD-001, action avatar_bridge WO · 2026-08-27*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-27 (WO-037 DONE + Presentable v1 WO governance closure)
+**Authority:** Builder execution · Build List loop § Verify.
+
+### WO-037: Memory FACT SNAPSHOT — DONE
+
+`store_interaction(user, response, action, project_tag)` implemented in `core/memory_engine.py`.
+Appends raw turn records to `memory/interactions.json`; surfaces via `retrieve()` (keyword) and
+`retrieve_by_project()` (recency). Both WO-037 acceptance criteria now met.
+
+**Evidence:** `tests/test_wo022_037_memory_recall_e2e.py` — 9/9 PASS (was 5/9; AT-1/2/3 were failing).
+
+### Presentable v1 WOs — governance closure (all verified DONE in prior session)
+
+The following WOs are implemented and verified. No DONE cards existed; closing now.
+
+| WO | Title | AT evidence | Status |
+|---|---|---|---|
+| WO-022 | Memory recall wiring | `test_wo022_memory_recall.py` 5/5 PASS | **DONE** |
+| WO-020 | Tool routing | `test_wo020_tool_routing.py` 6/6 PASS + `test_wo020_routing_drift.py` 6/6 PASS | **DONE** |
+| WO-039 | Garbled intent routing | 43/43 PASS across all sub-tests (wo039 suite) | **DONE** |
+| WO-048 | "How's the company real" | `test_wo048_company_real.py` 12/12 PASS | **DONE** |
+| WO-045 | Take Five + exit gate | `test_wo045_take_five.py` 6/6 + `test_wo045b_exit_gate_ordering.py` 7/7 PASS | **DONE** |
+| WO-037 | Memory fact snapshot | `test_wo022_037_memory_recall_e2e.py` 9/9 PASS | **DONE** |
+
+### Presentable v1 milestone — Tier 1 + Tier 2 DONE
+
+With the above closures:
+- **Tier 0** (WO-032b — real brain/Groq): BLOCKED pending Groq account resolution (David action)
+- **Tier 1** (WO-048, WO-045): **DONE**
+- **Tier 2** (WO-022/037, WO-020, WO-039, `conversing` field): **DONE**
+
+Milestone is DONE except Tier 0 Groq block (David-gated, no Builder action possible).
+
+### Next Build List item
+
+Builder now returns to CANON programme (highest priority post-Presentable per CANON_BUILD_PROGRAM.md).
+Next item: WO-CANON Tier A — first available unblocked item from the Tier A list.
+
+*Board / Lead Architect · 2026-08-27*
