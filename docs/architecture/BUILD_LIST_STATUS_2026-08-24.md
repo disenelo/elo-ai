@@ -36,12 +36,12 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 | P9 Leaf on Water | ✅ IN CANON | Ratified 2026-08-24; `ARCHITECTURAL_PRINCIPLES.md` P9 |
 | Vessel Kernel Loop reconciliation | ✅ DONE | BOARD-003 resolved 2026-08-23; Vision Spine note ratified 2026-08-24 |
 | Planetary Layer | 🟡 SPEC'D | CP-003 SPECIFIED+RATIFIED 2026-08-24; implementation NOT authorised (awaits SP-29) |
-| Inner Child / Curiosity | 🟡 SPEC'D | ambient_thought() = SP-33 SPEC'D+RATIFIED; WO-SPINE-001 ISSUED |
+| Inner Child / Curiosity | ✅ DONE | SP-31/SP-32/SP-33 self-initiation: WO-SP31-SP32 DONE, MT 13/13 PASS 2026-08-27; ELO_SELF_INITIATION=OFF (David L3 to activate) |
 | Builder / Creative mode | 🔴 NOT STARTED | In RTR (RTR-020) but no SPEC/WO |
-| Personality / speech / relationship style | 🟡 PARTIAL | SC-NEW-001 storytelling_style SPEC'D+RATIFIED; relationship style = WP_F gap |
+| Personality / speech / relationship style | 🟡 PARTIAL | SC-NEW-001 (storytelling_style) ✅ DONE; relationship style WP_F gap: spec (05_relationship_faculty.md) is STUB — Board dispatching CA/LA to write spec before any WO |
 | Storytelling style | ✅ DONE | WO-SC-NEW-001 DONE (commit `8d86743`); storytelling_style in CognitivePlan, inferred in spine.py, [STORYTELLING FRAME] injected in server.py; 5/5 ATs PASS 2026-08-27 |
 | CCM integration | ✅ RECONCILED | CCM_RECONCILIATION_2026-08-23.md; 19 covered, 3 gaps (storytelling, cultural, street language) |
-| WKG integration | ✅ Phase 1 DONE | WO-WKG-001 DONE 2026-08-24 |
+| WKG integration | ✅ Phase 1+2 DONE | WO-WKG-001 Phase 1 DONE 2026-08-24; BWKG-02 Phase 2 corpus ingestion DONE 2026-08-22; WO-WKG-004 runtime injection DONE 2026-08-27 |
 | ELO-HISTORY recovery | 🟡 PARTIAL | HIST-001–006 in RTR; HIST-007–012 = ChatGPT exports missing (David to export) |
 | Astrology source recovery / ratification | 🟡 PARTIAL | Directive §8 = functional recovery; original chart outstanding (BOARD-004 path) |
 
@@ -51,8 +51,8 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 
 | Item | Status | Authority |
 |---|---|---|
-| Q-NAV remaining SPEC consequences | 🟡 IN PROGRESS | Wave 1 WOs; SP-8–SP-14 SPEC'D+RATIFIED (amendment 2026-08-23) |
-| Q-BODY remaining SPEC consequences | 🟡 IN PROGRESS | WO-NAV-004 DONE (surface graph reader + BodySchema) |
+| Q-NAV remaining SPEC consequences | ✅ DONE | Wave 1 WOs all complete+MT verified; SP-8–SP-14 implemented (WO-NAV-009 through WO-NAV-013) |
+| Q-BODY remaining SPEC consequences | ✅ DONE | WO-NAV-004 DONE; BodySchema live; body_win_id consumer (WO-NAV-009) MT 6/6 PASS |
 | Q-MOVEMENT WHERE I AM | ✅ SPEC'D | L3-NAV-3 ratified; departure node authoritative |
 | Q-MOVEMENT WANT TO GO | ✅ DONE | WO-NAV-013 DONE (commit `26f10e9`+`fe89023`); 5/5 ATs PASS 2026-08-27 |
 | Q-MOVEMENT AM MOVING | ✅ SPEC'D | SP-2: movement_report issued_by="brain" |
@@ -66,7 +66,7 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 | Remaining dependencies | ✅ RESOLVED | SP-24 D-3 ruled; WO-NAV-013 DONE; Wave 1 complete |
 | L3 ratification where required | ✅ DONE | David L3 ratified 2026-08-23 (Wave 1 full batch) |
 | Builder implementation | ✅ DONE | Navigation wave WOs all complete + MT verified 2026-08-27 |
-| Verification | 🟡 PARTIAL | MT Wave 1+2 verified; seam test regressions (build_embodiment_state removed) reported to Board |
+| Verification | ✅ DONE | MT Wave 1+2 verified; seam regressions fixed 2026-08-27; test_wo097_wo106_seam.py 7/7 PASS |
 
 ---
 
@@ -134,9 +134,9 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 | Unity body | ✅ LIVE | — |
 | UI | ✅ LIVE | — |
 | Gaze | 🟡 IN PROGRESS | `gaze` dict in elo_spatial.json live; GazeState SPEC'd in contracts |
-| Movement | 🟡 IN PROGRESS | Wave 1 NAV WOs; take-five fix DONE 2026-08-24 |
-| World state | 🟡 IN PROGRESS | `spatial_faculty.py`, `elo_spatial.json`, WO-NAV-004 DONE |
-| Consequence reporting | 🟡 IN PROGRESS | WO-NAV-001 (SP-1+SP-2 ACK fix) = critical path |
+| Movement | ✅ DONE | Navigation wave WOs all complete+MT verified 2026-08-27; take-five full hide accepted |
+| World state | ✅ DONE | `spatial_faculty.py`, `elo_spatial.json`, WO-NAV-004 DONE; company_state wired (WO-EA2-NEW-A) |
+| Consequence reporting | ✅ DONE | WO-NAV-001 (SP-1+SP-2 ACK fix) MT VERIFIED 2026-08-27 |
 | Visual brainiser | 🟡 SPEC'D | Diagnostic backboard in PE register (PE-033); not yet built |
 | Sensor/world feedback | 🟡 IN PROGRESS | MT RD-EXPRESSION-001 (evidence filed; formal verdict pending) |
 
