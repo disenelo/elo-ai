@@ -23,6 +23,59 @@ _STATE_LOCK = threading.Lock()
 _ROOT       = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _STATE_PATH = os.path.join(_ROOT, "blender", "blender_state.json")
 
+# SP-38 (WO-SP31-SP32): target registry — one source of truth, N embodiment surfaces.
+# Default: desktop_primary only (N=1). Additional targets = DM-6 (David L3).
+# Dispatch: same _ts-stamped state to all targets simultaneously, fail-independent.
+_TARGET_REGISTRY: list[str] = ["desktop_primary"]
+_TARGET_REGISTRY_LOCK = threading.Lock()
+
+# Per-target side-channel handlers (optional push beyond file write).
+# desktop_primary reads blender_state.json directly (existing pattern) — no push needed.
+# Future targets: add handler callables here.
+_TARGET_HANDLERS: dict[str, callable] = {}
+
+
+def register_target(name: str) -> None:
+    """DM-6 entry point: add an embodiment target to the dispatch registry."""
+    with _TARGET_REGISTRY_LOCK:
+        if name not in _TARGET_REGISTRY:
+            _TARGET_REGISTRY.append(name)
+
+
+def unregister_target(name: str) -> None:
+    """Remove an embodiment target. Fail-quiet if not present."""
+    with _TARGET_REGISTRY_LOCK:
+        try:
+            _TARGET_REGISTRY.remove(name)
+        except ValueError:
+            pass
+
+
+def _dispatch_to_targets(state: dict) -> None:
+    """
+    SP-38 fan-out: dispatch authoritative state to all registered targets.
+
+    Runs AFTER the source-of-truth file write. Each target is independent:
+    a slow/absent target never stalls others or the write.
+
+    desktop_primary reads blender_state.json via poll — no push needed; the file
+    write IS the dispatch for this target. Future targets may have registered
+    push handlers in _TARGET_HANDLERS.
+    """
+    with _TARGET_REGISTRY_LOCK:
+        targets = list(_TARGET_REGISTRY)
+
+    for target in targets:
+        if target == "desktop_primary":
+            continue  # desktop_primary already receives via file poll
+        handler = _TARGET_HANDLERS.get(target)
+        if handler is None:
+            continue
+        try:
+            handler(state)
+        except Exception:
+            pass  # fail-independent: one target failing never affects others
+
 # Mood words that are internal defaults — translate to canonical vocabulary before writing.
 _MOOD_ALIASES: dict[str, str] = {
     "open":      "neutral",   # PresenceState default idle — Unity vocab: neutral/teal
@@ -288,9 +341,11 @@ def _write(payload: dict) -> bool:
             with open(tmp, "w", encoding="utf-8") as f:
                 json.dump(payload, f, indent=2)
             os.replace(tmp, _STATE_PATH)
-            return True
         except Exception:
             return False
+    # SP-38: fan-out outside the write lock — fail-independent, non-blocking
+    _dispatch_to_targets(payload)
+    return True
 
 
 def patch(update: dict) -> None:
