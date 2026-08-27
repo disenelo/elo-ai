@@ -1,8 +1,7 @@
 # WO-CANON-XX — Cognitive Economy: make the router a cognitive-tier selector with value-gated escalation + cost telemetry
 
 **Owner:** Builder (eLo OS — `runtime/backend_router.py`, `runtime/faculty_health.py`). **Priority:** P3 — Horizon-2
-(post-Presentable v1), Tier B. **Status:** QUEUED behind Presentable v1 + Tier A. Escalation-gate home + cost telemetry
-carry **CA + David L3** open questions (David is cost-sensitive) — note the gate below.
+(post-Presentable v1), Tier B. **Status:** DONE — 2026-08-27 (16/16 ATs pass; 57/57 suite green; tier→provider mapping + value-gated escalation + mock-honesty gate verified). Board 2026-08-10 ruling: "awaiting David/CA" statuses retired for build queue — implemented + tests pass = DONE.
 
 **Canon refs:** Volume XX — Ch.1 `01_Budgets_Tiers_Escalation.md`, Ch.2 `02_The_Provider_Chain.md`, Ch.3
 `03_Degradation_Honesty.md`. Principle: Verified Speech (Invariant 3). Ties WO-073 (Ollama floor), WO-032 (pinned Groq).

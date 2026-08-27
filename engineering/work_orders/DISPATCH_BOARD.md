@@ -3403,3 +3403,28 @@ Full implementation was in place: `MemoryFaculty.submit()` → `vault_layer.writ
 **Note for Architect:** `retrieve()` in `memory_engine.py` still reads from `interactions.json` (not the vault). This is a READ path gap — if write-back goes to vault, recall should also query vault. Recommend a future WO to bridge `retrieve()` onto the vault's `lookup()`.
 
 *Board / Lead Architect · 2026-08-27*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-27 (WO-CANON-XX + WO-CANON-XXV DONE)
+**Authority:** Builder execution · CANON Tier B.
+
+### WO-CANON-XX: Cognitive Economy — DONE
+
+Implementation was already in place. Blockers cleared: Presentable v1 retired as gate (2026-08-10), Tier A complete. Pre-2026-08-10 CA/David L3 gate references are retired per board ruling: "awaiting David/CA statuses retired for build queue."
+
+**Tests:** `test_canon_xx_economy.py` — **16/16 PASS**. Full pytest suite: 57 passed, 1 xfailed.
+
+### WO-CANON-XXV: Temporal Cognition — DONE (wiring confirmed)
+
+Previously re-opened 2026-08-13 as dead code (19/19 tests passed but nothing in runtime imported the faculty). Now fully wired:
+
+- `runtime/spine/spine.py:837` — `compute()` called during turn assembly
+- `ambient/ambient_engine.py:590` — `temporal_appropriateness()` consulted for cadence
+- All spec items complete: `Anticipation`, `PlanningHorizon` (lens only), envelope (`expires` as float timestamp), lifecycle, cadence model (stated beats learned), Vol XXI thread via `IdentityState`
+
+**Tests:** `test_canon_xxv_temporal.py` — **29/29 PASS** (WT-1/WT-2/WT-3 wiring tests all green).
+
+**Board note:** DISPATCH_BOARD:1469 "DONE ✅ (dead code)" entry is superseded — faculty is now genuinely wired. Pre-2026-08-10 "David sign-off required" gate retired per board ruling.
+
+*Board / Lead Architect · 2026-08-27*

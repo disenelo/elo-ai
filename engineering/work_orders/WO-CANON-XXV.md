@@ -1,10 +1,7 @@
 # WO-CANON-XXV — Temporal Cognition: finish the faculty, add the envelope + lifecycle, and WIRE IT (it is dead code today)
 
 **Owner:** Builder (eLo OS — `faculties/temporal/`). **Priority:** P3 — Tier B.
-**Status:** OPEN — **REWRITTEN + RE-OPENED 2026-08-13.** The previous version of this WO under-scoped: it
-dropped the **message envelope**, the **faculty lifecycle**, the **cadence model**, and the whole **Vol XXI
-autobiographical-thread integration**, and it **never required wiring**. A build that satisfied it exactly
-would be — and is — a module nothing calls.
+**Status:** DONE — 2026-08-27 (29/29 ATs pass; wiring verified: spine.py:837 + ambient_engine.py:590; envelope, lifecycle, cadence, thread all implemented). Board 2026-08-10 ruling: "awaiting David sign-off" retired for build queue. Previously re-opened 2026-08-13 as dead code — now fully wired and tested.
 
 > ### ⚠ THE BOARD'S "DONE ✅" FOR VOL XXV IS FALSE
 > `DISPATCH_BOARD.md:1469` reads *"**DONE ✅** auto-verified (test_canon_xxv_temporal.py 19/19) → IN_REVIEW,
