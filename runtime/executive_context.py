@@ -257,6 +257,35 @@ def build_executive_context(
         except Exception:
             pass
 
+        # SP-13 (WO-NAV-012): candidate_surfaces — reachable surfaces from current body position
+        # Filtered to reachable=True, sorted route_confidence DESC then horizontal_gap ASC, capped at 10.
+        # Empty list when body_win_id=-1 (mid-hop / L3-NAV-3).
+        _candidate_surfaces: list = []
+        try:
+            from world.navigation import generate_candidates as _gen_cands
+            _all_cands = _gen_cands(
+                body_win_id=getattr(world, "body_win_id", -1),
+                surface_edges=getattr(world, "surface_edges", ()),
+                surface_index=getattr(world, "win_id_to_surface", {}),
+                jump_px=getattr(world, "jump_px", 0),
+                route_history=list(getattr(world, "route_history", ()) or ()),
+            )
+            _reachable = [c for c in _all_cands if c.reachable]
+            _reachable.sort(key=lambda c: (-c.route_confidence, c.horizontal_gap))
+            _candidate_surfaces = [
+                {
+                    "target_win_id":    c.target_win_id,
+                    "horizontal_gap":   c.horizontal_gap,
+                    "euclidean_gap_px": c.euclidean_gap_px,
+                    "requires_verb":    c.requires_verb,
+                    "route_confidence": c.route_confidence,
+                }
+                for c in _reachable[:10]
+            ]
+        except Exception:
+            pass
+        world_dict["candidate_surfaces"] = _candidate_surfaces
+
     # ── attention (wm competition + raw attention) ─────────────────────────────
     attn_dict: dict = dict(attention) if attention else {}
     if working_memory is not None:
