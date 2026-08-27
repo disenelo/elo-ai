@@ -3347,3 +3347,25 @@ Builder now returns to CANON programme (highest priority post-Presentable per CA
 Next item: WO-CANON Tier A — first available unblocked item from the Tier A list.
 
 *Board / Lead Architect · 2026-08-27*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-27 (WO-CANON-XV DONE)
+**Authority:** Builder execution · CANON Tier A.
+
+### WO-CANON-XV: World Model — DONE (Builder scope)
+
+**Parts completed:**
+- **Part A (degraded reconciliation):** `assemble_world_state()` now reconciles `degraded[]` with `domain_health` before freezing — every absent/stale domain appears in `degraded[]`. Fixes the long-standing under-reporting bug.
+- **Part B (envelope binding):** `sender="WorldStateFaculty"` and `expires=assembled_ts+30s` added to `LiveWorldState`. Vol V §2 envelope fields now present.
+- **Part C (consumer migration):** Temporal faculty confirmed as real consumer reading `world_state.time`/`calendar` — no direct sensor calls.
+
+**Tests:** `tests/test_canon_xv_world_state.py` — **20/20 PASS** (was 14/14). RT-1..RT-6 added.
+
+**Commit:** `415203d`
+
+**Deferred (WO-CANON-VII gate):** `tools/tool_router.py` pre-spine sensor calls (3 sites) cannot be migrated until WO-CANON-VII closes (pre-spine decision path). Single assembly per turn stays the law.
+
+**Architect action required:** Update `docs/architecture/Volume_XV/00_Metadata.md` to mark implementation: DONE (Builder lane ends; Architect confirmation gate per WO DoD).
+
+*Board / Lead Architect · 2026-08-27*
