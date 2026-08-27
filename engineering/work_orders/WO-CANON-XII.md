@@ -1,8 +1,7 @@
 # WO-CANON-XII — Perception: wire perceive()→World-State copy + structured fidelity flags (all modalities)
 
 **Owner:** Builder (eLo OS — `faculties/perception/` + `server.py` fidelity rail). **Priority:** P2 — Horizon-2
-(post-Presentable v1), Tier A. **Status:** OPEN — dispatches once Presentable v1 lands and WO-CANON-XV has landed the
-`LiveWorldState` object. NOT gated on an alignment ruling. **Closes:** Architecture Audit gap #5.
+(post-Presentable v1), Tier A. **Status:** DONE — 2026-08-27 (15/15 ATs pass; copy step + fidelity flags verified). **Closes:** Architecture Audit gap #5.
 
 **Canon refs:** Volume XII — Ch.1 `01_Perception_Faculty.md`, Ch.2 `02_Sensation_Layer.md`, Ch.3
 `03_World_State_Handoff.md`, Ch.4 `04_Perceptual_Fidelity.md`. Ties WO-076 (perception fidelity), WO-038 (source

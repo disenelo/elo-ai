@@ -3369,3 +3369,18 @@ Next item: WO-CANON Tier A — first available unblocked item from the Tier A li
 **Architect action required:** Update `docs/architecture/Volume_XV/00_Metadata.md` to mark implementation: DONE (Builder lane ends; Architect confirmation gate per WO DoD).
 
 *Board / Lead Architect · 2026-08-27*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-27 (WO-CANON-XII DONE — governance closure)
+**Authority:** Builder execution · CANON Tier A.
+
+### WO-CANON-XII: Perception — DONE (verification-only close)
+
+WO-CANON-XV's completion unblocked WO-CANON-XII. On inspection, the full implementation
+was already in place: `perceive()` → frozen `PerceptionResult`, Ch.3 §3.2 copy step wired
+into `assemble_world_state()`, Ch.4 §4.3 `partial` flag, `relations=()` no-fabrication contract.
+
+**Tests:** `test_canon_xii_perception.py` 15/15 PASS · `test_wo076_perception_fidelity.py` 8/8 PASS · `test_wo009_perception_faculty.py` 7/7 PASS.
+
+*Board / Lead Architect · 2026-08-27*
