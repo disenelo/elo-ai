@@ -232,6 +232,8 @@ class LiveWorldState:
     surfaces:           tuple  = field(default_factory=tuple)  # WO-NAV-004 SP-7: surface_graph nodes, Y-flipped
     jump_px:            int    = 0                             # WO-NAV-004 SP-8: capability_set.jump_px (authoritative)
     body_win_id:        int    = -1                            # WO-NAV-009 SP-9: eLo body position from elo_spatial.json; -1 = mid-hop / unknown
+    surface_edges:      tuple  = field(default_factory=tuple)  # WO-NAV-010 SP-11: surface_graph edges for candidate generation
+    win_id_to_surface:  dict   = field(default_factory=dict)   # WO-NAV-010 SP-12: int win_id → surface dict bridge
 
 
 # ── Assembly ──────────────────────────────────────────────────────────────────
@@ -480,6 +482,8 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
     _surfaces: tuple = ()
     _jump_px: int = 0
     _body_win_id: int = -1
+    _surface_edges: tuple = ()
+    _win_id_to_surface: dict = {}
     try:
         with open(_SPATIAL_PATH, encoding="utf-8") as _sf2:
             _sd2 = json.load(_sf2)
@@ -497,6 +501,14 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
             }
             for n in _sg2.get("nodes", [])
         )
+        # WO-NAV-010 SP-11: store edges for candidate generation
+        _surface_edges = tuple(_sg2.get("edges", []))
+        # WO-NAV-010 SP-12: int win_id → surface dict bridge (built once at assembly)
+        try:
+            from world.navigation import build_surface_index as _bsi
+            _win_id_to_surface = _bsi(_surfaces)
+        except Exception:
+            _win_id_to_surface = {}
         _health("surfaces", "live" if _surfaces else "absent",
                 "elo_spatial.json", 0.9 if _surfaces else 0.0)
     except Exception:
@@ -612,9 +624,11 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
         degraded=tuple(degraded),
         route_history=_route_hist,
         capability_results=_cap_results,
-        surfaces=_surfaces,       # WO-NAV-004 SP-7
-        jump_px=_jump_px,         # WO-NAV-004 SP-8
-        body_win_id=_body_win_id, # WO-NAV-009 SP-9
+        surfaces=_surfaces,             # WO-NAV-004 SP-7
+        jump_px=_jump_px,               # WO-NAV-004 SP-8
+        body_win_id=_body_win_id,       # WO-NAV-009 SP-9
+        surface_edges=_surface_edges,   # WO-NAV-010 SP-11
+        win_id_to_surface=_win_id_to_surface,  # WO-NAV-010 SP-12
     )
 
 

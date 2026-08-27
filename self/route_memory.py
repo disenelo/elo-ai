@@ -41,6 +41,7 @@ def remember_route(
     smoothness: float,
     ack_id: str,
     ack_received: bool,
+    goal_win_id: "int | None" = None,  # WO-NAV-011 SP-14: optional int win_id for confidence lookup
     log_path: str | None = None,
 ) -> bool:
     """
@@ -52,16 +53,25 @@ def remember_route(
     if not ack_received:
         return False
 
+    # WO-XDNA-001: carry the turn's Experience DNA on every route record.
+    try:
+        from runtime.experience_id import get as _get_xid
+        _xid = _get_xid()
+    except Exception:
+        _xid = ""
+
     path = log_path or _ROUTE_LOG
     record = {
-        "ts":         time.time(),
-        "goal":       goal_surface or "",
-        "route_legs": legs if isinstance(legs, list) else [],
-        "arrived":    bool(arrived),
-        "fell":       bool(fell),
-        "duration_s": float(duration_s),
-        "smoothness": float(smoothness),
-        "ack_id":     str(ack_id),
+        "ts":            time.time(),
+        "goal":          goal_surface or "",
+        "goal_win_id":   int(goal_win_id) if goal_win_id is not None else None,  # WO-NAV-011 SP-14
+        "route_legs":    legs if isinstance(legs, list) else [],
+        "arrived":       bool(arrived),
+        "fell":          bool(fell),
+        "duration_s":    float(duration_s),
+        "smoothness":    float(smoothness),
+        "ack_id":        str(ack_id),
+        "experience_id": _xid,   # WO-XDNA-001
     }
 
     try:
@@ -161,3 +171,35 @@ def recent_routes(n: int = 5, log_path: str | None = None) -> list[dict]:
     except Exception:
         return []
     return records[-n:]
+
+
+# WO-NAV-011 SP-14: per-goal win_id route confidence ─────────────────────────
+
+_EPSILON = 0.01  # non-zero floor so low-confidence targets stay in candidate set
+
+
+def route_confidence_by_win_id(
+    target_win_id: int,
+    route_history: list,
+) -> float:
+    """
+    SP-14: arrivals/attempts for route_memory records where goal_win_id == target_win_id.
+
+    Returns 0.5 (neutral prior) when no matching records exist.
+    Returns epsilon (not 0.0) when all attempts failed — keeps low-confidence targets
+    in the candidate set while correctly sorting them last.
+    """
+    matching = [
+        r for r in route_history
+        if r.get("goal_win_id") == target_win_id
+    ]
+    if not matching:
+        return 0.5
+
+    arrivals = sum(1 for r in matching if r.get("arrived", False))
+    attempts = len(matching)
+
+    if arrivals == 0:
+        return _EPSILON
+
+    return round(arrivals / attempts, 4)

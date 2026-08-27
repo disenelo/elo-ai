@@ -3320,6 +3320,7 @@ def _process_turn(raw: str) -> dict:
                             smoothness=1.0 if _mout.arrived and not _mout.fell else 0.0,
                             ack_id=_mout.ack_id,
                             ack_received=True,
+                            goal_win_id=_mout.goal_win_id,  # WO-NAV-011 SP-14
                         )
                 except Exception:
                     pass
