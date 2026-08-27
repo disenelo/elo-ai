@@ -228,6 +228,9 @@ class LiveWorldState:
     turn_id:       str    = ""
     domain_health: dict   = field(default_factory=dict)
     degraded:      tuple  = field(default_factory=tuple)
+    # Vol V §2 envelope binding (WO-CANON-XV Part B)
+    sender:        str    = "WorldStateFaculty"
+    expires:       str    = ""   # ISO-8601 TTL — set to assembled_ts + 30s during assembly
     route_history:      tuple  = field(default_factory=tuple)  # WO-118: recent route outcomes
     capability_results: tuple  = field(default_factory=tuple)  # WO-CAP-001: last capability results
     surfaces:           tuple  = field(default_factory=tuple)  # WO-NAV-004 SP-7: surface_graph nodes, Y-flipped
@@ -617,6 +620,12 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
     except Exception:
         pass
 
+    # WO-CANON-XV Part A: reconcile degraded[] with domain_health so they agree exactly.
+    # Any domain marked absent or stale in domain_health must appear in degraded[].
+    for _d, _h in domain_health.items():
+        if _h.get("status") in ("absent", "stale") and _d not in degraded:
+            degraded.append(_d)
+
     return LiveWorldState(
         desktop=desktop,
         user=user,
@@ -636,6 +645,8 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
         turn_id=turn_id,
         domain_health=domain_health,
         degraded=tuple(degraded),
+        sender="WorldStateFaculty",
+        expires=datetime.fromtimestamp(assembled_ts + 30.0, tz=timezone.utc).isoformat(),
         route_history=_route_hist,
         capability_results=_cap_results,
         surfaces=_surfaces,             # WO-NAV-004 SP-7

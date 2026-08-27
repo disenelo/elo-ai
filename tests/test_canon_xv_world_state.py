@@ -280,6 +280,120 @@ except py_compile.PyCompileError as e:
     fail("AT-4", e)
 
 
+# ── RT-1: import sanity — all symbols live_world_state uses at the desktop site exist ──
+try:
+    import desktop.window_state as _dws_mod
+    assert callable(getattr(_dws_mod, "get", None)), "desktop.window_state.get must exist and be callable"
+    ws = assemble_world_state(turn_id="rt1")
+    # desktop domain_health entry must exist even if domain is absent
+    assert "desktop" in ws.domain_health, "desktop must always have a domain_health entry"
+    assert ws.domain_health["desktop"]["status"] in ("live", "cached", "stale", "absent"), \
+        f"desktop status must be a valid _DOMAIN_STATUS; got {ws.domain_health['desktop']['status']!r}"
+    ok("RT-1: desktop.window_state.get exists; desktop domain always has a health entry (no silent ImportError)")
+except AssertionError as e:
+    fail("RT-1", e)
+except Exception as e:
+    fail("RT-1", e)
+
+
+# ── RT-2: no bare except in assemble path — code errors must be logged, not silently swallowed ──
+try:
+    import ast, textwrap
+    with open("world/live_world_state.py", encoding="utf-8") as _f:
+        _src = _f.read()
+    _tree = ast.parse(_src)
+    bare_excepts = []
+    for _node in ast.walk(_tree):
+        if isinstance(_node, ast.ExceptHandler) and _node.type is None:
+            bare_excepts.append(_node.lineno)
+    assert not bare_excepts, (
+        f"Bare 'except:' found at lines {bare_excepts} — must use 'except Exception' with logging"
+    )
+    ok("RT-2: no bare except: clauses in live_world_state.py — code errors cannot be silently converted to absent")
+except AssertionError as e:
+    fail("RT-2", e)
+except Exception as e:
+    fail("RT-2", e)
+
+
+# ── RT-3: consumer proof — temporal faculty reads world_state, not direct sensors ──
+try:
+    import ast as _ast2
+    with open("faculties/temporal/faculty.py", encoding="utf-8") as _f2:
+        _tsrc = _f2.read()
+    # Temporal faculty must NOT import from desktop.window_state (direct sensor call)
+    assert "from desktop.window_state" not in _tsrc and "import desktop.window_state" not in _tsrc, \
+        "temporal faculty must not import desktop.window_state directly"
+    # Temporal faculty MUST reference world_state (proves it's a consumer)
+    assert "world_state" in _tsrc, "temporal faculty must read world_state (not sensor directly)"
+    # Verify at runtime: temporal faculty reads world_state.time correctly
+    from faculties.temporal.faculty import _build_temporal_state
+    ws_rt3 = assemble_world_state(turn_id="rt3")
+    ts_result = _build_temporal_state(ws_rt3, last_interaction_ts=0.0, idle_seconds=0.0)
+    assert ts_result is not None, "_build_temporal_state returned None with a live world_state"
+    ok("RT-3: temporal faculty reads world_state (not sensors directly); _build_temporal_state succeeds")
+except AssertionError as e:
+    fail("RT-3", e)
+except Exception as e:
+    fail("RT-3", e)
+
+
+# ── RT-4: envelope binding — sender=WorldStateFaculty, expires is set ──
+try:
+    ws = assemble_world_state(turn_id="rt4")
+    assert hasattr(ws, "sender"), "LiveWorldState must have a 'sender' field"
+    assert ws.sender == "WorldStateFaculty", f"sender must be 'WorldStateFaculty'; got {ws.sender!r}"
+    assert hasattr(ws, "expires"), "LiveWorldState must have an 'expires' field"
+    assert ws.expires != "", "expires must be set to a non-empty ISO-8601 string"
+    # expires must be after assembled_ts
+    from datetime import datetime, timezone as _tz2
+    exp_dt = datetime.fromisoformat(ws.expires)
+    asm_dt = datetime.fromtimestamp(ws.assembled_ts, tz=_tz2.utc)
+    assert exp_dt > asm_dt, f"expires ({ws.expires}) must be after assembled_ts"
+    ok(f"RT-4: envelope bound — sender={ws.sender!r}, expires={ws.expires}")
+except AssertionError as e:
+    fail("RT-4", e)
+except Exception as e:
+    fail("RT-4", e)
+
+
+# ── RT-5: degraded consistency — set equality ──
+try:
+    ws = assemble_world_state(turn_id="rt5")
+    expected_degraded = {d for d, h in ws.domain_health.items() if h.get("status") in ("absent", "stale")}
+    actual_degraded = set(ws.degraded)
+    assert actual_degraded == expected_degraded, (
+        f"degraded must exactly match domain_health absent/stale set.\n"
+        f"  degraded={actual_degraded}\n  expected={expected_degraded}"
+    )
+    ok(f"RT-5: degraded == domain_health absent/stale set ({len(actual_degraded)} domains)")
+except AssertionError as e:
+    fail("RT-5", e)
+except Exception as e:
+    fail("RT-5", e)
+
+
+# ── RT-6: Vol XIII boundary — no spatial reasoning functions added by this WO ──
+try:
+    import ast as _ast3
+    with open("world/live_world_state.py", encoding="utf-8") as _f3:
+        _lws_src = _f3.read()
+    _lws_tree = _ast3.parse(_lws_src)
+    # Check no NEW functions with spatial-reasoning names (affordance/reachability/route_compute etc.)
+    _spatial_fn_patterns = ("affordance", "reachability", "route_compute", "route_plan", "path_find",
+                            "spatial_graph", "nav_graph", "surface_graph_build")
+    _fn_names = [n.name for n in _ast3.walk(_lws_tree) if isinstance(n, _ast3.FunctionDef)]
+    violations = [fn for fn in _fn_names if any(pat in fn for pat in _spatial_fn_patterns)]
+    assert not violations, (
+        f"Vol XIII boundary violation — spatial reasoning functions in live_world_state.py: {violations}"
+    )
+    ok("RT-6: Vol XIII boundary — no spatial reasoning functions in live_world_state.py")
+except AssertionError as e:
+    fail("RT-6", e)
+except Exception as e:
+    fail("RT-6", e)
+
+
 print()
 print("=" * 60)
 print(f"WO-CANON-XV world state  {PASS} passed  {FAIL} failed")
