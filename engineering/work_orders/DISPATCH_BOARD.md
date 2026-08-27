@@ -40,6 +40,37 @@ Governance constitution in force. No implementation required. All seats operate 
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-27 (WO-WKG-004 · §4 Build List · WKG runtime injection + §2 relationship style finding)
+**Authority:** Builder execution + Board assessment.
+
+### WO-WKG-004 — WKG Runtime Injection ✅
+**Build List item:** §4 CCM + WKG — "Verify recovered knowledge cannot silently disappear"
+
+**CA read result:** `retrieve_wkg()` defined in `knowledge/graph_loader.py` (Phase 1/2 DONE) but was NEVER called in `server.py` or `spine.py`. WKG knowledge (Joseph corpus — 18 claims, 20 entities) was silently absent from every LLM turn.
+
+**Implementation:** After `g_ctx = graph_context(raw)` (server.py line ~2905), `retrieve_wkg(raw, top_k=2)` now called. WKG hits formatted with epistemic labels and appended to `g_ctx` (same additive pattern as all other context blocks). Fault-tolerant. `executive.py` not touched.
+
+**Tests:** `tests/test_wo_wkg004_wkg_runtime_injection.py` 8/8 PASS. Commit `816594b`.
+
+**Build List §4 status change:**
+- "WKG Phase 1": ✅ DONE → ✅ DONE
+- "Verify recovered knowledge cannot silently disappear": 🔴 NO WO → ✅ CLOSED
+
+### §2 — Personality/speech/relationship style: BOARD FINDING (requires spec)
+**CA read result (Board assessment):**
+- `relationship_faculty.analyse()` computes `register`, `expression_posture`, `familiarity` — WORKING ✅
+- `register` enters `exec_decision["register"]` — WIRED ✅
+- BUT: `prompt_builder.py` does NOT read register from exec_decision ❌
+- `expression_posture`, `familiarity` NOT in `exec_decision` — never reach prompt ❌
+- `_FAREWELL_POOL_SOUTH_LDN`, `_PURE_GREETING_POOL_PATOIS` etc. — DEFINED but DEAD CODE (never referenced) ❌
+- Spec `docs/architecture/05_relationship_faculty.md`: **STUB/PENDING** ❌
+
+**DECISION:** Cannot implement without spec. Build List item remains 🟡 PARTIAL.
+**Required action:** Board to dispatch CA/LA to write `05_relationship_faculty.md` in a dedicated session → then WO → then Builder prompt injection.
+**No David L3 required** — intent in RTR-008/RTR-009. CA spec only.
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-27 (WO-REL-001 — §1 Build List Intent/Relationship WP_F gap closed)
 **Authority:** Builder execution + Board assessment. Build List loop advance.
 
