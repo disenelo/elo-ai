@@ -26,6 +26,48 @@ Governance constitution in force. No implementation required. All seats operate 
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-27 (Builder sweep COMPLETE · all authorised WOs done · gates documented)
+**Authority:** Alignment loop sweep — all Builder execution queue items exhausted. No new implementation without Board WO.
+
+**Full test regression (2026-08-27):** 103/103 PASS across WO-NAV-001..012, WO-WORLD-001, WO-SP31/32/38 test suites.
+
+### PROGRAMME STATE SUMMARY
+
+**DONE — no further action required from Builder:**
+WO-NAV-001 · WO-NAV-002 · WO-NAV-003 · WO-NAV-004 · WO-NAV-005 · WO-NAV-006 · WO-NAV-007 · WO-NAV-008 · WO-NAV-009 · WO-NAV-010 · WO-NAV-011 · WO-NAV-012 · WO-NAV-013 · WO-SP31-SP32 · WO-SP38 · WO-WORLD-001 (+ defect) · WO-CAP-001 (Board/LA gate) · WO-SC-NEW-001 · WO-WKG-001/002/003 · WO-SPINE-001/002/003
+
+**Board maintenance done this session:** COMPANY_FOCUS marker refreshed (commit `d8d0764`). Gap E voiced_briefing staleness deferred — requires full WO table audit (NEW-C).
+
+**BLOCKED — hard gates only:**
+| Item | Gate | Seat |
+|---|---|---|
+| WO-EA2-1 close | MT verification | MT |
+| WO-EA2-2 (Presence panel) | WO-EA2-1 MT verify → Board dispatch | MT → Board → Design |
+| WO-NAV-013 close | MT verification | MT |
+| PRES-004 WO | WO-NAV-013 MT verify AND DM-2/DM-3 | MT + Design |
+| WO-CAP-001 architectural close | Board/LA verify production call chain | Board/LA |
+| SP-25/SP-26 (WO-NAV-012b) | DM-2/DM-3 geometry measurements | Design/MT |
+| 0057 (4-second rule) | David L3 latency policy rulings | David L3 |
+| WO-CANON-XI parity gate | Live Unity move data (brain_route + unity_route) | Design → live run |
+| 0081 parity step 2 | Live Unity sessions with current code | — |
+| 05b/WO-112 | FREEZE_V1_LOCK (executive.py) | David L3 unfreeze |
+| NEW-A (cognitive wiring WO) | Board to scope + issue WO → Builder | Board |
+| Gap B (company.* intents) | WO-EA2-2 scope (covers partial) | Board → Design/Builder |
+| ELO-HISTORY recovery | David ChatGPT exports | David L3 |
+| CP-003 Planetary Layer WO | Board to issue (depends on SP-29 weights D-gate) | Board |
+| SC-NEW-001 language full integration | Separate WO required | Board → Builder |
+| 0059 SPEED | Cloudflare block on Groq/Cerebras from agent network | External |
+
+**David L3 actions needed to unblock Builder:**
+1. `ELO_SELF_INITIATION=1` — activate SP-31 self-initiation to observe live
+2. 0057 latency policy rulings — with R1/R2 measurements already filed
+3. DM-2/DM-3 geometry measurements (or authorise Design to provide them)
+4. SP-29 weight decisions (D-gate) — unblocks CP-003 Planetary Layer WO
+5. New WO dispatch for NEW-A (company_state → cognitive spine wiring)
+6. ELO-HISTORY ChatGPT exports (HIST-007–012)
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-27 (SP-31/SP-32 · SP-38 · NAV-009 DONE — Builder sweep complete)
 **Authority:** Builder execution under SEAT protocol. All three WOs self-contained — no Board close required (Board/LA gates on WO-CAP-001 only). MT to verify as part of regular batch.
 
