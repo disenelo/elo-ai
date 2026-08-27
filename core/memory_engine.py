@@ -175,25 +175,6 @@ def _load_store() -> list:
     return []
 
 
-def store_interaction(user: str, response: str, action: str, project_tag: str) -> dict:
-    """WO-037 FACT SNAPSHOT — append raw turn record to interactions.json."""
-    record = {
-        "user":        user,
-        "response":    response,
-        "action":      action,
-        "project_tag": project_tag,
-        "concepts":    _detect_concepts(user + " " + response),
-        "timestamp":   datetime.utcnow().isoformat(),
-    }
-    interactions = _load_store()
-    interactions.append(record)
-    os.makedirs(os.path.dirname(_STORE_PATH), exist_ok=True)
-    with open(_STORE_PATH, "w") as f:
-        json.dump(interactions, f, indent=2)
-    _update_session(record)
-    return record
-
-
 # ── session state ──────────────────────────────────────────────────────────────
 
 def _update_session(record: dict):
