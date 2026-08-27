@@ -26,6 +26,21 @@ Governance constitution in force. No implementation required. All seats operate 
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-27 (SP-31/SP-32 · SP-38 · NAV-009 DONE — Builder sweep complete)
+**Authority:** Builder execution under SEAT protocol. All three WOs self-contained — no Board close required (Board/LA gates on WO-CAP-001 only). MT to verify as part of regular batch.
+
+| WO | SP items | State | Evidence |
+|---|---|---|---|
+| **WO-SP31-SP32 — Self-initiation gate** | SP-31 (world-event spine call) + SP-32 (permission conditions) | ✅ DONE — Builder 2026-08-27 | Commit `aecc67b`. `runtime/self_initiation.py` NEW — ATTENDING (A1/A2/A3) + HARD-QUIET (Q1–Q4) gate, default OFF (`ELO_SELF_INITIATION=1` = David L3 activation). `_world_event_thought()` wired in `server.py`. Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-SP31-SP32_self_initiation_gate_result.md`. 13/13 PASS. |
+| **WO-SP38 — Target registry fan-out** | SP-38 (simultaneity policy) | ✅ DONE — Builder 2026-08-27 | Commit `a666323`. `_TARGET_REGISTRY`, `register_target()`, `unregister_target()`, `_dispatch_to_targets()` added to `blender_bridge/state_writer.py`. N=1 today (`desktop_primary`); DM-6 = David L3 to add targets. Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-SP38_target_registry_result.md`. 10/10 PASS. |
+| **WO-NAV-009 — body_win_id consumer** | SP-9 (body position from Unity) | ✅ DONE — Builder 2026-08-27 | Commit `3463e4e`. `world/live_world_state.py`: `body_win_id` field in `LiveWorldState`, `update_confirmed_body_win_id()` + `get_confirmed_body_win_id()`. L3-NAV-3: confirmed position updates only on `arrived=True`. ACK wiring in `server.py`. Gate cleared: Unity-WO-B1 accepted + WO-NAV-004 ✅. Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-NAV-009_body_win_id_result.md`. 6/6 PASS. |
+
+**Pending MT verification:** WO-SP31-SP32 / WO-SP38 / WO-NAV-009 now DONE — add to next MT batch.
+**Pending Board verification:** WO-CAP-001 remains Board/LA-close (commit `7ec57bf`, 9/9 PASS) — do not self-close.
+**Blocked:** `05b / WO-112` = FREEZE_V1_LOCK (`executive.py`). `0059 SPEED` live measurement = Cloudflare block on Groq/Cerebras from agent network. `0057` = awaiting David L3 latency policy rulings + live measurements. `PRES-004` = HELD awaiting WO-NAV-013 MT verification.
+
+---
+
 ## BOARD STATE — 2026-08-23 (updated post WO-WORLD-001 authorisation)
 **Authority:** `_intake/SOURCE_2026-08-23_DAVID_experience_DNA_ratification.md` · `_intake/SOURCE_2026-08-23_DAVID_G3_validation_directive.md` · `findings/G3_CLOSURE_2026-08-23.md` · `findings/E7_RERUN_AUTHORISATION_2026-08-23.md` · `_intake/SOURCE_2026-08-23_DAVID_L3_ratification_world_time_capability.md`
 
