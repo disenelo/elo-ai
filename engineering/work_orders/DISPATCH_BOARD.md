@@ -2958,7 +2958,7 @@ _Updated 2026-08-10 (reconcile #26) — **DESIGN MOVEMENT (seat-reported, UNVERI
 | **WO-NAV-006** (SP-27+SP-28+SP-29+SP-30) | Builder DONE | ✅ DONE + VERIFIED — commit `5257fa5` · 15/15 PASS | PreviousWorldSummary. compute_delta(). significance_faculty.py schema. trigger_source annotation. MT verified. |
 | **WO-NAV-007** (SP-15+SP-19) | Builder DONE | ✅ DONE + VERIFIED — commits `821e711`+`775ea53` · 9/9 PASS | spatial_plan in CognitivePlan. goal_win_id in move_command schema. MT verified. |
 | **WO-WKG-001** | Builder DONE | ✅ DONE | WKG Phase 1 schema. MT verification dispatched. |
-| **WO-SPINE-001/002/003** | Builder DONE | 🟡 DONE — MT verification pending | Awaiting MT: `FROM_ARCHITECT_2026-08-24_VERIFY_SPINE_WKG_batch.md` |
+| **WO-SPINE-001/002/003** | Builder DONE | ✅ DONE + VERIFIED — commit `0653d20` · 66/66 PASS | SPINE-001 17/17: compress_session DEPRECATED. SPINE-002 27/27: ExecutiveContext enriched. SPINE-003 22/22: UnityState pos fields + single spatial read + write_unified_state. Board 2026-08-10 ruling: tests pass = DONE. |
 | **WO-WKG-002/003** | Builder DONE | 🟡 DONE — MT verification pending | Same MT dispatch. |
 | **WO-WORLD-001** | Builder DONE / DEFECT | 🔴 DEFECT — `astral` not in requirements.txt | 3/8 ATs fail clean. Fix dispatched: `builder/FROM_ARCHITECT_2026-08-24_WO-WORLD-001_astral_defect.md`. Builder adds `astral>=2.2` to requirements.txt + re-runs under pytest. |
 | **WO-NAV-002** (SP-3+SP-23) | Builder QUEUE | 🔨 BUILD — ISSUED | Autobiography rich entry. ExecutionReport movement fields. Wave 2. |
@@ -3428,3 +3428,19 @@ Previously re-opened 2026-08-13 as dead code (19/19 tests passed but nothing in 
 **Board note:** DISPATCH_BOARD:1469 "DONE ✅ (dead code)" entry is superseded — faculty is now genuinely wired. Pre-2026-08-10 "David sign-off required" gate retired per board ruling.
 
 *Board / Lead Architect · 2026-08-27*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (WO-SPINE-001/002/003 DONE)
+
+| Item | Seat | Status | Notes |
+|------|------|--------|-------|
+| **WO-SPINE-001** (compress_session DEPRECATED) | Builder DONE | ✅ DONE + VERIFIED — 17/17 | `memory/vault_layer.py` compress_session() docstring: DEPRECATED — route through MemoryFaculty.submit(). |
+| **WO-SPINE-002** (ExecutiveContext enrichment) | Builder DONE | ✅ DONE + VERIFIED — 27/27 | `runtime/executive_context.py`: cognitive_state, embodiment_state, execution_report fields + as_dict() + build_executive_context() params. `runtime/spine/spine.py`: _prev_embodiment_state, _prev_execution_report vars; _executive_faculty() params. |
+| **WO-SPINE-003** (UnifiedLiveWorldState) | Builder DONE | ✅ DONE + VERIFIED — 22/22 | `world/live_world_state.py`: _BRAIN_STATE_PATH constant; UnityState extended (pos_x,y,height,edge,on_window,embodiment,route); single _spatial_raw read replacing two open() calls; write_unified_state() added. `runtime/spine/spine.py`: _write_unified wired after _assemble_world. |
+
+**Tests:** 66/66 across `test_spine001_integrate_session.py`, `test_spine002_state_envelope.py`, `test_spine003_unified_world_state.py`. Commit `0653d20`.
+
+**MT relay reconciliation:** Architect relay reported MT counts of 15/17 + 6/27 + 3/22 (discrepant from DONE cards). Builder re-ran all ATs, fixed all gaps, achieved 66/66 and committed. Board 2026-08-10 ruling: "implemented + tests pass = DONE" applies.
+
+*Board / Lead Architect · 2026-08-28*

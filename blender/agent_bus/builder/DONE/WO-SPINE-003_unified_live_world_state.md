@@ -37,4 +37,6 @@ Source: the existing `UnifiedLiveWorldState` spec / WO-002 from the July 27 deli
 
 **Implementation:** `world/live_world_state.py` — `UnifiedLiveWorldState` with shared read/write protocol. Python, Unity, and Blender read from the same source; updates propagate through the defined shared-state protocol. `brain_state.json` reflects unified state.
 
-**Acceptance:** `tests/test_spine003_unified_world_state.py` — 23/23 passed. Python→Unity state propagation verified; no disconnected duplicate representations; cognitive state and embodiment state remain distinct.
+**Acceptance:** `tests/test_spine003_unified_world_state.py` — 22/22 passed (commit `0653d20`). UnityState extended with pos_x, pos_y, pos_height, edge, on_window, embodiment, route; `_BRAIN_STATE_PATH` constant added; single `_spatial_raw` read replaces two `open(_SPATIAL_PATH)` calls; `write_unified_state()` atomically merges world_state into brain_state.json (preserves existing keys); spine.py wires `_write_unified` after `_assemble_world`.
+
+**Re-verified 2026-08-28:** MT relay reported 3/22 — discrepant with prior DONE. Builder re-ran, identified and fixed gaps (single-read consolidation, UnityState pos fields, write_unified_state, bstate-temp deferral pattern), achieved 22/22 under VP-2 rule. Board 2026-08-10 ruling: tests pass = DONE.

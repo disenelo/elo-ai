@@ -46,4 +46,6 @@ Source contracts: Volume VII (Executive Cortex), Volume VI (Working Memory & Att
 
 **Implementation:** `memory/execution_context.py` — `CognitiveState`, `EmbodimentState`, `ExecutionReport` wired into `ExecutionContext`. Executive receives structured state fields, not prose descriptions.
 
-**Acceptance:** `tests/test_spine002_state_envelope.py` — 26/26 passed. Executive context has `cognitive_state` field as structured object; `as_dict()` exposes all EC state keys; structured fields distinguish attention/embodiment/execution layers.
+**Acceptance:** `tests/test_spine002_state_envelope.py` — 27/27 passed (commit `0653d20`). Executive context has `cognitive_state`, `embodiment_state`, `execution_report` fields; `as_dict()` exposes all EC state keys; `build_executive_context()` accepts and forwards them; spine.py carries `_prev_embodiment_state` and `_prev_execution_report` module vars.
+
+**Re-verified 2026-08-28:** MT relay reported 6/27 — discrepant with prior DONE. Builder re-ran, identified and fixed gaps, achieved 27/27 under VP-2 rule (miniconda3 python3). Board 2026-08-10 ruling: tests pass = DONE.
