@@ -35,9 +35,15 @@ Governance constitution in force. No implementation required. All seats operate 
 | **WO-SP38 — Target registry fan-out** | SP-38 (simultaneity policy) | ✅ DONE — Builder 2026-08-27 | Commit `a666323`. `_TARGET_REGISTRY`, `register_target()`, `unregister_target()`, `_dispatch_to_targets()` added to `blender_bridge/state_writer.py`. N=1 today (`desktop_primary`); DM-6 = David L3 to add targets. Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-SP38_target_registry_result.md`. 10/10 PASS. |
 | **WO-NAV-009 — body_win_id consumer** | SP-9 (body position from Unity) | ✅ DONE — Builder 2026-08-27 | Commit `3463e4e`. `world/live_world_state.py`: `body_win_id` field in `LiveWorldState`, `update_confirmed_body_win_id()` + `get_confirmed_body_win_id()`. L3-NAV-3: confirmed position updates only on `arrived=True`. ACK wiring in `server.py`. Gate cleared: Unity-WO-B1 accepted + WO-NAV-004 ✅. Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-NAV-009_body_win_id_result.md`. 6/6 PASS. |
 
-**Pending MT verification:** WO-SP31-SP32 / WO-SP38 / WO-NAV-009 now DONE — add to next MT batch.
+**Pending MT verification:** WO-SP31-SP32 / WO-SP38 / WO-NAV-009 / WO-NAV-010 / WO-NAV-011 / WO-NAV-012 now DONE — add to next MT batch.
 **Pending Board verification:** WO-CAP-001 remains Board/LA-close (commit `7ec57bf`, 9/9 PASS) — do not self-close.
-**Blocked:** `05b / WO-112` = FREEZE_V1_LOCK (`executive.py`). `0059 SPEED` live measurement = Cloudflare block on Groq/Cerebras from agent network. `0057` = awaiting David L3 latency policy rulings + live measurements. `PRES-004` = HELD awaiting WO-NAV-013 MT verification.
+**Blocked:** `05b / WO-112` = FREEZE_V1_LOCK (`executive.py`). `0059 SPEED` live measurement = Cloudflare block on Groq/Cerebras from agent network. `0057` = awaiting David L3 latency policy rulings + live measurements. `PRES-004` = HELD awaiting WO-NAV-013 MT verification. SP-25/SP-26 = gated on Design/MT DM-2/DM-3 geometry measurements.
+
+| WO | SP items | State | Evidence |
+|---|---|---|---|
+| **WO-NAV-010 — Surface bridge + candidate generation** | SP-12 + SP-11 | ✅ DONE — Builder 2026-08-27 | Commit `4c8692b`. `world/navigation.py` NEW — `Candidate` dataclass, `build_surface_index()`, `generate_candidates()`. `LiveWorldState.surface_edges` + `.win_id_to_surface` added. 10/10 PASS. |
+| **WO-NAV-011 — Route confidence by win_id** | SP-14 | ✅ DONE — Builder 2026-08-27 | Commit `4c8692b`. `route_confidence_by_win_id()` in `self/route_memory.py`. `goal_win_id` optional field in `remember_route()` records. `server.py` ACK call updated. 7/7 PASS. |
+| **WO-NAV-012 — candidate_surfaces in world_dict** | SP-13 | ✅ DONE — Builder 2026-08-27 | Commit `5005aa5`. `executive_context.py` — `candidate_surfaces` added to `world_dict`: reachable-only, sorted confidence DESC / gap ASC, capped at 10. SP-25/26 deferred pending DM-2/DM-3. 7/7 PASS. |
 
 ---
 
