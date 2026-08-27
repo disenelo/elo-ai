@@ -3444,3 +3444,50 @@ Previously re-opened 2026-08-13 as dead code (19/19 tests passed but nothing in 
 **MT relay reconciliation:** Architect relay reported MT counts of 15/17 + 6/27 + 3/22 (discrepant from DONE cards). Builder re-ran all ATs, fixed all gaps, achieved 66/66 and committed. Board 2026-08-10 ruling: "implemented + tests pass = DONE" applies.
 
 *Board / Lead Architect · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (Queue scan — all active items complete)
+**Authority:** Builder execution · continuous alignment loop.
+
+### WO-EA2-NEW-A — ✅ CONFIRMED DONE (7/7 ATs PASS)
+
+`company_state.json` → `LiveWorldState.company_state` → `attention_in["world_state"]["company_state"]`. Pre-existing commit `16a1b4c`. ATs re-run this session: 7/7 PASS (`test_wo_ea2_new_a_company_state_wiring.py`). Sensitive fields (`money`, `seats_sample`) excluded. `executive.py` untouched. Result card: `builder/DONE/FROM_BUILDER_WO-EA2-NEW-A_company_state_wiring_result.md`. Awaiting Board/LA architectural close.
+
+### WO-EXP-001 / WO-SC-NEW-001 — ✅ CONFIRMED DONE (5/5 ATs PASS)
+
+`storytelling_style: str | None` in Meaning Object. Implemented under WO-SC-NEW-001 (commit `8d86743`). Re-run this session: 5/5 PASS (`test_wo_sc_new001_storytelling_style.py`). DONE card: `builder/DONE/WO-SC-NEW-001_storytelling_style.md` + `FROM_BUILDER_WO-SC-NEW-001_result.md`. WO-EXP-001 queue card is the same work — both closed.
+
+### Full ACTIVE_QUEUE_NOW items — all complete
+
+All items from `FROM_ARCHITECT_2026-08-27_ACTIVE_QUEUE_NOW.md` are DONE:
+| WO | Result |
+|---|---|
+| WO-NAV-013 AT file | ✅ 5/5 PASS · commit `fe89023` |
+| test_0005 sys.exit fix | ✅ DONE · commit `34246cb` · 1302 tests collect cleanly |
+| WO-EA2-NEW-A | ✅ 7/7 PASS · commit `16a1b4c` |
+| WO-GUARD-001 | ✅ 6/6 PASS · commit `d621ee1` |
+| WO-MOBILE-001 | ✅ 5/5 PASS · commit `5d982a5` |
+| WO-SPINE-001/002/003 | ✅ 66/66 PASS · commit `0653d20` |
+
+### Perception test diagnosis (from directive)
+
+`test_wo096_desktop_perception` AT-2 (confirmed): `import get_active_window` style vs `from … import get` style mismatch at one fixture call site. One-line fix. No fix WO issued — returning to Board for scope decision.
+
+`test_card_0006_perception_world` AT-3/AT-5 (confirmed): `_is_truncated()` called on already-tagged `[PARTIAL: …]` strings ending in `]` not `…`. Test expectation vs implementation gap. No fix WO issued.
+
+### Builder queue status — EMPTY
+
+No independently executable Builder items remain. All governed work is:
+- ✅ DONE (implemented + tests pass)
+- ⏸ HELD (external gate: Design/MT verification, Unity parity, David L3 ruling)
+- 🔴 BLOCKED (Board fix WO required before Builder can act)
+
+### Board actions required
+
+1. **F2 fix WO** — `voice/voice_engine.py` `_pulse_lipsync` missing `text=` arg. Diagnosis: `builder/FROM_BUILDER_2026-08-28_F2_DIAGNOSIS.md`. Scope: `voice/voice_engine.py` only, 4–5 lines.
+2. **avatar_bridge.py fix WO** — `core/avatar_bridge.py:19` broken import (`from_state`, `orb_intensity` don't exist in `emotion_engine.py`). Options: implement the missing symbols, or rewrite `avatar_bridge.py` against current API.
+3. **Perception test fix WOs** (optional — low priority): `test_wo096` AT-2 + `test_card_0006` AT-3/AT-5 described above. Builder ready to execute on issuance.
+4. **WO-CANON-XI parity** — dispatch Design to run live Unity moves emitting `brain_route` + `unity_route` to `route_memory.jsonl`. Gate for XI-AD-2.
+
+*Builder · 2026-08-28*
