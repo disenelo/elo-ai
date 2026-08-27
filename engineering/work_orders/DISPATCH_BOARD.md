@@ -40,6 +40,25 @@ Governance constitution in force. No implementation required. All seats operate 
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-27 (WO-REL-001 — §1 Build List Intent/Relationship WP_F gap closed)
+**Authority:** Builder execution + Board assessment. Build List loop advance.
+
+**Build List item:** §1 ONE BRAIN FOUNDATION — Intent / Relationship (WP_F gap)
+
+**CA read result (Board assessment):**
+- `runtime/spine/relationship_faculty.py` — IMPLEMENTED + WIRED (spine.py:718-719 → `enrich()` spine.py:863)
+- `runtime/router/intent_engine.py` — IMPLEMENTED + WIRED (spine.py:66 → `plan.capability_hint`)
+- Both outputs flow into `CognitivePlan` on every turn
+- Implementation gap: **none**. Validation gap: **closed**.
+
+**WO-REL-001:** `tests/test_wo_rel001_intent_relationship_validation.py` NEW — 12/12 PASS. Covers: RelationshipContext output, SOUTH_LDN/PATOIS/HYBRID register detection, active_projects, expression_posture thresholds, familiarity growth, CognitivePlan flow via enrich(), intent_engine required keys, memory/file_ops intent categories, confidence range. Commit `dda98ce`.
+
+**Build List §1 — Intent / Relationship: 🟡 PARTIAL → ✅ VERIFIED**
+
+Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-REL-001_intent_relationship_validation_result.md`
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-27 (WO-GUARD-001 · WO-MOBILE-001 · pytest collection fixes · WO-NAV-013 AT)
 **Authority:** Builder execution under SEAT protocol. Alignment loop sweep — all newly authorised WOs executed.
 
