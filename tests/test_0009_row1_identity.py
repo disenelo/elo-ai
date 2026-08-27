@@ -99,5 +99,6 @@ print(f"Row 1 IDENTITY: {PASS} passed, {FAIL} failed")
 print()
 print("Row verified by this test:")
 print("  1  IDENTITY — EloSelfState fields drive the rendered identity prompt")
-if FAIL:
-    sys.exit(1)
+if __name__ == "__main__":
+    if FAIL:
+        sys.exit(1)
