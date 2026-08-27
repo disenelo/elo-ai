@@ -133,7 +133,7 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 | Disenelo Presence | ✅ LIVE | Unity DesktopBuddy.cs running |
 | Unity body | ✅ LIVE | — |
 | UI | ✅ LIVE | — |
-| Gaze | 🟡 IN PROGRESS | `gaze` dict in elo_spatial.json live; GazeState SPEC'd in contracts |
+| Gaze | ✅ DONE | WO-099b: gaze consume + describe live; 7/7 ATs PASS (`test_wo099b_gaze_consume.py`) |
 | Movement | ✅ DONE | Navigation wave WOs all complete+MT verified 2026-08-27; take-five full hide accepted |
 | World state | ✅ DONE | `spatial_faculty.py`, `elo_spatial.json`, WO-NAV-004 DONE; company_state wired (WO-EA2-NEW-A) |
 | Consequence reporting | ✅ DONE | WO-NAV-001 (SP-1+SP-2 ACK fix) MT VERIFIED 2026-08-27 |
