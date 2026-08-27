@@ -18,7 +18,8 @@
 Audit: `docs/architecture/findings/INITIATIVE_01_BOARD_AUDIT_2026-08-27.md`  
 Open gaps: A (company_state→spine wiring) · B (company.* intents) · C (WO-EA2-2 panel) · E (stale voiced_briefing)  
 Gap D (post-LLM gate): CLOSED — commit `4688685`  
-Next item: **MT verify WO-EA2-1** (`test_ea2_1_company_state.py` + `test_ea2_2_company_intents.py`)
+Next item: **MT verify WO-EA2-1** (`test_ea2_1_company_state.py` + `test_ea2_2_company_intents.py`)  
+**Builder governance gap CLOSED 2026-08-27** (commit `5548a30`): WO-EA2-1 implementation predated result-card convention. COMPLETION_LOG.md entry filed; `FROM_BUILDER_WO-EA2-1_company_state_writer_result.md` filed to DONE/. Tests confirmed: `test_ea2_1_company_state.py` 6/5 PASS · `test_ea2_2_company_intents.py` 11/11 PASS. Evidence now available for MT formal verification.
 
 ### Initiative 02 — ACKNOWLEDGED ✅
 Acknowledgement: `docs/architecture/findings/INITIATIVE_02_ACKNOWLEDGEMENT_2026-08-27.md`  
