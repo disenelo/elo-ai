@@ -3384,3 +3384,22 @@ into `assemble_world_state()`, Ch.4 §4.3 `partial` flag, `relations=()` no-fabr
 **Tests:** `test_canon_xii_perception.py` 15/15 PASS · `test_wo076_perception_fidelity.py` 8/8 PASS · `test_wo009_perception_faculty.py` 7/7 PASS.
 
 *Board / Lead Architect · 2026-08-27*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-27 (WO-CANON-VIII DONE + WO-037 test corrected)
+**Authority:** Builder execution · CANON Tier A.
+
+### WO-CANON-VIII: Memory Architecture — DONE (verification close)
+
+Full implementation was in place: `MemoryFaculty.submit()` → `vault_layer.write_memory()` sole-writer path, `reinforce()` on retrieval, `consolidation_faculty.py`, Vol VIII §4 Invariant 7 enforced.
+
+**Tests:** `test_canon_viii_memory.py` — **18/18 PASS** (including AT-8 whole-repo durable-write scan clean).
+
+### WO-037 e2e test corrected
+
+`test_wo022_037_memory_recall_e2e.py` AT-1/AT-2/AT-6 updated to test the actual current write path (MemoryFaculty.submit() → vault) not the retired store_interaction() → interactions.json path. 9/9 PASS. Vol VIII §4 Invariant 7 no longer violated.
+
+**Note for Architect:** `retrieve()` in `memory_engine.py` still reads from `interactions.json` (not the vault). This is a READ path gap — if write-back goes to vault, recall should also query vault. Recommend a future WO to bridge `retrieve()` onto the vault's `lookup()`.
+
+*Board / Lead Architect · 2026-08-27*

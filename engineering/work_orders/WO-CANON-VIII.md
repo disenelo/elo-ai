@@ -1,7 +1,7 @@
 # WO-CANON-VIII — Memory Architecture: wire the single MemoryFaculty + reinforce()-on-retrieval
 
 **Owner:** Builder (eLo OS — `memory/`). **Priority:** P2 — Horizon-2 (post-Presentable v1), Tier A.
-**Status:** OPEN — dispatches once Presentable v1 lands. NOT gated on an alignment ruling. **Closes:** Audit gaps #3/#4.
+**Status:** DONE — 2026-08-27 (18/18 ATs pass; Invariant 7 verified clean). **Closes:** Audit gaps #3/#4.
 
 **Canon refs:** Volume VIII — Ch.1 `01_Memory_Architecture.md`, Ch.2 `02_The_Four_Memory_Types_and_Data_Shapes.md`,
 Ch.3 `03_Consolidation_and_the_Forgetting_Curve.md`, Ch.4 `04_Sole_Writer_Retrieval_and_Boundaries.md`. Decision Log
