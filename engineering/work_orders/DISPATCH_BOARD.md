@@ -3221,3 +3221,24 @@ D-1–D-4 committed at `2c9eefc`; 3/4 ATs PASS; XI-AD-2 (parity check) RED — c
 **Board action required:** Dispatch Design to run live moves and collect parity data. Until then Builder cannot complete XI-AD-2.
 
 *Board / Lead Architect · 2026-08-27*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-27 (WP_F sweep — 5 coverage gaps closed)
+**Authority:** Builder execution · Build List loop § Verify.
+
+### WP_F gaps identified and closed this cycle
+
+| Module | Gap | ATs | Result | Commit |
+|---|---|---|---|---|
+| `runtime/executive_override.py` | D7 ruling (Card 0035) — One-Brain post-Executive override whitelist | 6 | 6/6 PASS | `789d234` |
+| `runtime/state_machine.py` | eLo OS v2.1 runtime state machine | 8 | 8/8 PASS | `789d234` |
+| `company_runtime/dashboard_server.py` | WO-BOARD-001 board_state endpoint | 5 | 5/5 PASS | `23ea717` |
+| `runtime/spine/executive_extension.py` | Executive-Delegated Capability Selection (extension point for frozen executive.py) | 8 | 8/8 PASS | `8af096c` |
+| `runtime/spine/control_plane.py` | Memory Arbitration Layer — L1→L2→L3 hierarchy, session mode detection | 12 | 12/12 PASS | `8af096c` |
+
+**Test suite:** 1216 collected, 0 errors (was 1177 at session start).
+
+### Continuing Build List loop — next scan underway
+
+*Board / Lead Architect · 2026-08-27*
