@@ -71,5 +71,6 @@ except Exception as e:
 
 print(f"\n{'='*40}")
 print(f"WO-120 Spatial Faculty: {PASS} passed, {FAIL} failed")
-if FAIL:
-    sys.exit(1)
+if __name__ == "__main__":
+    if FAIL:
+        sys.exit(1)
