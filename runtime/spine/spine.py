@@ -281,6 +281,30 @@ def _executive_faculty(
     if _learning_advice is not None:
         _attention_in["learning_advice"] = _learning_advice.as_dict()
 
+    # ── LOOP-8 / WO-CREATIVE-001: Creative Imagination consultation ─────────────
+    # Vol XXVI Ch.1+Ch.3: diverge generates candidates; evaluate scores them.
+    # Proposes and scores only — Executive selects. Never calls executive_select().
+    _creative_candidates: list = []
+    try:
+        from faculties.creative.creative_imagination import (
+            diverge as _ci_diverge,
+            evaluate as _ci_evaluate,
+        )
+        _ci_intent = _attention_in.get("intent", "")
+        _ci_focal = getattr(cognitive_state, "focal_thread", "") if cognitive_state else ""
+        if _ci_intent:
+            _ci_seeds = [_ci_intent, _ci_focal] if _ci_focal else [_ci_intent]
+            _ci_raw = _ci_diverge(goal=_ci_intent, seeds=_ci_seeds, breadth_budget=3)
+            _creative_candidates = [
+                {"candidate": c.to_dict(), "score": _ci_evaluate(c, goal=_ci_intent).to_dict()}
+                for c in _ci_raw
+            ] if _ci_raw else []
+    except Exception as _ci_err:
+        _log.debug("creative_imagination failed (non-critical): %s", _ci_err)
+
+    if _creative_candidates:
+        _attention_in["creative_candidates"] = _creative_candidates
+
     # WO-117 SELF-INTERPRET (card 0083): eLo reads his own record and says something
     # true about himself — assembly, not invention. ADR-Exec-005 D1: every claim
     # carries the count it came from. CT4V-03: reads only, never writes EloSelfState.

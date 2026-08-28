@@ -146,6 +146,7 @@ class CognitiveState:
     # ── Creative Context ──────────────────────────────────────────────────────
     creative_mode_signal: str   = ""          # STUDIO_MODE | BUILDER_MODE | DESIGNER_MODE | ""
     active_topic_depth:   int   = 0           # how many turns on current topic
+    creative_candidates:  tuple = field(default_factory=tuple)  # WO-CREATIVE-001: [({"candidate":…,"score":…}),…] epistemic_status="imagined"
 
     # ── Session Metadata ──────────────────────────────────────────────────────
     session_id:           str   = ""

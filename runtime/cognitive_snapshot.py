@@ -126,6 +126,9 @@ class CognitiveSnapshot:
     # ── WO-095: Recalled lessons (confirmed only, ≤3, ≤240 chars total) ────────
     lessons: tuple = field(default_factory=tuple)  # each: str (the lesson statement)
 
+    # ── WO-CREATIVE-001: Creative imagination candidates ─────────────────────
+    creative_candidates: tuple = field(default_factory=tuple)  # ({"candidate":…,"score":…},…) epistemic_status="imagined", ≤3
+
     # ── Assembly metadata ──────────────────────────────────────────────────────
     assembled_ts: float = 0.0
     turn_id: str = ""
@@ -343,6 +346,24 @@ def build_snapshot(
     except Exception:
         confidence -= 0.01
 
+    # ── WO-CREATIVE-001: Creative imagination (≤3 candidates, epistemic_status="imagined") ─
+    _ci_snap_candidates: tuple = ()
+    try:
+        from faculties.creative.creative_imagination import (
+            diverge as _ci_diverge,
+            evaluate as _ci_evaluate,
+        )
+        _ci_intent = att.get("intent", "")
+        if _ci_intent:
+            _ci_seeds = [_ci_intent, self_focal_thread] if self_focal_thread else [_ci_intent]
+            _ci_raw = _ci_diverge(goal=_ci_intent, seeds=_ci_seeds, breadth_budget=3)
+            _ci_snap_candidates = tuple(
+                {"candidate": c.to_dict(), "score": _ci_evaluate(c, goal=_ci_intent).to_dict()}
+                for c in _ci_raw
+            )
+    except Exception:
+        confidence -= 0.01
+
     return CognitiveSnapshot(
         self_mood=round(self_mood, 3),
         self_curiosity=round(self_curiosity, 3),
@@ -369,6 +390,7 @@ def build_snapshot(
         chrome_recent_domains=chrome_recent_domains,
         gated_capabilities=gated_capabilities,
         lessons=recalled_lessons,
+        creative_candidates=_ci_snap_candidates,
         assembled_ts=assembled_ts,
         turn_id=turn_id,
         confidence=max(0.0, min(1.0, confidence)),
