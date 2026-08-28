@@ -3812,3 +3812,16 @@ Board Acceptance doc `BOARD_ACCEPTANCE_WO-NAV-013_Unity-WO-B1_B2_2026-08-27.md` 
 `_any_truncated` now checks raw sensor inputs before tagging. AT-3 and AT-5 from Board IRV `test_card_0006_perception_world` resolved.
 
 *Builder · 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (CANON-XI-STEP2 + CANON-XI-SERVER-ACK)
+
+| WO | Status |
+|---|---|
+| WO-CANON-XI-STEP2 | ✅ DONE — commit 4957515 · 5/5 AT PASS · result card in DONE/ |
+| WO-CANON-XI-SERVER-ACK | ✅ DONE — commit 9d7e1e9 · AT-1 deferred (Design ACK field pending) · result card in DONE/ |
+
+CANON-XI Python-side parity chain complete. Waiting: WO-CANON-XI-UNITY-ROUTE (Design adds unity_route to Unity arrived ACK).
+
+*Builder · 2026-08-28*
