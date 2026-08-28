@@ -42,6 +42,8 @@ def remember_route(
     ack_id: str,
     ack_received: bool,
     goal_win_id: "int | None" = None,  # WO-NAV-011 SP-14: optional int win_id for confidence lookup
+    brain_route: "list | None" = None,    # XI-AD-2: brain's chosen route for parity
+    unity_route: "list | None" = None,    # XI-AD-2: Unity's executed route for parity
     log_path: str | None = None,
 ) -> bool:
     """
@@ -71,7 +73,9 @@ def remember_route(
         "duration_s":    float(duration_s),
         "smoothness":    float(smoothness),
         "ack_id":        str(ack_id),
-        "experience_id": _xid,   # WO-XDNA-001
+        "experience_id": _xid,          # WO-XDNA-001
+        "brain_route":   brain_route,   # XI-AD-2: None until live move emits it
+        "unity_route":   unity_route,   # XI-AD-2: None until Unity ACK emits it
     }
 
     try:
