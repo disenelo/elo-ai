@@ -3788,3 +3788,15 @@ Board Acceptance doc `BOARD_ACCEPTANCE_WO-NAV-013_Unity-WO-B1_B2_2026-08-27.md` 
 **Gate open:** WO-FIX-AVATARBRIDGE-001 is now executable (gate was LIPSYNC-001 result card).
 
 *Builder · 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (WO-FIX-AVATARBRIDGE-001)
+
+| WO | Status |
+|---|---|
+| WO-FIX-AVATARBRIDGE-001 | ✅ DONE — commit 811982f · 8/8 AT PASS · result card in DONE/ |
+
+`core/avatar_bridge.py` is now importable. All runtime paths blocked on this import are unblocked.
+
+*Builder · 2026-08-28*
