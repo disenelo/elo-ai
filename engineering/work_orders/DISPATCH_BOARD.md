@@ -3982,14 +3982,73 @@ CANON-XI Python-side parity chain complete. Waiting: WO-CANON-XI-UNITY-ROUTE (De
 | AT-5 | route JSON-serialisable; wrap leg type + jump leg goal_win_id preserved | ✅ PASS |
 | NAV-013 AT-2 regression | handle_navigate({"goal_win_id": 7}) still returns name="move", goal_win_id=7 | ✅ PASS |
 
-### Remaining blockers (unchanged)
+### Remaining blockers (updated)
 - WO-CANON-XXIV §C: Architect lane (doc cross-reference)
 - WO-CANON-VI/XVI/X: CA alignment rulings B/C/D required
 - WO-CANON-XXI: Vol VIII + XXVII governance gate
 - WO-CANON-XXII: Vol XVI dependency
 - WO-CONV-001, WO-CAP-001: Board/LA close pending
-- 0057: David L3 latency policy
+- 0057: ✅ SUPERSEDED 2026-08-28 — faculty loop architecture closes it (see L3 ruling appended below)
+- WO-112 `alternatives_rejected`: FREEZE_V1_LOCK (executive.py). Confidence defect on ambient/bypass paths: server.py-only fix, no Architect ruling needed.
 
 **SEAT READY — NO AUTHORISED EXECUTABLE WORK**
 
 *Builder · 2026-08-28*
+
+---
+
+## David L3 Ruling — 2026-08-28 (Faculty Architecture + 0057 Closure)
+**Authority:** David L3 verbal 2026-08-28 · Verbatim below · Permanent record.
+
+### Ruling 1 — Faculty Architecture (canonical)
+
+> *"0057 will be superseded with the way I already said I want eLo to use FACULTIES, and they NOT CHANGE THE OUTCOME OR RESPONSE OF ELO"*
+
+One Brain layers (verbatim):
+```
+eLo / ONE BRAIN
+↓  UNDERSTAND INTENT + CONTEXT
+↓  SELECT / ORCHESTRATE CAPABILITIES
+↓  FACULTY / MODEL / TOOL CONTRIBUTION
+↓  eLo RECONCILIATION
+↓  DECIDE / AUTHORISE
+↓  EXECUTION
+↓  CONSEQUENCE / RESULT
+↓  VERIFICATION
+↓  eLo
+↓  LEARNING / MEMORY / UPDATED STATE
+```
+
+For company operation (second loop, verbatim):
+```
+eLo / One Brain → Company Brain / Board → correct Seat → authorised work
+→ Execution → Verification → Board / Company State → eLo
+```
+
+Two nested loops (verbatim):
+```
+Cognitive loop:    eLo → Faculty → eLo
+Operational loop:  eLo → Board → Seat → Execution → Verification → eLo
+
+Together:
+DAVID L3 → eLo → FACULTIES → eLo → GOVERNED EXECUTION → CONSEQUENCE → VERIFICATION → eLo
+```
+
+**Faculty rule (verbatim):** *"Faculties are capabilities of eLo, not alternate brains. So Claude, Groq, Cerebras, Ollama, research, Python, CAD, etc. can contribute, but their output does not become the final eLo response or decision automatically. The loop is: eLo → Faculty → eLo not: eLo → Faculty → David. The faculty never becomes the authority in the middle. That was the core correction behind the Response Authority / Faculty Governance realignment."*
+
+### Ruling 2 — 0057 CLOSED
+
+0057 (4-second rule) is CLOSED. Architectural answer: if a faculty is slow, eLo proceeds without it — faculty output is a contribution, not a gating requirement. `SELECT / ORCHESTRATE CAPABILITIES` is eLo's own step; it can skip a slow faculty or use a faster one. No separate latency policy needed. The "quicker route" David described is the faculty orchestration step itself.
+
+**0057 status: SUPERSEDED 2026-08-28 by faculty loop architecture. No WO needed.**
+
+### Ruling 3 — WO-112 scope clarification (Builder analysis, 2026-08-28)
+
+FREEZE_V1_LOCK blocks ONLY `alternatives_rejected` (executive.py candidate-set formation). All other gaps:
+- `confidence: null` on main turns → FIXED (spine.py:361, commit 0653d20) — one post-fix live run needed to confirm
+- `confidence: null` on ambient/bypass journal entries → fixable in `server.py` only (no executive.py change): add `getattr(_amb_plan, "confidence", None)` to ambient daemon journal call (server.py:1033-1037)
+- `record_failure` → already wired (server.py:3822)
+
+WO-112 is partially executable without Architect ruling. `alternatives_rejected` block stands.
+
+*Recorded by Builder from David L3 verbal 2026-08-28*

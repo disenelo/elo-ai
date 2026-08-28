@@ -1034,6 +1034,8 @@ def ambient_thought() -> None:
                     "intent_source":   "self",
                     "internal_intent": _top_intent,
                     "action":          _amb_action,
+                    # WO-112: thread confidence from plan so ambient entries are not null
+                    "confidence":      getattr(_amb_plan, "confidence", None),
                 },
                 backend="ambient",
                 outcome="ambient",
