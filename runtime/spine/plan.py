@@ -126,6 +126,12 @@ class CognitivePlan:
     #         "exploratory" | "direct" | None (no mode signal)
     storytelling_style:   "str | None"  = None
 
+    # ── WO-INNER-001: inner-child expression — creative imagination candidates ──
+    # Set by _executive_faculty from LOOP-8 output (Vol XXVI Ch.1+Ch.3).
+    # Each entry: {"candidate": {concept, metaphor, …}, "score": {…}} epistemic_status="imagined"
+    # Propagated to server.py for [CREATIVE SEED] system prompt injection.
+    creative_candidates:  tuple = field(default_factory=tuple)
+
     def needs_llm(self) -> bool:
         return not self.direct_response and not self.system_immediate and not self.system_pending
 

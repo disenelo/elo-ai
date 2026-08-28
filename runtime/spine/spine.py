@@ -304,6 +304,8 @@ def _executive_faculty(
 
     if _creative_candidates:
         _attention_in["creative_candidates"] = _creative_candidates
+        # WO-INNER-001 D-2: propagate to plan so server.py can inject [CREATIVE SEED]
+        plan.creative_candidates = tuple(_creative_candidates)
 
     # WO-117 SELF-INTERPRET (card 0083): eLo reads his own record and says something
     # true about himself — assembly, not invention. ADR-Exec-005 D1: every claim

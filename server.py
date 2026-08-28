@@ -3664,6 +3664,13 @@ def _process_turn(raw: str) -> dict:
             }.get(_plan.storytelling_style, "")
             if _ss_hint:
                 system = system + f"\n\n[STORYTELLING FRAME — this turn only]\n{_ss_hint}"
+        # WO-INNER-001 D-3: inner-child expression — inject top creative seed (RTR-015 / §5)
+        _ci_srv_candidates = getattr(_plan, "creative_candidates", None) or ()
+        if _ci_srv_candidates:
+            _ci_srv_top = _ci_srv_candidates[0].get("candidate", {}) if _ci_srv_candidates else {}
+            _ci_srv_metaphor = (_ci_srv_top.get("metaphor", "") or "").strip()
+            if _ci_srv_metaphor:
+                system = system + f"\n\n[CREATIVE SEED — imagined, not asserted]\n{_ci_srv_metaphor}"
         # WO-081: emergent cognition — internal life (habits, intents, absence-awareness)
         try:
             from self.emergent_cognition import emergent_block as _ec_emergent_block, internal_intents as _ec_intents
