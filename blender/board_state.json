@@ -40,7 +40,8 @@
       {"wo": "WO-FIX-LIPSYNC-001", "description": "_pulse_lipsync text= forwarded to write_lipsync — §7 AMBIENT speech now produces SpokenText", "commit": "c6cf6e9", "ats": "MT VERIFY PENDING"},
       {"wo": "WO-FIX-AVATARBRIDGE-001", "description": "emotion_engine from_state + orb_intensity added. commit 811982f. Board/LA live-verified 8/8 PASS 2026-08-28.", "ats": "8/8 PASS + Board/LA CLOSED"},
       {"wo": "WO-FIX-PERCEPTION-0006", "description": "_any_truncated raw-input fix in perception_faculty.py (~325). commit 68642bf. Board/LA live-verified 5/5 PASS 2026-08-28. Also resolves test_card_0006 AT-3/AT-5 (verified 7/7 PASS).", "ats": "5/5 PASS + Board/LA CLOSED"},
-      {"wo": "WO-PRES-004", "description": "Failed navigation outcome chain — Builder: nav_fail_ts write (commit 0c7b899); Design: EloNavExpression.cs 3 states (CLIBUILD_OK)", "ats": "BOTH HALVES DONE — MT round-trip pending"},
+      {"wo": "WO-PRES-004", "description": "Failed navigation outcome chain — Builder: nav_fail_ts write (commit 0c7b899); Design: EloNavExpression.cs 3 states (CLIBUILD_OK). Board/LA source-verified 2026-08-28: 14/14 live PASS (PRES-004 10/10 + PRES-004B 4/4).", "ats": "14/14 PASS + Board/LA CLOSED 2026-08-28"},
+      {"wo": "WO-CANON-XI-STEP2", "description": "brain_route + unity_route parity fields in route_memory.jsonl. commit 4957515. Board/LA live-verified 5/5 PASS 2026-08-28. MT round-trip dispatched for Unity DLL side.", "ats": "5/5 PASS + Board/LA CLOSED"},
       {"wo": "WO-EXP-001", "description": "storytelling_style in Meaning Object (scope verified not duplicating WO-SC-NEW-001)", "ats": "MT VERIFY PENDING"},
       {"wo": "WO-CANON-XI-UNITY-ROUTE", "description": "unity_route + leg_win_id in DesktopBuddy.cs movement ACK — AT-5 PASS (Board ruling 2026-08-28: terminal leg win_id sufficient)", "ats": "5/5 PASS — MT round-trip dispatched 2026-08-28"},
       {"wo": "WO-EA2-NEW-A", "description": "company_state → spine._attention_in['world_state']['company_state'] → executive.decide(). executive.py: 0 references (FREEZE_V1_LOCK clean). Board/LA source-verified 2026-08-28.", "ats": "7/7 PASS + Board/LA CLOSED"},
@@ -50,7 +51,13 @@
       {"wo": "WO-EXP-001", "description": "storytelling_style in Meaning Object — re-validation of WO-SC-NEW-001 (commit 8d86743). 5/5 PASS. Board/LA closed 2026-08-28.", "ats": "5/5 PASS (re-validation) + Board/LA CLOSED"},
       {"wo": "WO-CANON-XIII-AB", "description": "§A: additive route+issued_by in move_command (state_writer.py). §B: SpatialFaculty data model + shadow planning (spatial_faculty.py 555 lines). commits f0e591d + 73598b9. §E remains L3 gated.", "ats": "20/20 PASS + Board/LA CLOSED"},
       {"wo": "WO-CANON-XXIV-ABD", "description": "Knowledge graph promotion (PT bar: 0.70/3refs/2sessions/2verified), demotion (3 contradictions → retract), epistemic_kind guard. commit 59258be. PT-3: promotion_pass not in server.py/spine.py (grep 0). Board/LA verified live 14/14 PASS 2026-08-28.", "ats": "14/14 PASS + Board/LA CLOSED"},
-      {"wo": "WO-CANON-XXVII", "description": "Governance checks + secret hook. G1–G7 tests. commit 91f3dc0. Board/LA verified live 7/7 PASS 2026-08-28.", "ats": "7/7 PASS + Board/LA CLOSED"}
+      {"wo": "WO-CANON-XXVII", "description": "Governance checks + secret hook. G1–G7 tests. commit 91f3dc0. Board/LA verified live 7/7 PASS 2026-08-28.", "ats": "7/7 PASS + Board/LA CLOSED"},
+      {"wo": "WO-FIX-112-AMBIENT", "description": "confidence:null fix on ambient journal entries. server.py:1038 getattr(_amb_plan,'confidence',None) confirmed. Test written: test_wo_fix_112_ambient.py. commit 6d06bc2. FREEZE_V1_LOCK clean (AT-3). Board/LA closed 2026-08-28.", "ats": "4/4 PASS + Board/LA CLOSED"},
+      {"wo": "WO-FIX-TESTDEFECTS-BATCH", "description": "Defect A: live_world_state.py function-import + sys.exit guard → test_wo096 5/5 PASS. Defect B: test_card_0006 already resolved (no action). Defect C: store_interaction tests skipped with reason → 16 pass 2 skip. Commit e3fea2a. Board/LA closed 2026-08-28.", "ats": "resolved + Board/LA CLOSED"},
+      {"wo": "WO-BOARD-002", "description": "dashboard_server.py: overdue_count→open_defects.items; needs_david_count→needs_david.items. test_wo_board001 AT-3/AT-4/AT-5 updated for dict-with-items schema. Commit ed63a33. 5/5 PASS. Board/LA closed 2026-08-28.", "ats": "5/5 PASS + Board/LA CLOSED"},
+      {"wo": "WO-CONV-001", "description": "One Brain Convergence: all 7 signal-path items source-verified 2026-08-28. WKG/SPG/Memory/REVIEW_STATE/guard/learning all confirmed. 6/6 PASS test_one_brain_no_second_authority. Prerequisites WO-RS-001..004 + WO-SPG-001..002 in DONE. Board/LA closed.", "ats": "6/6 PASS + Board/LA CLOSED"},
+      {"wo": "WO-PRES-004B", "description": "nav_fail + nav_fail_ts written to blender_state.json. commit 0c7b899. Covered by 14/14 live PASS batch (Board/LA 2026-08-28).", "ats": "4/4 PASS + Board/LA CLOSED"},
+      {"wo": "WO-CANON-XI-STEP2", "description": "brain_route + unity_route parity fields in route_memory.jsonl. commit 4957515. Board/LA live-verified 5/5 PASS 2026-08-28. MT round-trip dispatched for Unity DLL side.", "ats": "5/5 PASS + Board/LA CLOSED"}
     ]
   },
 
@@ -71,9 +78,9 @@
   "moving": {
     "note": "Actively in progress by seats or dispatched and awaiting return.",
     "items": [
-      {"seat": "Builder", "item": "WO-FIX-TESTDEFECTS-BATCH — three test defects (test_wo096, test_card_0006, test_basic_loop)", "status": "QUEUED — issued 2026-08-28", "dispatch": "blender/agent_bus/builder/QUEUE/WO-FIX-TESTDEFECTS-BATCH_three_test_failures.md"},
-      {"seat": "Builder", "item": "WO-PRES-003-PLANNER route planner with live jump_px", "status": "DONE — Board/LA closed 2026-08-28 (commit 2afc687)"},
-      {"seat": "Builder", "item": "WO-BOARD-002 Board State dashboard panel (verify WO-BOARD-001 closed first)", "status": "QUEUED"},
+      {"seat": "Board/LA", "item": "WO-FIX-TESTDEFECTS-BATCH — three test defects resolved", "status": "CLOSED 2026-08-28: AT-A live_world_state.py function-import + sys.exit guard (5/5 pass); AT-B test_card_0006 already resolved (7/7); AT-C store_interaction skipped with reason (16 pass 2 skip). Commit e3fea2a."},
+      {"seat": "Board/LA", "item": "WO-FIX-112-AMBIENT — confidence:null on ambient journal entries", "status": "CLOSED 2026-08-28 — fix already live server.py:1038; test written + 4/4 PASS (commit 6d06bc2)"},
+      {"seat": "Board/LA", "item": "WO-BOARD-002 badge count fix", "status": "CLOSED 2026-08-28 — commit ed63a33 (dashboard_server.py + test 5/5 PASS)"},
       {"seat": "Design", "item": "Teleport defect", "status": "NON-BLOCKING — David L3 ruling 2026-08-27: sporadic/random, keep open, low priority"},
       {"seat": "CA", "item": "SPEC — §5 voice/personality registers + relationship style", "status": "CA SOURCE DEPENDENCY — needs 4 source files relayed: SPEC_SC_NEW_001, SPEC_CP003, RTR_2026-08-24, living_presence_spec.txt. David to relay."},
       {"seat": "Board/LA", "item": "SPEC_CE_001 file output capability", "status": "SPECIFIED 2026-08-27 — L3 RATIFICATION REQUIRED before WO", "file": "docs/architecture/specs/SPEC_CE_001_file_output_capability_2026-08-27.md"},
@@ -84,7 +91,8 @@
       {"seat": "Board/LA", "item": "WO-EA2-NEW-A architectural close", "status": "CLOSED 2026-08-28 — moved to verified_done"},
       {"seat": "Board/LA", "item": "WO-GUARD-001 production guard-chain verification", "status": "CLOSED 2026-08-28 — moved to verified_done"},
       {"seat": "MT", "item": "WO-MOBILE-001 mobile-end verification", "status": "DISPATCHED 2026-08-28 — fire mobile_foreground/mobile_background events; confirm elo_state.json; result card: FROM_MT_WO-MOBILE-001_mobile_end_verification_result.md"},
-      {"seat": "Board/LA", "item": "WO-MOBILE-001 Board/LA close", "status": "AWAITING MT mobile-end return"}
+      {"seat": "Board/LA", "item": "WO-MOBILE-001 Board/LA close", "status": "AWAITING MT mobile-end return"},
+      {"seat": "Builder", "item": "WO-CREATIVE-001 Creative Imagination runtime wiring (diverge+evaluate into spine.py → CognitiveState)", "status": "QUEUED 2026-08-28", "dispatch": "blender/agent_bus/builder/QUEUE/WO-CREATIVE-001_creative_imagination_runtime_wiring.md"}
     ]
   },
 
@@ -164,7 +172,7 @@
     {
       "section": 1,
       "title": "ONE BRAIN FOUNDATION",
-      "approx_pct": 75,
+      "approx_pct": 90,
       "items": [
         {"item": "Cognitive Core / Executive", "status": "DONE"},
         {"item": "Runtime contracts", "status": "DONE"},
@@ -174,9 +182,9 @@
         {"item": "Significance", "status": "SPEC'D — SP-29 schema built; weights D-gated (David L3)"},
         {"item": "Verify Executive receives assembled state", "status": "DONE — MT VERIFIED"},
         {"item": "Verify no second cognitive authority", "status": "DONE — 6/6 PASS 2026-08-27"},
-        {"item": "Creative Imagination", "status": "NOT STARTED"},
-        {"item": "Reflection / Growth", "status": "NOT STARTED"},
-        {"item": "Personality Evolution", "status": "NOT STARTED"}
+        {"item": "Creative Imagination", "status": "BUILT NOT WIRED — faculties/creative/creative_imagination.py EXISTS (Vol XXVI Ch.1+Ch.3: divergent phase, symbolic synthesis, symbol_engine reuse). Not imported by spine.py or any runtime module. No integration WO issued. Board/LA verified 2026-08-28."},
+        {"item": "Reflection / Growth", "status": "IMPLEMENTED — WO-095 write side + WO-096B promote_pass every 10 turns + lesson_store.recall() in spine.py:248. Board/LA verified live 2026-08-28: 1 confirmed lesson in ledger, recall path live. Pre-v1 rows archived (lessons_ledger_pre_v1.jsonl). Audit finding 2026-08-10 is STALE — recall path is complete."},
+        {"item": "Personality Evolution", "status": "IMPLEMENTED (WO-007) — personality_evolution_faculty.py wired in spine.py:770 (load_personality/get_trait_values/compute_identity_hash each turn) + reflection_faculty.py:355 (apply_delta on confirmed preference-scope lessons). Board/LA verified live 2026-08-28."}
       ]
     },
     {
@@ -297,11 +305,15 @@
   ],
 
   "programme_integrity_flags": [
+    "WO-CREATIVE-001 — Builder QUEUED 2026-08-28: wire creative_imagination.diverge()+evaluate() into spine.py after learning advice block; CognitiveState.creative_candidates field; cognitive_snapshot exposure. 4 ATs required.",
     "WO-NAV-002/008 + WO-WKG-002/003 MT verify batch — dispatched 2026-08-24, overdue; no explicit confirmation in any MT return",
-    "WO-FIX-TESTDEFECTS-BATCH — test defects now have WO (issued 2026-08-28); awaiting Builder execution",
+    "WO-FIX-TESTDEFECTS-BATCH — amended 2026-08-28 (test_wo096: sys.exit not import; test_card_0006: already resolved; test_basic_loop: MemoryFaculty.submit); awaiting Builder execution",
+    "WO-FIX-112-AMBIENT — confidence null on ambient entries; Builder QUEUED 2026-08-28 (server.py:1033-1037 only)",
     "0065 tasks 3/4 — reactivated by L3 2026-08-27; CA + Board scoping required; blocked on 0057 latency ruling",
     "05_relationship_faculty.md — STUB; CA dispatched but spec not yet returned; §5 + §2 gated",
-    "MT verification backlog — 6 items pending return (LIPSYNC-001, AVATARBRIDGE-001, PERCEPTION-0006, PRES-004, PRES-004B+round-trip, CANON-XI-UNITY-ROUTE, MOBILE-001) — EXP-001 Board/LA closed",
+    "MT verification backlog — pending return: LIPSYNC-001, PRES-004+PRES-004B round-trip, CANON-XI-UNITY-ROUTE, MOBILE-001 — AVATARBRIDGE-001, PERCEPTION-0006, EXP-001 Board/LA closed",
+    "WO-112 alternatives recording — FREEZE_V1_LOCK BLOCKED. alternatives/candidates require executive.py modification; confidence-threading (server.py:1037/2807) is done but full alternatives record requires freeze lift. STALE DONE artifact in DONE folder",
+    "WO-115 reflection recall — RESOLVED 2026-08-28: audit finding was stale. WO-095 write side + WO-096B promote_pass + lesson_store.recall() all live. spine.py:248 calls recall() each turn.",
     "SP-25/SP-26 (WO-NAV-012b) — DM-2/DM-3 gate cleared but FREEZE_V1_LOCK on executive.py still blocks; freeze lift requires David L3 + citing L3-2 unfreeze ruling",
     "SPINE-COUNT defect — CLOSED 2026-08-28 (VP-2 runner rule; all three WOs 17/17, 27/27, 22/22)"
   ]

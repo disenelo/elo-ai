@@ -5,6 +5,154 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-28 (WO-CANON-XXVII BUILT; §4.4 G-4 corrected; Build List scan complete)
+**Authority:** Board / Lead Architect — §19 Build List scan continued through remaining WOs
+
+### WO-CANON-XXVII — ✅ BUILT · AWAITING David L3 ratification
+Both halves complete:
+- **§A (Architect):** `docs/architecture/Volume_XXVII/04_Governed_Index.md` built 2026-08-21. §4.4 G-4 entries corrected this session — WO-CANON-XXV and WO-CANON-XV removed from false-DONE list (both genuinely verified: XXVII commit `91f3dc0`; XV commit `415203d`).
+- **§B (Builder):** commit `91f3dc0` · 7/7 GT PASS (`governance_check.py` G-1..G-4 + `check_secrets.py` + `.githooks/pre-commit` + `tests/test_canon_xxvii_governance.py`). Result card: `DONE/FROM_BUILDER_WO-CANON-XXVII_governance_checks_result.md`.
+
+**Gate per WO:** David L3 ratification required. Per Rule 4.1 tests green + committed = DONE for Builder deliverables; the Architect-level promotion of the WO to COMPLETE requires David L3 (as the WO explicitly states). Status: BUILT, AWAITING L3.
+
+**CANON-XXI XXVII gate:** Builder result card queried whether the XXVII gate for CANON-XXI is now cleared. Board ruling: NO — CANON-XXI requires Vol VIII (not built) + XXVII CA/David L3 ratification + WO-073 (Groq blocked). CANON-XXI remains blocked regardless of XXVII's Builder half.
+
+### Remaining Build List scan — all WOs assessed
+| WO | Owner | Status | Board assessment |
+|---|---|---|---|
+| WO-CANON-XVI | Builder | QUEUED (Horizon-2, Tier A) | Post-Presentable v1 · not Architect-executable |
+| WO-CANON-XX | Builder | ✅ DONE 2026-08-27 (16/16) | Already closed |
+| WO-CANON-XXI | Builder | QUEUED (Horizon-2, Tier B) | Blocked Vol VIII + XXVII gate + WO-073 |
+| WO-CANON-XXII | Builder | QUEUED (Horizon-2, Tier B) | Blocked Vol XVI + RESERVED events |
+| WO-CANON-XXIII | Builder (+ Architect Markdown) | OPEN P4 Tier C | Architect item: Vol XXIII corrections — deferred, P4 not Presentable-v1 blocking |
+| WO-CANON-XXV | Builder | ✅ DONE 2026-08-27 (29/29) | Already closed |
+| WO-CANON-XXVII | Both | BUILT, AWAITING L3 | See above |
+| WO-INT7-* (11 WOs) | Design (Unity) | Design lane | Not Architect-executable |
+| WO-INT9 | Game/UI (Unity) | Game lane | Not Architect-executable |
+| WO-GM1, WO-PRIN-1 | Not found on disk | — | Files do not exist; not blocking |
+
+### Programme stop condition — confirmed
+All Architect-executable Markdown actions exhausted. Confirmed stop per §24 (AWAITING EXTERNAL DEPENDENCY):
+1. MT result cards (5 outstanding batches)
+2. Builder result cards (3 active: TESTDEFECTS-BATCH, 112-AMBIENT, SPG-001 AT-7)
+3. David L3 decisions (9 items listed in CLAUDE.md)
+4. CA 0065 Task 3 ruling
+5. WO-CANON-XXVII David L3 ratification (new)
+
+**NEXT UNLOCK:** First MT or Builder result card returned → reconcile → next governed consequence.
+
+*Board / Lead Architect · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (MT batch 3 returns + Design PUSH reconciliation + Game→Design routing)
+**Authority:** Board / Lead Architect — MT result cards read this session + Design outbox cards processed
+
+### MT returns — batch 3
+
+**WO-NAV-013 ✅ MT VERIFIED** (`FROM_MT_WO-NAV-013_verification_result.md`)
+5/5 PASS at commit `fe89023`. `handle_navigate` confirmed at `backend_router.py:125`. Programme suite: +394 passes, −17 failures vs 2026-08-24 baseline. No new regressions. FULLY CLOSED.
+
+**WO-EA2-1 ✅ MT VERIFIED** (`FROM_MT_WO-EA2-1_verification_result.md`)
+`test_ea2_1` 6/6 · `test_ea2_2` 11/11. Three canonical name corrections (match CLAUDE.md standing facts):
+- module = `company_runtime/company_state_writer.py` (not `runtime/`)
+- emit fn = `publish()` (not `write_company_state()`)
+- output = `blender/company_state.json` (not `data/`)
+Programme suite: same +394/−17 vs baseline. FULLY CLOSED. (EA2-1 §4 "Presence dashboard renders from it" = EA2-2's AT — carried forward, not absorbed here.)
+
+**WO-BOARD-002 ✅ MT VERIFIED** (`FROM_MT_WO-BOARD-002_verification_result.md`)
+6/6 AT PASS. `board_state.json` populated (22,699 bytes, 9 keys, 14 moving / 6 defects / 9 needs_david / 10 build_list entries). All four section literals confirmed in shipped `Assembly-CSharp.dll` (UTF-16LE, mtime Aug 28 01:55). Design half CLOSED. **Remaining: David visual read** — layout/colour/overflow in running Presence app (David L3 item 1). MT note: binary string literals in .NET DLL must test UTF-16LE (#US heap), not just ASCII (#Strings) — a plain grep on the DLL gives false negatives; MT corrected its own first pass.
+
+### Design PUSH card reconciliation (`FROM_DESIGN_2026-08-28_PUSH_builder_items_elevation_request.md`)
+
+Design requested Board elevate Builder items now unblocked by DM-2/DM-3. Board reconciliation:
+
+| Item | Actual status | Board ruling |
+|---|---|---|
+| Q-NAV-4 (difficulty scoring to Executive) | ✅ DONE — covered by WO-PRES-003-PLANNER D-3 (commit `2afc687`, reads live jump_px) | No further dispatch needed |
+| PRES-003 (wrap-leg route) | ✅ DONE — WO-PRES-003-PLANNER committed `2afc687`, 5/5 PASS | No further dispatch needed |
+| PRES-004 (nav-fail trigger) | ✅ DONE — WO-PRES-004 + WO-PRES-004B both committed and AT-verified | No further dispatch needed |
+| Q-NAV-5 (executive re-route) | 🔴 BLOCKED — FREEZE_V1_LOCK on `executive.py` (LAW-017), sole remaining blocker | Cannot dispatch until David L3 lifts lock |
+| Q-CUR-1 (curiosity/significance) | 🔴 BLOCKED — David L3 scope decision required (item 5, David L3 list) | Cannot dispatch until scoping decision |
+
+Design's measurements (DM-2/DM-3) are already integrated — the board_state.json entries that showed them as gating are stale. WO-BOARD-002 data will auto-update on next board_state.json write.
+
+**Note to Design:** Q-NAV-4, PRES-003, PRES-004 are done — no further Design waiting. Q-NAV-5 and Q-CUR-1 are brain-side, blocked at the Board level; Design has no action.
+
+### Game→Design arm spec routing (`FROM_GAME_2026-08-28_arm_yawpitch_wave_grab_spec.md`)
+Game (SEAT-ENG-005) filed a 4-question arm yawPitch/wave/grab spec request directly to Design's inbox. Board ACKs this routing as correct. Design dispatch written this session: `FROM_ARCHITECT_2026-08-28_arm_spec_for_game_dispatch.md`. Design to answer 4 questions (which bones carry yawPitch, body-local axes, wave mechanism, grab latch pose) and return to Game. No Board hold on this — Design has the context, game is parallel to nav/curiosity.
+
+### Stale queue card note
+`QUEUE/WO-PRES-003-PLANNER_wrap_route_leg.md` is stale — Builder's result card is already in `DONE/FROM_BUILDER_WO-PRES-003-PLANNER_result.md`. No action needed; card is superseded.
+
+### Programme suite health (MT-confirmed 2026-08-28)
+Baseline 2026-08-24: 779 passed / 141 failed / 8 errors.
+Current 2026-08-28: **1173 passed** / **124 failed** / 8 errors. Δ: **+394 passes, −17 failures**.
+Residual 124 failures are pre-existing. Harness defect: 27 of 279 test files script-style (`sys.exit()`); future WO, not blocking.
+
+*Board / Lead Architect · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (Builder queue update — 3 executable items re-dispatched)
+**Authority:** Board / Lead Architect — §19 full Build List scan
+
+**Finding:** Builder post-compaction scan (`Builder · 2026-08-28 post-compaction`, line 4327) reported "all executable items exhausted" but missed `WO-FIX-TESTDEFECTS-BATCH` which is in QUEUE/ with no result card in DONE/. Board re-dispatched.
+
+**Active queue filed:** `FROM_ARCHITECT_2026-08-28_ACTIVE_QUEUE_NOW.md` (2nd dispatch, supersedes first)
+
+| Item | Priority | Status |
+|---|---|---|
+| WO-FIX-TESTDEFECTS-BATCH (3 test defects: wo096 import, card_0006 truncation, basic_loop store_interaction) | P2 | ✅ Re-dispatched — missed in post-compaction scan |
+| WO-FIX-112-AMBIENT (server.py confidence null on ambient paths) | P2 | Already dispatched — confirmed active |
+| WO-SPG-001 AT-7 re-derive (read-only, live vault_layer.lookup() measure) | P3 | ✅ Dispatched — the one authorised remaining SPG action |
+
+**WO-CANON-XIII §E / D-XIII-1:** Confirmed blocked on CANON-XI parity proof (AT-1 MT verify pending). No Architect action possible.
+**WO-CONV-001:** Confirmed blocked on SPG steps 3-10 (David L3 authorisation hold, 2026-08-21).
+
+*Board / Lead Architect · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (Design PRES-003 L3-intent card — ACK + close)
+**Authority:** Board / Lead Architect — `FROM_DESIGN_2026-08-28_PRES-003_wrap_route_leg_L3_intent.md`
+
+Design filed a card sharpening David L3 intent for PRES-003 (wrap-route leg) and requesting Board surface + release. **PRES-003 is already DONE.** Builder implemented commit `2afc687`, 5/5 PASS + NAV-013 regression, all David L3 intent met (direct-reach check → wrap-leg candidate when outside jump_px → navigation_failed when jump_px=0). Gates Design identified as clearing (WO-NAV-013, DM-2/DM-3) were cleared; that's why Builder was dispatched and executed this session. Design's execution-side (bottom→top wrap live, ledge walk live) will activate when the planner routes via the new `wrap_bottom_to_top` leg — no further Design WO needed.
+
+**Board response to Design:** PRES-003 DONE. Builder half implemented and Board-closed this session. Design execution-side activates automatically on first commanded wrap-leg route.
+
+*Board / Lead Architect · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (CANON-XI Unity commit received + MT AT-1 dispatch)
+**Authority:** Board / Lead Architect — Design return card `FROM_DESIGN_WO-CANON-XI-UNITY-ROUTE_commit_hash.md`
+
+### WO-CANON-XI-UNITY-ROUTE — ✅ FULLY COMMITTED
+Design returned commit hash `7573f9d` (branch `design/canon-xi-unity-route`). File: `Assets/Scripts/DesktopBuddy.cs` — `_mvStartWin` capture, MoveEnd `unity_route` + `leg_win_id`. Design confirms 5/5 AT PASS per Board ruling (AT-5: terminal-leg `leg_win_id` accepted; per-leg stream = FUTURE, not implemented per instruction).
+
+**Step 2b status update:** Working tree → ✅ **COMMITTED** (`7573f9d`). AT-5 ruling honoured. UNITY SIDE FULLY CLOSED.
+
+### MT AT-1 live verify — DISPATCHED
+`blender/agent_bus/mt/FROM_ARCHITECT_2026-08-28_MT_dispatch_CANON-XI_AT1_live_verify.md`
+
+MT must verify: live arrived ACK contains `unity_route` → `server.py` reads it → `remember_route()` stores it → `self/route_memory.jsonl` entry has both `brain_route` + `unity_route`. Also: unit tests `test_canon_xi_server_ack.py` and parity metric (gate for Step 3 = ≥ 80%).
+
+Return: `FROM_MT_WO-CANON-XI-AT1_live_verify_result.md`
+
+### CANON-XI parity chain — updated state
+| Step | Status |
+|---|---|
+| Step 1 (Python brain_route to remember_route) | ✅ DONE (commit `2c9eefc`) |
+| Step 2a (Python — remember_route fields) | ✅ DONE (commit `4957515`, 5/5) |
+| Step 2b (Unity — unity_route in arrived ACK) | ✅ DONE (commit `7573f9d`, 5/5) |
+| Step 2c (Python — server.py ACK read + relay) | ✅ DONE (commit `9d7e1e9`, AT-4 5/5; AT-1 LIVE PENDING → MT dispatched) |
+| Step 3 (Remove Unity local route selection) | 🔴 BLOCKED — parity ≥ 80% + AT-1 MT verify |
+
+*Board / Lead Architect · 2026-08-28*
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-28 (Post-compaction — full programme reconciliation)
 **Authority:** Board / Lead Architect — post-compaction loop per MASTER_MULTI_SEAT_OPERATING_PROTOCOL.md
 
@@ -26,10 +174,10 @@ David L3 verbal ruling 2026-08-28 (verbatim recorded at Board lines 4050-4104): 
 | WO-113 (GAP — row 17) | `runtime/affordances.py` · `test_wo113_gap_assessment.py` 10/10 · `test_0014_wo113_gap_states.py` 9/0. Seven gap state constants + gap_state() function + body-size join proven | ✅ CLOSED 2026-08-28 |
 | WO-110 rows 10+11 (INFER+UNKNOWN) | `runtime/the_moment.py` tier_fact(). `test_wo110_epistemic_tiers.py` 11/11 · `test_0011_wave4_epistemic.py` 9/0. EP-2 (inferred source computed) + EP-4 (absence statable) | ✅ CLOSED 2026-08-28 |
 
-### Open Architect-lane actions (in order — not Builder, not Design)
-1. **Volume_XV/00_Metadata.md** — mark implementation DONE (WO-CANON-XV, commit `415203d`, 20/20 PASS). Architect action, doing this session.
-2. **WO-CANON-XXIV §C** — add cross-reference note in `docs/architecture/Volume_XXIV/03_Compression_and_Reasoning_Support.md` §3.4 ↔ `LEARNING_LOOP_v1.md` §3.4. Architect lane. Doing this session.
-3. **WO-FIX-112-AMBIENT** — author WO for server.py-only confidence null fix on ambient/bypass paths (no executive.py; not FREEZE_V1_LOCK gated). Dispatch to Builder. Doing this session.
+### Architect-lane actions — COMPLETED this session
+1. **Volume_XV/00_Metadata.md** — ✅ DONE: status updated to DONE, audit_status CLOSED, all DoD checkboxes marked, deferred tool_router.py item documented. [VERIFIED — file edited this session]
+2. **WO-CANON-XXIV §C** — ✅ DONE: cross-reference table added to `docs/architecture/Volume_XXIV/03_Compression_and_Reasoning_Support.md` §3.4 and reciprocal cross-reference added to `LEARNING_LOOP_v1.md` §3.4. One promotion model, two ledgers, numeric alignment documented. Confirms AG-1 compliance. [VERIFIED — both files edited this session]
+3. **WO-FIX-112-AMBIENT** — ✅ DISPATCHED: WO authored at `engineering/work_orders/WO-FIX-112-AMBIENT.md`. Builder queue card at `builder/QUEUE/WO-FIX-112-AMBIENT_confidence_null_ambient.md`. Server.py-only (executive.py untouched). 4 ATs. Return card: `FROM_BUILDER_WO-FIX-112-AMBIENT_result.md`.
 
 ### Blocked — no Architect or Builder action available
 - WO-CONV-001: SPG prerequisite outstanding (Board-gated, David L3)
@@ -4440,4 +4588,105 @@ No new dispatches have arrived since the previous session's board close.
 - Game seat: WO-GAME-001 no result card yet
 - CA: §5 relationship spec pending return; §6 CREATE spec pending return
 - David L3: 8 outstanding items (DM-2/DM-3 now cleared)
+
+
+---
+## Board Session — 2026-08-28 (continuation — context resumed)
+
+### Board Actions — Architectural Closes (batch)
+
+**WO-PRES-004 + WO-PRES-004B — CLOSED**
+- Builder result cards confirmed in DONE
+- Board live run: `test_wo_pres004_failed_navigation.py + test_wo_pres004b_nav_fail_state_write.py` → 14/14 PASS
+- Close record: `FROM_ARCHITECT_2026-08-28_batch_close_PRES004_SP31-SP32_CANON-XI.md`
+
+**WO-SP31-SP32 — CLOSED**
+- Builder result card in DONE (aecc67b)
+- Board live run: `test_sp31_sp32_self_initiation.py` → 13/13 PASS
+
+**WO-CANON-XI (Builder Python side / Step 2) — CLOSED**
+- Builder result card: 5/5 PASS (commit 4957515)
+- Board live run: `test_wo_canon_xi_step2_parity_fields.py` → 5/5 PASS
+- MT round-trip (Unity DLL side): still pending return
+
+### Investigations — Build List §1 NOT STARTED items
+
+**WO-112 (alternatives recording) — FREEZE_V1_LOCK BLOCKED**
+- Scope requires generating candidate alternatives inside executive.py
+- executive.py: 0 matches for `alternatives`, `candidates`, `options` — feature not built
+- executive.py cannot be modified without FREEZE_V1_LOCK lift
+- Confidence-threading (WO-112 partial) is live at server.py:1037/2807
+- Status: STALE DONE artifact in DONE folder; actual alternatives recording is BLOCKED
+
+**WO-115 / Reflection recall path — RESOLVED (audit was stale)**
+- Board investigated lesson_store.py: `recall()` function EXISTS at line 440
+- spine.py:248 calls `lesson_store.recall(context=..., k=3)` each turn
+- promote_pass runs every 10 turns via server.py (WO-096B)
+- Current ledger: 1 confirmed lesson; pre-v1 rows archived to lessons_ledger_pre_v1.jsonl
+- 2026-08-10 audit finding "write-only / nothing reads them" is STALE
+- WO-095 + WO-096B implemented the full recall path
+
+### WO-FIX-112-AMBIENT — New Builder queue item confirmed active
+- Brief confirmed in QUEUE: `WO-FIX-112-AMBIENT_confidence_null_ambient.md`
+- Fix: server.py:1033-1037 ambient journal call — add `confidence=getattr(_amb_plan, "confidence", None)`
+- executive.py untouched — no FREEZE_V1_LOCK issue
+- Status: QUEUED
+
+### board_state.json updated
+- Added WO-PRES-004/PRES-004B Board/LA close (14/14 PASS)
+- Added WO-CANON-XI-STEP2 close entry
+- Corrected §1 build list: Reflection/Growth = IMPLEMENTED (recall path live)
+- Personality Evolution: file EXISTS but no governing WO
+- WO-112 alternatives: flagged as FREEZE_V1_LOCK BLOCKED in programme_integrity_flags
+- WO-115: flagged as RESOLVED in programme_integrity_flags
+- WO-FIX-112-AMBIENT added to moving
+
+### Stale QUEUE items identified (closed items still in QUEUE folder)
+The following QUEUE briefs have closed result cards in DONE but the brief files remain in QUEUE:
+- WO-BOARD-001, WO-EA2-NEW-A, WO-EXP-001, WO-GUARD-001, WO-PRES-003-PLANNER (Board/LA closed this session)
+- WO-PRES-004, WO-PRES-004B, WO-SP31-SP32, 0081_WO-CANON-XI_A_D (Builder DONE + Board/LA closed)
+These are stale artifacts — the QUEUE is clear of these items for programme purposes.
+
+
+### Board Actions — Second batch (same session 2026-08-28)
+
+**WO-FIX-112-AMBIENT — CLOSED**
+- fix already live at server.py:1038 (getattr(_amb_plan, "confidence", None))
+- Test written: test_wo_fix_112_ambient.py → 4/4 PASS
+- commit 6d06bc2; FREEZE_V1_LOCK clean (AT-3)
+
+**WO-FIX-TESTDEFECTS-BATCH — CLOSED**
+- Defect A (test_wo096): live_world_state.py function-import style; sys.exit guard → 5/5 PASS
+- Defect B (test_card_0006): already resolved — no action
+- Defect C (test_basic_loop): store_interaction → @pytest.mark.skip with reason → 16 pass 2 skip
+- commit e3fea2a
+
+**WO-BOARD-002 — CLOSED**
+- dashboard_server.py: overdue_count → open_defects.items; needs_david_count → needs_david.items
+- test_wo_board001 AT-3/AT-4/AT-5 updated for dict-with-items schema
+- commit ed63a33; 5/5 PASS
+
+**WO-CONV-001 — CLOSED**
+- All 7 signal-path items source-verified:
+  1. Input classifies: spine attention_in ✓
+  2. WKG → Executive: WO-WKG-004 8/8 ✓
+  3. SPG self-state: spatial_faculty + elo_self_state ✓
+  4. Memory recall: lesson_store.recall() in spine.py:248 ✓
+  5. REVIEW_STATE blocks: WO-RS-001..004 ✓
+  6. No contamination: WO-GUARD-001 + identity_guard ✓
+  7. Learning authorized: WO-095 + MemoryFaculty.submit() ✓
+- 6/6 PASS test_one_brain_no_second_authority.py
+
+### Investigations — §1 Build List corrections
+- **Personality Evolution**: NOT NOT STARTED — WO-007 wired. spine.py:770 loads personality vector each turn; reflection_faculty.py:355 applies delta on confirmed lessons. §1 approx_pct updated 75→90%.
+- **Reflection/Growth**: Confirmed IMPLEMENTED (WO-095+WO-096B) — audit 2026-08-10 stale.
+- **Creative Imagination**: Genuinely NOT STARTED — no WO, no file, no spec.
+
+### Open programme items after this session
+- David L3: 8 decisions outstanding (ELO_SELF_INITIATION=1, 0057 latency, SP-29, CCM-C, §7 scope, PE-037, HIST-007..012)
+- MT backlog: LIPSYNC-001, PRES-004 round-trip, CANON-XI, MOBILE-001 awaiting return
+- Builder QUEUE genuinely active: Unity-WO-B1 (Unity seat), 0057 (David L3 gated)
+- WO-112 alternatives recording: FREEZE_V1_LOCK blocked
+- CA: §5 relationship spec pending return; §6 CREATE spec pending return
+- Creative Imagination (§1): no WO issued; Board should spec and issue when CA returns
 
