@@ -124,7 +124,7 @@ _last_pp         = None   # last known presence_plan — survives tool-call turn
 # WO-054: "queued" holds an intent that arrived while sit is in-flight; emitted once sit clears.
 _PENDING_SIT:  dict = {"active": False, "since": 0.0, "queued": None}
 _PENDING_MOVE: dict = {"active": False, "since": 0.0, "direction": "", "sub_type": "",
-                       "route_timeout_s": 8.0}  # OQ-1.3: timeout derived from route expected_ms sum
+                       "route_timeout_s": 8.0, "brain_route": None}  # OQ-1.3 + XI-AD-2
 _PENDING_EXIT: dict = {"active": False, "since": 0.0}                     # IO contract UP/DOWN exit_complete ACK
 _pscheduler      = _PresenceScheduler()
 _behaviour_gate  = _BehaviourGate()
@@ -3344,6 +3344,14 @@ def _process_turn(raw: str) -> dict:
                 try:
                     from self.route_memory import remember_route as _rr
                     if _mout is not None:
+                        # XI-AD-2: extract parity fields; clear brain_route so next move starts clean
+                        _xi_brain_route = _PENDING_MOVE.get("brain_route")
+                        _xi_unity_route = (
+                            _mv_ev.get("unity_route")
+                            or _mv_ev.get("report", {}).get("unity_route")
+                            or None
+                        )
+                        _PENDING_MOVE["brain_route"] = None  # XI-AD-2: consumed at ACK
                         _rr(
                             goal_surface=_mout.goal or _PENDING_MOVE.get("sub_type", "") or "",
                             legs=_mout.route_nodes,
@@ -3353,7 +3361,9 @@ def _process_turn(raw: str) -> dict:
                             smoothness=1.0 if _mout.arrived and not _mout.fell else 0.0,
                             ack_id=_mout.ack_id,
                             ack_received=True,
-                            goal_win_id=_mout.goal_win_id,  # WO-NAV-011 SP-14
+                            goal_win_id=_mout.goal_win_id,   # WO-NAV-011 SP-14
+                            brain_route=_xi_brain_route,     # XI-AD-2: Python executive's chosen route
+                            unity_route=_xi_unity_route,     # XI-AD-2: Unity's executed route (from Design ACK)
                         )
                 except Exception:
                     pass
@@ -4554,6 +4564,11 @@ def _process_turn(raw: str) -> dict:
                         leg.get("expected_ms", 0) for leg in _rt_legs if isinstance(leg, dict)
                     )
                     _PENDING_MOVE["route_timeout_s"] = max(8.0, _rt_exp_ms / 1000.0 * 1.5) if _rt_exp_ms else 8.0
+                    # XI-AD-2: store brain's chosen win_id sequence for parity logging at ACK
+                    _PENDING_MOVE["brain_route"] = [
+                        leg.get("win_id") for leg in _rt_legs
+                        if isinstance(leg, dict) and leg.get("win_id") is not None
+                    ] or None
                 elif _mv_intent == "step_out":
                     # Exit intent — activate pending tracker; gate "stepping away" on exit_complete
                     _PENDING_EXIT["active"] = True
