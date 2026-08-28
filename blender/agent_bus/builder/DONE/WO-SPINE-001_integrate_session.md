@@ -41,3 +41,5 @@ Replace `compress_session()` with `integrate_session()` per the canonical contra
 **Implementation:** `runtime/reflection_faculty.py` — `integrate_session()` with significance gate. `memory/consolidation_faculty.py` — wired at session end. `memory/vault_layer.py` — `compress_session()` deprecated. `tools/truth_sync.py` — calls `integrate_session()`, not `compress_session()`.
 
 **Acceptance:** `tests/test_spine001_integrate_session.py` — 17/17 passed. Session integration runs with significance threshold; below-threshold sessions skipped; compress_session in vault_layer.py has deprecation notice; no new code imports it from vault_layer; server.py does not call compress_session.
+
+**Re-verified 2026-08-28:** MT reported 15/17 per SPINE WO Defect Reconciliation. Builder re-ran under VP-2 rule (`~/miniconda3/bin/python3 -m pytest`): **17/17 PASS**. No implementation changes needed. Discrepancy was runner/environment difference. Board 2026-08-10 ruling: tests pass = DONE.
