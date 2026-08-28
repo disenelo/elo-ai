@@ -18,7 +18,7 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 | Memory architecture | ✅ DONE | `autobiography.jsonl`, `memory_pack.json`, WO-WKG-001 DONE 2026-08-24 |
 | Significance | 🟡 SPEC'D | SP-29 SPECIFIED+RATIFIED; no WO issued; awaiting SP-29 weights (D-item) |
 | Intent / Relationship | ✅ DONE | WO-REL-001 DONE 2026-08-27: 12/12 ATs pass; relationship_faculty + intent_engine validated; result card filed to Board |
-| Creative Imagination | 🔴 NOT STARTED | No RTR entry; not in RTR-001–052; future capability |
+| Creative Imagination | ✅ DONE | WO-CREATIVE-001 DONE 2026-08-28 (commit 551c225, 4/4 PASS); WO-INNER-001 expression path DONE 2026-08-28 (commit 7c0a919, 5/5 PASS) — diverge/evaluate wired into spine LOOP-8, candidates in CognitiveState + plan + [CREATIVE SEED] injected in server.py |
 | Agency | ✅ DONE | Agency Engine Vol V Ch.10 built (card 0009); authority invariants enforced |
 | Reflection / Growth | 🔴 NOT STARTED | No WO; not in current execution queue |
 | Personality Evolution | 🔴 NOT STARTED | No WO |
@@ -96,7 +96,7 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 | Storytelling | ✅ SPEC'D+RATIFIED | SC-NEW-001; implementation pending |
 | Personality registers | 🟡 SPEC'D | CP-003 (11 planetary registers) SPEC'D+RATIFIED; not implemented |
 | Planetary architecture | ✅ SPEC'D+RATIFIED | CP-003 2026-08-24 |
-| Inner-child expression | 🟡 PARTIAL | RTR-012–015 recovered; no dedicated WO |
+| Inner-child expression | ✅ DONE | WO-INNER-001 DONE 2026-08-28 (commit 7c0a919, 5/5 PASS) — RTR-015 (Jupiter=Expansion Engine) expression path complete; [CREATIVE SEED] injected in server.py |
 | Builder expression | 🔴 NOT STARTED | RTR-020; no WO |
 | Creative output style | 🔴 NOT STARTED | No WO |
 

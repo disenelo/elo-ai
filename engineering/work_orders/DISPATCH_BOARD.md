@@ -5,6 +5,40 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-28 (Routing model divergence — WO-ROUTER-001 dispatched)
+**Authority:** Board / Lead Architect — David L3 canonical routing ruling 2026-08-28
+
+### Finding — `_route_by_tier()` IS the static provider-authority ladder
+
+David L3 ruling (`SOURCE_2026-08-28_DAVID_L3_one_brain_canonical_routing.md`): LLMs sit inside CAPABILITY. Provider selected by capability satisfaction, NOT by static priority position. The current `_TIER_PROVIDER_ORDER` + positional iteration in `backend_router.py` is the wrong model.
+
+```python
+# CURRENT (wrong model):
+_TIER_PROVIDER_ORDER = {
+    _TIER_CONVERSATIONAL: ["ollama", "groq", "cerebras", ...],  # static priority list
+    ...
+}
+# → "This is a conversational turn → try Ollama (position 0)"
+
+# REQUIRED (capability model):
+# → "Executive plan requires language_generation capability → select best available provider"
+```
+
+**FREEZE_V1_LOCK note:** `executive.py` cannot be touched. The tier (capability descriptor) is received as a parameter — unchanged. The fix is entirely inside `backend_router.py`.
+
+**WO-073 absorbed:** the Ollama-in-pinned-mode bug is the same root cause. AT-4 of WO-ROUTER-001 closes WO-073.
+
+### WO-ROUTER-001 — DISPATCHED (P1)
+- **Full spec:** `engineering/work_orders/WO-ROUTER-001_capability_driven_provider_selection.md`
+- **Queue card:** `blender/agent_bus/builder/QUEUE/WO-ROUTER-001_capability_driven_provider_selection.md`
+- **Scope:** `backend_router.py` only. Replace positional `_route_by_tier()` iteration with capability-satisfaction selection (availability + cost preference). D-1: selector. D-2: Ollama before Mock in pinned mode + `llama3.1:8b` default. D-3: capability field in routing trace.
+- **8 ATs** — see full WO. Return: `DONE/FROM_BUILDER_WO-ROUTER-001_result.md`.
+- **Active Queue updated** — WO-ROUTER-001 is now P1 ahead of WO-CREATIVE-001.
+
+*Board / Lead Architect · 2026-08-28*
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-28 (Builder session-close — mass closures + audit findings)
 **Authority:** Board / Lead Architect — Builder session-close card 2026-08-28
 
@@ -4885,5 +4919,77 @@ CA ruling 2026-08-27: "Board should now advance CE-001." CA says "L3 if required
 **WAITING EXTERNAL:**
 - MT: LIPSYNC-001, PRES-004 round-trip, CANON-XI Unity DLL, MOBILE-001
 - CA: §5 relationship spec (source dependency on RTR/CP-003/living_presence_spec material)
+
+*Board / Lead Architect · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (WO-INNER-001 DONE · §5 inner-child expression complete · Build List scan closed)
+**Authority:** Board / Lead Architect — post-compaction §14 Build List Return Rule continuation
+
+### Build List scan continuation — §8 visual brainiser + §5 inner-child expression
+
+**§8 Visual brainiser:** Confirmed Unity/Design lane. `brain_state_writer.py` (Python side) already done. `EloOneBrainPanel.cs` + `EloBrainCluster.cs` are Design seat. No Board/LA Python action outstanding.
+
+**§5 inner-child expression expression path GAP — FOUND AND CLOSED:**
+
+**Root cause identified:** WO-CREATIVE-001 (this session) wired creative_candidates into spine LOOP-8 and stored in `CognitiveState` + `CognitiveSnapshot`. But the expression path was incomplete — `runtime/spine/plan.py` (mutable CognitivePlan, used at runtime) had no `creative_candidates` field, so server.py could not inject the candidates into the system prompt.
+
+**WO-INNER-001 — ✅ DONE · commit 7c0a919 · 5/5 PASS**
+
+Authority: BUILD LIST §5 (inner-child expression, "no dedicated WO") · RTR-015 (Jupiter = Expansion Engine — see possibility space, imagination → Creative Imagination Faculty)
+
+| Deliverable | File | What |
+|---|---|---|
+| D-1 | `runtime/spine/plan.py` | `creative_candidates: tuple = field(default_factory=tuple)` added (analogous to storytelling_style WO-SC-NEW-001 pattern) |
+| D-2 | `runtime/spine/spine.py` | `plan.creative_candidates = tuple(_creative_candidates)` after LOOP-8 (propagates computed candidates to plan) |
+| D-3 | `server.py` | `[CREATIVE SEED — imagined, not asserted]` + top candidate metaphor injected into system prompt after [STORYTELLING FRAME] |
+
+**ATs: 5/5 PASS** (`tests/test_wo_inner001_creative_seed_injection.py`)
+- AT-1: plan.py has creative_candidates field, defaults to empty tuple ✅
+- AT-2: spine.py contains `plan.creative_candidates` assignment + WO-INNER-001 label ✅
+- AT-3: server.py contains [CREATIVE SEED] injection reading `_plan.creative_candidates` ✅
+- AT-4: executive.py has 0 references (FREEZE_V1_LOCK clean) ✅
+- AT-5: empty tuple is falsy (safe branch); non-empty is truthy ✅
+
+**§1 BUILD_LIST_STATUS updated:**
+- Creative Imagination: NOT STARTED → DONE (WO-CREATIVE-001 + WO-INNER-001 both done)
+- Inner-child expression: PARTIAL → DONE (RTR-015 expression path now complete)
+
+### Architecture note — two CognitivePlan classes
+`runtime.contracts.CognitivePlan` is frozen (canonical target). `runtime.spine.plan.CognitivePlan` is mutable (in-use at runtime). WO-SC-NEW-001 correctly added `storytelling_style` to plan.py; WO-INNER-001 follows the same pattern for creative_candidates. When executive.py eventually unfreezes, the migration to `runtime.contracts.CognitivePlan` will need to carry both fields.
+
+### Full Build List scan — final state post this session
+
+| Section | Board/LA status |
+|---|---|
+| §1 ONE BRAIN FOUNDATION | Creative Imagination ✅ DONE (WO-CREATIVE-001 + WO-INNER-001). Remainder: SP-29 (D-gated David) |
+| §2 INTENT RECOVERY | HIST-007–012 (David export) · Planetary Layer (SP-29 D-gated) |
+| §5 EXPRESSION | Inner-child DONE · Storytelling DONE · Relationship style CA-blocked (stub spec, full session required) · Builder expression RTR-020 no SPEC |
+| §6 CREATE | CE-001 WO pending David L3 call (Board surfaced 2026-08-28) |
+| §7–§10 | All WAITING DAVID or WAITING MT or WAITING DESIGN |
+
+**No further Board/LA-executable Python items found.** Programme stop condition confirmed per §24.
+
+### Programme state — end of continuation session 2026-08-28
+**DONE this extended session:**
+1. Routing architecture drift: FILED (Initiative 02 §11) — AWAITING DAVID L3
+2. WO-CREATIVE-001: DONE (4/4 PASS, commit 551c225)
+3. DROP loop (0001): DONE (3/3 PASS, commit aa305bf)
+4. WO-INNER-001: DONE (5/5 PASS, commit 7c0a919)
+
+**WAITING DAVID (8 items, unchanged):**
+1. ELO_SELF_INITIATION=1 (urgency: NOW)
+2. Routing Architecture — Option A/B/C ratification
+3. CE-001 file output WO — does this need L3? CA says "if required"
+4. SP-29 significance weights
+5. CCM Category C ratification
+6. §7 World Interface scope
+7. PE-037 hand design ruling
+8. HIST-007..012 ChatGPT exports
+
+**WAITING EXTERNAL (unchanged):**
+- MT: LIPSYNC-001, PRES-004 round-trip, CANON-XI Unity DLL, MOBILE-001
+- CA: §5 relationship spec (stub, requires own full session)
 
 *Board / Lead Architect · 2026-08-28*
