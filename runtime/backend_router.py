@@ -122,7 +122,56 @@ _ACTION_PRIORITY: dict[str, int] = {
 
 # ── WO-NAV-013 SP-18: Navigate action handler ────────────────────────────────
 
-def handle_navigate(exec_decision: dict, *, reachable: bool = True) -> "dict | None":
+# WO-PRES-003-PLANNER: path to live spatial snapshot (D-3 — never hardcoded)
+_ELO_SPATIAL_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "blender", "elo_spatial.json",
+)
+
+
+def _read_spatial_for_nav(_elo_spatial_path: "str | None" = None) -> "tuple":
+    """
+    WO-PRES-003-PLANNER D-3: read elo_spatial.json live each navigate call.
+
+    Returns (body_win_id: int, edges: list, jump_px: int).
+    Returns (None, [], 0) on any read or parse error — callers treat as
+    'no spatial data available' and fall through to original behaviour.
+    """
+    path = _elo_spatial_path or _ELO_SPATIAL_PATH
+    try:
+        with open(path, encoding="utf-8") as _f:
+            _data = _json.load(_f)
+        _sg        = _data.get("surface_graph", {})
+        _body      = _data.get("body_win_id")
+        _edges     = _sg.get("edges", [])
+        _jump_px   = int(_sg.get("capability_set", {}).get("jump_px", 0))
+        if _body is None:
+            return (None, [], 0)
+        return (int(_body), _edges, _jump_px)
+    except Exception:
+        return (None, [], 0)
+
+
+def _directly_reachable(body_win_id: int, goal_win_id: int, edges: list, jump_px: int) -> bool:
+    """
+    WO-PRES-003-PLANNER D-1: single-hop reachability from body to goal.
+    Mirrors SP-11 gap_px <= jump_px criterion (navigation.py).
+    """
+    src = f"win-{body_win_id}"
+    tgt = f"win-{goal_win_id}"
+    return any(
+        e.get("from") == src and e.get("to") == tgt
+        and float(e.get("gap_px", jump_px + 1)) <= jump_px
+        for e in edges
+    )
+
+
+def handle_navigate(
+    exec_decision: dict,
+    *,
+    reachable: bool = True,
+    _elo_spatial_path: "str | None" = None,
+) -> "dict | None":
     """
     SP-18 (WO-NAV-013): translate an Executive navigate decision into a
     movement intent dict that the consequence chain dispatches as move_command.
@@ -130,21 +179,28 @@ def handle_navigate(exec_decision: dict, *, reachable: bool = True) -> "dict | N
     WO-PRES-004 D-1: when reachable=False, returns a navigation_failed outcome
     dict instead of a movement intent (no route exists).
 
+    WO-PRES-003-PLANNER D-1/D-2/D-3: when goal_win_id is not directly reachable
+    via single-hop jump, prepends a wrap_bottom_to_top leg in intent["route"] so
+    the locomotion layer re-enters from screen top at the same x before jumping.
+    jump_px is read LIVE from elo_spatial.json on every call (never hardcoded).
+    If jump_px <= 0 (no jump capability), navigation_failed is returned instead.
+
     Args:
         exec_decision: Executive decision dict. Consumed keys:
             goal_win_id  — deliberate navigation target (int); absent on directional
             type         — navigate type hint ("jump_left" / "jump_right" / …)
             direction    — directional hint ("left"|"right"|"up"|"down")
         reachable: False when caller has determined no route exists for this goal.
+        _elo_spatial_path: override path for elo_spatial.json (test injection only).
 
     Returns:
-        navigation_failed outcome dict when reachable=False.
-        Movement intent dict suitable for _state_write / move_command emission,
-        or None when no actionable navigate signal is present (AT-5 case).
+        navigation_failed outcome dict when reachable=False or jump_px <= 0.
+        Movement intent dict with optional route[] when a wrap leg is needed.
+        None when no actionable navigate signal is present.
     """
     goal_win_id = exec_decision.get("goal_win_id") or exec_decision.get("navigate_goal_win_id")
 
-    # WO-PRES-004 D-1: named failure outcome when no reachable route exists
+    # WO-PRES-004 D-1: named failure outcome when caller signals no reachable route
     if not reachable:
         return {
             "outcome":     "navigation_failed",
@@ -165,6 +221,35 @@ def handle_navigate(exec_decision: dict, *, reachable: bool = True) -> "dict | N
             intent["goal_win_id"] = int(goal_win_id)
         except (TypeError, ValueError):
             pass
+
+        # WO-PRES-003-PLANNER D-1/D-2/D-3: wrap route candidate logic
+        _gid = intent.get("goal_win_id")
+        if _gid is not None:
+            try:
+                _body, _edges, _jump_px = _read_spatial_for_nav(_elo_spatial_path)
+                if _body is not None and _edges:
+                    if _jump_px <= 0:
+                        # D-4: no jump capability — unreachable even via wrap
+                        return {
+                            "outcome":     "navigation_failed",
+                            "reason":      "no_reachable_route",
+                            "goal_win_id": _gid,
+                        }
+                    if not _directly_reachable(_body, _gid, _edges, _jump_px):
+                        # D-1: not directly reachable — prepend wrap_bottom_to_top leg
+                        intent["route"] = [
+                            {
+                                "type":        "wrap_bottom_to_top",
+                                "from_win_id": _body,
+                                "to_position": "screen_top_same_x",
+                            },
+                            {
+                                "type":        "jump",
+                                "goal_win_id": _gid,
+                            },
+                        ]
+            except Exception:
+                pass  # spatial read failure → fall through, emit intent as-is
 
     if direction:
         intent["direction"] = direction
