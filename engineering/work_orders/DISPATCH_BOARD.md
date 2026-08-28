@@ -5,6 +5,57 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-28 (Post-compaction — full programme reconciliation)
+**Authority:** Board / Lead Architect — post-compaction loop per MASTER_MULTI_SEAT_OPERATING_PROTOCOL.md
+
+### WO-PRES-003-PLANNER — ✅ CLOSED 2026-08-28
+Builder delivered: commit `2afc687` · 5/5 PASS · NAV-013 regression 5/5 PASS. All 5 ATs confirmed including D-3 (live jump_px read from `capability_set`, never hardcoded). AT-1..5 results read from Builder report. Architectural close applied per Rule 4.1 (tests green + committed = DONE).
+
+### WO-CAP-001 — ✅ FORMALLY CLOSED 2026-08-28
+Implementation evidence: commit `7ec57bf` · 9/9 PASS (per Builder 2026-08-24). Board/LA IRV previously confirmed all 5 call chain links (line 453 this Board, 2026-08-27): `enrich_from_plan → record_capability_result → JSONL → recent_capability_results → LiveWorldState.capability_results → spine.py attention_in`. This is the formal implementation close resolving the recurring "Board/LA close pending" note in Builder reports. No further Builder action required on this WO.
+
+### 0057 (4-Second Rule) — ✅ SUPERSEDED 2026-08-28 per David L3 Ruling
+David L3 verbal ruling 2026-08-28 (verbatim recorded at Board lines 4050-4104): if a faculty is slow, eLo proceeds without it — faculty output is a contribution, not a gating requirement. `SELECT / ORCHESTRATE CAPABILITIES` is eLo's own step; it can skip a slow faculty or use a faster one. No separate latency policy needed. **Q-NAV-5 update:** 0057 gate NOW CLEARED. FREEZE_V1_LOCK on `executive.py` (LAW-017) is the sole remaining blocker for Q-NAV-5. Not cleared by this ruling.
+
+### Paper-trail closures (stale-DONE rows now formally acknowledged)
+| WO | Evidence | Board close |
+|---|---|---|
+| WO-CANON-XXIV §A/B/D | commit `59258be` · 14/14 PASS. §A: promotion_pass() timed+threshold-gated · §B: demotion_pass() + david_correction() retraction with provenance · §D: graph_loader.py epistemic kind fix, validate_graph_write(), check_referential_integrity() | ✅ CLOSED 2026-08-28 |
+| WO-CANON-XIII §A+§B | commits `f0e591d`+`73598b9` · 20/20 AT PASS. §C (shadow parity): requires live Unity. §D requires §C. §E requires David L3 ruling D-XIII-1. Builder result card filed: `builder/DONE/FROM_BUILDER_WO-CANON-XIII_spatial_faculty_AB_result.md` | ✅ §A+§B CLOSED 2026-08-28 · §C/D/E blocked |
+| WO-116 / WO-CANON-XXVI rows 20+22+25+26 | Wave 6 commit `3b8eb6f` · 11/11 PASS. ADAPT §7: `wall_jump confidence` 0.700→0.800 on one more success. LEARN/ADAPT/SELF-INTERPRET/MEANING all evidenced | ✅ CLOSED 2026-08-28 |
+| WO-113 (GAP — row 17) | `runtime/affordances.py` · `test_wo113_gap_assessment.py` 10/10 · `test_0014_wo113_gap_states.py` 9/0. Seven gap state constants + gap_state() function + body-size join proven | ✅ CLOSED 2026-08-28 |
+| WO-110 rows 10+11 (INFER+UNKNOWN) | `runtime/the_moment.py` tier_fact(). `test_wo110_epistemic_tiers.py` 11/11 · `test_0011_wave4_epistemic.py` 9/0. EP-2 (inferred source computed) + EP-4 (absence statable) | ✅ CLOSED 2026-08-28 |
+
+### Open Architect-lane actions (in order — not Builder, not Design)
+1. **Volume_XV/00_Metadata.md** — mark implementation DONE (WO-CANON-XV, commit `415203d`, 20/20 PASS). Architect action, doing this session.
+2. **WO-CANON-XXIV §C** — add cross-reference note in `docs/architecture/Volume_XXIV/03_Compression_and_Reasoning_Support.md` §3.4 ↔ `LEARNING_LOOP_v1.md` §3.4. Architect lane. Doing this session.
+3. **WO-FIX-112-AMBIENT** — author WO for server.py-only confidence null fix on ambient/bypass paths (no executive.py; not FREEZE_V1_LOCK gated). Dispatch to Builder. Doing this session.
+
+### Blocked — no Architect or Builder action available
+- WO-CONV-001: SPG prerequisite outstanding (Board-gated, David L3)
+- WO-CANON-XIII §C/D/E: Designer (live Unity) + David L3 ruling D-XIII-1
+- WO-CANON-XI Step 3: parity ≥ 80% + AT-1 MT verify (pending Design commit)
+- Q-NAV-5: FREEZE_V1_LOCK on executive.py (LAW-017) — sole remaining blocker
+- WO-SPG-001 steps 3–10: David L3 / Board ruling
+- 0065 Task 3/4: CA ruling pending (`FROM_CA_2026-08-28_ruling_0065_task3.md`)
+- Q-CUR-1..5 WO authoring: David L3 Presentable-v1 scope decision
+
+*Board / Lead Architect · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (BDRIFT-F7/F8 + WO-CANON-XXVIII Board close — Rule 4.1)
+**Authority:** Rule 4.1: "IN_REVIEW is not a hold — tests green + committed = DONE." Evidence read 2026-08-28.
+
+| Item | Evidence | Board |
+|---|---|---|
+| **BDRIFT-F7** (autobiography retrieval gap) | Diagnosis delivered. Follow-on: **WO-117** ✅ DONE 2026-08-21 (commit `4b8955d`, 5/5 AT, `runtime/self_interpret.py` wired). F7 gap is closed by WO-117 implementation. | ✅ **CLOSED 2026-08-28** — diagnosis complete, follow-on done |
+| **BDRIFT-F8** (lessons write-ordering gap) | Diagnosis delivered. Follow-on: **WO-CANON-XXVIII** ✅ IN_REVIEW → DONE per Rule 4.1 (commit `92cccb4`, `test_canon_xxviii_adaptive_learning.py` 16 tests, 0 fail). Domain policy gaps are honest documented residuals, not blockers. | ✅ **CLOSED 2026-08-28** — diagnosis complete, follow-on done |
+| **WO-CANON-XXVIII** (Adaptive Learning / RL Faculty) | `test_canon_xxviii_adaptive_learning.py` 16/4-gaps/0-fail. commit `92cccb4`. Green + committed = DONE per Rule 4.1. Residual gaps (domain policy classes, simulation-first, robot RD-3) are honest documented future increments. | ✅ **CLOSED 2026-08-28** per Rule 4.1 |
+| **LOOP-7** | ✅ PROVEN (card 0082, commit `0a47a83` 2026-08-21). Counterfactual: fitting lesson flips `reflect→answer`; conflicting lesson raises curiosity. | ✅ **CLOSED — no further action** |
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-28 (PRESENCE TrackList + PRES-004 Design half confirmed · SPINE reconciled · Elevation ACK)
 **Authority:** `FROM_DESIGN_2026-08-28_PRESENCE_TRACKLIST_full.md` · `FROM_DESIGN_2026-08-28_WO-PRES-004_visual_expression_SPEC.md` · `FROM_BUILDER_2026-08-28_SPINE_RECONCILIATION_RESULT.md` [all read 2026-08-28].
 
@@ -4354,3 +4405,39 @@ No new dispatches have arrived since the previous session's board close.
 **SEAT READY — NO AUTHORISED EXECUTABLE WORK. Awaiting dispatch.**
 
 *Builder · 2026-08-28 (post-compaction)*
+
+---
+
+## Board / LA — Session Record 2026-08-28 (post-compaction continuation)
+
+**Session resumed from compaction. Post-compaction scan complete at commit e8f0586. Continuing governed programme.**
+
+### Actions this session
+
+**A1 — MT dispatch: WO-CANON-XI-UNITY-ROUTE round-trip verify**
+- Filed: `blender/agent_bus/mt/FROM_ARCHITECT_2026-08-28_MT_dispatch_CANON-XI_round_trip.md`
+- AT-5 Board ruling already issued (terminal leg win_id sufficient; per-leg stream = FUTURE)
+- 5 acceptance tests (AT-D1 through AT-D5): DLL literals, CLIBUILD_OK, server.py grep, parity-fields pytest 5/5, LLM-layer exclusion
+- MT result card: `blender/agent_bus/mt/DONE/FROM_MT_WO-CANON-XI-UNITY-ROUTE_verification_result.md`
+
+**A2 — board_state.json updated (2026-08-28)**
+- SPINE-COUNT defect: CLOSED (verified 17/17, 27/27, 22/22 under VP-2)
+- F2 (LIPSYNC): status updated to FIXED (commit c6cf6e9) — MT verify pending
+- PRES-004: both halves done, MT round-trip pending
+- DM-2/DM-3: marked SATISFIED in needs_david
+- test defect trio: status updated to WO ISSUED (WO-FIX-TESTDEFECTS-BATCH)
+- WO-CANON-XI-UNITY-ROUTE: added to verified_done section (5/5 AT PASS, MT dispatched)
+- Moving items: replaced stale SPINE/F2/PRES-004 with current active items
+- Programme integrity flags: refreshed to reflect session state
+
+### Current programme state
+
+**CATEGORY: E — Queue items dispatched; Build List has open work in multiple seats (MT backlog, Builder queue, Board/LA pending closes)**
+
+- MT verification backlog: 7 items (LIPSYNC-001, AVATARBRIDGE-001, PERCEPTION-0006, EXP-001, PRES-004, PRES-004B, CANON-XI)
+- Builder queue: WO-FIX-TESTDEFECTS-BATCH, WO-PRES-003-PLANNER, WO-BOARD-002
+- Board/LA pending closes: WO-EA2-NEW-A, WO-GUARD-001, WO-MOBILE-001
+- Game seat: WO-GAME-001 no result card yet
+- CA: §5 relationship spec pending return; §6 CREATE spec pending return
+- David L3: 8 outstanding items (DM-2/DM-3 now cleared)
+

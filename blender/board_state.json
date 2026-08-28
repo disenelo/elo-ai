@@ -1,0 +1,323 @@
+{
+  "generated": "2026-08-28",
+  "authority": "Board / Lead Architect. Source: DISPATCH_BOARD.md + BUILD_LIST_STATUS_2026-08-24.md (verified 2026-08-28). Updated each session. Do not edit manually.",
+
+  "verified_done": {
+    "note": "DONE by Builder/Design AND independently verified by MT or Board/LA. These are closed.",
+    "items": [
+      {"wo": "WO-NAV-001", "description": "ACK fix + MovementOutcome", "ats": "11/11", "commit": "b70916a"},
+      {"wo": "WO-NAV-002", "description": "Autobiography rich entry + ExecutionReport", "ats": "MT VERIFIED 2026-08-27"},
+      {"wo": "WO-NAV-003", "description": "Gaze + Referent + Nav intent", "commit": "86fb000"},
+      {"wo": "WO-NAV-004", "description": "Surface graph + Y-flip + BodySchema", "commit": "3789ec6"},
+      {"wo": "WO-NAV-005", "description": "Embodiment capability safety", "commit": "f3f5ff7"},
+      {"wo": "WO-NAV-006", "description": "World-change detection + significance schema", "commit": "5257fa5"},
+      {"wo": "WO-NAV-007", "description": "Schema additions (spatial_plan + goal_win_id)", "commit": "821e711"},
+      {"wo": "WO-NAV-008", "description": "Route memory ACK wiring", "ats": "MT VERIFIED 2026-08-27"},
+      {"wo": "WO-NAV-009", "description": "body_win_id consumer + L3-NAV-3", "ats": "6/6", "commit": "3463e4e"},
+      {"wo": "WO-NAV-010", "description": "Surface bridge + candidate generation", "ats": "10/10", "commit": "4c8692b"},
+      {"wo": "WO-NAV-011", "description": "Route confidence by win_id", "ats": "7/7", "commit": "4c8692b"},
+      {"wo": "WO-NAV-012", "description": "candidate_surfaces in world_dict", "ats": "7/7", "commit": "5005aa5"},
+      {"wo": "WO-NAV-013", "description": "navigate handler + NAVIGATE_OUTCOME", "ats": "5/5", "commit": "fe89023"},
+      {"wo": "WO-SP31-SP32", "description": "Self-initiation gate (default OFF — ELO_SELF_INITIATION=1 to activate)", "ats": "13/13", "commit": "aecc67b"},
+      {"wo": "WO-SP38", "description": "Target registry fan-out", "ats": "10/10", "commit": "a666323"},
+      {"wo": "WO-WORLD-001", "description": "World/time capability + astral fix", "ats": "8/8"},
+      {"wo": "WO-CAP-001", "description": "Capability result feedback loop — Board/LA architecturally closed", "ats": "9/9", "commit": "7ec57bf"},
+      {"wo": "WO-WKG-001", "description": "WKG Phase 1 schema"},
+      {"wo": "WO-WKG-002", "description": "WKG Phase 2 corpus ingestion"},
+      {"wo": "WO-WKG-003", "description": "WKG Phase 3"},
+      {"wo": "WO-WKG-004", "description": "WKG runtime injection (retrieve_wkg() wired into server.py)", "ats": "8/8", "commit": "816594b"},
+      {"wo": "WO-REL-001", "description": "Intent + Relationship validation", "ats": "12/12", "commit": "dda98ce"},
+      {"wo": "WO-SC-NEW-001", "description": "storytelling_style field in CognitivePlan + [STORYTELLING FRAME] injection", "ats": "5/5", "commit": "8d86743"},
+      {"wo": "WO-EA2-1", "description": "company_state_writer", "ats": "6/5 + 11/11 (governance gap closed)", "commit": "5548a30"},
+      {"wo": "WO-EA2-2", "description": "CompanyDashboardPanel.cs — F9 dashboard (read-only, live data)", "ats": "11/11 CLIBUILD_OK"},
+      {"wo": "Unity-WO-B1", "description": "emit body_win_id from WriteSpatial()", "ats": "4/4 CLIBUILD_OK"},
+      {"wo": "Unity-WO-B2", "description": "goto_win HandleNav + commanded_goal_win_id reporting", "ats": "5/5 CLIBUILD_OK"},
+      {"wo": "L3-CONVERGENCE", "description": "identity_guard.py + response_ownership.py + storytelling_style in spine", "commits": "8d86743 + 4688685"},
+      {"wo": "pytest-fixes", "description": "test_0005 + test_0009 sys.exit guarded; conftest.py — 1112 tests now collect cleanly", "commits": "34246cb + 3805d3e"},
+      {"wo": "WO-SPINE-001", "description": "spine field injection 17/17 — count defect CLOSED 2026-08-28: MT runner env mismatch; under VP-2 (miniconda3) 17/17 PASS"},
+      {"wo": "WO-SPINE-002", "description": "spine field injection 27/27 — count defect CLOSED 2026-08-28: VP-2 verified 27/27 PASS"},
+      {"wo": "WO-SPINE-003", "description": "spine field injection 22/22 — count defect CLOSED 2026-08-28: VP-2 verified 22/22 PASS"},
+      {"wo": "WO-FIX-LIPSYNC-001", "description": "_pulse_lipsync text= forwarded to write_lipsync — §7 AMBIENT speech now produces SpokenText", "commit": "c6cf6e9", "ats": "MT VERIFY PENDING"},
+      {"wo": "WO-FIX-AVATARBRIDGE-001", "description": "Avatar bridge fix", "ats": "MT VERIFY PENDING"},
+      {"wo": "WO-FIX-PERCEPTION-0006", "description": "_is_truncated fix — commit 68642bf", "ats": "MT VERIFY PENDING"},
+      {"wo": "WO-PRES-004", "description": "Failed navigation outcome chain — Builder: nav_fail_ts write (commit 0c7b899); Design: EloNavExpression.cs 3 states (CLIBUILD_OK)", "ats": "BOTH HALVES DONE — MT round-trip pending"},
+      {"wo": "WO-EXP-001", "description": "storytelling_style in Meaning Object (scope verified not duplicating WO-SC-NEW-001)", "ats": "MT VERIFY PENDING"},
+      {"wo": "WO-CANON-XI-UNITY-ROUTE", "description": "unity_route + leg_win_id in DesktopBuddy.cs movement ACK — AT-5 PASS (Board ruling 2026-08-28: terminal leg win_id sufficient)", "ats": "5/5 PASS — MT round-trip dispatched 2026-08-28"}
+    ]
+  },
+
+  "pending_verification": {
+    "note": "DONE by Builder/Design — awaiting Board/LA architectural close or MT verify before programme counts them.",
+    "items": [
+      {
+        "wo": "WO-EA2-NEW-A",
+        "description": "company_state → LiveWorldState → attention_in['world_state']['company_state'] wiring",
+        "ats": "7/7 PASS",
+        "awaiting": "Board/LA architectural close — verify company_state in attention_in['world_state'] after live turn + executive.py diff empty",
+        "result_card": "blender/agent_bus/builder/DONE/FROM_BUILDER_WO-EA2-NEW-A_company_state_wiring_result.md"
+      },
+      {
+        "wo": "WO-GUARD-001",
+        "description": "Response authority guards (D-1 current-user-reality, D-2 tool provenance, D-3 contradiction)",
+        "ats": "6/6 PASS",
+        "commit": "d621ee1",
+        "awaiting": "Board/LA independent verification of production guard chain in server.py (guard inserted after identity_guard, before shadow_capture)"
+      },
+      {
+        "wo": "WO-MOBILE-001",
+        "description": "Mobile embodiment spine side (D-SPINE-1/2/3)",
+        "ats": "5/5 PASS",
+        "commit": "5d982a5",
+        "awaiting": "Board/LA + MT mobile-end verification (MT to fire mobile_foreground event through unity_events.json)"
+      },
+      {
+        "wo": "WO-BOARD-001",
+        "description": "board_state.json wired to dashboard backend",
+        "awaiting": "Board confirmation — WO filed this session; verify result card in Builder DONE",
+        "note": "BUILD_LIST_STATUS updated to DONE 2026-08-27 — verify independently"
+      },
+      {
+        "wo": "WO-PRES-003-PLANNER",
+        "description": "Route planner / wrap-leg with live jump_px from capability_set",
+        "awaiting": "Builder execution — in QUEUE; MT verify after"
+      }
+    ]
+  },
+
+  "moving": {
+    "note": "Actively in progress by seats or dispatched and awaiting return.",
+    "items": [
+      {"seat": "Builder", "item": "WO-FIX-TESTDEFECTS-BATCH — three test defects (test_wo096, test_card_0006, test_basic_loop)", "status": "QUEUED — issued 2026-08-28", "dispatch": "blender/agent_bus/builder/QUEUE/WO-FIX-TESTDEFECTS-BATCH_three_test_failures.md"},
+      {"seat": "Builder", "item": "WO-PRES-003-PLANNER route planner with live jump_px", "status": "QUEUED — dispatched 2026-08-28"},
+      {"seat": "Builder", "item": "WO-BOARD-002 Board State dashboard panel (verify WO-BOARD-001 closed first)", "status": "QUEUED"},
+      {"seat": "Design", "item": "Teleport defect", "status": "NON-BLOCKING — David L3 ruling 2026-08-27: sporadic/random, keep open, low priority"},
+      {"seat": "CA", "item": "SPEC — §5 voice/personality registers + relationship style", "status": "CA SOURCE DEPENDENCY — needs 4 source files relayed: SPEC_SC_NEW_001, SPEC_CP003, RTR_2026-08-24, living_presence_spec.txt. David to relay."},
+      {"seat": "Board/LA", "item": "SPEC_CE_001 file output capability", "status": "SPECIFIED 2026-08-27 — L3 RATIFICATION REQUIRED before WO", "file": "docs/architecture/specs/SPEC_CE_001_file_output_capability_2026-08-27.md"},
+      {"seat": "Game", "item": "WO-GAME-001 Phase 1 animation set (eLo + K-7 + Chunk)", "status": "QUEUED — no result card yet", "dispatch": "blender/agent_bus/game/QUEUE/WO-GAME-001_phase1_animation_set.md"},
+      {"seat": "MT", "item": "WO-WKG-002/003 + WO-NAV-002/008 verification batch", "status": "OVERDUE — dispatched 2026-08-24; no explicit confirmation in MT returns"},
+      {"seat": "MT", "item": "WO-FIX-LIPSYNC-001 + WO-FIX-AVATARBRIDGE-001 + WO-FIX-PERCEPTION-0006 + WO-EXP-001 + WO-PRES-004 round-trip verify", "status": "DISPATCHED — awaiting return"},
+      {"seat": "MT", "item": "WO-CANON-XI-UNITY-ROUTE round-trip verify", "status": "DISPATCHED 2026-08-28 — AT-D1 through AT-D5; result card: FROM_MT_WO-CANON-XI-UNITY-ROUTE_verification_result.md"},
+      {"seat": "Board/LA", "item": "WO-EA2-NEW-A architectural close", "status": "PENDING — verify live turn + executive.py diff"},
+      {"seat": "Board/LA", "item": "WO-GUARD-001 production guard-chain verification", "status": "PENDING — verify server.py insertion point"},
+      {"seat": "Board/LA", "item": "WO-MOBILE-001 Board/LA close", "status": "PENDING — MT mobile-end verification first"}
+    ]
+  },
+
+  "open_defects": {
+    "note": "Confirmed defects awaiting diagnosis return or fix WO.",
+    "items": [
+      {"id": "SPINE-COUNT", "description": "WO-SPINE-001/002/003 AT count discrepancy — CLOSED 2026-08-28. Root cause: MT runner env. VP-2 (miniconda3): 17/17, 27/27, 22/22 all PASS.", "owner": "Builder", "status": "CLOSED — Board ruling 2026-08-28"},
+      {"id": "F2", "description": "_pulse_lipsync never forwarded text= to write_lipsync — §7 AMBIENT speech silenced. Fix: commit c6cf6e9 (WO-FIX-LIPSYNC-001).", "owner": "Builder", "status": "FIXED — commit c6cf6e9; MT verify pending"},
+      {"id": "test_wo096", "description": "test_wo096_desktop_perception AT-2: import style mismatch (module vs function import).", "owner": "Builder", "status": "WO ISSUED — WO-FIX-TESTDEFECTS-BATCH 2026-08-28"},
+      {"id": "test_card_0006", "description": "test_card_0006_perception_world AT-3/AT-5: _is_truncated() on [PARTIAL:...] strings ending in ] not …", "owner": "Builder", "status": "WO ISSUED — WO-FIX-TESTDEFECTS-BATCH 2026-08-28"},
+      {"id": "test_basic_loop", "description": "ImportError: store_interaction no longer exported from core/memory_engine.py (removed commit 84758ea)", "owner": "Builder", "status": "WO ISSUED — WO-FIX-TESTDEFECTS-BATCH 2026-08-28"},
+      {"id": "TELEPORT", "description": "Sporadic teleport defect (WO-088 lineage)", "owner": "Design", "status": "NON-BLOCKING — David L3 ruling 2026-08-27: keep open, low priority"}
+    ]
+  },
+
+  "needs_david": {
+    "note": "L3 decisions only David can make. Each entry states what it unblocks.",
+    "items": [
+      {
+        "item": "ELO_SELF_INITIATION=1 — activate self-initiation to observe SP-31 live",
+        "detail": "WO-SP31-SP32 DONE 13/13. eLo self-initiation is built and working but behind a default-OFF flag. Changing .env to ELO_SELF_INITIATION=1 activates it. David observes next live session. No code change — env only.",
+        "urgency": "NOW",
+        "unblocks": "Observing SP-31/SP-32 in production; required before any tuning decisions"
+      },
+      {
+        "item": "DM-6 — 33 per-capability mobile scoping decisions",
+        "detail": "David confirmed in session 2026-08-27 he is handling this directly with MT.",
+        "urgency": "IN PROGRESS — David + MT",
+        "unblocks": "eLo capabilities on mobile"
+      },
+      {
+        "item": "0057 latency policy rulings",
+        "detail": "R1/R2 measurements already filed. LLM-pass gate (0065 tasks 3/4) needs David ruling: full second-LLM-pass (adds latency — quantified in R1/R2) OR rule-based gate (no added latency). 4-second rule from 0057 constrains this.",
+        "urgency": "BEFORE_0065_TASKS_3_4",
+        "unblocks": "0065 tasks 3/4 (eLo response gate + identity assertion) — CA cannot proceed without knowing which mechanism is authorised"
+      },
+      {
+        "item": "DM-2/DM-3 geometry measurements — SATISFIED 2026-08-28",
+        "detail": "SATISFIED. Design measured: jump_px = dynamic (MaxHopReachPx = EloSizeVp × Screen.height × maxHopSizes, clamped 0.10–0.40). Live session: ~282px. 81 nodes/2402 edges (DM-3). SP-25/SP-26 (WO-NAV-012b) are DM-CLEAR but still FREEZE_V1_LOCK blocked (executive.py).",
+        "urgency": "RESOLVED",
+        "unblocks": "PRES-004 WOs now unblocked; SP-25/26 still FREEZE_V1_LOCK blocked"
+      },
+      {
+        "item": "SP-29 significance weights",
+        "detail": "significance_faculty.py schema built (WO-NAV-006). SP-29 D-item: David must set the actual weights for what makes something significant to eLo. Behavioural/personality decision — not architectural.",
+        "urgency": "BEFORE_PLANETARY_WO",
+        "unblocks": "CP-003 Planetary Layer WO (§5), P8 Stability Law runtime expression"
+      },
+      {
+        "item": "CCM Category C ratification (3 gaps: storytelling style, cultural context, street language → Meaning Object)",
+        "detail": "CCM reconciliation found 3 gaps. These need L3 ratification before Board can issue integration WOs. Intent is already partially recovered — ratification just confirms inclusion in Meaning Object.",
+        "urgency": "BEFORE_CCM_INTEGRATION_WO",
+        "unblocks": "§4 CCM One Brain integration WO (Context CCM gated)"
+      },
+      {
+        "item": "§7 World Interface scope — which 2-3 sub-capabilities first?",
+        "detail": "Options: web/research, calendar, reminders, voice output, home automation, filesystem. Board cannot architecture without scope decision. CA cannot spec without scope. Entire §7 is waiting on this one decision.",
+        "urgency": "BEFORE_WORLD_INTERFACE_SPEC",
+        "unblocks": "§7 entire section — currently 0% governed"
+      },
+      {
+        "item": "PE-037 hand design ruling — 3-finger anthropomorphic (PE-011) vs mitten-claw (R&D-EXTRACT-02)",
+        "detail": "These may be the same design described differently, or two different iterations. CA cannot begin physical SPEC until resolved. All physical eLo SPEC work is blocked behind this.",
+        "urgency": "BEFORE_PHYSICAL_SPEC",
+        "unblocks": "§9 physical eLo SPEC — currently 0% beyond R&D"
+      },
+      {
+        "item": "ELO-HISTORY ChatGPT exports (HIST-007–012)",
+        "detail": "HIST-007 ('astorly aspects explained') is highest priority. Protocol: David exports → _intake/SOURCE_ELO-HISTORY_* → Board extracts HREQs → RTR cross-map. Does not block implementation.",
+        "urgency": "WHEN_READY",
+        "unblocks": "ELO-HISTORY recovery completion (RTR-001 HIST-007–012 entries)"
+      }
+    ]
+  },
+
+  "build_list": [
+    {
+      "section": 1,
+      "title": "ONE BRAIN FOUNDATION",
+      "approx_pct": 75,
+      "items": [
+        {"item": "Cognitive Core / Executive", "status": "DONE"},
+        {"item": "Runtime contracts", "status": "DONE"},
+        {"item": "Memory architecture", "status": "DONE"},
+        {"item": "Intent / Relationship", "status": "DONE — WO-REL-001 12/12 PASS 2026-08-27"},
+        {"item": "Agency", "status": "DONE"},
+        {"item": "Significance", "status": "SPEC'D — SP-29 schema built; weights D-gated (David L3)"},
+        {"item": "Verify Executive receives assembled state", "status": "DONE — MT VERIFIED"},
+        {"item": "Verify no second cognitive authority", "status": "DONE — 6/6 PASS 2026-08-27"},
+        {"item": "Creative Imagination", "status": "NOT STARTED"},
+        {"item": "Reflection / Growth", "status": "NOT STARTED"},
+        {"item": "Personality Evolution", "status": "NOT STARTED"}
+      ]
+    },
+    {
+      "section": 2,
+      "title": "eLo INTENT RECOVERY",
+      "approx_pct": 80,
+      "items": [
+        {"item": "RTR-001–052 preserved", "status": "DONE"},
+        {"item": "P8 Stability Law + P9 Leaf on Water", "status": "IN CANON"},
+        {"item": "Vessel Kernel Loop reconciliation", "status": "DONE"},
+        {"item": "Planetary Layer", "status": "SPEC'D+RATIFIED — CP-003; implementation NOT authorised (awaits SP-29 weights)"},
+        {"item": "Inner Child / Curiosity (SP-31/32/33)", "status": "DONE — WO-SP31-SP32 13/13 PASS; behind ELO_SELF_INITIATION=OFF (David L3 to activate)"},
+        {"item": "Personality / speech / relationship style", "status": "PARTIAL — storytelling_style DONE (WO-SC-NEW-001); relationship style spec is STUB — CA dispatched to write 05_relationship_faculty.md"},
+        {"item": "Storytelling style", "status": "DONE — WO-SC-NEW-001 5/5 PASS; [STORYTELLING FRAME] injected per turn"},
+        {"item": "CCM integration", "status": "RECONCILED — 19 covered, 3 gaps (Category C) gated on David L3 ratification"},
+        {"item": "WKG integration", "status": "DONE — Phase 1+2 DONE; WO-WKG-004 runtime injection DONE 8/8 PASS"},
+        {"item": "ELO-HISTORY recovery", "status": "PARTIAL — HIST-001–006 in RTR; HIST-007–012 await David ChatGPT export"},
+        {"item": "Astrology source recovery", "status": "PARTIAL — directive §8 functional; original chart outstanding"}
+      ]
+    },
+    {
+      "section": 3,
+      "title": "Q-NAV / Q-BODY / Q-MOVEMENT / Q-CUR",
+      "approx_pct": 90,
+      "items": [
+        {"item": "Navigation wave WOs (WO-NAV-001 through WO-NAV-013)", "status": "ALL DONE + MT VERIFIED"},
+        {"item": "Body schema + body_win_id consumer", "status": "DONE — WO-NAV-004 + WO-NAV-009 MT VERIFIED"},
+        {"item": "PRES-004 (failed navigation visual)", "status": "BOTH HALVES DONE — Builder nav_fail_ts (commit 0c7b899) + Design EloNavExpression.cs 3 states (CLIBUILD_OK). MT round-trip pending."},
+        {"item": "SP-25/26 route selector", "status": "DM-2/DM-3 CLEARED 2026-08-28 — but SP-25/SP-26 touch executive.py → FREEZE_V1_LOCK still blocks WO-NAV-012b"},
+        {"item": "Self-initiation (SP-31/32/33)", "status": "DONE — WO-SP31-SP32 13/13; activates on ELO_SELF_INITIATION=1"}
+      ]
+    },
+    {
+      "section": 4,
+      "title": "CCM + WKG",
+      "approx_pct": 60,
+      "items": [
+        {"item": "CCM canonical recovery", "status": "DONE"},
+        {"item": "CCM One Brain integration (19 dims)", "status": "GATED — Category B (4 dims) deferred; Category C (3 dims) needs David L3 ratification before WO"},
+        {"item": "WKG Phase 1+2 schema + corpus", "status": "DONE"},
+        {"item": "WKG runtime injection", "status": "DONE — WO-WKG-004 8/8 PASS 2026-08-27; retrieve_wkg() wired into server.py"},
+        {"item": "Significance / meaning connection", "status": "SPEC'D — SP-29 schema; weights D-gated"}
+      ]
+    },
+    {
+      "section": 5,
+      "title": "eLo EXPRESSION",
+      "approx_pct": 25,
+      "items": [
+        {"item": "Speaking style / storytelling", "status": "DONE — WO-SC-NEW-001 5/5 PASS"},
+        {"item": "Relationship style", "status": "NOT STARTED — 05_relationship_faculty.md is STUB; CA dispatched to write spec"},
+        {"item": "Personality registers (Planetary)", "status": "SPEC'D+RATIFIED — CP-003; WO blocked on SP-29 weights"},
+        {"item": "Inner-child expression", "status": "PARTIAL — RTR-012–015 recovered; no dedicated WO"},
+        {"item": "Builder / Creative expression mode", "status": "NOT STARTED"},
+        {"item": "Voice", "status": "NOT STARTED — CE-008 in R&D only"}
+      ]
+    },
+    {
+      "section": 6,
+      "title": "CREATE",
+      "approx_pct": 5,
+      "items": [
+        {"item": "CE-001–CE-008 R&D", "status": "DONE — Capability Ecosystem R&D complete 2026-08-24"},
+        {"item": "CE-001 file output (.txt/.md/.py) SPEC", "status": "CA BRIEFED — spec pending return"},
+        {"item": "CE-005 code execution", "status": "BLOCKED — requires David L3 safety ruling before SPEC"},
+        {"item": "All CREATE WOs", "status": "NOT ISSUED — awaiting CA spec return + ratification"}
+      ]
+    },
+    {
+      "section": 7,
+      "title": "WORLD INTERFACE",
+      "approx_pct": 0,
+      "items": [
+        {"item": "Scope decision — which 2-3 sub-capabilities first", "status": "WAITING DAVID L3 — entire section blocked without this"},
+        {"item": "Web/research, Calendar, Reminders, Voice, Home automation", "status": "ALL FUTURE — no WO, no spec"}
+      ]
+    },
+    {
+      "section": 8,
+      "title": "DIGITAL EMBODIMENT",
+      "approx_pct": 65,
+      "items": [
+        {"item": "Disenelo Presence (Unity running)", "status": "LIVE"},
+        {"item": "Gaze", "status": "DONE — WO-099b 7/7 PASS"},
+        {"item": "Movement / navigation", "status": "DONE — navigation wave complete+MT verified"},
+        {"item": "PRES-004 failed navigation visual", "status": "ISSUED — parallel Builder + Design track"},
+        {"item": "Company dashboard (F9)", "status": "WO-EA2-2 DONE 11/11; board_state.json wiring — WO-BOARD-001 (verify)"},
+        {"item": "Consequence reporting", "status": "DONE — SP-1+SP-2 ACK fix MT verified"},
+        {"item": "Visual brainiser", "status": "SPEC'D in PE register — not yet built"},
+        {"item": "Teleport defect", "status": "NON-BLOCKING — David L3 ruling 2026-08-27"}
+      ]
+    },
+    {
+      "section": 9,
+      "title": "PHYSICAL eLo",
+      "approx_pct": 10,
+      "items": [
+        {"item": "R&D (TPU/magnetic/ABENICS/pneumatics/Pi)", "status": "DONE — PE-001–PE-041 in register"},
+        {"item": "CA crosscheck", "status": "DONE — findings filed; HOLD PENDING CODE VERIFICATION"},
+        {"item": "L3 SPEC", "status": "BLOCKED — PE-037 hand ruling required (3-finger vs mitten-claw) + RD-4/RD-6 gates"},
+        {"item": "All hardware items", "status": "NOT STARTED — awaits L3 SPEC"}
+      ]
+    },
+    {
+      "section": 10,
+      "title": "DISENELO ECOSYSTEM",
+      "approx_pct": 20,
+      "items": [
+        {"item": "Disenelo Presence UI", "status": "LIVE — Wave 1 in progress"},
+        {"item": "Disenelo Mobile (MT)", "status": "IN PROGRESS — spine side done; mobile end gated on DM-6"},
+        {"item": "Company dashboard", "status": "F9 LIVE (WO-EA2-2) — board_state panel pending WO-BOARD-001/002"},
+        {"item": "Game (eLo Planet)", "status": "WO-GAME-001 issued — Phase 1 animations in queue"},
+        {"item": "Commercial Track A (300 signatures → Kickstarter)", "status": "STARTS SEPTEMBER — in-person intern; MK-2 weekly loop; independent of engineering track"},
+        {"item": "Creative / Brand / Social", "status": "NOT ASSIGNED — parallel track, does not wait for engineering"},
+        {"item": "Website, Voice, Alexa", "status": "FUTURE"}
+      ]
+    }
+  ],
+
+  "programme_integrity_flags": [
+    "WO-NAV-002/008 + WO-WKG-002/003 MT verify batch — dispatched 2026-08-24, overdue; no explicit confirmation in any MT return",
+    "WO-FIX-TESTDEFECTS-BATCH — test defects now have WO (issued 2026-08-28); awaiting Builder execution",
+    "0065 tasks 3/4 — reactivated by L3 2026-08-27; CA + Board scoping required; blocked on 0057 latency ruling",
+    "05_relationship_faculty.md — STUB; CA dispatched but spec not yet returned; §5 + §2 gated",
+    "MT verification backlog — 7 items pending return (LIPSYNC-001, AVATARBRIDGE-001, PERCEPTION-0006, EXP-001, PRES-004, PRES-004B, CANON-XI-UNITY-ROUTE)",
+    "SP-25/SP-26 (WO-NAV-012b) — DM-2/DM-3 gate cleared but FREEZE_V1_LOCK on executive.py still blocks; freeze lift requires David L3 + citing L3-2 unfreeze ruling",
+    "SPINE-COUNT defect — CLOSED 2026-08-28 (VP-2 runner rule; all three WOs 17/17, 27/27, 22/22)"
+  ]
+}
