@@ -4309,3 +4309,48 @@ WO-116/XXVI rows 20/22/25/26 ✅ · WO-CANON-XIII §A+§B ✅ · WO-112 partial 
 **SEAT READY — NO AUTHORISED EXECUTABLE WORK. All executable items exhausted.**
 
 *Builder · 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (Post-compaction scan — seat status confirmed)
+
+### Scan scope
+
+Full QUEUE/ directory re-scanned after context compaction. All items verified against DONE/ result cards and git log.
+
+### Confirmation
+
+Every item in `builder/QUEUE/` with a Builder seat designation now has a result card in `builder/DONE/`:
+
+| WO | Commit | Status |
+|---|---|---|
+| WO-PRES-003-PLANNER | 2afc687 | ✅ DONE — 5/5 PASS + NAV-013 regression 5/5 |
+| WO-PRES-004 | 84aebe1 | ✅ DONE — 10/10 PASS |
+| WO-PRES-004B | 0c7b899 | ✅ DONE — 2/2 PASS |
+| WO-GUARD-001 | (in DONE card) | ✅ DONE |
+| WO-EA2-NEW-A | (in DONE card) | ✅ DONE |
+| WO-MOBILE-001 | (in DONE card) | ✅ DONE |
+| WO-SP31-SP32 | (in DONE card) | ✅ DONE |
+| WO-EXP-001 | (in DONE card) | ✅ DONE |
+| WO-BOARD-001 | (in DONE card) | ✅ DONE |
+| WO-NAV-009 through NAV-013 | (in DONE cards) | ✅ DONE |
+
+Most recent Architect dispatch: `FROM_ARCHITECT_2026-08-28_ACTIVE_QUEUE_NOW.md` (06:26) — sole active item was WO-PRES-003-PLANNER, which is done (2afc687, 06:26 → filed 791079b at 05:39, board updated in c46cada).
+
+No new dispatches have arrived since the previous session's board close.
+
+**Blockers unchanged — all require external input before Builder can proceed:**
+
+| Blocker | Needs |
+|---|---|
+| WO-112 `alternatives_rejected` | Unfreeze of executive.py (FREEZE_V1_LOCK) |
+| 0065 Tasks 3/4 | CA ruling: `FROM_CA_2026-08-28_ruling_0065_task3.md` |
+| WO-CANON-XIII §E | David L3 ruling D-XIII-1 |
+| Q-NAV-5 / Row 19 consuming side | FREEZE_V1_LOCK (executive.py) |
+| WO-SPG-001 steps 3–10 | David L3 / Board ruling (2026-08-21 hold) |
+| WO-CANON-XIII §C | Designer seat + live Unity session |
+| WO-CONV-001 | Board gate — SPG prerequisite |
+
+**SEAT READY — NO AUTHORISED EXECUTABLE WORK. Awaiting dispatch.**
+
+*Builder · 2026-08-28 (post-compaction)*
