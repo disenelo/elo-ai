@@ -5,6 +5,29 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-28 (Design + Game outbox reconciliation · WO-EA2-2 gate collapsed · DM-2/DM-3 SATISFIED · WO-CANON-XI-STEP2 authored)
+**Authority:** Board — outbox reconciliation + next governed consequences.
+
+**Design returns (2026-08-28):**
+- DM-2/DM-3: ✅ SATISFIED — `capability_set.jump_px` live in elo_spatial.json (formula: `clamp(EloSizeVp × 3, 0.10, 0.40) × 1440`; at session size ≈ 282 px). Surface graph: 71 nodes, 1848 edges with gap_px. Verbatim: `docs/architecture/_intake/SOURCE_2026-08-28_Design_DM2_DM3_measurements.md`. **Builder flag:** read jump_px LIVE each turn — not 576 (halved after maxHopSizes 6→3).
+- WO-PRES-004 Design half: ✅ built (EloNavExpression.cs, 3 failure states). PENDING_MT. Needs Builder half (queued post defect chain) for live round-trip verify.
+- WO-BOARD-002 Design half: ✅ built (CompanyDashboardPanel.cs Board State section). PENDING_MT. Board ruling: AT-3 PASSES on open_defects render — no days field required. MT dispatch filed: `blender/agent_bus/mt/FROM_ARCHITECT_2026-08-28_MT_dispatch_BOARD002.md`.
+- WO-EA2-2 (Company Dashboard Unity side): ✅ already built by Design (surfaced from Presence tracklist). Gate collapsed — no Board dispatch to Design required. Added to MT next batch.
+- Presence Tracklist: full governed view of §8 (Digital Embodiment) now on Board. 13 since-Jul-25 items recorded (DONE or PENDING_MT). §E locked decisions are Board-governed constraints. Verbatim: `docs/architecture/_intake/SOURCE_2026-08-28_Design_Presence_Tracklist.md`.
+
+**Game returns (2026-08-28):**
+- WO-GAME-001: 13 runs, all exit_code=1. Structural block — Unity MCP bridge not recovering. QUEUED unchanged. Git HEAD: `8f6e7ec`.
+- GM-2b: root cause found + fix landed (code). Play-UNVERIFIED (bridge down). No Board gate change.
+- eLo-Planet tracker reconciled through 2026-08-21: moonwalk fix (93a323e), DayNightCycle events (6425eaf), vehicle seat offsets (527e9dd). §7 stale backlog cleared.
+
+**WO-CANON-XI-STEP2 authored (2026-08-28):** Root cause of XI-AD-2 permanent RED: `remember_route()` has no `brain_route`/`unity_route` params — parity test can never pass. Fix: add two optional params + write to JSONL. WO: `engineering/work_orders/WO-CANON-XI-STEP2-route-parity.md`. QUEUED — dispatch after WO-FIX-PERCEPTION-0006 result card. Non-scope discovery: `server.py` ACK handler (~line 3345) must also pass these fields (separate follow-on WO).
+
+**Builder sequence (full):** WO-FIX-LIPSYNC-001 → WO-FIX-AVATARBRIDGE-001 → WO-FIX-PERCEPTION-0006 → WO-PRES-004 Builder half → WO-CANON-XI-STEP2 → CANON-XI server.py ACK wiring
+
+**MT next batch:** WO-BOARD-002 + WO-EA2-2 (alongside WO-NAV-013 + WO-EA2-1)
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-28 (MT dispatched — WO-NAV-013 + WO-EA2-1 verification)
 **Authority:** Board — next governed consequence per programme focus.
 
@@ -182,7 +205,7 @@ Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-REL-001_intent_rela
 
 **BLOCKED — unchanged:**
 - WO-NAV-013 close: MT verification gate
-- PRES-004 WO: WO-NAV-013 MT verify + DM-2/DM-3
+- PRES-004 WO: WO-NAV-013 MT verify (~~DM-2/DM-3 SATISFIED 2026-08-28~~)
 - 05b/WO-112: FREEZE_V1_LOCK (executive.py)
 
 **CLOSED 2026-08-28 (removed from blocked list):**
@@ -213,6 +236,8 @@ Tasks 1/2 ✅ DONE. Task 3 (eLo response gate — execution owns the language) a
 
 **CA action required:** Audit D-1 through D-6 against canon (CANON-I, CANON-VII, Vol VII executive, 0065 v1 boundary). Determine whether task 3 gate is LLM-based (blocked by 0057) or rule-based (unblocked). Issue governed WOs.
 
+**0065 Task 3 CA brief filed (2026-08-28):** `blender/agent_bus/blender/FROM_BOARD_2026-08-28_CA_brief_0065_task3_spine_execution.md`. Spine now established (WO-SPINE-001/002/003 DONE 66/66). CA ruling requested: is "route reply through spine execution path" rule-based (WO issuable now) or LLM-based (blocked by 0057). CA return: `blender/agent_bus/blender/FROM_CA_2026-08-28_ruling_0065_task3.md`.
+
 ---
 
 ## BOARD STATE UPDATE — 2026-08-27 (Builder sweep COMPLETE · all authorised WOs done · gates documented)
@@ -231,14 +256,14 @@ WO-NAV-001 · WO-NAV-002 · WO-NAV-003 · WO-NAV-004 · WO-NAV-005 · WO-NAV-006
 | Item | Gate | Seat |
 |---|---|---|
 | WO-EA2-1 close | MT verification | MT |
-| WO-EA2-2 (Presence panel) | WO-EA2-1 MT verify → Board dispatch | MT → Board → Design |
+| ~~WO-EA2-2 (Presence panel) — Board dispatch to Design~~ | ✅ GATE COLLAPSED 2026-08-28 — Design already built (surfaced from Design tracklist: CompanyDashboardPanel.cs ✅ show + governed approve + toggle) | MT verify added to next batch |
 | WO-NAV-013 close | MT verification | MT |
-| PRES-004 WO | WO-NAV-013 MT verify AND DM-2/DM-3 | MT + Design |
+| PRES-004 WO | WO-NAV-013 MT verify (~~DM-2/DM-3 SATISFIED 2026-08-28~~) | MT |
 | ~~WO-CAP-001 architectural close~~ | ✅ CLOSED 2026-08-27 — Board/LA IRV confirmed all 5 call chain links (`enrich_from_plan` → `record_capability_result` → JSONL → `recent_capability_results` → `LiveWorldState.capability_results` → `spine.py attention_in`) | — |
-| SP-25/SP-26 (WO-NAV-012b) | DM-2/DM-3 geometry measurements | Design/MT |
+| SP-25/SP-26 (WO-NAV-012b) | ~~DM-2/DM-3 SATISFIED 2026-08-28~~ — Builder: read jump_px LIVE from capability_set (do not hardcode 576) | Builder flag |
 | 0057 (4-second rule) | David L3 latency policy rulings | David L3 |
-| WO-CANON-XI parity gate | Live Unity move data (brain_route + unity_route) | Design → live run |
-| 0081 parity step 2 | Live Unity sessions with current code | — |
+| WO-CANON-XI parity gate step 2 | ~~route_memory lacks brain_route/unity_route fields~~ — WO-CANON-XI-STEP2 authored 2026-08-28, QUEUED after FIX-PERCEPTION-0006 | Builder (queued) |
+| 0081 parity step 3 | Remove Unity local selection — BLOCKED on step 2 parity prove ≥ 80% | Builder (after step 2) |
 | 05b/WO-112 | FREEZE_V1_LOCK (executive.py) | David L3 unfreeze |
 | ~~WO-EA2-NEW-A architectural close~~ | ✅ CLOSED 2026-08-28 | — |
 | Gap B (company.* intents) | WO-EA2-2 scope (covers partial) | Board → Design/Builder |
@@ -250,7 +275,7 @@ WO-NAV-001 · WO-NAV-002 · WO-NAV-003 · WO-NAV-004 · WO-NAV-005 · WO-NAV-006
 **David L3 actions needed to unblock Builder:**
 1. `ELO_SELF_INITIATION=1` — activate SP-31 self-initiation to observe live
 2. 0057 latency policy rulings — with R1/R2 measurements already filed
-3. DM-2/DM-3 geometry measurements (or authorise Design to provide them)
+3. ~~DM-2/DM-3 geometry measurements~~ — ✅ SATISFIED 2026-08-28 (Design supplied; live in `capability_set.jump_px` + `surface_graph`)
 4. SP-29 weight decisions (D-gate) — unblocks CP-003 Planetary Layer WO
 5. New WO dispatch for NEW-A (company_state → cognitive spine wiring)
 6. ELO-HISTORY ChatGPT exports (HIST-007–012)
@@ -3645,6 +3670,41 @@ NAV-013 regression: `test_wo_nav013_navigate_handler.py` still 5/5 PASS.
 | 0057 | ⏸ HELD | David L3 latency policy ruling |
 | F2 voice fix | 🔴 NO WO | Board must issue WO |
 | avatar_bridge fix | 🔴 NO WO | Board must issue WO |
+
+**Builder queue: SEAT READY — NO AUTHORISED EXECUTABLE WORK**
+
+*Builder · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (Session 3 — WO-EXP-001 re-verification + full queue audit)
+**Authority:** Builder execution · Enforcement loop
+
+### WO-EXP-001 — ✅ 5/5 PASS (re-verification)
+
+`storytelling_style: str | None = None` was shipped 2026-08-25 (WO-SC-NEW-001, commit `8d86743`). WO-EXP-001 (issued 2026-08-27) is a re-validation of the same implementation. All 5 ATs pass against the live codebase. Result card filed: `builder/DONE/FROM_BUILDER_WO-EXP-001_storytelling_style_result.md`.
+
+### Unity-WO-B1 — ✅ ALREADY DONE (Design 2026-08-24, Board accepted 2026-08-27)
+
+Board Acceptance doc `BOARD_ACCEPTANCE_WO-NAV-013_Unity-WO-B1_B2_2026-08-27.md` confirms `body_win_id` is already emitting from `DesktopBuddy.WriteSpatial()`. No Builder action required.
+
+### Full queue audit — all items accounted
+
+| QUEUE item | Status |
+|---|---|
+| 0081/WO-CANON-XI §A/§D | 🔴 BLOCKED — parity gate open (live Unity moves needed for XI-AD-2) |
+| 05b/WO-112 CHOOSE | 🔴 BLOCKED — FREEZE_V1_LOCK on executive.py decision logic |
+| Unity-WO-B1 | ✅ DONE — Design completed 2026-08-24, Board accepted 2026-08-27 |
+| WO-BOARD-001 | ✅ DONE — FROM_BUILDER result card in DONE/ |
+| WO-CAP-001 | ✅ DONE — 9/9 PASS 2026-08-24, result in WO file |
+| WO-CONV-001 | ⏸ HELD — Board-gated; SPG prerequisite outstanding; do not self-close |
+| WO-EA2-NEW-A | ✅ DONE — 7/7 PASS 2026-08-27, result card in DONE/ |
+| WO-EXP-001 | ✅ DONE — 5/5 PASS re-verified 2026-08-28 |
+| WO-GUARD-001 | ✅ DONE — FROM_BUILDER result card in DONE/ |
+| WO-MOBILE-001 | ✅ DONE — FROM_BUILDER result card in DONE/ |
+| WO-NAV-009 | ✅ DONE — FROM_BUILDER result card in DONE/ |
+| WO-PRES-004 | ✅ DONE — 10/10 PASS 2026-08-28, awaiting MT verify |
+| WO-SP31-SP32 | ✅ DONE — FROM_BUILDER result card in DONE/ |
 
 **Builder queue: SEAT READY — NO AUTHORISED EXECUTABLE WORK**
 
