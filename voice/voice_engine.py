@@ -152,12 +152,12 @@ def _build_frame(phoneme: str) -> dict[str, float]:
     return frame
 
 
-def _pulse_lipsync(phonemes: list[tuple[str, float]], stop: threading.Event) -> None:
+def _pulse_lipsync(phonemes: list[tuple[str, float]], stop: threading.Event, text: str = "") -> None:
     """Drive mouth shapes for the duration of the phoneme sequence."""
     for phoneme, duration in phonemes:
         if stop.is_set():
             break
-        write_lipsync(_build_frame(phoneme), active=True)
+        write_lipsync(_build_frame(phoneme), active=True, text=text)
         time.sleep(duration)
 
 
@@ -209,7 +209,7 @@ def _play_openai(text: str, stop: threading.Event) -> bool:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-        _pulse_lipsync(phonemes, stop)
+        _pulse_lipsync(phonemes, stop, text=text)
 
         if stop.is_set():
             proc.kill()              # WO-019: immediately cancel afplay when interrupted
@@ -337,7 +337,7 @@ def _play_elevenlabs(text: str, stop: threading.Event) -> bool:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-        _pulse_lipsync(phonemes, stop)
+        _pulse_lipsync(phonemes, stop, text=text)
 
         if stop.is_set():
             proc.kill()
@@ -368,7 +368,7 @@ def _play_say(text: str, stop: threading.Event) -> None:
     except FileNotFoundError:
         return
 
-    _pulse_lipsync(phonemes, stop)
+    _pulse_lipsync(phonemes, stop, text=text)
 
     try:
         proc.wait(timeout=30.0)
