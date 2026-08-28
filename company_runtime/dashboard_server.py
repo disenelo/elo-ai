@@ -81,8 +81,8 @@ class Handler(BaseHTTPRequestHandler):
             bs = _read_board_state()
             payload = {
                 "board_state": bs,
-                "overdue_count": len(bs.get("overdue", [])),   # D-3
-                "needs_david_count": len(bs.get("needs_david", [])),  # D-4
+                "overdue_count": len(bs.get("open_defects", {}).get("items", [])),   # D-3: open_defects.items
+                "needs_david_count": len(bs.get("needs_david", {}).get("items", [])),  # D-4: needs_david.items
             }
             return self._send(200, json.dumps(payload))
         return self._send(404, "not found", "text/plain")

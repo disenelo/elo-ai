@@ -72,18 +72,23 @@ def test_moving_array_readable_and_nonempty():
     """AT-3: moving array readable and contains at least one item when file is present."""
     bs = _get_read_board_state(_REAL_BOARD_STATE)
     assert "moving" in bs, "AT-3: board_state must contain 'moving' key"
-    assert isinstance(bs["moving"], list), (
-        f"AT-3: board_state['moving'] must be a list; got {type(bs['moving'])}"
+    # moving may be a plain list or a dict with "items" key (schema evolution)
+    moving = bs["moving"]
+    moving_items = moving.get("items", moving) if isinstance(moving, dict) else moving
+    assert isinstance(moving_items, list), (
+        f"AT-3: board_state['moving'] items must be a list; got {type(moving_items)}"
     )
-    assert len(bs["moving"]) >= 1, (
-        f"AT-3: board_state['moving'] must contain at least one item; got {bs['moving']}"
+    assert len(moving_items) >= 1, (
+        f"AT-3: board_state['moving'] must contain at least one item; got {moving_items}"
     )
 
 
 def test_overdue_count_is_integer():
     """AT-4: overdue count returned correctly as integer."""
     bs = _get_read_board_state(_REAL_BOARD_STATE)
-    overdue_count = len(bs.get("overdue", []))
+    # open_defects replaced overdue; may be dict with "items" or plain list
+    od = bs.get("open_defects", bs.get("overdue", []))
+    overdue_count = len(od.get("items", od) if isinstance(od, dict) else od)
     assert isinstance(overdue_count, int), (
         f"AT-4: overdue count must be an int; got {type(overdue_count)}"
     )
@@ -94,7 +99,8 @@ def test_overdue_count_is_integer():
 def test_needs_david_count_is_integer():
     """AT-5: needs_david count returned correctly as integer."""
     bs = _get_read_board_state(_REAL_BOARD_STATE)
-    nd_count = len(bs.get("needs_david", []))
+    nd = bs.get("needs_david", [])
+    nd_count = len(nd.get("items", nd) if isinstance(nd, dict) else nd)
     assert isinstance(nd_count, int), (
         f"AT-5: needs_david count must be an int; got {type(nd_count)}"
     )
