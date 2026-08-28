@@ -38,8 +38,8 @@
       {"wo": "WO-SPINE-002", "description": "spine field injection 27/27 — count defect CLOSED 2026-08-28: VP-2 verified 27/27 PASS"},
       {"wo": "WO-SPINE-003", "description": "spine field injection 22/22 — count defect CLOSED 2026-08-28: VP-2 verified 22/22 PASS"},
       {"wo": "WO-FIX-LIPSYNC-001", "description": "_pulse_lipsync text= forwarded to write_lipsync — §7 AMBIENT speech now produces SpokenText", "commit": "c6cf6e9", "ats": "MT VERIFY PENDING"},
-      {"wo": "WO-FIX-AVATARBRIDGE-001", "description": "Avatar bridge fix", "ats": "MT VERIFY PENDING"},
-      {"wo": "WO-FIX-PERCEPTION-0006", "description": "_is_truncated fix — commit 68642bf", "ats": "MT VERIFY PENDING"},
+      {"wo": "WO-FIX-AVATARBRIDGE-001", "description": "emotion_engine from_state + orb_intensity added. commit 811982f. Board/LA live-verified 8/8 PASS 2026-08-28.", "ats": "8/8 PASS + Board/LA CLOSED"},
+      {"wo": "WO-FIX-PERCEPTION-0006", "description": "_any_truncated raw-input fix in perception_faculty.py (~325). commit 68642bf. Board/LA live-verified 5/5 PASS 2026-08-28. Also resolves test_card_0006 AT-3/AT-5 (verified 7/7 PASS).", "ats": "5/5 PASS + Board/LA CLOSED"},
       {"wo": "WO-PRES-004", "description": "Failed navigation outcome chain — Builder: nav_fail_ts write (commit 0c7b899); Design: EloNavExpression.cs 3 states (CLIBUILD_OK)", "ats": "BOTH HALVES DONE — MT round-trip pending"},
       {"wo": "WO-EXP-001", "description": "storytelling_style in Meaning Object (scope verified not duplicating WO-SC-NEW-001)", "ats": "MT VERIFY PENDING"},
       {"wo": "WO-CANON-XI-UNITY-ROUTE", "description": "unity_route + leg_win_id in DesktopBuddy.cs movement ACK — AT-5 PASS (Board ruling 2026-08-28: terminal leg win_id sufficient)", "ats": "5/5 PASS — MT round-trip dispatched 2026-08-28"},
@@ -79,7 +79,7 @@
       {"seat": "Board/LA", "item": "SPEC_CE_001 file output capability", "status": "SPECIFIED 2026-08-27 — L3 RATIFICATION REQUIRED before WO", "file": "docs/architecture/specs/SPEC_CE_001_file_output_capability_2026-08-27.md"},
       {"seat": "Game", "item": "WO-GAME-001 Phase 1 animation set (eLo + K-7 + Chunk)", "status": "QUEUED — no result card yet", "dispatch": "blender/agent_bus/game/QUEUE/WO-GAME-001_phase1_animation_set.md"},
       {"seat": "MT", "item": "WO-WKG-002/003 + WO-NAV-002/008 verification batch", "status": "OVERDUE — dispatched 2026-08-24; no explicit confirmation in MT returns"},
-      {"seat": "MT", "item": "WO-FIX-LIPSYNC-001 + WO-FIX-AVATARBRIDGE-001 + WO-FIX-PERCEPTION-0006 + WO-PRES-004 round-trip verify", "status": "DISPATCHED — awaiting return"},
+      {"seat": "MT", "item": "WO-FIX-LIPSYNC-001 + WO-PRES-004 round-trip verify", "status": "DISPATCHED — awaiting return"},
       {"seat": "MT", "item": "WO-CANON-XI-UNITY-ROUTE round-trip verify", "status": "DISPATCHED 2026-08-28 — AT-D1 through AT-D5; result card: FROM_MT_WO-CANON-XI-UNITY-ROUTE_verification_result.md"},
       {"seat": "Board/LA", "item": "WO-EA2-NEW-A architectural close", "status": "CLOSED 2026-08-28 — moved to verified_done"},
       {"seat": "Board/LA", "item": "WO-GUARD-001 production guard-chain verification", "status": "CLOSED 2026-08-28 — moved to verified_done"},
@@ -94,7 +94,7 @@
       {"id": "SPINE-COUNT", "description": "WO-SPINE-001/002/003 AT count discrepancy — CLOSED 2026-08-28. Root cause: MT runner env. VP-2 (miniconda3): 17/17, 27/27, 22/22 all PASS.", "owner": "Builder", "status": "CLOSED — Board ruling 2026-08-28"},
       {"id": "F2", "description": "_pulse_lipsync never forwarded text= to write_lipsync — §7 AMBIENT speech silenced. Fix: commit c6cf6e9 (WO-FIX-LIPSYNC-001).", "owner": "Builder", "status": "FIXED — commit c6cf6e9; MT verify pending"},
       {"id": "test_wo096", "description": "test_wo096_desktop_perception AT-2: import style mismatch (module vs function import).", "owner": "Builder", "status": "WO ISSUED — WO-FIX-TESTDEFECTS-BATCH 2026-08-28"},
-      {"id": "test_card_0006", "description": "test_card_0006_perception_world AT-3/AT-5: _is_truncated() on [PARTIAL:...] strings ending in ] not …", "owner": "Builder", "status": "WO ISSUED — WO-FIX-TESTDEFECTS-BATCH 2026-08-28"},
+      {"id": "test_card_0006", "description": "test_card_0006_perception_world AT-3/AT-5: _is_truncated() fix. ALREADY RESOLVED by WO-FIX-PERCEPTION-0006 (commit 68642bf). Board verified 7/7 PASS 2026-08-28.", "owner": "Builder", "status": "RESOLVED — WO-FIX-PERCEPTION-0006 commit 68642bf"},
       {"id": "test_basic_loop", "description": "ImportError: store_interaction no longer exported from core/memory_engine.py (removed commit 84758ea)", "owner": "Builder", "status": "WO ISSUED — WO-FIX-TESTDEFECTS-BATCH 2026-08-28"},
       {"id": "TELEPORT", "description": "Sporadic teleport defect (WO-088 lineage)", "owner": "Design", "status": "NON-BLOCKING — David L3 ruling 2026-08-27: keep open, low priority"}
     ]
