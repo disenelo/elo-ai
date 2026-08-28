@@ -44,7 +44,8 @@
       {"wo": "WO-EXP-001", "description": "storytelling_style in Meaning Object (scope verified not duplicating WO-SC-NEW-001)", "ats": "MT VERIFY PENDING"},
       {"wo": "WO-CANON-XI-UNITY-ROUTE", "description": "unity_route + leg_win_id in DesktopBuddy.cs movement ACK — AT-5 PASS (Board ruling 2026-08-28: terminal leg win_id sufficient)", "ats": "5/5 PASS — MT round-trip dispatched 2026-08-28"},
       {"wo": "WO-EA2-NEW-A", "description": "company_state → spine._attention_in['world_state']['company_state'] → executive.decide(). executive.py: 0 references (FREEZE_V1_LOCK clean). Board/LA source-verified 2026-08-28.", "ats": "7/7 PASS + Board/LA CLOSED"},
-      {"wo": "WO-GUARD-001", "description": "D-1/D-2/D-3 response authority guards: identity_guard → guards → shadow_capture. Order confirmed server.py:4839/4844/4865. commit d621ee1. Board/LA source-verified 2026-08-28.", "ats": "6/6 PASS + Board/LA CLOSED"}
+      {"wo": "WO-GUARD-001", "description": "D-1/D-2/D-3 response authority guards: identity_guard → guards → shadow_capture. Order confirmed server.py:4839/4844/4865. commit d621ee1. Board/LA source-verified 2026-08-28.", "ats": "6/6 PASS + Board/LA CLOSED"},
+      {"wo": "WO-BOARD-001", "description": "board_state.json → dashboard backend: _read_board_state() + GET /board_state.json route in dashboard_server.py. commit 23ea717. Badge count gap → WO-BOARD-002 scope. Board/LA closed 2026-08-28.", "ats": "5/5 PASS + Board/LA CLOSED"}
     ]
   },
 
@@ -57,12 +58,6 @@
         "ats": "5/5 PASS",
         "commit": "5d982a5",
         "awaiting": "Board/LA + MT mobile-end verification (MT to fire mobile_foreground event through unity_events.json)"
-      },
-      {
-        "wo": "WO-BOARD-001",
-        "description": "board_state.json wired to dashboard backend",
-        "awaiting": "Board confirmation — WO filed this session; verify result card in Builder DONE",
-        "note": "BUILD_LIST_STATUS updated to DONE 2026-08-27 — verify independently"
       },
       {
         "wo": "WO-PRES-003-PLANNER",
