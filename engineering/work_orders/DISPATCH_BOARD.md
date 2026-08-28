@@ -3612,3 +3612,40 @@ All governed items checked this session:
 | avatar_bridge fix | 🔴 NO WO | Board must issue WO |
 
 *Builder · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (WO-PRES-004 DONE)
+**Authority:** Builder execution · WO-PRES-004 gate: WO-NAV-013 MT-VERIFIED ✅ (cleared 2026-08-27 in WO header)
+
+### WO-PRES-004 — ✅ DONE (10/10 ATs PASS)
+
+**Commit:** `84aebe1`  
+**Tests:** `tests/test_wo_pres004_failed_navigation.py` — 10/10 PASS  
+**Result card:** `builder/DONE/FROM_BUILDER_WO-PRES-004_result.md`
+
+| Deliverable | Location | Status |
+|---|---|---|
+| D-1 `navigation_failed` outcome | `runtime/backend_router.py:125` `handle_navigate(reachable=False)` | ✅ |
+| D-2 Executive trigger `[NAVIGATION_FAILED]` | `server.py:3387` distinct block + `[EVALUATE_BEAT]` | ✅ |
+| D-3 One-shot, no loop | `server.py` `_PENDING_MOVE["active"]=False` in FAILED branch | ✅ |
+| D-4 CAP-001 chain | `server.py` `record_capability_result(navigate, succeeded=False)` | ✅ |
+
+Constraints: `executive.py` untouched, additive to success path, no animation definition.  
+NAV-013 regression: `test_wo_nav013_navigate_handler.py` still 5/5 PASS.
+
+### Queue scan — post PRES-004
+
+| Item | Status | Blocker |
+|---|---|---|
+| WO-PRES-004 | ✅ JUST DONE | Awaiting Board/MT verify |
+| WO-CONV-001 | ⏸ HELD | Board-gated; SPG pre-requisite outstanding; do not self-close |
+| WO-CANON-XI parity (XI-AD-2) | ⏸ HELD | Design must run live Unity moves to emit brain_route/unity_route |
+| WO-112 (05b) | 🔴 BLOCKED | FREEZE_V1_LOCK |
+| 0057 | ⏸ HELD | David L3 latency policy ruling |
+| F2 voice fix | 🔴 NO WO | Board must issue WO |
+| avatar_bridge fix | 🔴 NO WO | Board must issue WO |
+
+**Builder queue: SEAT READY — NO AUTHORISED EXECUTABLE WORK**
+
+*Builder · 2026-08-28*
