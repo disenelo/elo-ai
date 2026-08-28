@@ -110,3 +110,70 @@ def get_tone_modifier(user_input: str) -> dict:
         "pacing":  _PACING_MAP.get(emotion, _PACING_MAP["neutral"]),
         "warmth":  _WARMTH_MAP.get(emotion, _WARMTH_MAP["neutral"]),
     }
+
+
+# ── avatar expression signals ──────────────────────────────────────────────────
+
+_STATE_SIGNALS: dict = {
+    #            emotion       intent               posture         pace       energy
+    "idle":      ("calm",      "hold_space",        "settle",       "slow",    0.20),
+    "conversing":("engaged",   "show_presence",     "upright",      "steady",  0.60),
+    "thinking":  ("curious",   "show_curiosity",    "lean_forward", "slow",    0.50),
+    "sitting":   ("relaxed",   "hold_space",        "settle",       "slow",    0.30),
+    "excited":   ("excited",   "show_enthusiasm",   "upright",      "lively",  0.90),
+    "calm":      ("calm",      "hold_space",        "settle",       "slow",    0.20),
+}
+
+_ENERGY_BOOST: dict = {
+    "excited":    +0.10,
+    "playful":    +0.08,
+    "curious":    +0.05,
+    "reflective": -0.05,
+    "distorted":  -0.10,
+}
+
+_ORB_BOOST: dict = {
+    "excited":  +0.10,
+    "curious":  +0.07,
+    "playful":  +0.05,
+    "calm":     -0.08,
+    "relaxed":  -0.05,
+}
+
+
+def from_state(state: str, input_emotion: str = "neutral", mode: str = "companion") -> dict:
+    """
+    Map eLo's current state + detected input emotion + mode into expression signals.
+
+    Returns:
+        {
+            "emotion": str,   # eLo's expressed emotion
+            "intent":  str,   # expression intent for the body
+            "posture": str,   # body posture hint
+            "pace":    str,   # response/movement pace
+            "energy":  float, # 0.0 (low) to 1.0 (high), clamped
+        }
+    """
+    base = _STATE_SIGNALS.get(state, _STATE_SIGNALS["idle"])
+    emotion, intent, posture, pace, energy = base
+
+    energy += _ENERGY_BOOST.get(input_emotion, 0.0)
+    energy = round(max(0.0, min(1.0, energy)), 2)
+
+    return {
+        "emotion": emotion,
+        "intent":  intent,
+        "posture": posture,
+        "pace":    pace,
+        "energy":  energy,
+    }
+
+
+def orb_intensity(energy: float, emotion: str = "neutral") -> float:
+    """
+    Derive orb glow intensity from energy level and emotion.
+
+    Returns a float clamped to [0.0, 1.0], rounded to 2 decimal places.
+    """
+    intensity = energy + _ORB_BOOST.get(emotion, 0.0)
+    return round(max(0.0, min(1.0, intensity)), 2)
