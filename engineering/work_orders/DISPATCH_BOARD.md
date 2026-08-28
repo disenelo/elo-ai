@@ -4052,3 +4052,44 @@ FREEZE_V1_LOCK blocks ONLY `alternatives_rejected` (executive.py candidate-set f
 WO-112 is partially executable without Architect ruling. `alternatives_rejected` block stands.
 
 *Recorded by Builder from David L3 verbal 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (Session resume — full QUEUE scan)
+
+**Context:** Resumed after context compaction. Full QUEUE scan executed to confirm seat state.
+
+### QUEUE scan — complete status
+
+| QUEUE Item | Status |
+|---|---|
+| `0057_THE_4_SECOND_RULE.md` | ✅ SUPERSEDED 2026-08-28 — faculty loop architecture (David L3) |
+| `0081_WO-CANON-XI_A_D_ruled_go.md` | ⏸ Design-blocked — Unity must return `unity_route` in arrived ACK |
+| `05b_WO-112_CHOOSE_record_the_alternatives.md` | ⏸ FREEZE_V1_LOCK (alternatives_rejected in executive.py) |
+| `Unity-WO-B1_emit_body_win_id.md` | Unity/Design track — not Builder Python lane |
+| `WO-BOARD-001` | ✅ DONE — result card in DONE/ (commit 23ea717) |
+| `WO-CAP-001` | ✅ Builder DONE — Board/LA close pending |
+| `WO-CONV-001` | ⏸ Board-gated (SPG prerequisite) |
+| `WO-EA2-NEW-A` | ✅ DONE — result card in DONE/ (commit 16a1b4c) |
+| `WO-EXP-001` | ✅ DONE — result card in DONE/ (commit 8d86743) |
+| `WO-GUARD-001` | ✅ DONE — result card in DONE/ (commit d621ee1) |
+| `WO-MOBILE-001` | ✅ DONE — result card in DONE/ (commit 5d982a5) |
+| `WO-NAV-009` | ✅ DONE — result card in DONE/ |
+| `WO-PRES-003-PLANNER` | ✅ DONE — result card in DONE/ (commit 2afc687) |
+| `WO-PRES-004` | ✅ DONE — result card in DONE/ (commit 0c7b899 for 004B finalisation) |
+| `WO-PRES-004B` | ✅ DONE — result card in DONE/ (board closed 2026-08-28) |
+| `WO-SP31-SP32` | ✅ DONE — result card in DONE/ |
+
+### Engineering WOs outside QUEUE — scan result
+
+No newly-unblocked Builder Python items found:
+- WO-CANON-XIII: OPEN but NEEDS DAVID L3 ruling D-XIII-1 — DO NOT START
+- WO-CANON-XXII: QUEUED behind Presentable v1 + Tier A (Horizon-2)
+- WO-CANON-XXIII: STALE spec, CA alignment required
+- WO-PRIN-1: No status found — no dispatch in QUEUE
+
+**SEAT READY — NO AUTHORISED EXECUTABLE WORK**
+
+All blockers confirmed unchanged from prior session record above.
+
+*Builder · 2026-08-28*
