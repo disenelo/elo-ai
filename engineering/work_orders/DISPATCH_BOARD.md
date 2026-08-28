@@ -4769,3 +4769,45 @@ eLo/INPUT → FACULTIES → ASSEMBLED STATE → EXECUTIVE (DECIDES) → ONE COGN
 WO-CREATIVE-001 — Builder QUEUED — Board/LA proceeding to execute (wire creative_imagination.diverge()+evaluate() into spine.py).
 
 *Board / Lead Architect · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (WO-CREATIVE-001 CLOSED; §1 Creative Imagination DONE)
+**Authority:** Board / Lead Architect
+
+### WO-CREATIVE-001 ✅ CLOSED — 4/4 PASS — commit 551c225
+
+**Build:**
+- **D-1** (spine.py LOOP-8): `diverge(goal, seeds, breadth_budget=3)` + `evaluate(c, goal)` after learning advice block → `_attention_in["creative_candidates"]`
+- **D-2** (contracts.py): `CognitiveState.creative_candidates: tuple` field added to Creative Context section
+- **D-3** (cognitive_snapshot.py): `CognitiveSnapshot.creative_candidates: tuple` field added; `build_snapshot()` calls diverge+evaluate using `att.get("intent")` and `self_focal_thread`
+
+**Constraints confirmed:**
+- executive.py: NOT TOUCHED — FREEZE_V1_LOCK clean (AT-4)
+- `executive_select()` NOT called from spine
+- Additive only — no existing code removed
+- API: `diverge()` + `evaluate()` — correct Vol XXVI Ch.1+Ch.3 API
+
+**§1 Build List update:** Creative Imagination → DONE (was "BUILT NOT WIRED")
+**§1 approx_pct:** remains 90% (all Foundation items now at implemented or DONE)
+
+### Governance status
+- Routing architecture drift: FILED — awaiting David L3 ratification
+- 0057: SUPERSEDED
+- WO-CREATIVE-001: CLOSED
+
+### Programme state after this session (2026-08-28 end)
+**David L3 queue (8 items, 1 NEW):**
+1. ELO_SELF_INITIATION=1 (urgency: NOW)
+2. Routing Architecture correction — Option A/B/C ratification (**NEW 2026-08-28**)
+3. SP-29 significance weights
+4. CCM Category C ratification
+5. §7 World Interface scope
+6. PE-037 hand design ruling
+7. HIST-007..012 ChatGPT exports
+
+**MT backlog still pending:** LIPSYNC-001, PRES-004 round-trip, CANON-XI Unity DLL, MOBILE-001
+
+**Next executable governed work:** Board/LA scans Build List for next independent unblocked item.
+
+*Board / Lead Architect · 2026-08-28*

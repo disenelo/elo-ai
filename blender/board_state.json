@@ -57,7 +57,8 @@
       {"wo": "WO-BOARD-002", "description": "dashboard_server.py: overdue_count→open_defects.items; needs_david_count→needs_david.items. test_wo_board001 AT-3/AT-4/AT-5 updated for dict-with-items schema. Commit ed63a33. 5/5 PASS. Board/LA closed 2026-08-28.", "ats": "5/5 PASS + Board/LA CLOSED"},
       {"wo": "WO-CONV-001", "description": "One Brain Convergence: all 7 signal-path items source-verified 2026-08-28. WKG/SPG/Memory/REVIEW_STATE/guard/learning all confirmed. 6/6 PASS test_one_brain_no_second_authority. Prerequisites WO-RS-001..004 + WO-SPG-001..002 in DONE. Board/LA closed.", "ats": "6/6 PASS + Board/LA CLOSED"},
       {"wo": "WO-PRES-004B", "description": "nav_fail + nav_fail_ts written to blender_state.json. commit 0c7b899. Covered by 14/14 live PASS batch (Board/LA 2026-08-28).", "ats": "4/4 PASS + Board/LA CLOSED"},
-      {"wo": "WO-CANON-XI-STEP2", "description": "brain_route + unity_route parity fields in route_memory.jsonl. commit 4957515. Board/LA live-verified 5/5 PASS 2026-08-28. MT round-trip dispatched for Unity DLL side.", "ats": "5/5 PASS + Board/LA CLOSED"}
+      {"wo": "WO-CANON-XI-STEP2", "description": "brain_route + unity_route parity fields in route_memory.jsonl. commit 4957515. Board/LA live-verified 5/5 PASS 2026-08-28. MT round-trip dispatched for Unity DLL side.", "ats": "5/5 PASS + Board/LA CLOSED"},
+      {"wo": "WO-CREATIVE-001", "description": "Creative Imagination runtime wiring: D-1 spine.py LOOP-8 (diverge+evaluate → _attention_in); D-2 CognitiveState.creative_candidates (contracts.py); D-3 CognitiveSnapshot.creative_candidates (cognitive_snapshot.py + build_snapshot). FREEZE_V1_LOCK clean. commit 551c225. Board/LA closed 2026-08-28.", "ats": "4/4 PASS + Board/LA CLOSED"}
     ]
   },
 
@@ -92,7 +93,7 @@
       {"seat": "Board/LA", "item": "WO-GUARD-001 production guard-chain verification", "status": "CLOSED 2026-08-28 — moved to verified_done"},
       {"seat": "MT", "item": "WO-MOBILE-001 mobile-end verification", "status": "DISPATCHED 2026-08-28 — fire mobile_foreground/mobile_background events; confirm elo_state.json; result card: FROM_MT_WO-MOBILE-001_mobile_end_verification_result.md"},
       {"seat": "Board/LA", "item": "WO-MOBILE-001 Board/LA close", "status": "AWAITING MT mobile-end return"},
-      {"seat": "Builder", "item": "WO-CREATIVE-001 Creative Imagination runtime wiring (diverge+evaluate into spine.py → CognitiveState)", "status": "QUEUED 2026-08-28", "dispatch": "blender/agent_bus/builder/QUEUE/WO-CREATIVE-001_creative_imagination_runtime_wiring.md"}
+      {"seat": "Board/LA", "item": "WO-CREATIVE-001 Creative Imagination runtime wiring", "status": "CLOSED 2026-08-28 — 4/4 PASS, commit 551c225. Moved to verified_done."}
     ]
   },
 
@@ -188,7 +189,7 @@
         {"item": "Significance", "status": "SPEC'D — SP-29 schema built; weights D-gated (David L3)"},
         {"item": "Verify Executive receives assembled state", "status": "DONE — MT VERIFIED"},
         {"item": "Verify no second cognitive authority", "status": "DONE — 6/6 PASS 2026-08-27"},
-        {"item": "Creative Imagination", "status": "BUILT NOT WIRED — faculties/creative/creative_imagination.py EXISTS (Vol XXVI Ch.1+Ch.3: divergent phase, symbolic synthesis, symbol_engine reuse). Not imported by spine.py or any runtime module. No integration WO issued. Board/LA verified 2026-08-28."},
+        {"item": "Creative Imagination", "status": "DONE — WO-CREATIVE-001 4/4 PASS (commit 551c225 2026-08-28). diverge+evaluate wired into spine.py LOOP-8; CognitiveState.creative_candidates; CognitiveSnapshot.creative_candidates + build_snapshot. executive.py untouched."},
         {"item": "Reflection / Growth", "status": "IMPLEMENTED — WO-095 write side + WO-096B promote_pass every 10 turns + lesson_store.recall() in spine.py:248. Board/LA verified live 2026-08-28: 1 confirmed lesson in ledger, recall path live. Pre-v1 rows archived (lessons_ledger_pre_v1.jsonl). Audit finding 2026-08-10 is STALE — recall path is complete."},
         {"item": "Personality Evolution", "status": "IMPLEMENTED (WO-007) — personality_evolution_faculty.py wired in spine.py:770 (load_personality/get_trait_values/compute_identity_hash each turn) + reflection_faculty.py:355 (apply_delta on confirmed preference-scope lessons). Board/LA verified live 2026-08-28."}
       ]
@@ -312,7 +313,7 @@
 
   "programme_integrity_flags": [
     "ROUTING ARCHITECTURE DRIFT — Initiative 02 §11 filed 2026-08-28: backend_router.py _TIER_PROVIDER_ORDER creates static provider-priority ladder (Ollama-first/Groq-first by tier). Violates §6 (eLo reconciliation must precede response) and §7 (no permanent model authority ladder). Canonical flow: CAPABILITY is downstream of EXECUTIVE DECIDES. Source: SOURCE_2026-08-28_DAVID_L3_canonical_execution_flow.md. Drift notice: DRIFT_NOTICE_2026-08-28_routing_architecture.md. 3 correction options proposed. AWAITING David L3 ratification. DO NOT implement without ruling.",
-    "WO-CREATIVE-001 — Builder QUEUED 2026-08-28: wire creative_imagination.diverge()+evaluate() into spine.py after learning advice block; CognitiveState.creative_candidates field; cognitive_snapshot exposure. 4 ATs required.",
+    "WO-CREATIVE-001 — CLOSED 2026-08-28: 4/4 PASS (commit 551c225). diverge+evaluate wired into spine.py LOOP-8; CognitiveState + CognitiveSnapshot creative_candidates fields added. FREEZE_V1_LOCK clean.",
     "WO-NAV-002/008 + WO-WKG-002/003 MT verify batch — dispatched 2026-08-24, overdue; no explicit confirmation in any MT return",
     "WO-FIX-TESTDEFECTS-BATCH — amended 2026-08-28 (test_wo096: sys.exit not import; test_card_0006: already resolved; test_basic_loop: MemoryFaculty.submit); awaiting Builder execution",
     "WO-FIX-112-AMBIENT — confidence null on ambient entries; Builder QUEUED 2026-08-28 (server.py:1033-1037 only)",
