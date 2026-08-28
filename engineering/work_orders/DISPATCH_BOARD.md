@@ -5,6 +5,72 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-28 (Builder returns WO-PRES-004 + WO-EXP-001 · Design roam/jump/ledge cluster · David L3 actions)
+**Authority:** Builder result cards (`blender/agent_bus/builder/DONE/`) + Design cluster file. Board IRV complete 2026-08-28.
+
+### Builder closes
+
+| WO | Builder evidence | Board |
+|---|---|---|
+| **WO-PRES-004** (Failed Navigation Outcome Chain — Python half) | ✅ 10/10 PASS · commit `84aebe1` · `executive.py` unmodified · NAV-013 regression clean | ✅ **CLOSED (Python half)** — AT-6 gap noted below; MT verify Python half now |
+| **WO-EXP-001** (storytelling_style field) | ✅ 5/5 PASS · already live since commit `8d86743` (WO-SC-NEW-001 2026-08-25) · re-verified | ✅ **CLOSED 2026-08-28** |
+
+**WO-PRES-004 AT-6 gap:** Builder filed result before addendum landed. `nav_fail`/`nav_fail_ts`/`nav_fail_dir` write to `blender_state.json` via `state_writer.py` NOT implemented. Follow-on WO authored + DISPATCHED: `engineering/work_orders/WO-PRES-004B.md` → `blender/agent_bus/builder/QUEUE/WO-PRES-004B_nav_fail_blender_state_write.md`. Files: `server.py` (NAVIGATION_FAILED block) + `state_writer.py` only — parallel-safe with defect chain. 2 ATs. Return: `FROM_BUILDER_WO-PRES-004B_AT6_result.md`.
+
+### Design — Roam/Jump/Ledge cluster (SEAT-ENG-004, 2026-08-27)
+Source: `blender/agent_bus/design/FROM_DESIGN_2026-08-27_ROAM_JUMP_LEDGE_regression_cluster.md`
+
+| # | Item | Status |
+|---|---|---|
+| #3 | Step-back→run→jump REGRESSION restored (`needRunUp` now fires for lateral cross-window leaps) | ✅ DONE CLIBUILD_OK |
+| #4/#0 | Edge walk restored — `EdgeSeg` margin capped to 10% of window span (was fixed vp value collapsing narrow windows) | ✅ DONE CLIBUILD_OK |
+| #1 | Fall-through / wrap-to-top BUG: tunneling fix — catches any window top crossed this frame | ✅ DONE CLIBUILD_OK |
+| #2 | Jump distance prefab fix: `maxHopSizes 6→3` in `eLo-ProductonReady 1.prefab:1452` (code-default change was overridden by prefab) | ✅ DONE CLIBUILD_OK |
+
+All four PENDING David L3 runtime eye to confirm feel (SR-002 established behaviour; one item at a time).
+
+### David L3 actions added this session
+1. **BOARD-002 visual read** — panel mechanically confirmed; layout/colour/overflow require David's eyes in running Presence app.
+2. **Roam/Jump/Ledge cluster runtime confirm** — all 4 fixes live; David to confirm #3 (run-leap), #4 (edge walk), #1 (no fall-through), #2 (jump size) feel at runtime. Tune magnitudes on his word.
+
+### MT next dispatch (after PRES-004B follow-on authored — see below)
+- WO-PRES-004 Python half: MT verify 10/10 AT (run `tests/test_wo_pres004_failed_navigation.py`) — dispatchable now, independent of AT-6 gap
+- WO-EXP-001: MT verify `tests/test_wo_sc_new001_storytelling_style.py` — 5/5 expected
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (MT batch 1+2 reconciliation — WO-NAV-013 + WO-EA2-1 + WO-BOARD-002 VERIFIED · DM-1 SATISFIED)
+**Authority:** MT result cards — `blender/agent_bus/mt/DONE/` (three cards filed). Board IRV complete 2026-08-28.
+
+### Architectural closes
+
+| WO | MT verdict | Board close |
+|---|---|---|
+| **WO-NAV-013** (navigate handler) | ✅ 5/5 PASS · commit `fe89023` · no regressions (−17 failures vs 2026-08-24 baseline) | ✅ **CLOSED 2026-08-28** |
+| **WO-EA2-1** (company_state_writer) | ✅ 6/5 + 11/11 PASS · no regressions · 3 dispatch identifier corrections noted below | ✅ **CLOSED 2026-08-28** |
+| **WO-BOARD-002** (Board State panel — Design half) | ✅ 6/6 AT PASS · 7/7 DLL literals · board_state.json 22.7 KB populated | ✅ **CLOSED (MT-verified) — David L3 visual read pending** |
+| **WO-EA2-2** (Company Dashboard — Design half) | ✅ Confirmed via BOARD-002 evidence: `CompanyDashboardPanel.cs` present; `blender/company_state.json` populated (confirmed by WO-EA2-1 result). | ✅ **CLOSED (Design half) 2026-08-28** |
+
+**DM-1 (eLo world-space position):** ✅ SATISFIED 2026-08-28 — `body_win_id` confirmed live in `elo_spatial.json` (WO-NAV-009 result card in DONE; IRV 2026-08-28). Board measurements row updated.
+
+### WO-EA2-1 dispatcher identifier corrections (MT §4 — canonical references updated)
+- `runtime/company_state_writer.py` → **`company_runtime/company_state_writer.py`**
+- `write_company_state()` → **`publish()`** (and `process_action()`)
+- `data/company_state.json` → **`blender/company_state.json`**
+
+### David L3 action added — BOARD-002 visual read
+Panel mechanically confirmed (source + JSON + DLL). Layout legibility, colour contrast, and positioning below company_state section require David's eyes in the running Presence app. L3 visual accept is the remaining gate for full architectural close of BOARD-002.
+
+### Programme consequences
+- **WO-NAV-013 ✅ → PRES-004 gate fully cleared.** Builder executes defect chain (LIPSYNC → AVATARBRIDGE → PERCEPTION → PRES-004) — PRES-004 is now gate-clear when its turn arrives.
+- **WO-EA2-1 + EA2-2 Design half both CLOSED.** EA2 round-trip (`publish()` → `blender/company_state.json` → `CompanyDashboardPanel.cs`) confirmed end-to-end. No further EA2 WO required.
+- **BOARD-002 Design half CLOSED** — David visual read is the only remaining gate.
+
+### Harness defect — Board note (no dispatch now — non-blocking)
+MT: 27 of 279 test files are script-style (`sys.exit()`, no collectable `test_*`). Three frozen-kernel suites cannot run under pytest sweep; AT-5 workarounds each time. A 27-file normalisation is a standalone WO. Board notes for future dispatch — not blocking current wave.
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-28 (Design + Game outbox reconciliation · WO-EA2-2 gate collapsed · DM-2/DM-3 SATISFIED · WO-CANON-XI-STEP2 authored)
 **Authority:** Board — outbox reconciliation + next governed consequences.
 
@@ -22,7 +88,7 @@
 
 **WO-CANON-XI-STEP2 authored (2026-08-28):** Root cause of XI-AD-2 permanent RED: `remember_route()` has no `brain_route`/`unity_route` params — parity test can never pass. Fix: add two optional params + write to JSONL. WO: `engineering/work_orders/WO-CANON-XI-STEP2-route-parity.md`. QUEUED — dispatch after WO-FIX-PERCEPTION-0006 result card. Non-scope discovery: `server.py` ACK handler (~line 3345) must also pass these fields (separate follow-on WO).
 
-**Builder sequence (full):** WO-FIX-LIPSYNC-001 → WO-FIX-AVATARBRIDGE-001 → WO-FIX-PERCEPTION-0006 → WO-PRES-004 Builder half → WO-CANON-XI-STEP2 → CANON-XI server.py ACK wiring
+**Builder sequence (full):** WO-FIX-LIPSYNC-001 → WO-FIX-AVATARBRIDGE-001 → WO-FIX-PERCEPTION-0006 → WO-PRES-004 Builder half → WO-CANON-XI-STEP2 → **WO-CANON-XI-SERVER-ACK** (authored 2026-08-28: `engineering/work_orders/WO-CANON-XI-SERVER-ACK.md` — 4 ATs; pass `brain_route`/`unity_route` into `remember_route()` call at server.py ~line 3347; store in `_PENDING_MOVE["brain_route"]` at ~line 4536)
 
 **MT next batch:** WO-BOARD-002 + WO-EA2-2 (alongside WO-NAV-013 + WO-EA2-1)
 
@@ -204,8 +270,8 @@ Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-REL-001_intent_rela
 | **pytest collection fixes** | test_0005 + test_0009 `sys.exit()` blocker · programme-wide `conftest.py` guard | ✅ DONE — Builder 2026-08-27 | `tests/test_0005_wo120_spatial_faculty.py` — `sys.exit` guarded inside `if __name__ == "__main__"`. Commit `34246cb`. `tests/test_0009_row1_identity.py` — same pattern. `tests/conftest.py` NEW — `pytest_ignore_collect` skips script-style files (no `def test_`). 1112 pytest-style tests now collect cleanly. Commit `3805d3e`. Pre-existing ImportError: `test_basic_loop.py` references `store_interaction` removed in commit `84758ea` — reported to Board; not caused by this session. |
 
 **BLOCKED — unchanged:**
-- WO-NAV-013 close: MT verification gate
-- PRES-004 WO: WO-NAV-013 MT verify (~~DM-2/DM-3 SATISFIED 2026-08-28~~)
+- ~~WO-NAV-013 close: MT verification gate~~ ✅ CLOSED 2026-08-28
+- ~~PRES-004 WO: WO-NAV-013 MT verify~~ ✅ GATE CLEARED 2026-08-28 (~~DM-2/DM-3 SATISFIED 2026-08-28~~)
 - 05b/WO-112: FREEZE_V1_LOCK (executive.py)
 
 **CLOSED 2026-08-28 (removed from blocked list):**
@@ -255,14 +321,15 @@ WO-NAV-001 · WO-NAV-002 · WO-NAV-003 · WO-NAV-004 · WO-NAV-005 · WO-NAV-006
 **BLOCKED — hard gates only:**
 | Item | Gate | Seat |
 |---|---|---|
-| WO-EA2-1 close | MT verification | MT |
-| ~~WO-EA2-2 (Presence panel) — Board dispatch to Design~~ | ✅ GATE COLLAPSED 2026-08-28 — Design already built (surfaced from Design tracklist: CompanyDashboardPanel.cs ✅ show + governed approve + toggle) | MT verify added to next batch |
-| WO-NAV-013 close | MT verification | MT |
-| PRES-004 WO | WO-NAV-013 MT verify (~~DM-2/DM-3 SATISFIED 2026-08-28~~) | MT |
+| ~~WO-EA2-1 close~~ | ✅ MT VERIFIED 2026-08-28 | ✅ **CLOSED 2026-08-28** |
+| ~~WO-EA2-2 (Presence panel) — Board dispatch to Design~~ | ✅ GATE COLLAPSED 2026-08-28 — Design already built; confirmed via BOARD-002 MT evidence | ✅ **CLOSED (Design half) 2026-08-28** |
+| ~~WO-NAV-013 close~~ | ✅ MT VERIFIED 2026-08-28 | ✅ **CLOSED 2026-08-28** |
+| ~~PRES-004 WO gate~~ | ~~WO-NAV-013 MT verify~~ · ~~DM-2/DM-3~~ | ✅ **ALL GATES CLEARED 2026-08-28** — Builder dispatches PRES-004 after defect chain |
 | ~~WO-CAP-001 architectural close~~ | ✅ CLOSED 2026-08-27 — Board/LA IRV confirmed all 5 call chain links (`enrich_from_plan` → `record_capability_result` → JSONL → `recent_capability_results` → `LiveWorldState.capability_results` → `spine.py attention_in`) | — |
 | SP-25/SP-26 (WO-NAV-012b) | ~~DM-2/DM-3 SATISFIED 2026-08-28~~ — Builder: read jump_px LIVE from capability_set (do not hardcode 576) | Builder flag |
 | 0057 (4-second rule) | David L3 latency policy rulings | David L3 |
-| WO-CANON-XI parity gate step 2 | ~~route_memory lacks brain_route/unity_route fields~~ — WO-CANON-XI-STEP2 authored 2026-08-28, QUEUED after FIX-PERCEPTION-0006 | Builder (queued) |
+| WO-CANON-XI parity — Python side | WO-CANON-XI-STEP2: add brain_route/unity_route to remember_route() — QUEUED after FIX-PERCEPTION-0006 | Builder (queued) |
+| WO-CANON-XI parity — Unity side | WO-CANON-XI-UNITY-ROUTE: add unity_route to arrived ACK — 🟠 DISPATCHED → Design 2026-08-28 | Design (dispatched) |
 | 0081 parity step 3 | Remove Unity local selection — BLOCKED on step 2 parity prove ≥ 80% | Builder (after step 2) |
 | 05b/WO-112 | FREEZE_V1_LOCK (executive.py) | David L3 unfreeze |
 | ~~WO-EA2-NEW-A architectural close~~ | ✅ CLOSED 2026-08-28 | — |
@@ -293,7 +360,7 @@ WO-NAV-001 · WO-NAV-002 · WO-NAV-003 · WO-NAV-004 · WO-NAV-005 · WO-NAV-006
 
 **Pending MT verification:** WO-SP31-SP32 / WO-SP38 / WO-NAV-009 / WO-NAV-010 / WO-NAV-011 / WO-NAV-012 now DONE — add to next MT batch.
 **Pending Board verification:** WO-CAP-001 remains Board/LA-close (commit `7ec57bf`, 9/9 PASS) — do not self-close.
-**Blocked:** `05b / WO-112` = FREEZE_V1_LOCK (`executive.py`). `0059 SPEED` live measurement = Cloudflare block on Groq/Cerebras from agent network. `0057` = awaiting David L3 latency policy rulings + live measurements. `PRES-004` = HELD awaiting WO-NAV-013 MT verification. SP-25/SP-26 = gated on Design/MT DM-2/DM-3 geometry measurements.
+**Blocked:** `05b / WO-112` = FREEZE_V1_LOCK (`executive.py`). `0059 SPEED` live measurement = Cloudflare block on Groq/Cerebras from agent network. `0057` = awaiting David L3 latency policy rulings + live measurements. ~~`PRES-004` = HELD awaiting WO-NAV-013 MT verification~~ ✅ GATE CLEARED 2026-08-28 — PRES-004 in Builder defect chain (4th after LIPSYNC→AVATARBRIDGE→PERCEPTION). ~~SP-25/SP-26 = gated on Design/MT DM-2/DM-3 geometry measurements~~ ✅ DM-2/DM-3 SATISFIED 2026-08-28.
 
 | WO | SP items | State | Evidence |
 |---|---|---|---|
@@ -330,11 +397,11 @@ WO-NAV-001 · WO-NAV-002 · WO-NAV-003 · WO-NAV-004 · WO-NAV-005 · WO-NAV-006
 | **Embodied One Brain → DISENELO Presence** | AUDIT | ✅ COMPLETE | `findings/AUDIT_EMBODIED_ONE_BRAIN_2026-08-23.md`. Full L1-L4 ratings. Navigation: 8 of 13 capabilities L1. Curiosity: 5 of 6 capabilities L1. ONE BRAIN / MANY BODIES: embodiment identity in EloSelfState but NOT in LiveWorldState frozen field. Experience DNA: L3 but no body_context tag and no failed-route recall. Critical learning test: PARTIAL — Row 14 ROUTE is tone-shift, not re-routing. Architecture consistent with ONE BRAIN claim; integration gaps do not require a second brain. 11 R&D items + 5 Design/MT measurements. |
 | **Embodied One Brain → DISENELO Presence** | Stage 2 R&D ORDER | ✅ ISSUED | `docs/architecture/RD_EMBODIED_ONE_BRAIN_STAGE2_ORDER_2026-08-23.md`. Unified investigation across 3 lanes. 16 questions (Q-NAV-1..6, Q-CUR-1..5, Q-BODY-1..5). Priority: Q-BODY-3 → Q-NAV-1 → Q-CUR-1 → Q-NAV-5. NO SPEC. NO BUILDER. |
 | **Embodied One Brain → DISENELO Presence** | R&D P0 REVIEW | 🔴 P0 NOT COMPLETE | `findings/RD_P0_REVIEW_2026-08-23.md`. Architecture invariant (ONE BRAIN/MANY BODIES) confirmed sound — no second cognitive system exists or required. Three blockers: (1) Executive not in nav loop (Q-NAV-1 🔴 + Q-NAV-5 🔴); (2) World observation absent (Q-CUR-1 🔴 — significance_faculty.py does not exist); (3) DM-1/DM-2/DM-3 measurements required from Design/MT. SPEC BLOCKED. BUILDER BLOCKED. |
-| **Embodied One Brain → DISENELO Presence** | R&D Lane 1 (Navigation) | 🔴 P0 PARTIAL | Q-NAV-1 ✅ 🔴 BROKEN — `findings/RD_QNAV1_canonical_spatial_target_2026-08-23.md`. No speech→spatial-target chain. intent_engine has no navigation category. Navigation runs as reflex; Executive not involved in goal-setting. · Q-NAV-2 ✅ 🟡 PARTIAL/BLOCKED — `findings/RD_QNAV2_elo_position_2026-08-23.md`. Surface identity via gaze.win_id derivable; pixel rect in elo_spatial.json; world-space position BLOCKED on DM-1. · Q-NAV-5 ✅ 🔴 BROKEN (LOAD-BEARING) — `findings/RD_QNAV5_failure_redecision_2026-08-23.md`. Row 14 ROUTE produces tone-shift ("witness"), not re-routing. No "reconsider → different choice" path exists. Q-NAV-3 (platform map P1) · Q-NAV-4 (candidate routes P1 — BLOCKED DM-2+DM-3) · Q-NAV-6 (walk/run/jump P2) remain open. |
+| **Embodied One Brain → DISENELO Presence** | R&D Lane 1 (Navigation) | 🔴 P0 PARTIAL | Q-NAV-1 ✅ 🔴 BROKEN — `findings/RD_QNAV1_canonical_spatial_target_2026-08-23.md`. No speech→spatial-target chain. intent_engine has no navigation category. Navigation runs as reflex; Executive not involved in goal-setting. · Q-NAV-2 ✅ 🟡 PARTIAL/BLOCKED — `findings/RD_QNAV2_elo_position_2026-08-23.md`. Surface identity via gaze.win_id derivable; pixel rect in elo_spatial.json; world-space position ✅ SATISFIED 2026-08-28 — body_win_id live in elo_spatial.json (WO-NAV-009 DONE). · Q-NAV-5 ✅ 🔴 BROKEN (LOAD-BEARING) — `findings/RD_QNAV5_failure_redecision_2026-08-23.md`. Row 14 ROUTE produces tone-shift ("witness"), not re-routing. No "reconsider → different choice" path exists. Q-NAV-3 (platform map P1) · Q-NAV-4 (candidate routes P1 — BLOCKED DM-2+DM-3) · Q-NAV-6 (walk/run/jump P2) remain open. |
 | **Embodied One Brain → DISENELO Presence** | R&D Lane 2 (Curiosity) | 🔴 P0 BROKEN | Q-CUR-1 ✅ 🔴 BROKEN — `findings/RD_QCUR1_world_delta_2026-08-23.md`. No inter-turn world delta mechanism. significance_faculty.py does not exist. Curiosity = static personality trait, not world-responsive signal. Design requirements E (significance scoring) and F (self-initiation signal) fully absent. Q-CUR-2 · Q-CUR-3 · Q-CUR-4 · Q-CUR-5 remain open. |
 | **Embodied One Brain → DISENELO Presence** | R&D Lane 3 (One Brain/Many Bodies) | 🟡 PARTIAL | Q-BODY-3 ✅ 🟡 PARTIAL — `findings/RD_QBODY3_one_brain_many_bodies_2026-08-23.md`. Cognitive pipeline body-agnostic (spine.py + executive.py verified clean). Three gaps: (1) capability catalog not body-filtered; (2) embodiment identity not in LiveWorldState; (3) ACK_UNITY_ACK not generic. No second brain required. Q-BODY-1 · Q-BODY-2 · Q-BODY-4 · Q-BODY-5 remain open. |
 | **Embodied One Brain → DISENELO Presence** | Design cross-check ("Made Believable") | ✅ CAPTURED + CROSS-MAPPED | `_intake/SOURCE_2026-08-23_DESIGN_made_believable_experience_crosscheck.md` · `findings/DESIGN_RD_CROSSMAP_made_believable_2026-08-23.md`. 8 MB requirements mapped. Confirmations: gap_px IS continuous (MB-03 partially supported in data). New gap: Q-ATT-1 (David gaze-on-eLo — no sensor exists). DM-4 scope expanded: must include failure cause taxonomy, not just outcome boolean. Design MB document = the test for Stage 8 EMBODIED DEMONSTRATION. Not Builder instructions. |
-| **Embodied One Brain → DISENELO Presence** | Design/MT measurements | 🟡 REQUIRED — awaiting | DM-1 (eLo world-space position — CRITICAL for MB-01 world point requirement) · DM-2 (jump height/distance — normalises gap_px → difficulty_score for MB-03) · DM-3 (platform geometry — candidate entry points for MB-02) · DM-4 **EXPANDED SCOPE**: failure cause classification required ("fell_short" \| "mistimed" \| "wrong_line" \| "blocked") not just arrived/fell · DM-5 (body scale). Multiple R&D questions BLOCKED until received. |
+| **Embodied One Brain → DISENELO Presence** | Design/MT measurements | 🟡 PARTIAL — DM-1/DM-2/DM-3 SATISFIED | ~~DM-1 (eLo world-space position)~~ ✅ SATISFIED 2026-08-28 — `body_win_id` live in `elo_spatial.json` (WO-NAV-009 DONE, IRV 2026-08-28) · ~~DM-2 (jump_px)~~ ✅ SATISFIED 2026-08-28 — `capability_set.jump_px` dynamic (formula: `clamp(EloSizeVp × maxHopSizes,0.10,0.40) × Screen.height`; current=282px) · ~~DM-3 (surface geometry)~~ ✅ SATISFIED 2026-08-28 — `surface_graph` 71 nodes/1848 edges, `reach_px`=129 · DM-4 **OPEN**: failure cause taxonomy ("fell_short"\|"mistimed"\|"wrong_line"\|"blocked") — not yet measured · DM-5 (body scale) **OPEN**. DM-4/DM-5 are not blocking current programme wave. |
 | **Embodied One Brain → DISENELO Presence** | Builder synthesis | ✅ COMPLETE | `findings/RD_QNAV5_SYNTHESIS_complete_chain_2026-08-23.md`. 11 investigations, zero F items (architecturally incompatible). 23-leg chain assessed. Four breaks named with evidence: (1) ACK break `server.py:149–151` — SP-1+SP-2 two lines; (2) No navigate handler — SP-18 new code; (3) Row 14 ROUTE tone-shift only — SP-25 requires Executive unfreeze; (4) No autonomous spine call — SP-31 requires Design E-items. |
 | **Embodied One Brain → DISENELO Presence** | Board / Design cross-check | ✅ COMPLETE | `docs/architecture/BOARD_DESIGN_CROSSCHECK_2026-08-23.md`. Four closure boundaries mapped to R&D evidence + Design requirements + SPEC needs + Design/MT deliverables. |
 | **Embodied One Brain → DISENELO Presence** | SPEC candidates classified | ✅ COMPLETE | `docs/architecture/SPEC_CANDIDATES_CLASSIFIED_2026-08-23.md`. 38 items: A=17 canonical now · B=15 awaiting Design/MT · C=2 awaiting Executive unfreeze · D=4 awaiting David behavioural decisions. SP-1+SP-2 are highest-leverage A items. **BUILDER MUST NOT IMPLEMENT YET.** |
@@ -3707,5 +3774,17 @@ Board Acceptance doc `BOARD_ACCEPTANCE_WO-NAV-013_Unity-WO-B1_B2_2026-08-27.md` 
 | WO-SP31-SP32 | ✅ DONE — FROM_BUILDER result card in DONE/ |
 
 **Builder queue: SEAT READY — NO AUTHORISED EXECUTABLE WORK**
+
+*Builder · 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (WO-FIX-LIPSYNC-001)
+
+| WO | Status |
+|---|---|
+| WO-FIX-LIPSYNC-001 | ✅ DONE — commit be8fdcc · 5/5 AT PASS · result card in DONE/ |
+
+**Gate open:** WO-FIX-AVATARBRIDGE-001 is now executable (gate was LIPSYNC-001 result card).
 
 *Builder · 2026-08-28*
