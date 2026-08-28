@@ -4221,3 +4221,49 @@ Result card: `builder/DONE/FROM_BUILDER_WO-113_gap_assessment_result.md`
 **SEAT READY — NO AUTHORISED EXECUTABLE WORK**
 
 *Builder · 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (WO-110 rows 10+11 result card — INFER + UNKNOWN stale)
+
+### WO-110 (INFER + UNKNOWN) — rows 10 and 11 missed in 2026-08-21 sweep
+
+Board row 11 appeared in the tally as `🚫 NOT BUILT`. Row 10 was missing the EVIDENCED marker.
+Both are covered by `runtime/the_moment.py` `tier_fact()` — same WO-110 `05c` card as row 9 which
+WAS marked evidenced 2026-08-21.
+
+Test results (run 2026-08-28):
+
+| Runner | Result |
+|---|---|
+| `pytest tests/test_wo110_epistemic_tiers.py` | **11/11 PASS** |
+| `python3 tests/test_0011_wave4_epistemic.py` | **9/0 PASS** |
+
+Key test coverage:
+- Row 10 (INFER): `EP-2 — inferred source → 'inferred'` — computed, not a constant
+- Row 11 (UNKNOWN): `EP-4 — None/empty/[]/\{\} all → 'unknown'` — absence is statable
+
+Result card: `builder/DONE/FROM_BUILDER_WO-110_epistemic_rows10_11_result.md`
+
+| Row | Name | Status |
+|---|---|---|
+| 10 | INFER | ✅ DONE — EP-2 proven; tier computed from source, not constant |
+| 11 | UNKNOWN | ✅ DONE — EP-4 proven; absence is a statable fact |
+
+Tally note: the `🚫 NOT BUILT | 1 · 5 · 11 · 17 · 18` tally at line 1492 is stale:
+- Row 1: evidenced 2026-08-21 (seat column already shows ✅ EVIDENCED)
+- Row 5: evidenced 2026-08-21 (seat column already shows ✅ EVIDENCED)
+- Row 11: ✅ DONE (this card)
+- Row 17: ✅ DONE (WO-113 card filed earlier today)
+- Row 18: evidenced 2026-08-21 (seat column already shows ✅ EVIDENCED)
+
+Row 19 (SELF-CHOOSE) status update: board body says "prompt text only, never on plan." After
+WO-INGRESS-32 (commit `d87c578`, 2026-08-24), `emergent_cognition` now routes through
+`spine.run(intent_source="self")` — it DOES reach the Executive. However, the Executive produces
+`silence` for all ambient ticks (per code comment, server.py:1007-1008). Consuming `intent_source="self"`
+in executive.py is blocked by FREEZE_V1_LOCK. Row 19 status is now:
+**BUILT, WIRED TO EXECUTIVE (FREEZE_V1_LOCK on consuming side)** — not "never on plan."
+
+**SEAT READY — NO AUTHORISED EXECUTABLE WORK**
+
+*Builder · 2026-08-28*
