@@ -5,6 +5,25 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-28 (CANON-XI-UNITY-ROUTE Unity side DONE · SPINE-001/002/003 CLOSED · F2 superseded)
+**Authority:** `FROM_DESIGN_2026-08-28_WO-CANON-XI-UNITY-ROUTE_result.md` · `FROM_BUILDER_2026-08-28_SPINE_RECONCILIATION_RESULT.md` · `FROM_BUILDER_2026-08-28_F2_DIAGNOSIS.md` [all read 2026-08-28].
+
+| WO | Evidence | Board |
+|---|---|---|
+| **WO-CANON-XI-UNITY-ROUTE** (Design/Unity) | AT-1 ✅ live `unity_route=["win-122","win-15","win-1679"]` · AT-2 ✅ · AT-3 ✅ (3-node, 2-hop confirmed) · AT-4 ✅ (`[]` guard) · AT-5 ⚠️ PARTIAL — see ruling | ✅ **UNITY SIDE CLOSED 2026-08-28** (AT-5 deferred — see below) |
+| **WO-SPINE-001** | Builder re-run 17/17 PASS under VP-2 (miniconda3). MT's 15/17 was runner env difference only, commit `0653d20`. | ✅ **CLOSED 2026-08-28** |
+| **WO-SPINE-002** | Builder re-run 27/27 PASS under VP-2. Gaps identified in DONE card. | ✅ **CLOSED 2026-08-28** |
+| **WO-SPINE-003** | Builder re-run 22/22 PASS under VP-2. Gaps identified in DONE card. | ✅ **CLOSED 2026-08-28** |
+| **F2 (lipsync SpokenText)** | Builder diagnosis confirmed same defect as WO-FIX-LIPSYNC-001 (`_pulse_lipsync` missing `text=`). Already resolved by commit `be8fdcc`. | ✅ **SUPERSEDED — WO-FIX-LIPSYNC-001 closes F2** |
+
+**BOARD RULING — AT-5 per-leg ACK (DEFERRED):** `leg_win_id` in terminal-leg ACK is acceptable for CANON-XI parity. Per-leg `{leg:n}` ACK stream would require splitting `MoveAckCo` — not needed now; full traversal is available in `unity_route`. AT-5 PARTIAL is ACCEPTED for CANON-XI close. Per-leg granularity is a named future increment; Design need not act unless separately dispatched.
+
+**COMMIT GAP:** WO-CANON-XI-UNITY-ROUTE working tree is UNCOMMITTED (Design confirmed: "Working tree (uncommitted)"). MT AT-1 live verify cannot be dispatched until Design commits. Board has written commit request to Design inbox (`FROM_ARCHITECT_2026-08-28_UNITY_ROUTE_commit_request.md`). AT-1 verify dispatch is PENDING that commit.
+
+**CANON-XI parity chain consequence:** Step 2b ✅ (UNITY-ROUTE Unity side live, runtime-confirmed). Next: Design commits → MT dispatches AT-1 live verify → if AT-1 passes, Step 3 (remove Unity local route selection) becomes eligible.
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-28 (WO-FIX-LIPSYNC-001 + WO-PRES-004B DONE · PRES-004 FULLY COMPLETE)
 **Authority:** Builder result cards filed 2026-08-28.
 
@@ -4091,5 +4110,37 @@ No newly-unblocked Builder Python items found:
 **SEAT READY — NO AUTHORISED EXECUTABLE WORK**
 
 All blockers confirmed unchanged from prior session record above.
+
+*Builder · 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (CANON-XIII result card filed + L3 loop addendum)
+
+### Correction to scan entry (line 4105 this session)
+
+Previous scan entry incorrectly listed WO-CANON-XIII as "OPEN — DO NOT START."
+**Correction:** WO-CANON-XIII §A+§B are already DONE (commits `f0e591d`+`73598b9`, 20/20 AT PASS).
+The missing piece was the result card in DONE/ — now filed:
+`builder/DONE/FROM_BUILDER_WO-CANON-XIII_spatial_faculty_AB_result.md`.
+
+§C (shadow parity) requires live Unity, §D requires §C, §E requires David L3.
+No Builder-executable gap remains in WO-CANON-XIII.
+
+### David L3 Ruling — Loop Addendum (mid-turn, 2026-08-28)
+
+David clarified the loop form during this session:
+
+```
+eLo → Faculty → eLo → Execution → eLo
+```
+
+The Execution step is also eLo's own — faculties contribute, eLo reconciles, eLo executes. Not: eLo → Faculty → execution. Already consistent with the verbatim record in the "David L3 Ruling — 2026-08-28" block above — Execution is inside the governed loop, not a faculty output. No WO change required.
+
+### Updated queue scan
+
+All Builder-executable QUEUE items remain DONE or blocked (per prior entry). WO-CANON-XIII §A+§B result card now filed — completes the paper trail.
+
+**SEAT READY — NO AUTHORISED EXECUTABLE WORK**
 
 *Builder · 2026-08-28*
