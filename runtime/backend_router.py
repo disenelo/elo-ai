@@ -122,22 +122,36 @@ _ACTION_PRIORITY: dict[str, int] = {
 
 # ── WO-NAV-013 SP-18: Navigate action handler ────────────────────────────────
 
-def handle_navigate(exec_decision: dict) -> "dict | None":
+def handle_navigate(exec_decision: dict, *, reachable: bool = True) -> "dict | None":
     """
     SP-18 (WO-NAV-013): translate an Executive navigate decision into a
     movement intent dict that the consequence chain dispatches as move_command.
+
+    WO-PRES-004 D-1: when reachable=False, returns a navigation_failed outcome
+    dict instead of a movement intent (no route exists).
 
     Args:
         exec_decision: Executive decision dict. Consumed keys:
             goal_win_id  — deliberate navigation target (int); absent on directional
             type         — navigate type hint ("jump_left" / "jump_right" / …)
             direction    — directional hint ("left"|"right"|"up"|"down")
+        reachable: False when caller has determined no route exists for this goal.
 
     Returns:
+        navigation_failed outcome dict when reachable=False.
         Movement intent dict suitable for _state_write / move_command emission,
         or None when no actionable navigate signal is present (AT-5 case).
     """
     goal_win_id = exec_decision.get("goal_win_id") or exec_decision.get("navigate_goal_win_id")
+
+    # WO-PRES-004 D-1: named failure outcome when no reachable route exists
+    if not reachable:
+        return {
+            "outcome":     "navigation_failed",
+            "reason":      "no_reachable_route",
+            "goal_win_id": goal_win_id,
+        }
+
     nav_type    = exec_decision.get("type", "")
     direction   = exec_decision.get("direction", "")
 

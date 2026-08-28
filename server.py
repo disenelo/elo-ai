@@ -3384,14 +3384,55 @@ def _process_turn(raw: str) -> dict:
                 # SP-21 (WO-NAV-013): navigate outcome → executive_context on this turn
                 # Deliberate navigation (goal_win_id set) gets an explicit outcome block so
                 # the Executive observes the result before generating a response.
+                # WO-PRES-004: FAILED case is distinct — named outcome, one-shot, CAP-001 logged.
                 try:
                     if _mout is not None and _mout.goal_win_id is not None:
-                        _nav_status = "ARRIVED" if _mout.arrived else ("FELL" if _mout.fell else "FAILED")
-                        _nav_outcome_block = (
-                            f"[NAVIGATE_OUTCOME] goal_win_id={_mout.goal_win_id} "
-                            f"status={_nav_status} arrived={_mout.arrived} fell={_mout.fell} "
-                            f"duration_s={_mout.duration_s} issued_by={_mout.issued_by}"
-                        )
+                        _is_failed = not _mout.arrived and not _mout.fell
+                        if _is_failed:
+                            # WO-PRES-004 D-1: call handle_navigate with reachable=False
+                            try:
+                                from runtime.backend_router import handle_navigate as _hnd_nav
+                                _failed_outcome = _hnd_nav(
+                                    {"goal_win_id": _mout.goal_win_id}, reachable=False
+                                )
+                            except Exception:
+                                _failed_outcome = {
+                                    "outcome": "navigation_failed",
+                                    "reason":  "no_reachable_route",
+                                    "goal_win_id": _mout.goal_win_id,
+                                }
+                            # WO-PRES-004 D-2: distinct context block so Executive can trigger
+                            # failed_navigation expression state
+                            _nav_outcome_block = (
+                                f"[NAVIGATION_FAILED] goal_win_id={_mout.goal_win_id} "
+                                f"outcome=navigation_failed reason=no_reachable_route "
+                                f"duration_s={_mout.duration_s} "
+                                "[EVALUATE_BEAT] Route not found — settle, do not re-attempt."
+                            )
+                            # WO-PRES-004 D-3: one-shot — clear pending move to prevent loop
+                            _PENDING_MOVE["active"] = False
+                            # WO-PRES-004 D-4: log to capability result chain
+                            try:
+                                from self.capability_memory import record_capability_result as _rcr
+                                from runtime.experience_id import get as _get_xid
+                                _rcr(
+                                    capability="navigate",
+                                    experience_id=_get_xid(),
+                                    goal_surface=f"goal_win_id={_mout.goal_win_id}",
+                                    result_summary="navigation_failed: no_reachable_route",
+                                    result_typed=_failed_outcome or {},
+                                    succeeded=False,
+                                    failure_reason="no_reachable_route",
+                                )
+                            except Exception:
+                                pass
+                        else:
+                            _nav_status = "ARRIVED" if _mout.arrived else "FELL"
+                            _nav_outcome_block = (
+                                f"[NAVIGATE_OUTCOME] goal_win_id={_mout.goal_win_id} "
+                                f"status={_nav_status} arrived={_mout.arrived} fell={_mout.fell} "
+                                f"duration_s={_mout.duration_s} issued_by={_mout.issued_by}"
+                            )
                         g_ctx = f"{g_ctx}\n{_nav_outcome_block}" if g_ctx else _nav_outcome_block
                 except Exception:
                     pass
