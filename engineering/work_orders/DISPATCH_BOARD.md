@@ -4811,3 +4811,79 @@ WO-CREATIVE-001 — Builder QUEUED — Board/LA proceeding to execute (wire crea
 **Next executable governed work:** Board/LA scans Build List for next independent unblocked item.
 
 *Board / Lead Architect · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (Build List scan complete — main programme WAITING / DROP loop next)
+**Authority:** Board / Lead Architect — §14 Build List Return Rule
+
+### Build List scan — all items assessed post-WO-CREATIVE-001
+
+**Main programme (eLo AI OS + Presence + Game):**
+
+| Section | Status | Next action |
+|---|---|---|
+| §1 ONE BRAIN FOUNDATION | 90% — all items DONE/IMPLEMENTED except SP-29 D-gated | WAITING DAVID (SP-29 weights) |
+| §2 INTENT RECOVERY | 80% — RTR/WKG done; relationship style STUB; CCM C gaps | WAITING CA (source dependency) + WAITING DAVID (CCM-C) |
+| §3 Q-NAV/Q-BODY | 90% — navigation wave done; PRES-004 round-trip pending | WAITING MT |
+| §4 CCM + WKG | 60% — Category C needs L3 ratification | WAITING DAVID |
+| §5 EXPRESSION | 25% — storytelling done; relationship style CA-blocked | WAITING CA (source dependency) |
+| §6 CREATE | 5% — CE-001 SPEC written 2026-08-27; L3 ratification needed | WAITING DAVID (see note below) |
+| §7 WORLD INTERFACE | 0% — scope decision needed | WAITING DAVID |
+| §8 DIGITAL EMBODIMENT | 65% — navigation done; visual brainiser not WO'd; MT pending | WAITING MT |
+| §9 PHYSICAL eLo | 10% — PE-037 hand ruling needed | WAITING DAVID |
+| §10 ECOSYSTEM | 20% — MOBILE-001 MT pending; DROP loop queued | DROP LOOP NEXT |
+
+### CE-001 status — Board note for David
+
+CA ruling 2026-08-27: "Board should now advance CE-001." CA says "L3 if required" (not mandatory). SPEC written at `docs/architecture/specs/SPEC_CE_001_file_output_capability_2026-08-27.md`. Board previously marked this as "L3 RATIFICATION REQUIRED before WO." 
+
+**Decision for David:** Does CE-001 file-output capability require L3 ratification before WO? CA says it's architecturally sound and consistent with the existing capability model. If David says "go," Board will issue the WO immediately.
+
+### Next executable governed work — §10 Social/Creative DROP loop
+
+`social_design_studio/QUEUE/0001_STAND_UP_THE_DROP_LOOP.md` — AUTHORISED. "§10 Creative / Brand / Social: parallel track, does not wait for engineering." Not blocked by any eLo OS dependency. Board/LA proceeding to execute.
+
+*Board / Lead Architect · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (DROP loop DONE — §10 Creative track)
+**Authority:** Board / Lead Architect
+
+### social_design_studio/0001_STAND_UP_THE_DROP_LOOP ✅ DONE — commit aa305bf
+
+**Built:**
+- `creative/catalogue.py`: classify() — filename-signal + extension-family classifier; low-confidence → question
+- `creative/drop_loop.py`: `scan_once()` one-pass + `--poll N` continuous mode; skips `_`-prefixed files and sidecars; dedup via `_processed.log`
+- Sidecar writes: `02_CATALOGUED/{name}.catalogue.md` (always); `03_IN_PROCESS/{name}.proposal.md` (when project known); `04_FOR_DAVID/{name}.approval.md` (approval gate); `04_FOR_DAVID/{name}.question.md` (when uncertain)
+- Constraint: NO writes to `05_SHIPPED` — AT-3 enforces this
+
+**Tests: 3/3 PASS** (`tests/test_drop_loop_0001.py`)
+- AT-1: 3 unlike files (blend/png/md) catalogued, originals untouched, sidecars present
+- AT-2: no-signal file → 04_FOR_DAVID question, no project assigned (no guessing)
+- AT-3: 05_SHIPPED empty after full loop run
+
+**Pending David:** First real artefact drop. Loop will process immediately on `python -m creative.drop_loop --once` or `--poll 60`.
+
+### Programme state — end of session 2026-08-28
+**DONE this session:**
+1. Routing architecture drift: FILED (governance conflict, Initiative 02 §11) — AWAITING DAVID L3
+2. WO-CREATIVE-001: DONE (4/4 PASS, commit 551c225)
+3. DROP loop (0001): DONE (3/3 PASS, commit aa305bf)
+
+**WAITING DAVID (8 items):**
+1. ELO_SELF_INITIATION=1 (urgency: NOW)
+2. Routing Architecture — Option A/B/C (NEW 2026-08-28)
+3. CE-001 file output WO — Board asks: does this need L3? CA says "if required"
+4. SP-29 significance weights
+5. CCM Category C ratification
+6. §7 World Interface scope
+7. PE-037 hand design ruling
+8. HIST-007..012 ChatGPT exports
+
+**WAITING EXTERNAL:**
+- MT: LIPSYNC-001, PRES-004 round-trip, CANON-XI Unity DLL, MOBILE-001
+- CA: §5 relationship spec (source dependency on RTR/CP-003/living_presence_spec material)
+
+*Board / Lead Architect · 2026-08-28*
