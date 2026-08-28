@@ -48,7 +48,9 @@
       {"wo": "WO-BOARD-001", "description": "board_state.json → dashboard backend: _read_board_state() + GET /board_state.json route in dashboard_server.py. commit 23ea717. Badge count gap → WO-BOARD-002 scope. Board/LA closed 2026-08-28.", "ats": "5/5 PASS + Board/LA CLOSED"},
       {"wo": "WO-PRES-003-PLANNER", "description": "handle_navigate() reads jump_px LIVE from elo_spatial.json capability_set; wrap_bottom_to_top leg when not directly reachable. commit 2afc687. Board/LA source-verified 2026-08-28.", "ats": "5/5 PASS + Board/LA CLOSED"},
       {"wo": "WO-EXP-001", "description": "storytelling_style in Meaning Object — re-validation of WO-SC-NEW-001 (commit 8d86743). 5/5 PASS. Board/LA closed 2026-08-28.", "ats": "5/5 PASS (re-validation) + Board/LA CLOSED"},
-      {"wo": "WO-CANON-XIII-AB", "description": "§A: additive route+issued_by in move_command (state_writer.py). §B: SpatialFaculty data model + shadow planning (spatial_faculty.py 555 lines). commits f0e591d + 73598b9. §E remains L3 gated.", "ats": "20/20 PASS + Board/LA CLOSED"}
+      {"wo": "WO-CANON-XIII-AB", "description": "§A: additive route+issued_by in move_command (state_writer.py). §B: SpatialFaculty data model + shadow planning (spatial_faculty.py 555 lines). commits f0e591d + 73598b9. §E remains L3 gated.", "ats": "20/20 PASS + Board/LA CLOSED"},
+      {"wo": "WO-CANON-XXIV-ABD", "description": "Knowledge graph promotion (PT bar: 0.70/3refs/2sessions/2verified), demotion (3 contradictions → retract), epistemic_kind guard. commit 59258be. PT-3: promotion_pass not in server.py/spine.py (grep 0). Board/LA verified live 14/14 PASS 2026-08-28.", "ats": "14/14 PASS + Board/LA CLOSED"},
+      {"wo": "WO-CANON-XXVII", "description": "Governance checks + secret hook. G1–G7 tests. commit 91f3dc0. Board/LA verified live 7/7 PASS 2026-08-28.", "ats": "7/7 PASS + Board/LA CLOSED"}
     ]
   },
 
