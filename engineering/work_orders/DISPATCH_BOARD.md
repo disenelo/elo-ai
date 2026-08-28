@@ -4267,3 +4267,45 @@ in executive.py is blocked by FREEZE_V1_LOCK. Row 19 status is now:
 **SEAT READY — NO AUTHORISED EXECUTABLE WORK**
 
 *Builder · 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (Full scan complete — seat exhausted)
+
+### Scan scope
+
+Engineering WO directory + QUEUE/ + DONE/ cross-checked against git log and test runs.
+
+### Summary of stale-paper-trail corrections this session
+
+| WO | What was stale | Result |
+|---|---|---|
+| WO-113 (row 17 GAP) | Board: `🚫 NOT BUILT`. Tests: 10/10 + 9/0 PASS | Result card filed; commit `8564c89` |
+| WO-110 (rows 10+11 INFER+UNKNOWN) | Board: row 10 missing EVIDENCED; row 11 in NOT_BUILT tally. Tests: 11/11 + 9/0 PASS | Result card filed; commit `155b3a7` |
+
+### All Engineering WOs — final status
+
+**DONE (pre-compaction + this session):**
+WO-CANON-VIII ✅ · WO-CANON-XII ✅ · WO-CANON-XX ✅ · WO-CANON-XXII ✅ · WO-CANON-XXIII ✅ ·
+WO-CANON-XXIV §A/B/D ✅ · WO-CANON-XXV ✅ · WO-CANON-XXVII ✅ · WO-CANON-XI-STEP2 ✅ ·
+WO-CANON-XI-SERVER-ACK ✅ (AT-1 deferred to live Unity) · WO-FIX-LIPSYNC-001 ✅ ·
+WO-FIX-AVATARBRIDGE-001 ✅ · WO-FIX-PERCEPTION-0006 ✅ · WO-PRES-003-PLANNER ✅ · WO-PRES-004B ✅ ·
+WO-116/XXVI rows 20/22/25/26 ✅ · WO-CANON-XIII §A+§B ✅ · WO-112 partial (ambient confidence, server.py) ✅
+
+**BLOCKED (confirmed unchanged):**
+
+| WO / Item | Blocker |
+|---|---|
+| WO-112 `alternatives_rejected` | FREEZE_V1_LOCK (executive.py) |
+| WO-CONV-001 | Board-gated — SPG prerequisite outstanding |
+| WO-CAP-001 | Board/LA close pending (Builder done) |
+| 0081/WO-CANON-XI-UNITY-ROUTE | Design seat — unity_route field in Unity ACK |
+| WO-CANON-XIII §C/D/E | §C: Designer + live Unity · §E: David L3 ruling D-XIII-1 |
+| WO-SPG-001 steps 3–10 | HELD — David L3 / Board ruling 2026-08-21 required |
+| 0065 Tasks 3/4 | CA ruling pending: `blender/agent_bus/blender/FROM_CA_2026-08-28_ruling_0065_task3.md` |
+| Q-NAV-5 | FREEZE_V1_LOCK (executive.py) |
+| Row 19 SELF-CHOOSE consuming side | FREEZE_V1_LOCK (executive.py) |
+
+**SEAT READY — NO AUTHORISED EXECUTABLE WORK. All executable items exhausted.**
+
+*Builder · 2026-08-28*
