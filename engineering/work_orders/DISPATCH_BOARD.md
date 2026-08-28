@@ -5,6 +5,57 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-28 (WO-FIX-LIPSYNC-001 + WO-PRES-004B DONE · PRES-004 FULLY COMPLETE)
+**Authority:** Builder result cards filed 2026-08-28.
+
+| WO | Evidence | Board |
+|---|---|---|
+| **WO-FIX-LIPSYNC-001** | ✅ 5/5 PASS · commit `be8fdcc` · `_pulse_lipsync` forwards `text=` to `write_lipsync` on all TTS paths · §7 AMBIENT SpokenText now populates | ✅ **CLOSED 2026-08-28** |
+| **WO-PRES-004B** (AT-6 nav_fail write) | ✅ 4/4 PASS · commit `0c7b899` · `patch({"nav_fail":..., "nav_fail_ts":...})` in NAVIGATION_FAILED block · edge-trigger contract confirmed | ✅ **CLOSED 2026-08-28** |
+
+**WO-PRES-004 FULLY COMPLETE 2026-08-28:** Python outcome chain (AT-1..5, commit `84aebe1`) + AT-6 nav_fail write (commit `0c7b899`) + Design EloNavExpression.cs (CLIBUILD_OK, Design half). Full round-trip: `handle_navigate(reachable=False)` → `navigation_failed` → `blender_state.json` `nav_fail`/`nav_fail_ts` → `EloNavExpression.cs` plays the beat. MT verify dispatched (PRES-004 supplement: `blender/agent_bus/mt/FROM_ARCHITECT_2026-08-28_MT_dispatch_PRES004B_supplement.md`).
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (Builder defect chain DONE · CANON-XI Python parity DONE · PRES-003 released · Q-NAV-4/Q-CUR-1 unblocked)
+**Authority:** Builder result cards (5 filed) + Design crosscheck (`FROM_DESIGN_2026-08-28_Q-NAV_Q-BODY_Q-CUR_presence_crosscheck.md` + `FROM_DESIGN_2026-08-28_PRES-003_wrap_route_leg_L3_intent.md`). Board IRV 2026-08-28.
+
+### Builder closes — defect chain complete
+
+| WO | Evidence | Board close |
+|---|---|---|
+| **WO-FIX-LIPSYNC-001** | Gate confirmed: AVATARBRIDGE result cites commit `c6cf6e9` as gate satisfied | ✅ **CLOSED 2026-08-28** |
+| **WO-FIX-AVATARBRIDGE-001** | ✅ 8/8 PASS · commit `811982f` · `avatar_bridge.py` now importable | ✅ **CLOSED 2026-08-28** |
+| **WO-FIX-PERCEPTION-0006** | ✅ 5/5 PASS · commit `68642bf` · `_any_truncated` checks raw inputs before tagging | ✅ **CLOSED 2026-08-28** |
+
+### CANON-XI Python parity chain — complete
+
+| WO | Evidence | Board close |
+|---|---|---|
+| **WO-CANON-XI-STEP2** | ✅ 5/5 PASS · commit `4957515` · `remember_route()` now accepts `brain_route`/`unity_route`; explicit null in JSONL when omitted | ✅ **CLOSED 2026-08-28** |
+| **WO-CANON-XI-SERVER-ACK** | ✅ 4/4 (AT-1 deferred to live Unity round-trip) · commit `9d7e1e9` · `_PENDING_MOVE["brain_route"]` + `unity_route` extraction from `_mv_ev` wired into `remember_route()` | ✅ **CLOSED (pending AT-1 live verify after WO-CANON-XI-UNITY-ROUTE lands)** |
+
+**CANON-XI parity state:** Step 2a ✅ + Step 2b (WO-CANON-XI-UNITY-ROUTE DISPATCHED to Design — pending) + Step 2c ✅. AT-1 live verify gates on Design returning `unity_route` in arrived ACK.
+
+### MT next batch (now dispatched — see dispatch file)
+WO-FIX-LIPSYNC-001 · WO-FIX-AVATARBRIDGE-001 · WO-FIX-PERCEPTION-0006 · WO-CANON-XI-STEP2 · WO-CANON-XI-SERVER-ACK
+Dispatch: `blender/agent_bus/mt/FROM_ARCHITECT_2026-08-28_MT_dispatch_defectchain_canonxi.md`
+
+### Design crosscheck (Q-NAV/Q-BODY/Q-CUR) — reconciled
+Source: `blender/agent_bus/design/FROM_DESIGN_2026-08-28_Q-NAV_Q-BODY_Q-CUR_presence_crosscheck.md`
+**Presence (Design/Unity) half = PROVEN LIVE** — all 5 DMs + Q-MOVEMENT phases present in `elo_spatial.json` now. No false brain-dependency on Design side. Design supplied DM-5 (`height=0.0625`). Live evidence: `body_win_id=1679`, `surface_graph` 81 nodes/2402 edges, `jump_px=270`, `reach_px=150`.
+**Brain (Builder) half now UNBLOCKED:**
+- Q-NAV-4 difficulty scoring (reads live `jump_px`) → **WO issued (see below)**
+- Q-NAV-5 Executive re-route after failure → 🔴 BLOCKED: FREEZE_V1_LOCK (`executive.py`). Requires David L3 unfreeze ruling + 0057 latency policy.
+- Q-CUR-1 significance_faculty.py → **WO issued to separate Builder track (see below)**
+
+### PRES-003 (bottom→top wrap as route leg) — GATES CLEARED, WO RELEASED
+Source: `blender/agent_bus/design/FROM_DESIGN_2026-08-28_PRES-003_wrap_route_leg_L3_intent.md`
+Authority: RTR-055 + PRES-003 RATIFIED David L3 2026-08-24. Gates: WO-NAV-013 ✅ + DM-2/DM-3 ✅ (now supplied).
+**Design execution already live** (WO-075 bottom→top wrap + 2026-08-27 roam fixes). Builder planner half dispatched: `engineering/work_orders/WO-PRES-003-PLANNER.md` → `blender/agent_bus/builder/QUEUE/`.
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-28 (Builder returns WO-PRES-004 + WO-EXP-001 · Design roam/jump/ledge cluster · David L3 actions)
 **Authority:** Builder result cards (`blender/agent_bus/builder/DONE/`) + Design cluster file. Board IRV complete 2026-08-28.
 
@@ -3850,6 +3901,31 @@ CANON-XI Python-side parity chain complete. Waiting: WO-CANON-XI-UNITY-ROUTE (De
 | WO-CAP-001 | Board/LA close (Builder done) |
 | WO-CANON-XI-UNITY-ROUTE | Design seat (not Builder) |
 | 0065 Task 3 | CA ruling pending (FROM_BOARD_2026-08-28_CA_brief) |
+
+**SEAT READY — NO AUTHORISED EXECUTABLE WORK**
+
+*Builder · 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (session continuation)
+
+**WO-CANON-XXIV §A/B/D** — DONE (commit 59258be · 14/14 PASS + 5/5 regression)
+
+### Completed this block
+| WO | Scope | Tests | Commit |
+|---|---|---|---|
+| WO-CANON-XXIV §A | promotion_pass() — timed-only, threshold-gated Memory→Knowledge promotion | PT-1/4 PASS | 59258be |
+| WO-CANON-XXIV §B | demotion_pass() + david_correction() — retraction with provenance preserved | DT-1/6 PASS | 59258be |
+| WO-CANON-XXIV §D | graph_loader.py epistemic kind fix; contested/retracted excluded; validate_graph_write(); check_referential_integrity() | KT-1/3, AG-1 PASS | 59258be |
+
+### Remaining blockers (unchanged)
+- WO-CANON-XXIV §C: Architect lane (doc cross-reference Vol XXIV ↔ LEARNING_LOOP_v1.md)
+- WO-CANON-VI/XVI/X: CA alignment rulings B/C/D required
+- WO-CANON-XXI: Vol VIII + XXVII governance gate
+- WO-CANON-XXII: Vol XVI dependency
+- WO-CONV-001, WO-CAP-001: Board/LA close pending
+- 0057: David L3 latency policy
 
 **SEAT READY — NO AUTHORISED EXECUTABLE WORK**
 
