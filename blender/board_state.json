@@ -124,10 +124,16 @@
         "unblocks": "eLo capabilities on mobile"
       },
       {
-        "item": "0057 latency policy rulings",
-        "detail": "R1/R2 measurements already filed. LLM-pass gate (0065 tasks 3/4) needs David ruling: full second-LLM-pass (adds latency — quantified in R1/R2) OR rule-based gate (no added latency). 4-second rule from 0057 constrains this.",
-        "urgency": "BEFORE_0065_TASKS_3_4",
-        "unblocks": "0065 tasks 3/4 (eLo response gate + identity assertion) — CA cannot proceed without knowing which mechanism is authorised"
+        "item": "0057 latency policy rulings — SUPERSEDED 2026-08-28",
+        "detail": "SUPERSEDED. David L3 ruling 2026-08-28: faculty output is a contribution, not a gating requirement. The tier-routing 'quicker route' is architecturally non-compliant with Initiative 02 §6+§7. Separate drift notice filed: DRIFT_NOTICE_2026-08-28_routing_architecture.md. 0065 tasks 3/4 constraint: CA to re-assess against Initiative 02 §6 (never DAVID→FACULTY→RESPONSE) rather than 0057 4-second rule.",
+        "urgency": "RESOLVED — see routing architecture item below",
+        "unblocks": "N/A — superseded"
+      },
+      {
+        "item": "ROUTING ARCHITECTURE — David L3 ratification required",
+        "detail": "Initiative 02 §11 DRIFT: backend_router.py _TIER_PROVIDER_ORDER creates a static primary→secondary→fallback model ladder, violating §7. Canonical flow (David L3 2026-08-28): CAPABILITY is downstream of EXECUTIVE DECIDES → ONE COGNITIVE PLAN → EXECUTION GATE. Provider selection must derive from the cognitive plan — not precede it. Three options proposed in DRIFT_NOTICE_2026-08-28_routing_architecture.md: (A) capability_requirement field in CognitivePlan, (B) Execution Gate emits provider spec, (C) Remove tier routing; single ELO_BACKEND per environment. Board/LA recommends Option C as most Initiative-02-aligned. NO implementation until David L3 ratifies.",
+        "urgency": "BEFORE_ANY_PROVIDER_ROUTING_CHANGE",
+        "unblocks": "0057 closure (correct implementation), 0065 tasks 3/4 latency constraint re-assessment, Initiative 02 §7 compliance"
       },
       {
         "item": "DM-2/DM-3 geometry measurements — SATISFIED 2026-08-28",
@@ -305,6 +311,7 @@
   ],
 
   "programme_integrity_flags": [
+    "ROUTING ARCHITECTURE DRIFT — Initiative 02 §11 filed 2026-08-28: backend_router.py _TIER_PROVIDER_ORDER creates static provider-priority ladder (Ollama-first/Groq-first by tier). Violates §6 (eLo reconciliation must precede response) and §7 (no permanent model authority ladder). Canonical flow: CAPABILITY is downstream of EXECUTIVE DECIDES. Source: SOURCE_2026-08-28_DAVID_L3_canonical_execution_flow.md. Drift notice: DRIFT_NOTICE_2026-08-28_routing_architecture.md. 3 correction options proposed. AWAITING David L3 ratification. DO NOT implement without ruling.",
     "WO-CREATIVE-001 — Builder QUEUED 2026-08-28: wire creative_imagination.diverge()+evaluate() into spine.py after learning advice block; CognitiveState.creative_candidates field; cognitive_snapshot exposure. 4 ATs required.",
     "WO-NAV-002/008 + WO-WKG-002/003 MT verify batch — dispatched 2026-08-24, overdue; no explicit confirmation in any MT return",
     "WO-FIX-TESTDEFECTS-BATCH — amended 2026-08-28 (test_wo096: sys.exit not import; test_card_0006: already resolved; test_basic_loop: MemoryFaculty.submit); awaiting Builder execution",

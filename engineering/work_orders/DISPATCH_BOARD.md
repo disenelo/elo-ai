@@ -5,6 +5,46 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-28 (Builder session-close — mass closures + audit findings)
+**Authority:** Board / Lead Architect — Builder session-close card 2026-08-28
+
+### Closures — all Rule 4.1 applied (live PASS + committed = DONE)
+
+| WO | Result | Board ruling |
+|---|---|---|
+| **WO-PRES-004 + WO-PRES-004B** | 14/14 live PASS | ✅ CLOSED — supersedes pending MT verify |
+| **WO-SP31-SP32** | 13/13 live PASS | ✅ CLOSED — self-initiation gate done |
+| **WO-CANON-XI-STEP2** | 5/5 live PASS | ✅ CLOSED — already Board-closed, Builder live-confirmed |
+| **WO-FIX-112-AMBIENT** | 4/4 PASS (fix at server.py:1038) | ✅ CLOSED — ambient confidence null resolved |
+| **WO-FIX-TESTDEFECTS-BATCH** | All 3 defects resolved (test_wo096 5/5, test_basic_loop 16 pass/2 skip) | ✅ CLOSED |
+| **WO-BOARD-002 badge fix** | 5/5 PASS (badge counts corrected) | ✅ CLOSED — supplements MT verification |
+| **WO-CONV-001** | 7-item signal path source-verified, 6/6 PASS | ✅ Signal path VERIFIED — see note below |
+
+**WO-CONV-001 note:** Builder verified the existing 7-item one-brain signal path (source-read + 6 ATs). This is path verification of what IS live — not implementation of SPG steps 3-10 (those remain Board-gated, David L3 authorisation hold 2026-08-21). CONV-001 verification portion CLOSED; SPG implementation remains pending L3.
+
+**WO-SP31-SP32:** David L3 live observation of ELO_SELF_INITIATION=1 (SP-31) remains on David's list — the WO is built and tested; the runtime taste-confirmation is David's.
+
+### Audit findings from Builder (corrections to programme understanding)
+
+- **WO-115 (reflection recall):** ALREADY LIVE since WO-095/WO-096B. Not an open item — close from Build List.
+- **§1 Personality Evolution:** WO-007 already wired at `spine.py:770`. Was incorrectly showing "NOT STARTED" in some records — correct to DONE.
+- **§1 Creative Imagination:** File exists, not wired. Builder issued **WO-CREATIVE-001** to self. Board ACKs this WO as active in Builder queue.
+
+### Builder-cited David L3 outstanding (reconciled against Board record)
+Builder lists: `ELO_SELF_INITIATION=1, 0057 latency, SP-29, CCM-C, §7 scope, PE-037, HIST-007..012`
+
+Board reconciliation:
+- **ELO_SELF_INITIATION=1** — already David L3 item 7 ✅
+- **0057 latency** — **SUPERSEDED.** 0057 CLOSED per David L3 ruling 2026-08-28 (faculty output is a contribution, not a gating requirement; verbatim at Board lines 4050-4104). Builder is working from stale state on this item. No L3 action required.
+- **SP-29, CCM-C, §7 scope, PE-037, HIST-007..012** — NEW. Added to David L3 outstanding list (items 10–15). Architect does not have full context on these; they are as Builder reported them.
+
+### MT backlog still pending
+LIPSYNC-001 · PRES-004 round-trip · CANON-XI Unity DLL · MOBILE-001. (WO-FIX-112-AMBIENT removed — now DONE by live Builder confirm.)
+
+*Board / Lead Architect · 2026-08-28*
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-28 (WO-CANON-XXVII BUILT; §4.4 G-4 corrected; Build List scan complete)
 **Authority:** Board / Lead Architect — §19 Build List scan continued through remaining WOs
 
@@ -4690,3 +4730,42 @@ These are stale artifacts — the QUEUE is clear of these items for programme pu
 - CA: §5 relationship spec pending return; §6 CREATE spec pending return
 - Creative Imagination (§1): no WO issued; Board should spec and issue when CA returns
 
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (Initiative 02 §11 Drift Filing — Routing Architecture)
+**Authority:** Board / Lead Architect — canonical flow diagram received from David L3
+
+### Governance Conflict Filed — Routing Architecture
+
+**Source trigger:** David (L3) provided canonical execution flow diagram in response to: "The entire routing system is not correct to how I want it, it shouldn't be eLo → Faculty → David Response."
+
+**Canonical flow (David L3, 2026-08-28):**
+```
+eLo/INPUT → FACULTIES → ASSEMBLED STATE → EXECUTIVE (DECIDES) → ONE COGNITIVE PLAN → EXECUTION GATE → CAPABILITY → ACTION → CONSEQUENCE → RESULT/NEW STATE → eLo → MEMORY/LEARNING (loop)
+```
+
+**Drift finding (Initiative 02 §11):**
+- `runtime/backend_router.py` `_TIER_PROVIDER_ORDER` (line ~89): static provider-priority ladder (Ollama-first/Groq-first by tier)
+- `_route_by_tier()` (line ~615): iterates ladder, tries each provider in order
+- This makes the provider order the routing authority — not the Executive's cognitive plan
+- **Violation:** Initiative 02 §7 (no permanent model authority ladder), §6 (never DAVID→FACULTY→RESPONSE)
+- **What CAPABILITY means in the canonical flow:** it is downstream of EXECUTIVE DECIDES + EXECUTION GATE. The LLM is a tool that executes the decided plan. Provider selection must derive from the cognitive plan.
+
+**Files created:**
+- `docs/architecture/_intake/SOURCE_2026-08-28_DAVID_L3_canonical_execution_flow.md` — verbatim canonical source
+- `engineering/work_orders/DRIFT_NOTICE_2026-08-28_routing_architecture.md` — §11 drift record (original intent / current implementation / divergence / cause / affected systems / authority required / proposed correction)
+
+**0057 status:** SUPERSEDED. The "quicker route" from 0057 §3 is architecturally non-compliant. This is not a latency tuning question — it is an architecture question. 0057 is closed. The routing correction is a new governed item.
+
+**WO-CREATIVE-001 AT-2 defect corrected:** AT-2 previously said "imports `generate`" — wrong. The correct API is `diverge` + `evaluate`. AT-2 corrected to check for those imports.
+
+### David L3 — new decision required
+
+**ROUTING ARCHITECTURE:** 3 options filed in DRIFT_NOTICE_2026-08-28. Board/LA recommends Option C (remove tier routing; single `ELO_BACKEND` per environment — simplest, most §7-compliant). Awaiting David ruling before any implementation.
+
+### Next governed action
+
+WO-CREATIVE-001 — Builder QUEUED — Board/LA proceeding to execute (wire creative_imagination.diverge()+evaluate() into spine.py).
+
+*Board / Lead Architect · 2026-08-28*

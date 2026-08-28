@@ -59,7 +59,7 @@ In `runtime/cognitive_snapshot.py`, include `creative_candidates` (≤3, `episte
 
 Write `tests/test_wo_creative001_imagination_wiring.py` — 4 ATs:
 - AT-1: `creative_imagination.diverge()` returns a list (may be empty — non-critical path); `evaluate()` scores the candidates
-- AT-2: spine.py imports `generate` from `faculties.creative.creative_imagination` (grep check)
+- AT-2: spine.py source contains `diverge` and `evaluate` imported from `faculties.creative.creative_imagination` (grep check — NOT `generate`)
 - AT-3: `CognitiveState` has `creative_candidates` field (or equivalent)
 - AT-4: executive.py has 0 references to `creative_imagination` (FREEZE_V1_LOCK clean)
 
