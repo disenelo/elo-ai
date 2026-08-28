@@ -3800,3 +3800,15 @@ Board Acceptance doc `BOARD_ACCEPTANCE_WO-NAV-013_Unity-WO-B1_B2_2026-08-27.md` 
 `core/avatar_bridge.py` is now importable. All runtime paths blocked on this import are unblocked.
 
 *Builder · 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (WO-FIX-PERCEPTION-0006)
+
+| WO | Status |
+|---|---|
+| WO-FIX-PERCEPTION-0006 | ✅ DONE — commit 68642bf · 5/5 AT PASS · result card in DONE/ |
+
+`_any_truncated` now checks raw sensor inputs before tagging. AT-3 and AT-5 from Board IRV `test_card_0006_perception_world` resolved.
+
+*Builder · 2026-08-28*
