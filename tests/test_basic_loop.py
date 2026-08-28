@@ -18,6 +18,7 @@ import json
 import os
 import sys
 import tempfile
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -98,6 +99,7 @@ def test_adventure_overlay_contains_expansion_instruction():
 
 # ─── memory retrieval ──────────────────────────────────────────────────────────
 
+@pytest.mark.skip(reason="store_interaction removed commit 84758ea — superseded by MemoryFaculty.submit() + vault_layer; retrieve() path is read-only historical data")
 def test_store_and_retrieve(tmp_path, monkeypatch):
     store = tmp_path / "interactions.json"
     monkeypatch.setattr(memory_engine, "_STORE_PATH", str(store))
@@ -116,6 +118,7 @@ def test_retrieve_returns_empty_on_no_match(tmp_path, monkeypatch):
     results = memory_engine.retrieve("zzzzunmatchable")
     assert results == []
 
+@pytest.mark.skip(reason="store_interaction removed commit 84758ea — superseded by MemoryFaculty.submit() + vault_layer")
 def test_project_tagging(tmp_path, monkeypatch):
     store = tmp_path / "interactions.json"
     monkeypatch.setattr(memory_engine, "_STORE_PATH", str(store))

@@ -291,8 +291,8 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
     # ── Desktop ───────────────────────────────────────────────────────────────
     desktop = DesktopState()
     try:
-        import desktop.window_state as _ws_mod   # module-style so test patches propagate
-        win = _ws_mod.get()
+        from desktop.window_state import get as _ws_get
+        win = _ws_get()
         desktop = DesktopState(
             active_app=win.app,
             active_window=win.title,

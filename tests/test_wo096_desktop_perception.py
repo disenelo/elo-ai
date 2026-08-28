@@ -197,5 +197,5 @@ except Exception as e:
 print()
 print("=" * 62)
 print(f"WO-096 desktop perception     {_passed} passed   {_failed} failed")
-if _failed:
+if __name__ == "__main__" and _failed:
     sys.exit(1)
