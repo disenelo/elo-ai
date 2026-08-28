@@ -5,6 +5,84 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-28 (MT dispatched — WO-NAV-013 + WO-EA2-1 verification)
+**Authority:** Board — next governed consequence per programme focus.
+
+**MT dispatch filed:** `blender/agent_bus/mt/FROM_ARCHITECT_2026-08-28_MT_dispatch_NAV013_EA21.md`
+
+| Dispatch | Item | Gate if VERIFIED |
+|---|---|---|
+| 1 | WO-NAV-013 — 5/5 PASS `fe89023` — MT re-run + regression | Board closes NAV-013 → PRES-004 gate advances |
+| 2 | WO-EA2-1 — 6/5 + 11/11 PASS — MT re-run + regression | Board closes EA2-1 → dispatches WO-EA2-2 (Presence panel) |
+
+**Running in parallel:** Builder executing WO-FIX-LIPSYNC-001 (independent files — no conflict).
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (WO-GAME-001 block report)
+**Authority:** Game seat return to Board — honest block, no fabrication.
+
+### WO-GAME-001 — 🔴 BLOCKED (recorded 2026-08-28)
+
+**Item:** K-7 and Chunk Phase 1 animations (WO-GAME-001 core deliverable)
+
+**Gate 1 — Assets missing (David L3 / asset work):**
+- K-7 has no model.
+- Chunk has a model but no animations.
+- Creating models + animations = Blender rig/animate/export — this is David's asset work, not Game's seat function.
+- Game cannot fabricate these. No workaround exists.
+
+**Gate 2 — Unity MCP bridge down:**
+- Unity is open but the MCP bridge is not running.
+- State-machine wiring, controller switching, and all 10 acceptance tests require Unity through the bridge.
+- No test can be verified without the bridge.
+
+**WO-GAME-001 status:** QUEUED (unchanged — no false progress recorded by Game seat). ✅ Correct handling per protocol.
+
+**Who owns each gate:**
+
+| Gate | Owner |
+|---|---|
+| K-7 model + animation assets | David (asset creation) |
+| Chunk animation assets | David (asset creation) |
+| Unity MCP bridge live | David / environment setup |
+
+**Board action:** No WO issued. No workaround. WO-GAME-001 remains QUEUED until both gates are clear. Game seat: IDLE — report ready when assets + bridge are available.
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (Three architectural closes · Two defect WOs dispatched)
+**Authority:** CA ruling 2026-08-28 — close proven work before opening new authority.
+
+### Closes — 2026-08-28
+
+| WO | Evidence | Close |
+|---|---|---|
+| **WO-GUARD-001** — Response Authority Guards | 6/6 PASS · commit `d621ee1` · result card filed | ✅ CLOSED — Board/LA architectural close 2026-08-28. No further action. |
+| **WO-MOBILE-001** — Mobile Embodiment (spine side) | 5/5 PASS · commit `5d982a5` · result card filed | ✅ CLOSED — Board/LA architectural close 2026-08-28. No further action. |
+| **WO-EA2-NEW-A** — company_state → cognitive spine wiring | 7/7 PASS · commit `16a1b4c` · result card filed · executive.py diff empty | ✅ CLOSED — Board/LA architectural close 2026-08-28. Gap A CLOSED. No further action. |
+
+### Defect WOs Dispatched — 2026-08-28
+
+| WO | Defect | File | Status |
+|---|---|---|---|
+| **WO-FIX-LIPSYNC-001** | `_pulse_lipsync` does not forward `text=` to `write_lipsync` → `SpokenText` always `""` → §7 AMBIENT silenced | `voice/voice_engine.py` only | 🟠 DISPATCHED → Builder |
+| **WO-FIX-AVATARBRIDGE-001** | `core/avatar_bridge.py:19` imports `from_state, orb_intensity` from `emotion_engine.py` — neither exists → module unimportable | `core/emotion_engine.py` only (add two functions) | ⚪ QUEUED — dispatch after WO-FIX-LIPSYNC-001 result card filed |
+
+WO files: `engineering/work_orders/WO-FIX-LIPSYNC-001.md` · `engineering/work_orders/WO-FIX-AVATARBRIDGE-001.md`
+
+### WO-FIX-PERCEPTION-0006 authored — QUEUED (2026-08-28)
+
+**Board scope decision:** `test_card_0006_perception_world` AT-3/AT-5 defect is in production code (`perception_faculty.py`), not the test. `_any_truncated` checks already-tagged values → truncation never fires. Fix: one-line change to check raw inputs before tagging. WO: `engineering/work_orders/WO-FIX-PERCEPTION-0006.md`. QUEUED — dispatch after WO-FIX-AVATARBRIDGE-001 result card.
+
+**`test_wo096_desktop_perception` AT-2:** Board IRV confirms `get_active_window` not present in either production file — AT-2 appears already passing. MT to confirm when running batch. No WO required.
+
+### CE-001 — Status Unchanged
+
+`SPEC_CE_001_file_output_capability_2026-08-27.md` — SPECIFIED. **AWAITING DAVID L3 RATIFICATION.** No Builder WO until ratified.
+
+---
+
 ## PROGRAMME FOCUS — 2026-08-27
 
 **company_focus:** Navigation + Verification + Embodiment Alignment + Game Phase 1
@@ -34,9 +112,11 @@ Gap D (post-LLM gate): CLOSED — commit `4688685`
 Next item: **MT verify WO-EA2-1** (`test_ea2_1_company_state.py` + `test_ea2_2_company_intents.py`)  
 **Builder governance gap CLOSED 2026-08-27** (commit `5548a30`): WO-EA2-1 implementation predated result-card convention. COMPLETION_LOG.md entry filed; `FROM_BUILDER_WO-EA2-1_company_state_writer_result.md` filed to DONE/. Tests confirmed: `test_ea2_1_company_state.py` 6/5 PASS · `test_ea2_2_company_intents.py` 11/11 PASS. Evidence now available for MT formal verification.
 
-### Initiative 02 — ACKNOWLEDGED ✅
+### Initiative 02 — ACKNOWLEDGED ✅ | MASTER PROTOCOL FILED 2026-08-28 ✅
 Acknowledgement: `docs/architecture/findings/INITIATIVE_02_ACKNOWLEDGEMENT_2026-08-27.md`  
-Governance constitution in force. No implementation required. All seats operate under its rules from this session forward.
+Governance constitution in force. No implementation required. All seats operate under its rules from this session forward.  
+**MASTER MULTI-SEAT OPERATING PROTOCOL filed 2026-08-28:** `docs/architecture/MASTER_MULTI_SEAT_OPERATING_PROTOCOL.md`  
+Authority: David L3. 64-section operating constitution turned into a permanent canonical reference document. Covers: One Build List · One Dispatch Board · One Workstream · Seat Boundaries · No Spontaneous WO Creation · Evidence Chain · Blocked Means Blocked · L3 Authority · Historical Material · Anti-Mini-Programme Rule · All Architectural Invariants · Anti-Drift Checklists · Status Language Convention. All seats use this document as their operating reference; Board does not receive the 64-section prompt again — seats refer to the canonical file.
 
 ---
 
@@ -103,9 +183,12 @@ Result card: `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-REL-001_intent_rela
 **BLOCKED — unchanged:**
 - WO-NAV-013 close: MT verification gate
 - PRES-004 WO: WO-NAV-013 MT verify + DM-2/DM-3
-- WO-GUARD-001 close: Board/LA independent production guard-chain verification
-- WO-MOBILE-001 close: Board/LA + MT mobile-end verification
 - 05b/WO-112: FREEZE_V1_LOCK (executive.py)
+
+**CLOSED 2026-08-28 (removed from blocked list):**
+- WO-GUARD-001: ✅ Board/LA close complete
+- WO-MOBILE-001: ✅ Board/LA close complete
+- WO-EA2-NEW-A: ✅ Board/LA close complete
 
 **Pre-existing defect dispatched to Board (diagnosis only — no fix authorised):**
 - `test_wo096_desktop_perception` AT-2: import style mismatch — fixture uses module-style `import` vs function-style `from ... import get`. Fix is one-line.
@@ -151,13 +234,13 @@ WO-NAV-001 · WO-NAV-002 · WO-NAV-003 · WO-NAV-004 · WO-NAV-005 · WO-NAV-006
 | WO-EA2-2 (Presence panel) | WO-EA2-1 MT verify → Board dispatch | MT → Board → Design |
 | WO-NAV-013 close | MT verification | MT |
 | PRES-004 WO | WO-NAV-013 MT verify AND DM-2/DM-3 | MT + Design |
-| WO-CAP-001 architectural close | Board/LA verify production call chain | Board/LA |
+| ~~WO-CAP-001 architectural close~~ | ✅ CLOSED 2026-08-27 — Board/LA IRV confirmed all 5 call chain links (`enrich_from_plan` → `record_capability_result` → JSONL → `recent_capability_results` → `LiveWorldState.capability_results` → `spine.py attention_in`) | — |
 | SP-25/SP-26 (WO-NAV-012b) | DM-2/DM-3 geometry measurements | Design/MT |
 | 0057 (4-second rule) | David L3 latency policy rulings | David L3 |
 | WO-CANON-XI parity gate | Live Unity move data (brain_route + unity_route) | Design → live run |
 | 0081 parity step 2 | Live Unity sessions with current code | — |
 | 05b/WO-112 | FREEZE_V1_LOCK (executive.py) | David L3 unfreeze |
-| WO-EA2-NEW-A architectural close | Board/LA verify `company_state` in `attention_in["world_state"]` after live turn + `executive.py` diff empty | Board/LA |
+| ~~WO-EA2-NEW-A architectural close~~ | ✅ CLOSED 2026-08-28 | — |
 | Gap B (company.* intents) | WO-EA2-2 scope (covers partial) | Board → Design/Builder |
 | ELO-HISTORY recovery | David ChatGPT exports | David L3 |
 | CP-003 Planetary Layer WO | Board to issue (depends on SP-29 weights D-gate) | Board |
@@ -3489,5 +3572,43 @@ No independently executable Builder items remain. All governed work is:
 2. **avatar_bridge.py fix WO** — `core/avatar_bridge.py:19` broken import (`from_state`, `orb_intensity` don't exist in `emotion_engine.py`). Options: implement the missing symbols, or rewrite `avatar_bridge.py` against current API.
 3. **Perception test fix WOs** (optional — low priority): `test_wo096` AT-2 + `test_card_0006` AT-3/AT-5 described above. Builder ready to execute on issuance.
 4. **WO-CANON-XI parity** — dispatch Design to run live Unity moves emitting `brain_route` + `unity_route` to `route_memory.jsonl`. Gate for XI-AD-2.
+
+*Builder · 2026-08-28*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-28 (Session 2 — SPINE-001 reconciliation + gate scan)
+**Authority:** Builder execution · `FROM_ARCHITECT_2026-08-27_SPINE_WO_DEFECT_RECONCILIATION.md`
+
+### WO-SPINE-001 reconciliation — ✅ 17/17 PASS under VP-2 rule
+
+MT reported 15/17. Builder re-ran under `~/miniconda3/bin/python3 -m pytest`: **17/17 PASS** (0.23s). No implementation changes required — discrepancy was runner/environment only. DONE card updated with re-verification note. SPINE-002 and SPINE-003 were already re-verified in previous session (27/27 + 22/22). Reconciliation result filed: `builder/FROM_BUILDER_2026-08-28_SPINE_RECONCILIATION_RESULT.md`. Commit: `844b887`.
+
+### MT dispatch observed (2026-08-28) — not Builder work
+
+`blender/agent_bus/mt/FROM_ARCHITECT_2026-08-28_MT_dispatch_NAV013_EA21.md` dispatches MT to:
+1. Verify WO-NAV-013 (5 ATs, commit `fe89023`) → Board close → PRES-004 gate advance
+2. Verify WO-EA2-1 (17 ATs across 2 files) → Board close → WO-EA2-2 (Presence panel) dispatch
+
+Builder cannot act on PRES-004 until Board closes WO-NAV-013 post-MT-verify.
+
+### WO-073b (0059 in DOING) — externally blocked
+
+Live latency measurement required for full closure. Groq HTTP 403 + Cerebras HTTP 403 (Cloudflare block). Tests 5/5 PASS (commit `3712836`). Router implementation complete. First-audible-word measurement cannot be taken until Groq/Cerebras key status resolved. David/Board action needed.
+
+### Builder queue status — SEAT READY, NO AUTHORISED EXECUTABLE WORK
+
+All governed items checked this session:
+
+| Item | Status | Blocker |
+|---|---|---|
+| SPINE-001 reconciliation | ✅ DONE | Filed to Board |
+| WO-PRES-004 | ⏸ HELD | MT NAV-013 verify + Board close first |
+| WO-112 (05b) | 🔴 BLOCKED | FREEZE_V1_LOCK on executive.py decision logic |
+| 0057 | ⏸ HELD | David L3 latency policy ruling |
+| 0059 (WO-073b) | ⏸ IN DOING — blocked | Groq/Cerebras 403; live measurement impossible |
+| 0081/WO-CANON-XI | ⏸ HELD | Design dispatch for live Unity parity moves |
+| F2 fix | 🔴 NO WO | Board must issue WO |
+| avatar_bridge fix | 🔴 NO WO | Board must issue WO |
 
 *Builder · 2026-08-28*
