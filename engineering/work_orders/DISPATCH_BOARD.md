@@ -4191,3 +4191,33 @@ Result card: `builder/DONE/FROM_BUILDER_WO-116_WO-CANON-XXVI_wave6_adapt_meaning
 **SEAT READY — NO AUTHORISED EXECUTABLE WORK**
 
 *Builder · 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (WO-113 GAP result card filed — row 17 paper trail)
+
+### WO-113 (GAP) — ✅ DONE (`runtime/affordances.py` — implementation pre-dates this session)
+
+Board row 17 was stale: `🚫 **NOT BUILT**`. Implementation exists and all tests pass:
+
+| Runner | Result |
+|---|---|
+| `pytest tests/test_wo113_gap_assessment.py` | **10/10 PASS** |
+| `python3 tests/test_0014_wo113_gap_states.py` | **9/0 PASS** |
+
+Seven gap state constants present (`runtime/affordances.py` lines 80–86). `gap_state()` function at line 124. Body-size join proven (capability × geometry, not surface lookup). `reliable_range` marked `source: declared` — does not masquerade as learned experience.
+
+Example §6 output confirmed:
+```
+'I can wall-jump, but gap_distance=170px > reliable_range=160px (source: declared) — CAN-BUT-DEGRADED confidence 1%'
+```
+
+Result card: `builder/DONE/FROM_BUILDER_WO-113_gap_assessment_result.md`
+
+| Row | Name | Status |
+|---|---|---|
+| 17 | GAP | ✅ DONE — GA-1…GA-9 + 10/10 pytest |
+
+**SEAT READY — NO AUTHORISED EXECUTABLE WORK**
+
+*Builder · 2026-08-28*
