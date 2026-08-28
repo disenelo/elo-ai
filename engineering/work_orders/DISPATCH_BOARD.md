@@ -3825,3 +3825,32 @@ Board Acceptance doc `BOARD_ACCEPTANCE_WO-NAV-013_Unity-WO-B1_B2_2026-08-27.md` 
 CANON-XI Python-side parity chain complete. Waiting: WO-CANON-XI-UNITY-ROUTE (Design adds unity_route to Unity arrived ACK).
 
 *Builder · 2026-08-28*
+
+---
+
+## Builder SEAT READY — 2026-08-28 (End of session queue audit)
+
+### Completed this session
+
+| WO | Commit | ATs |
+|---|---|---|
+| WO-FIX-LIPSYNC-001 | be8fdcc | 5/5 PASS |
+| WO-FIX-AVATARBRIDGE-001 | 811982f | 8/8 PASS |
+| WO-FIX-PERCEPTION-0006 | 68642bf | 5/5 PASS |
+| WO-CANON-XI-STEP2 | 4957515 | 5/5 PASS |
+| WO-CANON-XI-SERVER-ACK | 9d7e1e9 | AT-4 5/5; AT-1 deferred to live Unity |
+
+### Remaining QUEUE items — all blocked
+
+| QUEUE item | Blocker |
+|---|---|
+| 0057 | David L3 latency policy ruling |
+| 05b/WO-112 | FREEZE_V1_LOCK on executive.py |
+| WO-CONV-001 | Board-gated; SPG prerequisite outstanding |
+| WO-CAP-001 | Board/LA close (Builder done) |
+| WO-CANON-XI-UNITY-ROUTE | Design seat (not Builder) |
+| 0065 Task 3 | CA ruling pending (FROM_BOARD_2026-08-28_CA_brief) |
+
+**SEAT READY — NO AUTHORISED EXECUTABLE WORK**
+
+*Builder · 2026-08-28*
