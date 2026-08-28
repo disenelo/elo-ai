@@ -3411,6 +3411,22 @@ def _process_turn(raw: str) -> dict:
                             )
                             # WO-PRES-004 D-3: one-shot — clear pending move to prevent loop
                             _PENDING_MOVE["active"] = False
+                            # WO-PRES-004B: write nav_fail fields to blender_state for Design expression trigger
+                            try:
+                                from blender_bridge.state_writer import patch as _sw_patch
+                                import time as _pres_time
+                                _nav_fail_reason = (_failed_outcome or {}).get("reason", "no_reachable_route")
+                                _nav_fail_val = (
+                                    "cant_reach" if _nav_fail_reason == "no_reachable_route"
+                                    else "evaluating" if "eval" in _nav_fail_reason
+                                    else "no_route"
+                                )
+                                _sw_patch({
+                                    "nav_fail":    _nav_fail_val,
+                                    "nav_fail_ts": _pres_time.time(),
+                                })
+                            except Exception:
+                                pass
                             # WO-PRES-004 D-4: log to capability result chain
                             try:
                                 from self.capability_memory import record_capability_result as _rcr
