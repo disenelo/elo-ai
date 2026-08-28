@@ -5,6 +5,25 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-28 (PRESENCE TrackList + PRES-004 Design half confirmed · SPINE reconciled · Elevation ACK)
+**Authority:** `FROM_DESIGN_2026-08-28_PRESENCE_TRACKLIST_full.md` · `FROM_DESIGN_2026-08-28_WO-PRES-004_visual_expression_SPEC.md` · `FROM_BUILDER_2026-08-28_SPINE_RECONCILIATION_RESULT.md` [all read 2026-08-28].
+
+**PRES-004 Design half CONFIRMED:** `EloNavExpression.cs` CLIBUILD_OK · polls `nav_fail`/`nav_fail_ts` edge-triggered · three states: `cant_reach`→head-shake, `evaluating`→scan, `no_route`→sigh-slump. Builder trigger (`nav_fail`/`nav_fail_ts`/`nav_fail_dir` write) already wired by WO-PRES-004B commit `0c7b899`. **PRES-004 full round-trip CONFIRMED — implementation complete.** David visual read of the three beats is the remaining step (David L3 taste item, not a Build List item).
+
+**PRESENCE TrackList (Design `FROM_DESIGN_2026-08-28_PRESENCE_TRACKLIST_full.md`) reconciled:**
+- All core motion behaviours ✅ (walk, hop, up-jump, wall-jump, down-drop, climb, etc.)
+- Nav / gaze / VFX / expression all ✅ (Unity-WO-B1/B2, SP-24, WO-099a, WO-058, WO-062, PRES-004)
+- UI panels ✅ (WO-EA2-2 company dashboard, WO-BOARD-002 Board State panel — PENDING_MT)
+- Open items gated on David's eyes/taste or eLo OS emit (not Design implementation gaps)
+- §E LOCKED DECISIONS captured [VERIFIED from source]: One Brain (never invents cognition), mood = feel+colour never navigation, calm is the action, detection scales with body size, motion speeds locked (back-up = WALK speed), facing rule (DOWN drop faces FRONT), animation timing = normalized clip time (0–1), keep motion set restrained, colour psychology = Hawkins+Abraham-Hicks.
+- Capability status panel (Design item 2): needs `show_capability_panel` emit from eLo OS/Builder. Gap noted — no existing WO covers this emit. Future Builder item; not blocking now.
+
+**Design elevation ACK filed:** `FROM_ARCHITECT_2026-08-28_elevation_ACK.md` — PRES-003 dispatched ✅, PRES-004 done ✅, Q-NAV-4 covered ✅, Q-NAV-5 FROZEN (FREEZE_V1_LOCK, correcting Design's assumption that Q-NAV-4 unblocks it), Q-CUR-1 awaiting L3.
+
+**SPINE-001/002/003 CLOSED** — see next update for detail.
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-28 (CANON-XI-UNITY-ROUTE Unity side DONE · SPINE-001/002/003 CLOSED · F2 superseded)
 **Authority:** `FROM_DESIGN_2026-08-28_WO-CANON-XI-UNITY-ROUTE_result.md` · `FROM_BUILDER_2026-08-28_SPINE_RECONCILIATION_RESULT.md` · `FROM_BUILDER_2026-08-28_F2_DIAGNOSIS.md` [all read 2026-08-28].
 
@@ -422,9 +441,9 @@ WO-NAV-001 · WO-NAV-002 · WO-NAV-003 · WO-NAV-004 · WO-NAV-005 · WO-NAV-006
 | ~~WO-CAP-001 architectural close~~ | ✅ CLOSED 2026-08-27 — Board/LA IRV confirmed all 5 call chain links (`enrich_from_plan` → `record_capability_result` → JSONL → `recent_capability_results` → `LiveWorldState.capability_results` → `spine.py attention_in`) | — |
 | SP-25/SP-26 (WO-NAV-012b) | ~~DM-2/DM-3 SATISFIED 2026-08-28~~ — Builder: read jump_px LIVE from capability_set (do not hardcode 576) | Builder flag |
 | 0057 (4-second rule) | David L3 latency policy rulings | David L3 |
-| WO-CANON-XI parity — Python side | WO-CANON-XI-STEP2: add brain_route/unity_route to remember_route() — QUEUED after FIX-PERCEPTION-0006 | Builder (queued) |
-| WO-CANON-XI parity — Unity side | WO-CANON-XI-UNITY-ROUTE: add unity_route to arrived ACK — 🟠 DISPATCHED → Design 2026-08-28 | Design (dispatched) |
-| 0081 parity step 3 | Remove Unity local selection — BLOCKED on step 2 parity prove ≥ 80% | Builder (after step 2) |
+| WO-CANON-XI parity — Python side | ~~WO-CANON-XI-STEP2: add brain_route/unity_route to remember_route()~~ — ✅ DONE 2026-08-28 (commit `4957515`, 5/5 PASS) | ✅ CLOSED |
+| WO-CANON-XI parity — Unity side | ~~WO-CANON-XI-UNITY-ROUTE: add unity_route to arrived ACK~~ — ✅ DONE 2026-08-28 · AT-1..4 PASS · runtime confirmed `unity_route=["win-122","win-15","win-1679"]` · AT-5 DEFERRED (per-leg ACK, Board ruling) · **PENDING Design commit** (request filed) · AT-1 MT verify pending commit | ✅ UNITY SIDE CLOSED (commit pending) |
+| 0081 parity step 3 | Remove Unity local selection — BLOCKED: awaiting AT-1 MT verify (gates on Design commit → MT pass) | Builder (after AT-1 PASS) |
 | 05b/WO-112 | FREEZE_V1_LOCK (executive.py) | David L3 unfreeze |
 | ~~WO-EA2-NEW-A architectural close~~ | ✅ CLOSED 2026-08-28 | — |
 | Gap B (company.* intents) | WO-EA2-2 scope (covers partial) | Board → Design/Builder |
@@ -4140,6 +4159,34 @@ The Execution step is also eLo's own — faculties contribute, eLo reconciles, e
 ### Updated queue scan
 
 All Builder-executable QUEUE items remain DONE or blocked (per prior entry). WO-CANON-XIII §A+§B result card now filed — completes the paper trail.
+
+**SEAT READY — NO AUTHORISED EXECUTABLE WORK**
+
+*Builder · 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (WO-116 ADAPT result card filed — Wave 6 paper trail)
+
+### WO-116 (ADAPT) — ✅ DONE (Wave 6 commit `3b8eb6f` · 2026-08-24)
+
+Board row 22 was stale: "NOT BLOCKED — UNBUILT. Cleared 2026-08-21." The Wave 6 commit landed 2026-08-24 — after that entry was written. Test result (run 2026-08-28): **11/11 PASS** including:
+
+**§7 acceptance criterion met:**
+```
+BEFORE   wall_jump confidence = 0.700  (7/10 successes)
+AFTER    wall_jump confidence = 0.800  (after one more success)
+```
+The delta moves. ADAPT is not just memory — it is adaptive.
+
+Result card: `builder/DONE/FROM_BUILDER_WO-116_WO-CANON-XXVI_wave6_adapt_meaning_result.md`
+
+| Row | Name | Status |
+|---|---|---|
+| 20 | LEARN | ✅ DONE — LN-1/2/3/4 |
+| 22 | ADAPT | ✅ DONE — AD-1/2/3 · §7 confirmed |
+| 25 | SELF-INTERPRET | ✅ DONE (commit `4b8955d`, board line 1485) |
+| 26 | MEANING | ✅ DONE — MG-1/2/3/4 |
 
 **SEAT READY — NO AUTHORISED EXECUTABLE WORK**
 
