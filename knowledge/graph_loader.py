@@ -245,14 +245,23 @@ def retrieve(user_input: str, top_k: int = 3) -> list[dict]:
     entities = _find_entities(text)
     results: list[dict] = []
 
-    # entity hits
+    # WO-CANON-XXIV §D: statuses that are excluded from retrieval (behaviourally real)
+    _EXCLUDED_STATUSES = frozenset({"contested", "retracted"})
+
+    # entity hits — skip contested/retracted nodes
     for e in entities:
+        if e.get("status") in _EXCLUDED_STATUSES:
+            continue
         kw_score = sum(1 for k in e.get("keywords", []) if k in text)
+        # §D: epistemic_kind is distinct from ontology type.
+        # Authored entities default to "fact"; promoted nodes carry their own kind.
+        epistemic_kind = e.get("epistemic_kind") or e.get("status") or "fact"
         results.append({
             "label":      e.get("name", e.get("id", "")),
             "content":    e.get("description", ""),
             "confidence": float(e.get("confidence", 1.0)),
-            "kind":       e.get("type", "entity"),
+            "kind":       epistemic_kind,
+            "type":       e.get("type", "entity"),
             "evidence":   list(e.get("evidence", [])),
             "score":      kw_score,
         })
@@ -269,6 +278,7 @@ def retrieve(user_input: str, top_k: int = 3) -> list[dict]:
                     "content":    r.get("connection", r.get("meaning", "")),
                     "confidence": float(r.get("confidence", 1.0)),
                     "kind":       "relationship",
+                    "type":       "relationship",
                     "evidence":   list(r.get("evidence", [])),
                     "score":      float(r.get("strength", 0.5)),
                 })
@@ -329,6 +339,52 @@ def build_context(user_input: str, max_chars: int = 800) -> str:
 
     context = "\n".join(lines)
     return context[:max_chars]
+
+
+# ── WO-CANON-XXIV §D: write-path validation + referential integrity ───────────
+
+_EPISTEMIC_KINDS = frozenset({"fact", "perspective", "inference", "promoted_memory"})
+
+
+def validate_graph_write(entry: dict) -> None:
+    """
+    §D: Validate an entity dict before writing to the knowledge graph.
+    Raises ValueError on violations.
+
+    Rules:
+    - epistemic_kind must be one of {fact, perspective, inference, promoted_memory}
+    - fact and promoted_memory MUST have non-empty evidence[]
+    - perspective MUST carry epistemic_kind="perspective" (always tagged)
+    - strength is salience only — never treated as confidence (read-path guard)
+    """
+    kind = entry.get("epistemic_kind") or entry.get("kind")
+    if kind and kind not in _EPISTEMIC_KINDS and kind not in ("contested", "retracted"):
+        raise ValueError(f"Unknown epistemic_kind {kind!r}; must be one of {_EPISTEMIC_KINDS}")
+
+    if kind in ("fact", "promoted_memory"):
+        evidence = entry.get("evidence") or []
+        if not evidence:
+            raise ValueError(
+                f"epistemic_kind={kind!r} requires non-empty evidence[]; "
+                "no orphan facts allowed (Vol XXIV §2.4)"
+            )
+
+
+def check_referential_integrity(graph: dict) -> list[str]:
+    """
+    §D: Check that every relationship from/to resolves to an existing entity id.
+    Returns list of problem strings (empty = clean).
+    """
+    entity_ids = {e.get("id") for e in graph.get("entities", []) if e.get("id")}
+    problems: list[str] = []
+    for r in graph.get("relationships", []):
+        frm = r.get("from")
+        to  = r.get("to")
+        if frm and frm not in entity_ids:
+            problems.append(f"relationship {r.get('id','?')!r}: dangling from={frm!r}")
+        if to and to not in entity_ids:
+            problems.append(f"relationship {r.get('id','?')!r}: dangling to={to!r}")
+    return problems
 
 
 # ── WKG Phase 1: retrieve_wkg() ───────────────────────────────────────────────
