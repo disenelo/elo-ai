@@ -82,7 +82,8 @@
       {"seat": "MT", "item": "WO-CANON-XI-UNITY-ROUTE round-trip verify", "status": "DISPATCHED 2026-08-28 — AT-D1 through AT-D5; result card: FROM_MT_WO-CANON-XI-UNITY-ROUTE_verification_result.md"},
       {"seat": "Board/LA", "item": "WO-EA2-NEW-A architectural close", "status": "CLOSED 2026-08-28 — moved to verified_done"},
       {"seat": "Board/LA", "item": "WO-GUARD-001 production guard-chain verification", "status": "CLOSED 2026-08-28 — moved to verified_done"},
-      {"seat": "Board/LA", "item": "WO-MOBILE-001 Board/LA close", "status": "PENDING — MT mobile-end verification first"}
+      {"seat": "MT", "item": "WO-MOBILE-001 mobile-end verification", "status": "DISPATCHED 2026-08-28 — fire mobile_foreground/mobile_background events; confirm elo_state.json; result card: FROM_MT_WO-MOBILE-001_mobile_end_verification_result.md"},
+      {"seat": "Board/LA", "item": "WO-MOBILE-001 Board/LA close", "status": "AWAITING MT mobile-end return"}
     ]
   },
 
