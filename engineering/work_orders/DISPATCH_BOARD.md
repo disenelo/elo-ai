@@ -17,6 +17,30 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-28 (Design Q-NAV/Q-BODY/Q-CUR crosscheck reconciled · Q-CUR scoping added to David L3 queue)
+**Authority:** `FROM_DESIGN_2026-08-28_Q-NAV_Q-BODY_Q-CUR_presence_crosscheck.md` · `docs/architecture/findings/RD_QCUR3_significance_to_executive_2026-08-23.md` [VERIFIED read 2026-08-28].
+
+**Design half — ALL PROVEN live (no false dependency):**
+- Q-NAV-2/DM-1: `body_win_id=1679`, `x/y`, `on_window`, `edge` — live ✅
+- Q-NAV-4/DM-2: `capability_set.jump_px=270` (proportional post-fix), `reach_px=150` — live ✅
+- Q-NAV-3/DM-3: `surface_graph` 81 nodes / 2402 edges — live ✅
+- Q-NAV-5/Q-CUR-1/DM-4: `last_move{arrived,fell,outcome,route,legs,gap,retries}` — live ✅
+- Q-BODY-3/DM-5: `height=0.0625`, `embodiment=desktop` — live ✅
+- Q-MOVEMENT all 5 phases: WHERE I AM · WANT TO GO · AM MOVING · ARRIVED · WHAT HAPPENED — live ✅
+
+**Brain half — correctly Builder's lane, now unblocked:**
+
+| Q | What it is | Status |
+|---|---|---|
+| **Q-NAV-4** | Candidate routes + difficulty scoring using live `jump_px` | **COVERED** by WO-PRES-003-PLANNER (dispatched 2026-08-28, D-3 = live jump_px read) |
+| **Q-NAV-5** | Executive re-decision after failure | **BLOCKED** — FREEZE_V1_LOCK (executive.py, LAW-017) + 0057 policy pending David L3 |
+| **Q-CUR-1..5** | World-delta → significance → curiosity → Executive One Brain path | **SCOPING REQUIRED** — see below |
+
+**Q-CUR-1..5 R&D findings (RD_QCUR3 — VERIFIED ABSENT 2026-08-23):**
+Three breaks verified absent: (C-1) autonomous spine call path — `ambient_thought()` bypasses `spine.run()` entirely; (C-2) `trigger_source` field absent from `attention` dict; (C-3) `delta_to_attention_candidate()` bridge function absent. None of C-1/C-2/C-3 require `executive.py` changes (not FREEZE_V1_LOCK blocked). This is a major architectural change — curiosity wired through the One Brain Executive rather than a parallel brain. **David L3 scoping decision required before WO is authored** — added to L3 queue as item (6).
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-28 (Builder defect chain DONE · CANON-XI Python parity DONE · PRES-003 released · Q-NAV-4/Q-CUR-1 unblocked)
 **Authority:** Builder result cards (5 filed) + Design crosscheck (`FROM_DESIGN_2026-08-28_Q-NAV_Q-BODY_Q-CUR_presence_crosscheck.md` + `FROM_DESIGN_2026-08-28_PRES-003_wrap_route_leg_L3_intent.md`). Board IRV 2026-08-28.
 
@@ -3902,7 +3926,7 @@ CANON-XI Python-side parity chain complete. Waiting: WO-CANON-XI-UNITY-ROUTE (De
 | WO-CANON-XI-UNITY-ROUTE | Design seat (not Builder) |
 | 0065 Task 3 | CA ruling pending (FROM_BOARD_2026-08-28_CA_brief) |
 
-**SEAT READY — NO AUTHORISED EXECUTABLE WORK**
+**SEAT READY — NO AUTHORISED EXECUTABLE WORK (after PRES-003-PLANNER — see next block)**
 
 *Builder · 2026-08-28*
 
@@ -3921,6 +3945,45 @@ CANON-XI Python-side parity chain complete. Waiting: WO-CANON-XI-UNITY-ROUTE (De
 
 ### Remaining blockers (unchanged)
 - WO-CANON-XXIV §C: Architect lane (doc cross-reference Vol XXIV ↔ LEARNING_LOOP_v1.md)
+- WO-CANON-VI/XVI/X: CA alignment rulings B/C/D required
+- WO-CANON-XXI: Vol VIII + XXVII governance gate
+- WO-CANON-XXII: Vol XVI dependency
+- WO-CONV-001, WO-CAP-001: Board/LA close pending
+- 0057: David L3 latency policy
+
+**SEAT READY — NO AUTHORISED EXECUTABLE WORK**
+
+*Builder · 2026-08-28*
+
+---
+
+## Builder Report — 2026-08-28 (WO-PRES-003-PLANNER DONE)
+
+**WO-PRES-003-PLANNER** — DONE (commit 2afc687 · 5/5 PASS + 5/5 NAV-013 regression)
+
+### Completed this block
+| WO | Scope | Tests | Commit |
+|---|---|---|---|
+| WO-PRES-003-PLANNER | `handle_navigate()` wrap_bottom_to_top route leg; live jump_px from elo_spatial.json; navigation_failed when jump_px=0 | AT-1/5 PASS (5/5) | 2afc687 |
+
+**Key deliverables:**
+- `_read_spatial_for_nav()` — reads `blender/elo_spatial.json` live each call, returns (body_win_id, edges, jump_px). Graceful fallback (None, [], 0) on any error.
+- `_directly_reachable()` — single-hop edge check: `from==win-{body}` ∧ `to==win-{goal}` ∧ `gap_px <= jump_px`.
+- `handle_navigate()` extended: when goal_win_id not directly reachable and jump_px > 0 → `intent["route"] = [wrap_bottom_to_top leg, jump leg]`. When jump_px <= 0 → navigation_failed. Elo_spatial unreadable → falls through (original behaviour preserved).
+- D-3 satisfied: jump_px is never hardcoded — read live from `capability_set.jump_px` per call.
+
+**AT results:**
+| AT | Description | Result |
+|---|---|---|
+| AT-1 | gap_px(500) > jump_px(100) → route[0] is wrap_bottom_to_top | ✅ PASS |
+| AT-2 | gap_px(50) <= jump_px(200) → no route field (direct path) | ✅ PASS |
+| AT-3 | jump_px=0 → navigation_failed outcome | ✅ PASS |
+| AT-4 | jump_px=10, gap_px=50 → wrap candidate added (live jump_px confirmed) | ✅ PASS |
+| AT-5 | route JSON-serialisable; wrap leg type + jump leg goal_win_id preserved | ✅ PASS |
+| NAV-013 AT-2 regression | handle_navigate({"goal_win_id": 7}) still returns name="move", goal_win_id=7 | ✅ PASS |
+
+### Remaining blockers (unchanged)
+- WO-CANON-XXIV §C: Architect lane (doc cross-reference)
 - WO-CANON-VI/XVI/X: CA alignment rulings B/C/D required
 - WO-CANON-XXI: Vol VIII + XXVII governance gate
 - WO-CANON-XXII: Vol XVI dependency
