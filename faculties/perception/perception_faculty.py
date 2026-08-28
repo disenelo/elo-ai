@@ -322,7 +322,8 @@ def perceive(
     _confidence_final = round(confidence, 3)
     # Ch.4 §4.3: partial when primary modalities (window, vision) are absent, confidence low,
     # or any modality read is truncated (structural signal — enforced pre-prompt, not a rail).
-    _any_truncated = any(_is_truncated(v) for v in modality_reads.values() if isinstance(v, str))
+    _raw_sensor_inputs = [window_title, vision_text, voice_transcript, file_context]
+    _any_truncated = any(_is_truncated(v) for v in _raw_sensor_inputs if v is not None)
     _partial = (
         _confidence_final < 0.7
         or source_health.get("window", {}).get("status") == "absent"
