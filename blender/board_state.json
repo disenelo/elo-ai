@@ -42,27 +42,15 @@
       {"wo": "WO-FIX-PERCEPTION-0006", "description": "_is_truncated fix — commit 68642bf", "ats": "MT VERIFY PENDING"},
       {"wo": "WO-PRES-004", "description": "Failed navigation outcome chain — Builder: nav_fail_ts write (commit 0c7b899); Design: EloNavExpression.cs 3 states (CLIBUILD_OK)", "ats": "BOTH HALVES DONE — MT round-trip pending"},
       {"wo": "WO-EXP-001", "description": "storytelling_style in Meaning Object (scope verified not duplicating WO-SC-NEW-001)", "ats": "MT VERIFY PENDING"},
-      {"wo": "WO-CANON-XI-UNITY-ROUTE", "description": "unity_route + leg_win_id in DesktopBuddy.cs movement ACK — AT-5 PASS (Board ruling 2026-08-28: terminal leg win_id sufficient)", "ats": "5/5 PASS — MT round-trip dispatched 2026-08-28"}
+      {"wo": "WO-CANON-XI-UNITY-ROUTE", "description": "unity_route + leg_win_id in DesktopBuddy.cs movement ACK — AT-5 PASS (Board ruling 2026-08-28: terminal leg win_id sufficient)", "ats": "5/5 PASS — MT round-trip dispatched 2026-08-28"},
+      {"wo": "WO-EA2-NEW-A", "description": "company_state → spine._attention_in['world_state']['company_state'] → executive.decide(). executive.py: 0 references (FREEZE_V1_LOCK clean). Board/LA source-verified 2026-08-28.", "ats": "7/7 PASS + Board/LA CLOSED"},
+      {"wo": "WO-GUARD-001", "description": "D-1/D-2/D-3 response authority guards: identity_guard → guards → shadow_capture. Order confirmed server.py:4839/4844/4865. commit d621ee1. Board/LA source-verified 2026-08-28.", "ats": "6/6 PASS + Board/LA CLOSED"}
     ]
   },
 
   "pending_verification": {
     "note": "DONE by Builder/Design — awaiting Board/LA architectural close or MT verify before programme counts them.",
     "items": [
-      {
-        "wo": "WO-EA2-NEW-A",
-        "description": "company_state → LiveWorldState → attention_in['world_state']['company_state'] wiring",
-        "ats": "7/7 PASS",
-        "awaiting": "Board/LA architectural close — verify company_state in attention_in['world_state'] after live turn + executive.py diff empty",
-        "result_card": "blender/agent_bus/builder/DONE/FROM_BUILDER_WO-EA2-NEW-A_company_state_wiring_result.md"
-      },
-      {
-        "wo": "WO-GUARD-001",
-        "description": "Response authority guards (D-1 current-user-reality, D-2 tool provenance, D-3 contradiction)",
-        "ats": "6/6 PASS",
-        "commit": "d621ee1",
-        "awaiting": "Board/LA independent verification of production guard chain in server.py (guard inserted after identity_guard, before shadow_capture)"
-      },
       {
         "wo": "WO-MOBILE-001",
         "description": "Mobile embodiment spine side (D-SPINE-1/2/3)",
@@ -97,8 +85,8 @@
       {"seat": "MT", "item": "WO-WKG-002/003 + WO-NAV-002/008 verification batch", "status": "OVERDUE — dispatched 2026-08-24; no explicit confirmation in MT returns"},
       {"seat": "MT", "item": "WO-FIX-LIPSYNC-001 + WO-FIX-AVATARBRIDGE-001 + WO-FIX-PERCEPTION-0006 + WO-EXP-001 + WO-PRES-004 round-trip verify", "status": "DISPATCHED — awaiting return"},
       {"seat": "MT", "item": "WO-CANON-XI-UNITY-ROUTE round-trip verify", "status": "DISPATCHED 2026-08-28 — AT-D1 through AT-D5; result card: FROM_MT_WO-CANON-XI-UNITY-ROUTE_verification_result.md"},
-      {"seat": "Board/LA", "item": "WO-EA2-NEW-A architectural close", "status": "PENDING — verify live turn + executive.py diff"},
-      {"seat": "Board/LA", "item": "WO-GUARD-001 production guard-chain verification", "status": "PENDING — verify server.py insertion point"},
+      {"seat": "Board/LA", "item": "WO-EA2-NEW-A architectural close", "status": "CLOSED 2026-08-28 — moved to verified_done"},
+      {"seat": "Board/LA", "item": "WO-GUARD-001 production guard-chain verification", "status": "CLOSED 2026-08-28 — moved to verified_done"},
       {"seat": "Board/LA", "item": "WO-MOBILE-001 Board/LA close", "status": "PENDING — MT mobile-end verification first"}
     ]
   },
