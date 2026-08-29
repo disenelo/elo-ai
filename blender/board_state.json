@@ -398,6 +398,13 @@
         "ats": "12/12 PASS",
         "date": "2026-08-29",
         "note": "David L3 live feel gate pending. Builder close complete."
+      },
+      {
+        "wo": "WO-ROUTER-001",
+        "description": "Capability-driven provider selection \u2014 TIER_PROVIDER_CANDIDATES + cost-sort replaces static ladder; D-2 WO-073 absorbed (pinned groq \u2192 Ollama floor); D-3 capability field in routing_trace.json; ELO_OLLAMA_MODEL default llama3.1:8b",
+        "ats": "8/8 PASS",
+        "date": "2026-08-29",
+        "note": "test_brain_authors 4/4 + test_wo073 6/6 regression clean"
       }
     ],
     "count": 57

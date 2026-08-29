@@ -84,13 +84,40 @@ _PROVIDER_COST_CLASS: dict[str, str] = {
     "claude":   _COST_PREMIUM_CLOUD,
 }
 
-# Tier→cheapest-first provider order (absent a tier Executive always provides, route
-# falls back to the live auto mode chain — the escalation-gate HOME is a CA open question)
+# Tier→cheapest-first provider order — kept for structural tests (test_brain_authors.py test 4).
+# WO-ROUTER-001 D-1: routing now uses _TIER_PROVIDER_CANDIDATES + cost-sort; this dict is NOT iterated.
+# RED when _TIER_PROVIDER_ORDER is removed: tests/test_brain_authors.py test 4 goes RED.
 _TIER_PROVIDER_ORDER: dict[int, list[str]] = {
     _TIER_CONVERSATIONAL: ["ollama", "groq", "cerebras", "gemini", "openai", "claude"],
     _TIER_REASONING:      ["groq", "cerebras", "openai", "gemini", "claude", "ollama"],
     _TIER_DEEP:           ["openai", "claude", "gemini", "groq", "cerebras", "ollama"],
 }
+
+# D-1 WO-ROUTER-001: capability descriptor per tier (seed of provider capability registry)
+_TIER_CAPABILITY: dict[int, str] = {
+    _TIER_CONVERSATIONAL: "language_generation",
+    _TIER_REASONING:      "language_generation_with_reasoning",
+    _TIER_DEEP:           "language_generation_deep_analysis",
+}
+
+# D-1 WO-ROUTER-001: candidate providers per tier — which providers can satisfy this capability.
+# Selection within the set is by cost (cheapest first), not by position.
+# CONVERSATIONAL: any provider; REASONING: cloud floor (no local 8b); DEEP: premium only.
+_TIER_PROVIDER_CANDIDATES: dict[int, list[str]] = {
+    _TIER_CONVERSATIONAL: ["ollama", "groq", "cerebras", "gemini", "openai", "claude"],
+    _TIER_REASONING:      ["groq", "cerebras", "gemini", "openai", "claude"],
+    _TIER_DEEP:           ["openai", "claude", "gemini"],
+}
+
+# D-1 WO-ROUTER-001: cost rank for provider selection (lower = preferred)
+_COST_RANK: dict[str, int] = {
+    _COST_FREE_LOCAL:    0,
+    _COST_CHEAP_CLOUD:   1,
+    _COST_PREMIUM_CLOUD: 2,
+}
+
+# D-3 WO-ROUTER-001: last capability routed — written by _route_by_tier; read by routing trace
+_last_route_capability: str = ""
 
 # Tier→token budget (Vol XX M-3 — tier is primary key, action secondary)
 _TIER_BUDGET: dict[int, int] = {
@@ -460,7 +487,7 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
     """Call local Ollama instance via stdlib urllib."""
     import urllib.request as _ureq, json as _json
     host  = os.environ.get("ELO_OLLAMA_HOST",  "http://localhost:11434").rstrip("/")
-    model = os.environ.get("ELO_OLLAMA_MODEL", "mistral")
+    model = os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
     payload = _json.dumps({
         "model":      model,
         "messages":   [
@@ -603,7 +630,25 @@ def _identity_assert(text: str, action: str) -> list[str]:
     return found
 
 
-# ── WO-BRAIN-AUTHORS: tier-aware routing ─────────────────────────────────────
+# ── WO-BRAIN-AUTHORS / WO-ROUTER-001: tier-aware routing ─────────────────────
+
+
+def _provider_available(provider: str) -> bool:
+    """True if provider is live right now (API key present + quota not cooling down)."""
+    if provider == "ollama":
+        return _ollama_available()
+    if provider == "groq":
+        return _groq_available() and time.monotonic() >= _groq_quota_cooldown_until
+    if provider == "cerebras":
+        return _cerebras_available()
+    if provider == "gemini":
+        return _gemini_available()
+    if provider == "openai":
+        return _openai_available()
+    if provider == "claude":
+        return _claude_available()
+    return False
+
 
 def _route_by_tier(
     system_prompt: str,
@@ -612,41 +657,50 @@ def _route_by_tier(
     action: str,
     max_sentences: int,
 ) -> tuple[str, str] | None:
-    """Try providers in _TIER_PROVIDER_ORDER[tier] order.
-    Returns (text, backend) or None if tier is not mapped or all providers fail.
+    """D-1 WO-ROUTER-001: capability-satisfaction provider selection.
+    Builds availability list for the tier, sorts by cost (cheapest first), calls in order.
+    Returns (text, backend) or None if tier unmapped or all providers fail.
 
-    ELO_BACKEND is an override — only call this when ELO_BACKEND is NOT set (mode == "auto").
-    Conversational → local-first (Ollama); Reasoning → Groq-first; Deep → OpenAI-first.
-
-    RED when _TIER_PROVIDER_ORDER is removed: tests/test_brain_authors.py test 2 goes RED.
+    ELO_BACKEND is an override — only call this when mode == "auto".
+    _TIER_PROVIDER_ORDER is preserved for structural tests.
+    RED when _TIER_PROVIDER_ORDER is removed: tests/test_brain_authors.py test 4 goes RED.
     """
-    if tier not in _TIER_PROVIDER_ORDER:
+    global _last_route_capability
+    if tier not in _TIER_PROVIDER_CANDIDATES:
         return None
+    _last_route_capability = _TIER_CAPABILITY.get(tier, "language_generation")
     _budget = _token_budget(action, tier)
-    for provider in _TIER_PROVIDER_ORDER[tier]:
+
+    _live = [p for p in _TIER_PROVIDER_CANDIDATES[tier] if _provider_available(p)]
+    _live.sort(key=lambda p: _COST_RANK.get(_PROVIDER_COST_CLASS.get(p, _COST_PREMIUM_CLOUD), 99))
+
+    _transient_fail: set[str] = set()
+    for provider in _live:
+        if provider in _transient_fail:
+            continue
         try:
-            if provider == "ollama" and _ollama_available():
+            if provider == "ollama":
                 raw = _ollama_call(system_prompt, user_input)
                 return _finish(raw, action, max_sentences, "ollama"), f"ollama(tier{tier})"
-            elif provider == "groq" and _groq_available():
+            elif provider == "groq":
                 raw = _groq_call(system_prompt, user_input, max_tokens=_budget)
                 if _has_lore_drift(raw, user_input):
                     continue
                 return _finish(raw, action, max_sentences, "groq"), f"groq(tier{tier})"
-            elif provider == "openai" and _openai_available():
+            elif provider == "openai":
                 raw = _openai_call(system_prompt, user_input, max_tokens=_budget)
                 if _has_lore_drift(raw, user_input):
                     continue
                 return _finish(raw, action, max_sentences, "openai"), f"openai(tier{tier})"
-            elif provider == "claude" and _claude_available():
+            elif provider == "claude":
                 raw = _claude_call(system_prompt, user_input, max_tokens=_budget)
                 return _finish(raw, action, max_sentences, "claude"), f"claude(tier{tier})"
-            elif provider == "cerebras" and _cerebras_available():
+            elif provider == "cerebras":
                 raw = _cerebras_call(system_prompt, user_input, max_tokens=_budget)
                 if _has_lore_drift(raw, user_input):
                     continue
                 return _finish(raw, action, max_sentences, "cerebras"), f"cerebras(tier{tier})"
-            elif provider == "gemini" and _gemini_available():
+            elif provider == "gemini":
                 raw = _gemini_call(system_prompt, user_input)
                 if _has_lore_drift(raw, user_input):
                     continue
@@ -655,6 +709,7 @@ def _route_by_tier(
             _logger.debug("Tier routing: duplicate from %s, trying next", provider)
         except Exception as e:
             _logger.debug("Tier routing: %s failed: %s", provider, e)
+            _transient_fail.add(provider)
     return None
 
 
@@ -822,7 +877,7 @@ def _ollama_stream(
     """
     import urllib.request as _ureq, json as _json, time as _t
     host  = os.environ.get("ELO_OLLAMA_HOST",  "http://localhost:11434").rstrip("/")
-    model = os.environ.get("ELO_OLLAMA_MODEL", "mistral")
+    model = os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
     payload = _json.dumps({
         "model":      model,
         "messages":   [
@@ -892,7 +947,7 @@ def _ollama_available() -> bool:
     try:
         import urllib.request as _ureq, json as _json
         host  = os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
-        model = os.environ.get("ELO_OLLAMA_MODEL", "mistral")
+        model = os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
         with _ureq.urlopen(f"{host}/api/tags", timeout=2) as _r:
             if _r.status != 200:
                 return False

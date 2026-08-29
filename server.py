@@ -4233,6 +4233,7 @@ def _process_turn(raw: str) -> dict:
             # Modelled on WO-017 movement_debug; emitted every turn to blender/routing_trace.json.
             try:
                 import time as _rt_time, json as _rt_json
+                from runtime.backend_router import _last_route_capability as _rt_cap
                 _rt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                         "blender", "routing_trace.json")
                 _rt_tmp  = _rt_path + ".tmp"
@@ -4244,6 +4245,7 @@ def _process_turn(raw: str) -> dict:
                     "cal_reason":          _cal_reason,
                     "tool_agent":          _agent or None,
                     "backend_used":        backend_used,
+                    "capability":          _rt_cap or None,
                     "llm_latency_ms":      round(_llm_latency_ms, 1),
                     "_ts":                 _rt_time.time(),
                 }
