@@ -150,6 +150,7 @@ _ACK_BODY_TYPES = frozenset({"sit_complete", "sit_held", "move_complete", "exit_
                                "stand_complete", "wave_complete",
                                "arrived", "movement_report"})  # SP-1: movement_report enters ACK path
 _ack_last_ts: float = 0.0     # last _ts seen — prevents re-appending the same event
+_mobile_last_ts: float = 0.0  # WO-FIX-MOBILE-REPLAY: dedup mobile events by timestamp
 
 
 def _parse_unity_events_tolerant(path: str) -> tuple[list[dict], int]:
@@ -1834,7 +1835,7 @@ def _init_session():
     # 0015: cursor persisted to unity_events_cursor.json so Designer's rotation can warn
     # (Rule 1) if it would discard a row above consumed_seq. Cursor also survives restart.
     def _poll_unity_events() -> None:
-        global _ack_last_ts
+        global _ack_last_ts, _mobile_last_ts  # WO-FIX-MOBILE-REPLAY
         import time as _pt
         from runtime.unity_events_cursor import read_cursor as _rc, write_cursor as _wc
         _poller_log = _logging.getLogger(__name__ + ".ack_poller")
@@ -1864,18 +1865,20 @@ def _init_session():
                     # WO-MOBILE-001 D-SPINE-1/2: mobile foreground/background events
                     # G4: events arrive only through this authenticated window process
                     elif _ev_type in ("mobile_foreground", "mobile_background"):
-                        try:
-                            from runtime.mobile_embodiment import (
-                                apply_mobile_foreground as _mob_fg,
-                                apply_mobile_background as _mob_bg,
-                            )
-                            _mob_ts = float(_ev.get("_ts", 0)) or _pt.time()
-                            if _ev_type == "mobile_foreground":
-                                _elo_self = _self_mutate(lambda s: _mob_fg(s, ts=_mob_ts))
-                            else:
-                                _elo_self = _self_mutate(lambda s: _mob_bg(s, ts=_mob_ts))
-                        except Exception as _mob_err:
-                            _poller_log.warning("WO-MOBILE-001: event handler error: %s", _mob_err)
+                        if _ev_ts > _mobile_last_ts:  # WO-FIX-MOBILE-REPLAY: dedup by ts
+                            try:
+                                from runtime.mobile_embodiment import (
+                                    apply_mobile_foreground as _mob_fg,
+                                    apply_mobile_background as _mob_bg,
+                                )
+                                _mob_ts = _ev_ts or _pt.time()
+                                if _ev_type == "mobile_foreground":
+                                    _elo_self = _self_mutate(lambda s: _mob_fg(s, ts=_mob_ts))
+                                else:
+                                    _elo_self = _self_mutate(lambda s: _mob_bg(s, ts=_mob_ts))
+                                _mobile_last_ts = _ev_ts  # WO-FIX-MOBILE-REPLAY
+                            except Exception as _mob_err:
+                                _poller_log.warning("WO-MOBILE-001: event handler error: %s", _mob_err)
                 if _new_seq > _ack_consumed_seq:
                     _ack_consumed_seq = _new_seq
                     _wc(_ack_consumed_seq)
