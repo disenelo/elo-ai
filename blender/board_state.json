@@ -363,6 +363,13 @@
         "ats": "4/4 PASS",
         "date": "2026-08-29",
         "note": "Implementation pre-existing; tests written this session"
+      },
+      {
+        "wo": "WO-BOARD-001",
+        "description": "board_state.json dashboard backend \u2014 /board_state endpoint in company_runtime/dashboard_server.py",
+        "ats": "5/5 PASS",
+        "date": "2026-08-29",
+        "note": "Implementation pre-existing; tests written this session"
       }
     ],
     "count": 57
