@@ -296,6 +296,16 @@
         "wo": "WO-045-BUILDER",
         "description": "Take Five Builder half \u2014 6/6 PASS; step_out + return_elo wired; exit-gate ordering clean",
         "ats": "6/6 PASS + Board/LA CLOSED 2026-08-29 (Design half pending for integrated DoD)"
+      },
+      {
+        "wo": "WO-FIX-MOBILE-REPLAY",
+        "description": "Mobile event replay guard \u2014 _mobile_last_ts added to server.py; mirrors ACK pattern",
+        "ats": "4/4 PASS + Board/LA CLOSED 2026-08-29 (commit a894ce7)"
+      },
+      {
+        "wo": "WO-FIX-WKG-ISOLATION",
+        "description": "WKG test ordering dependency fixed \u2014 test_canon_xxiv_promotion finally-block restores full graph",
+        "ats": "3/3 PASS + Board/LA CLOSED 2026-08-29 (commit 512d0a2)"
       }
     ],
     "count": 57
