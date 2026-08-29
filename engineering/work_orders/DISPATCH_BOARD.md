@@ -5218,3 +5218,36 @@ Authority: BUILD LIST §5 (inner-child expression, "no dedicated WO") · RTR-015
 9. HIST-007–012 ChatGPT exports (HIST-007 priority)
 
 *Board / Lead Architect · 2026-08-29*
+
+## BOARD STATE UPDATE — 2026-08-29 (continuation session — WO-ROUTER-001 + QUEUE audit)
+
+**Builder work completed this session (verified_done: 71 → 74):**
+
+| WO | Result | Status |
+|---|---|---|
+| **WO-ROUTER-001** — Capability-driven provider selection | 8/8 PASS · commit `d9cc0a7` · D-1: _TIER_PROVIDER_CANDIDATES + cost-sort replaces static ladder · D-2: WO-073 Ollama floor confirmed · D-3: capability field in routing_trace.json · AT-8: ELO_OLLAMA_MODEL default `llama3.1:8b` | ✅ CLOSED 2026-08-29 |
+| **WO-048** — "How's the company?" | Builder close confirmed (12/12 PASS, result card filed prior session) · verified_done count updated | AWAITING DAVID L3 live feel |
+| **WO-EA2-NEW-A** — Company state → cognitive wiring | Architect close confirmed (2026-08-28) · queue card moved | ✅ CLOSED |
+
+**Queue housekeeping this session:** WO-CAP-001, WO-CONV-001, WO-EA2-NEW-A, WO-SP31-SP32, WO-GUARD-001 queue cards moved to QUEUE/DONE (all already in verified_done). 0057 result card filed.
+
+**XI-AD-2 parity null fix:** `test_canon_xi_a_d_route.py` AT-2 was incorrectly PASS (null==null counted as match). Fixed to filter entries where brain_route is None. AT-2 correctly RED again (commit `4d6bd09`). Unity-WO-B1 (Design) still required for real parity data.
+
+**WAITING DAVID L3 (updated — WO-ROUTER-001 removed from list, it's DONE):**
+1. `ELO_SELF_INITIATION=1` in `.env` — code built, MT 13/13 PASS — one env var gate
+2. WO-CANON-XXVII L3 ratification (§B 7/7 GT PASS; committed `91f3dc0`)
+3. CE-001 file output WO — does L3 ratification apply?
+4. SP-29 significance weights — unlocks Planetary Layer + CCM §4
+5. CCM Category C ratification
+6. §7 World Interface scope
+7. PE-037 hand design ruling
+8. HIST-007–012 ChatGPT exports
+9. 0057 §4 policy gate — >4s latency rule proposal (result card: FROM_BUILDER_0057_4_second_rule_result.md)
+
+**verified_done count: 74**
+
+**§24 Programme Stop Condition — CONFIRMED:**
+Builder QUEUE: all items DONE/CLOSED or WAITING DAVID/DESIGN/FREEZE/MT.
+No unblocked, unexecuted Board/LA-authorised Python work remains.
+
+*Board / Lead Architect · 2026-08-29*
