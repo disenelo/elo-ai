@@ -314,6 +314,27 @@
         "commit": "18b9be5",
         "date": "2026-08-29",
         "note": "Both BPs already implemented; tests written and verified this session"
+      },
+      {
+        "wo": "WO-022",
+        "description": "memory recall wiring \u2014 verify pass",
+        "ats": "5/5 + 9/9 PASS",
+        "date": "2026-08-29",
+        "note": "VERIFY FIRST \u2014 implementation pre-existing; no code changes"
+      },
+      {
+        "wo": "WO-036",
+        "description": "reply length discipline \u2014 verify pass",
+        "ats": "7/7 + 3/3 + 10/10 PASS",
+        "date": "2026-08-29",
+        "note": "VERIFY FIRST \u2014 implementation pre-existing; no code changes"
+      },
+      {
+        "wo": "WO-039",
+        "description": "garbled intent routing \u2014 verify pass (400-msg: 0 garbles)",
+        "ats": "6/6 + 6/7 f4-fixture + full suite",
+        "date": "2026-08-29",
+        "note": "VERIFY FIRST \u2014 implementation pre-existing; no code changes"
       }
     ],
     "count": 57
