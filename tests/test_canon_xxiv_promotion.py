@@ -226,7 +226,6 @@ def test_dt2_retracted_excluded_from_retrieve(tmp_path, monkeypatch):
 
     # Monkeypatch graph loader to serve this retracted entity
     original_graph = gl._graph.copy()
-    original_graph_entities = list(gl._graph.get("entities", []))
     gl._graph = {"entities": [retracted_entity], "relationships": []}
 
     try:
@@ -235,7 +234,7 @@ def test_dt2_retracted_excluded_from_retrieve(tmp_path, monkeypatch):
             "retracted node must not appear in retrieve() results"
         )
     finally:
-        gl._graph = {"entities": original_graph_entities, "relationships": []}
+        gl._graph = original_graph  # WO-FIX-WKG-ISOLATION: restore full graph (not just entities)
 
 
 # ── DT-3 ─────────────────────────────────────────────────────────────────────
