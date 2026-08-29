@@ -84,16 +84,27 @@ def test_xi_ad2_parity_proven() -> None:
     except (json.JSONDecodeError, OSError) as e:
         err(f"XI-AD-2: could not read route_memory.jsonl: {e}")
 
-    # Check whether any entries carry both brain_route and unity_route for parity comparison
-    parity_entries = [e for e in entries if "brain_route" in e and "unity_route" in e]
+    # Check whether any entries carry real (non-null) brain_route + unity_route for parity comparison.
+    # Null==null would trivially match — exclude null-keyed entries (pre-Unity-route wiring).
+    parity_entries = [
+        e for e in entries
+        if e.get("brain_route") is not None and e.get("unity_route") is not None
+    ]
     if not parity_entries:
-        # Entries exist but none carry parity fields — the log predates route wiring
-        warn(
-            f"XI-AD-2: {len(entries)} route_memory entries found but none carry brain_route + unity_route."
-            " These are pre-route entries. Parity comparison not yet possible."
-        )
+        null_keyed = [e for e in entries if "brain_route" in e and e.get("brain_route") is None]
+        if null_keyed:
+            warn(
+                f"XI-AD-2: {len(null_keyed)} entries have brain_route/unity_route keys but both are null."
+                " These are post-STEP2 entries pending WO-CANON-XI-UNITY-ROUTE (Design)."
+                " Parity not yet provable — Unity arrived ACK must carry unity_route field."
+            )
+        else:
+            warn(
+                f"XI-AD-2: {len(entries)} route_memory entries found but none carry brain_route + unity_route."
+                " These are pre-route entries. Parity comparison not yet possible."
+            )
         red(
-            "XI-AD-2: parity not yet proven — no brain_route/unity_route entries in route_memory.jsonl."
+            "XI-AD-2: parity not yet proven — no real brain_route/unity_route entries in route_memory.jsonl."
             " Cannot remove Unity's local route selection until match rate is confirmed."
         )
 
