@@ -370,6 +370,27 @@
         "ats": "5/5 PASS",
         "date": "2026-08-29",
         "note": "Implementation pre-existing; tests written this session"
+      },
+      {
+        "wo": "WO-PRES-003-PLANNER",
+        "description": "wrap_bottom_to_top route leg in handle_navigate \u2014 live jump_px from elo_spatial.json",
+        "ats": "5/5 PASS",
+        "date": "2026-08-29",
+        "note": "Implementation pre-existing; tests written this session"
+      },
+      {
+        "wo": "WO-PRES-004",
+        "description": "failed navigation outcome chain \u2014 navigation_failed outcome, one-shot, no loop",
+        "ats": "5/5 PASS",
+        "date": "2026-08-29",
+        "note": "Implementation pre-existing; tests written this session"
+      },
+      {
+        "wo": "WO-PRES-004B",
+        "description": "nav_fail + nav_fail_ts written to blender_state.json for EloNavExpression.cs edge-trigger",
+        "ats": "2/2 PASS",
+        "date": "2026-08-29",
+        "note": "Implementation pre-existing; tests written this session"
       }
     ],
     "count": 57
