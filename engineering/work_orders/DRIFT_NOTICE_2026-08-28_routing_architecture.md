@@ -92,11 +92,19 @@ The Execution Gate (between ONE COGNITIVE PLAN and CAPABILITY) is a new or exten
 2. Added to board_state.json `needs_david` — DONE
 3. Added to programme_integrity_flags — DONE
 4. DISPATCH_BOARD.md updated — DONE
-5. David L3 reviews and ratifies Option A, B, or C (or provides new direction)
-6. Board/LA issues correction WO
-7. Builder implements
-8. Board/LA verifies: executive.py untouched, no tier ladder, FREEZE_V1_LOCK clean
+5. David L3 reviews and ratifies Option A, B, or C — ✅ DONE 2026-08-28 (`SOURCE_2026-08-28_DAVID_L3_one_brain_canonical_routing.md`) — David L3 ruled capability-satisfaction selection (aligns with Option A direction: tier defines capability floor, cost-sort selects cheapest satisfying provider within that floor)
+6. Board/LA issues correction WO — ✅ DONE: WO-ROUTER-001 issued 2026-08-28
+7. Builder implements — ✅ DONE: commit `d9cc0a7` · `_TIER_PROVIDER_CANDIDATES` + `_COST_RANK` + `_provider_available()` · `_TIER_PROVIDER_ORDER` kept for structural test compat only (not used for routing) · 8/8 AT PASS
+8. Board/LA verifies — ✅ DONE 2026-08-29: `executive.py` untouched (FREEZE_V1_LOCK), no static ladder used for routing, `test_brain_authors.py` 4/4 PASS, `test_wo_router001_capability_selection.py` 8/8 PASS
 
 ---
 
-*Board / Lead Architect · 2026-08-28*
+## RESOLUTION STATUS: ✅ RESOLVED 2026-08-29
+
+**Drift closed by WO-ROUTER-001 (commit `d9cc0a7`).** Static tier ladder replaced with capability-satisfaction selection. `_TIER_PROVIDER_ORDER` preserved for structural test compatibility only; `_route_by_tier()` now uses `_TIER_PROVIDER_CANDIDATES` + cost-sort + `_provider_available()`. No static priority ladder drives provider selection. `executive.py` untouched. Initiative 02 §7 compliant.
+
+**Remaining open item (not drift — forward work):** `capability_requirement` on `CognitivePlan` (Option A full form) is not yet implemented — the plan does not yet emit a capability field consumed by the router. The router derives tier from action type (existing `_derive_tier`). This is recorded as a known architectural debt for a future WO, not a blocking drift.
+
+---
+
+*Board / Lead Architect · 2026-08-28 (resolved 2026-08-29)*

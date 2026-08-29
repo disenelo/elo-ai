@@ -946,11 +946,11 @@
     }
   ],
   "programme_integrity_flags": [
-    "ROUTING ARCHITECTURE DRIFT \u2014 Initiative 02 \u00a711 filed 2026-08-28: backend_router.py _TIER_PROVIDER_ORDER creates static provider-priority ladder (Ollama-first/Groq-first by tier). Violates \u00a76 (eLo reconciliation must precede response) and \u00a77 (no permanent model authority ladder). Canonical flow: CAPABILITY is downstream of EXECUTIVE DECIDES. Source: SOURCE_2026-08-28_DAVID_L3_canonical_execution_flow.md. Drift notice: DRIFT_NOTICE_2026-08-28_routing_architecture.md. 3 correction options proposed. AWAITING David L3 ratification. DO NOT implement without ruling.",
+    "ROUTING ARCHITECTURE DRIFT \u2014 RESOLVED 2026-08-29 by WO-ROUTER-001 (commit d9cc0a7). _TIER_PROVIDER_ORDER no longer drives routing; capability-satisfaction selection via _TIER_PROVIDER_CANDIDATES + _COST_RANK + _provider_available() now in use. Initiative 02 \u00a77 compliant. Forward debt: CognitivePlan.capability_requirement field (Option A full form) \u2014 future WO, not blocking drift. Drift notice updated: DRIFT_NOTICE_2026-08-28_routing_architecture.md.",
     "WO-CREATIVE-001 \u2014 CLOSED 2026-08-28: 4/4 PASS (commit 551c225). diverge+evaluate wired into spine.py LOOP-8; CognitiveState + CognitiveSnapshot creative_candidates fields added. FREEZE_V1_LOCK clean.",
     "WO-NAV-002/008 + WO-WKG-002/003 MT verify batch \u2014 dispatched 2026-08-24, overdue; no explicit confirmation in any MT return",
-    "WO-FIX-TESTDEFECTS-BATCH \u2014 amended 2026-08-28 (test_wo096: sys.exit not import; test_card_0006: already resolved; test_basic_loop: MemoryFaculty.submit); awaiting Builder execution",
-    "WO-FIX-112-AMBIENT \u2014 confidence null on ambient entries; Builder QUEUED 2026-08-28 (server.py:1033-1037 only)",
+    "WO-FIX-TESTDEFECTS-BATCH \u2014 CLOSED 2026-08-28: result card + Architect close card in DONE/. Queue card in QUEUE/DONE/. All three test defects fixed (test_wo096 sys.exit, test_card_0006, test_basic_loop MemoryFaculty).",
+    "WO-FIX-112-AMBIENT \u2014 CLOSED 2026-08-28: confidence null on ambient/bypass journal entries fixed at server.py:1033-1037 (getattr(_amb_plan, 'confidence', None)). Architect close card in DONE/. Queue card in QUEUE/DONE/. executive.py untouched. FREEZE_V1_LOCK clean.",
     "0065 tasks 3/4 \u2014 reactivated by L3 2026-08-27; CA + Board scoping required; blocked on 0057 latency ruling",
     "05_relationship_faculty.md \u2014 STUB; CA dispatched but spec not yet returned; \u00a75 + \u00a72 gated",
     "MT verification backlog \u2014 pending return: LIPSYNC-001, PRES-004+PRES-004B round-trip, CANON-XI-UNITY-ROUTE, MOBILE-001 \u2014 AVATARBRIDGE-001, PERCEPTION-0006, EXP-001 Board/LA closed",
