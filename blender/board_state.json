@@ -306,6 +306,14 @@
         "wo": "WO-FIX-WKG-ISOLATION",
         "description": "WKG test ordering dependency fixed \u2014 test_canon_xxiv_promotion finally-block restores full graph",
         "ats": "3/3 PASS + Board/LA CLOSED 2026-08-29 (commit 512d0a2)"
+      },
+      {
+        "wo": "WO-064-BP1+2",
+        "description": "conversing field (BP-1) + spoken move words \u2192 move_command (BP-2)",
+        "ats": "BP-1: 4/4, BP-2: 5/5",
+        "commit": "18b9be5",
+        "date": "2026-08-29",
+        "note": "Both BPs already implemented; tests written and verified this session"
       }
     ],
     "count": 57
