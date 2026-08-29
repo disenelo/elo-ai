@@ -20,8 +20,8 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 | Intent / Relationship | ✅ DONE | WO-REL-001 DONE 2026-08-27: 12/12 ATs pass; relationship_faculty + intent_engine validated; result card filed to Board |
 | Creative Imagination | ✅ DONE | WO-CREATIVE-001 DONE 2026-08-28 (commit 551c225, 4/4 PASS); WO-INNER-001 expression path DONE 2026-08-28 (commit 7c0a919, 5/5 PASS) — diverge/evaluate wired into spine LOOP-8, candidates in CognitiveState + plan + [CREATIVE SEED] injected in server.py |
 | Agency | ✅ DONE | Agency Engine Vol V Ch.10 built (card 0009); authority invariants enforced |
-| Reflection / Growth | 🔴 NOT STARTED | No WO; not in current execution queue |
-| Personality Evolution | 🔴 NOT STARTED | No WO |
+| Reflection / Growth | ✅ DONE | WO-115 live since WO-095/WO-096B — `lesson_store.recall()` wired in `server.py` (WO-115 lines 3173+, promote_pass every N turns). Builder audit 2026-08-28 confirmed. [VERIFIED from source] |
+| Personality Evolution | ✅ DONE | WO-007 wired at `spine.py:790–807` — `personality_evolution_faculty` loaded, traits/baseline set on plan per turn. Builder audit 2026-08-28 confirmed. [VERIFIED from source] |
 | Verify Executive receives assembled state correctly | ✅ DONE | WO-NAV-001 MT VERIFIED; seam regressions fixed 2026-08-27 (stale string literals + early world=None warning added to spine.py); test_wo097_wo106_seam.py 7/7 PASS |
 | Verify no second cognitive authority exists | ✅ DONE | `tests/test_one_brain_no_second_authority.py` 6/6 PASS 2026-08-27; RD_P0_REVIEW_2026-08-23.md verdict confirmed: Executive is sole decision-maker, no competing decide() elsewhere |
 
@@ -169,20 +169,20 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 
 ## Summary
 
-| Section | % Complete (approx) |
-|---|---|
-| 1. One Brain Foundation | ~60% |
-| 2. eLo Intent Recovery | ~70% |
-| 3. Q-NAV/Q-BODY/Q-MOVEMENT/Q-CUR | ~65% |
-| 4. CCM + WKG | ~55% |
-| 5. eLo Expression | ~20% |
-| 6. CREATE | R&D done; 0% implemented |
-| 7. World Interface | 0% |
-| 8. Digital Embodiment | ~50% |
-| 9. Physical eLo | R&D done; 0% built |
-| 10. Disenelo Ecosystem | ~15% |
+| Section | % Complete (approx) | Last updated |
+|---|---|---|
+| 1. One Brain Foundation | ~91% (10/11 — only SP-29 significance D-gated) | 2026-08-29 |
+| 2. eLo Intent Recovery | ~70% (HIST-007–012 David export; Planetary Layer SP-29 D-gated; Astrology David L3) | 2026-08-29 |
+| 3. Q-NAV/Q-BODY/Q-MOVEMENT/Q-CUR | ~90% (all waves done; SP-31/32 built, ELO_SELF_INITIATION=OFF gate; SP-29 pending) | 2026-08-29 |
+| 4. CCM + WKG | ~55% (CCM One Brain + context = L3 gated; significance SP-29 D-gated) | 2026-08-24 |
+| 5. eLo Expression | ~33% (3/9 DONE: speaking style, storytelling, inner-child; 4 not started; 2 spec'd) | 2026-08-29 |
+| 6. CREATE | R&D done; 0% implemented (CE-001 WO pending David L3) | 2026-08-29 |
+| 7. World Interface | 0% (FUTURE) | 2026-08-24 |
+| 8. Digital Embodiment | ~75% (nav + gaze + body + consequence all done; visual brainiser spec'd; sensor/world MT) | 2026-08-29 |
+| 9. Physical eLo | R&D done; 0% built (PE-037 hand ruling blocks L3 SPEC) | 2026-08-24 |
+| 10. Disenelo Ecosystem | ~15% (backbone live; MT + Design active) | 2026-08-24 |
 
-**Immediate critical path:** WO-NAV-001 (SP-1+SP-2) → Builder → unlocks WO-NAV-002 + WO-NAV-008 + consequence consumers.  
-**Next unblocked Board action:** Issue SP-24 D-3 ruling ✅ DONE this session. Issue WO-NAV-013 after WO-NAV-001 verified.
+**Current critical path (2026-08-29):** David L3 decisions gate further progress — highest urgency: ELO_SELF_INITIATION=1 activation + WO-ROUTER-001 Option A/B/C ratification.  
+**Board/LA-executable Python items:** None unblocked. Programme aligned per §24.
 
-— Board / Lead Architect · 2026-08-24
+— Board / Lead Architect · 2026-08-29
