@@ -5037,3 +5037,18 @@ Authority: BUILD LIST §5 (inner-child expression, "no dedicated WO") · RTR-015
 **Programme aligned per §24. No Board/LA-executable Python items remain unblocked.**
 
 *Board / Lead Architect · 2026-08-29*
+
+### BOARD STATE UPDATE — 2026-08-29 (WO-048 + WO-045 Builder half — Board/LA close)
+
+**Board/LA verified via live test runs (2026-08-29):**
+
+| WO | ATs | Board/LA Close |
+|---|---|---|
+| **WO-048 — "How's the company?" made real** | 12/12 PASS (script: `tests/test_wo048_company_real.py`) · 19 phrasings → company path · VARIED · FOCUSED · LINKS · recommendation · py_compile clean | ✅ **CLOSED 2026-08-29** — result card filed. Gate: David L3 live feel (integrated DoD). |
+| **WO-045 Builder half — Take Five** | 6/6 PASS (script: `tests/test_wo045_take_five.py`) · step_out + return_elo wired · exit-gate ordering clean · py_compile clean | ✅ **CLOSED 2026-08-29 (Builder half)** — Design half required for integrated DoD. Result card filed. |
+
+**WO-045 integrated DoD note:** Builder half done. Design half (Unity pop-off visual, hide, return beat) must also return before WO-045 is fully DONE per Milestone.
+
+**WO-048 integrated DoD note:** Builder half done (12/12). David L3 live feel ("how's the company") is the final integrated gate.
+
+*Board / Lead Architect · 2026-08-29*

@@ -286,8 +286,19 @@
         "wo": "WO-INNER-001",
         "description": "Inner-child expression: creative seed injection. D-1 plan.py creative_candidates field; D-2 spine.py LOOP-8 propagates to plan; D-3 server.py [CREATIVE SEED] injection. RTR-015 (Jupiter=Expansion). FREEZE_V1_LOCK clean. commit 7c0a919. Board/LA closed 2026-08-28.",
         "ats": "5/5 PASS + Board/LA CLOSED"
+      },
+      {
+        "wo": "WO-048",
+        "description": "How is the company made real \u2014 12/12 PASS; 19 phrasings \u2192 company path; VARIED, FOCUSED, LINKS, recommendation; company_state_writer._build_briefing + _recommend + _strip_md",
+        "ats": "12/12 PASS + Board/LA CLOSED 2026-08-29"
+      },
+      {
+        "wo": "WO-045-BUILDER",
+        "description": "Take Five Builder half \u2014 6/6 PASS; step_out + return_elo wired; exit-gate ordering clean",
+        "ats": "6/6 PASS + Board/LA CLOSED 2026-08-29 (Design half pending for integrated DoD)"
       }
-    ]
+    ],
+    "count": 57
   },
   "pending_verification": {
     "note": "DONE by Builder/Design \u2014 awaiting Board/LA architectural close or MT verify before programme counts them.",
