@@ -182,7 +182,7 @@ Legend: ✅ DONE · 🟡 IN PROGRESS / SPEC'D · 🔴 NOT STARTED · ⏳ PENDING
 | 9. Physical eLo | R&D done; 0% built (PE-037 hand ruling blocks L3 SPEC) | 2026-08-24 |
 | 10. Disenelo Ecosystem | ~15% (backbone live; MT + Design active) | 2026-08-24 |
 
-**Current critical path (2026-08-29):** David L3 decisions gate further progress — highest urgency: ELO_SELF_INITIATION=1 activation + WO-ROUTER-001 Option A/B/C ratification.  
+**Current critical path (2026-08-29):** David L3 decisions gate further progress — highest urgency: ELO_SELF_INITIATION=1 activation. WO-ROUTER-001 ✅ DONE (capability-driven selection live, commit d9cc0a7; removed from critical path 2026-08-29).
 **Board/LA-executable Python items:** None unblocked. Programme aligned per §24.
 
-— Board / Lead Architect · 2026-08-29
+— Board / Lead Architect · 2026-08-29 (updated 2026-08-29 — WO-ROUTER-001 critical-path line corrected)

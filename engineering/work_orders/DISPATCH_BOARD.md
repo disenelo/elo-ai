@@ -5251,3 +5251,31 @@ Builder QUEUE: all items DONE/CLOSED or WAITING DAVID/DESIGN/FREEZE/MT.
 No unblocked, unexecuted Board/LA-authorised Python work remains.
 
 *Board / Lead Architect · 2026-08-29*
+
+## BOARD STATE UPDATE — 2026-08-29 (continuation — BUILD_LIST_STATUS critical-path correction)
+
+**Action:** `docs/architecture/BUILD_LIST_STATUS_2026-08-24.md` critical-path line updated — removed stale "WO-ROUTER-001 Option A/B/C ratification" reference (WO-ROUTER-001 is DONE, commit d9cc0a7, 8/8 PASS, verified_done 74).
+
+**Test confirmation (3 suites, 16 total):**
+- `test_wo_router001_capability_selection.py`: 8/8 PASS
+- `test_brain_authors.py`: 4/4 PASS (regression clean)
+- `test_canon_xi_a_d_route.py`: 3/4 PASS · XI-AD-2 correctly RED (parity gate WAITING DESIGN — expected)
+
+**§24 Programme Stop Condition — CONFIRMED (exhaustive):**
+- All Builder QUEUE items: DONE/CLOSED or WAITING DAVID/DESIGN/FREEZE/MT
+- BUILD_LIST_STATUS Markdown correction: complete (this entry)
+- No unblocked, unexecuted Board/LA-authorised Python work remains
+- XI-AD-2 RED is structural/correct — not a programme failure
+
+**WAITING DAVID L3 (9 items, unchanged):**
+1. `ELO_SELF_INITIATION=1` in `.env` — code built, 13/13 PASS — gate is David
+2. WO-CANON-XXVII L3 ratification (§B 7/7 GT PASS; committed `91f3dc0`)
+3. CE-001 file output WO — does L3 ratification apply?
+4. SP-29 significance weights — unlocks Planetary Layer + CCM §4
+5. CCM Category C ratification
+6. §7 World Interface scope
+7. PE-037 hand design ruling
+8. HIST-007–012 ChatGPT exports
+9. 0057 §4 policy gate — >4s latency rule proposal (FROM_BUILDER_0057_4_second_rule_result.md)
+
+*Board / Lead Architect · 2026-08-29*
