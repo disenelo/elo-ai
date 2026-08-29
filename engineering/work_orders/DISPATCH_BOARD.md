@@ -5,6 +5,27 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-28 (Milestone Tier 1 dispatched — WO-048 + WO-045)
+**Authority:** Board / Lead Architect — Milestone scan, Tier 1 acceptance test items now queued
+
+Milestone scan revealed WO-048 and WO-045 (David's two named Presentable v1 acceptance tests) were NOT in Builder's queue despite being OPEN + unblocked.
+
+| WO | Tier | Status | Dispatch |
+|---|---|---|---|
+| **WO-ROUTER-001** | 0 (real brain — routing model fix) | ✅ Dispatched Builder P1 | `QUEUE/WO-ROUTER-001_capability_driven_provider_selection.md` |
+| **WO-048** ("How's the company?" real) | 1 — acceptance test | ✅ Dispatched Builder P1 | `QUEUE/WO-048_how_is_the_company_real.md` |
+| **WO-045 Builder half** (Take Five intent → leave cmd) | 1 — acceptance test | ✅ Dispatched Builder P2 | `QUEUE/WO-045_take_five_builder_half.md` |
+| **WO-045 Design half** (pop-off + hide + return) | 1 — acceptance test | ✅ Dispatched Design P2 | `FROM_ARCHITECT_2026-08-28_WO-045_take_five_design_half.md` |
+
+**WO-048** is API-FREE and can build in parallel with WO-ROUTER-001. No dependency on Tier 0 brain status.
+**WO-045** integrated DoD: DONE only when Builder + Design halves both return passing (Milestone DoD rule: full behaviour works end-to-end).
+
+**Tier 2 items (queued next):** WO-022/037 (memory), WO-020 (kernel routing), WO-036 (reply length), WO-039 (garbled intent), `conversing` field — not yet dispatched. WO-ROUTER-001 + WO-048 + WO-045 take priority.
+
+*Board / Lead Architect · 2026-08-28*
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-28 (Routing model divergence — WO-ROUTER-001 dispatched)
 **Authority:** Board / Lead Architect — David L3 canonical routing ruling 2026-08-28
 
@@ -4996,5 +5017,23 @@ Authority: BUILD LIST §5 (inner-child expression, "no dedicated WO") · RTR-015
 
 ### Board maintenance — 2026-08-29
 **COMPANY_FOCUS marker refreshed.** Added WO-CREATIVE-001 DONE (commit 551c225), WO-INNER-001 DONE (commit 7c0a919), WO-ROUTER-001 WAITING DAVID Option A/B/C to marker items and note. Updated timestamp to 2026-08-29. company_state_writer will republish voiced_briefing/company_focus on next run.
+
+*Board / Lead Architect · 2026-08-29*
+
+### Board maintenance — 2026-08-29 (RTR + Build List audit)
+**RTR corrected (commit `1f53ff7`):**
+- RTR-015: UNRESOLVED → RESOLVED (WO-CREATIVE-001 + WO-INNER-001, commits 551c225 + 7c0a919)
+- RTR-023: UNRESOLVED → PARTIAL (DROP loop done commit aa305bf; CE-001 pending David L3)
+- RTR-011/019: PARTIAL → BUILT_PENDING_ACTIVATION (WO-SP31-SP32 DONE 13/13 MT PASS; ELO_SELF_INITIATION=OFF)
+- RTR-020: updated to reflect all waves done; SP-29 + ELO_SELF_INITIATION are the remaining David L3 gates
+- RTR-038/051: remain UNRESOLVED (David L3 ChatGPT exports required)
+
+**BUILD_LIST_STATUS summary updated (commit `a771617`):**
+- §1 One Brain Foundation: ~60% → ~91%
+- §3 Q-NAV/Q-CUR: ~65% → ~90%
+- §5 eLo Expression: ~20% → ~33%
+- §8 Digital Embodiment: ~50% → ~75%
+
+**Programme aligned per §24. No Board/LA-executable Python items remain unblocked.**
 
 *Board / Lead Architect · 2026-08-29*
