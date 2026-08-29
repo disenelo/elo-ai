@@ -29,22 +29,27 @@ def _src(rel):
 
 def test_remember_reinforce_after_lookup():
     src = _src("server.py")
-    # The recall block must import reinforce from consolidation_faculty
-    assert "consolidation_faculty" in src and "_reinforce_hit" in src, \
-        "server.py must reinforce recalled memories via consolidation_faculty"
-    # reinforce must appear after _vlookup call
+    # consolidation_faculty must be imported for reinforcement
+    assert "consolidation_faculty" in src, \
+        "server.py must use consolidation_faculty for memory reinforcement"
+    # vault hits must be queued for reinforcement after lookup (deferred-drain pattern)
     idx_lookup = src.find("_vault_hits = _vlookup")
-    idx_reinf  = src.find("_reinforce_hit", idx_lookup)
+    idx_queue  = src.find("_vault_reinforce_queue.append", idx_lookup)
     assert idx_lookup != -1, "_vlookup call not found in server.py"
-    assert idx_reinf  != -1, "_reinforce_hit must appear after _vlookup in server.py"
+    assert idx_queue  != -1, "vault hits must be queued for reinforce after _vlookup"
+    # reinforce must be imported from consolidation_faculty (the drainer uses it)
+    assert "reinforce as _rf" in src, \
+        "server.py must import reinforce as _rf from consolidation_faculty"
 
 
 # ── AT-FIX-3: embodiment="desktop" in _self_apply_embodiment call ────────────
 
 def test_body_embodiment_written():
     src = _src("server.py")
-    assert 'embodiment="desktop"' in src or "embodiment='desktop'" in src, (
-        "server.py must pass embodiment='desktop' to _self_apply_embodiment"
+    # _self_apply_embodiment must be called with an embodiment= keyword argument
+    # (uses _active_body variable which holds the concrete embodiment string at runtime)
+    assert "_self_apply_embodiment" in src and "embodiment=_active_body" in src, (
+        "server.py must call _self_apply_embodiment with embodiment=_active_body"
     )
 
 
@@ -52,10 +57,13 @@ def test_body_embodiment_written():
 
 def test_body_tier_computed():
     src = _src("runtime/the_moment.py")
-    # Must NOT be a static "verified" string
-    assert '"embodiment_tier":  "verified" if state.embodiment else' in src or \
-           "'embodiment_tier': 'verified' if state.embodiment else" in src, (
-        "the_moment.py must compute embodiment_tier from state.embodiment, not hardcode"
+    # Must use tier_fact(state.embodiment, ...) — dynamic, not hardcoded "verified"
+    assert "tier_fact(state.embodiment," in src, (
+        "the_moment.py must compute embodiment_tier via tier_fact(state.embodiment, ...) not hardcode"
+    )
+    # Must not hardcode a string literal for embodiment_tier
+    assert '"embodiment_tier":  "verified"' not in src and "'embodiment_tier': 'verified'" not in src, (
+        "the_moment.py must NOT hardcode 'verified' for embodiment_tier"
     )
 
 
@@ -63,13 +71,18 @@ def test_body_tier_computed():
 
 def test_self_observe_record_behaviour_called():
     src = _src("server.py")
-    assert "_rb(_elo_self, _action)" in src, (
-        "server.py must call record_behaviour(_elo_self, _action) after self_update"
+    # record_behaviour is called via _rb inside _apply_end_of_turn closure (param s)
+    assert "record_behaviour as _rb" in src, (
+        "server.py must import record_behaviour as _rb"
     )
-    # Must appear after _self_update call
-    idx_update = src.find("_elo_self = _self_update")
-    idx_rb     = src.find("_rb(_elo_self, _action)", idx_update)
-    assert idx_rb != -1, "record_behaviour must appear after _self_update call"
+    assert "_rb(s, _action)" in src, (
+        "server.py must call _rb(s, _action) inside the end-of-turn mutator closure"
+    )
+    # _self_update(s, _turn_data) and _rb(s, _action) both appear in _apply_end_of_turn
+    idx_update = src.find("_self_update(s, _turn_data)")
+    idx_rb     = src.find("_rb(s, _action)", idx_update)
+    assert idx_update != -1, "_self_update(s, _turn_data) not found in server.py"
+    assert idx_rb != -1, "_rb(s, _action) must appear after _self_update in the closure"
 
 
 # ── AT-FIX-4b: topics extracted from raw (not always []) ─────────────────────
