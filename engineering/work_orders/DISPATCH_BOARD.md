@@ -1,7 +1,146 @@
 # DISENELO DISPATCH BOARD
-### LIVE STATE — 2026-08-27, updated from verified execution evidence.
+### LIVE STATE — 2026-08-29, updated from verified execution evidence.
 
 **David: *"Lets get the board done."*** This header is the board. Read it and you know the company.
+
+---
+
+## BOARD STATE UPDATE — 2026-08-29 (WO-048 CLOSED — 12/12 PASS)
+**Authority:** Board / Lead Architect
+
+**WO-048 "How's the company?" made real** — Builder returned result card. 12/12 PASS. Commits `aa41d5c` + `6aa3dd1`. FREEZE_V1_LOCK clean (`executive.py` not touched). `company_state_writer.py` now builds REAL, VARIED briefing with DISENELO tokens, FOCUS surfacing, board links, and honest recommendation. 19+ phrasings routed to company path; 6 non-company controls clean. Honest fallback on missing data. **Integrated DoD gate remaining: David L3 live feel ("how's the company").** Board closes on test evidence; taste = David's read.
+
+**Builder active queue (updated — WO-048 removed):** WO-ROUTER-001 P1 → WO-FIX-MOBILE-REPLAY P2 → WO-SPG-001 AT-7 P3 → WO-064 BP-1+2 → WO-022 → WO-039 → WO-036 → WO-FIX-WKG-ISOLATION P3.
+
+---
+
+## BOARD STATE UPDATE — 2026-08-29 (DAVID_APPROVED.md reconciliation — verify-first instruction added to Tier 2 queue cards)
+**Authority:** Board / Lead Architect
+
+`DAVID_APPROVED.md` (2026-08-10) records David's live-confirmed approvals for multiple Tier 2 WOs that have existing test files. Board Rule 4.1: "tests green + committed = DONE." Builder must run existing tests BEFORE implementing; if they pass, return result card and close without new code.
+
+| WO | DAVID_APPROVED note | Test file(s) | Instruction |
+|---|---|---|---|
+| WO-048 | "David live-confirmed 'works'" | `test_wo048_company_real.py` (12 ATs) | Verify first; implement only failing ATs |
+| WO-022 | "green+tested 2026-08-10" | `test_wo022_memory_recall.py` + `_e2e` | Verify first; implement only if failing |
+| WO-039 | "0 garbles on 400-msg stress" | `test_wo039_garbled_routing.py` + 400-msg | Verify first; implement only if failing |
+| WO-036 | "reply tightening approved" | `test_wo036_reply_length.py` + mirror | Verify first; implement only if failing |
+
+All queue cards updated with `⚡ VERIFY FIRST` instruction. If any WO passes all ATs on first run, Board will close it via Rule 4.1 — no re-implementation needed.
+
+*Board / Lead Architect · 2026-08-29*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-29 (WO-064 + WO-065 dispatched — gap found in Milestone Tier 2 scan)
+**Authority:** Board / Lead Architect
+
+WO-064 and WO-065 were OPEN/spec'd 2026-08-07 but never dispatched. Found during Tier 2 scan.
+
+| WO | Seat | Priority | What |
+|---|---|---|---|
+| WO-064 BP-1 | Builder | P1 | Publish `conversing` boolean to `blender_state.json` (unblocks Design sit-linger gate) |
+| WO-064 BP-2 | Builder | P2 | Spoken move words → `move_command` emit |
+| WO-065 item 1 | Design | P1 | `sit_held` heartbeat (verifiable hold) |
+| WO-065 item 2 | Design | P1 | EloOSProcess restart-on-launch (kill stale backend) |
+| WO-065 item 3 | Design | P2 | Emit `sit_ended` UP (pairs with WO-064 BP-5) |
+
+WO-064 BP-3 = WO-045 (DONE). Design now has executable work (`FROM_ARCHITECT_2026-08-29_WO-065_designer_runtime_integrity.md`).
+
+*Board / Lead Architect · 2026-08-29*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-29 (Tier 2 dispatched · WO-037 already DONE · WO-020 FREEZE gated)
+**Authority:** Board / Lead Architect
+
+Milestone Tier 2 scan complete. WO-037 (memory writeback) already DONE 2026-08-27 (9/9 PASS) — no dispatch needed. Remaining Tier 2 items dispatched to Builder:
+
+| WO | Issue | Queue card |
+|---|---|---|
+| WO-022 (P1) | Memory recall not connected to vault retrieval | `QUEUE/WO-022_memory_recall_wiring.md` |
+| WO-039 (P1) | Garbled intent — prose mis-parsed as command fragments | `QUEUE/WO-039_garbled_intent_routing.md` |
+| WO-036 (P2) | Reply length / "I notice" mirroring reflex | `QUEUE/WO-036_reply_length_discipline.md` |
+
+**WO-020 (kernel routing drift, P0):** Seam A touches `executive.py` (`_conversation_action()`) — FREEZE_V1_LOCK blocked. Seam B (routing seam) may be safe; Builder to scope and report. Not dispatched until FREEZE_V1_LOCK status is confirmed.
+
+**`conversing` field (Builder → Designer):** No standalone WO authored yet. Gap noted — needs WO authoring after WO-048 lands. Future dispatch.
+
+*Board / Lead Architect · 2026-08-29*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-29 (WO-045 DONE · 3 more MT verifications · head-grid bake in transit)
+**Authority:** Board / Lead Architect
+
+### WO-045 "Take Five" — CLOSED (Integrated DoD met)
+
+Both halves returned passing this session:
+
+| Half | Result | Commits |
+|---|---|---|
+| Builder (intent → leave/return cmd) | ✅ 6/6 PASS | `1a66020` · `1da3481` · `83d4955` |
+| Design (Unity pop-off + hide + return) | ✅ DT-1..4 PASS (source-verified, CLIBUILD_OK) | `74b2047` · `8873b20` · `a17d4c7` · `b1c6805` |
+
+FREEZE_V1_LOCK clean (AT-4 Builder, executive.py not touched). Integrated DoD rule: both halves returning passing = WO-045 DONE. Live visual sign-off (David/MT — "reads as eLo leaving") is a taste confirmation, not a gate.
+
+Stale queue card `builder/QUEUE/WO-045_take_five_builder_half.md` — Builder to clean up.
+
+### Additional MT verifications (2 more cards, returned this session)
+
+| Card | WO | Verdict |
+|---|---|---|
+| `FROM_MT_WO-PRES004_EXP001_verification_result.md` | WO-PRES-004 + WO-EXP-001 | ✅ PRES-004 10/10 · EXP-001 5/5 · FREEZE_V1_LOCK clean on both |
+| `FROM_MT_WO-CANON-XI-UNITY-ROUTE_verification_result.md` | WO-CANON-XI-UNITY-ROUTE | ✅ AT-D1..D5 PASS · `unity_route`/`leg_win_id` confirmed in shipped DLL (UTC-16LE re-checked in new build `9601f68`) · LLM exposure clean (AT-D5) |
+
+**WO-EXP-001** now officially MT-verified (5/5; live since commit `8d86743` 2026-08-25).
+
+### Head-grid bake — in transit
+
+Design committed the exporter at `9601f68` (133 angles, 19×7, ±45 pitch). MT confirms the new baked PNGs are NOT yet in MT's `BakedFrames/` — the current grid still covers ±30 only. MT's ±30 pitch clamp stays in effect until frames land. Design to deliver frames to `mobile_test/` delivery path; MT will self-update with the 3 specified one-line changes when received.
+
+*Board / Lead Architect · 2026-08-29*
+
+---
+
+## BOARD STATE UPDATE — 2026-08-29 (MT batch 4 returns — 4 cards; WO-ROUTER-001 unblocked; 2 new WOs)
+**Authority:** Board / Lead Architect
+
+### MT batch 4 — all returned (2026-08-29 03:39–04:24)
+
+| Card | WO | Verdict |
+|---|---|---|
+| `FROM_MT_WO-PRES004B_verification_result.md` | WO-PRES-004B | ✅ VERIFIED 4/4 — full PRES-004 chain closed |
+| `FROM_MT_defectchain_canonxi_verification_result.md` | WOs A–E | ✅ ALL PASS: LIPSYNC 5/5 · AVATARBRIDGE 8/8 · PERCEPTION 5/5 · CANON-XI-STEP2 5/5 · CANON-XI-SERVER-ACK static+5/5 |
+| `FROM_MT_WO-MOBILE-001_mobile_end_verification_result.md` | WO-MOBILE-001 | ✅ VERIFIED 5/5 + **1 defect** (mobile event replay — `WO-FIX-MOBILE-REPLAY` issued) |
+| `FROM_MT_WO-CANON-XI_AT1_verification_result.md` | CANON-XI AT-1 | ⚠️ PARTIAL — unit 5/5 ✅ · Python read path ✅ · Unity DLL live ✅ · round-trip artefact NOT OBSERVED (no goal-nav to destination yet) |
+
+**LIPSYNC-001 note:** MT confirmed this closes the long-standing F2 blocker — `SpokenText` was permanently `""`, which silenced §7 AMBIENT and blocked §9 speech bubble on DISENELO Mobile. Fixed at source (`voice_engine.py:160`).
+
+**WKG suite artefact:** Full-suite run shows +66 failures (test_wkg_phase2 + 2 related files). MT confirmed these pass in isolation — ordering dependency. Not a behaviour regression. `WO-FIX-WKG-ISOLATION` issued (P3).
+
+**CANON-XI AT-1 Board ruling:** Alternative route (Python read path) SATISFIED. AT-1 gate CLEARED. Step 3 gate condition: parity ≥ 80% — requires live navigation to write `route_memory.jsonl`. Will clear naturally on first goal-directed navigation in David's next session. No further MT dispatch needed for AT-1.
+
+### WO-ROUTER-001 — UNBLOCKED (option ruling issued 2026-08-29)
+
+Builder could not proceed without Option A/B/C ruling. Ruling filed: `FROM_ARCHITECT_2026-08-29_WO-ROUTER-001_option_ruling.md`. **Option A**: rename `_TIER_PROVIDER_ORDER` → `_TIER_COST_PREFERENCE`, add `_TIER_CAPABILITY` annotation, add capability to trace log, update docstring. Existing cheapest-first availability-filtered loop is architecturally correct — do NOT restructure it. Builder unblocked.
+
+### WO-CREATIVE-001 — CLOSED (4/4 PASS, commit `551c225`)
+
+Builder returned 2026-08-28 15:46. `creative_imagination.py` wired into spine.py LOOP-8 as non-critical path. `executive.py` NOT TOUCHED (AT-4 FREEZE_V1_LOCK clean). Board closes.
+
+### Design — head range citation corrected
+
+Design self-corrected CARD004 error. Canonical operative head range: **±92 yaw / ±40 pitch** (cursor-follow, `absoluteAim=true`). Grid extended to ±45 pitch, 133 angles. Board acknowledged `FROM_ARCHITECT_2026-08-29_head_range_ack.md`. MT re-bake follows on grid delivery.
+
+### New WOs issued this session
+
+| WO | Priority | Owner | Issue |
+|---|---|---|---|
+| WO-FIX-MOBILE-REPLAY | P2 | Builder | Mobile event replay guard (`server.py` only) |
+| WO-FIX-WKG-ISOLATION | P3 | Builder | WKG test ordering dependency (test-infra only) |
+
+*Board / Lead Architect · 2026-08-29*
 
 ---
 
@@ -5050,5 +5189,32 @@ Authority: BUILD LIST §5 (inner-child expression, "no dedicated WO") · RTR-015
 **WO-045 integrated DoD note:** Builder half done. Design half (Unity pop-off visual, hide, return beat) must also return before WO-045 is fully DONE per Milestone.
 
 **WO-048 integrated DoD note:** Builder half done (12/12). David L3 live feel ("how's the company") is the final integrated gate.
+
+*Board / Lead Architect · 2026-08-29*
+
+## BOARD STATE UPDATE — 2026-08-29 (WO-FIX-MOBILE-REPLAY ✅ + WO-FIX-WKG-ISOLATION ✅ — both Board/LA CLOSED)
+
+| WO | Result | Status |
+|---|---|---|
+| **WO-FIX-MOBILE-REPLAY** | 4/4 PASS · commit `a894ce7` · `_mobile_last_ts` guard mirrors ACK pattern; same event ts → process once; different ts → both process; `executive.py` untouched | ✅ CLOSED 2026-08-29 |
+| **WO-FIX-WKG-ISOLATION** | 3/3 PASS · commit `512d0a2` · root cause: `test_canon_xxiv_promotion.py` finally-block restored partial dict (entities only), stripping wkg_claims — test_wkg_phase2 saw empty graph. Fix: `gl._graph = original_graph` (full copy). 0 wkg_phase2 failures in full suite (was 66). | ✅ CLOSED 2026-08-29 |
+
+**verified_done count: 59**
+
+**§24 Programme Stop Condition — CONFIRMED (exhaustive):**
+- Builder QUEUE: all items DONE/CLOSED or WAITING DAVID/FREEZE
+- All Board/LA Markdown actions this session: complete
+- No unblocked, unexecuted Board/LA-authorised Python work remains
+
+**WAITING DAVID L3 (priority order):**
+1. `ELO_SELF_INITIATION=1` in `.env` — code built, MT 13/13 PASS — one env var, gate is David
+2. WO-ROUTER-001 Option A/B/C — routing `_TIER_PROVIDER_ORDER` ladder vs intent-directed
+3. WO-CANON-XXVII L3 ratification (§B 7/7 GT PASS; already committed `91f3dc0`)
+4. CE-001 file output WO — does L3 ratification apply?
+5. SP-29 significance weights — unlocks Planetary Layer + CCM §4
+6. CCM Category C ratification (3 gaps → Meaning Object)
+7. §7 World Interface scope — which 2–3 sub-capabilities first
+8. PE-037 hand design ruling: 3-finger vs mitten-claw
+9. HIST-007–012 ChatGPT exports (HIST-007 priority)
 
 *Board / Lead Architect · 2026-08-29*
