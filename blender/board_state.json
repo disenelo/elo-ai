@@ -405,6 +405,13 @@
         "ats": "8/8 PASS",
         "date": "2026-08-29",
         "note": "test_brain_authors 4/4 + test_wo073 6/6 regression clean"
+      },
+      {
+        "wo": "WO-EA2-NEW-A",
+        "description": "company_state.json \u2192 LiveWorldState.company_state \u2192 attention_in[world_state][company_state]; executive.py untouched (FREEZE_V1_LOCK)",
+        "ats": "7/7 PASS",
+        "date": "2026-08-27",
+        "note": "Architect source-verify 2026-08-28 confirmed. money/seats_sample excluded per Board ruling."
       }
     ],
     "count": 57
