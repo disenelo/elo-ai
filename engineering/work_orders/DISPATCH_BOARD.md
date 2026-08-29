@@ -5,6 +5,33 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-29 (WO-020 Seam B dispatched — P0)
+**Authority:** Board / Lead Architect
+
+**WO-020 Seam B DISPATCHED to Builder (P0 — ahead of all queue items).** Seam B = `tools/tool_router.py` ambiguous-word guard + `runtime/contracts.py` entity latch + capability registry dispatch. Confirmed NOT touching `executive.py` → FREEZE_V1_LOCK SAFE. Seam A (action-selection drift in `executive.py:_conversation_action()`) remains FREEZE_V1_LOCK blocked — not dispatched. Builder: check WO-018 completion first (VERIFY FIRST). 4 ATs: "what is done?" → no web-search; "open Joe Budden Podcast" → browser/computer-control with correct target; entity clears on new request; frozen-kernel tests green. Card: `QUEUE/WO-020-SEAM-B_tool_routing_entity_latch.md`.
+
+---
+
+## BOARD STATE UPDATE — 2026-08-29 (WO-REL-001 retroactive close)
+**Authority:** Board / Lead Architect
+
+**WO-REL-001 CLOSED 2026-08-27** (commit `dda98ce`). Result card `FROM_BUILDER_WO-REL-001_intent_relationship_validation_result.md` found in `builder/DONE/` this session — unreconciled since 2026-08-27. Board records it now.
+
+WO-REL-001 = validation WO for §1 WP_F gap (Build List 2026-08-24): `relationship_faculty.py` (spine.py:718-719 → `enrich()` at spine.py:863) and `intent_engine.py` (spine.py:66 → `plan.capability_hint`) both WIRED and VALIDATED on every turn. Implementation gap: none existed. Validation gap: closed. §1 One Brain Foundation — WP_F row now DONE.
+
+**WO-072 dispatched to Builder 2026-08-29** (P1, ⚡ VERIFY FIRST). Intent Gatekeeper — rules-first, cheap-LLM normalizer, default CONVERSATION. `tests/test_wo072_intent_gatekeeper.py` exists. FREEZE_V1_LOCK check on executive.py. Card: `QUEUE/WO-072_intent_gatekeeper.md`.
+
+---
+
+## BOARD STATE UPDATE — 2026-08-29 (WO-063 dispatched to Design + WO-064 BP-4 dispatched to Builder)
+**Authority:** Board / Lead Architect
+
+**WO-063 "Command Wakes The Body"** dispatched to Design (P2, post-Presentable v1). Design idle after WO-065 close. WO-063 Unity C# — wake from dormancy/steer/off-window on any `move_command`/`sit_command`. 5 ATs verified without David. `executive.py` NOT IN SCOPE. Inbox: `FROM_ARCHITECT_2026-08-29_WO-063_command_wakes_body.md`.
+
+**WO-064 BP-4 (expression micro-emit)** dispatched to Builder. ⚡ VERIFY FIRST — `server.py:4667-4689` already implements BP-4. Test file: `tests/test_wo064_expression_micro.py`. If passes → WO-062 integrated DoD (both halves done: Design `8873b20` + Builder BP-4) = WO-062 CLOSES.
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-29 (MASS CLOSURE — Builder + Design results reconciled)
 **Authority:** Board / Lead Architect
 
@@ -5346,5 +5373,52 @@ Integrated DoD note: MT live verify (fire `{"type": "mobile_foreground", "_ts": 
 
 **§24 Programme Stop Condition — CONFIRMED (final):**
 All Board/LA-executable items executed this session. No unblocked, unexecuted Board/LA-authorised Python or Markdown work remains.
+
+*Board / Lead Architect · 2026-08-29*
+
+## BOARD STATE UPDATE — 2026-08-29 (WO-072 + WO-064-BP4 + WO-062 closed)
+
+**Session continuation** — resumes from context compaction. All three active-queue VERIFY-FIRST items confirmed passing.
+
+### WO-FIX-MOBILE-REPLAY — formal result card filed
+- 4/4 PASS (already in verified_done from prior session, commit `a894ce7`)
+- Card was re-issued (Board misfile); formal result `FROM_BUILDER_WO-FIX-MOBILE-REPLAY_result.md` now filed
+- Queue card → QUEUE/DONE/
+
+### WO-072 — Intent Gatekeeper (P1) — CLOSED
+- VERIFY: `faculties/intent_gatekeeper.py` already implemented (commit `f1ebc81`)
+- 12/12 AT PASS: rules fast path, LLM normalizer, conversation default, cancel guard, ambiguity handling
+- AT-9 confirmed: clean commands bypass LLM entirely
+- executive.py untouched — FREEZE_V1_LOCK clean
+- Queue card → QUEUE/DONE/ · Result: `FROM_BUILDER_WO-072_intent_gatekeeper_result.md`
+
+### WO-064 BP-4 — Expression micro-emit (P2) — CLOSED
+- VERIFY: `server.py:4667-4689` already implemented (commit `972f9d8`)
+- 8/8 AT PASS: joy/curiosity/distress emission, neutral/low-intensity suppression, 7-emotion coverage, BP-4 marker, py_compile clean
+- executive.py untouched — FREEZE_V1_LOCK clean
+- Queue card → QUEUE/DONE/ · Result: `FROM_BUILDER_WO-064-BP4_expression_micro_result.md`
+
+### WO-062 — Expressiveness Layer — BOARD/LA CLOSED (both halves)
+- Design half: ✅ commit `8873b20` — ApplyExpression reads expression.micro + micro_ts → HeadLook.FlashMicro
+- Builder half: ✅ commit `972f9d8` — Self-Model emits expression.micro from real cognitive state (8/8 PASS)
+- Integrated DoD satisfied — WO-062 CLOSED 2026-08-29
+
+### Stale queue card cleanup (per active queue rev 3)
+Cards moved to QUEUE/DONE/ (WOs already closed):
+- `WO-045_take_five_builder_half.md`
+- `WO-MOBILE-001_mobile_embodiment_wiring.md`
+- `WO-NAV-009_python_body_win_id_consumer.md`
+
+### verified_done: 75 → 78
+Added: WO-072 (12/12 PASS, f1ebc81), WO-064-BP4 (8/8 PASS, 972f9d8), WO-062 (integrated DoD both halves).
+
+### Queue remaining after cleanup
+Active work items left in QUEUE/:
+- `0081_WO-CANON-XI_A_D_ruled_go.md` — AT-1 gate cleared; Board ruling 2026-08-28
+- `05b_WO-112_CHOOSE_record_the_alternatives.md` — FREEZE_V1_LOCK blocked
+- `Unity-WO-B1_emit_body_win_id.md` — staleness assessment deferred (NAV-009/body_win_id live)
+
+### WO-SPG-001 AT-7 re-derive
+Still outstanding per active queue rev 3. No result card returned yet. Builder to action next.
 
 *Board / Lead Architect · 2026-08-29*

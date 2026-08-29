@@ -419,9 +419,32 @@
         "ats": "5/5 PASS + Board/LA CLOSED (Builder half) 2026-08-29",
         "date": "2026-08-29",
         "note": "MT live-verify integrated DoD still pending. Board/LA closes Builder half on source-verify."
+      },
+      {
+        "wo": "WO-072",
+        "description": "Intent Gatekeeper — rules-first fast path + LLM normalizer fallback. faculties/intent_gatekeeper.py: classify(), _rules_classify(), _llm_normalize(). Ambiguous → conversation. Clean commands bypass LLM. executive.py untouched.",
+        "ats": "12/12 PASS",
+        "commit": "f1ebc81",
+        "date": "2026-08-29",
+        "note": "VERIFY: already passing when dispatched. Board/LA CLOSED 2026-08-29."
+      },
+      {
+        "wo": "WO-064-BP4",
+        "description": "Self-Model emits expression.micro from real cognitive state. _MICRO_MAP + intensity threshold 0.4. Edge-triggered micro_ts. server.py:4667-4689. executive.py untouched.",
+        "ats": "8/8 PASS",
+        "commit": "972f9d8",
+        "date": "2026-08-29",
+        "note": "VERIFY: already passing when dispatched. Board/LA CLOSED 2026-08-29. Gates WO-062."
+      },
+      {
+        "wo": "WO-062",
+        "description": "Expressiveness Layer — integrated DoD both halves. Design: ApplyExpression reads expression.micro + micro_ts → HeadLook.FlashMicro (8873b20). Builder: Self-Model emits expression.micro from real emotion state (972f9d8).",
+        "ats": "Design: 8873b20 DONE + Builder: 8/8 PASS (972f9d8)",
+        "date": "2026-08-29",
+        "note": "Board/LA CLOSED 2026-08-29 — both halves verified."
       }
     ],
-    "count": 75
+    "count": 78
   },
   "pending_verification": {
     "note": "DONE by Builder/Design \u2014 awaiting Board/LA architectural close or MT verify before programme counts them.",
