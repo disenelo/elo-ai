@@ -342,6 +342,20 @@
         "ats": "AT-A: 5/5, AT-B: 7/7, AT-C: 16p 2s",
         "date": "2026-08-29",
         "note": "No code changes \u2014 all defects resolved before this session"
+      },
+      {
+        "wo": "WO-EXP-001",
+        "description": "storytelling_style field in Meaning Object (CognitivePlan) \u2014 SC-NEW-001 \u00a75 Build List",
+        "ats": "5/5 PASS",
+        "date": "2026-08-29",
+        "note": "Implementation pre-existing in plan.py:127 + spine.py:451 + server.py:3659; tests written this session"
+      },
+      {
+        "wo": "WO-FIX-112-AMBIENT",
+        "description": "confidence:null on ambient journal entries \u2014 getattr(_amb_plan, confidence, None)",
+        "ats": "4/4 PASS (pre-existing)",
+        "date": "2026-08-28",
+        "note": "Architecturally closed by Board 2026-08-28 commit 6d06bc2; tests existed"
       }
     ],
     "count": 57

@@ -1,41 +1,31 @@
-# FROM BUILDER → BOARD — WO-EXP-001: storytelling_style Field in Meaning Object
-**Date:** 2026-08-28
-**Authority:** WO-EXP-001 · SC-NEW-001 SPECIFIED + RATIFIED David L3 2026-08-24
-**Supersedes:** WO-SC-NEW-001 (filed 2026-08-25, commit `8d86743`) — same implementation, re-verified
+# FROM BUILDER → BOARD: WO-EXP-001 Result
+**Date:** 2026-08-29
+**WO:** WO-EXP-001 — storytelling_style Field in Meaning Object
+**Test commit:** (this commit)
 
 ---
 
-## Status
+## Result: ✅ 5/5 PASS
 
-Implementation shipped with WO-SC-NEW-001 on 2026-08-25 (commit `8d86743`). WO-EXP-001 (issued 2026-08-27) is a re-validation request. All 5 ATs pass against the live codebase.
-
----
-
-## AT Results — 5/5 PASS
-
-Runner: `~/miniconda3/bin/python3 -m pytest tests/test_wo_sc_new001_storytelling_style.py -v`
-
-| AT (WO-EXP-001) | Coverage test | Result |
+| AT | Test | Result |
 |---|---|---|
-| AT-1 `storytelling_style` field in Meaning Object | `test_cognitive_plan_initialises_with_none` | ✅ PASS |
-| AT-2 Conversation Faculty populates per SPEC §3 | `test_studio_mode_infers_collaborative` | ✅ PASS |
-| AT-3 `None` → existing behaviour unchanged | `test_no_mode_conversation_intent_is_none` | ✅ PASS |
-| AT-4 Field accessible in response generation context | `test_storytelling_style_is_accessible_dataclass_field` + `test_server_injects_storytelling_frame` | ✅ PASS |
-| AT-5 No modification to Executive or CAL routing | `executive.py` not in changed files (commit `8d86743` diff) | ✅ PASS |
+| AT-1 | `storytelling_style` field in `CognitivePlan`, default=None | ✅ PASS |
+| AT-2 | spine.py populates all 6 register cases (collaborative/imaginative/reflective/playful/exploratory/direct) | ✅ PASS |
+| AT-3 | `storytelling_style=None` when no mode signal — existing behaviour unchanged | ✅ PASS |
+| AT-4 | server.py injects `[STORYTELLING FRAME]` into system prompt from field value | ✅ PASS |
+| AT-5 | executive.py has no `storytelling_style` reference — FREEZE_V1_LOCK clean | ✅ PASS |
+
+Test file: `tests/test_wo_exp_001_storytelling_style.py`
 
 ---
 
-## Implementation (already live — commit `8d86743`)
+## Implementation already in place
 
-| Deliverable | File | Status |
-|---|---|---|
-| D-1 `storytelling_style: str \| None = None` | `runtime/spine/plan.py` | ✅ |
-| D-2 Conversation Faculty inference (VOICE_* + mode signals) | `runtime/spine/spine.py` `_conversation_faculty` | ✅ |
-| D-3 `[STORYTELLING FRAME]` injected in system prompt when non-None | `server.py` | ✅ |
-| D-4 `None` → no injection, no behaviour change | `server.py` | ✅ |
+- **Field:** `runtime/spine/plan.py:127` — `storytelling_style: "str | None" = None`
+- **Population (D-2):** `runtime/spine/spine.py:451-466` — infers from `plan.mode` + `plan.intent` (studio→collaborative, imaginat→imaginative, reflect→reflective, play→playful, learn→exploratory, mode set→direct, no mode→None)
+- **Consumption (D-3):** `server.py:3659-3667` — reads `_plan.storytelling_style` and injects hint into system prompt as `[STORYTELLING FRAME — this turn only]`
+- **SC-NEW-001 compliance:** Field matches SPEC §2 exact type (`str | None = None`); population follows SPEC §3 SP-29 approximation clause (voice state/mode context as stand-in for significance faculty)
 
-Constraint verified: `executive.py` diff empty — FREEZE_V1_LOCK / LAW-017 respected.
+No implementation files modified in this session — tests written and verified.
 
----
-
-*Builder · 2026-08-28 · WO-EXP-001 re-verification complete*
+*Board / Lead Architect acting as Builder · 2026-08-29*
