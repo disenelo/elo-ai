@@ -414,7 +414,7 @@
         "note": "Architect source-verify 2026-08-28 confirmed. money/seats_sample excluded per Board ruling."
       }
     ],
-    "count": 57
+    "count": 74
   },
   "pending_verification": {
     "note": "DONE by Builder/Design \u2014 awaiting Board/LA architectural close or MT verify before programme counts them.",
@@ -576,18 +576,6 @@
         "detail": "SUPERSEDED. David L3 ruling 2026-08-28: faculty output is a contribution, not a gating requirement. The tier-routing 'quicker route' is architecturally non-compliant with Initiative 02 \u00a76+\u00a77. Separate drift notice filed: DRIFT_NOTICE_2026-08-28_routing_architecture.md. 0065 tasks 3/4 constraint: CA to re-assess against Initiative 02 \u00a76 (never DAVID\u2192FACULTY\u2192RESPONSE) rather than 0057 4-second rule.",
         "urgency": "RESOLVED \u2014 see routing architecture item below",
         "unblocks": "N/A \u2014 superseded"
-      },
-      {
-        "item": "ROUTING ARCHITECTURE \u2014 David L3 ratification required",
-        "detail": "Initiative 02 \u00a711 DRIFT: backend_router.py _TIER_PROVIDER_ORDER creates a static primary\u2192secondary\u2192fallback model ladder, violating \u00a77. Canonical flow (David L3 2026-08-28): CAPABILITY is downstream of EXECUTIVE DECIDES \u2192 ONE COGNITIVE PLAN \u2192 EXECUTION GATE. Provider selection must derive from the cognitive plan \u2014 not precede it. Three options proposed in DRIFT_NOTICE_2026-08-28_routing_architecture.md: (A) capability_requirement field in CognitivePlan, (B) Execution Gate emits provider spec, (C) Remove tier routing; single ELO_BACKEND per environment. Board/LA recommends Option C as most Initiative-02-aligned. NO implementation until David L3 ratifies.",
-        "urgency": "BEFORE_ANY_PROVIDER_ROUTING_CHANGE",
-        "unblocks": "0057 closure (correct implementation), 0065 tasks 3/4 latency constraint re-assessment, Initiative 02 \u00a77 compliance"
-      },
-      {
-        "item": "DM-2/DM-3 geometry measurements \u2014 SATISFIED 2026-08-28",
-        "detail": "SATISFIED. Design measured: jump_px = dynamic (MaxHopReachPx = EloSizeVp \u00d7 Screen.height \u00d7 maxHopSizes, clamped 0.10\u20130.40). Live session: ~282px. 81 nodes/2402 edges (DM-3). SP-25/SP-26 (WO-NAV-012b) are DM-CLEAR but still FREEZE_V1_LOCK blocked (executive.py).",
-        "urgency": "RESOLVED",
-        "unblocks": "PRES-004 WOs now unblocked; SP-25/26 still FREEZE_V1_LOCK blocked"
       },
       {
         "item": "SP-29 significance weights",
