@@ -356,6 +356,13 @@
         "ats": "4/4 PASS (pre-existing)",
         "date": "2026-08-28",
         "note": "Architecturally closed by Board 2026-08-28 commit 6d06bc2; tests existed"
+      },
+      {
+        "wo": "WO-CREATIVE-001",
+        "description": "creative_imagination.py wired into spine.py; creative_candidates in CognitivePlan + snapshot",
+        "ats": "4/4 PASS",
+        "date": "2026-08-29",
+        "note": "Implementation pre-existing; tests written this session"
       }
     ],
     "count": 57
