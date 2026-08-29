@@ -412,9 +412,16 @@
         "ats": "7/7 PASS",
         "date": "2026-08-27",
         "note": "Architect source-verify 2026-08-28 confirmed. money/seats_sample excluded per Board ruling."
+      },
+      {
+        "wo": "WO-MOBILE-001",
+        "description": "Mobile embodiment wiring (spine side). D-SPINE-1: mobile_foreground \u2192 apply_embodiment(phone). D-SPINE-2: background keeps embodiment=phone, sets mobile_lifecycle=background. D-SPINE-3: nearby_surfaces cleared. executive.py untouched (FREEZE_V1_LOCK). commit 5d982a5. Board/LA source-verified 2026-08-29. MT integrated DoD pending (MT to fire foreground event through authenticated window process).",
+        "ats": "5/5 PASS + Board/LA CLOSED (Builder half) 2026-08-29",
+        "date": "2026-08-29",
+        "note": "MT live-verify integrated DoD still pending. Board/LA closes Builder half on source-verify."
       }
     ],
-    "count": 74
+    "count": 75
   },
   "pending_verification": {
     "note": "DONE by Builder/Design \u2014 awaiting Board/LA architectural close or MT verify before programme counts them.",

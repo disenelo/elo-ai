@@ -5279,3 +5279,19 @@ No unblocked, unexecuted Board/LA-authorised Python work remains.
 9. 0057 §4 policy gate — >4s latency rule proposal (FROM_BUILDER_0057_4_second_rule_result.md)
 
 *Board / Lead Architect · 2026-08-29*
+
+## BOARD STATE UPDATE — 2026-08-29 (WO-MOBILE-001 Board/LA source-verify close)
+
+**Board/LA close criteria verified (2026-08-29):**
+- `tests/test_wo_mobile001_mobile_embodiment.py`: 5/5 PASS (live run)
+- `executive.py`: NOT in commit `5d982a5` — FREEZE_V1_LOCK clean
+- Files in commit: `runtime/mobile_embodiment.py`, `self/elo_self_model.py`, `server.py`, test file
+- D-SPINE-1/2/3 source-verified: `apply_mobile_foreground()` / `apply_mobile_background()` / `nearby_surfaces` clear confirmed
+
+**WO-MOBILE-001: ✅ Board/LA CLOSED (Builder half) — 2026-08-29**
+
+Integrated DoD note: MT live verify (fire `{"type": "mobile_foreground", "_ts": <ts>}` through `unity_events.json`, confirm AT-1–AT-5 against live spine) still pending. MT does NOT touch spine files.
+
+**verified_done count: 75**
+
+*Board / Lead Architect · 2026-08-29*
