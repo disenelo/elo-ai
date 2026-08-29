@@ -2415,7 +2415,7 @@ _Last updated: 2026-08-10 (auto-reconcile #28) — **NO NEW SEAT MOVEMENT since 
 >
 > **Bank now (already shipped — need David live-confirm, NOT build): WO-030 · WO-036 · WO-039 · WO-042 · WO-043 · WO-044 + merge branches WO-031 · WO-026.**
 >
-<!-- COMPANY_FOCUS: Initiative 01 — Presence + Embodied Navigation | items: WO-EA2-1(MT-verify), WO-NAV-013(MT-verify), PRES-001..006(held-pending-DM), gap-A-cognitive-wiring(WO-TBD), WO-EA2-2(held-on-EA2-1) | note: Navigation waves 1–5 DONE 2026-08-27 (WO-NAV-001..013, WO-SP31/32/38). WO-WORLD-001 defect DONE. WO-CAP-001 DONE awaiting Board/LA. Next gates: MT verify WO-EA2-1 + WO-NAV-013; Design DM-2/DM-3 geometry measurements; David L3 0057 latency policy. Initiative 01 audit complete 2026-08-27 — gaps A/B/C/E open; gap D closed (commit 4688685). Updated 2026-08-27. -->
+<!-- COMPANY_FOCUS: Initiative 01 — Presence + Embodied Navigation | items: WO-EA2-1(MT-verify), WO-NAV-013(MT-verify), PRES-001..006(held-pending-DM), gap-A-cognitive-wiring(WO-TBD), WO-EA2-2(held-on-EA2-1), WO-ROUTER-001(WAITING-DAVID-option-A/B/C) | note: Navigation waves 1–5 DONE 2026-08-27 (WO-NAV-001..013, WO-SP31/32/38). WO-WORLD-001 defect DONE. WO-CAP-001 DONE awaiting Board/LA. WO-CREATIVE-001 DONE 2026-08-28 (commit 551c225) — Creative Imagination Faculty wired into spine LOOP-8. WO-INNER-001 DONE 2026-08-28 (commit 7c0a919) — RTR-015 inner-child expression path complete; [CREATIVE SEED] injected server.py. WO-ROUTER-001 filed QUEUE: _TIER_PROVIDER_ORDER routing violation §6+§7 — WAITING DAVID Option A/B/C ratification. Next gates: MT verify WO-EA2-1 + WO-NAV-013; Design DM-2/DM-3 geometry measurements; David L3 routing option + ELO_SELF_INITIATION=1 activation. Initiative 01 audit complete 2026-08-27 — gaps A/B/C/E open; gap D closed (commit 4688685). Updated 2026-08-29. -->
 
 > **Done bar (experience test):** one working session where eLo keeps one voice · finishes his sentences · remembers what you told him · routes a tool truthfully · never false-alarms "can't reach my thinking" · knows itself (where/how big/what it can do) · and sits AND moves when asked. All true → Presentable v1 is real.
 
@@ -4993,3 +4993,8 @@ Authority: BUILD LIST §5 (inner-child expression, "no dedicated WO") · RTR-015
 - CA: §5 relationship spec (stub, requires own full session)
 
 *Board / Lead Architect · 2026-08-28*
+
+### Board maintenance — 2026-08-29
+**COMPANY_FOCUS marker refreshed.** Added WO-CREATIVE-001 DONE (commit 551c225), WO-INNER-001 DONE (commit 7c0a919), WO-ROUTER-001 WAITING DAVID Option A/B/C to marker items and note. Updated timestamp to 2026-08-29. company_state_writer will republish voiced_briefing/company_focus on next run.
+
+*Board / Lead Architect · 2026-08-29*
