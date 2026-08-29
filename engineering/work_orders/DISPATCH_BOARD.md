@@ -5,6 +5,35 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-29 (MASS CLOSURE — Builder + Design results reconciled)
+**Authority:** Board / Lead Architect
+
+### WOs CLOSED this reconciliation:
+
+| WO | Result | Commits / Evidence |
+|---|---|---|
+| **WO-ROUTER-001** | ✅ 8/8 PASS | Capability-driven `_route_by_tier()` live. `_TIER_CAPABILITY` + `_TIER_PROVIDER_CANDIDATES` + `_COST_RANK` added. `executive.py` NOT touched. Note: `_TIER_PROVIDER_ORDER` KEPT (structural test compat — AT-7 confirms test_brain_authors 4/4). AT-8: `ELO_OLLAMA_MODEL` default → `llama3.1:8b` at 3 sites. |
+| **WO-073** | ✅ ABSORBED — AT-4 confirms Ollama in pinned-Groq fallback chain. `keep_alive=30m` confirmed live. Closes with WO-ROUTER-001. |
+| **WO-064 BP-1+2** | ✅ BP-1 4/4 + BP-2 5/5 | VERIFY FIRST: both already in server.py (4654) + state_writer.py (186). `conversing` boolean live. Move words → `move_command{type,_ts}` live. Commit `18b9be5` (tests). |
+| **WO-022** | ✅ Rule 4.1 — 5/5 + 9/9 PASS. Code already correct (DAVID_APPROVED 2026-08-10). No new implementation. |
+| **WO-036** | ✅ Rule 4.1 — 7/7 + 3/3 + 10/10 PASS. BREVITY + banned openers confirmed live. No new implementation. |
+| **WO-039** | ✅ Rule 4.1 — 6/6 + 0 garbles/400 + F1-F6 pass (F4 AT-1 = live-vault fixture, not a code gap). No new implementation. |
+| **WO-FIX-WKG-ISOLATION** | ✅ 3/3 PASS — `test_canon_xxiv_promotion.py` finally-block now restores full graph. Suite: 82/82 (was 66 failures). Test-only fix. |
+| **WO-065 (Design)** | ✅ 3/3 source-verified — sit_held heartbeat (unity_events.json, 4s pulse, commits `e9b0e0b`+`f33e600`), EloOSProcess restart-on-launch (kills stale :5050, `e9b0e0b`), sit_ended emit (`0b3ca8b`). CLIBUILD_OK 180MB. Artefact confirm on next natural sit/relaunch (taste, not gate). |
+
+### Programme consequence:
+- **`conversing` field live (WO-064 BP-1) + sit_held/sit_ended (WO-065)** → sit-linger loop COMPLETE. Design gate met.
+- **Capability-driven routing live (WO-ROUTER-001)** → David L3 canonical routing intent SATISFIED at code level.
+- **WKG suite 82/82 clean** → WKG phase 2 verification path clear.
+- **0057 latency data** — Builder measured: typical turn 6.5–8s; `living_presence_spec` = 67.2% of tokens (David's sole lever); Groq/Cerebras available as ~1–2s faster path. **PROPOSAL: `ELO_4S_RULE=1` gate → escalate tier to REASONING when >4s.** David L3 required before implementing. Added to L3 outstanding.
+- **WO-FIX-MOBILE-REPLAY** — STILL OPEN. Queue card was filed to `builder/DONE/` (wrong path) — Builder never picked it up. Re-issued to correct `builder/QUEUE/` location this BSU.
+
+### Builder active queue (updated — post-mass-closure):
+WO-FIX-MOBILE-REPLAY P2 → WO-SPG-001 AT-7 P3 (re-derive, no result card yet).
+Stale cards in builder/QUEUE/ (Builder to clean): WO-045 · WO-MOBILE-001 · WO-NAV-009 · Unity-WO-B1.
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-29 (WO-048 CLOSED — 12/12 PASS)
 **Authority:** Board / Lead Architect
 
@@ -5293,5 +5322,29 @@ No unblocked, unexecuted Board/LA-authorised Python work remains.
 Integrated DoD note: MT live verify (fire `{"type": "mobile_foreground", "_ts": <ts>}` through `unity_events.json`, confirm AT-1–AT-5 against live spine) still pending. MT does NOT touch spine files.
 
 **verified_done count: 75**
+
+*Board / Lead Architect · 2026-08-29*
+
+## BOARD STATE UPDATE — 2026-08-29 (test_000b stale assertions fixed — 7/7 PASS)
+
+**Action:** `tests/test_000b_five_surgical_fixes.py` — 4 stale string-pattern assertions aligned to current implementation. Board/LA source-verify: implementations are correct, tests were checking superseded string patterns (pre-existing failures since 2026-08-24 per MT baseline).
+
+| AT | Old pattern | Current implementation | Fix |
+|---|---|---|---|
+| AT-FIX-2 | `_reinforce_hit` | deferred queue `_vault_reinforce_queue.append` + `reinforce as _rf` | Updated assertion |
+| AT-FIX-3 | `embodiment='desktop'` literal | `embodiment=_active_body` variable | Updated assertion |
+| AT-FIX-3b | inline `"verified" if state.embodiment else` | `tier_fact(state.embodiment, ...)` | Updated assertion |
+| AT-FIX-4 | `_rb(_elo_self, _action)` | `_rb(s, _action)` (closure param `s`) | Updated assertion |
+
+**Result:** 7/7 PASS · commit `79048d7` · 0 production code changes
+
+**Full suite status (2026-08-29):**
+- Total PASS: 1239 (minus XI-AD-2 RED + ~117 other pre-existing)
+- XI-AD-2: correctly RED (parity gate, WAITING DESIGN)
+- Pre-existing failures: ~117 (bwkg02 corpus data gaps, nav_004 spatial data, others — all confirmed pre-existing per MT baseline 2026-08-24)
+- New failures from this session: **0**
+
+**§24 Programme Stop Condition — CONFIRMED (final):**
+All Board/LA-executable items executed this session. No unblocked, unexecuted Board/LA-authorised Python or Markdown work remains.
 
 *Board / Lead Architect · 2026-08-29*
