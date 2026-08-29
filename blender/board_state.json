@@ -335,6 +335,13 @@
         "ats": "6/6 + 6/7 f4-fixture + full suite",
         "date": "2026-08-29",
         "note": "VERIFY FIRST \u2014 implementation pre-existing; no code changes"
+      },
+      {
+        "wo": "WO-FIX-TESTDEFECTS-BATCH",
+        "description": "Three test defects \u2014 all pre-resolved (wo096 sys.exit, card-0006 AT-3+5, test_basic_loop store_interaction skip)",
+        "ats": "AT-A: 5/5, AT-B: 7/7, AT-C: 16p 2s",
+        "date": "2026-08-29",
+        "note": "No code changes \u2014 all defects resolved before this session"
       }
     ],
     "count": 57
