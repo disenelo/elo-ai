@@ -5422,3 +5422,43 @@ Active work items left in QUEUE/:
 Still outstanding per active queue rev 3. No result card returned yet. Builder to action next.
 
 *Board / Lead Architect · 2026-08-29*
+
+## BOARD STATE UPDATE — 2026-08-29 (WO-020-SEAM-B CLOSED; queue audit)
+
+### WO-020 Seam B — CLOSED (VERIFY: already done)
+- `tests/test_wo020_tool_routing.py`: 6/6 PASS
+- `tests/test_wo020_routing_drift.py`: 6/5 PASS (12 total)
+- Implementation: `a2d1b79` + `92fada3` — Board re-verified `e45d870`
+- Queue card → QUEUE/DONE/ · Result: `FROM_BUILDER_WO-020-SEAM-B_tool_routing_entity_latch_result.md`
+- 0057 stale card → QUEUE/DONE/ (result already filed: FROM_BUILDER_0057_4_second_rule_result.md)
+
+### Unity-WO-B1 — DESIGN LANE (not Builder)
+- Lane correction issued 2026-08-24 (FROM_ARCHITECT_2026-08-24_Unity-WO-B1_lane_correction.md)
+- `body_win_id` CONFIRMED LIVE in `blender/elo_spatial.json` — Design delivered it
+- Card left in QUEUE per lane correction ruling; acknowledged DONE by Design
+
+### WO-CANON-XI 0081 — Builder step DONE; parity gate WAITING DESIGN
+- §A (route+issued_by in move_command): ✅ DONE — commits f0e591d + 73598b9
+- Step 2 (parity: brain route vs Unity route): 🔴 WAITING DESIGN — XI-AD-2 correctly RED
+- Step 3 (remove Unity local route selection): blocked on parity gate
+- OQ-1.3/1.4 (timeouts, ACKs): unimplemented; blocked on parity gate
+- Queue card remains in QUEUE — not stale, Builder half done, Design parity step open
+
+### 05b WO-112 — FREEZE_V1_LOCK BLOCKED
+- alternatives/candidates recording requires executive.py modification
+- Confidence-threading at server.py:1037/2807 is done
+- Full alternatives record requires L3 freeze lift — unblocked only by David L3 ruling
+- Queue card remains in QUEUE
+
+### Queue state post cleanup (2026-08-29)
+Remaining in QUEUE/:
+- `0081_WO-CANON-XI_A_D_ruled_go.md` — Builder §A done; parity WAITING DESIGN
+- `05b_WO-112_CHOOSE_record_the_alternatives.md` — FREEZE_V1_LOCK BLOCKED
+- `Unity-WO-B1_emit_body_win_id.md` — Design lane (body_win_id live); card stays per ruling
+
+### §24 Programme Stop Condition — CONFIRMED (2026-08-29)
+All Builder QUEUE items: DONE, WAITING DESIGN, or FREEZE_V1_LOCK BLOCKED.
+No unblocked, unexecuted Board/LA-authorised Python work remains.
+verified_done: 78
+
+*Board / Lead Architect · 2026-08-29*
