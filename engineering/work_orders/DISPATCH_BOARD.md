@@ -5,6 +5,22 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-30 (9th pass — MT returns processed)
+
+### WO-MOBILE-001 — INTEGRATED DOD COMPLETE ✅
+MT mobile-end verified: `FROM_MT_WO-MOBILE-001_mobile_end_verification_result.md` — 5/5 PASS.
+- AT-4 live: `embodiment = "phone"` (now `"mobile"` per WO-MOBILE-RENAME 2026-08-30)
+- AT-5 live: `mobile_lifecycle = "background"`, embodiment unchanged
+- Replay defect found by MT → **already fixed** (WO-FIX-MOBILE-REPLAY, commit `a894ce7`)
+- `pending_verification` cleared — WO-MOBILE-001 integrated DoD now complete.
+
+### WO-CANON-XI-UNITY-ROUTE — MT CONFIRMED ✅
+MT re-verified current DLL (`Aug 29 03:39`, 603 KB): `unity_route` + `leg_win_id` present in `#US` heap.
+`route_memory.jsonl` absent (no goal-directed move has fired — expected). Wiring verified both sides.
+Note: head-pose grid `9601f68` (19×7) shipped but frames not yet on MT's disk — not a blocker.
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-30 (8th pass — WO-MOBILE-RENAME CLOSED)
 
 ### WO-MOBILE-RENAME — CLOSED ✅ 16/16 PASS (commit `14d1958`)
@@ -15,6 +31,22 @@
 - `executive.py` NOT touched — FREEZE_V1_LOCK clean
 - **verified_done count: 83 → 84**
 - Unblocks MT emitter consistency (MT UP-channel now aligns on label `"mobile"`)
+
+---
+
+## BOARD STATE UPDATE — 2026-08-30 (8th pass — WO-MOBILE-RENAME closed · §24 rejected · Builder unblocked)
+
+### WO-MOBILE-RENAME — CLOSED ✅ (commits `14d1958`+`e702da4`)
+`"phone"` → `"mobile"` in `runtime/mobile_embodiment.py` + test assertions. verified_done = **84**.
+
+### Builder §24 — REJECTED. Three executable WOs remain.
+Builder called §24 after executing WO-MOBILE-RENAME, scanning only the stale queue cards and missing the new dispatches. Board issued `FROM_ARCHITECT_2026-08-30_REJECT_SECTION24_continue.md`.
+
+Remaining unblocked Builder queue:
+1. **WO-067-WRITE-PATH** (P1) — memory category tagging — EXECUTABLE NOW
+2. **WO-MOBILE-BRAIN** (P1) — `phone_capabilities` field — EXECUTABLE NOW
+3. **WO-MOBILE-PHASE2** (P2) — brain signals — Phase 1A gate CLEARED
+4. **WO-SPG-001 AT-7** (P3) — read-only measurement
 
 ---
 

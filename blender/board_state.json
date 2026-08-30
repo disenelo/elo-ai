@@ -415,10 +415,10 @@
       },
       {
         "wo": "WO-MOBILE-001",
-        "description": "Mobile embodiment wiring (spine side). D-SPINE-1: mobile_foreground \u2192 apply_embodiment(phone). D-SPINE-2: background keeps embodiment=phone, sets mobile_lifecycle=background. D-SPINE-3: nearby_surfaces cleared. executive.py untouched (FREEZE_V1_LOCK). commit 5d982a5. Board/LA source-verified 2026-08-29. MT integrated DoD pending (MT to fire foreground event through authenticated window process).",
-        "ats": "5/5 PASS + Board/LA CLOSED (Builder half) 2026-08-29",
+        "description": "Mobile embodiment wiring (spine side). D-SPINE-1: mobile_foreground \u2192 apply_embodiment (label: 'phone' at close, renamed to 'mobile' by WO-MOBILE-RENAME 2026-08-30). D-SPINE-2: background keeps embodiment, sets mobile_lifecycle=background. D-SPINE-3: nearby_surfaces cleared. executive.py untouched. commit 5d982a5. MT mobile-end verified 2026-08-29: 5/5 PASS. Replay defect found by MT \u2192 fixed WO-FIX-MOBILE-REPLAY (a894ce7). Integrated DoD COMPLETE.",
+        "ats": "5/5 PASS + MT VERIFIED 2026-08-29 \u2014 INTEGRATED DOD COMPLETE",
         "date": "2026-08-29",
-        "note": "MT live-verify integrated DoD still pending. Board/LA closes Builder half on source-verify."
+        "note": "Fully closed. MT result: FROM_MT_WO-MOBILE-001_mobile_end_verification_result.md. Embodiment label subsequently renamed to 'mobile' by WO-MOBILE-RENAME."
       },
       {
         "wo": "WO-072",
@@ -495,20 +495,7 @@
   },
   "pending_verification": {
     "note": "DONE by Builder/Design \u2014 awaiting Board/LA architectural close or MT verify before programme counts them.",
-    "items": [
-      {
-        "wo": "WO-MOBILE-001",
-        "description": "Mobile embodiment spine side (D-SPINE-1/2/3)",
-        "ats": "5/5 PASS",
-        "commit": "5d982a5",
-        "awaiting": "Board/LA + MT mobile-end verification (MT to fire mobile_foreground event through unity_events.json)"
-      },
-      {
-        "wo": "WO-MOBILE-001-MT",
-        "description": "WO-MOBILE-001 mobile-end verify \u2014 MT dispatched 2026-08-28",
-        "awaiting": "MT result card FROM_MT_WO-MOBILE-001_mobile_end_verification_result.md"
-      }
-    ]
+    "items": []
   },
   "moving": {
     "note": "Actively in progress by seats or dispatched and awaiting return.",
