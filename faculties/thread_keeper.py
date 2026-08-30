@@ -233,6 +233,7 @@ def record_state(topic: str, summary: str, session_id: str = "") -> None:
 def recall_thread(topic: str = "") -> str:
     """
     Look up last-state entry for topic (or most recent if topic is empty).
+    Also checks second_brain/index.jsonl for visual captures (WO-068 Phase 2).
     Returns a direct answer from the log — never fabricates.
     """
     if not os.path.exists(_LAST_STATE):
@@ -251,25 +252,154 @@ def recall_thread(topic: str = "") -> str:
     if not entries:
         return "Nothing logged yet — I haven't recorded a thread for that. Next time you switch topics I'll lock the state."
 
+    def _archive_suffix(q: str) -> str:
+        if not q:
+            return ""
+        hit = search_second_brain(q)
+        if hit and "Nothing" not in hit and "Couldn't" not in hit:
+            return f"\n\nAlso in archive — {hit}"
+        return ""
+
     # Topic match: find the most recent entry whose topic contains the query
     if topic:
         tl = topic.lower()
         matched = [e for e in entries if tl in e.get("topic", "").lower()]
         if matched:
             best = matched[-1]
-            return (
+            reply = (
                 f"Last state on '{best['topic']}' ({best['saved']}): "
                 f"{best['summary']}"
             )
+            return reply + _archive_suffix(topic)
         # No exact topic match — return most recent with honest caveat
         best = entries[-1]
-        return (
+        reply = (
             f"No exact match for '{topic}'. Most recent thread ({best['saved']}): "
             f"'{best['topic']}' — {best['summary']}"
         )
+        return reply + _archive_suffix(topic)
 
     # No topic specified — most recent
     best = entries[-1]
     return (
         f"Last thread ({best['saved']}): '{best['topic']}' — {best['summary']}"
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# D. SECOND BRAIN — visual capture + vision-indexed recall (WO-068 Phase 2)
+# ─────────────────────────────────────────────────────────────────────────────
+
+_SECOND_BRAIN_DIR   = os.path.join(_ROOT, "self", "second_brain")
+_SECOND_BRAIN_INDEX = os.path.join(_SECOND_BRAIN_DIR, "index.jsonl")
+
+
+def _describe_screenshot(image_bytes: bytes) -> str:
+    """Pass image_bytes through vision_loop._analyse() and return the description string."""
+    try:
+        from tools import vision_loop as _vl
+        result = _vl._analyse(image_bytes)
+        if result and result.get("description"):
+            return result["description"]
+    except Exception as e:
+        _log.debug("vision describe failed: %s", e)
+    return ""
+
+
+def capture_visual(text: str, image_bytes: bytes | None = None, elo_made: bool = False) -> str:
+    """
+    Extended capture (WO-068 Phase 2): saves text note to ideas_log.jsonl (Phase 1),
+    and if image_bytes is provided, also saves the screenshot to second_brain/ with
+    provenance + vision description, and appends to the index.
+
+    Returns confirmation naming both save paths when a screenshot is included.
+    """
+    # Phase 1: always capture the text note
+    text_reply = capture(text)
+
+    if not image_bytes:
+        return text_reply
+
+    # Phase 2: save screenshot + index it
+    try:
+        os.makedirs(_SECOND_BRAIN_DIR, exist_ok=True)
+        ts_now   = time.time()
+        ts_label = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        img_filename = f"capture_{ts_label}.png"
+        img_path     = os.path.join(_SECOND_BRAIN_DIR, img_filename)
+
+        with open(img_path, "wb") as f:
+            f.write(image_bytes)
+
+        description = _describe_screenshot(image_bytes)
+
+        entry = {
+            "ts":          ts_now,
+            "saved":       datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
+            "path":        img_path,
+            "type":        "screenshot",
+            "note":        text.strip(),
+            "description": description,
+            "tags":        {
+                "david_reference": not elo_made,
+                "elo_made":        elo_made,
+            },
+        }
+        with open(_SECOND_BRAIN_INDEX, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+        rel_img   = os.path.relpath(img_path, _ROOT)
+        rel_index = os.path.relpath(_SECOND_BRAIN_INDEX, _ROOT)
+        desc_line = f" ({description})" if description else ""
+        return (
+            f"Got it — text saved to `self/ideas_log.jsonl`, "
+            f"screenshot saved to `{rel_img}`{desc_line}. "
+            f"Indexed in `{rel_index}`."
+        )
+    except Exception as e:
+        _log.warning("capture_visual write failed: %s", e)
+        return text_reply + f" (screenshot save failed: {e})"
+
+
+def search_second_brain(query: str) -> str:
+    """
+    Search second_brain/index.jsonl by keyword match on description + note.
+    Returns the best matching entry or an honest "nothing found yet" reply.
+    """
+    if not os.path.exists(_SECOND_BRAIN_INDEX):
+        return "Nothing in the archive yet — capture something first and I'll be able to search it."
+
+    try:
+        entries: list[dict] = []
+        with open(_SECOND_BRAIN_INDEX, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    entries.append(json.loads(line))
+    except Exception:
+        return "Couldn't read the second brain index — file might be corrupted."
+
+    if not entries:
+        return "Nothing in the archive yet — capture something first and I'll be able to search it."
+
+    ql = query.lower()
+    scored: list[tuple[int, dict]] = []
+    for e in entries:
+        text_blob = (e.get("description", "") + " " + e.get("note", "")).lower()
+        score = sum(1 for word in ql.split() if word in text_blob)
+        if score > 0:
+            scored.append((score, e))
+
+    if not scored:
+        return f"Nothing matching '{query}' in the archive yet."
+
+    scored.sort(key=lambda x: (-x[0], -x[1]["ts"]))
+    _, best = scored[0]
+    rel_path    = os.path.relpath(best["path"], _ROOT)
+    description = best.get("description", "")
+    saved       = best.get("saved", "")
+    desc_line   = f": {description}" if description else ""
+    return (
+        f"Found it — `{rel_path}` ({saved}){desc_line}. "
+        f"Note: \"{best.get('note', '')}\"."
     )
