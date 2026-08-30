@@ -106,12 +106,12 @@ class TestBrainAuthors(unittest.TestCase):
         self.assertIn(
             "groq", backend_build,
             f"action='build' (TIER_REASONING) should select groq first, got '{backend_build}'. "
-            "_TIER_PROVIDER_ORDER is not being read — tier wiring is absent."
+            "_TIER_PROVIDER_CANDIDATES tier wiring is absent or _route_by_tier() not called."
         )
         self.assertIn(
             "openai", backend_deep,
             f"action='deep' (TIER_DEEP) should select openai first, got '{backend_deep}'. "
-            "_TIER_PROVIDER_ORDER is not being read — tier wiring is absent."
+            "_TIER_PROVIDER_CANDIDATES tier wiring is absent or _route_by_tier() not called."
         )
         self.assertNotEqual(
             backend_build, backend_deep,
@@ -163,14 +163,14 @@ class TestBrainAuthors(unittest.TestCase):
             "_route_by_tier not found in backend_router — tier wiring is absent"
         )
         self.assertTrue(
-            hasattr(br, "_TIER_PROVIDER_ORDER"),
-            "_TIER_PROVIDER_ORDER not found in backend_router"
+            hasattr(br, "_TIER_PROVIDER_CANDIDATES"),
+            "_TIER_PROVIDER_CANDIDATES not found in backend_router — capability routing absent"
         )
-        # Verify the table has the right structure
-        tier_r = br._TIER_PROVIDER_ORDER.get(br._TIER_REASONING)
-        tier_d = br._TIER_PROVIDER_ORDER.get(br._TIER_DEEP)
-        self.assertIsNotNone(tier_r, "TIER_REASONING not in _TIER_PROVIDER_ORDER")
-        self.assertIsNotNone(tier_d, "TIER_DEEP not in _TIER_PROVIDER_ORDER")
+        # Verify the candidates table has the right tiers
+        tier_r = br._TIER_PROVIDER_CANDIDATES.get(br._TIER_REASONING)
+        tier_d = br._TIER_PROVIDER_CANDIDATES.get(br._TIER_DEEP)
+        self.assertIsNotNone(tier_r, "TIER_REASONING not in _TIER_PROVIDER_CANDIDATES")
+        self.assertIsNotNone(tier_d, "TIER_DEEP not in _TIER_PROVIDER_CANDIDATES")
         # Verify build→reasoning, deep→deep
         self.assertEqual(
             br._action_default_tier("build"), br._TIER_REASONING,

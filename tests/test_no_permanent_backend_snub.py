@@ -88,30 +88,30 @@ def test_bk2_success_clears_cooldown() -> None:
 # ── BK-3  no provider removed from the chain at runtime ──────────────────────
 
 def test_bk3_no_provider_removed() -> None:
-    """No provider is removed from _TIER_PROVIDER_ORDER at runtime."""
+    """No provider is removed from _TIER_PROVIDER_CANDIDATES at runtime."""
     import runtime.backend_router as br
 
-    if not hasattr(br, "_TIER_PROVIDER_ORDER"):
-        ok("BK-3: _TIER_PROVIDER_ORDER not found — skipping (different chain structure)")
+    if not hasattr(br, "_TIER_PROVIDER_CANDIDATES"):
+        ok("BK-3: _TIER_PROVIDER_CANDIDATES not found — skipping (different chain structure)")
         return
 
     # Flatten all providers across all tiers into a frozenset for comparison
-    def _all_providers(order):
-        return frozenset(p for providers in order.values() for p in providers)
+    def _all_providers(candidates):
+        return frozenset(p for providers in candidates.values() for p in providers)
 
-    initial_providers = _all_providers(br._TIER_PROVIDER_ORDER)
+    initial_providers = _all_providers(br._TIER_PROVIDER_CANDIDATES)
     if "openai" not in initial_providers:
-        err("BK-3: 'openai' not in _TIER_PROVIDER_ORDER at all — cannot verify it stays")
+        err("BK-3: 'openai' not in _TIER_PROVIDER_CANDIDATES at all — cannot verify it stays")
 
     # Setting cooldown must not remove any provider from the chain
     br._openai_quota_cooldown_until = time.monotonic() + 60.0
-    after_cooldown = _all_providers(br._TIER_PROVIDER_ORDER)
+    after_cooldown = _all_providers(br._TIER_PROVIDER_CANDIDATES)
     br._openai_quota_cooldown_until = 0.0
 
     if initial_providers != after_cooldown:
         err(f"BK-3: provider chain changed after cooldown set — "
             f"removed: {initial_providers - after_cooldown}")
-    ok("BK-3: _TIER_PROVIDER_ORDER unchanged after cooldown — provider still in chain, just skipped")
+    ok("BK-3: _TIER_PROVIDER_CANDIDATES unchanged after cooldown — provider still in chain, just skipped")
 
 
 # ── runner ────────────────────────────────────────────────────────────────────

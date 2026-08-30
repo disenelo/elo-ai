@@ -4,8 +4,9 @@ runtime/backend_router.py — eLo OS backend routing layer.
 Routes requests between local (Ollama) and cloud (Groq / Gemini / OpenAI) backends.
 Falls back to mock when nothing is available.
 
-Priority (auto mode):
-    OpenAI → Gemini → Claude → Groq → Cerebras → Ollama → Mock
+Routing (auto mode): Executive determines required capability; _route_by_tier() selects
+the provider that satisfies that capability from _TIER_CAPABILITY + _TIER_PROVIDER_CANDIDATES,
+ranked by _COST_RANK. No static provider priority ladder exists.
 
 Routing mode set via ELO_BACKEND env var:
     export ELO_BACKEND=auto    (default)
@@ -84,14 +85,6 @@ _PROVIDER_COST_CLASS: dict[str, str] = {
     "claude":   _COST_PREMIUM_CLOUD,
 }
 
-# Tier→cheapest-first provider order — kept for structural tests (test_brain_authors.py test 4).
-# WO-ROUTER-001 D-1: routing now uses _TIER_PROVIDER_CANDIDATES + cost-sort; this dict is NOT iterated.
-# RED when _TIER_PROVIDER_ORDER is removed: tests/test_brain_authors.py test 4 goes RED.
-_TIER_PROVIDER_ORDER: dict[int, list[str]] = {
-    _TIER_CONVERSATIONAL: ["ollama", "groq", "cerebras", "gemini", "openai", "claude"],
-    _TIER_REASONING:      ["groq", "cerebras", "openai", "gemini", "claude", "ollama"],
-    _TIER_DEEP:           ["openai", "claude", "gemini", "groq", "cerebras", "ollama"],
-}
 
 # D-1 WO-ROUTER-001: capability descriptor per tier (seed of provider capability registry)
 _TIER_CAPABILITY: dict[int, str] = {
@@ -662,8 +655,6 @@ def _route_by_tier(
     Returns (text, backend) or None if tier unmapped or all providers fail.
 
     ELO_BACKEND is an override — only call this when mode == "auto".
-    _TIER_PROVIDER_ORDER is preserved for structural tests.
-    RED when _TIER_PROVIDER_ORDER is removed: tests/test_brain_authors.py test 4 goes RED.
     """
     global _last_route_capability
     if tier not in _TIER_PROVIDER_CANDIDATES:
@@ -1183,7 +1174,7 @@ def route(
 
     # WO-BRAIN-AUTHORS: tier-aware routing — Brain applies the model.
     # When ELO_BACKEND is NOT set (mode == "auto"), use the Executive's action tier
-    # to choose the provider order from _TIER_PROVIDER_ORDER instead of the static chain.
+    # to select via _TIER_PROVIDER_CANDIDATES + _COST_RANK (capability-driven, no static ladder).
     # ELO_BACKEND in .env is an explicit override and wins unconditionally.
     _derived_tier = tier or _action_default_tier(action)
     if _derived_tier and not os.environ.get("ELO_BACKEND", ""):

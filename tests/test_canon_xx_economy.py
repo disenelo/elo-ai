@@ -33,7 +33,7 @@ try:
         _TIER_REFLEX, _TIER_CONVERSATIONAL, _TIER_REASONING, _TIER_DEEP,
         _COST_FREE_LOCAL, _COST_CHEAP_CLOUD, _COST_PREMIUM_CLOUD,
         _PROVIDER_COST_CLASS,
-        _TIER_PROVIDER_ORDER,
+        _TIER_PROVIDER_CANDIDATES,
         _TIER_BUDGET,
         _ACTION_PRIORITY,
         _action_priority,
@@ -157,18 +157,19 @@ except Exception as e:
     fail("Ch.2/ST-5", e)
 
 
-# ── Ch.2/FT-5: tier→provider ordering — Tier 1 cheapest-first ────────────────
+# ── Ch.2/FT-5: tier→provider candidates — Tier 1 cheapest-first ──────────────
 try:
     assert _import_ok
-    tier1_order = _TIER_PROVIDER_ORDER[_TIER_CONVERSATIONAL]
-    tier3_order = _TIER_PROVIDER_ORDER[_TIER_DEEP]
+    tier1_cands = _TIER_PROVIDER_CANDIDATES[_TIER_CONVERSATIONAL]
+    tier3_cands = _TIER_PROVIDER_CANDIDATES[_TIER_DEEP]
     # Tier 1: Ollama (free-local) must come before OpenAI (premium-cloud)
-    assert tier1_order.index("ollama") < tier1_order.index("openai"), \
-        "Tier 1 must route ollama before openai"
-    # Tier 3: OpenAI (premium-cloud) must come before Ollama (free-local)
-    assert tier3_order.index("openai") < tier3_order.index("ollama"), \
-        "Tier 3 must route openai before ollama"
-    ok("Ch.2/FT-5: tier provider order — Tier 1 cheapest-first, Tier 3 premium-first")
+    assert tier1_cands.index("ollama") < tier1_cands.index("openai"), \
+        "Tier 1 candidates must list ollama before openai"
+    # Tier 3: OpenAI (premium-cloud) must come before Claude (premium-cloud, lower preference)
+    assert "openai" in tier3_cands, "Tier 3 candidates must include openai"
+    assert tier3_cands.index("openai") < tier3_cands.index("claude"), \
+        "Tier 3 candidates must list openai before claude"
+    ok("Ch.2/FT-5: tier provider candidates — Tier 1 cheapest-first, Tier 3 premium-first")
 except AssertionError as e:
     fail("Ch.2/FT-5", e)
 except Exception as e:
