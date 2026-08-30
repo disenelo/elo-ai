@@ -274,13 +274,22 @@ _CAL_ACTIONS = ("answer", "build", "connect", "celebrate", "reflect",
                 "ground", "challenge", "witness", "silence")
 
 
-def decide(attention_model: dict, loop_detected: bool = False, user_input: str = "") -> dict:
+def decide(
+    attention_model: dict,
+    loop_detected: bool = False,
+    user_input: str = "",
+    draft_response: str = "",          # WO-RESPONSE-GATE: optional; if provided, runs quality gate
+    cognitive_state=None,              # WO-RESPONSE-GATE: CognitiveState for gate checks
+) -> dict:
     """
     Compute the executive decision from the attention model.
 
     Args:
         attention_model: Output of core.memory_relevance_filter.compute().
         loop_detected:   True if hard loop detection fired.
+        draft_response:  If non-empty, the response gate evaluates it and returns
+                         gated_response + gate_flags in the result dict.
+        cognitive_state: CognitiveState for gate checks (optional).
 
     Returns:
         ExecDecision dict:
@@ -291,6 +300,10 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
             response_goal — clarify | stabilise | explore | create | answer | reflect
             cognitive_load — low | medium | high
             priority_order — ["primary", "secondary", "ignore"] labels
+            memory_worthy  — WO-SP29: significance >= 0.72
+            self_init_eligible — WO-SP29: significance >= 0.90
+            gated_response — WO-RESPONSE-GATE: quality-checked response (if draft_response provided)
+            gate_flags     — WO-RESPONSE-GATE: list of gate check flags
     """
     intent   = attention_model.get("intent", "conversation")
     emo      = attention_model.get("emotional_context", {})
@@ -434,6 +447,19 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
         else float(_sig_dict or 0.0)
     )
 
+    # WO-RESPONSE-GATE: evaluate draft response through 10-point quality gate
+    _gate_flags:    list = []
+    _gated_response: str = draft_response
+    if draft_response:
+        try:
+            from runtime.response_gate import ResponseGate as _RG
+            _gate_result = _RG().evaluate(draft_response, cognitive_state, attention_model)
+            _gate_flags    = _gate_result.flags
+            _gated_response = _gate_result.revised_response or draft_response
+        except Exception as _ge:
+            import logging as _logging
+            _logging.getLogger(__name__).warning("response_gate FAILED: %s", _ge)
+
     return {
         "tone":              tone,
         "max_sentences":     max_s,
@@ -449,4 +475,6 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
         "confidence":        cal.get("confidence", 0.7),  # WO-112: thread from _conversation_action
         "memory_worthy":     _sig_overall >= 0.72,        # WO-SP29: significance memory gate
         "self_init_eligible": _sig_overall >= 0.90,       # WO-SP29: significance self-init gate
+        "gated_response":    _gated_response,             # WO-RESPONSE-GATE: quality-checked response
+        "gate_flags":        _gate_flags,                 # WO-RESPONSE-GATE: list of check flags
     }
