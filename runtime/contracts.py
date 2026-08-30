@@ -167,6 +167,9 @@ class CognitiveState:
     # ── Memory Category Tags (WO-MEMORY-TURN-TYPES) ──────────────────────────
     memory_categories:    tuple = field(default_factory=tuple)  # canonical categories this turn
 
+    # ── Significance Faculty (WO-SP29) ────────────────────────────────────────
+    significance_score:   float = 0.0          # overall score 0.0-1.0; gates memory write (>=0.72) and self-init (>=0.90)
+
     # ── Assembly Confidence ───────────────────────────────────────────────────
     assembly_confidence:  float = 1.0         # 0.0 if faculties partially failed
 

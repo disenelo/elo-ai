@@ -1055,6 +1055,21 @@ def assemble_cognitive_state(
     except Exception:
         _mem_categories = ()
 
+    # WO-SP29: compute per-turn significance score from world state
+    _significance_score: float = 0.0
+    try:
+        from runtime.significance_faculty import compute_significance as _csig_sp29
+        _world_delta_sp29: dict = {}
+        try:
+            from world.world_delta import compute_delta as _wd_compute_sp29
+            _world_delta_sp29 = _wd_compute_sp29() or {}
+        except Exception:
+            pass
+        _sig_result = _csig_sp29(_world_delta_sp29)
+        _significance_score = float(_sig_result.get("overall", 0.0))
+    except Exception:
+        _significance_score = 0.0
+
     # D1 ruling (Card 0035): intent_signal is the COGNITIVE intent that the
     # Executive decides on — sourced from core/memory_relevance_filter (attention_model["intent"]).
     # The intent_engine's router hint travels as `capability_hint`, elsewhere.
@@ -1071,6 +1086,7 @@ def assemble_cognitive_state(
         working_memory=working_memory,
         attention_state=_attn_state,
         memory_categories=_mem_categories,
+        significance_score=_significance_score,
     )
 
 

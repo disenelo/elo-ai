@@ -427,17 +427,26 @@ def decide(attention_model: dict, loop_detected: bool = False, user_input: str =
     if action == "celebrate":
         max_s = 1   # celebrate is one sentence only — no expansion
 
+    # WO-SP29: significance gates — reads from ExecutiveContext (significance_score in world_dict)
+    _sig_dict = attention_model.get("significance_score", {})
+    _sig_overall = (
+        _sig_dict.get("overall", 0.0) if isinstance(_sig_dict, dict)
+        else float(_sig_dict or 0.0)
+    )
+
     return {
-        "tone":           tone,
-        "max_sentences":  max_s,
-        "stability":      is_stable,
-        "intent":         intent,
-        "response_goal":  goal,
-        "cognitive_load": cog_load,
-        "priority_order": priority_order,
-        "action":         action,
-        "cal_reason":     cal.get("reason", ""),
-        "valence":        valence,
-        "momentum":       momentum,
-        "confidence":     cal.get("confidence", 0.7),  # WO-112: thread from _conversation_action
+        "tone":              tone,
+        "max_sentences":     max_s,
+        "stability":         is_stable,
+        "intent":            intent,
+        "response_goal":     goal,
+        "cognitive_load":    cog_load,
+        "priority_order":    priority_order,
+        "action":            action,
+        "cal_reason":        cal.get("reason", ""),
+        "valence":           valence,
+        "momentum":          momentum,
+        "confidence":        cal.get("confidence", 0.7),  # WO-112: thread from _conversation_action
+        "memory_worthy":     _sig_overall >= 0.72,        # WO-SP29: significance memory gate
+        "self_init_eligible": _sig_overall >= 0.90,       # WO-SP29: significance self-init gate
     }
