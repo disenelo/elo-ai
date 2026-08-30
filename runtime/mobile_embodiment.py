@@ -2,8 +2,8 @@
 runtime/mobile_embodiment.py — WO-MOBILE-001: Mobile Embodiment Wiring (Spine Side)
 
 Handles mobile foreground/background events:
-  D-SPINE-1: foreground → apply_embodiment("phone"), update world_dict, record history
-  D-SPINE-2: background → keep embodiment="phone", update mobile_lifecycle="background"
+  D-SPINE-1: foreground → apply_embodiment("mobile"), update world_dict, record history
+  D-SPINE-2: background → keep embodiment="mobile", update mobile_lifecycle="background"
   D-SPINE-3: clear nearby_surfaces on mobile switch
 
 Authority: David L3 + CA ruling 2026-08-27
@@ -28,7 +28,7 @@ _MOBILE_EMBODIMENT_SCOPE: frozenset[str] = frozenset({
 
 def apply_mobile_foreground(state: "EloSelfState", ts: float = 0.0) -> "EloSelfState":
     """
-    D-SPINE-1: On verified mobile foreground event, transition embodiment to 'phone'.
+    D-SPINE-1: On verified mobile foreground event, transition embodiment to 'mobile'.
     D-SPINE-3: Clear nearby_surfaces (desktop surface state must not leak to mobile).
     Records transition with timestamp in embodiment_transitions.
     G2: Only call this from a verified authenticated event source.
@@ -37,7 +37,7 @@ def apply_mobile_foreground(state: "EloSelfState", ts: float = 0.0) -> "EloSelfS
         from_embodiment = state.embodiment
         ts = ts or time.time()
 
-        state.embodiment = "phone"
+        state.embodiment = "mobile"
         state.mobile_lifecycle = "foreground"
 
         # D-SPINE-3: clear desktop surface state
@@ -50,7 +50,7 @@ def apply_mobile_foreground(state: "EloSelfState", ts: float = 0.0) -> "EloSelfS
         transition = {
             "ts": ts,
             "from_": from_embodiment,
-            "to": "phone",
+            "to": "mobile",
             "event": "mobile_foreground",
         }
         transitions = list(getattr(state, "embodiment_transitions", []))
@@ -58,7 +58,7 @@ def apply_mobile_foreground(state: "EloSelfState", ts: float = 0.0) -> "EloSelfS
         state.embodiment_transitions = transitions[-20:]  # keep last 20
 
         _log.warning(
-            "MOBILE D-SPINE-1: embodiment=%s → phone (foreground). nearby_surfaces cleared.",
+            "MOBILE D-SPINE-1: embodiment=%s → mobile (foreground). nearby_surfaces cleared.",
             from_embodiment,
         )
     except Exception as _e:
@@ -69,21 +69,21 @@ def apply_mobile_foreground(state: "EloSelfState", ts: float = 0.0) -> "EloSelfS
 
 def apply_mobile_background(state: "EloSelfState", ts: float = 0.0) -> "EloSelfState":
     """
-    D-SPINE-2: On phone background notification, keep embodiment='phone',
+    D-SPINE-2: On mobile background notification, keep embodiment='mobile',
     update mobile_lifecycle='background'.
     D-2 governed: embodiment identity and lifecycle are separate dimensions.
     """
     try:
         ts = ts or time.time()
 
-        # D-SPINE-2: embodiment stays "phone" — do NOT revert to "desktop"
+        # D-SPINE-2: embodiment stays "mobile" — do NOT revert to "desktop"
         # Only lifecycle changes
         state.mobile_lifecycle = "background"
 
         transition = {
             "ts": ts,
-            "from_": "phone",
-            "to": "phone",
+            "from_": "mobile",
+            "to": "mobile",
             "event": "mobile_background",
             "lifecycle": "background",
         }
@@ -92,7 +92,7 @@ def apply_mobile_background(state: "EloSelfState", ts: float = 0.0) -> "EloSelfS
         state.embodiment_transitions = transitions[-20:]
 
         _log.warning(
-            "MOBILE D-SPINE-2: embodiment stays 'phone', lifecycle=background"
+            "MOBILE D-SPINE-2: embodiment stays 'mobile', lifecycle=background"
         )
     except Exception as _e:
         _log.warning("apply_mobile_background error (non-fatal): %s", _e)

@@ -114,8 +114,8 @@ class TestAT3UniversalCapability(unittest.TestCase):
         self._check_any_cap_visible("robot")
 
     def test_at3_any_cap_appears_in_phone(self):
-        """A capability scoped to {'any'} appears when embodiment='phone'."""
-        self._check_any_cap_visible("phone")
+        """A capability scoped to {'any'} appears when embodiment='mobile'."""
+        self._check_any_cap_visible("mobile")
 
     def _check_any_cap_visible(self, embodiment: str):
         from runtime.capabilities.capability import Capability

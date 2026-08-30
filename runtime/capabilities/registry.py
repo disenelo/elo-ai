@@ -452,6 +452,42 @@ ALL_CAPABILITIES: list[Capability] = (
     _DESKTOP + _ROBOT + _STUDIO
 )
 
+# ── PHONE EMBODIMENT SCOPE ────────────────────────────────────────────────────
+# DAVID L3, 2026-08-28: "7. 20 genuinely work do those" — his ruling on which capabilities
+# eLo can ACTUALLY perform on an iPhone. His condition, verbatim: "It would only be good if
+# he can actually do it on the iPhone."
+#
+# Before this, every capability carried the dataclass default frozenset({"desktop"}), so
+# `embodiment="mobile"` yielded 0 of 48 and eLo on the phone could not even `respond`
+# (MT verification 2026-08-28, WO-MOBILE-001 AT-2 FAIL).
+#
+# Listed here as ONE auditable decision set rather than scattered across 48 declarations,
+# so Board can review or amend the ruling in one place.
+#
+# EXCLUDED and why — recorded so the absence is a decision, not an oversight:
+#   window/desktop-bound  app_launch · window_focus · window_observer · desktop_presence
+#                         file_drop · screenshot · computer_control · terminal
+#   no iOS API            volume (apps cannot set system volume) · dark_mode (cannot set
+#                         system appearance) · sleep · clipboard (prompts on every read)
+#   partial only          messages / email (compose sheet only — the USER presses send)
+#                         notes (no public iOS API) · vision (camera yes, SCREEN no)
+#                         file_read / obsidian (sandboxed)
+#   desktop apps          unity · blender · substance
+#   needs a Mac bridge    3d_printer · laser · plotter · heat_press
+#                         robot_camera · robot_motion · robot_runtime  (also RESERVED)
+_PHONE_CAPABLE: frozenset[str] = frozenset({
+    "time", "timer", "calculator", "translate", "weather", "news",
+    "search", "wikipedia", "draft", "image_gen", "model_gen", "github",
+    "spotify", "calendar", "reminders", "camera", "truth_sync",
+    "brightness",       # UIScreen.main.brightness IS settable while the app is foreground
+    "media_control",    # own-app audio only
+    "vault_write",
+})
+
+for _c in ALL_CAPABILITIES:
+    if _c.id in _PHONE_CAPABLE:
+        _c.embodiment_scope = frozenset(_c.embodiment_scope | {"mobile"})
+
 _BY_ID: dict[str, Capability] = {c.id: c for c in ALL_CAPABILITIES}
 
 

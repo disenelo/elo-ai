@@ -22,13 +22,13 @@ def _fresh_state(**kw):
     return s
 
 
-# AT-1 — D-SPINE-1: foreground event → current_embodiment = "phone" in state
+# AT-1 — D-SPINE-1: foreground event → current_embodiment = "mobile" in state
 def test_mobile_foreground_sets_embodiment_phone():
     from runtime.mobile_embodiment import apply_mobile_foreground
     state = _fresh_state()
     state = apply_mobile_foreground(state, ts=time.time())
-    assert state.embodiment == "phone", (
-        f"AT-1: current_embodiment must be 'phone' after foreground event; got {state.embodiment!r}"
+    assert state.embodiment == "mobile", (
+        f"AT-1: current_embodiment must be 'mobile' after foreground event; got {state.embodiment!r}"
     )
 
 
@@ -53,21 +53,21 @@ def test_mobile_foreground_records_transition_with_ts():
     state = apply_mobile_foreground(state, ts=ts_before)
     assert len(state.embodiment_transitions) >= 1, "AT-3: embodiment_transitions must have a record"
     latest = state.embodiment_transitions[-1]
-    assert latest.get("to") == "phone", f"AT-3: transition 'to' must be 'phone'; got {latest}"
+    assert latest.get("to") == "mobile", f"AT-3: transition 'to' must be 'mobile'; got {latest}"
     assert "ts" in latest, "AT-3: transition must have a timestamp"
     assert latest["event"] == "mobile_foreground", "AT-3: transition event must be 'mobile_foreground'"
 
 
-# AT-4 — D-SPINE-2: background event → current_embodiment stays "phone" (does NOT revert)
+# AT-4 — D-SPINE-2: background event → current_embodiment stays "mobile" (does NOT revert)
 def test_mobile_background_keeps_embodiment_phone():
     from runtime.mobile_embodiment import apply_mobile_foreground, apply_mobile_background
     state = _fresh_state()
     state = apply_mobile_foreground(state, ts=time.time())
-    assert state.embodiment == "phone"
+    assert state.embodiment == "mobile"
     # Now simulate background
     state = apply_mobile_background(state, ts=time.time())
-    assert state.embodiment == "phone", (
-        "AT-4: current_embodiment must stay 'phone' on background — must not revert to 'desktop'"
+    assert state.embodiment == "mobile", (
+        "AT-4: current_embodiment must stay 'mobile' on background — must not revert to 'desktop'"
     )
     assert state.mobile_lifecycle == "background", (
         f"AT-4: mobile_lifecycle must be 'background'; got {state.mobile_lifecycle!r}"
