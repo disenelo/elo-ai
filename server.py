@@ -5479,6 +5479,16 @@ if __name__ == "__main__":
     except Exception:
         pass
 
+    # WO-MOBILE-BRAIN: write phone_capabilities to blender_state.json at startup.
+    # MT reads this field, caches it, uses it as the authoritative list of what
+    # the mock brain is permitted to attempt. Field is static — written once at boot.
+    try:
+        from runtime.capabilities.registry import _PHONE_CAPABLE as _mob_caps
+        from blender_bridge.state_writer import patch as _mob_patch
+        _mob_patch({"phone_capabilities": sorted(_mob_caps)})
+    except Exception as _mob_err:
+        _logging.warning("WO-MOBILE-BRAIN: phone_capabilities write failed: %s", _mob_err)
+
     # Spotify widget poll — writes blender_state.json["spotify"] every 4s if credentials set
     try:
         from tools.spotify_agent import start_poll as _spotify_start
