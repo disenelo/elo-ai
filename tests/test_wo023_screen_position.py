@@ -53,6 +53,10 @@ _spatial_stub.WindowBounds    = _FakeWin
 _spatial_stub.get_elo_spatial = lambda: _FakeElo()
 _spatial_stub.get_windows     = lambda: []
 
+# WO-FIX-SYS-POLLUTION: save originals before stub injection so we can restore after exec_module.
+_orig_desktop_pkg  = sys.modules.get("desktop")
+_orig_spatial_stub = sys.modules.get("desktop.spatial_state")
+
 # Register stubs before exec_module so the `from desktop.spatial_state import …` succeeds
 _desktop_pkg = _types.ModuleType("desktop")
 _desktop_pkg.spatial_state = _spatial_stub
@@ -60,6 +64,18 @@ sys.modules.setdefault("desktop", _desktop_pkg)
 sys.modules["desktop.spatial_state"] = _spatial_stub
 
 _pf_spec.loader.exec_module(_pf_mod)
+
+# WO-FIX-SYS-POLLUTION: restore originals — position_faculty captured all spatial_state
+# symbols at module level, so _pf_mod's namespace is unaffected. Downstream tests get
+# the real modules (both are importable from the repo).
+def _restore(key, orig):
+    if orig is None:
+        sys.modules.pop(key, None)
+    else:
+        sys.modules[key] = orig
+
+_restore("desktop", _orig_desktop_pkg)
+_restore("desktop.spatial_state", _orig_spatial_stub)
 
 # Expose module symbols as module-level names for the tests
 compute_position   = _pf_mod.compute_position

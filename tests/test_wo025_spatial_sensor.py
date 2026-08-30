@@ -27,6 +27,12 @@ _mod  = importlib.util.module_from_spec(_spec)
 sys.modules["perception_faculty_test"] = _mod  # required for dataclass __module__ lookup
 
 # Stubs needed by perceive_from_live_state() lazy imports
+# WO-FIX-SYS-POLLUTION: save originals so we can restore after exec_module.
+_orig_desktop     = sys.modules.get("desktop")
+_orig_desktop_ws  = sys.modules.get("desktop.window_state")
+_orig_blender     = sys.modules.get("blender_bridge")
+_orig_blender_sw  = sys.modules.get("blender_bridge.state_writer")
+
 _desktop_stub = _types.ModuleType("desktop.window_state")
 _desktop_stub.get_active_window = lambda: {"app": "Code", "title": "test.py"}
 sys.modules.setdefault("desktop", _types.ModuleType("desktop"))
@@ -38,6 +44,19 @@ sys.modules.setdefault("blender_bridge", _types.ModuleType("blender_bridge"))
 sys.modules["blender_bridge.state_writer"] = _blender_stub
 
 _spec.loader.exec_module(_mod)
+
+# WO-FIX-SYS-POLLUTION: restore all four entries so downstream tests get real modules.
+# Both real modules import cleanly; lazy imports in THIS file's own tests will reimport them.
+def _restore(key, orig):
+    if orig is None:
+        sys.modules.pop(key, None)
+    else:
+        sys.modules[key] = orig
+
+_restore("desktop", _orig_desktop)
+_restore("desktop.window_state", _orig_desktop_ws)
+_restore("blender_bridge", _orig_blender)
+_restore("blender_bridge.state_writer", _orig_blender_sw)
 
 perceive               = _mod.perceive
 perceive_from_live_state = _mod.perceive_from_live_state
