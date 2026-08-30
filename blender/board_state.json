@@ -442,9 +442,56 @@
         "ats": "Design: 8873b20 DONE + Builder: 8/8 PASS (972f9d8)",
         "date": "2026-08-29",
         "note": "Board/LA CLOSED 2026-08-29 — both halves verified."
+      },
+      {
+        "wo": "WO-067-STEP1",
+        "description": "Vector Recall SPIKE — Step 1 diagnostic (read-only). Root cause of weather→clothing cross-session miss: WRITE PATH. Both clothing turns had memory_categories: [] — never lifted to vault. Vault has 0 clothing-rec records. vault_layer.lookup() is NOT the bottleneck. Step 2 (vector store) NOT recommended until write path fixed.",
+        "ats": "N/A — diagnostic only, no ATs",
+        "date": "2026-08-30",
+        "note": "Board/LA CLOSED 2026-08-30. Step 2 deferred. Cheapest fix = tag contextual recs with memory_category. Awaiting David L3 ruling to proceed."
+      },
+      {
+        "wo": "WO-SEAM-A",
+        "description": "Executive minimum repair — plain imperatives route to ANSWER. Added _IMPERATIVE_PREFIXES to runtime/executive.py _conversation_action(). Plain commands ('open X', 'tell me Y', 'play Z') no longer fall to default reflect. FREEZE_V1_LOCK LIFTED for this WO only (David L3). Restored after close.",
+        "ats": "7/7 PASS (tests/test_wo_seam_a_executive_repair.py)",
+        "commit": "858db4d",
+        "date": "2026-08-30",
+        "note": "FREEZE_V1_LOCK restored. executive.py returns to freeze. Board/LA CLOSED 2026-08-30."
+      },
+      {
+        "wo": "WO-SP31-SELF-INITIATION",
+        "description": "ELO_SELF_INITIATION=1 set in .env. David L3 ruling (SOURCE_2026-08-30 §4). VERIFY FIRST — SP31/SP32 gate already implemented. Significance threshold 0.72 (attending) / 0.90 (exceptional). Low-sig → ambient_only. Flag absent before; now active. .env gitignored.",
+        "ats": "4/4 AT + 13/13 SP31/SP32 PASS",
+        "commit": "f9eaf2a (result card)",
+        "date": "2026-08-30",
+        "note": "Board/LA CLOSED 2026-08-30. Flag live in .env (not in git — secret store)."
+      },
+      {
+        "wo": "WO-067-WRITE-PATH",
+        "description": "Memory category tagging: 10 WO categories in _CATEGORY_SIGNALS. Fixed critical silent bug: experience_id kwarg on MemoryCandidate → TypeError → except:pass → vault writes failing silently for all server.py turns. Fixed + category tagger + write_interaction() for interactions.json + significance boost 0.25→0.55 for tagged turns.",
+        "ats": "6/6 PASS (tests/test_wo067_write_path_memory_tagging.py)",
+        "commit": "cf28758",
+        "date": "2026-08-30",
+        "note": "Board/LA CLOSED 2026-08-30. Critical vault write-path bug also fixed."
+      },
+      {
+        "wo": "WO-MOBILE-BRAIN",
+        "description": "phone_capabilities written to blender_state.json at startup. _PHONE_CAPABLE frozenset sorted to array. MT reads it as authoritative capability list. No new endpoint, Ruling 006 untouched, executive.py not touched.",
+        "ats": "AT-7: 1/1 PASS (tests/test_wo_mobile_brain_phone_capabilities.py)",
+        "commit": "bc2d99b",
+        "date": "2026-08-30",
+        "note": "Board/LA CLOSED 2026-08-30."
+      },
+      {
+        "wo": "WO-MOBILE-RENAME",
+        "description": "Rename embodiment label phone → mobile. David L3 ruling 2026-08-30: 'Phone should be mobile as that's the same thing it's a mobile device, you are the Mobile Tester, MT.' mobile_embodiment.py: all embodiment value strings phone→mobile. registry.py: embodiment_scope {phone}→{mobile} (critical: cap filter now matches mobile). Tests updated. executive.py not touched.",
+        "ats": "AT-1/2/3/4: 16/16 PASS (MOBILE-001 ×5, nav-005 ×10, mobile-brain ×1)",
+        "commit": "14d1958",
+        "date": "2026-08-30",
+        "note": "Board/LA CLOSED 2026-08-30. Unblocks MT emitter consistency."
       }
     ],
-    "count": 78
+    "count": 84
   },
   "pending_verification": {
     "note": "DONE by Builder/Design \u2014 awaiting Board/LA architectural close or MT verify before programme counts them.",

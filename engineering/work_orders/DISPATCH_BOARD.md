@@ -5,6 +5,156 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-30 (8th pass — WO-MOBILE-RENAME CLOSED)
+
+### WO-MOBILE-RENAME — CLOSED ✅ 16/16 PASS (commit `14d1958`)
+`phone` → `mobile` embodiment label rename complete.
+- `runtime/mobile_embodiment.py`: all embodiment value strings changed (state.embodiment, transition records, comments)
+- `runtime/capabilities/registry.py`: `embodiment_scope {"phone"} → {"mobile"}` — critical runtime fix; without this, capability filter would have returned 0 caps for mobile embodiment despite the rename
+- Tests: `test_wo_mobile001_mobile_embodiment.py` + `test_wo_nav_005.py` assertions updated
+- `executive.py` NOT touched — FREEZE_V1_LOCK clean
+- **verified_done count: 83 → 84**
+- Unblocks MT emitter consistency (MT UP-channel now aligns on label `"mobile"`)
+
+---
+
+## BOARD STATE UPDATE — 2026-08-30 (7th pass — QBODY rulings · WO-MOBILE-RENAME dispatched)
+
+### WO-MOBILE-RENAME — DISPATCHED to Builder (P1)
+`phone` → `mobile` embodiment label rename in `runtime/mobile_embodiment.py` + test assertions.
+David L3: "Phone should be mobile as that's the same thing it's a mobile device, you are the Mobile Tester, MT."
+String rename only; no logic change. Sequence: Builder close → MT emitter consistency.
+Card: `builder/QUEUE/WO-MOBILE-RENAME_phone_to_mobile_label.md`
+
+### QBODY proprioception blockers — BOARD RULINGS
+- **BLOCKER 1 (David L3):** Label = `"mobile"` → WO-MOBILE-RENAME issued to Builder
+- **BLOCKER 2 (David L3):** Per-body file. Desktop keeps `elo_spatial.json` unconditionally. Mobile writes `elo_spatial_mobile.json` (local phone-side only in Phase 1).
+- **BLOCKER 3 (Board):** QBODY UP proprioception phone→Mac deferred to Phase 3. No new probe write endpoints in Phase 1 (ruling 006). Mobile body moves autonomously; brain reads phone spatial in Phase 3 (cloud/off-LAN unlock).
+- **WO-MOBILE-001 mobile half gap** (iOS never emits `mobile_foreground/background`): Phase 3 transport WO (future).
+- **Axis warning captured:** MT must negate `move_dy` when implementing spatial emitter (SwiftUI y grows down; brain wants +y = UP).
+
+### MT sleep/dream state question — ANSWERED
+`asleep: true` = Phase 2 signal (WO-MOBILE-PHASE2 batch). Phase 2 disposition matrix filed.
+**Dream state = David L3 required** — not in canon. `asleep` = absent (null/off) until David rules otherwise.
+
+### Design state — 2026-08-30
+- DOING: empty
+- WO-063 (Command Wakes The Body) in inbox — Design to pick up next
+- HEAD_GRID 19×7 re-export: low priority per MT. MT running on 7×3 grid. No urgency.
+
+---
+
+## BOARD STATE UPDATE — 2026-08-30 (6th pass — WO-SEAM-A closed · Phase 1A complete · WO-SP31 closed)
+
+### WO-SEAM-A — CLOSED ✅ 7/7 PASS (commit `858db4d`)
+`executive.py` FREEZE_V1_LOCK **RESTORED.** `_IMPERATIVE_PREFIXES` guard live: plain commands route to `action: "answer"` (no longer fall through to reflect). Scope compliance confirmed — only 4 lines added to `_conversation_action()`, no redesign.
+
+### WO-SP31 Self-Initiation — CLOSED ✅ 4/4+13/13
+`ELO_SELF_INITIATION=1` live in `.env` (Builder set from SOURCE_2026-08-30 §4). Significance thresholds 0.72/0.90 hold. No random chatter. eLo waits when significance is not sufficient.
+
+### Phase 1A MT — COMPLETE ✅ 5/5
+| # | Item | Status |
+|---|---|---|
+| 1 | Travel memory persists + reloads | ✅ (prior) |
+| 2 | `alive` → `source` + `capability` axes | ✅ (`source` consumed; `capability` staged — Phase 1B consumer) |
+| 3 | `absent` corrected | ✅ (`asleep` = Phase 2 signal) |
+| 4 | Snapshot state + `phone_capabilities` | ✅ (MT side wired; Builder WO-MOBILE-BRAIN spine side pending) |
+| 5 | Autonomous presence from snapshot | ✅ (mirrored from `DesktopBuddy.cs` wander; offline chip live; tested OFF-LAN) |
+
+**Key qualifications:**
+- `capability` field and `phoneCapabilities`: staged (plumbing proven), not yet consumed — Phase 1B mock brain is the consumer
+- `liveContact` gates ONLY speech + lip-sync; movement/expression/glow survive on travel memory
+- `phone_capabilities` accepted at either top level or under `state` in `blender_state.json`
+- `travelling` and `dormant` NOT implemented — Phase 2 gates on `travel_intent` + `embodiment` signals from brain (D3 confirmed)
+- MT's plan document conflict on D3 noted and SUPERSEDED — "infer from last snapshot + no leave event" text in the plan doc is dead
+
+### MT dispatch — D3 confirmed by David
+> "Yes we want eLo to want to travel with me or not, so all good."
+
+D3 stands. `travelling` disposition = explicit brain intent only. Board plan updated.
+
+---
+
+## BOARD STATE UPDATE — 2026-08-30 (David + CA architectural locks/unlocks — 3 WOs dispatched)
+**Authority:** David L3 · Source: `SOURCE_2026-08-30_DAVID_CA_architectural_locks_unlocks.md`
+
+### Locks (hard architectural invariants — no further ruling required)
+- **Routing LOCKED:** Executive decides capability required. Capability layer determines how it is fulfilled. 0057 §3 permanently superseded by canonical execution flow.
+- **World Interface:** Confirmed as governed capability layer through which One Brain acts. Individual capabilities specified separately as programme advances.
+- **Physical eLo:** Governed R&D → CA → L3 → SPEC pipeline. David does not personally solve engineering stack.
+
+### Unlocks dispatched to Builder
+
+| WO | Unlock | Priority |
+|---|---|---|
+| **WO-SEAM-A** | FREEZE_V1_LOCK LIFTED for minimum repair of `executive.py` `_conversation_action()` — tighten CONNECT/REFLECT/WITNESS thresholds. Plain commands route to ANSWER. 7 ATs. **`executive.py` returns to FREEZE_V1_LOCK after this WO closes.** | P0 |
+| **WO-067-WRITE-PATH** | Memory category tagging — 10 categories (identity/relationship/preferences/plans/commitments/projects/decisions/experiences/contextual_state/learning). Governing principle: meaningful continuity, not transcript database. Tagger async/post-process. `executive.py` NOT touched. | P1 |
+| **WO-SP31-SELF-INITIATION** | `ELO_SELF_INITIATION=1` activated. ⚡ VERIFY FIRST — SP-31/SP-32 tests already pass; confirm significance threshold + relationship gate in place before activating. | P1 |
+
+### Builder queue now (updated)
+WO-SEAM-A P0 → WO-067-WRITE-PATH P1 → WO-SP31-SELF-INITIATION P1 → WO-MOBILE-BRAIN P1
+
+---
+
+## BOARD STATE UPDATE — 2026-08-29/30 (MASS CLOSURE — 7 WOs + 2 measurements)
+**Authority:** Board / Lead Architect
+
+### WOs CLOSED this reconciliation
+
+| WO | Result | Commits / Evidence |
+|---|---|---|
+| **WO-020 Seam B** | ✅ 12/11 PASS | Ambiguous-word guard (`a2d1b79`), urllib guard (`92fada3`). Entity latch cleared on new turn. Routing trace live at `blender/routing_trace.json`. `executive.py` NOT touched. FREEZE_V1_LOCK clean. AT-4 (Seam A) confirmed correct at check level — implementation stays FREEZE_V1_LOCK blocked. |
+| **WO-072** | ✅ 12/12 PASS | `faculties/intent_gatekeeper.py` live (`f1ebc81`). Rules-first fast path + LLM normalizer + default CONVERSATION. Clean commands bypass LLM (AT-9). `executive.py` NOT touched. |
+| **WO-064 BP-4** | ✅ 8/8 PASS | `server.py:4667-4689` BP-4 block (`972f9d8`). `_MICRO_MAP` 7 emotions. Intensity threshold 0.4. `micro_ts` edge-triggered. |
+| **WO-062** | ✅ INTEGRATED DoD COMPLETE | Design half `8873b20` (ApplyExpression → HeadLook.FlashMicro) + Builder half `972f9d8` (Self-Model emits expression.micro). Expressiveness Layer DONE. |
+| **WO-FIX-MOBILE-REPLAY** | ✅ 4/4 PASS | `_mobile_last_ts` guard at `server.py:153+1868+1879` (`a894ce7`). Mirrors `_ack_last_ts` pattern. `executive.py` NOT touched. MT verification dispatch follows. |
+| **WO-BOARD-001** | ✅ 5/5 PASS | `company_runtime/dashboard_server.py:25-37+79-85`. `_read_board_state()` + `/board_state` endpoint. Returns `board_state` + `overdue_count` + `needs_david_count`. |
+| **WO-GUARD-001** | ✅ 6/6 PASS | `runtime/response_authority_guards.py` — D-1 (in-session denial intercept) + D-2 (tool agent rewrite) + D-3 (memory claim qualification). All 3 new guards + 4 existing guards intact. D-4 stub documented. MT regression scenario authorised — dispatch follows. |
+
+### Measurements recorded (no close)
+
+| Item | Finding |
+|---|---|
+| **WO-SPG-001 AT-7** | Semantic gap confirmed real at 44% miss rate vs live vault (20 records). Root cause: vault is thin (8/30 seeds have coverage). SPG Steps 3–10 remain NOT AUTHORISED (David L3, 2026-08-22). Evidence available for next ruling. |
+| **WO-067 Step 1** | Write path root cause confirmed: `memory_categories: []` on both clothing-recommendation turns. Record never written to vault. Vector store (Step 2) premature — write path must be fixed first. Write-path fix WO to be authored (small targeted change, not SPG scope). |
+
+---
+
+## BOARD STATE UPDATE — 2026-08-29 (WO-MOBILE-BRAIN dispatched — P1)
+**Authority:** Board / Lead Architect
+
+**WO-MOBILE-BRAIN DISPATCHED** to Builder (phone_capabilities field) + MT (tier router + fallback + relay queue). David L3 — D1 + D1b both ruled. Integrated DoD: Builder AT-7 + MT AT-1..6.
+
+Builder card: `QUEUE/WO-MOBILE-BRAIN_phone_capabilities_field.md`. MT card: `FROM_ARCHITECT_2026-08-29_WO-MOBILE-BRAIN_mt_half.md`. Full WO: `engineering/work_orders/WO-MOBILE-BRAIN_slim_faculty_mock_brain.md`.
+
+---
+
+## BOARD STATE UPDATE — 2026-08-29 (Mobile eLo — D1b mock brain capability scope ruled)
+**Authority:** David L3
+
+**D1b RULED (2026-08-29):** Mock brain capability scope is tier-based, not a fixed list. David verbatim: *"There is a limit to what eLo can actually do with the phone, and those should be there. Like knowing the weather if it's possible, but if not just answering simple questions, until I can do offline (network hosting via a external port) Or a server."* Source: `SOURCE_2026-08-29_D1b_mock_brain_capability_scope.md`.
+
+**Tier structure** (Architect-derived from ruling): Tier 1 native (time/timer/calculator/brightness/media_control/camera — always); Tier 2 network-optional (weather/translate/news/search/wikipedia — LAN/WiFi); Tier 3 spine-dependent (image_gen/vault_write/github/spotify/calendar/reminders — deferred to reconnect); Fallback = simple conversational from travel memory. Phase 3 (external port / cloud server) is the full unlock. Mock brain is the bridge.
+
+**WO-MOBILE-BRAIN** to be authored by Architect (Phase 1B). No remaining gate.
+
+---
+
+## BOARD STATE UPDATE — 2026-08-29 (Mobile eLo Presence — D1 + D2 ruled, plan filed)
+**Authority:** David L3 · Board / Lead Architect
+
+**D1 RULED (2026-08-29):** Mobile eLo is a **mobile embodiment**, not a static snapshot. David verbatim: *"snapshot of what he was doing last on the other embodiment … moves around like he would in Desktop Presence, but on the device … keeps his expressions … slim version that can only do a few things … back in the network he relays to the brain, I'm back here, embodiment."* Verbatim source: `docs/architecture/_intake/SOURCE_2026-08-29_D1_mobile_embodiment_ruling.md`. Four properties: (1) snapshot carry, (2) autonomous presence on device, (3) slim faculty / mock brain, (4) re-embodiment relay on reconnect.
+
+**D2 RULED (2026-08-29):** Option A — spine writes phone-capable list into state file probe already serves. No new endpoint. Ruling 006 untouched. Travel memory caches it off-LAN.
+
+**Phase 1A UNBLOCKED for MT:** Items 2–5 unblocked — replace alive boolean with source+capability axes, correct absent to leave/exit/game-entry, wire snapshot (expression, mood, energy, animation), confirm autonomous presence runs from memory-source. Plan: `mobile_test/FROM_ARCHITECT_2026-08-29_mobile_presence_plan.md`.
+
+**New scope items (not yet WOs):** Phase 1B (mock brain / slim faculty — which 20 phone-capable capabilities; Builder + Architect) · Phase 1C (re-embodiment relay write path on probe — Builder, Board ruling on probe surface 006 required).
+
+**D3 outstanding:** Must travelling be explicit intent from spine? Phase 2 gate. Working Phase 1 inference: last snapshot + no leave event = travelling.
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-29 (WO-020 Seam B dispatched — P0)
 **Authority:** Board / Lead Architect
 
@@ -5462,3 +5612,35 @@ No unblocked, unexecuted Board/LA-authorised Python work remains.
 verified_done: 78
 
 *Board / Lead Architect · 2026-08-29*
+
+---
+
+### WO-067 Step 1 COMPLETE — Root cause: WRITE PATH (2026-08-30)
+
+**Finding:** The weather→clothing recommendation was never stored as a durable vault record. Both relevant turns in `interactions.json` had `memory_categories: []` — the write path never lifted them to facts.json, journal, or vault summaries. The vault has 0 clothing-recommendation records.
+
+**Implication:** `vault_layer.lookup()` is NOT the bottleneck — the data does not exist in any searchable durable store. A vector store (SPG, Chroma, FAISS) would NOT fix this miss.
+
+**Step 2 (Chroma/FAISS benchmark) NOT recommended** until write path is fixed.
+
+**Cheapest fix path:** Ensure contextual recommendations (clothing, plans, preferences given in conversation) are tagged with a `memory_category` so the write path stores them as durable facts.
+
+**Result card:** `blender/agent_bus/builder/DONE/FROM_BUILDER_WO-067_vector_recall_spike_step1_result.md`
+
+*Board / Lead Architect · 2026-08-30*
+
+---
+
+### WO-SEAM-A CLOSED — executive minimum repair (2026-08-30)
+
+**FREEZE_V1_LOCK LIFTED (David L3) and now RESTORED.**
+
+**What shipped:** `_IMPERATIVE_PREFIXES` added to `runtime/executive.py`. Check fires in `_conversation_action()` after CONNECT phrases. Plain imperatives ("open X", "tell me Y", "play Z") now route to ANSWER. Previously fell to default REFLECT.
+
+**7/7 AT PASS** · commit `858db4d` · `tests/test_wo_seam_a_executive_repair.py`
+
+Frozen kernel tests (WO-001, WO-006, WO-014) still pass. Seam B guard unchanged. FREEZE_V1_LOCK restored.
+
+verified_done: 80
+
+*Board / Lead Architect · 2026-08-30*
