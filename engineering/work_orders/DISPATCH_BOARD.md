@@ -5,6 +5,133 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-30 (11th pass — Full Source Alignment, All Items)
+**Source:** 22 SOURCE_ARCHIVE documents deep-scanned against codebase 2026-08-30.
+**Register:** `docs/architecture/SOURCE_ALIGNMENT_REGISTER_2026-08-30.md`
+
+---
+
+### ✅ CONSISTENT — 20 items (source intent matches what is built)
+
+| # | Item | Evidence |
+|---|---|---|
+| C-01 | One Brain Principle — Executive sole decision-maker | `executive.py` FREEZE_V1_LOCK; single-authority test 6/6 PASS |
+| C-02 | Runtime contracts (CognitiveState/CognitivePlan/EmbodimentState/ExecutionReport) | `contracts.py` live; immutability enforced |
+| C-03 | Capability-driven routing — no static provider ladder | `_route_by_tier()` + `_TIER_CAPABILITY` + `_COST_RANK` live (WO-ROUTER-001 8/8 PASS) |
+| C-04 | Response authority guards (D-1/D-2/D-3) | `response_authority_guards.py` live (WO-GUARD-001 6/6 PASS) |
+| C-05 | Response ownership gate | `response_ownership.py` R-1 + R-3 live |
+| C-06 | Explicit correction priority (current > stale inferred) | R-3 + D-1 guard tested |
+| C-07 | Memory architecture (WKG Phase 1+2, vault, autobiography) | WO-WKG-001/004 done; `retrieve_wkg()` wired; HIST-001-006 in RTR |
+| C-08 | Navigation / embodiment (Q-NAV / Q-BODY / Q-MOVEMENT) | Wave 1 WOs complete; MT verified 2026-08-27/28 |
+| C-09 | Self-initiation (SP-31/SP-32/SP-33) | `ELO_SELF_INITIATION=1` live (WO-SP31 closed 2026-08-30); 13/13 MT PASS |
+| C-10 | Storytelling style | WO-SC-NEW-001 DONE; [STORYTELLING FRAME] injected per turn |
+| C-11 | Company state briefing | WO-048 12/12 PASS; WO-BOARD-001 done; `company_state_writer.py` live |
+| C-12 | Creative imagination wired | WO-CREATIVE-001 4/4 PASS (commit `551c225`); spine.py LOOP-8 |
+| C-13 | Inner-child expression | WO-INNER-001 5/5 PASS (commit `7c0a919`); [CREATIVE SEED] injected |
+| C-14 | Memory claim guards | `memory_claim_guard.py` + `identity_guard.py` live |
+| C-15 | Multi-seat operating protocol | MASTER_MULTI_SEAT_OPERATING_PROTOCOL.md ratified; seats operational |
+| C-16 | Mobile embodiment | WO-MOBILE-PHASE2 done; `embodiment` + `travel_intent` + `asleep` signals live |
+| C-17 | CCM reconciliation (19 of 26 dims) | CCM_RECONCILIATION_2026-08-23.md; YAML data exists |
+| C-18 | Intent gatekeeper (WO-072) | `faculties/intent_gatekeeper.py` live (WO-072 12/12 PASS) |
+| C-19 | Reflection / Growth (lesson_store) | WO-115 live since WO-095/096B; `promote_pass` wired in server.py |
+| C-20 | Personality Evolution | `personality_evolution_faculty` loaded at spine.py:790-807; traits/baseline per turn |
+
+---
+
+### ⚠️ GAPS — 18 items (source intent defined, not yet built or not in canon)
+
+| # | Gap | Priority | Gate / Blocker |
+|---|---|---|---|
+| G-01 | Dream State WO — Executive recognition of `asleep: true` as processing window | P1 | Ruling live; machinery exists; WO not authored. Gate: Presentable v1 → BA-01 |
+| G-02 | SP-29 Significance faculty wiring | P1 | Faculty exists (`significance_faculty.py`), not wired. David L3 weight decision → BA-02 |
+| G-03 | Planetary Layer / Personality Registers (CP-003) | P1 | Ratified, not authorised. Awaits SP-29 → BA-02 |
+| G-04 | CCM One Brain integration — 3 cultural dims (storytelling/cultural/street) | P1 | GATED: David L3 ratification required → BA-03 |
+| G-05 | CREATE capability WOs (files / specs / CAD / image / research) | P2 | CE-001–008 R&D DONE; tools exist; no WO authorised → BA-06 |
+| G-06 | Relationship style spec + implementation | P2 | `relationship_faculty` wired; no style spec; no WO → BA-07 |
+| G-07 | Builder expression / Creative mode (RTR-020) | P2 | NOT STARTED; needs R&D/spec → BA-13 |
+| G-08 | Voice input/output | P3 | CE-008 R&D only; future capability → BA-15 |
+| G-09 | World Interface (Calendar / Reminders / Alexa / Lights) | P3 | Tools scaffolded; not authorised; all FUTURE → BA-17 |
+| G-10 | Astrology original chart (completes CP-003) | P2 | BOARD-004 path outstanding → BA-10 |
+| G-11 | HIST-007-012 (ChatGPT export) | P2 | David action required → BA-09 |
+| G-12 | eLo Response Gate — identity/personality/faculty-leakage as runtime layer | P1 | Guards exist; identity/personality checks are prompt-only. Source: "must be in runtime" → BA-04 |
+| G-13 | Full provenance contract wiring (`memory/provenance.py` EpistemicClass to D-2/D-3) | P2 | `response_authority_guards.py` has stub comment "not yet wired" → BA-12 |
+| G-14 | FEEL-NAME-SHAPE-EXPRESS-CHECK-REST loop (Living Presence Pool) | P3 | Not in canon, not in runtime. Awaits Planetary Layer → BA-14 |
+| G-15 | Physical eLo L3 SPEC | P2 | PE-037 hand conflict blocks spec → BA-08 |
+| G-16 | Visual brainiser (PE-033) | P3 | Spec exists; not built → BA-16 |
+| G-17 | Drag-and-drop company ingestion | P3 | `creative_drop_runner.py` stub; not specced; no WO → BA-18 |
+| G-18 | DISENELO Website / Kickstarter / Creative ecosystem | P3 | FUTURE; not started |
+
+---
+
+### ❌ CONFLICTS — 4 items (source intent contradicts current implementation or documentation)
+
+| # | Conflict | Severity | Action |
+|---|---|---|---|
+| CF-01 | `backend_router.py` docstring reads "Priority: OpenAI → Gemini → Claude → Groq → Cerebras → Ollama → Mock" — implies static ladder. Routing logic IS capability-driven but documentation lies. | MINOR | BA-11 — Builder docstring fix |
+| CF-02 | `_TIER_PROVIDER_ORDER` preserved in `backend_router.py` "for test compat" — structurally communicates old ladder. Not used in routing; `_TIER_PROVIDER_CANDIDATES` + `_COST_RANK` are live. | MINOR | Note: test dependency. No immediate action unless test refactored. |
+| CF-03 | eLo Response Gate is sentence-pattern matching + prompt instruction. Source (eLo Intent Alignment §6): *"This must be represented in the runtime, not merely described in a system prompt."* 15-point gate (identity / personality / faculty-leakage / relevance / action-truth) not runtime-enforced. | SIGNIFICANT | BA-04 — WO for runtime gate. CA crosscheck first. |
+| CF-04 | Source specifies CCM between Language Faculty and Memory Faculty in spine. Current spine.py: Language → Memory, no CCM enrichment step. CCM YAML data exists; not wired in architectural position. | MODERATE | BA-03 + CCM integration WO (gated on David L3 Cat C ratification) |
+
+---
+
+### 🔮 NOT YET POSSIBLE — 7 items (future capability; no current gate to open)
+
+| # | Item | Reason |
+|---|---|---|
+| I-01 | Physical eLo robot (TPU body / servos / magnetic joints / floating head / pneumatics) | Hardware R&D; PE-037 ruling needed; manufacturing + safety gate (David L3 + LG-2) |
+| I-02 | Alexa / voice gateway | Voice SDK integration + hardware dependency + CE-008 gap |
+| I-03 | Isaac Gym simulation for physical eLo | GPU cluster / cloud compute not in stack |
+| I-04 | AR / hologram embodiment | Future hardware; no roadmap item |
+| I-05 | Full Second Brain capture (screenshots + transcripts → taste flywheel) | WO-068 Phase 2; post-Presentable richness; vision integration across all of David's digital activity |
+| I-06 | eLo inherits the Architect layer | Long-term evolution; requires company-awareness + canonical reasoning maturity |
+| I-07 | Drag-and-drop ingestion full pipeline | Needs file-type detection, routing, project attachment — not yet designed |
+
+---
+
+### 🎯 RANKED BOARD ACTIONS — 18 items (all gaps/conflicts → named action)
+
+#### P0 — Author immediately (ruling exists, machinery exists, WO missing)
+
+| # | Action | Owner | Gate | Status |
+|---|---|---|---|---|
+| BA-01 | **Author Dream State WO.** David L3 ruling 2026-08-30 live. `faculties/dream/` + `creative_imagination.py` + `asleep: true` + write-path all exist. Connect into Executive-recognised dream-processing window. Dreaming must NOT become factual memory (boundary from source §10). | Board (author) → Builder (execute) | Presentable v1 | ⬜ NOT STARTED |
+
+#### P1 — Critical path (each blocks multiple downstream items)
+
+| # | Action | Owner | Gate | Status |
+|---|---|---|---|---|
+| BA-02 | **David L3 — SP-29 significance weights decision.** Unblocks: Planetary Layer (CP-003), CCM One Brain wiring (G-04), and 5+ expression items (G-03, G-07, G-14). | David (decision) | — | ⬜ AWAITING DAVID |
+| BA-03 | **David L3 — CCM Category C ratification** (storytelling / cultural / street language dims). Unblocks CCM → spine wiring (CF-04 resolution). | David (decision) | — | ⬜ AWAITING DAVID |
+| BA-04 | **Author WO — eLo Response Gate runtime layer.** Post-faculty-output cognitive evaluation step. Not a new prompt paragraph — a runtime gate where eLo evaluates whether the faculty output represents what eLo actually wants to say (identity / personality / leakage / relevance / action-truth checks). CA crosscheck required first. | Board (CA crosscheck) → Board (WO) → Builder | CA crosscheck | ⬜ NOT STARTED |
+| BA-05 | **David L3 item #9 — which turn types receive memory_category tags.** Closes WO-067 write-path gap. Without this, contextual turns continue to miss the vault. | David (decision) | — | ⬜ AWAITING DAVID |
+
+#### P2 — Next wave (unlocks after P1 or independently actionable)
+
+| # | Action | Owner | Gate | Status |
+|---|---|---|---|---|
+| BA-06 | **David L3 approval — CREATE capability WO.** CE-001–008 R&D done. Tools exist (`llm_file_agent.py`, `draft_agent.py`, `model_gen_agent.py`, etc.). Not wired. eLo cannot create files, write specs, or produce research outputs. One L3 approval unlocks the WO. | David (approval) | — | ⬜ AWAITING DAVID |
+| BA-07 | **CA spec — Relationship style.** `relationship_faculty` is wired (WO-REL-001 done) but the expression style — how eLo speaks *within* a relationship — has no spec. CA writes it before any Builder WO. | CA (spec) | — | ⬜ NOT STARTED |
+| BA-08 | **David L3 — PE-037 hand ruling** (3-finger vs mitten-claw). Unblocks Physical eLo L3 SPEC. | David (decision) | — | ⬜ AWAITING DAVID |
+| BA-09 | **David — ChatGPT history export** (HIST-007-012). Closes ELO-HISTORY recovery gap. | David (action) | — | ⬜ AWAITING DAVID |
+| BA-10 | **Board — BOARD-004 astrology original chart retrieval.** Completes CP-003 character constitution. | Board (research) | — | ⬜ NOT STARTED |
+| BA-11 | **Builder — fix `backend_router.py` docstring.** CF-01: docstring says static ladder; logic is capability-driven. Low-risk documentation fix. | Builder | No gate | ⬜ NOT STARTED |
+| BA-12 | **Builder WO — wire `memory/provenance.py` EpistemicClass to D-2/D-3 guards.** Currently stubbed only. Closes G-13 and completes response provenance chain. | Builder | No gate | ⬜ NOT STARTED |
+
+#### P3 — Post-Presentable v1 (correct sequencing; do not pull forward)
+
+| # | Action | Owner | Gate | Status |
+|---|---|---|---|---|
+| BA-13 | Builder expression WO (RTR-020) | Builder | Needs spec first | ⬜ NOT STARTED |
+| BA-14 | Creative output style WO | Builder | Needs spec | ⬜ NOT STARTED |
+| BA-15 | Voice input/output R&D → CA → L3 → SPEC → WO | Board → CA | CE-008 base | ⬜ NOT STARTED |
+| BA-16 | Visual brainiser WO (PE-033) | Builder | Spec exists | ⬜ NOT STARTED |
+| BA-17 | World Interface WOs (Calendar / Reminders / Alexa / Lights / Filesystem) | Builder | Authorisation path needed | ⬜ NOT STARTED |
+| BA-18 | Drag-and-drop ingestion design | CA (design) → Board (spec) | Full design needed | ⬜ NOT STARTED |
+
+---
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-30 (10th pass — Source Alignment Register)
 
 ### Source Deep Scan Complete — 22 SOURCE_ARCHIVE documents read against codebase
@@ -5795,5 +5922,50 @@ File: `blender/agent_bus/mobile_test/FROM_ARCHITECT_2026-08-30_CORRECTION_travel
 Also relayed: §5 brain-thinking-while-away placed on Phase 3 roadmap (requires spine off-LAN).
 
 verified_done: **85** (no new Builder WOs — these are Board relay tasks)
+
+*Board / Lead Architect · 2026-08-30*
+
+---
+
+### PASS 12 — Unity-WO-B1 RTR Update + §24 · 2026-08-30
+
+**Unity-WO-B1 — Design lane closure verified by Board**
+
+`body_win_id` in `DesktopBuddy.cs:3038` already carries `// Unity-WO-B1 / L3-NAV-3` comment.
+Design delivered this field. WO-NAV-009 (Python consumer, 2026-08-27) cited "Unity-WO-B1 accepted."
+RTR-039 updated: PARTIAL → DONE (chain complete: Unity emit + Python consumer 6/6 PASS).
+RTR note: WO card referenced RTR-041 (goal_win_id) — correct tracking row was RTR-039 (body_win_id).
+Lane correction ruling honoured: card stays in QUEUE, not moved to DONE.
+Evidence: `blender/agent_bus/builder/DONE/FROM_BUILDER_Unity-WO-B1_emit_body_win_id_result.md`
+
+---
+
+### §24 PROGRAMME STOP CONDITION — 2026-08-30
+
+**QUEUE state:**
+
+| Card | Status |
+|---|---|
+| `0081_WO-CANON-XI` | Builder §A done (3/4 AT); parity gate open — WAITING DESIGN (XI-AD-2 RED) |
+| `05b_WO-112_CHOOSE` | FREEZE_V1_LOCK BLOCKED — executive.py frozen; needs L3 lift to proceed |
+| `Unity-WO-B1` | Design lane — body_win_id live; stays in QUEUE per lane ruling |
+
+**DOING state:**
+
+| Card | Status |
+|---|---|
+| `0059_SPEED_stream_the_pinned_route` | BLOCKED EXTERNALLY — Groq/Cerebras HTTP 403 (Cloudflare); David needs to resolve account status |
+
+**Board relay tasks this pass:**
+- Micro presence tier plan → MT: SENT (unblocks MT Phase 1 item 4) ✅
+- D3 travel memory model correction → MT: SENT (travelling = travel_intent==true) ✅
+
+**All remaining QUEUE items are: WAITING DESIGN, FREEZE_V1_LOCK BLOCKED, or Design lane.**
+**All remaining DOING items are: EXTERNALLY BLOCKED.**
+**All Board relay tasks outstanding at session start: CLOSED.**
+
+No unblocked, unexecuted Board/LA-authorised Python work remains.
+
+**§24 confirmed.** verified_done: **85**
 
 *Board / Lead Architect · 2026-08-30*
