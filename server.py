@@ -4356,30 +4356,40 @@ def _process_turn(raw: str) -> dict:
             pass
 
         # ── WO-037 interactions write-back (routed via MemoryFaculty — card 0025) ─
-        # Previously wrote to interactions.json via store_interaction().
-        # Now routes through MemoryFaculty.submit() — Vol VIII Invariant 7 compliant.
+        # WO-067-WRITE-PATH: fixed experience_id bug (MemoryCandidate has no such field
+        # → TypeError → silent drop). Now tags meaningful turns with memory_categories
+        # and lifts them to vault at higher significance.
         try:
-            from core.memory_engine import load_registry as _load_registry, resolve_project as _resolve_project
+            from core.memory_engine import (
+                load_registry as _load_registry,
+                resolve_project as _resolve_project,
+                _classify_memory_categories as _cat_classify,
+                write_interaction as _write_interaction,
+            )
             from memory.memory_faculty import MemoryFaculty as _MemFac, MemoryCandidate as _MemCand
             _mem_registry    = _load_registry()
             _mem_project_tag = _resolve_project(raw, _mem_registry)
             _content = (raw + " " + response)[:1000]
-            try:
-                from runtime.experience_id import get as _get_xid
-                _mem_xid = _get_xid()
-            except Exception:
-                _mem_xid = ""
+            # Classify turn for meaningful continuity categories (WO-067-WRITE-PATH)
+            _mem_cats = _cat_classify(_content)
+            _mem_sig  = 0.55 if _mem_cats else 0.25
+            _mem_summary = raw[:180] + ("…" if len(raw) > 180 else "")
+            if _mem_cats:
+                _mem_summary = f"[{','.join(_mem_cats)}] {_mem_summary}"
             _MemFac().submit(_MemCand(
                 source_faculty="interaction",
                 content=_content,
                 proposed_type="episodic",
                 proposed_weight=3,
-                significance=0.25,
+                significance=_mem_sig,
                 project=_mem_project_tag,
-                summary=(raw[:180] + "…" if len(raw) > 180 else raw),
-                tags=("interaction", _action),
-                experience_id=_mem_xid,
+                summary=_mem_summary[:200],
+                tags=("interaction", _action) + tuple(_mem_cats),
             ))
+            # Write tagged turns to interactions.json for categorised recall (AT-5)
+            if _mem_cats:
+                _write_interaction(raw, response, _mem_cats,
+                                   mode=_action, project_tag=_mem_project_tag)
         except Exception:
             pass
 

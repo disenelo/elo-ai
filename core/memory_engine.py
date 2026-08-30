@@ -86,31 +86,76 @@ _STOPWORDS = {
 # An interaction can belong to multiple categories.
 
 _CATEGORY_SIGNALS: dict = {
+    # WO-067-WRITE-PATH: 10 governing categories (David L3, 2026-08-30)
     "identity": [
         r"\bi am\b", r"\bi want\b", r"\bi need\b", r"\bi believe\b",
         r"\bmy goal\b", r"\bmy project\b", r"\bmy work\b",
         r"\bwho am\b", r"\bpurpose\b", r"\bmeaning\b", r"\bi'?m building\b",
     ],
-    "project": [
+    "relationship": [
+        r"\bbetween us\b", r"\bour relationship\b", r"\bour conversation\b",
+        r"\byou and i\b", r"\bwe've been\b", r"\byou know me\b",
+        r"\btrust\b", r"\bmatter.*to (you|me|us)\b", r"\bour work\b",
+    ],
+    "preferences": [
+        r"\bprefer\b", r"\bi like\b", r"\bi don'?t like\b", r"\bdislike\b",
+        r"\bfavouri?te\b", r"\bi always\b", r"\bi never\b",
+        r"\bways? of working\b", r"\bi'?d rather\b", r"\bi tend to\b",
+    ],
+    "plans": [
+        r"\bplan\b", r"\bintend\b", r"\bgoing to\b", r"\bi'?m going to\b",
+        r"\bnext week\b", r"\bnext month\b", r"\bwill be doing\b",
+        r"\bscheduled\b", r"\bup next\b", r"\baiming to\b",
+    ],
+    "commitments": [
+        r"\bpromised\b", r"\bneed to remember\b", r"\bdon'?t forget\b",
+        r"\bremember to\b", r"\bcommit\b", r"\bmust\b", r"\bdeadline\b",
+        r"\bdue\b", r"\bresponsib\b",
+    ],
+    "projects": [
         r"\bbuilding\b", r"\bworking on\b", r"\bproject\b", r"\bsystem\b",
         r"\bversion\b", r"\bfeature\b", r"\bmodule\b", r"\bimplementation\b",
         r"\bshipping\b", r"\bdeploying\b", r"\bintegrat\b", r"\barchitecture\b",
+        r"\bdisenelo\b", r"\belo.?planet\b", r"\belo.?os\b",
+        r"\brobot\b", r"\bdesign for\b", r"\bgame\b", r"\baddon\b",
     ],
+    "decisions": [
+        r"\bdecid\b", r"\bchose\b", r"\bchosen\b", r"\bgoing with\b",
+        r"\bfinal decision\b", r"\bwe'?re going to\b", r"\bsettled on\b",
+        r"\bcommitted to\b", r"\bthe answer is\b", r"\bi'?ve decided\b",
+    ],
+    "experiences": [
+        r"\bjust happened\b", r"\bfinished\b", r"\bjust did\b", r"\bcompleted\b",
+        r"\bfinally\b.*\bdone\b", r"\bwent to\b", r"\bsaw\b", r"\bexperienced\b",
+        r"\bit was\b.*\bgreat\b", r"\bit went\b",
+    ],
+    "contextual_state": [
+        r"\bwear\b", r"\bjacket\b", r"\bcoat\b", r"\boutfit\b", r"\bclothing\b",
+        r"\bdressed\b", r"\blayers?\b.*\bwear\b", r"\bwhat.*wear\b",
+        r"\bhow many layers\b", r"\bcurrently\b", r"\bright now\b",
+        r"\btoday\b.*\bplan\b", r"\btoday\b.*\bdo\b",
+    ],
+    "learning": [
+        r"\blearned\b", r"\bnow know\b", r"\bnow understand\b", r"\bcorrected\b",
+        r"\bfixed it\b", r"\bnext time\b", r"\bshould have\b", r"\bmistake\b",
+        r"\brealis\w+\b", r"\binsight\b",
+    ],
+    # Legacy categories kept for retrieval compatibility
     "creative": [
-        r"\bdesign\b", r"\baesthetic\b", r"\bstyle\b", r"\bvisual\b",
+        r"\baesthetic\b", r"\bvisual\b",
         r"\bfeel\s+like\b", r"\blook\s+like\b", r"\bcolou?r\b", r"\btexture\b",
         r"\bsound\b", r"\bmusic\b", r"\bartistic\b", r"\bcreative\b",
-        r"\bimagine\b", r"\bwhat\s+if\b", r"\bnarrative\b", r"\bstory\b",
+        r"\bimagine\b", r"\bnarrative\b", r"\bstory\b",
     ],
     "world": [
-        r"\beLo\b", r"\bChunk\b", r"\bK-7\b", r"\bCore\b", r"\bSugarcore\b",
+        r"\bChunk\b", r"\bK-7\b", r"\bCore\b", r"\bSugarcore\b",
         r"\buniverse\b", r"\bworld\b", r"\bmyth\b", r"\bsymbolic\b",
         r"\bcharacter\b", r"\blore\b", r"\bcanon\b",
     ],
     "user": [
-        r"\bfeel\b", r"\bstuck\b", r"\bwrong\b", r"\bchaos\b",
+        r"\bstuck\b", r"\bwrong\b", r"\bchaos\b",
         r"\boverwhelm\b", r"\bexhausted\b", r"\bconfused\b",
-        r"\bbut\b.*\b(don'?t|not|hate|resist)\b",  # contradictions
+        r"\bbut\b.*\b(don'?t|not|hate|resist)\b",
         r"\bi\s+don'?t\s+know\b", r"\bnot\s+sure\b", r"\bscattered\b",
     ],
 }
@@ -173,6 +218,29 @@ def _load_store() -> list:
         with open(_STORE_PATH) as f:
             return json.load(f)
     return []
+
+
+def write_interaction(user: str, response: str, categories: list,
+                      mode: str = "", project_tag: str = "elo_core") -> None:
+    """WO-067-WRITE-PATH: append a tagged interaction record to interactions.json.
+
+    Only called when memory_categories is non-empty (meaningful continuity turns).
+    Preserves existing records; never rewrites the store.
+    """
+    from datetime import datetime, timezone
+    record = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "project_tag": project_tag,
+        "mode": mode,
+        "user": user[:500],
+        "response": response[:500],
+        "concepts": [],
+        "memory_categories": categories,
+    }
+    store = _load_store()
+    store.append(record)
+    with open(_STORE_PATH, "w") as f:
+        json.dump(store, f, indent=2, ensure_ascii=False)
 
 
 # ── session state ──────────────────────────────────────────────────────────────
