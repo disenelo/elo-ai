@@ -5,6 +5,42 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-30 (10th pass — Source Alignment Register)
+
+### Source Deep Scan Complete — 22 SOURCE_ARCHIVE documents read against codebase
+**Register:** `docs/architecture/SOURCE_ALIGNMENT_REGISTER_2026-08-30.md`
+**Counts:** 20 CONSISTENT · 18 GAPS · 4 CONFLICTS · 7 IMPOSSIBLE/FUTURE · 18 BOARD ACTIONS
+
+#### Conflicts requiring action
+- **CF-03 [SIGNIFICANT]:** eLo Response Gate is sentence-pattern matching + prompt instruction. Source (eLo Intent Alignment §6) states verbatim: *"This must be represented in the runtime, not merely described in a system prompt."* 15-point cognitive gate (identity / personality / faculty-leakage / relevance / action-truth checks) not implemented as runtime layer. → **BA-04: WO needed.**
+- **CF-04 [MODERATE]:** Source specifies CCM inserted between Language Faculty and Memory Faculty in spine. Current spine.py goes Language → Memory with no CCM enrichment step. → CCM integration WO needed (gated on BA-02 + BA-03).
+- **CF-01 [MINOR]:** `backend_router.py` docstring still reads "Priority: OpenAI → Gemini → Claude → Groq → Cerebras → Ollama → Mock" (old static ladder). Routing logic IS capability-driven; documentation is wrong. → **BA-11: Builder docstring fix.**
+
+#### Source intent completely absent from canon (must be canonised)
+1. **FEEL-NAME-SHAPE-EXPRESS-CHECK-REST** — Living Presence Pool per-response loop (SOURCE_CONTENT_STRUCTURE). Not in Vision Spine, not in runtime.
+2. **"eLo is a mirror, but not merely a copy"** — three-way distinction (David-derived / eLo-specific / shared-mirror) not codified in canon.
+3. **"Dreaming must not automatically become factual memory"** — explicit boundary from Drift Audit §10. Not captured in Dream State ruling or canon. Must be in the forthcoming Dream State WO.
+4. **Four-phase Presence evolution** (Phase I Digital Companion → II Executive Partner → III Company-aware eLo → IV Company-operating eLo) from ELO_INITIATIVE_PROTOCOL. Not a canonical phase map.
+5. **Enemy scan mechanic** ("SIGNAL DETECTED / FREQUENCY / STABILITY / RESPONSE") — scientifically-framed, not HP bars. Game source spec exists; no Game WO.
+
+#### Board Actions — P0/P1 (critical path)
+- **BA-01 [P0]:** Author Dream State WO. David L3 ruling live (2026-08-30). `faculties/dream/` + `creative_imagination.py` + `asleep: true` signal + memory write-path all exist. WO ready post-Presentable v1. Gate: Presentable v1.
+- **BA-02 [P1]:** David L3 — SP-29 significance weights decision. Blocks Planetary Layer (CP-003), CCM One Brain integration, and 5+ expression items.
+- **BA-03 [P1]:** David L3 — CCM Category C ratification (storytelling / cultural / street language dims). Blocks CCM → spine wiring.
+- **BA-04 [P1]:** Author WO — eLo Response Gate runtime layer. Post-faculty-output cognitive evaluation step (not another prompt paragraph). CA crosscheck required first.
+- **BA-05 [P1]:** David L3 item #9 — which turn types receive memory_category tags. Closes WO-067 write-path gap.
+
+#### Board Actions — P2 (next wave)
+- BA-06: David L3 approval for CREATE capability WO (CE-001–008 R&D done; tools exist; no WO)
+- BA-07: CA spec for Relationship Style (WP_F gap — relationship_faculty wired; no style spec)
+- BA-08: David L3 PE-037 hand ruling (unblocks Physical eLo L3 SPEC)
+- BA-09: David ChatGPT export — HIST-007-012
+- BA-10: Board — BOARD-004 astrology chart retrieval (completes CP-003)
+- BA-11: Builder — fix backend_router.py docstring (CF-01 documentation conflict)
+- BA-12: Builder WO — wire `memory/provenance.py` EpistemicClass to D-2/D-3 guards (stubs only)
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-30 (9th pass — MT returns processed)
 
 ### WO-MOBILE-001 — INTEGRATED DOD COMPLETE ✅
@@ -31,6 +67,26 @@ Note: head-pose grid `9601f68` (19×7) shipped but frames not yet on MT's disk �
 - `executive.py` NOT touched — FREEZE_V1_LOCK clean
 - **verified_done count: 83 → 84**
 - Unblocks MT emitter consistency (MT UP-channel now aligns on label `"mobile"`)
+
+---
+
+## BOARD STATE UPDATE — 2026-08-30 (9th pass — Builder §24 CONFIRMED · 4 WOs closed · verified_done=85)
+
+### Builder §24 — CONFIRMED. All authorised work complete.
+
+| WO | Commit | Status |
+|---|---|---|
+| WO-067-WRITE-PATH | `cf28758` | ✅ memory category tagging live |
+| WO-MOBILE-BRAIN | `bc2d99b` | ✅ phone_capabilities publishing to state file |
+| WO-MOBILE-PHASE2 | `cb9af34` | ✅ 5/5 — `embodiment`+`travel_intent`+`asleep` live |
+| WO-SPG-001 AT-7 | — | ✅ Architect read-only complete |
+
+**verified_done = 85.** Builder holds at §24 pending next Board dispatch.
+
+Downstream unblocked by these closes:
+- MT: `phone_capabilities` now publishing → MT can wire mock brain consumer (Phase 1B)
+- MT: Phase 2 signals live on spine side → MT wires disposition logic when Builder's signals arrive
+- Memory: contextual turns now tagged → vault write-path repaired; SPG Steps 3–10 remain gated on David L3
 
 ---
 
@@ -5674,5 +5730,70 @@ verified_done: 78
 Frozen kernel tests (WO-001, WO-006, WO-014) still pass. Seam B guard unchanged. FREEZE_V1_LOCK restored.
 
 verified_done: 80
+
+*Board / Lead Architect · 2026-08-30*
+
+---
+
+### WO-MOBILE-PHASE2 CLOSED — Brain Phase 2 signals live (2026-08-30)
+
+Three additive fields now published to `blender_state.json`:
+
+| Field | Written | Value |
+|---|---|---|
+| `embodiment` | Startup | `"desktop"` |
+| `travel_intent` | Startup | `false` (cognitive output; executive sets true when eLo chooses to travel) |
+| `asleep` | step_out signal | `true` / `false` on return_elo |
+
+**5/5 AT PASS** · commit `cb9af34` · `tests/test_wo_mobile_phase2_brain_signals.py`
+
+`executive.py` not touched. FREEZE_V1_LOCK clean. Ruling 006 untouched.
+
+Phase 2 note on `travel_intent`: field is live and phone-readable. Cognitive wiring (eLo autonomously choosing travel) is Phase 3+ — requires significance faculty + relationship faculty perception. Not in scope for this WO.
+
+verified_done: **85**
+
+---
+
+### PASS 11 — Board Relay · 2026-08-30
+
+**RELAY 1 — Micro Presence Tier Plan → MT** · SENT
+
+MT was blocked on Phase 1 item 4 (limited capability set for memory-sourced eLo) because the
+tier plan was held by Board, not MT. Board has now relayed the governed tier structure to MT.
+
+File: `blender/agent_bus/mobile_test/FROM_ARCHITECT_2026-08-30_REPLY_micro_presence_tiers.md`
+
+| Tier | Capabilities | Condition |
+|---|---|---|
+| 1 — Native | time · timer · calculator · brightness · media_control · camera | Always |
+| 2 — Network-optional | weather · translate · news · search · wikipedia | WiFi/LAN |
+| 3 — Spine-dependent | image_gen · model_gen · github · spotify · vault_write · calendar · reminders | Reconnect |
+| Fallback | simple conversational | Travel memory / last context |
+
+MT is unblocked. Phase 1 item 4 build can proceed against the governed tiers.
+
+---
+
+**RELAY 2 — Travel Memory Model Correction → MT** · SENT
+
+MT built `travelling = fromMemory && !goneAway`. D3 ruling (David L3, 2026-08-30) says:
+`travelling = explicit brain intent only` → `travel_intent == true` in snapshot.
+
+Correct model:
+- `travelling` = `fromMemory && snapshot.travelIntent == true`
+- `dormant` = `fromMemory && snapshot.travelIntent != true`
+- `absent` = `!fromMemory`
+
+`travel_intent` is published by the brain (WO-MOBILE-PHASE2, commit `cb9af34`). In Phase 1–2
+it is always `false` at startup → all off-LAN+memory states are `dormant`. `travelling` activates
+in Phase 3 when the cognitive loop writes `travel_intent: true`. MT must add `travelIntent: Bool`
+to `Snapshot: Codable` and update the three-state switch condition.
+
+File: `blender/agent_bus/mobile_test/FROM_ARCHITECT_2026-08-30_CORRECTION_travel_memory_model.md`
+
+Also relayed: §5 brain-thinking-while-away placed on Phase 3 roadmap (requires spine off-LAN).
+
+verified_done: **85** (no new Builder WOs — these are Board relay tasks)
 
 *Board / Lead Architect · 2026-08-30*
