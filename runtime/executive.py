@@ -134,6 +134,15 @@ _CAPABILITY_PHRASES = ("can you", "are you", "do you", "will you", "can elo", "d
 _DEMO_PHRASES     = ("i want to see you", "show me you", "show me what you",
                      "can i see you", "i'd like to see you", "let me see you")
 
+# WO-SEAM-A: plain imperatives must route to ANSWER, not reflective branches
+_IMPERATIVE_PREFIXES = (
+    "open ", "play ", "tell me", "give me", "show me the", "show me a",
+    "find ", "look up", "check ", "set a ", "set the ", "set my ",
+    "start ", "stop ", "launch ", "run ", "go to ", "navigate to ",
+    "search for ", "search ", "turn on", "turn off", "switch to ",
+    "mute ", "pause ", "resume ", "add ", "remove ", "delete ",
+)
+
 
 def _conversation_action(
     user_input: str,
@@ -183,6 +192,10 @@ def _conversation_action(
         return {"action": "build", "confidence": 0.9, "reason": "explicit build phrase"}
     if any(p in t for p in _CONNECT_PHRASES):
         return {"action": "connect", "confidence": 0.9, "reason": "explicit connect phrase"}
+
+    # WO-SEAM-A: plain imperatives route to ANSWER — never reflective branches
+    if any(t.strip().startswith(p) for p in _IMPERATIVE_PREFIXES):
+        return {"action": "answer", "confidence": 0.9, "reason": "plain imperative command"}
 
     # 1. ANSWER — factual questions (must be interrogative, not just contain "what")
     if intent in ("inquiry", "recall"):
