@@ -1047,11 +1047,19 @@ def assemble_cognitive_state(
 
     _attn_state = getattr(working_memory, "attention", None) if working_memory else None
 
+    # WO-MEMORY-TURN-TYPES: tag this turn with canonical memory categories
+    _raw_input = language.get("original", "")
+    try:
+        from memory.category_tagger import tag_turn as _tag_turn
+        _mem_categories = tuple(_tag_turn(_raw_input))
+    except Exception:
+        _mem_categories = ()
+
     # D1 ruling (Card 0035): intent_signal is the COGNITIVE intent that the
     # Executive decides on — sourced from core/memory_relevance_filter (attention_model["intent"]).
     # The intent_engine's router hint travels as `capability_hint`, elsewhere.
     return CognitiveState(
-        raw_input=language.get("original", ""),
+        raw_input=_raw_input,
         intent_signal=(attention or {}).get("intent") or language.get("intent") or "conversation",
         register=language.get("register", ""),
         social_signal=language.get("social", ""),
@@ -1062,6 +1070,7 @@ def assemble_cognitive_state(
         world_state=world_state,
         working_memory=working_memory,
         attention_state=_attn_state,
+        memory_categories=_mem_categories,
     )
 
 
