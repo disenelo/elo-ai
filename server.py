@@ -4511,6 +4511,13 @@ def _process_turn(raw: str) -> dict:
                     # David ruling 2026-08-24: brief phrases → privacy=false (mouse-move returns);
                     # privacy phrases → privacy=true (stays until "come back").
                     _sw_patch({"leave_command": {"_ts": _now_sp, "privacy": not _step_out_is_brief(raw)}})
+                    # WO-MOBILE-PHASE2: phone reads asleep=true → absent disposition.
+                    _sw_patch({"asleep": True})
+                elif _sp_sw == "return_elo":
+                    _PENDING_EXIT["active"] = False
+                    from blender_bridge.state_writer import patch as _sw_patch
+                    # WO-MOBILE-PHASE2: clear asleep flag on explicit return request.
+                    _sw_patch({"asleep": False})
             else:
                 # ── Legacy fallback: compute movement intent independently ─────
                 _vision      = _state.get("vision") if isinstance(_state, dict) else None
@@ -5488,6 +5495,16 @@ if __name__ == "__main__":
         _mob_patch({"phone_capabilities": sorted(_mob_caps)})
     except Exception as _mob_err:
         _logging.warning("WO-MOBILE-BRAIN: phone_capabilities write failed: %s", _mob_err)
+
+    # WO-MOBILE-PHASE2: write Phase 2 brain signals to blender_state.json at startup.
+    # `embodiment` — phone reads this to determine dormant vs absent disposition.
+    # `travel_intent` — cognitive output field; written false at startup; executive sets true.
+    # `asleep` — written true on step_out, false on return_elo.
+    try:
+        from blender_bridge.state_writer import patch as _ph2_patch
+        _ph2_patch({"embodiment": "desktop", "travel_intent": False, "asleep": False})
+    except Exception as _ph2_err:
+        _logging.warning("WO-MOBILE-PHASE2: brain signals write failed: %s", _ph2_err)
 
     # Spotify widget poll — writes blender_state.json["spotify"] every 4s if credentials set
     try:
