@@ -478,3 +478,102 @@ def decide(
         "gated_response":    _gated_response,             # WO-RESPONSE-GATE: quality-checked response
         "gate_flags":        _gate_flags,                 # WO-RESPONSE-GATE: list of check flags
     }
+
+
+# ── WO-DREAM-STATE ─────────────────────────────────────────────────────────────
+
+import json as _json
+import os as _os
+import time as _time
+
+_BLENDER_STATE_PATH = _os.path.join(
+    _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))),
+    "blender", "blender_state.json"
+)
+_DREAM_LOG_PATH = _os.path.join(
+    _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))),
+    "data", "dream_log.jsonl"
+)
+
+
+def _read_asleep() -> bool:
+    """Read sleep-state field from blender_state.json. Returns False on any error."""
+    try:
+        with open(_BLENDER_STATE_PATH, encoding="utf-8") as _f:
+            _bs = _json.load(_f)
+        return bool(_bs.get("asleep", False))
+    except Exception:
+        return False
+
+
+def run_dream_window(recent_topics: list | None = None) -> dict:
+    """
+    WO-DREAM-STATE: Executive dream processing window.
+
+    Reads blender_state.json for sleep state. If in sleep state:
+      1. Invokes run_dream() from dream_faculty.py
+      2. Writes dream log entry to data/dream_log.jsonl
+      3. Returns result dict with action="dream", response=None (no user-facing output)
+
+    If not in sleep state, returns {"action": "awake", "ran": False} immediately.
+    """
+    import logging as _log_mod
+    _log = _log_mod.getLogger(__name__)
+
+    if not _read_asleep():
+        return {"action": "awake", "ran": False}
+
+    result: dict = {
+        "action":            "dream",
+        "ran":               False,
+        "response":          None,   # NEVER surfaced to David
+        "dream_log_written": False,
+        "phase":             "",
+        "memory_written":    False,
+    }
+
+    try:
+        from faculties.dream.dream_faculty import run_dream as _run_dream, wake_from_dream as _wake
+        from self.elo_self_model import load as _load_self, save as _save_self
+
+        _elo_self = _load_self()
+        _topics   = list(recent_topics or [])
+
+        def _stub_llm(messages):
+            return ""
+
+        _dream_result = _run_dream(
+            _elo_self,
+            _topics,
+            _stub_llm,
+            idle_seconds=3600.0,
+        )
+
+        try:
+            _wake(_dream_result, _elo_self)
+            _save_self(_elo_self)
+        except Exception as _we:
+            _log.warning("dream wake_from_dream FAILED: %s", _we)
+
+        result["ran"]          = True
+        result["phase"]        = getattr(_dream_result, "journal_entry", {}).get("phase", "NREM")
+        result["memory_written"] = bool(getattr(_dream_result, "journal_entry", {}).get("memory_refs"))
+
+    except Exception as _de:
+        _log.warning("run_dream_window: dream_faculty FAILED: %s", _de)
+
+    try:
+        _os.makedirs(_os.path.dirname(_DREAM_LOG_PATH), exist_ok=True)
+        _entry = {
+            "ts":                     _time.time(),
+            "cycle_type":             result.get("phase") or "NREM",
+            "faculty_outputs_summary": f"ran={result['ran']}",
+            "memory_written":         result["memory_written"],
+        }
+        with open(_DREAM_LOG_PATH, "a", encoding="utf-8") as _dlf:
+            _dlf.write(_json.dumps(_entry) + "\n")
+        result["dream_log_written"] = True
+    except Exception as _dle:
+        _log.warning("run_dream_window: dream_log write FAILED: %s", _dle)
+
+    return result

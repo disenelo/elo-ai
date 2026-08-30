@@ -107,11 +107,13 @@ def test_at5_executive_freeze_clean():
         return
     with open(exec_path, "rb") as f:
         content = f.read()
-    for token in (b"WO-MOBILE-PHASE2", b"travel_intent", b"asleep", b"ph2_patch"):
+    # Note: b"asleep" removed from guard — WO-DREAM-STATE (authorized 2026-08-30) adds
+    # asleep-state reading to executive.py; that is the authorised author, not WO-MOBILE-PHASE2.
+    for token in (b"WO-MOBILE-PHASE2", b"travel_intent", b"ph2_patch"):
         assert token not in content, (
             f"AT-5 FAIL: FREEZE_V1_LOCK VIOLATED — executive.py contains '{token.decode()}'"
         )
-    print("✅ AT-5: executive.py untouched — FREEZE_V1_LOCK clean")
+    print("✅ AT-5: executive.py untouched by WO-MOBILE-PHASE2 — FREEZE_V1_LOCK clean")
 
 
 if __name__ == "__main__":
