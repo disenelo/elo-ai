@@ -8,8 +8,10 @@ No faculty decides independently. All feed the Executive.
 The Executive produces ONE CognitivePlan.
 That plan drives conversation, avatar, desktop, and future embodiments.
 
-Faculty order:
-    Language → Memory → Attention → Relationship → Desktop → Capability → Executive → Gate
+Faculty order (spine-internal):
+    Language → Relationship → Desktop → Capability → Executive → Gate
+Note: Memory (memory_pack_builder) and Attention (memory_relevance_filter) are
+pre-computed in server.py before spine.run() is called and passed in as arguments.
 """
 from __future__ import annotations
 import logging
@@ -431,6 +433,23 @@ def _executive_faculty(
     if len(chain) == 2 and not plan.is_system_turn():
         plan.capabilities = [(chain[0], plan.meaning), (chain[1], plan.meaning)]
 
+    # ── WO-TIER-FACULTY-001 D-2 + D-3: tier-ordered faculty read + speech gate ─
+    try:
+        from runtime.tiered_faculty_reader import TieredFacultyReader as _TFR
+        _world_dict = {}
+        if world is not None:
+            _desktop = getattr(world, "desktop", None)
+            _world_dict["active_window"] = getattr(_desktop, "active_app", "") if _desktop else ""
+        if cognitive_state is not None:
+            _world_dict["wkg_context"] = getattr(cognitive_state, "wkg_context", "")
+            _world_dict["mood"]        = getattr(cognitive_state, "emotional_tag", "")
+        _tfr_results, _speech_licence = _TFR().evaluate(_world_dict, cognitive_state)
+        plan.speech_licence = _speech_licence
+        if _speech_licence.violations:
+            _log.debug("tier-gate violations: %s", _speech_licence.violations)
+    except Exception as _tfr_err:
+        _log.debug("tiered_faculty_reader failed (non-critical): %s", _tfr_err)
+
     return plan
 
 
@@ -631,6 +650,24 @@ def run(
     if attention is None:
         attention = {}
 
+    # ── WO-DREAM-STATE: asleep check — before any faculty processing ─────────
+    # When eLo is in dream/sleep state, dispatch to the executive dream window.
+    # Output is NEVER surfaced to David — this is internal memory consolidation only.
+    try:
+        from runtime.executive import run_dream_window as _run_dream_window, _read_asleep as _is_asleep
+        if _is_asleep():
+            _dream_result = _run_dream_window(recent_topics=state.get("recent_topics"))
+            _dream_plan = CognitivePlan()
+            _dream_plan.action         = "dream"
+            _dream_plan.direct_response = ""     # NEVER surfaced to David
+            _dream_plan.direct_backend  = "dream"
+            _dream_plan.response_goal   = "stabilise"
+            _dream_plan.tone            = "silence_aware"
+            _dream_plan.dream_window    = _dream_result
+            return _dream_plan
+    except Exception as _dream_gate_err:
+        _log.warning("WO-DREAM-STATE gate FAILED (non-critical — continuing normal turn): %s", _dream_gate_err)
+
     # WO-XDNA-001: mint Experience DNA at turn start — before any faculty processing.
     try:
         from runtime.experience_id import mint as _mint_xid
@@ -649,15 +686,15 @@ def run(
         try:
             from runtime.faculty_health import mark_genome_recovered as _gh_recovered
             _gh_recovered("PerceptionFaculty")
-        except Exception:
-            pass
+        except Exception as _gh_rec_err:
+            _log.warning("mark_genome_recovered(PerceptionFaculty) FAILED: %s", _gh_rec_err)
     except Exception as _perc_err:
         _log.warning("perceive_from_live_state FAILED: %s", _perc_err)
         try:
             from runtime.faculty_health import mark_genome_degraded as _gh_degraded
             _gh_degraded("PerceptionFaculty", str(_perc_err)[:120])
-        except Exception:
-            pass
+        except Exception as _gh_deg_err:
+            _log.warning("mark_genome_degraded(PerceptionFaculty) FAILED: %s", _gh_deg_err)
 
     # ── WO-WORLD-001: Fast capability verb pre-sniff (Option A) ─────────────────
     # Keyword match against registry verbs — no LLM, no language faculty pass.
@@ -671,8 +708,8 @@ def run(
             if any(_v in _raw_lower for _v in (_cap.verbs or [])):
                 _early_capability_hint = _cap.id
                 break
-    except Exception:
-        pass  # hint failure is non-critical; world assembles without it
+    except Exception as _hint_err:
+        _log.warning("capability pre-sniff FAILED (non-critical): %s", _hint_err)
 
     # ── WO-CANON-XV: LiveWorldState — assembled FIRST, frozen, read by all faculties ─
     # Copies PerceptionResult fields into domain slices (Ch.3 §3.2 copy step).
@@ -753,6 +790,14 @@ def run(
     # ── v1.4 Language Faculty ─────────────────────────────────────────────────
     language = _language_faculty(raw)
 
+    # ── WO-CCM-SPINE: CCM enrichment — after Language Faculty, before Memory Faculty ──
+    _ccm_context: dict = {}
+    try:
+        from faculties.ccm.ccm_enricher import enrich as _ccm_enrich
+        _ccm_context = _ccm_enrich(raw, language, None)
+    except Exception as _ccm_err:
+        _log.warning("ccm_enricher FAILED: %s", _ccm_err)
+
     # ── v1.4 Relationship Faculty ─────────────────────────────────────────────
     relationship = None
     try:
@@ -769,8 +814,8 @@ def run(
     try:
         from self.elo_self_model import load as _load_self_emb
         _current_embodiment = getattr(_load_self_emb(), "embodiment", "desktop") or "desktop"
-    except Exception:
-        pass
+    except Exception as _emb_err:
+        _log.warning("elo_self_model load FAILED (using default embodiment): %s", _emb_err)
     capabilities = _capability_faculty(language["meaning"], language.get("capability_hint", ""), current_embodiment=_current_embodiment)
 
     # ── System Faculty ────────────────────────────────────────────────────────
@@ -782,6 +827,7 @@ def run(
         _cognitive_state = assemble_cognitive_state(
             language, memory_pack, attention, capabilities, None, state,
             world_state=_world, working_memory=_wm,
+            ccm_context=_ccm_context,
         )
     except Exception as _cs_err:
         _log.warning("assemble_cognitive_state FAILED: %s", _cs_err)
@@ -804,7 +850,7 @@ def run(
         _personality_baseline = _pv_baseline(_pv)
         _identity_hash = _pv_hash()
     except Exception as _pv_err:
-        _log.debug("personality read FAILED: %s", _pv_err)
+        _log.warning("personality read FAILED: %s", _pv_err)
 
     # ── WO-006 Vol V Ch.4: Emotional Processing — AffectState BEFORE Executive ─
     # process_emotion reads CognitiveState + self-model, returns (AffectState, EmotionalTag).
@@ -827,15 +873,28 @@ def run(
         try:
             from runtime.faculty_health import mark_genome_recovered as _gh_recovered
             _gh_recovered("EmotionFaculty")
-        except Exception:
-            pass
+        except Exception as _emo_rec_err:
+            _log.warning("mark_genome_recovered(EmotionFaculty) FAILED: %s", _emo_rec_err)
     except Exception as _emo_err:
         _log.warning("process_emotion FAILED: %s", _emo_err)
         try:
             from runtime.faculty_health import mark_genome_degraded as _gh_degraded
             _gh_degraded("EmotionFaculty", str(_emo_err)[:120])
-        except Exception:
-            pass
+        except Exception as _emo_deg_err:
+            _log.warning("mark_genome_degraded(EmotionFaculty) FAILED: %s", _emo_deg_err)
+
+    # ── WO-PLANETARY-KERNEL: Mode selector — BUILD / PLAY / EXPLORE / REFINE ──
+    _turn_mode: str = "EXPLORE"
+    try:
+        from kernel.mode_selector import select_mode as _select_mode
+        _sig_for_mode = getattr(_cognitive_state, "significance_score", 0.0) if _cognitive_state else 0.0
+        _turn_mode = _select_mode(
+            raw, language_output=language,
+            ccm_context=_ccm_context,
+            significance_score=_sig_for_mode,
+        )
+    except Exception as _mode_err:
+        _log.warning("mode_selector FAILED: %s", _mode_err)
 
     # ── Executive Faculty — ONE DECISION ─────────────────────────────────────
     # WO-106: pass assembled state so the Executive decides from real context
@@ -849,6 +908,9 @@ def run(
 
     # ── WO-052: Store snapshot on plan (assembled before; now pinned to it) ───
     plan.snapshot = _snapshot
+    # ── WO-PLANETARY-KERNEL: Pin turn mode (BUILD/PLAY/EXPLORE/REFINE) ───────
+    if not getattr(plan, "mode", ""):
+        plan.mode = _turn_mode
     # ── WO-CANON-XVI: Pin pre-assembled cognitive state to plan ──────────────
     plan.cognitive_state = _cognitive_state
     # ── WO-CANON-XV/XII: Store frozen world + perception on plan ──────────────
@@ -895,7 +957,7 @@ def run(
         if _self_interpretation and not _self_interpretation.is_empty():
             _log.info("F-7 self-interpret: %s", _self_interpretation.text[:120])
     except Exception as _si_run_err:
-        _log.debug("self_interpret (run scope) failed (non-critical): %s", _si_run_err)
+        _log.warning("self_interpret (run scope) failed (non-critical): %s", _si_run_err)
     plan.self_interpretation = _self_interpretation.as_dict() if _self_interpretation else None
 
     # ── v1.5 Executive Faculty enrichment (relationship + emotional vector) ───
@@ -977,8 +1039,8 @@ def run(
                 "completion_state": plan.execution_report.completion_state,
                 "llm_backend_used": plan.execution_report.llm_backend_used,
             })
-        except Exception:
-            pass
+        except Exception as _er_inner:
+            _log.warning("build_execution_report inner publish FAILED: %s", _er_inner)
     except Exception as _er_err:
         _log.warning("build_execution_report FAILED: %s", _er_err)
 
@@ -1024,6 +1086,7 @@ def assemble_cognitive_state(
     prior_state,
     world_state=None,
     working_memory=None,
+    ccm_context:    dict | None = None,
 ):
     """
     Assemble CognitiveState from all faculty outputs.
@@ -1054,6 +1117,26 @@ def assemble_cognitive_state(
         _mem_categories = tuple(_tag_turn(_raw_input))
     except Exception:
         _mem_categories = ()
+
+    # WO-CONV-001: WKG claims relevant to this turn
+    _wkg_context = ""
+    try:
+        import runtime.wkg_faculty as _wkg
+        _topic = language.get("intent", "") or language.get("meaning", "")[:60]
+        if _topic:
+            _entities = _wkg.search_entities(_topic)[:3]
+            if _entities:
+                _lines = []
+                for _ent in _entities:
+                    _claims = _wkg.get_claims_about(_ent.get("entity_id", ""))[:2]
+                    for _cl in _claims:
+                        _lines.append(
+                            f"[{_cl.get('epistemic_class','').upper()}] "
+                            f"{_ent.get('label','')} — {_cl.get('claim','')}"
+                        )
+                _wkg_context = "; ".join(_lines)
+    except Exception:
+        pass
 
     # WO-SP29: compute per-turn significance score from world state
     _significance_score: float = 0.0
@@ -1087,6 +1170,8 @@ def assemble_cognitive_state(
         attention_state=_attn_state,
         memory_categories=_mem_categories,
         significance_score=_significance_score,
+        wkg_context=_wkg_context,
+        ccm_context=ccm_context or {},
     )
 
 
@@ -1100,6 +1185,17 @@ def build_embodiment_state(plan, sequence_id: int = 0):
     led        = _LED_FROM_EMOTIONAL_STATE.get(es_name, "teal")
     resp       = getattr(plan, "direct_response", "") or ""
     ts         = datetime.datetime.utcnow().isoformat() + "Z"
+
+    # ── WO-PLANETARY-KERNEL + WO-BUILDER-EXPRESSION: register + mode shaping ──
+    if resp:
+        try:
+            from kernel.language_register import filter_response as _fr, shape_for_mode as _sfm
+            _mode = getattr(plan, "mode", "") or ""
+            resp = _fr(resp)
+            if _mode:
+                resp = _sfm(resp, _mode)
+        except Exception as _lre:
+            _log.debug("language_register shaping FAILED (non-critical): %s", _lre)
 
     return EmbodimentState(
         response_text=resp,
