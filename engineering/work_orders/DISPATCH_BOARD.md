@@ -5,6 +5,21 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-08-31 (23rd pass — CAD complete · lane correction · 15 runtime WOs dispatched)
+**Source:** Builder outbox report + Board ruling. [VERIFIED 2026-08-31]
+**Actions this pass:**
+- **WO-PHYSICAL-ELO-CAD ✅ DONE** — commit `ba21a12`. Three CAD parts in `Output/RD-CAD/`: `elo_hand_mitten_claw.step+.stl` (120×80×50mm, 4mm TPU, dual 3mm claw channels, 28mm wrist socket), `elo_neck_magnetic_housing.stl` (~70mm, 25mm ball + 26mm socket, 270° capture, 4× M3 flange), `elo_body_shell_inflated_reference.stl` (220×160×120mm, 6mm wall, 4 anchor bosses, bladder port, neck ring). verified_done: 118 → **119**.
+- **Lane correction (David ruling 2026-08-31):** Builder lane = eLo OS runtime (.py) ONLY. CAD = Board/Architect task. Game .cs Unity files = Game seat. Both removed from Builder's active queue. START_HERE corrected.
+- **Builder queue restocked:** 15 executable runtime cards now in `QUEUE/` — all Builder lane, all Python/runtime, none requiring David. Builder was reporting empty queue from stale view of phase list; directed to QUEUE/ directory.
+- **New WOs dispatched to QUEUE/ (this session):** WO-VOICE-REGISTER-001 (P1) · WO-IDENTITY-INTEGRITY-001 (P1) · WO-CONSUMPTION-INVARIANT-001 (P1) · WO-EXPRESSED-ELO-001 (P2) — sourced from FOUR-LAYER IDENTITY MODEL alignment + S-04.
+- **CLAUDE.md standing facts added (David rulings 2026-08-31):** No static provider ladder ever · eLo has no fixed response mode by design · Groq = P3/low urgency (450k token burn in testing).
+- **S-04 captured:** `SOURCE_ORIGINAL_INTENT_SIX_THREADS_2026-08-31.md` — verbatim six original intent threads (Voice/Feeling/Inner Child/Context/Growth/Feel Alive).
+**verified_done: 119**
+**Builder QUEUE:** 15 executable runtime cards in `QUEUE/`
+**Pending David:** BA-02, BA-03, BA-05, BA-06, BA-08, BA-10 + K-7 form names + K-7/Chunk FBX
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-31 (20th pass — Builder execution: 5 WOs DONE, game WOs DONE)
 **Source:** Direct build execution. [VERIFIED 2026-08-31]
 **Commit (eLo OS):** `23d13ef` — WO-RELATIONSHIP-STYLE + WO-PRES-001/002/005/006 + tests
@@ -22,6 +37,16 @@
 - **verified_done: 113**
 **Builder QUEUE remaining:** WO-PRES-002 (AT-2 Unity side — Unity-WO-B1 not dispatched), WO-PLANETARY-KERNEL (gated BA-02), WO-PHYSICAL-ELO-CAD, WO-MOBILE-PHASE2, WO-UNITY-GAZE, WO-VOICE-IO
 **Pending David:** BA-02, BA-03, BA-05, BA-06, BA-08, BA-09, BA-10 + Groq key rotation + K-7 seven form names (WO-GAME-006 blocker)
+
+## BOARD STATE UPDATE — 2026-08-31 (24th pass — WO-ROUTER-001 closed)
+**Source:** Evidence reconciliation — implementation confirmed complete, tests passing. [VERIFIED 2026-08-31]
+**Commit:** `d9cc0a7` (WO-ROUTER-001) + `e9e5277` (BA-11 static ladder removal)
+**Actions this pass:**
+- **WO-ROUTER-001 ✅ DONE** — Capability-driven provider selection in `backend_router.py`. D-1: `_route_by_tier()` now builds availability list per tier + selects by cost preference (`_TIER_CAPABILITY` constant, seed of capability registry). D-2: WO-073 absorbed — pinned-Groq chain is now Groq → Cerebras → Ollama → Mock; `ELO_OLLAMA_MODEL` defaults `llama3.1:8b`. D-3: routing trace includes `capability` + `tier` fields. Static `_TIER_PROVIDER_ORDER` ladder retired (BA-11). `executive.py` NOT TOUCHED. 8/8 ATs PASS. Result card filed.
+- **WO-073 ✅ DONE** (absorbed into WO-ROUTER-001 AT-4) — pinned-Groq Ollama fallback wired.
+- **verified_done: 120**
+**Pending David:** BA-02, BA-03, BA-05, BA-06, BA-08, BA-09, BA-10 + K-7 seven form names + K-7/Chunk FBX export
+**Builder QUEUE remaining:** WO-PLANETARY-KERNEL (gated BA-02), WO-VOICE-IO (awaiting L3 ratification), 0081/WO-CANON-XI (parity gate), WO-GAME-006 (K-7 form names)
 
 ## BOARD STATE UPDATE — 2026-08-31 (23rd pass — WO-PHYSICAL-ELO-CAD DONE)
 **Source:** Direct build execution. [VERIFIED 2026-08-31]
