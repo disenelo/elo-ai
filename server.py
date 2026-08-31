@@ -3007,23 +3007,16 @@ def _process_turn(raw: str) -> dict:
 
         g_ctx = graph_context(raw)
 
-        # ── WO-WKG-004: WKG claim injection — recovered knowledge reaches the LLM ──
+        # ── WO-WKG-001: WKG claim injection via structured ContextItem rendering ──
         try:
-            from knowledge.graph_loader import retrieve_wkg as _wkg_retrieve
-            _wkg_hits = _wkg_retrieve(raw, top_k=2)
-            if _wkg_hits:
-                _wkg_lines = []
-                for _wh in _wkg_hits:
-                    _wkg_cls = _wh.get("wkg_epistemic_class", "UNKNOWN")
-                    _wkg_ep  = {"VERIFIED": "verified",
-                                "SOURCE_ATTRIBUTED": "source-perspective",
-                                "SYMBOLIC": "symbolic",
-                                "DISPUTED": "disputed"}.get(_wkg_cls, "perspective")
-                    _wkg_lines.append(f"[WKG — {_wkg_ep}] {_wh['content']}")
-                _wkg_block = "\n".join(_wkg_lines)
+            from knowledge.graph_loader import retrieve_wkg_context_items as _retrieve_wkg_ctx_items
+            from memory.provenance import render_context_block as _render_ctx_block
+            _wkg_items = _retrieve_wkg_ctx_items(raw)
+            if _wkg_items:
+                _wkg_block = _render_ctx_block(_wkg_items)
                 g_ctx = f"{g_ctx}\n{_wkg_block}" if g_ctx else _wkg_block
         except Exception as _wkg_e:
-            _logging.warning("WO-WKG-004: wkg retrieve failed (non-fatal): %s", _wkg_e)
+            _logging.warning("WO-WKG-001: wkg ctx items failed (non-fatal): %s", _wkg_e)
 
         # ── Creator identity — always first so every LLM call knows who David is ──
         try:

@@ -404,7 +404,39 @@ def retrieve_wkg(user_input: str, top_k: int = 3) -> list[dict]:
     """
     from knowledge.wkg_schema import map_to_vol_xxiv
     _load_all()
-    claims = _graph.get(_WKG_CLAIMS_KEY, [])
+    claims = list(_graph.get(_WKG_CLAIMS_KEY, []))
+
+    # Also pull runtime claims from memory/wkg/claims.json (interaction-derived).
+    # These use entity IDs; look up labels for keyword matching.
+    try:
+        import json as _json
+        import os as _os
+        _wkg_dir = _os.path.join(_os.path.dirname(__file__), "..", "memory", "wkg")
+        _rt_claims_path  = _os.path.join(_wkg_dir, "claims.json")
+        _rt_entities_path = _os.path.join(_wkg_dir, "entities.json")
+        if _os.path.exists(_rt_claims_path) and _os.path.exists(_rt_entities_path):
+            with open(_rt_claims_path, encoding="utf-8") as _f:
+                _rt_claims = _json.load(_f)
+            with open(_rt_entities_path, encoding="utf-8") as _f:
+                _rt_entities = {e["entity_id"]: e for e in _json.load(_f)}
+            for _c in _rt_claims:
+                _subj = _rt_entities.get(_c.get("subject_entity_id", ""), {})
+                _obj  = _rt_entities.get(_c.get("object_entity_id",  ""), {})
+                claims.append({
+                    "id":                 _c.get("claim_id", ""),
+                    "subject":            _subj.get("label", _c.get("subject_entity_id", "")),
+                    "predicate":          _c.get("relationship_type", ""),
+                    "object":             _obj.get("label",  _c.get("object_entity_id",  "")),
+                    "wkg_epistemic_class": _c.get("epistemic_class", "UNKNOWN"),
+                    "confidence":          _c.get("confidence"),
+                    "evidence":           [],
+                    "interpretation":     f"{_subj.get('label','')} {_c.get('relationship_type','')} {_obj.get('label','')}",
+                    "notes":              _subj.get("description", "") + " " + _obj.get("description", ""),
+                    "source":             "runtime-wkg",
+                })
+    except Exception:
+        pass
+
     if not claims:
         return []
 
@@ -448,6 +480,63 @@ def retrieve_wkg(user_input: str, top_k: int = 3) -> list[dict]:
 
     results.sort(key=lambda x: (x["score"], x["confidence"]), reverse=True)
     return results[:top_k]
+
+
+# ── WKG-001: retrieve_wkg_context_items() — structured ContextItem wrapper ────
+
+def retrieve_wkg_context_items(user_input: str, top_k: int = 5) -> list:
+    """
+    WKG-001: retrieve WKG claims as ContextItem objects (structured provenance).
+
+    Maps wkg_epistemic_class → EpistemicClass / AuthorityLevel / PersistenceClass.
+    Returns [] when no matching claims (same zero-backfill guarantee as retrieve_wkg).
+    """
+    from memory.provenance import (
+        ContextItem, EpistemicClass, AuthorityLevel, PersistenceClass,
+    )
+
+    _MAP = {
+        "VERIFIED":         (EpistemicClass.CANONICAL,       AuthorityLevel.VERIFIED,      PersistenceClass.IMMUTABLE),
+        "HISTORICAL":       (EpistemicClass.CANONICAL,       AuthorityLevel.VERIFIED,      PersistenceClass.IMMUTABLE),
+        "SPECULATIVE":      (EpistemicClass.INFERRED,        AuthorityLevel.ADVISORY,      PersistenceClass.PERSISTENT),
+        "HYPOTHESIS":       (EpistemicClass.INFERRED,        AuthorityLevel.ADVISORY,      PersistenceClass.PERSISTENT),
+        "DISPUTED":         (EpistemicClass.INFERRED,        AuthorityLevel.NON_CANONICAL, PersistenceClass.PERSISTENT),
+        "SOURCE_ATTRIBUTED":(EpistemicClass.RETRIEVED_LORE,  AuthorityLevel.NON_CANONICAL, PersistenceClass.PERSISTENT),
+        "SYMBOLIC":         (EpistemicClass.RETRIEVED_LORE,  AuthorityLevel.NON_CANONICAL, PersistenceClass.PERSISTENT),
+    }
+    _UNKNOWN = (EpistemicClass.UNKNOWN, AuthorityLevel.UNKNOWN, PersistenceClass.PERSISTENT)
+
+    _load_all()
+    if not _graph.get(_WKG_CLAIMS_KEY):
+        return []
+
+    raw_claims = retrieve_wkg(user_input, top_k=top_k)
+    if not raw_claims:
+        return []
+
+    items: list[ContextItem] = []
+    for claim in raw_claims:
+        cls = claim.get("wkg_epistemic_class", "UNKNOWN")
+        ep_class, authority, persistence = _MAP.get(cls, _UNKNOWN)
+
+        # Build content: interpretation + evidence if present
+        content = claim.get("content", "")
+        evidence = claim.get("evidence", [])
+        if evidence:
+            content = f"{content}\nEvidence: {'; '.join(str(e) for e in evidence)}"
+
+        items.append(ContextItem(
+            content=content,
+            source="WKG",
+            provenance=f"WKG:{cls}",
+            timestamp=None,
+            session_id=None,
+            epistemic_class=ep_class,
+            persistence_class=persistence,
+            authority=authority,
+        ))
+
+    return items
 
 
 # ── WKG Phase 2: claim relationship accessor ──────────────────────────────────

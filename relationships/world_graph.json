@@ -380,7 +380,7 @@
   "_wkg_meta": {
     "namespace": "wkg:",
     "schema_version": "1.0",
-    "phase": "Phase 2 — Joseph corpus ingested 2026-08-22",
+    "phase": "Phase 2 — Joseph corpus ingested 2026-08-22; eLo universe corpus ingested 2026-08-22 (BWKG-02)",
     "authority": "David L3, 2026-08-22",
     "contract": "docs/architecture/WKG_BUILD_CONTRACT_AMENDED_2026-08-22.md",
     "carve_out": "docs/architecture/FREEZE_V1_CARVEOUT_WKG_2026-08-22.md",
@@ -391,240 +391,507 @@
     {
       "id": "wkg:Sun",
       "canonical_name": "Sun",
-      "aliases": ["solar", "Sol"],
+      "aliases": [
+        "solar",
+        "Sol"
+      ],
       "domain": "astronomy",
       "type": "celestial_body",
       "description": "The star at the centre of our solar system, producing light and heat through nuclear fusion. Primary driver of Earth's seasons via axial tilt and orbital position.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["sun", "solar", "sol"],
+      "keywords": [
+        "sun",
+        "solar",
+        "sol"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:Moon",
       "canonical_name": "Moon",
-      "aliases": ["Luna", "lunar"],
+      "aliases": [
+        "Luna",
+        "lunar"
+      ],
       "domain": "astronomy",
       "type": "celestial_body",
       "description": "Earth's only natural satellite, orbiting with a synodic period of approximately 29.53 days. Exerts gravitational influence on tides.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["moon", "luna", "lunar", "satellite"],
+      "keywords": [
+        "moon",
+        "luna",
+        "lunar",
+        "satellite"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:ConsciousMind",
       "canonical_name": "Conscious Mind",
-      "aliases": ["conscious", "waking mind", "awareness"],
+      "aliases": [
+        "conscious",
+        "waking mind",
+        "awareness"
+      ],
       "domain": "psychology",
       "type": "concept",
       "description": "Mental activity the individual is aware of and can deliberately direct. In Joseph's symbolic framework, associated with the Sun.",
       "epistemic_status": "SOURCE_ATTRIBUTED",
-      "keywords": ["conscious", "consciousness", "waking", "awareness", "conscious mind"],
+      "keywords": [
+        "conscious",
+        "consciousness",
+        "waking",
+        "awareness",
+        "conscious mind"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:SubconsciousMind",
       "canonical_name": "Subconscious Mind",
-      "aliases": ["subconscious", "unconscious", "dreaming mind"],
+      "aliases": [
+        "subconscious",
+        "unconscious",
+        "dreaming mind"
+      ],
       "domain": "psychology",
       "type": "concept",
       "description": "Mental processes occurring outside conscious awareness. In Joseph's symbolic framework, associated with the Moon. No established causal mechanism links the Moon to subconscious activity.",
       "epistemic_status": "SOURCE_ATTRIBUTED",
-      "keywords": ["subconscious", "unconscious", "dreaming", "intuition", "subconscious mind"],
+      "keywords": [
+        "subconscious",
+        "unconscious",
+        "dreaming",
+        "intuition",
+        "subconscious mind"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:SeasonWinter",
       "canonical_name": "Winter",
-      "aliases": ["winter season"],
+      "aliases": [
+        "winter season"
+      ],
       "domain": "astronomy",
       "type": "season",
       "description": "Astronomical season of minimum solar altitude. In Joseph's framework symbolises reflection, mental clarity, introspective ideation.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["winter", "winter season"],
+      "keywords": [
+        "winter",
+        "winter season"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:SeasonSpring",
       "canonical_name": "Spring",
-      "aliases": ["spring season"],
+      "aliases": [
+        "spring season"
+      ],
       "domain": "astronomy",
       "type": "season",
       "description": "Astronomical season of increasing daylight. In Joseph's framework symbolises emergence, embodiment, manifestation.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["spring", "spring season"],
+      "keywords": [
+        "spring",
+        "spring season"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:SeasonSummer",
       "canonical_name": "Summer",
-      "aliases": ["summer season"],
+      "aliases": [
+        "summer season"
+      ],
       "domain": "astronomy",
       "type": "season",
       "description": "Astronomical season of maximum solar altitude. In Joseph's framework symbolises action, expression, energy.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["summer", "summer season"],
+      "keywords": [
+        "summer",
+        "summer season"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:SeasonAutumn",
       "canonical_name": "Autumn",
-      "aliases": ["fall", "autumn season"],
+      "aliases": [
+        "fall",
+        "autumn season"
+      ],
       "domain": "astronomy",
       "type": "season",
       "description": "Astronomical season of decreasing daylight. In Joseph's framework symbolises emotional processing, release, integration.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["autumn", "fall", "autumn season"],
+      "keywords": [
+        "autumn",
+        "fall",
+        "autumn season"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:Number13",
       "canonical_name": "13",
-      "aliases": ["thirteen"],
+      "aliases": [
+        "thirteen"
+      ],
       "domain": "mathematics",
       "type": "number",
       "description": "The integer 13. Key in the 13-Moon calendar system (13 × 28 = 364).",
       "epistemic_status": "VERIFIED",
-      "keywords": ["13", "thirteen"],
+      "keywords": [
+        "13",
+        "thirteen"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:Number28",
       "canonical_name": "28",
-      "aliases": ["twenty-eight"],
+      "aliases": [
+        "twenty-eight"
+      ],
       "domain": "mathematics",
       "type": "number",
       "description": "The integer 28. Used as a symbolic lunar month in the 13-Moon calendar. Not equal to the actual synodic lunar month (~29.53 days).",
       "epistemic_status": "VERIFIED",
-      "keywords": ["28", "twenty-eight"],
+      "keywords": [
+        "28",
+        "twenty-eight"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:Number364",
       "canonical_name": "364",
-      "aliases": ["three hundred sixty-four"],
+      "aliases": [
+        "three hundred sixty-four"
+      ],
       "domain": "mathematics",
       "type": "number",
       "description": "The product 13 × 28 = 364. Used in the 13-Moon symbolic calendar.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["364", "three hundred sixty-four"],
+      "keywords": [
+        "364",
+        "three hundred sixty-four"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:Number365",
       "canonical_name": "365",
-      "aliases": ["three hundred sixty-five"],
+      "aliases": [
+        "three hundred sixty-five"
+      ],
       "domain": "mathematics",
       "type": "number",
       "description": "Approximate days in a tropical solar year. Gregorian calendar uses 365 days (365.25-day mean year via leap days).",
       "epistemic_status": "VERIFIED",
-      "keywords": ["365", "three hundred sixty-five"],
+      "keywords": [
+        "365",
+        "three hundred sixty-five"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:Number12",
       "canonical_name": "12",
-      "aliases": ["twelve"],
+      "aliases": [
+        "twelve"
+      ],
       "domain": "mathematics",
       "type": "number",
       "description": "The integer 12. Appears independently in multiple traditions: 12 zodiac signs, 12 disciples, 12 cranial nerve pairs in anatomy. No established common origin.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["12", "twelve"],
+      "keywords": [
+        "12",
+        "twelve"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:SynodicLunarMonth",
       "canonical_name": "Synodic Lunar Month",
-      "aliases": ["lunar month", "synodic month"],
+      "aliases": [
+        "lunar month",
+        "synodic month"
+      ],
       "domain": "astronomy",
       "type": "calendar",
       "description": "Time between successive identical Moon phases (e.g. full moon to full moon). Approximately 29.53 days. Not equal to 28 days.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["synodic month", "lunar month", "29.53", "synodic lunar month"],
+      "keywords": [
+        "synodic month",
+        "lunar month",
+        "29.53",
+        "synodic lunar month"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:TropicalSolarYear",
       "canonical_name": "Tropical Solar Year",
-      "aliases": ["solar year", "tropical year"],
+      "aliases": [
+        "solar year",
+        "tropical year"
+      ],
       "domain": "astronomy",
       "type": "calendar",
       "description": "Time for Earth to orbit the Sun relative to the vernal equinox. Approximately 365.25 days. Basis of the Gregorian calendar.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["solar year", "tropical year", "365"],
+      "keywords": [
+        "solar year",
+        "tropical year",
+        "365"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:EarthAxialTilt",
       "canonical_name": "Earth's Axial Tilt",
-      "aliases": ["axial tilt", "obliquity"],
+      "aliases": [
+        "axial tilt",
+        "obliquity"
+      ],
       "domain": "astronomy",
       "type": "concept",
       "description": "Earth's rotational axis tilted approximately 23.5 degrees relative to its orbital plane. Combined with orbital position, produces the four seasons.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["axial tilt", "earth tilt", "obliquity"],
+      "keywords": [
+        "axial tilt",
+        "earth tilt",
+        "obliquity"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:FourSeasons",
       "canonical_name": "Four Seasons",
-      "aliases": ["seasons"],
+      "aliases": [
+        "seasons"
+      ],
       "domain": "astronomy",
       "type": "concept",
       "description": "The four divisions of the year (winter, spring, summer, autumn) caused by Earth's axial tilt and orbital position relative to the Sun.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["seasons", "four seasons", "seasonal cycle"],
+      "keywords": [
+        "seasons",
+        "four seasons",
+        "seasonal cycle"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:TwelveCranialNerves",
       "canonical_name": "Twelve Cranial Nerves",
-      "aliases": ["cranial nerves", "12 cranial nerves"],
+      "aliases": [
+        "cranial nerves",
+        "12 cranial nerves"
+      ],
       "domain": "anatomy",
       "type": "anatomy",
       "description": "The 12 pairs of cranial nerves in human anatomy (I through XII), each serving specific sensory and/or motor functions.",
       "epistemic_status": "VERIFIED",
-      "keywords": ["cranial nerves", "12 cranial nerves", "cranial"],
+      "keywords": [
+        "cranial nerves",
+        "12 cranial nerves",
+        "cranial"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:TwelveDisciples",
       "canonical_name": "Twelve Disciples",
-      "aliases": ["disciples", "twelve apostles", "apostles"],
+      "aliases": [
+        "disciples",
+        "twelve apostles",
+        "apostles"
+      ],
       "domain": "tradition",
       "type": "tradition",
       "description": "The twelve disciples of Jesus in Christian tradition. Joseph proposes a symbolic correspondence with 12 cranial nerves — interpretive, not anatomical equivalence.",
       "epistemic_status": "SOURCE_ATTRIBUTED",
-      "keywords": ["disciples", "twelve disciples", "apostles"],
+      "keywords": [
+        "disciples",
+        "twelve disciples",
+        "apostles"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     },
     {
       "id": "wkg:TwelveZodiacSigns",
       "canonical_name": "Twelve Zodiac Signs",
-      "aliases": ["zodiac signs", "zodiac"],
+      "aliases": [
+        "zodiac signs",
+        "zodiac"
+      ],
       "domain": "tradition",
       "type": "tradition",
       "description": "The 12 zodiac signs in astrological tradition, originating in ancient Babylon. Divides the ecliptic into 12 equal segments.",
       "epistemic_status": "HISTORICAL",
-      "keywords": ["zodiac", "zodiac signs", "astrological signs"],
+      "keywords": [
+        "zodiac",
+        "zodiac signs",
+        "astrological signs"
+      ],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:EloCharacter",
+      "canonical_name": "eLo",
+      "aliases": [
+        "eLo character",
+        "eLo robot"
+      ],
+      "domain": "narrative_character",
+      "type": "character",
+      "description": "eLo — David's long-standing personal character. An adorable childhood imagination paired with adult reality. No eyes; expression through body posture and mouth only.",
+      "epistemic_status": "SYMBOLIC",
+      "keywords": [
+        "elo",
+        "character",
+        "companion"
+      ],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:ChunkCompanion",
+      "canonical_name": "Chunk",
+      "aliases": [
+        "Chunk companion"
+      ],
+      "domain": "narrative_character",
+      "type": "character",
+      "description": "Chunk — modular companion whose body forms vehicles and traversal forms.",
+      "epistemic_status": "SYMBOLIC",
+      "keywords": [
+        "chunk",
+        "modular",
+        "vehicle"
+      ],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:K7Companion",
+      "canonical_name": "K-7",
+      "aliases": [
+        "K7",
+        "spirit animal"
+      ],
+      "domain": "narrative_character",
+      "type": "character",
+      "description": "K-7 — seven-form spirit animal companion; shifts form to offer new perspective.",
+      "epistemic_status": "SYMBOLIC",
+      "keywords": [
+        "k7",
+        "k-7",
+        "spirit",
+        "seven forms"
+      ],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:SugarCoreState",
+      "canonical_name": "Sugarcore",
+      "aliases": [
+        "sugar core",
+        "overcharged state"
+      ],
+      "domain": "narrative_state",
+      "type": "concept",
+      "description": "Sugarcore — the overcharged state enemies occupy; not a villain archetype but a condition to be corrected through calm.",
+      "epistemic_status": "SYMBOLIC",
+      "keywords": [
+        "sugarcore",
+        "overcharged",
+        "enemies"
+      ],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:CalmPrinciple",
+      "canonical_name": "Calm",
+      "aliases": [
+        "calm is the action",
+        "corrective calm"
+      ],
+      "domain": "narrative_principle",
+      "type": "concept",
+      "description": "Calm — the governing design principle of the eLo universe. Calm is the action; correctives restore overcharged states.",
+      "epistemic_status": "SOURCE_ATTRIBUTED",
+      "keywords": [
+        "calm",
+        "corrective",
+        "principle"
+      ],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:NonverbalExpression",
+      "canonical_name": "Nonverbal Expression",
+      "aliases": [
+        "body language",
+        "nonverbal communication"
+      ],
+      "domain": "behavioral_science",
+      "type": "concept",
+      "description": "Nonverbal expression — the conveyance of emotion and intent through body posture, gesture, and movement rather than speech or text.",
+      "epistemic_status": "VERIFIED",
+      "keywords": [
+        "nonverbal",
+        "expression",
+        "body language",
+        "posture"
+      ],
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:FourActNarrative",
+      "canonical_name": "Four Act Journey",
+      "aliases": [
+        "4 act story",
+        "four act structure"
+      ],
+      "domain": "narrative_structure",
+      "type": "concept",
+      "description": "The eLo-Planet narrative structure: four acts tracing eLo's journey through the world, culminating in calm restoration.",
+      "epistemic_status": "SOURCE_ATTRIBUTED",
+      "keywords": [
+        "four act",
+        "narrative",
+        "journey",
+        "story"
+      ],
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z"
     }
@@ -653,6 +920,22 @@
       "source_type": "scientific_consensus",
       "created_at": "2026-08-22T00:00:00Z",
       "reliability_notes": "VERIFIED facts supported by anatomical research, dissection, neurological study, and medical consensus."
+    },
+    {
+      "id": "wkg:source:elo_planet_design_canon",
+      "author": "David Charles",
+      "title": "eLo-Planet Design Canon — character, world and narrative principles",
+      "source_type": "design_document",
+      "created_at": "2026-08-22T00:00:00Z",
+      "reliability_notes": "Primary design authority for the eLo universe. Claims attributed to this source are SOURCE_ATTRIBUTED unless independently corroborated."
+    },
+    {
+      "id": "wkg:source:behavioral_science_consensus",
+      "author": "Multiple researchers",
+      "title": "Behavioral Science Consensus on Nonverbal Communication",
+      "source_type": "scientific_consensus",
+      "created_at": "2026-08-22T00:00:00Z",
+      "reliability_notes": "Broad scientific consensus; claims attributed to this source may be VERIFIED with appropriate evidence."
     }
   ],
   "wkg_claims": [
@@ -704,7 +987,9 @@
       "updated_at": "2026-08-22T00:00:00Z",
       "interpretation": "No established causal mechanism links the Moon to subconscious mental activity. The Moon-subconscious correspondence is symbolic (SOURCE_ATTRIBUTED per Joseph), not causal.",
       "notes": "Distinct from Joseph's symbolic claim (wkg:claim:joseph_moon_subconscious). This VERIFIED claim records the absence of causal mechanism.",
-      "evidence": ["wkg:source:astronomy_consensus"],
+      "evidence": [
+        "wkg:source:astronomy_consensus"
+      ],
       "provenance": {
         "author": "Scientific consensus",
         "title": "Modern astronomy",
@@ -722,7 +1007,9 @@
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z",
       "interpretation": "13 multiplied by 28 equals 364: 13 × 28 = 364. Mathematical fact. Foundation of the 13-Moon calendar system.",
-      "evidence": ["mathematical derivation: 13 × 28 = 364"],
+      "evidence": [
+        "mathematical derivation: 13 × 28 = 364"
+      ],
       "confidence": 1.0,
       "provenance": {
         "author": "Mathematical derivation",
@@ -741,7 +1028,9 @@
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z",
       "interpretation": "364 + 1 = 365. One additional day bridges the 13-Moon calendar (13 × 28 = 364) to the approximate tropical solar year (365 days).",
-      "evidence": ["mathematical derivation: 364 + 1 = 365"],
+      "evidence": [
+        "mathematical derivation: 364 + 1 = 365"
+      ],
       "confidence": 1.0,
       "provenance": {
         "author": "Mathematical derivation",
@@ -760,7 +1049,9 @@
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z",
       "interpretation": "The synodic lunar month — time between successive full moons — is approximately 29.53 days, not 28.",
-      "evidence": ["wkg:source:astronomy_consensus"],
+      "evidence": [
+        "wkg:source:astronomy_consensus"
+      ],
       "confidence": 0.99,
       "provenance": {
         "author": "Scientific consensus",
@@ -780,7 +1071,9 @@
       "updated_at": "2026-08-22T00:00:00Z",
       "interpretation": "28 days is not equal to the exact synodic lunar month (~29.53 days). A 28-day month is a calendar convention, not a measured astronomical period.",
       "notes": "Do not encode '28 days = lunar month' as a verified astronomical fact.",
-      "evidence": ["wkg:source:astronomy_consensus"],
+      "evidence": [
+        "wkg:source:astronomy_consensus"
+      ],
       "confidence": 0.99,
       "provenance": {
         "author": "Scientific consensus",
@@ -818,7 +1111,9 @@
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z",
       "interpretation": "Earth's 23.5-degree axial tilt, combined with orbital position around the Sun, produces the four seasons. This is the established astronomical explanation.",
-      "evidence": ["wkg:source:astronomy_consensus"],
+      "evidence": [
+        "wkg:source:astronomy_consensus"
+      ],
       "confidence": 0.99,
       "provenance": {
         "author": "Scientific consensus",
@@ -947,7 +1242,9 @@
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z",
       "interpretation": "Human anatomy has exactly 12 cranial nerve pairs (I through XII), each serving specific sensory and/or motor functions. Established anatomical fact.",
-      "evidence": ["wkg:source:anatomy_consensus"],
+      "evidence": [
+        "wkg:source:anatomy_consensus"
+      ],
       "confidence": 0.99,
       "provenance": {
         "author": "Scientific consensus",
@@ -966,7 +1263,9 @@
       "created_at": "2026-08-22T00:00:00Z",
       "updated_at": "2026-08-22T00:00:00Z",
       "interpretation": "The 12 zodiac signs are a historically attested astrological tradition, originating in ancient Babylon and adapted across cultures. Independent from 12 disciples and 12 cranial nerves.",
-      "evidence": ["historical astronomical and astrological records"],
+      "evidence": [
+        "historical astronomical and astrological records"
+      ],
       "provenance": {
         "author": "Historical record",
         "title": "History of astronomy and astrology",
@@ -985,12 +1284,169 @@
       "updated_at": "2026-08-22T00:00:00Z",
       "interpretation": "The number 12 appears independently in multiple systems: 12 zodiac signs (astrological), 12 disciples (Christian tradition), 12 cranial nerve pairs (anatomy). No established evidence of common origin, shared derivation, or causal connection across these uses. They are structurally analogous without being historically related.",
       "notes": "Anti-syncretic claim. Do not collapse these into one explanation. Each use of 12 carries its own provenance and domain.",
-      "evidence": ["absence of cross-domain derivation evidence"],
+      "evidence": [
+        "absence of cross-domain derivation evidence"
+      ],
       "provenance": {
         "author": "Cross-domain analysis",
         "title": "WKG Phase 2 ingestion",
         "extraction_date": "2026-08-22",
         "source_type": "cross_domain_analysis"
+      }
+    },
+    {
+      "id": "wkg:claim:elo_embodies_calm_principle",
+      "subject": "wkg:EloCharacter",
+      "predicate": "EMBODIES",
+      "object": "wkg:CalmPrinciple",
+      "source": "wkg:source:elo_planet_design_canon",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "eLo embodies the design principle that calm is the action — not aggression or conflict, but corrective restoration.",
+      "notes": "Narrative design canon. Not an empirically verified claim about behaviour — SOURCE_ATTRIBUTED to design authority.",
+      "evidence": [],
+      "provenance": {
+        "author": "David Charles",
+        "title": "eLo-Planet Design Canon",
+        "extraction_date": "2026-08-22",
+        "source_type": "design_document"
+      }
+    },
+    {
+      "id": "wkg:claim:elo_expresses_through_nonverbal",
+      "subject": "wkg:EloCharacter",
+      "predicate": "EXPRESSES_THROUGH",
+      "object": "wkg:NonverbalExpression",
+      "source": "wkg:source:elo_planet_design_canon",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "eLo has no eyes; all emotional expression is conveyed through body posture and mouth movement only.",
+      "notes": "Design rule: eLo has NO EYES. Applies to all animations and to the physical robot.",
+      "evidence": [],
+      "provenance": {
+        "author": "David Charles",
+        "title": "eLo-Planet Design Canon",
+        "extraction_date": "2026-08-22",
+        "source_type": "design_document"
+      }
+    },
+    {
+      "id": "wkg:claim:k7_shifts_form_for_perspective",
+      "subject": "wkg:K7Companion",
+      "predicate": "SHIFTS_FORM_TO",
+      "object": "wkg:EloCharacter",
+      "source": "wkg:source:elo_planet_design_canon",
+      "wkg_epistemic_class": "SYMBOLIC",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "K-7's seven forms are symbolic — each shift offers eLo a new perspective, not a mechanical transformation.",
+      "notes": "Seven forms are narrative design; no single authoritative form list defined yet.",
+      "evidence": [],
+      "provenance": {
+        "author": "David Charles",
+        "title": "eLo-Planet Design Canon",
+        "extraction_date": "2026-08-22",
+        "source_type": "design_document"
+      }
+    },
+    {
+      "id": "wkg:claim:chunk_transforms_sugarcore",
+      "subject": "wkg:ChunkCompanion",
+      "predicate": "TRANSFORMS",
+      "object": "wkg:SugarCoreState",
+      "source": "wkg:source:elo_planet_design_canon",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Chunk's vehicle/modular transformations are analogous to the calm corrective — transformation as a mechanism of resolution.",
+      "notes": "Design canon relationship; Chunk's role as traversal companion maps onto the calm principle thematically.",
+      "evidence": [],
+      "provenance": {
+        "author": "David Charles",
+        "title": "eLo-Planet Design Canon",
+        "extraction_date": "2026-08-22",
+        "source_type": "design_document"
+      }
+    },
+    {
+      "id": "wkg:claim:sugarcore_is_state_not_villain",
+      "subject": "wkg:SugarCoreState",
+      "predicate": "IS_NOT",
+      "object": "wkg:EloCharacter",
+      "source": "wkg:source:elo_planet_design_canon",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Sugarcore is a state — an overcharged condition — not a villain. Enemies are not evil; they are overcharged and need correction, not defeat.",
+      "notes": "Core narrative design rule. The 'state not villain' framing governs all enemy design in eLo-Planet.",
+      "evidence": [],
+      "provenance": {
+        "author": "David Charles",
+        "title": "eLo-Planet Design Canon",
+        "extraction_date": "2026-08-22",
+        "source_type": "design_document"
+      }
+    },
+    {
+      "id": "wkg:claim:calm_governs_elo_responses",
+      "subject": "wkg:CalmPrinciple",
+      "predicate": "GOVERNS",
+      "object": "wkg:EloCharacter",
+      "source": "wkg:source:elo_planet_design_canon",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Calm governs eLo's responses — weapons are correctives, not weapons of aggression; actions restore rather than destroy.",
+      "notes": "Weapons are correctives. Calm is the action — the primary design rule for eLo-Planet gameplay and narrative.",
+      "evidence": [],
+      "provenance": {
+        "author": "David Charles",
+        "title": "eLo-Planet Design Canon",
+        "extraction_date": "2026-08-22",
+        "source_type": "design_document"
+      }
+    },
+    {
+      "id": "wkg:claim:elo_four_act_journey",
+      "subject": "wkg:EloCharacter",
+      "predicate": "FOLLOWS",
+      "object": "wkg:FourActNarrative",
+      "source": "wkg:source:elo_planet_design_canon",
+      "wkg_epistemic_class": "SOURCE_ATTRIBUTED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "eLo's story follows a four-act structure through the eLo-Planet world.",
+      "notes": "Narrative design canon. 4-act structure is the canonical story shape for the game and book.",
+      "evidence": [],
+      "provenance": {
+        "author": "David Charles",
+        "title": "eLo-Planet Design Canon",
+        "extraction_date": "2026-08-22",
+        "source_type": "design_document"
+      }
+    },
+    {
+      "id": "wkg:claim:nonverbal_expression_conveys_emotion",
+      "subject": "wkg:NonverbalExpression",
+      "predicate": "CONVEYS",
+      "object": "wkg:EloCharacter",
+      "source": "wkg:source:behavioral_science_consensus",
+      "wkg_epistemic_class": "VERIFIED",
+      "created_at": "2026-08-22T00:00:00Z",
+      "updated_at": "2026-08-22T00:00:00Z",
+      "interpretation": "Nonverbal cues — posture, gesture, movement — convey emotion as reliably as verbal expression, per behavioral science consensus.",
+      "notes": "Established scientific consensus underpinning eLo's design choice of no-eyes expression.",
+      "evidence": [
+        "Mehrabian, A. (1971). Silent Messages. Wadsworth.",
+        "Ekman, P. & Friesen, W. (1969). The repertoire of nonverbal behavior. Semiotica, 1(1), 49-98."
+      ],
+      "provenance": {
+        "author": "Multiple researchers",
+        "title": "Behavioral Science Consensus on Nonverbal Communication",
+        "extraction_date": "2026-08-22",
+        "source_type": "scientific_consensus"
       }
     }
   ],
@@ -1018,6 +1474,22 @@
       "type": "ANALOGOUS_TO",
       "created_at": "2026-08-22T00:00:00Z",
       "notes": "Both claims involve the number 12 across different domains. Structural analogy only — no derivation or common origin established. See wkg:claim:twelve_no_established_common_origin."
+    },
+    {
+      "id": "wkg:rel:nonverbal_supports_elo_design",
+      "type": "SUPPORTS",
+      "from": "wkg:claim:nonverbal_expression_conveys_emotion",
+      "to": "wkg:claim:elo_expresses_through_nonverbal",
+      "notes": "Behavioral science consensus (VERIFIED) supports the eLo design choice of nonverbal-only expression.",
+      "created_at": "2026-08-22T00:00:00Z"
+    },
+    {
+      "id": "wkg:rel:chunk_analogous_to_calm_principle",
+      "type": "ANALOGOUS_TO",
+      "from": "wkg:claim:chunk_transforms_sugarcore",
+      "to": "wkg:claim:elo_embodies_calm_principle",
+      "notes": "Chunk's transformation mechanism is analogous to the calm corrective eLo embodies.",
+      "created_at": "2026-08-22T00:00:00Z"
     }
   ],
   "wkg_proposed_claims": []
