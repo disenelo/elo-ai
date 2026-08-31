@@ -118,15 +118,16 @@ def emotion_speed(mood: str, base_speed: float | None = None) -> float:
 
 
 def write(
-    motion:       dict,
-    expression:   dict | None = None,
-    presence:     dict | None = None,
-    emotion:      dict | None = None,
-    gaze:         dict | None = None,
-    intent:       str | None = None,
-    trigger:      dict | None = None,
-    gesture:      dict | None = None,
-    gaze_target:  str | None = None,   # WO-UNITY-GAZE: cognitive focal_thread → Unity gaze
+    motion:          dict,
+    expression:      dict | None = None,
+    presence:        dict | None = None,
+    emotion:         dict | None = None,
+    gaze:            dict | None = None,
+    intent:          str | None = None,
+    trigger:         dict | None = None,
+    gesture:         dict | None = None,
+    gaze_target:     str | None = None,   # WO-UNITY-GAZE: cognitive focal_thread → Unity gaze
+    lifecycle_state: str | None = None,   # current LifecycleState.value
 ) -> bool:
     """
     Write a consolidated state to blender_state.json.
@@ -213,20 +214,24 @@ def write(
     if gaze_target is not None:
         payload["gaze_target"] = str(gaze_target)
 
+    if lifecycle_state is not None:
+        payload["lifecycle_state"] = str(lifecycle_state)
+
     return _write(payload)
 
 
 def write_with_presence(
-    motion:        dict,
-    expression:    dict | None = None,
-    presence:      dict | None = None,
-    emotion:       dict | None = None,
-    presence_plan: dict | None = None,
-    gaze:          dict | None = None,
-    intent:        str | None = None,
-    trigger:       dict | None = None,
-    gesture:       dict | None = None,
-    gaze_target:   str | None = None,   # WO-UNITY-GAZE: cognitive focal_thread → Unity gaze
+    motion:          dict,
+    expression:      dict | None = None,
+    presence:        dict | None = None,
+    emotion:         dict | None = None,
+    presence_plan:   dict | None = None,
+    gaze:            dict | None = None,
+    intent:          str | None = None,
+    trigger:         dict | None = None,
+    gesture:         dict | None = None,
+    gaze_target:     str | None = None,   # WO-UNITY-GAZE: cognitive focal_thread → Unity gaze
+    lifecycle_state: str | None = None,   # current LifecycleState.value
 ) -> bool:
     """
     v1.7 — write blender_state.json with Presence Plan block.
@@ -313,6 +318,9 @@ def write_with_presence(
     if gaze_target is not None:
         payload["gaze_target"] = str(gaze_target)
 
+    if lifecycle_state is not None:
+        payload["lifecycle_state"] = str(lifecycle_state)
+
     return _write(payload)
 
 
@@ -331,6 +339,8 @@ _PRESERVE_KEYS = {
     "phone_capabilities", "embodiment", "asleep", "travel_intent",
     # WO-UNITY-GAZE: cognitive gaze target — set per turn from focal_thread
     "gaze_target",
+    # Lifecycle: current cognitive lifecycle state — survives all non-lifecycle writes
+    "lifecycle_state",
 }
 
 _VISION_DEFAULT = {"active": False, "attention": 0.0, "focus": {"x": 0.5, "y": 0.5}, "app": ""}

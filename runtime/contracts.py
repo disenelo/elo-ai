@@ -8,6 +8,27 @@ No faculty, embodiment, or tool should reason outside of them.
 No contract mutates another contract.
 
 ────────────────────────────────────────────────
+THE COGNITIVE CHAIN (canonical, Four-Layer Identity Model 2026-08-31)
+
+  PERCEPTION   — raw input arrives
+    ↓
+  ATTENTION    — what matters surfaces
+    ↓
+  INTENT       — dominant purpose identified
+    ↓
+  EMOTION      — affective state inferred
+    ↓
+  MEMORY       — relevant experience retrieved
+    ↓
+  REASONING    — Executive decides (CognitivePlan)
+    ↓
+  IMAGINATION  — creative / dream recombination (async, during lifecycle rest)
+    ↓
+  AGENCY       — plan executed across surfaces
+    ↓
+  EXPRESSION   — voice, avatar, glow, motion delivered
+
+────────────────────────────────────────────────
 THE LOOP
 
   Observe
@@ -27,6 +48,17 @@ THE LOOP
   integrate_session()
     ↓
   Next observation.
+
+────────────────────────────────────────────────
+LIFECYCLE (canonical)
+
+  AWAKE → ENGAGED → PROCESSING → LOW_LOAD → RECHARGING
+    → CONSOLIDATING → DREAMING → RESTORED → AWAKE
+
+  During RECHARGING / CONSOLIDATING: memory consolidation, significance
+  reweighting, self-model update, unresolved-thread processing.
+  During DREAMING: recombination, imagination, replay — dream entries are
+  NOT automatically factual memory (see runtime/memory_origin.py).
 
 ────────────────────────────────────────────────
 IMMUTABILITY PRINCIPLE
@@ -148,6 +180,9 @@ class CognitiveState:
     active_topic_depth:   int   = 0           # how many turns on current topic
     creative_candidates:  tuple = field(default_factory=tuple)  # WO-CREATIVE-001: [({"candidate":…,"score":…}),…] epistemic_status="imagined"
 
+    # ── Lifecycle ─────────────────────────────────────────────────────────────
+    lifecycle_state:      str   = "awake"     # LifecycleState.value — awake/engaged/recharging/etc.
+
     # ── Session Metadata ──────────────────────────────────────────────────────
     session_id:           str   = ""
     turn_number:          int   = 0
@@ -169,6 +204,12 @@ class CognitiveState:
 
     # ── Significance Faculty (WO-SP29) ────────────────────────────────────────
     significance_score:   float = 0.0          # overall score 0.0-1.0; gates memory write (>=0.72) and self-init (>=0.90)
+
+    # ── WKG Faculty (WO-WKG-001..003 + WO-CONV-001) ─────────────────────────
+    wkg_context:          str   = ""           # WKG claims relevant to this turn; epistemic_class VERIFIED
+
+    # ── CCM Enrichment (WO-CCM-SPINE) ────────────────────────────────────────
+    ccm_context:          dict  = field(default_factory=dict)   # 26-dim CCM enrichment per turn
 
     # ── Assembly Confidence ───────────────────────────────────────────────────
     assembly_confidence:  float = 1.0         # 0.0 if faculties partially failed
@@ -321,6 +362,11 @@ class EmbodimentState:
     unity_material_profile: str  = "calm"     # material preset name
     unity_mode:             str  = "idle"     # idle | speaking | listening | thinking | ...
     unity_intensity:        float = 0.5
+    gaze_target:            str | None = None  # object name or direction label from cognitive focal_thread
+    world_state:            dict | None = None # world-state payload from Unity tick → spine
+
+    # ── Lifecycle ─────────────────────────────────────────────────────────────
+    lifecycle_state:    str   = "awake"       # LifecycleState.value — awake/engaged/dreaming/etc.
 
     # ── Desktop Avatar ────────────────────────────────────────────────────────
     desktop_presence:   str   = "ambient"     # ambient | engaged | listening | creative

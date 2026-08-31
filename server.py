@@ -154,6 +154,10 @@ _mobile_last_ts: float = 0.0  # WO-FIX-MOBILE-REPLAY: dedup mobile events by tim
 _behind_window_id: "str | None" = None  # WO-PRES-002: win_id eLo is currently behind; None = in front
 _unity_world_state: "dict | None" = None  # WO-UNITY-GAZE: latest world_state from Unity tick
 
+# Lifecycle manager — tracks eLo's cognitive lifecycle across turns and idle periods.
+from runtime.lifecycle import LifecycleManager as _LifecycleManager
+_lifecycle_mgr = _LifecycleManager()
+
 
 def _parse_unity_events_tolerant(path: str) -> tuple[list[dict], int]:
     """W0: Read all JSON objects from unity_events.json, tolerating concatenated/corrupt records.
@@ -903,6 +907,15 @@ def ambient_thought() -> None:
         import time as _time_mod
         from runtime.backend_router import route as _rt, active_backend as _ab, normalise as _nml
 
+        # ── Lifecycle tick ────────────────────────────────────────────────────
+        # Advance idle-time state machine (LOW_LOAD → RECHARGING).
+        _lc_state = _lifecycle_mgr.tick()
+        try:
+            from blender_bridge.state_writer import patch as _lc_patch
+            _lc_patch({"lifecycle_state": _lc_state.value})
+        except Exception:
+            pass
+
         # ── Dream Faculty check (unchanged) ───────────────────────────────────
         # Conditions: long idle + self-model signals → enter dream state.
         # Writes mode="dreaming" for Unity sleep animation before pipeline runs.
@@ -913,13 +926,18 @@ def ambient_thought() -> None:
             # 0037: ambient tick refreshes self-model before use (no long-lived cache).
             _elo_self = _self_load()
             if should_dream(_elo_self, _idle_sec, _energy_hist):
-                # Signal Unity: eLo is sleeping
-                from blender_bridge.state_writer import patch as _dp
-                _dp({
-                    "state":  {"mode": "dreaming", "emotion": "calm"},
-                    "motion": {"animation": "sleep", "speed": 0.1,
-                               "intensity": 0.2, "duration": 120.0},
-                })
+                # Lifecycle: enter dream
+                _lifecycle_mgr.enter_dream()
+                try:
+                    from blender_bridge.state_writer import patch as _dp
+                    _dp({
+                        "state":           {"mode": "dreaming", "emotion": "calm"},
+                        "motion":          {"animation": "sleep", "speed": 0.1,
+                                            "intensity": 0.2, "duration": 120.0},
+                        "lifecycle_state": "dreaming",
+                    })
+                except Exception:
+                    pass
                 # Dream pipeline
                 _dream_topics = [t[0] for t in getattr(_elo_self, "lifetime_threads", [])[:6]]
 
@@ -929,8 +947,16 @@ def ambient_thought() -> None:
                 _dream_result = run_dream(_elo_self, _dream_topics, _dream_llm)
                 # Integrate insight into self-state — 0037: through single-authority mutator
                 _elo_self = _self_mutate(lambda s: wake_from_dream(_dream_result, s))
-                # Signal Unity: wake
-                _dp({"state": {"mode": "idle", "emotion": "calm"}})
+                # Lifecycle: exit dream → RESTORED
+                _lifecycle_mgr.exit_dream()
+                try:
+                    from blender_bridge.state_writer import patch as _dp
+                    _dp({
+                        "state":           {"mode": "idle", "emotion": "calm"},
+                        "lifecycle_state": "restored",
+                    })
+                except Exception:
+                    pass
                 _lock.release()
                 return  # skip normal ambient cycle this tick
         except Exception:
@@ -1932,6 +1958,8 @@ def _process_turn(raw: str) -> dict:
         import time as _time_mod
         if _state is not None:
             _state["last_user_ts"] = _time_mod.time()
+        # Lifecycle: mark active turn — transitions to ENGAGED, resets idle clock
+        _lifecycle_mgr.on_turn()
         # SP-31/SP-32: A1 signal — every user turn counts as a conversing pulse
         try:
             from runtime.self_initiation import record_conversation_pulse as _si_pulse
@@ -4741,15 +4769,19 @@ def _process_turn(raw: str) -> dict:
                         _mv_intent = ""
                 # WO-UNITY-GAZE: forward focal_thread as gaze_target for Unity GazeController
                 _gaze_tgt = getattr(_elo_self, "focal_thread", None) or None
+                # Lifecycle: forward current lifecycle state to blender_state.json
+                _lc_val = _lifecycle_mgr.state_value
                 if _last_pp:
                     _state_write_presence(_cmd, _expr, _presence, _emotion, _last_pp,
                                           gaze=_gaze, intent=_mv_intent,
                                           trigger=_mv_trigger, gesture=_mv_gesture,
-                                          gaze_target=_gaze_tgt)
+                                          gaze_target=_gaze_tgt,
+                                          lifecycle_state=_lc_val)
                 else:
                     _state_write(_cmd, _expr, _presence, _emotion, gaze=_gaze,
                                  intent=_mv_intent, trigger=_mv_trigger, gesture=_mv_gesture,
-                                 gaze_target=_gaze_tgt)
+                                 gaze_target=_gaze_tgt,
+                                 lifecycle_state=_lc_val)
         except Exception:
             pass
 

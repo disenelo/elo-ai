@@ -177,6 +177,9 @@ class EloSelfState:
     embodiment_transitions: list = field(default_factory=list)  # [{ts, from_, to, event}]
     # WO-PRES-002: spatial depth state — which window eLo is currently behind (None = in front)
     behind_window_id: "str | None" = None
+    # Lifecycle: current cognitive lifecycle state (Four-Layer Identity Model, 2026-08-31)
+    # Canonical values: awake | engaged | processing | low_load | recharging | consolidating | dreaming | restored
+    lifecycle_state: str = "awake"
 
 
 # ── Persistence ───────────────────────────────────────────────────────────────
@@ -223,6 +226,7 @@ def load() -> EloSelfState:
             last_reflection_lesson=str(data.get("last_reflection_lesson", "")),
             mobile_lifecycle=str(data.get("mobile_lifecycle", "")),
             embodiment_transitions=list(data.get("embodiment_transitions", [])),
+            lifecycle_state=str(data.get("lifecycle_state", "awake")),
         )
     except (FileNotFoundError, json.JSONDecodeError, Exception):
         return EloSelfState()
