@@ -118,14 +118,15 @@ def emotion_speed(mood: str, base_speed: float | None = None) -> float:
 
 
 def write(
-    motion:     dict,
-    expression: dict | None = None,
-    presence:   dict | None = None,
-    emotion:    dict | None = None,
-    gaze:       dict | None = None,
-    intent:     str | None = None,
-    trigger:    dict | None = None,
-    gesture:    dict | None = None,
+    motion:       dict,
+    expression:   dict | None = None,
+    presence:     dict | None = None,
+    emotion:      dict | None = None,
+    gaze:         dict | None = None,
+    intent:       str | None = None,
+    trigger:      dict | None = None,
+    gesture:      dict | None = None,
+    gaze_target:  str | None = None,   # WO-UNITY-GAZE: cognitive focal_thread → Unity gaze
 ) -> bool:
     """
     Write a consolidated state to blender_state.json.
@@ -209,6 +210,9 @@ def write(
             "active": bool(gaze.get("active",  True)),
         }
 
+    if gaze_target is not None:
+        payload["gaze_target"] = str(gaze_target)
+
     return _write(payload)
 
 
@@ -222,6 +226,7 @@ def write_with_presence(
     intent:        str | None = None,
     trigger:       dict | None = None,
     gesture:       dict | None = None,
+    gaze_target:   str | None = None,   # WO-UNITY-GAZE: cognitive focal_thread → Unity gaze
 ) -> bool:
     """
     v1.7 — write blender_state.json with Presence Plan block.
@@ -305,6 +310,9 @@ def write_with_presence(
             "active": bool(gaze.get("active",  True)),
         }
 
+    if gaze_target is not None:
+        payload["gaze_target"] = str(gaze_target)
+
     return _write(payload)
 
 
@@ -318,6 +326,11 @@ _PRESERVE_KEYS = {
     "intent", "trigger", "gesture", "weather",
     # Core render fields — absent from this set = droppable on any patch (F-A fix)
     "expression", "motion", "state", "gaze", "presence_plan",
+    # WO-MOBILE-PHASE2: Phase 2 embodiment fields — written once at boot via patch(),
+    # must survive every subsequent _write() or the phone loses capabilities.
+    "phone_capabilities", "embodiment", "asleep", "travel_intent",
+    # WO-UNITY-GAZE: cognitive gaze target — set per turn from focal_thread
+    "gaze_target",
 }
 
 _VISION_DEFAULT = {"active": False, "attention": 0.0, "focus": {"x": 0.5, "y": 0.5}, "app": ""}

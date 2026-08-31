@@ -152,6 +152,7 @@ _ACK_BODY_TYPES = frozenset({"sit_complete", "sit_held", "move_complete", "exit_
 _ack_last_ts: float = 0.0     # last _ts seen — prevents re-appending the same event
 _mobile_last_ts: float = 0.0  # WO-FIX-MOBILE-REPLAY: dedup mobile events by timestamp
 _behind_window_id: "str | None" = None  # WO-PRES-002: win_id eLo is currently behind; None = in front
+_unity_world_state: "dict | None" = None  # WO-UNITY-GAZE: latest world_state from Unity tick
 
 
 def _parse_unity_events_tolerant(path: str) -> tuple[list[dict], int]:
@@ -1836,7 +1837,7 @@ def _init_session():
     # 0015: cursor persisted to unity_events_cursor.json so Designer's rotation can warn
     # (Rule 1) if it would discard a row above consumed_seq. Cursor also survives restart.
     def _poll_unity_events() -> None:
-        global _ack_last_ts, _mobile_last_ts, _behind_window_id  # WO-FIX-MOBILE-REPLAY / WO-PRES-002
+        global _ack_last_ts, _mobile_last_ts, _behind_window_id, _unity_world_state  # WO-FIX-MOBILE-REPLAY / WO-PRES-002 / WO-UNITY-GAZE
         import time as _pt
         from runtime.unity_events_cursor import read_cursor as _rc, write_cursor as _wc
         _poller_log = _logging.getLogger(__name__ + ".ack_poller")
@@ -1873,6 +1874,21 @@ def _init_session():
                                 _pj.dump({"behind_window_id": _behind_window_id}, _bwf)
                         except Exception:
                             pass
+
+                    # WO-UNITY-GAZE: world_state feedback from Unity tick
+                    elif _ev_type == "world_state":
+                        _ws_payload = _ev.get("payload") or {}
+                        if _ws_payload:
+                            _unity_world_state = _ws_payload
+                            try:
+                                import json as _wsj, datetime as _wsd
+                                _wsp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "world_state.json")
+                                _wsp_write = dict(_unity_world_state)
+                                _wsp_write.setdefault("timestamp", _wsd.datetime.utcnow().isoformat())
+                                with open(_wsp, "w", encoding="utf-8") as _wsf:
+                                    _wsj.dump(_wsp_write, _wsf)
+                            except Exception:
+                                pass
 
                     # WO-MOBILE-001 D-SPINE-1/2: mobile foreground/background events
                     # G4: events arrive only through this authenticated window process
@@ -4723,13 +4739,17 @@ def _process_turn(raw: str) -> dict:
                         # Different intent while sit is in-flight — queue it, hold position.
                         _PENDING_SIT["queued"] = _mv_intent
                         _mv_intent = ""
+                # WO-UNITY-GAZE: forward focal_thread as gaze_target for Unity GazeController
+                _gaze_tgt = getattr(_elo_self, "focal_thread", None) or None
                 if _last_pp:
                     _state_write_presence(_cmd, _expr, _presence, _emotion, _last_pp,
                                           gaze=_gaze, intent=_mv_intent,
-                                          trigger=_mv_trigger, gesture=_mv_gesture)
+                                          trigger=_mv_trigger, gesture=_mv_gesture,
+                                          gaze_target=_gaze_tgt)
                 else:
                     _state_write(_cmd, _expr, _presence, _emotion, gaze=_gaze,
-                                 intent=_mv_intent, trigger=_mv_trigger, gesture=_mv_gesture)
+                                 intent=_mv_intent, trigger=_mv_trigger, gesture=_mv_gesture,
+                                 gaze_target=_gaze_tgt)
         except Exception:
             pass
 
