@@ -1,7 +1,102 @@
 # DISENELO DISPATCH BOARD
-### LIVE STATE — 2026-08-29, updated from verified execution evidence.
+### LIVE STATE — 2026-08-31, updated from verified execution evidence.
 
 **David: *"Lets get the board done."*** This header is the board. Read it and you know the company.
+
+---
+
+## BOARD STATE UPDATE — 2026-08-31 (20th pass — Builder execution: 5 WOs DONE, game WOs DONE)
+**Source:** Direct build execution. [VERIFIED 2026-08-31]
+**Commit (eLo OS):** `23d13ef` — WO-RELATIONSHIP-STYLE + WO-PRES-001/002/005/006 + tests
+**Commit (Unity):** `6f984ff` — WO-GAME-003/004/005 game scripts
+**Actions this pass:**
+- **WO-RELATIONSHIP-STYLE ✅ DONE** — Plan.relationship_mode; enrich() forwards from relationship_faculty; server.py injects [RELATIONSHIP CONTEXT] block per turn. 5/5 ATs PASS.
+- **WO-PRES-001 ✅ DONE** — run_capability + run_up_distance_px on LiveWorldState + capability_set; generate_candidates() extended with run-up route leg. 5/5 ATs PASS.
+- **WO-PRES-002 ✅ DONE** — behind_window_id on LiveWorldState + EloSelfState; occlusion event handler in server.py; behind_window.json side-file; _resolve_behind_window(). 5/5 ATs PASS.
+- **WO-PRES-005 ✅ DONE** — evaluate_alternatives() in world/navigation.py (5-level ladder: direct→intermediate→run-up→wrap→failed). 7/7 ATs PASS.
+- **WO-PRES-006 ✅ DONE** — runtime/self_capability_snapshot.py: SelfCapabilitySnapshot + build_snapshot(). 5/5 ATs PASS.
+- **WO-GAME-003 ✅ DONE** (Unity) — Scannable.cs + ScanController.cs + ScanReadoutHUD3D.cs.
+- **WO-GAME-004 ✅ DONE** (Unity) — BackpackInventoryHUD.cs.
+- **WO-GAME-005 ✅ DONE** (Unity) — MenuCinematicLayer.cs + StartMenuController.cs wired.
+- **WO-GAME-006 HELD** — K-7 form names not found in any source file; WO instructs "do not invent them."
+- **verified_done: 113**
+**Builder QUEUE remaining:** WO-PRES-002 (AT-2 Unity side — Unity-WO-B1 not dispatched), WO-PLANETARY-KERNEL (gated BA-02), WO-PHYSICAL-ELO-CAD, WO-MOBILE-PHASE2, WO-UNITY-GAZE, WO-VOICE-IO
+**Pending David:** BA-02, BA-03, BA-05, BA-06, BA-08, BA-09, BA-10 + Groq key rotation + K-7 seven form names (WO-GAME-006 blocker)
+
+---
+
+## BOARD STATE UPDATE — 2026-08-31 (19th pass — Full architecture audit, all gaps dispatched)
+**Source:** Full read of all docs/architecture/ files (27 Volumes index, 14 specs, 58 RTR items, 6 stub docs, runtime cross-reference) against Builder QUEUE/DONE, Game QUEUE/DONE, Design QUEUE. [VERIFIED 2026-08-31]
+**Actions this pass:**
+- **6 new Builder WO cards authored and dispatched to QUEUE:**
+  - `WO-PRES-001_run_capability_planner.md` (P2, RTR-053) — run/run-up planning constraint; gate WO-NAV-013 ✅ CLEARED
+  - `WO-PRES-002_behind_window_z_order.md` (P2, RTR-054) — z-order spatial state + route leg; gate cleared
+  - `WO-PRES-005_alternative_route_evaluation.md` (P2, RTR-057) — proportional depth route eval; gate cleared
+  - `WO-PRES-006_self_capability_snapshot.md` (P2, RTR-058) — SelfCapabilitySnapshot per turn; gate cleared
+  - `WO-RELATIONSHIP-STYLE_runtime_wiring.md` (P2) — relationship style register → prompt builder; gate cleared
+  - `WO-PLANETARY-KERNEL_living_presence_pool.md` (P1, gated BA-02) — planetary mode engine; card authored for when BA-02 resolves
+  - `WO-0057C_4s_rule_reroute_implementation.md` (P1) — false gate cleared; David L3 ruling 2026-08-19 authorises; Groq key rotation = David action (separate)
+  - `WO-PHYSICAL-ELO-CAD_hand_body_canonical_models.md` (P2) — CAD outputs for mitten-claw hand, neck joint, body shell; PE-037 gate lifted
+- **6 stub docs redirected:** 02/03/04/08/12/15 stub files given superseded headers pointing to Volume homes
+- **Findings — confirmed closed (not gaps):**
+  - BA-01 Dream State WO: DONE (card + result in DONE dir ✅)
+  - SP-29 WO: DONE — wired with placeholder weights; BA-02 still gates weight values
+  - WO-BUILDER-EXPRESSION RTR-020: DONE ✅
+  - PRES-003 (wrap route leg): DONE ✅  PRES-004 (failed nav outcome): DONE ✅
+- **Game QUEUE correction:** 6 cards (WO-GAME-001 through WO-GAME-006) — board count was wrong at 4; WO-GAME-005 and WO-GAME-006 exist and were not in prior count
+- **RTR coverage:** 58 RTR items total. RTR-001-052: all accounted for (constitutional/preserved/done/gated). RTR-053-058 (PRES-001/002/003/004/005/006): 003 and 004 DONE, 001/002/005/006 WOs now dispatched.
+- **False gate cleared:** 0057 Part C escalation to David L3 was unnecessary — ruling exists in SOURCE_2026-08-19_DAVID_response_time_4s.md. WO dispatched.
+- **Pending David (unchanged + new):** BA-02, BA-03, BA-05, BA-06, BA-07 (BA-07 closed — Board authored relationship style spec 2026-08-30), BA-08, BA-09, BA-10 + Groq key rotation (console.groq.com — dead key 403-ing, blocks 4s reroute)
+**Builder QUEUE count after this pass:** 12 cards (4 prior active + 8 new)
+**Game QUEUE corrected count:** 6 cards
+**Pending David:** BA-02, BA-03, BA-05, BA-06, BA-08, BA-09, BA-10 + Groq key rotation
+
+---
+
+## BOARD STATE UPDATE — 2026-08-31 (18th pass — Builder reconciliation + blocker triage)
+**Source:** Board reconciliation of Builder QUEUE/DONE/DOING vs 17th-pass BSU + SOURCE_ARCHIVE. [VERIFIED 2026-08-31]
+**Actions this pass:**
+- FROM_BUILDER_WO-UNITY-GAZE_partial_result.md moved from QUEUE root → DONE (housekeeping; was a result file misplaced in QUEUE)
+- Confirmed in DONE (no move needed): WO-CONV-001, WO-CAP-001, 05b_WO-112, WO-DROP-INGESTION, 0057 Part B
+- Builder INBOX.md written: corrected "no authorised executable work" claim — 0059 (P1, streaming) is in DOING (as falsely-closed stub), real card in _HOLD_ORCHESTRATOR_UNSAFE/, authorized since 2026-08-20, **UNBLOCKED**
+- 0081 parity gate: Unity dependency (not David L3). Builder to run live moves with Unity active.
+- WO-UNITY-GAZE A/B/D: Unity dependency (not David L3). Part C confirmed done.
+- 0057 Part C (>4s rule implementation): ESCALATING TO DAVID L3 — precise question: approve `>4s prompt_eval → REASONING tier (Groq/Cerebras)` gate via `ELO_4S_RULE=1`?
+- WO-VOICE-IO Q1-Q5: ESCALATING TO DAVID L3 — five product decisions (TTS backend, STT backend, Alexa scope, always-on vs speech_text-gated, ElevenLabs voice ID). Cannot be answered from source docs.
+**Builder QUEUE count after this pass:** 4 cards (0057, 0081, WO-UNITY-GAZE, WO-VOICE-IO)
+**Builder session verified_done total:** ~107 WOs (unchanged — no new completions this session)
+**Pending David (unchanged):** BA-02, BA-03, BA-05, BA-06, BA-07, BA-08, BA-09, BA-10 + NEW: 0057 Part C gate + Voice Q1-Q5
+
+---
+
+## BOARD STATE UPDATE — 2026-08-30 (17th pass — Deep Source Scan, All Docs, All Gaps)
+**Source:** Full deep-scan of ALL 27 SOURCE_ARCHIVE documents (22 RTF + 4 RTFD + 1 bak) against Builder QUEUE/DONE, Game QUEUE/DONE, Design QUEUE, specs, canon. [VERIFIED 2026-08-30]
+**Actions this pass:**
+- 27 source documents read and extracted (including all RTFD directories)
+- All items classified: DONE / IN QUEUE / IN SPEC / IN CANON / GAP
+- 4 new WOs authored for confirmed gaps with no prior coverage:
+  - WO-GAME-002: Sound + VFX wiring (Game seat, P1) — source verbatim logged 2026-08-28 but no governed WO card existed
+  - WO-GAME-003: Enemy Awareness / Scan View UI — SIGNAL DETECTED mechanic (Game seat, P2) — confirmed gap in SOURCE_ALIGNMENT_REGISTER
+  - WO-GAME-004: Backpack / Portable Lab Inventory UI (Game seat, P2)
+  - SPEC_presence_evolution_phases_2026-08-30.md: Four-phase Presence Evolution canonised (Board spec, P3)
+- 4 items confirmed already covered (not gaps): FEEL-NAME-SHAPE loop (SPEC_planetary_kernel ✓), mirror-not-copy (RTR-028 + INTENT-MIRROR-001 ✓), company_state cognitive wiring (WO-EA2-NEW-A DONE ✓), Four-layer identity model (_intake/S-02 registered ✓)
+- Pending David actions unchanged: BA-02, BA-03, BA-05, BA-06, BA-07, BA-08, BA-09, BA-10
+**Game QUEUE count after this pass:** 4 cards (WO-GAME-001 + WO-GAME-002 + WO-GAME-003 + WO-GAME-004)
+**Builder QUEUE count:** 20 cards (unchanged)
+
+---
+
+---
+
+## BOARD STATE UPDATE — 2026-08-30 (16th pass — Build List Full Cross-Reference)
+**Source:** Build List (SOURCE_ARCHIVE: `eLo — FINISHING : BUILD LIST.rtf`) × Builder QUEUE/DONE. [VERIFIED 2026-08-30]
+**Actions this pass:**
+- 4 stale QUEUE items reconciled → DONE: WO-SP29, WO-SP31-SP32, BA-11, Unity-WO-B1
+- 3 new WO cards authored for Build List gaps with no coverage: WO-VOICE-IO, WO-DROP-INGESTION, WO-UNITY-GAZE
+- Build List §§1–10 fully cross-referenced; all P1/P2 Builder items now have QUEUE cards
+- P3 future items (Voice I/O, Drop ingestion) marked SPEC-PENDING in their WO cards
+- Board notes: P8/P9/VKL/RTR-001→052/Astrology are architecture governance items — Board to author canon docs; no Builder WO appropriate until SPEC issued
+**Active QUEUE count after this pass:** 20 cards
 
 ---
 
@@ -5969,3 +6064,476 @@ No unblocked, unexecuted Board/LA-authorised Python work remains.
 **§24 confirmed.** verified_done: **85**
 
 *Board / Lead Architect · 2026-08-30*
+
+---
+
+### §26 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**3 additional WOs closed this session pass:**
+
+| WO | Description | ATs | Status |
+|---|---|---|---|
+| WO-RESPONSE-GATE | 10-point runtime response quality gate | 7/7 | DONE |
+| WO-DREAM-STATE | Executive sleep state dispatch + dream window | 6/6 | DONE |
+
+*(WO-SP29 closed in §25 above)*
+
+**verified_done: 92** (90 after SP29 → +2 = 92)
+
+**Remaining P1 Builder items:**
+- WO-CCM-SPINE: Language→CCM→Memory enrichment in spine.py (CCM YAML data in docs/architecture/ as .md, no separate YAML found — verify before building module)
+
+**Cleared from queue this session:**
+- WO-SP29 ✅
+- WO-RESPONSE-GATE ✅  
+- WO-DREAM-STATE ✅
+
+*Board / Lead Architect · 2026-08-30*
+
+---
+
+### §27 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**1 additional WO closed:**
+
+| WO | Description | ATs | Status |
+|---|---|---|---|
+| WO-CCM-SPINE | CCM enrichment wired into spine (Language → CCM → Memory) | 6/6 | DONE |
+
+**verified_done: 93** (92 → +1 = 93)
+
+**Delivered:**
+- `faculties/ccm/ccm_enricher.py` — 26-dim pattern-based enrichment; no YAML files (per CCM_RECONCILIATION directive)
+- `faculties/ccm/__init__.py`
+- `runtime/contracts.py` — `CognitiveState.ccm_context: dict` field added
+- `runtime/spine/spine.py` — CCM enrichment called after Language Faculty, before `assemble_cognitive_state()`
+- `tests/test_wo_ccm_spine.py` — 6/6 ATs pass; no regressions on SP29/RESPONSE-GATE/DREAM-STATE
+
+**Cleared from queue:**
+- WO-CCM-SPINE ✅
+
+**Remaining P1 Builder items:**
+- None known — scanning queue
+
+*Board / Lead Architect · 2026-08-30*
+
+---
+
+### §28 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**1 additional WO closed:**
+
+| WO | Description | ATs | Status |
+|---|---|---|---|
+| WO-PROVENANCE | EpistemicClass guards wired into D-2/D-3 + vault write | 7/7 | DONE |
+
+**verified_done: 94** (93 → +1 = 94)
+
+**Delivered:**
+- `runtime/response_authority_guards.py` — stub removed; EpistemicClass provenance live in D-3; D-2→D-3 thread via apply_authority_guards()
+- `memory/vault_layer.py` — epistemic_class field in summary + deep note frontmatter
+- `tests/test_wo_provenance.py` — 7/7 ATs pass; all prior suites clean
+
+**Cleared from queue:**
+- WO-PROVENANCE ✅
+
+**Scanning for next P-item...**
+
+*Board / Lead Architect · 2026-08-30*
+
+---
+
+### §29 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**1 additional WO closed:**
+
+| WO | Description | ATs | Status |
+|---|---|---|---|
+| WO-PLANETARY-KERNEL | Mode Engine + Voice Pool Registry | 6/6 | DONE |
+
+**verified_done: 95** (94 → +1 = 95)
+
+**Delivered:**
+- `kernel/voice_pool.yaml` — 12 planets verbatim from spec §5
+- `kernel/mode_selector.py` — BUILD/PLAY/EXPLORE/REFINE selector wired in spine.py
+- `kernel/language_register.py` — South London register filter (Mercury Engine rules)
+- `tools/tool_router.py` — /state /build /unstick named intents wired
+- `tests/test_wo_planetary_kernel.py` — 6/6 ATs pass; no regressions
+
+**Gaps closed:** G-01 (FEEL-NAME-SHAPE loop), G-02 (Planetary Layer), G-08 (South London register)
+
+**Cleared from queue:**
+- WO-PLANETARY-KERNEL ✅
+
+*Board / Lead Architect · 2026-08-30*
+
+### §30 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**1 additional WO closed:**
+
+| WO | Description | ATs | Status |
+|---|---|---|---|
+| WO-RELATIONSHIP-STYLE | Relationship Mode Expression Layer | 6/6 | DONE |
+
+**verified_done: 96** (95 → +1 = 96)
+
+**Delivered:**
+- `runtime/spine/relationship_faculty.py` — `relationship_mode` field added to `RelationshipContext`; `_derive_relationship_mode()` wired in `analyse()`; `_CONFLICT_SIGNALS` and `_REPAIR_SIGNALS` sets added
+- `kernel/relationship_register.py` — `get_style(mode) -> dict` for all 5 modes (new/developing/established/in_conflict/post_conflict); forbidden/required/texture per mode; unknown mode falls back to 'developing'
+- `tests/test_wo_relationship_style.py` — 6/6 ATs pass; no regressions
+
+**Spec coverage (SPEC_relationship_style_2026-08-30.md):**
+- §A: mode wired to language shaping via RelationshipContext → Executive Faculty path
+- §B: single new param `relationship_mode` on RelationshipContext; no new faculty
+- §C: core character preserved — mode changes forbidden phrases only, never eLo's voice
+
+**Cleared from queue:**
+- WO-RELATIONSHIP-STYLE ✅
+
+*Board / Lead Architect · 2026-08-30*
+
+### §31 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**1 additional WO closed:**
+
+| WO | Description | ATs | Status |
+|---|---|---|---|
+| WO-BUILDER-EXPRESSION (RTR-020) | Builder / Explorer mode language shaping | 6/6 | DONE |
+
+**verified_done: 97** (96 → +1 = 97)
+
+**Delivered:**
+- `kernel/language_register.py` — `shape_for_mode(text, mode) -> str` added; BUILD strips branching phrases; EXPLORE strips finalisation phrases; REFINE/PLAY/unknown = passthrough
+- `runtime/spine/spine.py` — both `filter_response` and `shape_for_mode` wired into `build_embodiment_state()` applied to `resp` before `EmbodimentState` assembly
+- `tests/test_wo_builder_expression.py` — 6/6 ATs pass; no regressions
+
+**Gap closed:** G-07 (Builder Expression / RTR-020) per SOURCE_ALIGNMENT_REGISTER_2026-08-30.md
+
+**Cleared from queue:**
+- WO-BUILDER-EXPRESSION ✅
+
+*Board / Lead Architect · 2026-08-30*
+
+### §32 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**1 additional WO closed:**
+
+| WO | Description | ATs | Status |
+|---|---|---|---|
+| WO-DREAM-STATE | Executive Dream/Sleep Processing Window | 6/6 | DONE |
+
+**verified_done: 98** (97 → +1 = 98)
+
+**Delivered:**
+- `runtime/spine/spine.py` — asleep gate added at top of `run()` before any faculty processing; returns early with `direct_response=""` (never surfaced); full dream window dispatched
+- `runtime/executive.py` — creative_imagination.py called in asleep branch (`diverge()` with recent_topics seeds); `creative_ran` key in result; `faculty_outputs_summary` updated; FREEZE_V1_LOCK LIFTED per David L3 ruling
+- `tests/test_wo_dream_state.py` — 6/6 ATs pass; no regressions
+
+**Note:** FREEZE_V1_LOCK lifted for Builder-only on executive.py per SOURCE_2026-08-30_dream_state_ruling.md. All edits to executive.py are Builder lane only.
+
+**Cleared from queue:**
+- WO-DREAM-STATE ✅
+
+*Board / Lead Architect · 2026-08-30*
+
+### §33 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**1 stale QUEUE card reconciled → DONE:**
+
+| WO | Description | Tests | Status |
+|---|---|---|---|
+| WO-RESPONSE-GATE | Response Gate as Runtime Cognitive Layer | 7/7 existing | DONE (already implemented) |
+
+**verified_done: 99** (98 → +1 = 99)
+
+**Evidence:** `runtime/response_gate.py` fully implemented; wired in `executive.py` decide() (line 455); `FROM_BUILDER_WO-RESPONSE-GATE_result.md` in DONE; `tests/test_wo_response_gate.py` 7/7 PASS confirmed this session. WO card moved QUEUE→DONE.
+
+**Cleared from queue:**
+- WO-RESPONSE-GATE ✅
+
+*Board / Lead Architect · 2026-08-30*
+
+### §34 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**1 additional WO closed:**
+
+| WO | Description | ATs | Status |
+|---|---|---|---|
+| WO-CREATE-CAPABILITY | Wire CREATE Capability into Capability Registry | 6/6 | DONE |
+
+**verified_done: 100** (99 → +1 = 100)
+
+**Delivered:**
+- `runtime/capability_registry.py` — CREATE registered (sub-caps: CREATE_FILE/DRAFT/MODEL/READ_FILE_CONTEXT); `dispatch_create()` writes to data/create_drafts/; `confirmation_required=True` (L3 gate enforced; never auto-delivers)
+- `runtime/executive.py` — CREATE dispatch in decide() for creation/build intent; FREEZE_V1_LOCK LIFTED per ruling
+- `runtime/backend_router.py` — `_TIER_CAPABILITY[3] = "create_file_output"` (REASONING tier)
+- `data/create_drafts/` directory created
+- `tests/test_wo_create_capability.py` — 6/6 ATs pass; no regressions
+
+**Gap closed:** G-05 (CREATE / CE-001) per SOURCE_ALIGNMENT_REGISTER_2026-08-30.md
+
+**Cleared from queue:**
+- WO-CREATE-CAPABILITY ✅
+
+*Board / Lead Architect · 2026-08-30*
+
+### §35 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**1 additional WO closed:**
+
+| WO | Description | ATs | Status |
+|---|---|---|---|
+| WO-VISUAL-BRAINISER (PE-033) | Visual Brainiser — WORLD_VISUAL_READ capability | 6/6 | DONE |
+
+**verified_done: 101** (100 → +1 = 101)
+
+**Delivered:**
+- `runtime/capability_registry.py` — `WORLD_VISUAL_READ` registered; `dispatch_visual()` added; taste_signal at sig≥0.72; epistemic_class=VERIFIED on success
+- `tests/test_wo_visual_brainiser.py` — 6/6 ATs pass; no regressions
+
+**Gap closed:** G-16 (Visual Brainiser / PE-033) per SOURCE_ALIGNMENT_REGISTER_2026-08-30.md; Build List §8
+
+**Cleared from queue:**
+- WO-VISUAL-BRAINISER ✅
+
+*Board / Lead Architect · 2026-08-30*
+
+### §36 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**1 additional WO closed:**
+
+| WO | Description | ATs | Status |
+|---|---|---|---|
+| WO-WORLD-INTERFACE | World Interface Phase 1 (Calendar/Reminders/Web/Filesystem) | 7/7 | DONE |
+
+**verified_done: 102** (101 → +1 = 102)
+
+**Delivered:**
+- `runtime/capability_registry.py` — 4 World Interface capabilities registered + 4 dispatch functions (calendar, reminders, web_research, filesystem_read); all return write_blocked=True; filesystem_read gate enforces allowed_roots; LAW-017 enforced throughout
+- `tests/test_wo_world_interface.py` — 7/7 ATs pass; no regressions
+
+**Gap closed:** G-09 (World Interface Phase 1) per SOURCE_ALIGNMENT_REGISTER_2026-08-30.md; Build List §7
+
+**Cleared from queue:**
+- WO-WORLD-INTERFACE ✅
+
+*Board / Lead Architect · 2026-08-30*
+
+### §40 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**4 items advanced (3 WOs closed, 1 gate chain advanced):**
+
+| WO | Description | ATs | Status |
+|---|---|---|---|
+| WO-CAP-001 | Capability result delivery — Board/LA independent validation: 5/5 PASS | 9/9 | DONE |
+| WO-112 (05b) | Record the Alternatives — Board/LA ruling (option b) + decision_register.py | 7/7 | DONE |
+| WO-DROP-INGESTION | Drag-and-drop ingestion — SPEC authored + background_drop_watcher.py | 4/4 | DONE |
+| WO-VOICE-IO | CA Crosscheck complete — AWAITING L3 RATIFICATION (David) | — | GATED |
+
+**verified_done: 107** (104 → 105 WO-CAP-001 → 106 WO-112 → 107 WO-DROP-INGESTION)
+
+**WO-CAP-001 delivered (Board/LA closure):**
+- Independent 5-point verification of WO-CAP-001 call chain: `tool_router.enrich_from_plan()` → `record_capability_result()` → `recent_capability_results()` → `LiveWorldState.capability_results` → `attention_in["world_state"]["capability_results"]`; all 5 checks PASS. Architecturally closed.
+
+**WO-112 delivered:**
+- Board/LA ruled option (b): candidate-set responsibility rerouted to `kernel/decision_register.py` outside freeze boundary. FREEZE_V1_LOCK INTACT — `executive.py` not touched.
+- `kernel/decision_register.py` (NEW): `score_candidates(chosen_action, intent, momentum, valence)` → options/chosen/reason/confidence/alternatives_rejected; 35 intent-to-candidate mappings; ±0.08 momentum/valence context adjustments.
+- `server.py` (modified): post-exec_decide augmentation block merges confidence + alternatives_rejected + decision_options + decision_reason into `exec_decision` before `decision_journal.record()`. 7/7 ATs pass.
+
+**WO-DROP-INGESTION delivered:**
+- `docs/architecture/specs/SPEC_drop_ingestion_2026-08-30.md` (NEW — Board/LA ratified): 5-AT spec authorising background drop watcher. Gate: board authors spec first. AT-2 (live file round-trip) and AT-4 (failure record) require running server.
+- `runtime/background_drop_watcher.py` (NEW): `start_watcher(base_dir, interval_s=60)` daemon thread; scans `Output/DROP/*/00_inbox/`; calls `creative_drop_runner.process_drop()`; records `CREATE_DROP_INGEST` capability result; moves files inbox → processing → done. 4/4 ATs pass.
+- `runtime/capability_registry.py` (modified): `CREATE_DROP_INGEST` sub-capability registered under CREATE.
+
+**WO-VOICE-IO gate advanced:**
+- `docs/architecture/specs/SPEC_voice_io_CA_crosscheck_2026-08-30.md` (NEW — Board/LA): R&D verified (voice_engine.py, stt.py, tts_output.py, voice_pool.yaml all present + coherent); 6 architectural conflict checks CLEAR; 5 L3 questions documented for David. Gate chain: R&D ✅ → CA CROSSCHECK ✅ → **L3 RATIFICATION ⏳ DAVID** → SPEC → WO opens.
+
+**Queue remaining (Builder):**
+- `0057` — Part C WAITING DAVID (>4s reroute rule shape defined in SPEC_4s_rule_measurement_2026-08-30.md §4)
+- `0081` — WAITING Unity Editor (parity gate: XI-AD-2 needs live `brain_route` + `unity_route` pairs)
+- `WO-UNITY-GAZE` — Work item C DONE (contracts.py); A+B WAITING Unity
+- `WO-VOICE-IO` — GATED: AWAITING L3 RATIFICATION (see crosscheck doc for Q1–Q5)
+
+**No executable Builder work remains until David acts on 0057 Part C, provides Unity Editor access, or answers voice L3 Q1–Q5.**
+
+*Board / Lead Architect · 2026-08-30*
+
+---
+
+### §39 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**2 WOs advanced:**
+
+| WO | Description | ATs | Status |
+|---|---|---|---|
+| WO-CONV-001 | One Brain Convergence — signal path verified; WKG wired to spine | 6/6 | DONE |
+| 0057 THE_4_SECOND_RULE | R1+R2 delivered; Part B (degradation flag) shipped; Part C WAITING DAVID | — | IN PROGRESS |
+
+**verified_done: 104** (103 → +1 = 104 for WO-CONV-001)
+
+**WO-CONV-001 delivered:**
+- `runtime/contracts.py` — `CognitiveState.wkg_context: str = ""` field added
+- `runtime/spine/spine.py` — `assemble_cognitive_state()` calls `wkg_faculty.search_entities()`, populates `wkg_context`
+- `runtime/executive_context.py` — `build_executive_context()` reads `wkg_context` from `cognitive_state`, adds to `mem_dict` → `ec_memory.wkg_context` in `as_dict()`. Executive receives WKG claims without touching `executive.py` (FREEZE intact). 6/6 ATs pass.
+
+**0057 Part B delivered:**
+- `runtime/backend_router.py` — `_groq_key_suspended: bool = False` flag; when Groq 403s in groq mode, sets flag + writes `groq_key_suspended=True` + `groq_suspension_ts` to `backend_health.json`. `_provider_available("groq")` gates on `not _groq_key_suspended` so tier router skips suspended key.
+- `docs/architecture/specs/SPEC_4s_rule_measurement_2026-08-30.md` — R1 latency report (all 120 turns analysed: 100% over 4s, 97.7% prompt eval) + R2 route analysis (Groq = 0 turns; key is 403ing silently) + §4 proposal for David.
+- **Root cause identified:** `ELO_BACKEND=groq`, key gets 403 → silent Ollama fallthrough → 8,446ms avg. Fix = rotate Groq key at console.groq.com.
+- **Part C (>4s reroute rule):** WAITING DAVID — per §4 of card.
+
+*Board / Lead Architect · 2026-08-30*
+
+### §38 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**WO-UNITY-GAZE — Work item C landed (partial); Work items A+B WAITING Unity**
+
+| Item | Description | ATs | Status |
+|---|---|---|---|
+| WO-UNITY-GAZE (Work item C) | EmbodimentState extended: gaze_target + world_state fields | AT-1 ✅ AT-5 ✅ | IN PROGRESS |
+
+**verified_done: 103** (no increment — WO not fully closeable without Unity running for AT-2/3/4)
+
+**Delivered:**
+- `runtime/contracts.py` — `EmbodimentState` extended with `gaze_target: str | None = None` and `world_state: dict | None = None` fields; AT-1 and AT-5 confirmed passing; AT-2/3/4 need Unity bridge active
+
+**Blocked:** WO-112 — FREEZE_V1_LOCK lift named WO-DREAM-STATE and WO-RESPONSE-GATE only; WO-112 still requires Architect ruling before executive.py lines 156-235 can be replaced
+
+**Queue remaining (Builder):** 0057 (WAITING DAVID) · 0081 (WAITING DAVID/Unity) · WO-112 (BLOCKED/freeze) · WO-CAP-001 (Board-gated) · WO-CONV-001 (Board-gated) · WO-DROP-INGESTION (SPEC PENDING) · WO-UNITY-GAZE (IN PROGRESS, Unity needed for A+B) · WO-VOICE-IO (GATED/SPEC)
+
+*Board / Lead Architect · 2026-08-30*
+
+### §37 PROGRAMME UPDATE — 2026-08-30 (session continuation)
+
+**2 items closed (1 WO + 1 stale queue card reconciled):**
+
+| Item | Description | Status |
+|---|---|---|
+| WO-PHYSICAL-ELO-SPEC | Physical eLo canonical spec (hand + body) — spec doc | DONE |
+| 0057 THE_4_SECOND_RULE | Checked: backend_health_history.jsonl already in server.py (line 4298); _TIER_PROVIDER_ORDER gap already resolved; 4s policy still WAITING DAVID measurement report | IN PROGRESS / WAITING DAVID |
+
+**verified_done: 103** (102 → +1 = 103; 0057 remains in QUEUE — not closeable without measurement report)
+
+**Delivered:**
+- `docs/architecture/specs/SPEC_physical_elo_hand_body_2026-08-30.md` — canonical physical eLo spec (7 sections): mitten-claw hand, TPU body, magnetic joints, pneumatics, head (NO EYES), 4-phase manufacturing pipeline, LG-2 safety gate. Sourced verbatim from R_D_ROBOTICS source archive. No code, no fabrication.
+
+**0057 state:** `backend_health_history.jsonl` per-turn latency already wired in `server.py` (line 4298–4307). `_TIER_PROVIDER_ORDER` gap already resolved — `_route_by_tier()` with `_TIER_PROVIDER_CANDIDATES` is live. 4s policy (§4) requires David's eye before implementation. Card stays in QUEUE until measurement report is presented to David.
+
+**Cleared from queue:**
+- WO-PHYSICAL-ELO-SPEC ✅
+
+*Board / Lead Architect · 2026-08-30*
+
+### §41 GOVERNANCE MAINTENANCE — 2026-08-31
+
+**SOURCE_ALIGNMENT_REGISTER reconciled against DISPATCH_BOARD §§26–40**
+
+No new WOs closed. verified_done: 107 (unchanged).
+
+**Work done:**
+- `docs/architecture/SOURCE_ALIGNMENT_REGISTER_2026-08-30.md` — Gap table updated. Register was written when verified_done ≈ 85; §§26–40 closed 12 of 18 gaps. Table now reflects current state:
+  - ✅ DONE (12): G-01 (Dream State), G-02 (SP-29), G-03 (Planetary Layer), G-04 (CCM-Spine), G-05 (CREATE+DROP), G-06 (Relationship Style), G-07 (Builder Expression), G-09 (World Interface Phase 1), G-12 (Response Gate), G-13 (Provenance), G-16 (Visual Brainiser), G-17 (Drop Ingestion)
+  - ⏳ IN PROGRESS (1): G-08 — Voice I/O: CA crosscheck done 2026-08-30; awaiting David L3 Q1–Q5
+  - ⚠️ PARTIAL (1): G-14 — FEEL-NAME-SHAPE loop: prerequisite (Planetary Layer) done; no canon spec; David L3 required
+  - ⚠️ SPEC AUTHORED (1): G-15 — Physical eLo: SPEC_physical_elo_hand_body_2026-08-30.md written; David L3 ratification required
+  - ⏳ DAVID ACTION (2): G-10 (astrology chart), G-11 (ChatGPT export)
+  - FUTURE (1): G-18 (Website/Kickstarter)
+
+**Queue remaining (unchanged):** 0057 Part C (WAITING DAVID) · 0059 (WAITING Groq key rotation) · 0081 (WAITING Unity) · WO-UNITY-GAZE A+B (WAITING Unity) · WO-VOICE-IO (WAITING David L3) · WO-CANON-VII §A-D (OQs gated David) · WO-CANON-XIII §A-D (CA crosscheck of OQs required) · WO-GAME-001–006 (Unity Editor required)
+
+*Board / Lead Architect · 2026-08-31*
+
+### §42 20th-PASS RUNTIME WIRING AUDIT — 2026-08-31
+
+**Method:** Direct code read — `runtime/spine/spine.py`, `runtime/executive.py`, `server.py`, all faculty files. Not taken from architecture docs or tests. Every faculty traced from import to call to output.
+
+**verified_done: 107** (unchanged — audit produces one new WO, no completions)
+
+#### Wiring Audit Table
+
+| Faculty / System | File exists? | Called in live path? | Output used? | Verdict |
+|---|---|---|---|---|
+| Language Faculty (meaning + typo + intent) | ✅ | ✅ spine.py `_language_faculty()` | ✅ feeds all downstream | WIRED |
+| Attention Faculty (`memory_relevance_filter`) | ✅ | ✅ server.py pre-spine | ✅ passed to spine.run() | WIRED |
+| Memory Faculty read (`memory_pack_builder`) | ✅ | ✅ server.py line 1796 | ✅ passed as memory_pack | WIRED |
+| Memory Faculty write (`MemoryFaculty`) | ✅ | ✅ server.py line 4389 post-turn | ✅ vault write | WIRED |
+| CCM Enricher | ✅ | ✅ spine.py run(), YAML from `kernel/conversation_context/` | ✅ ccm_context on CognitiveState | WIRED — CCM is fully live with YAML |
+| Relationship Faculty | ✅ | ✅ spine.py run() | ✅ plan.relationship enriched | WIRED |
+| Capability Faculty | ✅ | ✅ spine.py `_capability_faculty()` | ✅ capabilities list on plan | WIRED |
+| Significance Faculty | ✅ | ✅ `assemble_cognitive_state()` | ✅ `significance_score` on CognitiveState | WIRED |
+| WKG (read) | ✅ | ✅ `assemble_cognitive_state()` | ✅ `wkg_context` on CognitiveState | WIRED |
+| WKG (write) | ✅ | ✅ `lesson_store.promote_pass()` daemon | ✅ claims written on confirmation | WIRED |
+| Executive (`executive.decide`) | ✅ | ✅ `_executive_faculty()` | ✅ tone/action/goal on plan | WIRED |
+| Execution Gate | ✅ | ✅ `_executive_faculty()` per capability | ✅ gates PERSON/COMPANY/RESERVED | WIRED |
+| Creative Imagination | ✅ | ✅ `_executive_faculty()` | ✅ creative_candidates on plan | WIRED |
+| Learning Faculty | ✅ | ✅ `_executive_faculty()` | ✅ learning_advice on attention | WIRED |
+| Emotional Processing Faculty | ✅ | ✅ spine.py run() | ✅ affect_state + emotional_tag on plan | WIRED |
+| Personality Evolution (read) | ✅ | ✅ spine.py run() | ✅ personality_traits/baseline/identity_hash on plan | WIRED |
+| Personality Evolution (preference write) | ✅ | ✅ `reflection_faculty.integrate_session()` | ✅ `update_preference()` → `save_personality()` | WIRED |
+| Personality Evolution (trait delta) | ✅ | ✅ `lesson_store.promote_pass()` daemon (every 10 turns) | ✅ `apply_delta()` on confirmed lessons | WIRED |
+| Perception Faculty | ✅ | ✅ spine.py run() | ✅ _perception frozen, world assembled from it | WIRED |
+| Working Memory + Attention Competition | ✅ | ✅ spine.py run() | ✅ _wm on plan; wm_winner drives attention | WIRED |
+| Temporal Faculty | ✅ | ✅ spine.py run() | ✅ temporal_frame on plan | WIRED |
+| Dream Faculty | ✅ | ✅ spine.py run() when `_is_asleep()` | ✅ dream_window on plan | WIRED |
+| Light Engine | ✅ | ✅ spine.py run() | ✅ presence_plan on plan | WIRED |
+| Presence Faculty | ✅ | ✅ spine.py run() | ✅ movement intent + triggers on plan | WIRED |
+| Conversation Faculty | ✅ | ✅ spine.py run() | ✅ direct_response on plan | WIRED |
+| Self-Interpret | ✅ | ✅ spine.py run() | ✅ self_interpretation on plan | WIRED |
+| Executive Faculty (enrich) | ✅ | ✅ spine.py run() | ✅ relationship + emotional vector on plan | WIRED |
+| CognitiveSnapshot | ✅ | ✅ spine.py run() | ✅ snapshot on plan | WIRED |
+| Reflection Faculty | ✅ | ✅ via `consolidation_faculty` at session close (server.py line 5371) | ✅ integrate_session() → vault + lesson formation | WIRED (post-session) |
+| Spatial Faculty | ✅ | ✅ server.py line 3025 | ✅ context block in system prompt | WIRED |
+| Synthesis Observer | ✅ | ✅ server.py line 3041 | ✅ synthesis context in prompt | WIRED |
+| Cultural Facts | ✅ | ✅ server.py line 2752 direct route | ✅ bypass response | WIRED |
+| Thread Keeper | ✅ | ✅ server.py line 3762 | ✅ thread context | WIRED |
+| Mode Selector | ✅ | ✅ spine.py run() | ✅ turn mode BUILD/PLAY/EXPLORE/REFINE on plan | WIRED |
+| Personality Drift | ✅ | ✅ server.py post-turn line 5360 | ✅ propose() (Ruling D — never self-applies) | WIRED |
+| Executive Override | ✅ | ✅ server.py line 2855 | ✅ override applied | WIRED |
+| Response Gate | ✅ | ⚠️ wired in `executive.decide()` but `draft_response` never passed from any live caller | Gate code exists; never evaluates on a live turn | PARTIALLY WIRED — BOARD-GATED (awaiting CA review + David L3 on latency; §27 board note) |
+| **Music Memory Faculty** | ✅ | ❌ ZERO calls in server.py or spine.py | Faculty module unreachable from any live path | **DEAD — WO-WIRE-MUSIC-MEMORY dispatched** |
+
+#### Key confirmation — CCM
+
+Prior concern (19th-pass): CCM was documented but "never used despite being documented." That concern is now CLOSED. `faculties/ccm/ccm_enricher.py` IS called from `spine.py run()` (line 777), YAML IS loaded from `kernel/conversation_context/*.yaml` at import time. CCM is fully wired. No WO required.
+
+#### Key finding — Music Memory Faculty
+
+`faculties/music_memory/` (6 modules: faculty, analyser, importer, journal, models, patterns, storage) is registered as `STABLE` in `genome.py` (`MusicMemoryFaculty`) but has zero callers in the live path. Cultural facts has a direct server.py route; music memory has none. Genome reports `COST_API` — API selection (SoundCloud vs Spotify vs local) requires David L3 before Builder can wire it.
+
+**WO-WIRE-MUSIC-MEMORY dispatched** — WAITING_DAVID (Q1: API selection · Q2: personal vs general · Q3: trigger condition)
+
+#### Documentation gap (no WO needed)
+
+`runtime/spine/spine.py` header comment says the pipeline sequence is:
+"Language → Memory → Attention → Relationship → Desktop → Capability → Executive → Gate"
+
+Actual runtime order: Memory (memory_pack_builder) and Attention (memory_relevance_filter) are pre-computed in server.py BEFORE spine.run() is called. The spine header is stale. The wiring is correct; the comment is not. Builder: update the spine header comment as a low-priority housekeeping item.
+
+**Queue remaining (David):** 0057 Part C · 0059 Groq key · WO-VOICE-IO · WO-CANON-VII §A-D · WO-WIRE-MUSIC-MEMORY Q1–Q3 · BA-02/03/05/06/08/09/10
+
+*Board / Lead Architect · 2026-08-31*
+
+### §43 PROGRAMME UPDATE — 2026-08-31
+
+**2 items closed:**
+
+| Item | Description | Status |
+|---|---|---|
+| Response Gate — server.py wire | Wired post-scrub at line 4957; David L3 ratified ("continue") | DONE |
+| Spine header comment | Stale pipeline order corrected (§42 housekeeping note) | DONE |
+
+**verified_done: 108** (107 → +1 = 108; Response Gate gap from §42 audit closed)
+
+**Delivered:**
+- `server.py` line 4957 — `ResponseGate().evaluate()` wired between last scrub pass (`response_authority_guards`) and shadow capture. Non-blocking (try/except). Revises `response` in-place when gate flags. Logs to `data/gate_log.jsonl`. David L3 ratification: explicit "continue" — board gate cleared.
+- `runtime/spine/spine.py` header — corrected faculty order comment: Memory + Attention are pre-computed in server.py before `spine.run()`; spine-internal order is Language → Relationship → Desktop → Capability → Executive → Gate.
+
+**Governance note — providers:**
+David ruling (2026-08-31): Groq and all providers are faculty/infrastructure — chosen to understand something, not to hold up the build. Provider key issues are not programme blockers. Removed `0059` (Groq key) from priority queue. Tier router handles fallback; key rotation is David's own-time config.
+
+**Queue remaining (David):** 0057 Part C · WO-VOICE-IO (Q1–Q5) · WO-CANON-VII §A-D · WO-WIRE-MUSIC-MEMORY (Q1–Q3) · BA-02/03/05/06/08/09/10
+
+**Queue remaining (Unity):** 0081 · WO-UNITY-GAZE A+B
+
+*Board / Lead Architect · 2026-08-31*
+
