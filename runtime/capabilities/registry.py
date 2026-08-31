@@ -43,6 +43,15 @@ _UTILITY: list[Capability] = [
         ack_source=ACK_SYNC_RETURN,
     ),
     Capability(
+        id="sun_events", display_name="Sun Events", category=CAT_UTILITY,
+        description="Sunrise, sunset, dawn and dusk times for a location",
+        verbs=["sunrise", "sunset", "dawn", "dusk", "golden hour", "solar noon",
+               "when does the sun", "sun event", "sun time"],
+        requires_api=False, execution_priority=2,
+        agent_module="tools.tool_router",
+        ack_source=ACK_SYNC_RETURN,
+    ),
+    Capability(
         id="news", display_name="News", category=CAT_UTILITY,
         description="Current headlines and news",
         verbs=["news", "headlines", "what's happening", "current events"],

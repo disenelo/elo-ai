@@ -34,6 +34,7 @@ class MemoryCandidate:
     project:         str   = "general"   # vault domain label
     summary:         str   = ""          # one-sentence summary (≤200 chars after compress)
     tags:            tuple = field(default_factory=tuple)   # frozen tag list
+    experience_id:   str   = ""          # WO-XDNA-001: per-turn identity minted by spine
 
 
 # ── Constants ────────────────────────────────────────────────────────────────
@@ -119,6 +120,7 @@ class MemoryFaculty:
                 deep_text=candidate.content,
                 weight=max(1, min(9, candidate.proposed_weight)),
                 tags=list(candidate.tags),
+                experience_id=candidate.experience_id,
             )
             return {"action": "write", "spot": spot, "reason": "new record written"}
         except Exception as exc:

@@ -71,20 +71,25 @@ def write_memory(
     weight: int = 5,
     tags: list[str] | None = None,
     date: datetime | None = None,
+    epistemic_class: str | None = None,
+    experience_id: str = "",
 ) -> str:
     """
     Write a complete tiered memory record.
 
     Args:
-        project     — domain: "elo-os" | "elo-game" | "elo-robot" | "elo-book"
-                               | "disenelo" | "david" | "general"
-        memory_type — "build" | "fix" | "decision" | "learn" | "connect"
-                               | "design" | "conversation"
-        summary     — one-sentence description (max 200 chars after compress)
-        deep_text   — full memory content (compressed to 2000 chars)
-        weight      — 0-9 importance (9=core identity, 7+=important, 4-6=useful)
-        tags        — Obsidian tag list e.g. ["architecture", "routing"]
-        date        — defaults to datetime.now()
+        project         — domain: "elo-os" | "elo-game" | "elo-robot" | "elo-book"
+                                   | "disenelo" | "david" | "general"
+        memory_type     — "build" | "fix" | "decision" | "learn" | "connect"
+                                   | "design" | "conversation"
+        summary         — one-sentence description (max 200 chars after compress)
+        deep_text       — full memory content (compressed to 2000 chars)
+        weight          — 0-9 importance (9=core identity, 7+=important, 4-6=useful)
+        tags            — Obsidian tag list e.g. ["architecture", "routing"]
+        date            — defaults to datetime.now()
+        epistemic_class — EpistemicClass value string (WO-PROVENANCE): "verified" |
+                          "inferred" | "generated" | "canonical" | etc.
+                          Defaults to "verified" for callers that don't specify.
 
     Returns:
         Spot code string e.g. "EO·BL·2607·9"
@@ -92,6 +97,7 @@ def write_memory(
     _ensure_dirs()
     date = date or datetime.now()
     tags = tags or []
+    epistemic_class = epistemic_class or "verified"
 
     coded  = encode(project=project, memory_type=memory_type, date=date, weight=weight)
     spot   = coded["spot"]
@@ -101,9 +107,11 @@ def write_memory(
     summary_short   = compress_text(summary,   max_chars=200)
     deep_compressed = compress_text(deep_text, max_chars=2000)
 
-    _append_spot_index(spot, bits, summary_short, date)
-    _write_summary_note(fname, spot, bits, summary_short, date, tags, weight, coded)
-    _write_deep_note(fname, spot, bits, deep_compressed, date, tags, weight)
+    _append_spot_index(spot, bits, summary_short, date, experience_id=experience_id)
+    _write_summary_note(fname, spot, bits, summary_short, date, tags, weight, coded,
+                        epistemic_class=epistemic_class, experience_id=experience_id)
+    _write_deep_note(fname, spot, bits, deep_compressed, date, tags, weight,
+                     epistemic_class=epistemic_class, experience_id=experience_id)
 
     # Invalidate cache so next obsidian_loader.load() picks up the new notes
     obsidian_loader.invalidate_cache()
@@ -115,16 +123,18 @@ def write_memory(
     return spot
 
 
-def _append_spot_index(spot: str, bits: str, summary: str, date: datetime) -> None:
+def _append_spot_index(spot: str, bits: str, summary: str, date: datetime,
+                        experience_id: str = "") -> None:
     date_str = date.strftime("%Y-%m-%d")
-    line = f"| `{spot}` | `{bits}` | {summary} | {date_str} |\n"
+    xid_col = f" {experience_id}" if experience_id else ""
+    line = f"| `{spot}` | `{bits}` | {summary} | {date_str} |{xid_col}\n"
 
     if not os.path.exists(_SPOT_FILE):
         header = (
             "---\ntype: memory-index\ndomain: memory\n---\n\n"
             "# eLo Memory — Spot Code Index\n\n"
-            "| Spot | Bits | Summary | Date |\n"
-            "|------|------|---------|------|\n"
+            "| Spot | Bits | Summary | Date | Experience ID |\n"
+            "|------|------|---------|------|---------------|\n"
         )
         with open(_SPOT_FILE, "w", encoding="utf-8") as f:
             f.write(header)
@@ -136,9 +146,12 @@ def _append_spot_index(spot: str, bits: str, summary: str, date: datetime) -> No
 def _write_summary_note(
     fname: str, spot: str, bits: str, summary: str,
     date: datetime, tags: list, weight: int, coded: dict,
+    epistemic_class: str = "verified",
+    experience_id: str = "",
 ) -> None:
     tag_str  = ", ".join(f'"{t}"' for t in tags) if tags else ""
     date_str = date.strftime("%Y-%m-%d")
+    xid_line = f"experience_id: {experience_id}\n" if experience_id else ""
     content  = (
         f"---\n"
         f"type: memory-summary\n"
@@ -149,6 +162,8 @@ def _write_summary_note(
         f"memory-type: {coded['t_code']}\n"
         f"date: {date_str}\n"
         f"weight: {weight}\n"
+        f"epistemic_class: {epistemic_class}\n"
+        f"{xid_line}"
         f"tags: [{tag_str}]\n"
         f"deep: [[deep/{fname}-deep]]\n"
         f"---\n\n"
@@ -167,9 +182,12 @@ def _write_summary_note(
 def _write_deep_note(
     fname: str, spot: str, bits: str, deep_text: str,
     date: datetime, tags: list, weight: int,
+    epistemic_class: str = "verified",
+    experience_id: str = "",
 ) -> None:
     tag_str  = ", ".join(f'"{t}"' for t in tags) if tags else ""
     date_str = date.strftime("%Y-%m-%d")
+    xid_line = f"experience_id: {experience_id}\n" if experience_id else ""
     content  = (
         f"---\n"
         f"type: memory-deep\n"
@@ -178,6 +196,8 @@ def _write_deep_note(
         f"bits: {bits}\n"
         f"date: {date_str}\n"
         f"weight: {weight}\n"
+        f"epistemic_class: {epistemic_class}\n"
+        f"{xid_line}"
         f"tags: [{tag_str}]\n"
         f"summary: [[summary/{fname}]]\n"
         f"---\n\n"
