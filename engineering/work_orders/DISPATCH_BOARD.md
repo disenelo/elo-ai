@@ -23,6 +23,19 @@
 **Builder QUEUE remaining:** WO-PRES-002 (AT-2 Unity side — Unity-WO-B1 not dispatched), WO-PLANETARY-KERNEL (gated BA-02), WO-PHYSICAL-ELO-CAD, WO-MOBILE-PHASE2, WO-UNITY-GAZE, WO-VOICE-IO
 **Pending David:** BA-02, BA-03, BA-05, BA-06, BA-08, BA-09, BA-10 + Groq key rotation + K-7 seven form names (WO-GAME-006 blocker)
 
+## BOARD STATE UPDATE — 2026-08-31 (21st pass — 4 WOs DONE)
+**Source:** Direct build execution. [VERIFIED 2026-08-31]
+**Commit (eLo OS):** `7b779e7` — WO-MOBILE-PHASE2 + WO-UNITY-GAZE Python side
+**Commit (Unity):** `4a44a43` (GazeController.cs), `a64b199` (WO-GAME-002 sound wiring), `4aa6aeb` (WO-GAME-001 code deliverables)
+**Actions this pass:**
+- **WO-MOBILE-PHASE2 ✅ DONE** — state_writer.py: phone_capabilities/embodiment/asleep/travel_intent added to _PRESERVE_KEYS; P1 defect closed; phase-2 fields now survive every _write() after boot. 5/5 ATs PASS.
+- **WO-UNITY-GAZE ✅ DONE** — state_writer.write() + write_with_presence() accept gaze_target param (focal_thread per turn). server.py: gaze_target forwarded + world_state event handler added (reads Unity world_state events → world_state.json). Unity: GazeController.cs reads gaze_target, smooth LookAt, world_state emit every 2s. 6/6 ATs PASS.
+- **WO-GAME-002 ✅ DONE** — Dead hooks wired: EnemyAlert.FireAlert() → EnemySounds.PlayAlert() code trigger; EnemyHealth.TakeDamage() → EnemySounds.PlayHurt()/PlayDeath(); PlayerController: idle breathing SetIdleBreathing, footstep timer (0.45s/0.30s sprint), land soft/hard by velocity, PlayCalmMode on both triggers; Collectible: type-specific PlayerSounds (PlayCoin/PlayFood/PlayCrateCollect/PlayWeaponPickup); AmbientAudioZone.cs (NEW — multi-layer trigger volume for birds/wind/water/underwater); GameOverController: gameOverClip stinger slot + plays in Show().
+- **WO-GAME-001 ✅ CODE DONE** — CharacterSwitcher.cs (DKC2 Tab cycling, per-slot InputLocked + CompanionFollow enable/disable, SetTarget() redirect); K7SniffDetector.cs (ZLayerShift OverlapSphere, Sniff Animator trigger, emission colour flash); CompanionFollow.SetTarget() added. Animation assets D-1–D-4 HELD pending K-7/Chunk FBX export from Blender.
+- **verified_done: 117**
+**Builder QUEUE remaining:** WO-PLANETARY-KERNEL (gated BA-02), WO-PHYSICAL-ELO-CAD (physical build), WO-VOICE-IO (SPEC-PENDING), 0081/WO-CANON-XI (parity gate — needs live move data), WO-GAME-006 (K-7 form names needed)
+**Pending David:** BA-02, BA-03, BA-05, BA-06, BA-08, BA-09, BA-10 + K-7 seven form names (WO-GAME-006 blocker) + K-7/Chunk Blender FBX export (WO-GAME-001 D-1–D-4)
+
 ---
 
 ## BOARD STATE UPDATE — 2026-08-31 (19th pass — Full architecture audit, all gaps dispatched)
