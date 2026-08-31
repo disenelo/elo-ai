@@ -27,8 +27,10 @@ def _fresh_module(no_autoloop: str = "") -> _types.ModuleType:
     )
     mod = importlib.util.module_from_spec(spec)
     # Stub heavy deps so the module loads without a full elo-ai environment
-    for dep in ("company_runtime.wo_test_runner", "company_runtime.company_state_writer",
-                "company_runtime", "company_runtime.agent_bus"):
+    _stub_deps = ("company_runtime.wo_test_runner", "company_runtime.company_state_writer",
+                  "company_runtime", "company_runtime.agent_bus")
+    _prior_modules = {dep: sys.modules.get(dep) for dep in _stub_deps}
+    for dep in _stub_deps:
         stub = _types.ModuleType(dep)
         stub.ROOT    = _ROOT
         stub.BOARD   = os.path.join(_ROOT, "engineering", "work_orders", "DISPATCH_BOARD.md")
@@ -53,6 +55,12 @@ def _fresh_module(no_autoloop: str = "") -> _types.ModuleType:
             os.environ["DISENELO_NO_AUTOLOOP"] = saved_env
         elif "DISENELO_NO_AUTOLOOP" in os.environ:
             del os.environ["DISENELO_NO_AUTOLOOP"]
+        # Restore sys.modules so stub doesn't contaminate later tests
+        for dep, prior in _prior_modules.items():
+            if prior is None:
+                sys.modules.pop(dep, None)
+            else:
+                sys.modules[dep] = prior
 
     return mod
 

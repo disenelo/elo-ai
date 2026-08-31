@@ -28,16 +28,27 @@ def _load_module() -> _types.ModuleType:
     mod = importlib.util.module_from_spec(spec)
     mod.__name__ = "tool_router_test"
     sys.modules["tool_router_test"] = mod
-    # Minimal stubs so import doesn't crash on missing deps
-    for dep in ("tools.accuweather_agent", "tools.spotify_agent", "tools.computer_control_agent"):
-        stub = _types.ModuleType(dep)
-        stub.is_available = lambda: False
-        stub.agent = lambda *a, **kw: None
-        sys.modules.setdefault(dep, stub)
+    # Minimal stubs so import doesn't crash on missing deps.
+    # Save and restore so the stubs don't contaminate later tests.
+    _stub_deps = ("tools.accuweather_agent", "tools.spotify_agent", "tools.computer_control_agent")
+    _prior = {dep: sys.modules.get(dep) for dep in _stub_deps}
+    for dep in _stub_deps:
+        if dep not in sys.modules:
+            stub = _types.ModuleType(dep)
+            stub.is_available = lambda: False
+            stub.agent = lambda *a, **kw: None
+            sys.modules[dep] = stub
     try:
         spec.loader.exec_module(mod)
     except Exception:
         pass  # partial load is fine — we only need constants + functions
+    finally:
+        # Restore so the stubs don't contaminate other tests
+        for dep, prior in _prior.items():
+            if prior is None:
+                sys.modules.pop(dep, None)
+            else:
+                sys.modules[dep] = prior
     return mod
 
 
