@@ -23,6 +23,14 @@
 **Builder QUEUE remaining:** WO-PRES-002 (AT-2 Unity side — Unity-WO-B1 not dispatched), WO-PLANETARY-KERNEL (gated BA-02), WO-PHYSICAL-ELO-CAD, WO-MOBILE-PHASE2, WO-UNITY-GAZE, WO-VOICE-IO
 **Pending David:** BA-02, BA-03, BA-05, BA-06, BA-08, BA-09, BA-10 + Groq key rotation + K-7 seven form names (WO-GAME-006 blocker)
 
+## BOARD STATE UPDATE — 2026-08-31 (22nd pass — WO-LIFECYCLE DONE)
+**Source:** Direct build execution. [VERIFIED 2026-08-31]
+**Commit (eLo OS):** `093097e` — WO-LIFECYCLE: eLo Cognitive Lifecycle
+**Actions this pass:**
+- **WO-LIFECYCLE ✅ DONE** — Four-Layer Identity Model established in runtime. `runtime/lifecycle.py`: LifecycleState (8 states: AWAKE/ENGAGED/PROCESSING/LOW_LOAD/RECHARGING/CONSOLIDATING/DREAMING/RESTORED) + LifecycleManager. `runtime/memory_origin.py`: MemoryOrigin enum; DREAM_SIMULATION excluded from auto-storage (dream does not become factual memory without significance gate). `runtime/contracts.py`: lifecycle_state on CognitiveState + EmbodimentState; cognitive chain (Perception→Attention→Intent→Emotion→Memory→Reasoning→Imagination→Agency→Expression) documented canonically. `self/elo_self_model.py`: lifecycle_state on EloSelfState. `blender_bridge/state_writer.py`: lifecycle_state in write() + write_with_presence() + _PRESERVE_KEYS. `server.py`: lifecycle manager global wired — on_turn(), tick(), enter_dream(), exit_dream() all connected. 10/10 ATs PASS.
+- **verified_done: 118**
+**Pending David:** BA-02, BA-03, BA-05, BA-06, BA-08, BA-09, BA-10 + K-7 seven form names + K-7/Chunk FBX export
+
 ## BOARD STATE UPDATE — 2026-08-31 (21st pass — 4 WOs DONE)
 **Source:** Direct build execution. [VERIFIED 2026-08-31]
 **Commit (eLo OS):** `7b779e7` — WO-MOBILE-PHASE2 + WO-UNITY-GAZE Python side
