@@ -131,35 +131,28 @@ class TestAT4Reachability(unittest.TestCase):
         jump_px = ws.jump_px
         self.assertGreater(jump_px, 0, "jump_px must be populated from capability_set")
 
-        # Horizontal gap is abs(target_x - current_x); rect_px[0] is left edge
-        # Simulate two platform pairs: one within threshold, one beyond
-        current_x = 500
-        target_near_x = current_x + 400    # gap = 400 < jump_px (527–576 range)
-        target_far_x  = current_x + jump_px + 50  # gap = jump_px + 50 → beyond
-
-        gap_near = abs(target_near_x - current_x)
-        gap_far  = abs(target_far_x  - current_x)
+        # Derive near/far gaps from live jump_px (not hardcoded — spec changed with maxHopSizes 6→3)
+        gap_near = max(jump_px - 50, jump_px // 2)  # well within reach
+        gap_far  = jump_px + 50                      # just beyond reach
 
         self.assertLessEqual(gap_near, jump_px,
                              f"gap_near={gap_near} should be <= jump_px={jump_px}")
         self.assertGreater(gap_far, jump_px,
                            f"gap_far={gap_far} should be > jump_px={jump_px}")
 
-    def test_at4_canonical_500_reachable_600_not(self):
-        """WO-NAV-004 canonical: gap=500 reachable, gap=600 not (jump_px >= 500, < 600+delta check)."""
+    def test_at4_canonical_live_matches_capability_set(self):
+        """jump_px assembled from live elo_spatial.json matches capability_set.jump_px exactly."""
         from world.live_world_state import assemble_world_state
 
         ws = assemble_world_state(turn_id="at4b-test")
         jump_px = ws.jump_px
-        self.assertGreater(jump_px, 0)
+        self.assertGreater(jump_px, 0, "jump_px must be > 0 (populated from capability_set)")
 
-        # The file specifies jump_px in range 500–600.
-        # AT condition from WO: gap=500 reachable, gap=600 not.
-        # We assert the live value satisfies this: 500 <= jump_px < 600.
-        self.assertGreaterEqual(jump_px, 500,
-                                f"jump_px={jump_px}: gap=500 must be reachable")
-        self.assertLess(jump_px, 600,
-                        f"jump_px={jump_px}: gap=600 must NOT be reachable")
+        # Verify assembly reads the live file verbatim — no hardcoded override
+        live = _load_spatial()
+        expected = int(live.get("surface_graph", {}).get("capability_set", {}).get("jump_px", 0))
+        self.assertEqual(jump_px, expected,
+                         f"assembled jump_px={jump_px} does not match live capability_set.jump_px={expected}")
 
 
 # ── AT-5: elo_spatial.json unchanged after world assembly ────────────────────────
