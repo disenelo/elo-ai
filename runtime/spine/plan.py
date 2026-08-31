@@ -120,6 +120,11 @@ class CognitivePlan:
     # Remains None for all non-navigate turns. Shape: {goal_win_id, candidates, route}
     spatial_plan:         "dict | None" = None
 
+    # ── WO-RELATIONSHIP-STYLE: relationship mode — expression register per turn ──
+    # Set by enrich() in executive_faculty.py from relationship_faculty output.
+    # Values: "new" | "developing" | "established" | "in_conflict" | "post_conflict"
+    relationship_mode:    str           = "developing"
+
     # ── WO-SC-NEW-001: storytelling style — inferred from voice/mode context ───
     # Set by _conversation_faculty before LLM call. Shapes how eLo frames action.
     # Values: "collaborative" | "imaginative" | "reflective" | "playful" |
@@ -131,6 +136,11 @@ class CognitivePlan:
     # Each entry: {"candidate": {concept, metaphor, …}, "score": {…}} epistemic_status="imagined"
     # Propagated to server.py for [CREATIVE SEED] system prompt injection.
     creative_candidates:  tuple = field(default_factory=tuple)
+
+    # ── WO-TIER-FACULTY-001: speech licence from tiered faculty reader ────────
+    # Set by _executive_faculty. None = not yet evaluated (pre-tier-reader).
+    # SpeechLicence.violations = fields eLo must not assert this turn.
+    speech_licence:       "object | None" = None
 
     def needs_llm(self) -> bool:
         return not self.direct_response and not self.system_immediate and not self.system_pending

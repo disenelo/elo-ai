@@ -151,6 +151,7 @@ _ACK_BODY_TYPES = frozenset({"sit_complete", "sit_held", "move_complete", "exit_
                                "arrived", "movement_report"})  # SP-1: movement_report enters ACK path
 _ack_last_ts: float = 0.0     # last _ts seen — prevents re-appending the same event
 _mobile_last_ts: float = 0.0  # WO-FIX-MOBILE-REPLAY: dedup mobile events by timestamp
+_behind_window_id: "str | None" = None  # WO-PRES-002: win_id eLo is currently behind; None = in front
 
 
 def _parse_unity_events_tolerant(path: str) -> tuple[list[dict], int]:
@@ -1835,7 +1836,7 @@ def _init_session():
     # 0015: cursor persisted to unity_events_cursor.json so Designer's rotation can warn
     # (Rule 1) if it would discard a row above consumed_seq. Cursor also survives restart.
     def _poll_unity_events() -> None:
-        global _ack_last_ts, _mobile_last_ts  # WO-FIX-MOBILE-REPLAY
+        global _ack_last_ts, _mobile_last_ts, _behind_window_id  # WO-FIX-MOBILE-REPLAY / WO-PRES-002
         import time as _pt
         from runtime.unity_events_cursor import read_cursor as _rc, write_cursor as _wc
         _poller_log = _logging.getLogger(__name__ + ".ack_poller")
@@ -1862,6 +1863,17 @@ def _init_session():
                         with _ACK_QUEUE_LOCK:
                             _ACK_QUEUE.append(dict(_ev))
                         _ack_last_ts = _ev_ts
+                    # WO-PRES-002: occlusion event — eLo moved behind or emerged from a window
+                    elif _ev_type == "occlusion":
+                        _behind_window_id = _ev.get("win_id") or None
+                        try:
+                            import json as _pj
+                            _bwp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "behind_window.json")
+                            with open(_bwp, "w", encoding="utf-8") as _bwf:
+                                _pj.dump({"behind_window_id": _behind_window_id}, _bwf)
+                        except Exception:
+                            pass
+
                     # WO-MOBILE-001 D-SPINE-1/2: mobile foreground/background events
                     # G4: events arrive only through this authenticated window process
                     elif _ev_type in ("mobile_foreground", "mobile_background"):
@@ -2765,6 +2777,28 @@ def _process_turn(raw: str) -> dict:
             import sys as _cf_sys
             print(f"[cultural_facts] routing error: {_cf_err}", file=_cf_sys.stderr)
 
+        # ── WO-WIRE-MUSIC-MEMORY: Music memory observation — inject when music mentioned ─
+        # Trigger: raw mentions a track, artist, album, or music-related term.
+        # Local-only (no API). Personal David music memory.
+        # Faculty returns has_signal=True only when library has something relevant.
+        _MUSIC_TRIGGER_WORDS = (
+            "track", "song", "album", "artist", "playlist", "music", "beat", "tune",
+            "listen", "playing", "spotify", "soundcloud", "vinyl", "record",
+        )
+        try:
+            _raw_lower_mm = raw.lower()
+            if any(w in _raw_lower_mm for w in _MUSIC_TRIGGER_WORDS):
+                from faculties.music_memory.faculty import MusicMemoryFaculty as _MMF
+                _mm_obs = _MMF().observe(trigger=raw)
+                if _mm_obs.has_signal and _mm_obs.observation_text:
+                    raw = (
+                        f"[MUSIC_MEMORY — from David's personal music library; "
+                        f"speak naturally, not as a data report]\n{_mm_obs.observation_text}\n\n"
+                        f"User said: {_original_raw}"
+                    )
+        except Exception:
+            pass  # music memory failure must never block a turn
+
         # WO-082 / 0033 Ruling 3: "why did you do that?" — inject journal context, route through spine.
         _raw_l_why = raw.strip().lower()
         if len(_raw_l_why) < 80 and any(_raw_l_why.startswith(t) for t in _WHY_TRACE_TRIGGERS):
@@ -2818,6 +2852,26 @@ def _process_turn(raw: str) -> dict:
                 _spine_degraded = list(_plan.world.degraded)
         else:
             exec_decision = exec_decide(attention_model, loop_detected=False, user_input=raw)
+
+        # WO-112 option (b): augment exec_decision with scored candidate set from
+        # kernel/decision_register.py — fills alternatives_rejected + confidence so
+        # the journal records a real decision, not null. executive.py not touched.
+        try:
+            from kernel.decision_register import score_candidates as _score_cands
+            _dr = _score_cands(
+                chosen_action=exec_decision.get("action", "conversation"),
+                intent=exec_decision.get("intent", "conversation"),
+                momentum=exec_decision.get("momentum", "stable"),
+                valence=exec_decision.get("valence", "neutral"),
+            )
+            if not exec_decision.get("alternatives_rejected"):
+                exec_decision["alternatives_rejected"] = _dr["alternatives_rejected"]
+            if exec_decision.get("confidence") is None:
+                exec_decision["confidence"] = _dr["confidence"]
+            exec_decision.setdefault("decision_options", _dr["options"])
+            exec_decision.setdefault("decision_reason", _dr["reason"])
+        except Exception:
+            pass
 
         # ── Energy history — track David's emotional energy across the session ──
         _energy_now = attention_model.get("emotional_context", {}).get("energy", 0.5)
@@ -2936,6 +2990,7 @@ def _process_turn(raw: str) -> dict:
             _uname = _up.get("user", {}).get("name", "David")
         except Exception:
             _uname = "David"
+
         _creator_block = (
             f"[CREATOR] You are speaking with {_uname} — your creator. "
             "You already know him. This is not a first meeting. "
@@ -3654,6 +3709,18 @@ def _process_turn(raw: str) -> dict:
             system = system + "\n\n" + _im_identity_block(_elo_self)
         except Exception:
             pass
+
+        # WO-RELATIONSHIP-STYLE: inject relationship mode register adjacent to storytelling frame
+        _rel_mode = getattr(_plan, "relationship_mode", "developing") if _plan is not None else "developing"
+        _rel_register = {
+            "new":          "NEW mode: shorter turns, genuine open questions, do not claim shared history",
+            "developing":   "DEVELOPING mode: begin threading references, humour may surface, can disagree without walkback",
+            "established":  "ESTABLISHED mode: shorthand, anticipatory, casual and warm, banter register open",
+            "in_conflict":  "IN-CONFLICT mode: one honest acknowledgement then move, shorter turns during tension, do not collapse into compliance",
+            "post_conflict": "POST-CONFLICT mode: normal warmth returns, do not reference friction repeatedly, resume the thread",
+        }.get(_rel_mode, "")
+        if _rel_register:
+            system = system + f"\n\n[RELATIONSHIP CONTEXT — this turn only]\n{_rel_register}"
 
         # WO-SC-NEW-001 D-3: storytelling style — shape how eLo frames this turn
         if _plan is not None and getattr(_plan, "storytelling_style", None):
@@ -4393,6 +4460,47 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # WKG write path: record a SOURCE_ATTRIBUTED claim from significant turns.
+        # Category-tagged turns (mem_cats non-empty) carry enough signal to propose.
+        # David entity is created/reused; topic concept is derived from the first category.
+        try:
+            if _mem_cats:
+                from runtime.wkg_faculty import (
+                    search_entities as _wkg_search, create_entity as _wkg_create,
+                    record_claim as _wkg_record_claim, _load as _wkg_load,
+                )
+                # David (PERSON) — find or create once
+                _wkg_david_hits = _wkg_search("David Charles")
+                if _wkg_david_hits:
+                    _wkg_david_id = _wkg_david_hits[0]["entity_id"]
+                else:
+                    _wkg_david_ent = _wkg_create("PERSON", "David Charles",
+                                                  aliases=["David"],
+                                                  description="Creator of eLo and DISENELO")
+                    _wkg_david_id = _wkg_david_ent["entity_id"]
+                # Topic concept — one per category tag
+                _wkg_topic_label = _mem_cats[0].replace("_", " ")
+                _wkg_topic_hits = _wkg_search(_wkg_topic_label)
+                if _wkg_topic_hits:
+                    _wkg_topic_id = _wkg_topic_hits[0]["entity_id"]
+                else:
+                    _wkg_topic_ent = _wkg_create("CONCEPT", _wkg_topic_label,
+                                                  description=f"Topic from interaction: {raw[:80]}")
+                    _wkg_topic_id = _wkg_topic_ent["entity_id"]
+                # Check relationship_types list includes ASSOCIATED_WITH (it does — hardcoded)
+                _wkg_rel_types = _wkg_load("relationship_types")
+                if "ASSOCIATED_WITH" in _wkg_rel_types:
+                    _wkg_record_claim(
+                        subject_entity_id=_wkg_david_id,
+                        relationship_type="ASSOCIATED_WITH",
+                        object_entity_id=_wkg_topic_id,
+                        epistemic_class="SOURCE_ATTRIBUTED",
+                        source_id=f"interaction:{_action}",
+                        confidence=0.7,
+                    )
+        except Exception:
+            pass
+
         # WO-108 Row 5 LOOK: directed-look production wire.
         # Records an observation each turn when eLo's gaze is on an active window.
         # _perceive_target reads elo_spatial.json directly; this call just ensures
@@ -4885,6 +4993,24 @@ def _process_turn(raw: str) -> dict:
             _rag_log.getLogger("response_authority_guards").warning(
                 "response_authority_guards failed (non-fatal): %s", _rag_err
             )
+
+        # ── eLo Response Gate ─────────────────────────────────────────────────
+        # Source: eLo Intent Alignment — Faculty Routing, Response Ownership &
+        # Drift Correction. Every faculty candidate must pass through eLo's own
+        # evaluation before reaching David. 10-point gate: identity, personality,
+        # faculty_leakage, relevance, action_truth, authority, register, length,
+        # reflection_default, rest. Revises where possible; never hard-blocks.
+        try:
+            from runtime.response_gate import ResponseGate as _RG
+            _rg_result = _RG().evaluate(
+                response,
+                cognitive_state=attention_model,
+                executive_context=exec_decision if exec_decision else {},
+            )
+            if _rg_result.revised_response:
+                response = _rg_result.revised_response
+        except Exception as _rg_err:
+            _logging.warning("response_gate failed (non-fatal): %s", _rg_err)
 
         # ── WO-070: shadow capture — passive turn logging (non-blocking) ─────────
         # Called here (post-scrub) so elo_raw_gen and elo_final can differ.
@@ -5432,6 +5558,17 @@ if __name__ == "__main__":
 
     _startup_faculty_check()
     _init_session()
+
+    # Wire wake continuity — mirrors main.py:122-124; must run after _init_session() sets _state
+    try:
+        from continuity.continuity_engine  import from_state  as _cont_from_state
+        from continuity.continuity_summary import startup_message as _cont_startup
+        _cont_state   = _cont_from_state(_state)
+        _cont_greeting = _cont_startup(_cont_state)
+        if _cont_greeting:
+            print(f"[eLo server] continuity: {_cont_greeting}")
+    except Exception as _cont_err:
+        _logging.warning("continuity_engine wakeup failed: %s", _cont_err)
 
     # CT0032: derive real health_state for every capability at startup
     try:

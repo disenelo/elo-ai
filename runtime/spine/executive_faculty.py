@@ -160,6 +160,7 @@ def enrich(
     plan.trust              = relationship.trust
     plan.expression_posture = relationship.expression_posture
     plan.active_projects    = relationship.active_projects
+    plan.relationship_mode  = relationship.relationship_mode  # WO-RELATIONSHIP-STYLE
 
     # Override register from relationship if not set by language faculty
     if not plan.register and relationship.register:

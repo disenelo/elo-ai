@@ -243,15 +243,32 @@ class LiveWorldState:
     capability_results: tuple  = field(default_factory=tuple)  # WO-CAP-001: last capability results
     surfaces:           tuple  = field(default_factory=tuple)  # WO-NAV-004 SP-7: surface_graph nodes, Y-flipped
     jump_px:            int    = 0                             # WO-NAV-004 SP-8: capability_set.jump_px (authoritative)
+    run_capability:     bool   = True                          # WO-PRES-001: True if eLo can run on current surface
+    run_up_distance_px: float  = 120.0                        # WO-PRES-001: min pixel run distance before long jump achievable
     body_win_id:        int    = -1                            # WO-NAV-009 SP-9: eLo body position from elo_spatial.json; -1 = mid-hop / unknown
     surface_edges:      tuple  = field(default_factory=tuple)  # WO-NAV-010 SP-11: surface_graph edges for candidate generation
     win_id_to_surface:  dict   = field(default_factory=dict)   # WO-NAV-010 SP-12: int win_id → surface dict bridge
     company_state:      dict   = field(default_factory=dict)   # WO-EA2-NEW-A: live company state from company_state.json
+    behind_window_id:   "str | None" = None                   # WO-PRES-002: win_id of window eLo is behind; None = in front
 
 
 # ── Assembly ──────────────────────────────────────────────────────────────────
 
-def assemble_world_state(turn_id: str = "", perception=None, capability_hint: str = "") -> LiveWorldState:
+_BEHIND_WINDOW_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "behind_window.json")
+
+
+def _resolve_behind_window(explicit: "str | None") -> "str | None":
+    """WO-PRES-002: return explicit value if set; otherwise read from behind_window.json."""
+    if explicit is not None:
+        return explicit
+    try:
+        with open(_BEHIND_WINDOW_PATH, encoding="utf-8") as _bwf:
+            return json.load(_bwf).get("behind_window_id") or None
+    except Exception:
+        return None
+
+
+def assemble_world_state(turn_id: str = "", perception=None, capability_hint: str = "", behind_window_id: "str | None" = None) -> LiveWorldState:  # WO-PRES-002
     """
     Assemble one frozen LiveWorldState from all available sensors.
     Called ONCE per turn, at the top of the turn, before faculties reason.
@@ -509,6 +526,8 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
         _sg2 = _spatial_raw.get("surface_graph", {})
         _cap_set2 = _sg2.get("capability_set", {})
         _jump_px = int(_cap_set2.get("jump_px", 0))
+        _run_capability = bool(_cap_set2.get("run_capability", True))
+        _run_up_distance_px = float(_cap_set2.get("run_up_distance_px", 120.0))
         _body_win_id = int(_spatial_raw.get("body_win_id", -1))  # WO-NAV-009 D-1: raw position; -1 = mid-hop
         _surfaces = tuple(
             {
@@ -678,10 +697,13 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
         capability_results=_cap_results,
         surfaces=_surfaces,             # WO-NAV-004 SP-7
         jump_px=_jump_px,               # WO-NAV-004 SP-8
+        run_capability=_run_capability,          # WO-PRES-001
+        run_up_distance_px=_run_up_distance_px, # WO-PRES-001
         body_win_id=_body_win_id,       # WO-NAV-009 SP-9
         surface_edges=_surface_edges,   # WO-NAV-010 SP-11
         win_id_to_surface=_win_id_to_surface,  # WO-NAV-010 SP-12
         company_state=_company_state,   # WO-EA2-NEW-A D-1
+        behind_window_id=_resolve_behind_window(behind_window_id),  # WO-PRES-002
     )
 
 

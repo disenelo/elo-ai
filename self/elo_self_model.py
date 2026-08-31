@@ -175,6 +175,8 @@ class EloSelfState:
     # WO-MOBILE-001: mobile embodiment lifecycle
     mobile_lifecycle: str = ""                   # "" | "foreground" | "background"
     embodiment_transitions: list = field(default_factory=list)  # [{ts, from_, to, event}]
+    # WO-PRES-002: spatial depth state — which window eLo is currently behind (None = in front)
+    behind_window_id: "str | None" = None
 
 
 # ── Persistence ───────────────────────────────────────────────────────────────
