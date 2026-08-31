@@ -6591,3 +6591,29 @@ David ruling (2026-08-31): Groq and all providers are faculty/infrastructure —
 
 *Board / Lead Architect · 2026-08-31*
 
+
+### §44 PROGRAMME UPDATE — 2026-08-31
+
+**Session result: 43 failed → 1 failed (WAITING DESIGNER)**
+
+| Item | Commits | Status |
+|---|---|---|
+| WO-105 spine.py silent failures | `e4fabd1` | CLOSED ✅ 10/10 |
+| WO-101 significance vector shape (14-dim always) + ADR-Exec-005 D1 reward | `85c7014` | CLOSED ✅ 8/8 |
+| LCI-001 verified-outcome reward gate | `85c7014` | CLOSED ✅ aligned with WO-101 |
+| WO-103 orphan faculty (window_event_faculty) | `06de991` | CLOSED ✅ 3/3 |
+| WO-RS-004 vault_write save-intent gate | `06de991` | CLOSED ✅ 6/6 |
+| GRND-01 provenance (_trace_executed, set_session_id, current_session_id) | `32a48f6` | CLOSED ✅ |
+| SPINE-002 CognitiveState import-line check | `32a48f6` | FIXED (import-lines-only scan) |
+| SPINE-003 _BEHIND_WINDOW_PATH expected set | `32a48f6` | FIXED |
+| BH-2 bypass handler count 31→32 | `32a48f6` | FIXED |
+| D3 executive.py frozen SHA1 (WO-DREAM-STATE) | `32a48f6` | UPDATED |
+| W2-3 session_id format "S{n}" (card 0082 F-2) | `32a48f6` | FIXED |
+| W6 lesson attribution (cal_reason + lesson_id) | `32a48f6` | CLOSED ✅ 8/8 — closes LOOP-7 trigger path |
+| sys.modules contamination — wo031_autostart (company_runtime) | `27c2978` | FIXED |
+| sys.modules contamination — wo030_weather_location (computer_control_agent) | `27c2978` | FIXED |
+| conftest.py fixtures for sequential tests (rows, confirmed_lessons, tmp_journal, first_sid) | `27c2978` | FIXED — 8 ERRORs → 0 |
+
+**verified_done: 1 failed remaining** — `test_xi_ad2_parity_proven` calls `sys.exit(1)` until Unity provides `brain_route`/`unity_route` in route_memory.jsonl. WAITING DESIGNER (Unity seat).
+
+*Board / eLo OS Seat · 2026-08-31*
