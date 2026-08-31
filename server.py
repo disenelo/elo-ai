@@ -1933,6 +1933,17 @@ def _init_session():
                                 _mobile_last_ts = _ev_ts  # WO-FIX-MOBILE-REPLAY
                             except Exception as _mob_err:
                                 _poller_log.warning("WO-MOBILE-001: event handler error: %s", _mob_err)
+
+                    # WO-094: window_event_faculty — closed/opened/moved decisions
+                    elif _ev_type in ("window_closed", "window_opened", "window_moved"):
+                        try:
+                            from faculties.window_event_faculty import decide_window_event as _decide_win
+                            _win_decision = _decide_win(_ev, state=_elo_self)
+                            if _win_decision:
+                                _poller_log.debug("WO-094: window decision: %s", _win_decision)
+                        except Exception as _win_err:
+                            _poller_log.warning("WO-094: window_event_faculty error: %s", _win_err)
+
                 if _new_seq > _ack_consumed_seq:
                     _ack_consumed_seq = _new_seq
                     _wc(_ack_consumed_seq)
@@ -3007,7 +3018,8 @@ def _process_turn(raw: str) -> dict:
 
         g_ctx = graph_context(raw)
 
-        # ── WO-WKG-001: WKG claim injection via structured ContextItem rendering ──
+        # ── WO-WKG-004/WO-WKG-001: WKG claim injection via structured ContextItem rendering ──
+        # retrieve_wkg_context_items maps wkg_epistemic_class → EpistemicClass (see graph_loader.py)
         try:
             from knowledge.graph_loader import retrieve_wkg_context_items as _retrieve_wkg_ctx_items
             from memory.provenance import render_context_block as _render_ctx_block
