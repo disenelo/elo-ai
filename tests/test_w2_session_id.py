@@ -48,15 +48,20 @@ def test_w2_2_session_id_defined():
     err("W2-2: _SESSION_ID not defined at module level")
 
 
-# ── W2-3: _SESSION_ID is a numeric string ────────────────────────────────────
+# ── W2-3: _SESSION_ID is "S{n}" format (card 0082 F-2) ──────────────────────
 def test_w2_3_numeric_format():
     import runtime.reflection_faculty as rf
     sid = rf._SESSION_ID
-    if not sid.isdigit():
-        err(f"W2-3: _SESSION_ID={sid!r} is not a numeric string (expected unix-epoch integer)")
-    if len(sid) < 9:
-        err(f"W2-3: _SESSION_ID={sid!r} too short to be a unix timestamp")
-    ok(f"W2-3: _SESSION_ID={sid!r} is a valid unix-epoch numeric string")
+    # card 0082 F-2: format is "S{n}" — NOT pure-numeric — so D1 gate
+    # (faculties/learning/faculty.py _evidence_is_verified) can distinguish
+    # a real session ID from a process ID.
+    if not sid.startswith("S"):
+        err(f"W2-3: _SESSION_ID={sid!r} must start with 'S' (card 0082 F-2 format)")
+    if not sid[1:].isdigit():
+        err(f"W2-3: _SESSION_ID={sid!r} — suffix after 'S' must be numeric")
+    if len(sid) < 10:  # "S" + at least 9-digit timestamp
+        err(f"W2-3: _SESSION_ID={sid!r} too short (expected S + 9+ digit timestamp)")
+    ok(f"W2-3: _SESSION_ID={sid!r} is valid 'S{{n}}' format (card 0082 F-2)")
 
 
 # ── W2-4: _SESSION_ID stable across multiple imports ────────────────────────

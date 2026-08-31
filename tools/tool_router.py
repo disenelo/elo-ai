@@ -35,6 +35,8 @@ import re
 import logging
 from typing import Optional, Tuple
 
+from memory.provenance import CapabilityRecord, ExecutionTrace
+
 try:
     from tools.truth_sync       import agent as _agent_truth_sync
     from tools.spotify_agent    import agent as _agent_spotify, is_playlist_intent as _is_playlist_intent, is_search_play_intent as _is_search_play_intent
@@ -87,6 +89,35 @@ _logger.propagate = False
 _last_agent:   Optional[str] = None   # e.g. "weather", "wikipedia"
 _last_arg:     Optional[str] = None   # e.g. "London", "black holes"
 _last_weather_condition: str = ""    # WO-058: last fetched condition, published to blender_state.json
+
+# ── WO-005: per-turn ExecutionTrace ───────────────────────────────────────────
+_current_trace: Optional[ExecutionTrace] = None
+
+
+def begin_trace(turn_id: str, session_id: str) -> ExecutionTrace:
+    """WO-005: initialise a fresh ExecutionTrace for this turn."""
+    global _current_trace
+    _current_trace = ExecutionTrace(turn_id=turn_id, session_id=session_id)
+    return _current_trace
+
+
+def get_trace() -> Optional[ExecutionTrace]:
+    """WO-005: return the current turn's ExecutionTrace (None if begin_trace not called yet)."""
+    return _current_trace
+
+
+def _trace_executed(capability: str, query: str = "", result_summary: str = "") -> None:
+    """WO-005: append a CapabilityRecord to the current trace for a tool that ran."""
+    global _current_trace
+    if _current_trace is None:
+        return
+    _current_trace.capabilities_executed.append(CapabilityRecord(
+        capability=capability,
+        status="EXECUTED",
+        authority="RUNTIME_VERIFIED",
+        query=query or None,
+        result_summary=result_summary or None,
+    ))
 
 # Persistent location store — blender/user_location.json
 # set_location() writes here; any tool can read it.
@@ -1184,7 +1215,44 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
     Never raises — if an agent fails, falls through gracefully.
     """
     global _last_agent, _last_arg
-    _lower = user_input.lower()
+    _lower = user_input.lower().strip()
+
+    # ── WO-PLANETARY-KERNEL: Named intent shortcuts — /state /build /unstick ──
+    # These are format-instruction intents, not external tool calls.
+    # Each injects a [CONTEXT:] block telling eLo the required output format.
+    if _lower.startswith("/state") or re.search(
+        r"\b(what\s+state\s+am\s+i\s+in|what['']?s?\s+(?:my|the)\s+current\s+state"
+        r"|\bstate\s+check\b|\bnext\s+smallest\s+(?:useful\s+)?action\b)\b", _lower
+    ):
+        _state_ctx = (
+            "[FORMAT: Respond in exactly this structure — "
+            "STATE: <current state> / SIGNAL: <one-word signal> / "
+            "MODE: <BUILD|PLAY|EXPLORE|REFINE> / ACTION: <next smallest usable action>. "
+            "Four fields. In order. Nothing else.]"
+        )
+        return f"{_state_ctx}\n\n{user_input}", "planetary_state"
+
+    if _lower.startswith("/build") or re.search(
+        r"\bswitch\s+to\s+build\s+mode\b|\bgive\s+me\s+a\s+step\s+plan\b", _lower
+    ):
+        _build_ctx = (
+            "[FORMAT: BUILD MODE. Respond with: 'BUILD MODE active.' then a minimal "
+            "numbered step list — maximum 5 steps. Each step is one line. No padding. "
+            "No elaboration after the list.]"
+        )
+        return f"{_build_ctx}\n\n{user_input}", "planetary_build"
+
+    if _lower.startswith("/unstick") or re.search(
+        r"\bi['']?m\s+(?:overloaded|overwhelmed|stuck)\s*[—-]?\s*reduce"
+        r"|\boverloaded[,.]?\s+(?:give\s+me\s+one|reduce)"
+        r"|\bjust\s+(?:give\s+me\s+one|one\s+(?:thing|action|step|direction))\b", _lower
+    ):
+        _unstick_ctx = (
+            "[FORMAT: UNSTICK MODE. Respond with EXACTLY ONE LINE. "
+            "Format: '<one direction>. <one action>.' "
+            "No bullets. No list. No explanation. One sentence only.]"
+        )
+        return f"{_unstick_ctx}\n\n{user_input}", "planetary_unstick"
 
     # ── WO-018: fetch enabled capability IDs once per call ────────────────────
     # Registry is the single authority. Agents whose capability is disabled here
@@ -1489,6 +1557,27 @@ def enrich_from_plan(
                     ag_name,
                 )
                 continue
+
+        # WO-RS-004: vault_write requires save intent — strip without it
+        if ag_name == "vault_write":
+            try:
+                from tools.vault_writer import is_save_intent as _is_save_intent
+                _query_for_intent = ag_query or user_input
+                if not _is_save_intent(_query_for_intent):
+                    _logger.info(
+                        "WO-RS-004: vault_write STRIPPED — no save intent in query %r",
+                        _query_for_intent[:80],
+                    )
+                    if _current_trace is not None:
+                        _current_trace.capabilities_stripped.append(CapabilityRecord(
+                            capability="vault_write",
+                            status="STRIPPED_NO_SAVE_INTENT",
+                            authority="RUNTIME_VERIFIED",
+                            query=_query_for_intent[:200],
+                        ))
+                    continue
+            except Exception as _si_err:
+                _logger.warning("WO-RS-004: save-intent check failed: %s", _si_err)
 
         ag_fn = _AGENTS.get(ag_name)
         if ag_fn is None:

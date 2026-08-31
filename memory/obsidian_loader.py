@@ -137,7 +137,7 @@ def _build_pack(notes: list) -> dict:
     # derivatives and must not enter prompt injection as canonical identity material.
     # They are included as reference-only, clearly labelled.
     context_lines = []
-    for domain in ("identity", "universe", "ai-os", "game", "robot"):
+    for domain in ("relationship", "identity", "universe", "ai-os", "game", "robot"):
         domain_notes = by_domain.get(domain, [])
         if domain_notes:
             context_lines.append(f"[{domain.upper()}]")
@@ -210,6 +210,40 @@ def get_context_block(max_chars: int = 2000) -> str:
     """
     pack = load()
     return pack.get("context_block", "")[:max_chars]
+
+
+def get_context_items(max_chars: int = 4800, current_session_id: str = "") -> list:
+    """
+    WO-005: Return vault notes as ContextItem objects for structured provenance rendering.
+    Returns [] when vault is empty. Every item is a ContextItem (not a string or dict).
+    current_session_id is passed through to each ContextItem's session_id field.
+    """
+    from memory.provenance import (
+        ContextItem, EpistemicClass, AuthorityLevel, PersistenceClass,
+    )
+    pack = load()
+    notes = pack.get("notes", [])
+    items = []
+    remaining = max_chars
+    for note in notes:
+        content = note.get("content", "") if isinstance(note, dict) else str(note)
+        if not content:
+            continue
+        if remaining <= 0:
+            break
+        content = content[:remaining]
+        remaining -= len(content)
+        items.append(ContextItem(
+            content=content,
+            source="VAULT_PRIOR",
+            provenance="RETRIEVED",
+            timestamp=note.get("timestamp") if isinstance(note, dict) else None,
+            session_id=current_session_id or None,
+            epistemic_class=EpistemicClass.RETRIEVED_MEMORY,
+            persistence_class=PersistenceClass.PERSISTENT,
+            authority=AuthorityLevel.NON_CANONICAL,
+        ))
+    return items
 
 
 def invalidate_cache():

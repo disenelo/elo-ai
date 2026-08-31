@@ -85,6 +85,15 @@ def _vault_journal_path() -> str:
     return internal
 
 
+_current_session_id: str = ""
+
+
+def set_session_id(session_id: str) -> None:
+    """AC-GR12: set the session_id written into note frontmatter."""
+    global _current_session_id
+    _current_session_id = session_id
+
+
 def _note_content(title: str, content: str, raw_query: str) -> str:
     today = datetime.now().strftime("%Y-%m-%d")
     return f"""---
@@ -93,6 +102,8 @@ domain: journal
 tags: [user-note, saved, {today}]
 version: 0.1
 created: {today}
+epistemic_class: generated
+session_id: {_current_session_id}
 ---
 
 # {title}

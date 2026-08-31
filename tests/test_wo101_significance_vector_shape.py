@@ -43,25 +43,21 @@ class TestVectorShapeConsistency(unittest.TestCase):
         self.assertFalse(missing, f"Keys missing with outcome: {missing}")
 
     def test_no_outcome_body_dims_are_zero(self):
-        """ACK-only body dims (embodiment, efficiency, safety) must be 0.0 when no outcome.
-        reward = 0.70*outcome_terms + 0.30*overall; with outcome_terms=0, reward = 0.30*overall (nonzero)."""
+        """ACK-only body dims (embodiment, efficiency, safety, reward) must be 0.0 when no outcome.
+        ADR-Exec-005 D1: reward fires only on verified outcomes — 0 when outcome=None."""
         result = self._eval()
         self.assertEqual(result["embodiment"], 0.0, "embodiment must be 0 with no outcome")
         self.assertEqual(result["efficiency"], 0.0, "efficiency must be 0 with no outcome")
         self.assertEqual(result["safety"],     0.0, "safety must be 0 with no outcome")
-        # reward = 0.30 * overall when no outcome (outcome_terms=0)
-        expected_reward = round(0.30 * result["overall"], 4)
-        self.assertAlmostEqual(result["reward"], expected_reward, places=4,
-                               msg="reward must equal 0.30*overall when no outcome")
+        self.assertEqual(result["reward"],     0.0, "reward must be 0 with no outcome (ADR-Exec-005 D1)")
 
     def test_verified_false_outcome_dims_zero(self):
-        """verified=False => all outcome_terms = 0 => reward driven by meaning only."""
+        """verified=False => reward=0 (ADR-Exec-005 D1: no reward without verification)."""
         outcome = {"verified": False, "completion": "met", "ack_received": True,
                    "cost": {"seconds": 1.0, "legs": 1, "retries": 0}}
         result = self._eval(outcome=outcome)
-        # embodiment/efficiency/safety scored from ACK but outcome_terms=0
-        expected_reward = result["overall"] * 0.30
-        self.assertAlmostEqual(result["reward"], expected_reward, places=4)
+        # ADR-Exec-005 D1: unverified outcome → reward = 0
+        self.assertEqual(result["reward"], 0.0, "reward must be 0 when verified=False")
 
     def test_verified_true_reward_above_meaning_only(self):
         """A verified ACK outcome must score differently from no-outcome (reward path is real)."""

@@ -243,12 +243,16 @@ def evaluate(
         scores["embodiment"] = emb
         scores["efficiency"] = eff
         scores["safety"]     = safe
-        scores["reward"]     = _clamp(0.70 * outcome_terms + 0.30 * scores["overall"])
+        # ADR-Exec-005 D1: reward=0 when not verified; verified path scores outcome only
+        if not outcome.get("verified", False):
+            scores["reward"] = 0.0
+        else:
+            scores["reward"] = _clamp(0.70 * outcome_terms + 0.30 * scores["overall"])
     else:
         scores["embodiment"] = 0.0
         scores["efficiency"] = 0.0
         scores["safety"]     = 0.0
-        scores["reward"]     = _clamp(0.30 * scores["overall"])
+        scores["reward"]     = 0.0  # ADR-Exec-005 D1: reward only on verified outcomes
 
     return scores
 

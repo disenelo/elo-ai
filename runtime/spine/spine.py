@@ -403,6 +403,18 @@ def _executive_faculty(
     # This is the honest, useful result the card asked for.
     plan.lesson_id = ""
 
+    # W6: lesson attribution — closes LOOP-7.
+    # lesson_id is always set to the top recalled lesson's key when any lesson
+    # was recalled this turn. cal_reason is only amended when the Executive
+    # returned the default branch ("default — no stronger signal") — in that
+    # case the lesson is the authoritative reason for the outcome.
+    # ADR-Exec-005 D6: Executive ASKS — spine acts on what it asked for.
+    if _recalled_lessons:
+        _top = _recalled_lessons[0]
+        plan.lesson_id = _top.get("lesson_key", "")
+        if plan.cal_reason == "default — no stronger signal":
+            plan.cal_reason = f"lesson: {_top.get('statement', '')}"
+
     # ── System action decision ────────────────────────────────────────────────
     if system_det:
         action, arg = system_det
