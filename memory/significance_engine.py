@@ -231,7 +231,7 @@ def evaluate(
             except Exception:
                 pass
 
-    # WO-101 Part B: outcome dims only present when outcome is supplied (backwards compat).
+    # WO-101 Part B: outcome dims always present — zeroed when outcome is None.
     if outcome is not None:
         emb  = _score_embodiment(outcome)
         eff  = _score_efficiency(outcome, action)
@@ -244,6 +244,11 @@ def evaluate(
         scores["efficiency"] = eff
         scores["safety"]     = safe
         scores["reward"]     = _clamp(0.70 * outcome_terms + 0.30 * scores["overall"])
+    else:
+        scores["embodiment"] = 0.0
+        scores["efficiency"] = 0.0
+        scores["safety"]     = 0.0
+        scores["reward"]     = _clamp(0.30 * scores["overall"])
 
     return scores
 
