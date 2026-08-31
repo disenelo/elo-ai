@@ -23,6 +23,14 @@
 **Builder QUEUE remaining:** WO-PRES-002 (AT-2 Unity side — Unity-WO-B1 not dispatched), WO-PLANETARY-KERNEL (gated BA-02), WO-PHYSICAL-ELO-CAD, WO-MOBILE-PHASE2, WO-UNITY-GAZE, WO-VOICE-IO
 **Pending David:** BA-02, BA-03, BA-05, BA-06, BA-08, BA-09, BA-10 + Groq key rotation + K-7 seven form names (WO-GAME-006 blocker)
 
+## BOARD STATE UPDATE — 2026-08-31 (23rd pass — WO-PHYSICAL-ELO-CAD DONE)
+**Source:** Direct build execution. [VERIFIED 2026-08-31]
+**Actions this pass:**
+- **WO-PHYSICAL-ELO-CAD ✅ DONE** — Canonical STL/STEP reference models generated in `Output/RD-CAD/`. `elo_hand_mitten_claw.step` + `.stl` (120×80×50mm, 4mm wall, dual 3mm claw channels, pull-wire channel, 3× sensor recesses, 28mm wrist socket). `elo_neck_magnetic_housing.stl` (25mm ball reference + socket housing, 26mm ID, 270° capture, 2× wire channels, 40mm flange, 4× M3 at 30mm BC). `elo_body_shell_inflated_reference.stl` (220×160×120mm chibi form, 6mm wall, neck ring, 4× anchor bosses, bladder inlet). build123d generators co-located. `Output/RD-CAD/README.md` inventory created. WO card moved to DONE.
+- **verified_done: 119**
+**Pending David:** BA-02, BA-03, BA-05, BA-06, BA-08, BA-09, BA-10 + K-7 seven form names + K-7/Chunk FBX export
+**Builder QUEUE remaining:** WO-PLANETARY-KERNEL (gated BA-02), WO-VOICE-IO (awaiting L3 ratification), 0081/WO-CANON-XI (parity gate — needs live move data), WO-GAME-006 (K-7 form names)
+
 ## BOARD STATE UPDATE — 2026-08-31 (22nd pass — WO-LIFECYCLE DONE)
 **Source:** Direct build execution. [VERIFIED 2026-08-31]
 **Commit (eLo OS):** `093097e` — WO-LIFECYCLE: eLo Cognitive Lifecycle
