@@ -6662,4 +6662,31 @@ David ruling (2026-08-31): Groq and all providers are faculty/infrastructure —
 - WO-FACE-EMOTION-001 D-4 (Game): speech jaw sync — WAITING GAME SEAT
 - WO-CANON-XI parity (test_xi_ad2): WAITING Unity (brain_route/unity_route in route_memory.jsonl)
 
+### §48b QUEUE SWEEP — 2026-09-03
+
+Full Builder QUEUE audit — all tests run against every WO that has a test file:
+
+| WO | Tests | Result |
+|---|---|---|
+| WO-CCM-SPINE | test_wo_ccm_spine.py | ✅ 6/6 (pre-existing) |
+| WO-SP29 | test_wo_sp29_significance.py | ✅ 6/6 (pre-existing) |
+| WO-SP31-SP32 | test_sp31_sp32_self_initiation.py | ✅ 13/13 (pre-existing) |
+| WO-RESPONSE-GATE | test_wo_response_gate.py | ✅ 7/7 (pre-existing) |
+| WO-DREAM-STATE | test_wo_dream_state.py | ✅ 6/6 (pre-existing) |
+| WO-VISUAL-BRAINISER | test_wo_visual_brainiser.py | ✅ 6/6 (pre-existing) |
+| WO-CREATIVE-001 | test_wo_creative001_imagination_wiring.py | ✅ (suite pass) |
+| WO-CAP-001 | test_wo_cap_001_capability_memory.py | ✅ (suite pass) |
+| WO-PROVENANCE | test_wo_provenance.py | ✅ 7/7 — NEW THIS SESSION |
+| WO-CREATE-CAPABILITY | test_wo_create_capability.py | ✅ 6/6 — NEW THIS SESSION |
+| WO-112 | test_wo112_choose_confidence.py | ✅ (suite pass) |
+
+**Remaining Builder QUEUE items — not executable today:**
+- `0057_THE_4_SECOND_RULE`: Measurement card — requires David's eye on proposal before policy ships
+- `WO-VOICE-IO`: Gated — awaiting ratified SPEC_voice_io_*.md (spec must exist before Builder starts)
+- `WO-CONV-001`: Sequence-locked behind WO-RS-001..004 + WO-WKG-001..002 + WO-SPG-001..002
+- `Unity-WO-B1`: Unity/Designer lane — body_win_id emission from Unity side
+- `0081_WO-CANON-XI`: WAITING Unity (brain_route/unity_route)
+
+**Total verified_done: 1536 passed, 0 new failures**
+
 *Board / eLo OS Seat · 2026-09-03*
