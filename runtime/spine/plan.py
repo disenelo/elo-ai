@@ -142,6 +142,27 @@ class CognitivePlan:
     # SpeechLicence.violations = fields eLo must not assert this turn.
     speech_licence:       "object | None" = None
 
+    # ── WO-SOURCE-002: cognitive principles check ───────────────────────────
+    principle_violations: list            = field(default_factory=list)
+
+    # ── WO-SOURCE-003: response gate result ────────────────────────────────
+    gate_result:          "dict | None"   = None
+
+    # ── WO-STABILITY-LAW-001: stability law P8/P9 ──────────────────────────
+    plan_complexity_score: float          = 0.0
+    stability_law_active:  bool           = False
+    leaf_on_water_active:  bool           = False
+
+    # ── WO-VESSEL-LOOP-001: vessel phase tracking ────────────────────────────
+    vessel_phase:              str        = "EXPRESS"
+    max_response_complexity:   str        = ""
+
+    # ── WO-INNER-CHILD-001: inner child mode flag ───────────────────────────
+    cognitive_mode_inner_child: bool      = False
+
+    # ── WO-CONV-AUTHORITY-001: correction detection ─────────────────────────
+    explicit_correction_detected: bool    = False
+
     def needs_llm(self) -> bool:
         return not self.direct_response and not self.system_immediate and not self.system_pending
 

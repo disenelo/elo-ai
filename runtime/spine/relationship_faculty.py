@@ -58,6 +58,10 @@ class RelationshipContext:
     # Never changes reasoning — only warmth and register of expression
     expression_posture: str   = "warm"
 
+    # WO-RELATIONSHIP-STYLE: relational developmental stage
+    # new | developing | established | in_conflict | post_conflict
+    relationship_mode:  str   = "developing"
+
     # Confidence in this relationship model (0.0–1.0)
     confidence:         float = 0.85
 

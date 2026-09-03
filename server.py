@@ -2900,6 +2900,12 @@ def _process_turn(raw: str) -> dict:
                 "confidence":    _plan.confidence,
                 # W6: lesson key that contributed this turn (or "")
                 "lesson_id":     getattr(_plan, "lesson_id", ""),
+                # WO-VESSEL-LOOP-001 / WO-INNER-CHILD-001 / WO-STABILITY-LAW-001
+                "vessel_phase":              getattr(_plan, "vessel_phase", "FEEL"),
+                "cognitive_mode_inner_child": getattr(_plan, "cognitive_mode_inner_child", False),
+                "stability_law_active":      getattr(_plan, "stability_law_active", False),
+                "leaf_on_water_active":      getattr(_plan, "leaf_on_water_active", False),
+                "plan_complexity_score":     getattr(_plan, "plan_complexity_score", 0.0),
             }
             # WO-105: collect last-turn spine domain health for /health endpoint
             global _spine_degraded
@@ -5068,6 +5074,25 @@ def _process_turn(raw: str) -> dict:
                 response = _rg_result.revised_response
         except Exception as _rg_err:
             _logging.warning("response_gate failed (non-fatal): %s", _rg_err)
+
+        # WO-SOURCE-003 D-3: hedge map defined; fires only on factual answers with
+        # external sensor violations — NOT on every conversational turn (no-ladder rule).
+        _EXTERNAL_SENSOR_FIELDS = frozenset({"active_window", "nearby", "foreground_app", "desktop_state"})
+        _hedge_map = {
+            "unknown":  "I'm not certain, but — ",
+            "possible": "As far as I can tell — ",
+            "inferred": "Based on what I'm observing — ",
+        }
+        _speech_lic_h = getattr(_plan, "speech_licence", None) if _plan is not None else None
+        _conv_action_h = getattr(_plan, "conversation_action", "") if _plan is not None else ""
+        _violation_fields_h = set(getattr(_speech_lic_h, "violations", ())) if _speech_lic_h else set()
+        if (_speech_lic_h is not None
+                and bool(_violation_fields_h & _EXTERNAL_SENSOR_FIELDS)
+                and _conv_action_h == "answer"):
+            _min_tier_h = getattr(_speech_lic_h, "min_tier", "unknown")
+            _hedge_h = _hedge_map.get(_min_tier_h.lower(), "I'm not certain, but — ")
+            if not response.startswith(_hedge_h):
+                response = _hedge_h + response
 
         # ── WO-070: shadow capture — passive turn logging (non-blocking) ─────────
         # Called here (post-scrub) so elo_raw_gen and elo_final can differ.

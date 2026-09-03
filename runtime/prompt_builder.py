@@ -330,6 +330,20 @@ def build(
     sections: list[str] = []
     _push("living_presence_spec", load_living_presence_spec())
 
+    # ── WO-SOURCE-001: Identity Anchor — who eLo IS (not what to say) ─────
+    try:
+        from runtime.identity_kernel import IdentityKernel as _IK
+        _push("identity_anchor", _IK.load().as_anchor_block())
+    except Exception:
+        pass
+
+    # ── WO-VOICE-REGISTER-001: Linguistic register — always present ────────
+    try:
+        from runtime.voice_register import get_register_block as _grb
+        _push("voice_register", _grb())
+    except Exception:
+        pass
+
     if personality_block.strip():
         _push("personality_block", personality_block)
 
@@ -402,6 +416,24 @@ def build(
         if vault_context.strip():
             _push("world_memory", f"[WORLD MEMORY]\n{vault_context[:1200]}")
 
+    # WO-SOURCE-004/005: DISENELO visual-world language block
+    # Injected when the user's input references eLo's world, brand colours, or art
+    _WORLD_SIGNALS = (
+        "elo", "elo's", "elo world", "safety colour", "safety color",
+        "disenelo", "sugarcore", "k-7", "chunk", "neopixel", "teal",
+        "coral", "amber", "violet", "orb", "glow", "presence colour",
+        "colour moment", "color moment", "world language",
+    )
+    _ui_lower = user_input.lower() if user_input else ""
+    if any(sig in _ui_lower for sig in _WORLD_SIGNALS):
+        _push("disenelo_world_language", (
+            "[DISENELO WORLD LANGUAGE]\n"
+            "The DISENELO world has its own visual language. Colours are states, not decoration.\n"
+            "idle=teal · listening=white · thinking=amber · speaking=coral · calm=violet\n"
+            "Safety is a colour — coral. Curiosity is amber. Rest is violet.\n"
+            "eLo exists at the centre of this language. Every surface speaks it."
+        ))
+
     # executive directive — explicit action + tone for this response
     if exec_decision:
         tone       = exec_decision.get("tone", "CHILDLIKE-WISE")
@@ -440,6 +472,22 @@ def build(
         ]
         if stable:
             directive_lines.append("Stability mode: active — stabilise first, simplify, no extra questions.")
+
+        # ── WO-VESSEL-LOOP-001: vessel phase ─────────────────────────────
+        _vessel = exec_decision.get("vessel_phase", "")
+        if _vessel:
+            directive_lines.append(f"vessel: {_vessel}")
+
+        # ── WO-INNER-CHILD-001: inner child mode ─────────────────────────
+        if exec_decision.get("cognitive_mode_inner_child"):
+            directive_lines.append("mode: inner-child — wonder first; approach with curiosity, not conclusions")
+
+        # ── WO-STABILITY-LAW-001: stability law active ───────────────────
+        if exec_decision.get("stability_law_active"):
+            directive_lines.append("stability: reduce — one line only; compress to single action")
+        elif exec_decision.get("leaf_on_water_active"):
+            directive_lines.append("stability: leaf-on-water — gentle, present, no more than two thoughts")
+
         _push("executive_directive", "\n".join(directive_lines))
 
     assembled = "\n\n".join(sections)
@@ -449,12 +497,32 @@ def build(
     _total_est_tokens = sum(b["est_tokens"] for b in _audit_blocks) if _audit_blocks else 0
     for b in _audit_blocks:
         b["pct_tokens"] = round(100.0 * b["est_tokens"] / _total_est_tokens, 1) if _total_est_tokens else 0.0
+    # WO-IDENTITY-INTEGRITY-001: scan assembled prompt for required identity blocks
+    try:
+        from runtime.identity_integrity import check_identity_minimum as _cim
+        _ir = _cim(assembled)
+        if _ir.context_pressure and _ir.recovery_text:
+            assembled = _ir.recovery_text + "\n\n" + assembled
+        _ii_status  = _ir.status
+        _ii_missing = _ir.missing_blocks
+        _ii_pct     = _ir.coverage_pct
+        _ii_pressure = _ir.context_pressure
+    except Exception:
+        _ii_status   = "INTACT"
+        _ii_missing  = []
+        _ii_pct      = 100.0
+        _ii_pressure = False
+
     _last_prompt_audit.clear()
     _last_prompt_audit.update({
-        "blocks":            _audit_blocks,
-        "total_chars":       _total_chars,
-        "total_est_tokens":  _total_est_tokens,
-        "assembled_chars":   len(assembled),
+        "blocks":                    _audit_blocks,
+        "total_chars":               _total_chars,
+        "total_est_tokens":          _total_est_tokens,
+        "assembled_chars":           len(assembled),
+        "identity_status":           _ii_status,
+        "identity_missing":          _ii_missing,
+        "identity_coverage_pct":     _ii_pct,
+        "context_pressure_detected": _ii_pressure,
     })
 
     return assembled

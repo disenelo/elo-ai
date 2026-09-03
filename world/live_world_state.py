@@ -562,7 +562,7 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
         edge=str(_spatial_raw.get("edge", "")),
         on_window=bool(_spatial_raw.get("on_window", False)),
         embodiment=str(_spatial_raw.get("embodiment", "")),
-        route=tuple(_spatial_raw.get("last_move", {}).get("route", ())),
+        route=tuple((_spatial_raw.get("last_move") or {}).get("route", ())),
     )
 
     # ── Ch.3 §3.2: copy PerceptionResult into domain slices (verbatim, no re-interpret) ──

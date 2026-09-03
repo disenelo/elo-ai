@@ -207,6 +207,7 @@ def _executive_faculty(
     affordances     = None,  # surface_affordances from CognitiveSnapshot
     embodiment_state = None, # WO-SPINE-002: prior-turn EmbodimentState | None
     execution_report = None, # WO-SPINE-002: prior-turn ExecutionReport | None
+    identity         = None, # WO-SOURCE-001: IdentityKernel | None — advisory context
 ) -> CognitivePlan:
     """
     The Executive is the only entity permitted to make decisions.
@@ -389,6 +390,50 @@ def _executive_faculty(
             plan.confidence = float(exec_out["confidence"])
         if not plan.register:
             plan.register = exec_out.get("register", "")
+
+        # ── WO-STABILITY-LAW-001: complexity scoring + P8/P9 gates ──────────
+        # Complexity = count of active capabilities + significant contexts.
+        _cap_count  = len(plan.capabilities)
+        _ctx_weight = 1 if (cognitive_state and getattr(cognitive_state, "wkg_context", "")) else 0
+        _score = float(_cap_count + _ctx_weight)
+        plan.plan_complexity_score = _score
+        if _score >= 6:
+            plan.stability_law_active = True
+            plan.leaf_on_water_active = False
+            _log.debug("stability_law: triggered — stability_law_triggered=True score=%.1f", _score)
+        elif 3 <= _score < 6:
+            plan.leaf_on_water_active = True
+            plan.stability_law_active = False
+        else:
+            plan.stability_law_active = False
+            plan.leaf_on_water_active = False
+
+        # ── WO-SOURCE-002: cognitive principles check (advisory, never blocks) ─
+        try:
+            from runtime.cognitive_principles import PRINCIPLES as _CP
+            plan.principle_violations = _CP.check(plan)
+            if plan.principle_violations:
+                _log.debug("principle_violations: %s", plan.principle_violations)
+        except Exception as _cp_err:
+            _log.debug("cognitive_principles check failed (non-fatal): %s", _cp_err)
+
+        # ── WO-INNER-CHILD-001: inner child mode (curiosity threshold) ────────
+        _curiosity = getattr(cognitive_state, "curiosity_score", 0.0) if cognitive_state else 0.0
+        _is_play   = (plan.mode or "").upper() in ("PLAY", "EXPLORE")
+        _is_dream  = plan.conversation_action in ("explore",)
+        plan.cognitive_mode_inner_child = bool(_curiosity > 0.7 or (_is_play and _is_dream))
+
+        # ── WO-VESSEL-LOOP-001: vessel phase ───────────────────────────────
+        if not plan.vessel_phase or plan.vessel_phase == "FEEL":
+            if plan.stability_law_active:
+                plan.vessel_phase = "STABILISE"
+            elif plan.conversation_action in ("build", "connect"):
+                plan.vessel_phase = "TRANSFORM"
+            elif plan.conversation_action in ("reflect", "witness"):
+                plan.vessel_phase = "EXPRESS"
+            elif plan.conversation_action == "ground":
+                plan.vessel_phase = "STABILISE"
+
     except Exception as e:
         _log.warning("executive_faculty/exec_decide FAILED: %s", e)
 
@@ -454,7 +499,8 @@ def _executive_faculty(
             _world_dict["active_window"] = getattr(_desktop, "active_app", "") if _desktop else ""
         if cognitive_state is not None:
             _world_dict["wkg_context"] = getattr(cognitive_state, "wkg_context", "")
-            _world_dict["mood"]        = getattr(cognitive_state, "emotional_tag", "")
+            _et = getattr(cognitive_state, "emotional_tag", None)
+            _world_dict["mood"] = getattr(_et, "dominant_emotion", "neutral") if _et else "neutral"
         _tfr_results, _speech_licence = _TFR().evaluate(_world_dict, cognitive_state)
         plan.speech_licence = _speech_licence
         if _speech_licence.violations:

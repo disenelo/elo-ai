@@ -112,6 +112,7 @@ _SOCIAL_PHRASES   = ["nice to see you", "good to see you", "great to see you",
                      "good to be back", "nice to be back"]
 
 # "how are you" variants — detected as whole-input or short social check-in
+# Includes South London / UK conversational equivalents
 _HOW_ARE_YOU = {
     "how are you", "how are you doing", "how are you feeling",
     "how are things", "how's things", "hows things",
@@ -119,6 +120,12 @@ _HOW_ARE_YOU = {
     "you ok", "you okay", "you alright",
     "how's it going", "hows it going", "how is it going",
     "how are we", "how are we doing",
+    # South London / UK conversational greetings — same register as "how are you"
+    "what you saying", "what you sayin", "what are you saying",
+    "what's good", "whats good", "you good",
+    "what's up", "whats up", "what's happening", "whats happening",
+    "what's cracking", "whats cracking", "what's good with you",
+    "you alright yeah",
 }
 
 # Pure greetings — match the entire input only, not substrings
@@ -164,10 +171,13 @@ def _conversation_action(
     if _bare in _PURE_GREETINGS:
         return {"action": "celebrate", "confidence": 0.85, "reason": "pure greeting"}
 
-    # "How are you" check-ins — direct pool, not LLM
+    # "How are you" check-ins — direct pool + substring match for prefixed inputs.
+    # e.g. "Hey eLo, what you saying?" → bare_q="hey elo, what you saying" → phrase hit
     _bare_q = _bare.rstrip("?")
     if _bare_q in _HOW_ARE_YOU or _bare in _HOW_ARE_YOU:
         return {"action": "celebrate", "confidence": 0.85, "reason": "how are you"}
+    if len(_bare) < 60 and any(_p in _bare_q for _p in _HOW_ARE_YOU):
+        return {"action": "celebrate", "confidence": 0.82, "reason": "how are you (prefixed)"}
 
     # Social greetings (no "?") — brief warm acknowledgement, not deep interpretation
     if (any(p in t for p in _SOCIAL_PHRASES)

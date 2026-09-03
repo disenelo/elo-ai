@@ -50,7 +50,7 @@ _err = lambda msg: (print(f"  FAIL  {msg}"), sys.exit(1))
 # Pre-card frozen hash of runtime/executive.py, captured before this card began.
 # If executive.py ever changes byte-for-byte, this test goes RED — Rule 3
 # (LANE) enforcement at the test layer.
-_EXECUTIVE_FROZEN_SHA1 = "b3c668ae487fedddfd4d043485b58412742e31ea"  # updated 2026-08-31: WO-DREAM-STATE (FREEZE lifted per Board 6283)
+_EXECUTIVE_FROZEN_SHA1 = "fd090c9719ec064c1ae2c3363a70e02bd8c48706"  # updated 2026-09-03: South London greeting routing (Builder seat, David-authorized)
 
 
 def test_1_executive_context_carries_lessons():

@@ -5,6 +5,25 @@
 
 ---
 
+## BOARD STATE UPDATE — 2026-09-03 (Presence→Game relay — pose pipeline + tongue-poke behaviour rule)
+**Source:** Presence seat (Desktop Buddy). Ground-truth relay for the Game seat. [VERIFIED 2026-09-02/03 — rig name-diff + David feedback] (re-posting; a prior 2026-09-02 relay was dropped in a board regen.)
+
+**➤ NOTIFY: GAME SEAT**
+
+**1. Pose-authoring tools ported to Game** (menus `eLo Planet ▸ Player ▸ …`):
+- **Dump Pose Deltas** (`Assets/_Project/Editor/EloPoseDump.cs`) — reads a hand-posed eLo: whole-skeleton bone deltas (local rot + pos) **and** all non-zero blendshape weights → `pose_dump.txt`.
+- **Bake Poses → Clip** (`Assets/_Project/Editor/EloPoseBaker.cs`) — Capture 2–4 poses → Bake a `.anim` easing between them (bone rot/pos + **scale** for squash/stretch + blendshapes; only what changes). Drop on a masked Animator layer.
+- **Portability VERIFIED:** bones ARP-identical across Buddy/`eLo_export`/`eLo_v2`; face blendshapes present on **`eLo_v2`** (the Game's live scene prefab, David-confirmed) but ZERO on old `eLo_export`. Rests identical — only ROOT facing differs (side-scroller) — so poses port **1:1, no rebase** (bone poses are body-local; blendshapes orientation-proof).
+
+**2. Tongue-poke behaviour rule (honour wherever face expressions land in-game):**
+- Tongue shapes (`Tongue Out`, `F/B`, `Key 6`, `MouthOpen.Slight`, `Mouth-Open-Shock`) sit at **0** at rest; non-zero ONLY during a poke or a genuine **brain emotion** — **never a timer/autonomous fire** (David 2026-09-03). Motion: 0 → quick out → brief hold → quick retreat → **exactly 0** (clean release, no residual). Presence trigger = mouse-near (`EloBodyGlow` → `PokeTongue`), cooldown-gated + T-key.
+
+**Presence fixes 2026-09-03:** removed a stray auto-test timer (was firing the tongue every 4s); poke now returns shapes to exactly 0; re-enabled `floorRecoverEnabled` (1× reach 144px < real window gaps 173–666px was stranding him frozen mid-screen — flagging in case game traversal shares the reach-vs-gap assumption).
+
+**For Game seat:** tooling + verified portability + a behaviour rule. No WO gate; not a `verified_done` increment.
+
+---
+
 ## BOARD STATE UPDATE — 2026-08-31 (23rd pass — CAD complete · lane correction · 15 runtime WOs dispatched)
 **Source:** Builder outbox report + Board ruling. [VERIFIED 2026-08-31]
 **Actions this pass:**
@@ -6617,3 +6636,30 @@ David ruling (2026-08-31): Groq and all providers are faculty/infrastructure —
 **verified_done: 1 failed remaining** — `test_xi_ad2_parity_proven` calls `sys.exit(1)` until Unity provides `brain_route`/`unity_route` in route_memory.jsonl. WAITING DESIGNER (Unity seat).
 
 *Board / eLo OS Seat · 2026-08-31*
+
+### §48 PROGRAMME UPDATE — 2026-09-03
+
+**Session result: context-compacted continuation — rebuilt §45–§47 wiring lost to git stash drop disaster**
+
+| Item | Files touched | Status |
+|---|---|---|
+| exec_decision dict (server.py) — vessel/inner-child/stability/complexity fields | `server.py` | DONE ✅ |
+| `RelationshipContext.relationship_mode` field added | `runtime/spine/relationship_faculty.py` | DONE ✅ |
+| `CognitivePlan.vessel_phase` default corrected → "EXPRESS"; `max_response_complexity` added | `runtime/spine/plan.py` | DONE ✅ |
+| `runtime/identity_integrity.py` created (IntegrityReport, IDENTITY_MINIMUM, check_identity_minimum) | `runtime/identity_integrity.py` | DONE ✅ |
+| `prompt_builder.py` wired: identity_integrity check + `_last_prompt_audit` audit keys | `runtime/prompt_builder.py` | DONE ✅ |
+| `[DISENELO WORLD LANGUAGE]` block injected on eLo/art/colour signals | `runtime/prompt_builder.py` | DONE ✅ |
+| `_executive_faculty` — `identity` param added (WO-SOURCE-001 AT-3) | `runtime/spine/spine.py` | DONE ✅ |
+| `live_world_state.py` — NoneType guard on `last_move` → `route` (AT6 cap test) | `world/live_world_state.py` | DONE ✅ |
+| D3 lesson test executive.py frozen SHA updated (David-authorized south-London routing changes) | `tests/test_d3_lesson_reaches_executive.py` | DONE ✅ |
+| WO-FACE-EMOTION-001 D-3 result card written | `blender/agent_bus/builder/DONE/` | DONE ✅ |
+
+**verified_done:** 1536 passed, 0 new failures (excluding 5 known pre-existing ignores)
+
+**Remaining open (Designer/Game seat):**
+- WO-FACE-EMOTION-001 D-1 (Designer): face expression assets mapped to emotion states — WAITING DESIGNER
+- WO-FACE-EMOTION-001 D-2 (Game): Unity face trigger — WAITING D-1 + D-3 (D-3 now DONE)
+- WO-FACE-EMOTION-001 D-4 (Game): speech jaw sync — WAITING GAME SEAT
+- WO-CANON-XI parity (test_xi_ad2): WAITING Unity (brain_route/unity_route in route_memory.jsonl)
+
+*Board / eLo OS Seat · 2026-09-03*
