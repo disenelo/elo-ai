@@ -66,6 +66,7 @@ _TIER_REFLEX         = 0   # handled before router — Tier 0 must never reach r
 _TIER_CONVERSATIONAL = 1   # cheapest capable (social, ambient, short answers)
 _TIER_REASONING      = 2   # capable cloud (build, plan, challenge, reflect)
 _TIER_DEEP           = 3   # premium (diagnose, deep, long analysis)
+_TIER_CREATE         = 4   # WO-CREATE-CAPABILITY: file/draft generation (REASONING-grade, L3 gate)
 
 # ── CT0031: Ollama timing telemetry — populated by _ollama_call each turn ─────
 _last_ollama_metrics: dict = {}
@@ -91,6 +92,7 @@ _TIER_CAPABILITY: dict[int, str] = {
     _TIER_CONVERSATIONAL: "language_generation",
     _TIER_REASONING:      "language_generation_with_reasoning",
     _TIER_DEEP:           "language_generation_deep_analysis",
+    _TIER_CREATE:         "language_generation_create_draft",  # WO-CREATE-CAPABILITY
 }
 
 # D-1 WO-ROUTER-001: candidate providers per tier — which providers can satisfy this capability.

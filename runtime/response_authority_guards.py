@@ -1,24 +1,23 @@
 """
-runtime/response_authority_guards.py — WO-GUARD-001: Response Authority Guard Chain
-3 guards inserted after existing 4 guards, before publication.
+runtime/response_authority_guards.py — WO-GUARD-001 + WO-PROVENANCE
+Response Authority Guard Chain: D-1, D-2, D-3.
 
 D-1: Current-user-reality override
-D-2: Tool provenance
-D-3: Contradiction / resurrection
+D-2: Tool provenance (now injects EpistemicClass.GENERATED for D-3)
+D-3: Contradiction / resurrection (now aware of EpistemicClass)
 
 Authority: CA ruling 2026-08-27 + David L3 Convergence Directive
 Each guard: wrap in try/except — failure must not block response.
-
-# PROVENANCE CONTRACT — WO-GUARD-001
-# D-2 and D-3 need: epistemic_class, authority_level, contradiction_flag
-# memory/provenance.py defines EpistemicClass / AuthorityLevel — not yet wired.
-# When wired, replace stub lookups here with provenance.py calls.
-# This is the coordination boundary — do not block on it.
 """
 from __future__ import annotations
 
 import logging
 import re
+
+try:
+    from memory.provenance import EpistemicClass as _EC
+except Exception:
+    _EC = None
 
 _log = logging.getLogger("response_authority_guards")
 
@@ -131,12 +130,35 @@ _CORRECTION_SIGNAL = re.compile(
 _MEMORY_QUALIFIER = "I may be misremembering, but "
 
 
-def guard_d3_contradiction_resurrection(response: str, session_summaries: list) -> str:
-    """D-3: Prevent resurrecting claims already contradicted in session."""
+def guard_d3_contradiction_resurrection(
+    response: str,
+    session_summaries: list,
+    memory_provenance: "dict | None" = None,
+) -> str:
+    """D-3: Prevent resurrecting claims already contradicted in session.
+    WO-PROVENANCE: also qualifies claims when epistemic_class is INFERRED or GENERATED.
+    """
     try:
         if not _MEMORY_CLAIM.search(response):
             return response
 
+        # WO-PROVENANCE: epistemic-class qualification (independent of session corrections)
+        _eclass = None
+        if memory_provenance and _EC is not None:
+            _eclass = memory_provenance.get("_epistemic_class")
+
+        if _eclass is not None:
+            _inferred_classes = {_EC.INFERRED, _EC.GENERATED} if _EC else set()
+            _canonical_classes = {_EC.CANONICAL} if _EC else set()
+            if _eclass in _inferred_classes:
+                def _qualify_epistemic(m: re.Match) -> str:
+                    return "I think " + m.group(0).lower()
+                _log.warning("D-3: INFERRED/GENERATED epistemic class — qualifying memory claim")
+                return _MEMORY_CLAIM.sub(_qualify_epistemic, response, count=1)
+            if _eclass in _canonical_classes:
+                return response  # CANONICAL claims pass unmodified
+
+        # Contradiction-based qualification (session correction signal)
         recent_user_inputs = [
             s.get("user", "")
             for s in session_summaries[-4:]
@@ -155,8 +177,7 @@ def guard_d3_contradiction_resurrection(response: str, session_summaries: list) 
         def _qualify_memory(m: re.Match) -> str:
             return _MEMORY_QUALIFIER + m.group(0).lower()
 
-        qualified = _MEMORY_CLAIM.sub(_qualify_memory, response, count=1)
-        return qualified
+        return _MEMORY_CLAIM.sub(_qualify_memory, response, count=1)
     except Exception as _e:
         _log.warning("D-3 guard exception (non-fatal): %s", _e)
         return response
@@ -168,9 +189,17 @@ def apply_authority_guards(
     response: str,
     session_summaries: list,
     tool_agent: str = "",
+    memory_provenance: "dict | None" = None,
 ) -> str:
-    """Apply D-1, D-2, D-3 in sequence. Each guard is independently wrapped."""
+    """Apply D-1, D-2, D-3 in sequence. Each guard is independently wrapped.
+    WO-PROVENANCE: D-2 injects EpistemicClass.GENERATED when a tool ran,
+    which D-3 then uses to qualify memory claims.
+    """
     response = guard_d1_current_user_reality(response, session_summaries)
     response = guard_d2_tool_provenance(response, tool_agent)
-    response = guard_d3_contradiction_resurrection(response, session_summaries)
+    # D-2 → D-3 provenance thread: tool-agent output is GENERATED, never VERIFIED
+    _d3_provenance = memory_provenance
+    if tool_agent and _EC is not None:
+        _d3_provenance = {"_epistemic_class": _EC.GENERATED}
+    response = guard_d3_contradiction_resurrection(response, session_summaries, _d3_provenance)
     return response
