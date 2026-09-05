@@ -403,6 +403,20 @@ def run():
         except Exception:
             pass
 
+        # WO-112: decision journal — record every turn with confidence + candidates
+        try:
+            from self.decision_journal import record as _dj_record
+            _dj_record(
+                turn=raw,
+                action=_action,
+                exec_decision=exec_decision,
+                backend=backend_name,
+                outcome="success",
+                trigger_source="user_message",
+            )
+        except Exception:
+            pass
+
         # Step 9: AVATAR — non-blocking, best-effort
         _presence = {}
         try:

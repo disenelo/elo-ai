@@ -151,6 +151,88 @@ _IMPERATIVE_PREFIXES = (
 )
 
 
+def _score_candidates(
+    user_input: str,
+    intent:     str,
+    valence:    str,
+    momentum:   str,
+) -> list[dict]:
+    """Score all 9 CAL actions against current signals. Used by the journal — does NOT change the decision.
+    Returns list of {action, utility} sorted descending; only actions with utility > 0 included."""
+    t = user_input.lower()
+    _bare = t.strip().rstrip("!.,")
+    _bare_q = _bare.rstrip("?")
+    is_question = t.strip().endswith("?") or any(
+        t.strip().startswith(w) for w in ("what ", "how ", "why ", "who ", "when ", "where ")
+    )
+    s = {a: 0.0 for a in _CAL_ACTIONS}
+
+    # answer
+    if _bare in _PURE_GREETINGS or _bare_q in _HOW_ARE_YOU or _bare in _HOW_ARE_YOU:
+        s["celebrate"] = max(s["celebrate"], 0.85)
+    if any(p in t for p in _DEMO_PHRASES):
+        s["answer"] = max(s["answer"], 0.88)
+    if t.strip().endswith("?") and any(p in t for p in _CAPABILITY_PHRASES):
+        s["answer"] = max(s["answer"], 0.92)
+    if any(t.strip().startswith(p) for p in _IMPERATIVE_PREFIXES):
+        s["answer"] = max(s["answer"], 0.9)
+    if intent in ("inquiry", "recall") and is_question:
+        s["answer"] = max(s["answer"], 0.95)
+
+    # build
+    if intent == "creation" and valence not in ("negative_low", "negative_high"):
+        s["build"] = max(s["build"], 0.8)
+    if any(p in t for p in _BUILD_PHRASES):
+        s["build"] = max(s["build"], 0.9)
+    if momentum == "building" and valence not in ("negative_low", "negative_high"):
+        s["build"] = max(s["build"], 0.65)
+
+    # celebrate
+    if len(_bare) < 60 and any(_p in _bare_q for _p in _HOW_ARE_YOU):
+        s["celebrate"] = max(s["celebrate"], 0.82)
+    if any(p in t for p in _SOCIAL_PHRASES) and not t.strip().endswith("?") and len(t.strip()) < 60:
+        s["celebrate"] = max(s["celebrate"], 0.8)
+    _affirm_short = len(t.strip()) < 35
+    if _affirm_short and any(p in t for p in _SHORT_AFFIRM):
+        s["celebrate"] = max(s["celebrate"], 0.8)
+    if valence == "positive_high" and momentum == "building":
+        s["celebrate"] = max(s["celebrate"], 0.85)
+    if any(p in t for p in _CELEBRATE_PHRASES):
+        s["celebrate"] = max(s["celebrate"], 0.8)
+    if valence in ("positive_high", "positive_low") and intent in ("conversation", "emotional"):
+        s["celebrate"] = max(s["celebrate"], 0.7)
+
+    # connect
+    if any(p in t for p in _CONNECT_PHRASES):
+        s["connect"] = max(s["connect"], 0.9)
+
+    # reflect
+    if intent == "emotional" and valence == "neutral":
+        s["reflect"] = max(s["reflect"], 0.7)
+
+    # ground
+    if intent in ("emotional", "stabilise") and valence in ("negative_low", "negative_high"):
+        s["ground"] = max(s["ground"], 0.9)
+    if momentum == "stuck" or intent == "stabilise":
+        s["ground"] = max(s["ground"], 0.85)
+    if valence in ("negative_low", "negative_high"):
+        s["ground"] = max(s["ground"], 0.8)
+
+    # challenge
+    if any(p in t for p in _CHALLENGE_PHRASES):
+        s["challenge"] = max(s["challenge"], 0.75)
+
+    # witness
+    if any(p in t for p in _WITNESS_PHRASES):
+        s["witness"] = max(s["witness"], 0.8)
+
+    return [
+        {"action": a, "utility": round(u, 3)}
+        for a, u in sorted(s.items(), key=lambda kv: -kv[1])
+        if u > 0.0
+    ]
+
+
 def _conversation_action(
     user_input: str,
     intent:     str,
@@ -160,98 +242,102 @@ def _conversation_action(
     """
     Conversation Action Layer — decides what eLo should DO this turn.
 
-    Returns dict with action, confidence, reason.
+    Returns dict with action, confidence, reason, candidates.
+    candidates = full scored list from _score_candidates — for the journal only, does not change the decision.
 
     Priority: ANSWER > BUILD > CONNECT > CELEBRATE > REFLECT > GROUND > CHALLENGE > WITNESS > SILENCE
     """
     t = user_input.lower()
     _bare = t.strip().rstrip("!.,")
+    # Compute candidates once — injected into every return so the journal always has the full picture.
+    _cands = _score_candidates(user_input, intent, valence, momentum)
 
     # Pure greetings — whole-input match only ("hey", "hello", "hi there", etc.)
     if _bare in _PURE_GREETINGS:
-        return {"action": "celebrate", "confidence": 0.85, "reason": "pure greeting"}
+        return {"action": "celebrate", "confidence": 0.85, "reason": "pure greeting", "candidates": _cands}
 
     # "How are you" check-ins — direct pool + substring match for prefixed inputs.
     # e.g. "Hey eLo, what you saying?" → bare_q="hey elo, what you saying" → phrase hit
     _bare_q = _bare.rstrip("?")
     if _bare_q in _HOW_ARE_YOU or _bare in _HOW_ARE_YOU:
-        return {"action": "celebrate", "confidence": 0.85, "reason": "how are you"}
+        return {"action": "celebrate", "confidence": 0.85, "reason": "how are you", "candidates": _cands}
     if len(_bare) < 60 and any(_p in _bare_q for _p in _HOW_ARE_YOU):
-        return {"action": "celebrate", "confidence": 0.82, "reason": "how are you (prefixed)"}
+        return {"action": "celebrate", "confidence": 0.82, "reason": "how are you (prefixed)", "candidates": _cands}
 
     # Social greetings (no "?") — brief warm acknowledgement, not deep interpretation
     if (any(p in t for p in _SOCIAL_PHRASES)
             and not t.strip().endswith("?")
             and len(t.strip()) < 60):
-        return {"action": "celebrate", "confidence": 0.8, "reason": "social greeting"}
+        return {"action": "celebrate", "confidence": 0.8, "reason": "social greeting", "candidates": _cands}
 
     # Demonstration requests ("I want to see you move", "show me you jump") — no "?" needed
     if any(p in t for p in _DEMO_PHRASES):
-        return {"action": "answer", "confidence": 0.88, "reason": "demonstration request"}
+        return {"action": "answer", "confidence": 0.88, "reason": "demonstration request", "candidates": _cands}
 
     # Capability / self-referential questions about eLo ("can you X?", "are you happy?")
     if t.strip().endswith("?") and any(p in t for p in _CAPABILITY_PHRASES):
-        return {"action": "answer", "confidence": 0.92, "reason": "capability question"}
+        return {"action": "answer", "confidence": 0.92, "reason": "capability question", "candidates": _cands}
 
     # Short affirmations checked first — they celebrate, not build
     if any(p in t for p in _SHORT_AFFIRM) and len(t.strip()) < 35:
-        return {"action": "celebrate", "confidence": 0.8, "reason": "short affirmation"}
+        return {"action": "celebrate", "confidence": 0.8, "reason": "short affirmation", "candidates": _cands}
 
     # Explicit BUILD/CONNECT phrases override intent
     if any(p in t for p in _BUILD_PHRASES):
-        return {"action": "build", "confidence": 0.9, "reason": "explicit build phrase"}
+        return {"action": "build", "confidence": 0.9, "reason": "explicit build phrase", "candidates": _cands}
     if any(p in t for p in _CONNECT_PHRASES):
-        return {"action": "connect", "confidence": 0.9, "reason": "explicit connect phrase"}
+        return {"action": "connect", "confidence": 0.9, "reason": "explicit connect phrase", "candidates": _cands}
 
     # WO-SEAM-A: plain imperatives route to ANSWER — never reflective branches
     if any(t.strip().startswith(p) for p in _IMPERATIVE_PREFIXES):
-        return {"action": "answer", "confidence": 0.9, "reason": "plain imperative command"}
+        return {"action": "answer", "confidence": 0.9, "reason": "plain imperative command", "candidates": _cands}
 
     # 1. ANSWER — factual questions (must be interrogative, not just contain "what")
     if intent in ("inquiry", "recall"):
         is_question = t.strip().endswith("?") or \
                       any(t.strip().startswith(w) for w in ("what ", "how ", "why ", "who ", "when ", "where "))
         if is_question:
-            return {"action": "answer", "confidence": 0.95, "reason": "factual question"}
+            return {"action": "answer", "confidence": 0.95, "reason": "factual question", "candidates": _cands}
 
     # 2. BUILD — creative intent in any non-negative valence (creation + neutral is still build)
     if intent == "creation" and valence not in ("negative_low", "negative_high"):
-        return {"action": "build", "confidence": 0.8, "reason": "creative intent"}
+        return {"action": "build", "confidence": 0.8, "reason": "creative intent", "candidates": _cands}
 
     # CHALLENGE — scope/frame doubt before positive routing (question the assumption, not the person)
     if any(p in t for p in _CHALLENGE_PHRASES):
-        return {"action": "challenge", "confidence": 0.75, "reason": "scope or frame doubt"}
+        return {"action": "challenge", "confidence": 0.75, "reason": "scope or frame doubt", "candidates": _cands}
 
     # 4. CELEBRATE — positive breakthrough or momentum
     if valence == "positive_high" and momentum == "building":
-        return {"action": "celebrate", "confidence": 0.85, "reason": "positive momentum detected"}
+        return {"action": "celebrate", "confidence": 0.85, "reason": "positive momentum detected", "candidates": _cands}
     if any(p in t for p in _CELEBRATE_PHRASES):
-        return {"action": "celebrate", "confidence": 0.8, "reason": "breakthrough signal"}
+        return {"action": "celebrate", "confidence": 0.8, "reason": "breakthrough signal", "candidates": _cands}
     if valence in ("positive_high", "positive_low") and intent in ("conversation", "emotional"):
-        return {"action": "celebrate", "confidence": 0.7, "reason": "positive state"}
+        return {"action": "celebrate", "confidence": 0.7, "reason": "positive state", "candidates": _cands}
 
     # 5. REFLECT — exploring meaning or genuinely uncertain
     if intent == "emotional" and valence == "neutral":
-        return {"action": "reflect", "confidence": 0.7, "reason": "emotional + neutral valence"}
+        return {"action": "reflect", "confidence": 0.7, "reason": "emotional + neutral valence", "candidates": _cands}
 
     # 6. GROUND — overwhelm, distress, negative low energy, stuck
     if intent in ("emotional", "stabilise") and valence in ("negative_low", "negative_high"):
-        return {"action": "ground", "confidence": 0.9, "reason": "negative emotional state"}
+        return {"action": "ground", "confidence": 0.9, "reason": "negative emotional state", "candidates": _cands}
     if momentum == "stuck" or intent == "stabilise":
-        return {"action": "ground", "confidence": 0.85, "reason": "stuck or stabilise intent"}
+        return {"action": "ground", "confidence": 0.85, "reason": "stuck or stabilise intent", "candidates": _cands}
     if valence in ("negative_low", "negative_high"):
-        return {"action": "ground", "confidence": 0.8, "reason": "negative valence"}
+        return {"action": "ground", "confidence": 0.8, "reason": "negative valence", "candidates": _cands}
 
     # 7. WITNESS — personal emotional share, nothing to fix
     if any(p in t for p in _WITNESS_PHRASES):
-        return {"action": "witness", "confidence": 0.8, "reason": "personal emotional share"}
+        return {"action": "witness", "confidence": 0.8, "reason": "personal emotional share", "candidates": _cands}
 
     # 8. Building momentum — default to build, not reflect
     if momentum == "building" and valence not in ("negative_low", "negative_high"):
-        return {"action": "build", "confidence": 0.65, "reason": "building momentum, stay in build mode"}
+        return {"action": "build", "confidence": 0.65, "reason": "building momentum, stay in build mode", "candidates": _cands}
 
     # default
-    return {"action": "reflect", "confidence": 0.5, "reason": "default — no stronger signal"}
+    return {"action": "reflect", "confidence": 0.5, "reason": "default — no stronger signal",
+            "candidates": _score_candidates(user_input, intent, valence, momentum)}
 
 
 _RESPONSE_GOAL: dict[str, str] = {
@@ -483,6 +569,7 @@ def decide(
         "valence":           valence,
         "momentum":          momentum,
         "confidence":        cal.get("confidence", 0.7),  # WO-112: thread from _conversation_action
+        "candidates":        cal.get("candidates", []),   # WO-112: full scored candidate set for journal
         "memory_worthy":     _sig_overall >= 0.72,        # WO-SP29: significance memory gate
         "self_init_eligible": _sig_overall >= 0.90,       # WO-SP29: significance self-init gate
         "gated_response":    _gated_response,             # WO-RESPONSE-GATE: quality-checked response

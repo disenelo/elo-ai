@@ -82,14 +82,23 @@ def record(
 ) -> None:
     """Append one decision trace entry. Silent on failure — never blocks a turn."""
     try:
-        # Reconstruct alternatives considered from override fields.
+        # Build alternatives_rejected from the full candidate set (WO-112).
+        # _conversation_action now scores all 9 CAL actions and attaches them as "candidates".
+        # We record every candidate that scored lower than the chosen action.
         alternatives: list = []
-        original = exec_decision.get("original_action")
-        if original and original != action:
-            reason = (exec_decision.get("reason")
-                      or exec_decision.get("cal_reason")
-                      or "routing override")
-            alternatives.append({"rejected": original, "reason": reason})
+        _candidates = exec_decision.get("candidates", [])
+        if _candidates:
+            for _c in _candidates:
+                if _c["action"] != action:
+                    alternatives.append({"action": _c["action"], "utility": _c["utility"]})
+        else:
+            # Legacy path: plain override field only (no candidate scoring active yet)
+            original = exec_decision.get("original_action")
+            if original and original != action:
+                reason = (exec_decision.get("reason")
+                          or exec_decision.get("cal_reason")
+                          or "routing override")
+                alternatives.append({"rejected": original, "reason": reason})
 
         # D7 ruling (Card 0035): overrides are uniform — every executive_override
         # journals its ground + rule + original action. Back-compat: also emit
