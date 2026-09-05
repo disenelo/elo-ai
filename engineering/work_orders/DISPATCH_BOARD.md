@@ -6739,9 +6739,17 @@ Full Builder QUEUE audit — all tests run against every WO that has a test file
 - `0081_WO-CANON-XI` — WAITING Unity (brain_route/unity_route parity)
 - `Unity-WO-B1` — Unity/Designer lane
 - `WO-112 (05b)` — BLOCKED (executive.py freeze; needs Architect ruling)
-- WO-FACE-EMOTION-001 D-3 (verification) — WAITING D-1 + D-2 completion
+- WO-FACE-EMOTION-001 D-3 — DONE (FROM_BUILDER_WO-FACE-EMOTION-001_d3_mood_string_result.md); D-1/D-2/D-4 Designer+Game seat
 - WO-PRESENCE-RESTORE-001, WO-PRESENCE-ECOLOGY-001 — Design seat
 
-**verified_done total: 1556 passed**
+**Also closed this session:**
+| Item | Commit | Status |
+|---|---|---|
+| 0059 — stream+deadline result card filed, DOING→DONE | 3712836 (2026-08-21 implementation) | CLOSED ✅ |
+| API key probe (0059 Task 0): Groq HTTP 403, Cerebras HTTP 403 (both down) | — | DOCUMENTED |
 
-*Builder seat · 2026-09-05 (session 2)*
+**No executable Builder work remains in any QUEUE, DOING, or _HOLD folder.**
+
+**verified_done total: 1556 passed + 5/5 (test_wo073b)**
+
+*Builder seat · 2026-09-05 (session 2 — final state)*
