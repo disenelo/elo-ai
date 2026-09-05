@@ -1,1 +1,44 @@
-[]
+[
+  {
+    "claim_id": "160ef7ce-ecf6-448f-9bdf-42b198adde4f",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "ebbfe451-d02e-44ce-8ae1-48dab7bab9af",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "main_loop"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788605204.775649,
+    "experience_id": null,
+    "contradicted_by": []
+  },
+  {
+    "claim_id": "adf39e8b-9f32-41af-b96d-b584c741de1f",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "ebbfe451-d02e-44ce-8ae1-48dab7bab9af",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "main_loop"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788605204.776124,
+    "experience_id": null,
+    "contradicted_by": []
+  },
+  {
+    "claim_id": "6127671c-0806-474e-ab1d-c527768e52b9",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "ebbfe451-d02e-44ce-8ae1-48dab7bab9af",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "main_loop"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788605204.776542,
+    "experience_id": null,
+    "contradicted_by": []
+  }
+]

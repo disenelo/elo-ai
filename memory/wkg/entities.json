@@ -1,1 +1,22 @@
-[]
+[
+  {
+    "entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "entity_type": "PERSON",
+    "label": "David Charles",
+    "aliases": [
+      "David"
+    ],
+    "description": "Creator of eLo and DISENELO",
+    "created_at": 1788605204.775095,
+    "source_ids": []
+  },
+  {
+    "entity_id": "ebbfe451-d02e-44ce-8ae1-48dab7bab9af",
+    "entity_type": "CONCEPT",
+    "label": "identity",
+    "aliases": [],
+    "description": "Topic from conversation: Yo what you saying",
+    "created_at": 1788605204.7753541,
+    "source_ids": []
+  }
+]

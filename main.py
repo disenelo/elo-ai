@@ -372,6 +372,37 @@ def run():
             response = f"{response} {_observation}"
         print(f"\neLo: {response}\n")
 
+        # WKG write — fire when turn content matches meaningful categories
+        try:
+            from core.memory_engine import _classify_memory_categories as _wkg_cat_classify
+            _wkg_content = (raw + " " + response)[:1000]
+            _wkg_cats = _wkg_cat_classify(_wkg_content)
+            if _wkg_cats:
+                from runtime.wkg_faculty import (
+                    search_entities as _wkg_search, create_entity as _wkg_create,
+                    record_claim as _wkg_record_claim, _load as _wkg_load,
+                )
+                _wkg_david = _wkg_search("David Charles")
+                _wkg_david_id = _wkg_david[0]["entity_id"] if _wkg_david else _wkg_create(
+                    "PERSON", "David Charles", aliases=["David"],
+                    description="Creator of eLo and DISENELO")["entity_id"]
+                _wkg_label = _wkg_cats[0].replace("_", " ")
+                _wkg_topic = _wkg_search(_wkg_label)
+                _wkg_topic_id = _wkg_topic[0]["entity_id"] if _wkg_topic else _wkg_create(
+                    "CONCEPT", _wkg_label,
+                    description=f"Topic from conversation: {raw[:80]}")["entity_id"]
+                if "ASSOCIATED_WITH" in _wkg_load("relationship_types"):
+                    _wkg_record_claim(
+                        subject_entity_id=_wkg_david_id,
+                        relationship_type="ASSOCIATED_WITH",
+                        object_entity_id=_wkg_topic_id,
+                        epistemic_class="SOURCE_ATTRIBUTED",
+                        source_id="main_loop",
+                        confidence=0.7,
+                    )
+        except Exception:
+            pass
+
         # Step 9: AVATAR — non-blocking, best-effort
         _presence = {}
         try:
