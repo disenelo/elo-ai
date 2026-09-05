@@ -6690,3 +6690,58 @@ Full Builder QUEUE audit — all tests run against every WO that has a test file
 **Total verified_done: 1536 passed, 0 new failures**
 
 *Board / eLo OS Seat · 2026-09-03*
+
+### §49 PROGRAMME UPDATE — 2026-09-05
+
+**Session result: 1559 passed, 0 new failures (3 pre-existing: moodpalette ×2, xi_ad2 WAITING Unity)**
+
+| Item | Files | Status |
+|---|---|---|
+| WO-SP29-WEIGHTS-001 — 13-dim significance weights ratified | `runtime/significance_faculty.py` | CLOSED ✅ 13/13 |
+| WO-CREATE-001 — WORLD_CREATE capability + create_health_check | `runtime/capability_registry.py` | CLOSED ✅ 6/6 |
+| WO-INTENT-GREET-001 — greet intent + classify() alias | `runtime/router/intent_engine.py` | CLOSED ✅ 5/5 |
+| WO-SPG-CAPTURE-001 — SPGCapture passive signal logger | `memory/spg_capture.py` | CLOSED ✅ 6/6 |
+| WO-CCM-CATEGORY-C-001 — street_language float + YAML boolean fix | `faculties/ccm/ccm_enricher.py`, `kernel/conversation_context/response_rhythm.yaml` | CLOSED ✅ 10/10 |
+| WO-PLANETARY-KERNEL — PlanetaryKernel + value_faculty stub + active_mode + [PLANETARY MODE] injection | `faculties/planetary_kernel.py`, `faculties/value_faculty.py`, `runtime/spine/plan.py`, `runtime/prompt_builder.py`, `runtime/spine/spine.py`, `server.py` | CLOSED ✅ 10/10 |
+| WO-VOICE-IO — VoiceOutputCapability + speech_text field | `capabilities/voice_output.py`, `capabilities/__init__.py`, `runtime/spine/plan.py` | CLOSED ✅ structural ATs pass; hardware ATs DEFERRED |
+| WO-SPG-RD-002 — SPG graph prototype (Node/Edge/build_graph/top_linked) | `memory/spg_graph.py` | CLOSED ✅ R&D done; G-2/G-5 OPEN (no live signal data yet) |
+| QUEUE sweep — stale WO cards moved QUEUE→DONE (all had existing result cards) | `blender/agent_bus/builder/QUEUE/` | DONE ✅ |
+
+**Gate updates:**
+- BA-02 (SP-29 weights) → CLOSED (weights ratified + shipped)
+- BA-03 (CCM Category C) → CLOSED
+- BA-06 (Voice I/O) → CLOSED (structural; hardware integration deferred)
+- WO-VOICE-IO gate → OPEN → CLOSED this session
+- WO-PLANETARY-KERNEL gate (BA-02) → CLOSED this session
+
+**Builder QUEUE remaining (not executable this session):**
+- `0057_THE_4_SECOND_RULE` — requires David's decision before policy ships
+- `0081_WO-CANON-XI` — WAITING Unity (brain_route/unity_route parity)
+- `Unity-WO-B1` — Unity/Designer lane
+- `WO-112 (05b)` — BLOCKED (executive.py freeze; needs Architect ruling)
+- WO-FACE-EMOTION-001 D-3 (verification) — WAITING D-1 + D-2 completion
+- WO-PRESENCE-RESTORE-001, WO-PRESENCE-ECOLOGY-001 — Design seat
+
+*Builder seat · 2026-09-05*
+
+### §50 PROGRAMME UPDATE — 2026-09-05 (session 2)
+
+**Session result: 1556 passed, 0 new failures (2 pre-existing: moodpalette ×2)**
+
+| Item | Files | Status |
+|---|---|---|
+| WKG-WRITE-FIX-001 — P0: wire WKG write into main.py turn loop | `main.py`, `memory/wkg/claims.json`, `memory/wkg/entities.json` | CLOSED ✅ commit 2d5f13a |
+
+**Root cause closed:** `main.py` (David's conversational entry point) had no WKG write code. WKG write existed only in `server.py` HTTP handler — unreachable from `main.py`'s turn loop. Every David ↔ eLo conversation bypassed the WKG entirely. Fixed: WKG write block added after response output in `main.py`. 3 real David turns → 2 entities + 3 claims in WKG confirmed.
+
+**Builder QUEUE remaining (unchanged):**
+- `0057_THE_4_SECOND_RULE` — requires David's decision before policy ships
+- `0081_WO-CANON-XI` — WAITING Unity (brain_route/unity_route parity)
+- `Unity-WO-B1` — Unity/Designer lane
+- `WO-112 (05b)` — BLOCKED (executive.py freeze; needs Architect ruling)
+- WO-FACE-EMOTION-001 D-3 (verification) — WAITING D-1 + D-2 completion
+- WO-PRESENCE-RESTORE-001, WO-PRESENCE-ECOLOGY-001 — Design seat
+
+**verified_done total: 1556 passed**
+
+*Builder seat · 2026-09-05 (session 2)*
