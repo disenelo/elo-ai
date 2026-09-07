@@ -87,4 +87,20 @@ def compute_significance(world_delta: dict, elo_self_state: dict | None = None) 
     # [ESTIMATE] overall = mean of all dimension scores
     scores["overall"] = round(sum(scores.values()) / len(scores), 4)           # [ESTIMATE]
 
+    # WO-SPG-HOOKS-001: tap significance spikes for SPG signal logger
+    try:
+        if scores["overall"] > 0.6:
+            from memory.spg_capture import get_capture as _spg_get
+            _top_dim = max(
+                ((k, v) for k, v in scores.items() if k != "overall"),
+                key=lambda kv: kv[1],
+            )
+            _spg_get().log(
+                "significance_spike",
+                significance=scores,
+                edge_hint=_top_dim[0],
+            )
+    except Exception:
+        pass
+
     return scores

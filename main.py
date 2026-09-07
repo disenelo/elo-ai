@@ -373,11 +373,12 @@ def run():
         print(f"\neLo: {response}\n")
 
         # WKG write — fire when turn content matches meaningful categories
+        _spg_wkg_cats: list = []
         try:
             from core.memory_engine import _classify_memory_categories as _wkg_cat_classify
             _wkg_content = (raw + " " + response)[:1000]
-            _wkg_cats = _wkg_cat_classify(_wkg_content)
-            if _wkg_cats:
+            _spg_wkg_cats = _wkg_cat_classify(_wkg_content)
+            if _spg_wkg_cats:
                 from runtime.wkg_faculty import (
                     search_entities as _wkg_search, create_entity as _wkg_create,
                     record_claim as _wkg_record_claim, _load as _wkg_load,
@@ -386,7 +387,7 @@ def run():
                 _wkg_david_id = _wkg_david[0]["entity_id"] if _wkg_david else _wkg_create(
                     "PERSON", "David Charles", aliases=["David"],
                     description="Creator of eLo and DISENELO")["entity_id"]
-                _wkg_label = _wkg_cats[0].replace("_", " ")
+                _wkg_label = _spg_wkg_cats[0].replace("_", " ")
                 _wkg_topic = _wkg_search(_wkg_label)
                 _wkg_topic_id = _wkg_topic[0]["entity_id"] if _wkg_topic else _wkg_create(
                     "CONCEPT", _wkg_label,
@@ -400,6 +401,18 @@ def run():
                         source_id="main_loop",
                         confidence=0.7,
                     )
+        except Exception:
+            pass
+
+        # WO-SPG-HOOKS-001: SPG tap — memory_write after WKG write
+        try:
+            from memory.spg_capture import get_capture as _spg_get
+            _spg_get().log(
+                "memory_write",
+                memory_keys=_spg_wkg_cats[:1],
+                context_tags=_spg_wkg_cats[:2],
+                embodiment="terminal",
+            )
         except Exception:
             pass
 

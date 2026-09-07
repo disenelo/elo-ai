@@ -861,6 +861,17 @@ def run(
     try:
         from runtime.spine.relationship_faculty import analyse as rel_analyse
         relationship = rel_analyse(raw, memory_pack)
+        # WO-SPG-HOOKS-001: tap relationship state for SPG signal logger
+        try:
+            from memory.spg_capture import get_capture as _spg_rel_get
+            _spg_rel_get().log(
+                "relationship_shift",
+                relationship=getattr(relationship, "relationship_mode", None)
+                             or getattr(relationship, "register", None),
+                edge_hint=getattr(relationship, "expression_posture", None),
+            )
+        except Exception as _spg_rel_err:
+            _log.warning("SPG relationship tap failed (non-blocking): %s", _spg_rel_err)
     except Exception as e:
         _log.warning("relationship_faculty FAILED: %s", e)
 
@@ -944,15 +955,21 @@ def run(
     # ── WO-PLANETARY-KERNEL: Mode selector — BUILD / PLAY / EXPLORE / REFINE ──
     _turn_mode: str = "EXPLORE"
     try:
-        from kernel.mode_selector import select_mode as _select_mode
+        from faculties.planetary_kernel import PlanetaryKernel as _PK
         _sig_for_mode = getattr(_cognitive_state, "significance_score", 0.0) if _cognitive_state else 0.0
-        _turn_mode = _select_mode(
-            raw, language_output=language,
+        _turn_mode = _PK().select_mode(
+            _cognitive_state,
+            turn=raw, language_output=language,
             ccm_context=_ccm_context,
             significance_score=_sig_for_mode,
         )
     except Exception as _mode_err:
-        _log.warning("mode_selector FAILED: %s", _mode_err)
+        _log.warning("planetary_kernel FAILED: %s", _mode_err)
+    # WO-PLANETARY-KERNEL D-4: ValueFaculty (Venus register stub — future CP-003)
+    try:
+        from faculties.value_faculty import ValueFaculty as _VF  # noqa: F401
+    except Exception as _vf_err:
+        _log.warning("value_faculty import FAILED: %s", _vf_err)
 
     # ── Executive Faculty — ONE DECISION ─────────────────────────────────────
     # WO-106: pass assembled state so the Executive decides from real context
@@ -969,6 +986,8 @@ def run(
     # ── WO-PLANETARY-KERNEL: Pin turn mode (BUILD/PLAY/EXPLORE/REFINE) ───────
     if not getattr(plan, "mode", ""):
         plan.mode = _turn_mode
+    # WO-PLANETARY-KERNEL: active_mode is the canonical kernel mode field
+    plan.active_mode = _turn_mode
     # ── WO-CANON-XVI: Pin pre-assembled cognitive state to plan ──────────────
     plan.cognitive_state = _cognitive_state
     # ── WO-CANON-XV/XII: Store frozen world + perception on plan ──────────────
@@ -1099,6 +1118,15 @@ def run(
             })
         except Exception as _er_inner:
             _log.warning("build_execution_report inner publish FAILED: %s", _er_inner)
+        # WO-SPG-HOOKS-001: tap ExecutionReport completion for SPG signal logger
+        try:
+            from memory.spg_capture import get_capture as _spg_er_get
+            _spg_er_get().log(
+                "memory_write",
+                edge_hint=plan.execution_report.planned_action,
+            )
+        except Exception as _spg_er_err:
+            _log.warning("SPG execution_report tap failed (non-blocking): %s", _spg_er_err)
     except Exception as _er_err:
         _log.warning("build_execution_report FAILED: %s", _er_err)
 
