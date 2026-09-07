@@ -71,6 +71,28 @@ _TIER_CREATE         = 4   # WO-CREATE-CAPABILITY: file/draft generation (REASON
 # ── CT0031: Ollama timing telemetry — populated by _ollama_call each turn ─────
 _last_ollama_metrics: dict = {}
 
+# ── WO-0057-PART-C: 4-second rule data dir ───────────────────────────────────
+_4S_DATA_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "data", "backend_health_history.jsonl",
+)
+
+
+def _log_4s_event(prompt_eval_ms: float, rerouted_to: "str | None") -> None:
+    """Append 4s rule trigger event to data/backend_health_history.jsonl."""
+    import json as _j
+    entry = {
+        "_ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "trigger": "4s_rule",
+        "prompt_eval_ms": round(prompt_eval_ms, 1),
+        "rerouted_to": rerouted_to,
+    }
+    try:
+        with open(_4S_DATA_PATH, "a", encoding="utf-8") as _f:
+            _f.write(_j.dumps(entry) + "\n")
+    except Exception:
+        pass
+
 # Provider cost classes — used for escalation comparison
 _COST_FREE_LOCAL    = "free-local"
 _COST_CHEAP_CLOUD   = "cheap-cloud"
@@ -674,6 +696,36 @@ def _route_by_tier(
         try:
             if provider == "ollama":
                 raw = _ollama_call(system_prompt, user_input)
+                # WO-0057-PART-C: 4s rule — if prompt_eval exceeded threshold, try REASONING tier
+                _pe_ms = _last_ollama_metrics.get("prompt_eval_ms", 0)
+                if os.environ.get("ELO_4S_RULE", "0") == "1" and _pe_ms > 4000:
+                    _logger.info(
+                        "4s rule triggered: prompt_eval=%.0fms, trying REASONING tier", _pe_ms
+                    )
+                    _reasoning_providers = [
+                        p for p in _TIER_PROVIDER_CANDIDATES.get(_TIER_REASONING, [])
+                        if p != "ollama" and _provider_available(p)
+                    ]
+                    for _rp in _reasoning_providers:
+                        try:
+                            if _rp == "groq":
+                                _rraw = _groq_call(system_prompt, user_input, max_tokens=_budget)
+                            elif _rp == "cerebras":
+                                _rraw = _cerebras_call(system_prompt, user_input, max_tokens=_budget)
+                            elif _rp == "openai":
+                                _rraw = _openai_call(system_prompt, user_input, max_tokens=_budget)
+                            elif _rp == "claude":
+                                _rraw = _claude_call(system_prompt, user_input, max_tokens=_budget)
+                            elif _rp == "gemini":
+                                _rraw = _gemini_call(system_prompt, user_input)
+                            else:
+                                continue
+                            _log_4s_event(_pe_ms, _rp)
+                            return _finish(_rraw, action, max_sentences, _rp), f"{_rp}(4s_rule)"
+                        except Exception as _re:
+                            _logger.debug("4s rule: %s failed: %s", _rp, _re)
+                    # No faster provider available — log and return Ollama result
+                    _log_4s_event(_pe_ms, None)
                 return _finish(raw, action, max_sentences, "ollama"), f"ollama(tier{tier})"
             elif provider == "groq":
                 raw = _groq_call(system_prompt, user_input, max_tokens=_budget)
