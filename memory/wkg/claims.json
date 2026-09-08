@@ -54,7 +54,7 @@
     "created_at": 1788883533.3031502,
     "experience_id": null,
     "contradicted_by": [],
-    "memory_type": "historical"
+    "memory_type": "foundational"
   },
   {
     "claim_id": "6e4238c0-4dd9-4704-bb72-28a77639d84c",
@@ -69,7 +69,7 @@
     "created_at": 1788883533.303437,
     "experience_id": null,
     "contradicted_by": [],
-    "memory_type": "historical"
+    "memory_type": "foundational"
   },
   {
     "claim_id": "8261b05c-b57f-468a-9790-5cea7d0c7293",
@@ -84,7 +84,7 @@
     "created_at": 1788883533.303604,
     "experience_id": null,
     "contradicted_by": [],
-    "memory_type": "historical"
+    "memory_type": "foundational"
   },
   {
     "claim_id": "836878b4-c7f4-49ca-93f1-b811629951b8",
@@ -99,7 +99,7 @@
     "created_at": 1788883533.3037598,
     "experience_id": null,
     "contradicted_by": [],
-    "memory_type": "historical"
+    "memory_type": "foundational"
   },
   {
     "claim_id": "bbd3d514-ea48-4856-81fc-9ab2bdcdb07b",
@@ -114,7 +114,7 @@
     "created_at": 1788883533.3039181,
     "experience_id": null,
     "contradicted_by": [],
-    "memory_type": "historical"
+    "memory_type": "foundational"
   },
   {
     "claim_id": "b004c63a-67ff-4aff-9f30-753e109064f6",
@@ -129,7 +129,7 @@
     "created_at": 1788883533.304089,
     "experience_id": null,
     "contradicted_by": [],
-    "memory_type": "historical"
+    "memory_type": "foundational"
   },
   {
     "claim_id": "32e2b72c-90be-42af-9062-e80a4bd030d2",
@@ -144,7 +144,7 @@
     "created_at": 1788883533.304259,
     "experience_id": null,
     "contradicted_by": [],
-    "memory_type": "historical"
+    "memory_type": "foundational"
   },
   {
     "claim_id": "db26c55a-2b79-458c-b9b2-4bc550449b28",
@@ -159,7 +159,7 @@
     "created_at": 1788883533.3044748,
     "experience_id": null,
     "contradicted_by": [],
-    "memory_type": "historical"
+    "memory_type": "foundational"
   },
   {
     "claim_id": "1b806976-b700-49e5-bba1-3c7572d836d4",

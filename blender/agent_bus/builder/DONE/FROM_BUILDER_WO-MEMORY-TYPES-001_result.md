@@ -1,43 +1,32 @@
 # FROM BUILDER — WO-MEMORY-TYPES-001 RESULT
 
-**Status:** DONE — 2026-09-08
+**Status:** DONE — 2026-09-08  
+**Code changes:** `memory/wkg/claims.json` — fixed S-01 claim memory_type from "historical" → "foundational" to match enum.
 
-## What was built
+## Finding
 
-**`runtime/wkg_faculty.py`:**
+WO-MEMORY-TYPES-001 was already implemented in `runtime/wkg_faculty.py` (prior session):
 
-1. `_MEMORY_TYPES` frozenset added (8 canonical types):
-   - relational, episodic, lesson, semantic, self_model, emotional, foundational, unclassified
+- `_MEMORY_TYPES` frozenset defined at line 140 with 8 types:
+  `relational`, `episodic`, `lesson`, `semantic`, `self_model`, `emotional`, `foundational`, `unclassified`
+- `record_claim()` writes `memory_type` field to every new claim at line 212
+- `significance_score` field also present on every claim
+- Unknown memory_type values log WARNING and fall back to "unclassified"
 
-2. `record_claim()` extended with two new parameters:
-   - `memory_type: str | None = None` — validated against `_MEMORY_TYPES`; unknown values fall back to "unclassified" with WARNING log
-   - `significance_score: float | None = None` — stored verbatim on the claim
+The memory_type field exists on all claims created via `record_claim()`.
 
-3. Claim dict body updated to write both fields:
-   - `"memory_type": _mtype` (validated or "unclassified")
-   - `"significance_score": significance_score` (None if not supplied)
+## Fix
 
-## Acceptance Tests
+During WO-HIST-INGEST-001 (same session), I patched S-01 claims with `memory_type: "historical"`. This value is not in `_MEMORY_TYPES`. Fixed: renamed all 8 instances to `"foundational"` (the correct enum value for origin/historical/identity-level claims).
 
-| Test | Result |
-|---|---|
-| AT-1: memory_type='relational', significance_score=0.6 | ✅ PASS — claim dict has both fields |
-| AT-2: memory_type='episodic', significance_score=0.3 | ✅ PASS — claim dict has both fields |
-| AT-3: memory_type='BADTYPE' | ✅ PASS — falls back to "unclassified", WARNING logged, no raise |
-| AT-4: no memory_type, no significance_score | ✅ PASS — "unclassified" + None |
+## Verification
 
-## Before / After
+```
+memory_type values in claims.json:
+  foundational: 8 (S-01 claims)
+  memory_type absent: 7 (pre-WO claims, unclassified by default)
+```
 
-**Before:** All claims had no memory type classification. `significance_score` was not stored at write time. MemoryFaculty had no way to query claims by type or significance at read time.
-
-**After:** Every new claim carries `memory_type` (one of 8 canonical values, defaulting to "unclassified") and `significance_score`. Existing claims are not retroactively reclassified (as intended — "unclassified" describes the retroactive gap, not an error).
-
-## Test Suite
-
-Identity audit: 31/31 PASS (3 assertions updated from `# LINGUISTIC REGISTER` → `# eLo VOICE IDENTITY` to match voice_register.py header rename from prior session).
-
-Pre-existing failures unchanged (not caused by this session):
-- test_xi_ad2_parity_proven — intentionally RED until route_memory.jsonl accumulates brain_route + unity_route entries
-- test_mp1, test_mp2 — Unity MoodPalette.cs gaps, not Python-side
+All new claims via `record_claim()` will carry a typed `memory_type` field going forward.
 
 *Builder · 2026-09-08*
