@@ -137,6 +137,18 @@ def create_entity(
 
 # ── write stub — MemoryFaculty sole writer (D-7) ─────────────────────────────
 
+_MEMORY_TYPES = frozenset({
+    "relational",    # from relationship_faculty — how eLo relates to a person/concept
+    "episodic",      # from consolidation/reflection — a specific event or experience
+    "lesson",        # from lesson_store — distilled actionable learning
+    "semantic",      # entity facts, world knowledge
+    "self_model",    # eLo's understanding of itself
+    "emotional",     # significance-gated emotional memory
+    "foundational",  # original intent / historical / identity-level
+    "unclassified",  # existing claims, retroactively not reclassified
+})
+
+
 def record_claim(
     subject_entity_id: str,
     relationship_type: str,
@@ -147,6 +159,8 @@ def record_claim(
     confidence: float | None = None,
     contradicted_by: list | None = None,
     memory_origin: str | None = None,
+    memory_type: str | None = None,
+    significance_score: float | None = None,
 ) -> dict:
     """
     MemoryFaculty sole entry point for WKG claim creation.
@@ -178,6 +192,14 @@ def record_claim(
         raise ValueError(f"Unknown relationship_type: {relationship_type!r}")
     if confidence is None:
         confidence = 1.0 if epistemic_class == "VERIFIED" else 0.5
+    # WO-MEMORY-TYPES-001: classify claim at write time
+    _mtype = "unclassified"
+    if memory_type is not None and memory_type in _MEMORY_TYPES:
+        _mtype = memory_type
+    elif memory_type is not None:
+        import logging as _mt_log
+        _mt_log.getLogger("wkg_faculty").warning("Unknown memory_type %r — using 'unclassified'", memory_type)
+
     claim = {
         "claim_id": str(uuid.uuid4()),
         "subject_entity_id": subject_entity_id,
@@ -187,6 +209,8 @@ def record_claim(
         "source_ids": [source_id] if source_id else [],
         "confidence": confidence,
         "created_at": time.time(),
+        "memory_type": _mtype,
+        "significance_score": significance_score,
         "experience_id": experience_id,
         "contradicted_by": contradicted_by or [],
     }
