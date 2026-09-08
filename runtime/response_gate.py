@@ -322,6 +322,24 @@ _GENERIC_MODEL_OPENERS = [
     "great! i'll", "i'm here to help", "i am here to help",
 ]
 
+# ── WO-GATE-001-AMEND check 9 — SEMANTIC RESURRECTION phrases ────────────────
+# Phrases that signal the response is reviving a prior-session task not in the
+# current turn. These must be stripped so stale context doesn't re-enter.
+_SEMANTIC_RESURRECTION_PHRASES = [
+    "picking this back up",
+    "picking up where we left off on",
+    "getting back to what we were doing",
+    "resuming our work on",
+    "continuing our work on",
+    "as we were working on before",
+    "returning to the earlier task",
+    "to continue what we started",
+    "from our last session",
+    "i was helping you with",
+    "we were in the middle of",
+    "carrying on from before with",
+]
+
 # ── WO-PROVENANCE-CONTEXT-001: context/action claim triggers ─────────────────
 _CONTEXT_CLAIM_TRIGGERS = [
     "you are doing", "you're doing", "you are working on", "you're working on",
@@ -442,6 +460,18 @@ def elo_response_gate(
                 remainder = output[len(prefix):].lstrip(" ,—–").strip()
                 if remainder:
                     output = remainder[0].upper() + remainder[1:]
+                    cl = output.lower()
+                break
+
+        # Check 9 — SEMANTIC RESURRECTION: strip sentences that revive prior-session
+        # tasks when the trigger word appeared in the current input coincidentally.
+        # Any sentence containing a resurrection phrase is removed from the response.
+        for phrase in _SEMANTIC_RESURRECTION_PHRASES:
+            if phrase in cl:
+                sentences = _re.split(r"(?<=[.!?])\s+", output)
+                filtered = [s for s in sentences if phrase not in s.lower()]
+                if filtered:
+                    output = " ".join(filtered)
                     cl = output.lower()
                 break
 
