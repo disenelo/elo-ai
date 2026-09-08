@@ -188,6 +188,17 @@ _INTENT_PATTERNS: list[tuple[str, list[str]]] = [
         r"\bbrainstorm\b",
         r"\bhelp\s+me\s+(?:write|draft)\b",
     ]),
+    # planning before lookup — otherwise lookup's generic "what is" catches "what's the plan"
+    ("planning", [
+        r"\bwhat(?:'s|\s+is)\s+(?:the\s+)?(?:plan|next\s+step|first\s+step|move)\b",
+        r"\bwhere\s+do\s+(?:i|we)\s+start\b",
+        r"\bwhat\s+do\s+(?:i|we)\s+do\s+(?:first|next)\b",
+        r"\baction\s+plan\b",
+        r"\bhelp\s+me\s+(?:plan|figure\s+out|map\s+out|work\s+out|think\s+through)\b",
+        r"\blet(?:'s|\s+us)\s+(?:plan|map\s+out|figure\s+out|think\s+through|work\s+out)\b",
+        r"\bplan\s+(?:out|the|this|it)\b",
+        r"\bwhat\s+(?:should|do)\s+(?:i|we)\s+(?:do|focus\s+on|build|prioritise|work\s+on)\s+(?:first|next|now)\b",
+    ]),
     ("lookup", [
         r"\bwhat(?:'s|\s+is)\s+(?:a\s+|an\s+|the\s+)?\w",
         r"\bwho(?:'s|\s+is)\b",
@@ -196,21 +207,33 @@ _INTENT_PATTERNS: list[tuple[str, list[str]]] = [
         r"\bdefine\b",
         r"\blook\s+up\b",
         r"\bsearch\s+(?:for\s+)?\b",
+        # WO-INTENT-ACCURACY-001: can-you-explain / walk-me-through phrasings
+        r"\bcan\s+you\s+(?:explain|walk\s+me\s+through|break\s+(?:it|that|this)\s+down|help\s+me\s+understand)\b",
+        r"\bwalk\s+me\s+through\b",
+        r"\bhelp\s+me\s+understand\b",
+        r"\bhow\s+does\s+.+\s+work\b",
+        r"\bbreak\s+(?:it|that|this)\s+down\b",
     ]),
     ("social", [
         r"^(?:yo|hey|hi|hello|wagwan|wah\s+gwaan|safe|aight|what(?:'s|\s+is)\s+(?:good|the\s+vibe)|you\s+(?:calm|good|alright))[\s\w,!?]*$",
         r"^(?:chilling|just\s+chilling|just\s+vibing|about\s+to\s+\w+|just\s+(?:woke|got|finished))\b",
     ]),
-    ("planning", [
-        r"\bwhat(?:'s|\s+is)\s+(?:the\s+)?(?:plan|next\s+step|first\s+step|move)\b",
-        r"\bwhere\s+do\s+(?:i|we)\s+start\b",
-        r"\bwhat\s+do\s+(?:i|we)\s+do\s+(?:first|next)\b",
-        r"\baction\s+plan\b",
-    ]),
     ("creation", [
         r"\blet(?:'s|\s+us)\s+(?:build|make|create|design)\b",
         r"\bi\s+(?:want|need)\s+to\s+(?:build|make|create|design)\b",
         r"\btime\s+to\s+(?:build|make|ship|launch)\b",
+        # WO-INTENT-ACCURACY-001: let's explore / work on / dig into phrasings
+        r"\blet(?:'s|\s+us)\s+(?:explore|work\s+on|dig\s+into|look\s+at|get\s+into|start\s+on)\b",
+        r"\bi\s+(?:want|need)\s+to\s+(?:explore|work\s+on|dig\s+into|start\s+on)\b",
+    ]),
+    # WO-INTENT-ACCURACY-001: grounding intent — BEFORE catch-all
+    ("ground", [
+        r"\bground\s+(?:my)?self\b",
+        r"\bi\s+need\s+to\s+(?:ground|breathe|slow\s+down|calm\s+down|settle)\b",
+        r"\bfeeling\s+(?:overwhelmed|scattered|anxious|off|lost|stuck)\b",
+        r"\bhelp\s+me\s+(?:breathe|ground|settle|calm\s+down|slow\s+down)\b",
+        r"\btake\s+a\s+(?:breath|minute|moment|step\s+back)\b",
+        r"\bi(?:'m|\s+am)\s+(?:overwhelmed|scattered|anxious|spiralling|spinning)\b",
     ]),
     # SP-16 (WO-NAV-003): spatial navigation intent — BEFORE catch-all
     ("navigation", [
@@ -262,6 +285,7 @@ _CATEGORY_MAP: dict[str, tuple[str, str]] = {
     "social":             ("Connect", "sharing a moment"),
     "planning":           ("Decide",  "charting a path forward"),
     "creation":           ("Build",   "making something new"),
+    "ground":             ("Reflect", "grounding and steadying"),
     "navigation":         ("Decide",  "navigating to a destination"),
     "conversation":       ("Connect", "being present together"),
 }
