@@ -240,6 +240,26 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
     except Exception:
         pass
 
+    # WO-COMPANY-STATE-TIER-001: per-turn company state snapshot
+    # Reads blender/company_state.json — written by company_state_writer.publish().
+    # Max age 600s (10 min) — stale company state is not worth injecting.
+    _company_state: dict = {}
+    try:
+        _cs_path = os.path.join(_ROOT, "blender", "company_state.json")
+        with open(_cs_path, encoding="utf-8") as _csf:
+            _cs_raw = json.load(_csf)
+        _cs_age = now - float(_cs_raw.get("_ts", 0.0))
+        if _cs_age <= 600.0:
+            _company_state = {
+                "voiced_briefing":  _cs_raw.get("voiced_briefing", ""),
+                "company_focus":    _cs_raw.get("company_focus", {}),
+                "today_priorities": _cs_raw.get("today_priorities", [])[:3],
+                "pending_david":    _cs_raw.get("pending_david", [])[:3],
+                "_ts":              _cs_raw.get("_ts", 0.0),
+            }
+    except Exception:
+        pass
+
     # WO-108: Last directed-look observation record
     _last_obs: dict = {}
     try:
@@ -314,6 +334,10 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
         "gap_assessment":       _gap_results,
         # WO-108: last directed-look observation record (for Executive verified-speech gate)
         "last_observation":     _last_obs,
+        # WO-COMPANY-STATE-TIER-001: company context per turn — voiced_briefing/focus/priorities.
+        # Empty dict when no file or stale (>600s). Tier: observed when fresh, unknown when absent.
+        "company_state":         _company_state,
+        "company_state_tier":    "observed" if _company_state else "unknown",
         # WO-126 Row 26 MEANING: previous turn's significance profile.
         # Empty dict when no prior turn exists — eLo must not claim significance without it.
         "last_significance":    _last_significance,
