@@ -1,3 +1,80 @@
+## BOARD STATE UPDATE — 2026-09-08 (§58 — Builder: 6 INBOX WOs closed — Gate/CCM/Hist/Dream/Vessel/Memory)
+**Source:** Builder execution. [VERIFIED — code + tests]
+**Commits:** `8dbade2` (gate amend) · `54b8a44` (WKG hist ingest) · `ee56f64` (all result cards)
+
+**WO-GATE-001-AMEND (P0) — DONE:**
+Check 9 (SEMANTIC RESURRECTION) was the only missing AMEND check. Added `_SEMANTIC_RESURRECTION_PHRASES` list (12 patterns) + check 9 inside `elo_response_gate()` in `runtime/response_gate.py`. Checks 8 (thread contamination), 10 (fabricated state), and provenance pass (check 11) were already wired. All AMEND checks now complete.
+
+**WO-CCM-SPINE-19-001 (P1) — DONE (already wired, diagnostic confirmed):**
+CCM enrichment was wired in spine.py:881-887 (prior session). BA-03 confirmed RATIFIED 2026-09-05 — all 3 Category C dims (storytelling, cultural, street) are authorised. WO AT-2 was based on stale BA-03 state. AT-1 PASS: CCM fires for street content (10 dims triggered). AT-3 PASS: executive.py not touched.
+
+**WO-HIST-INGEST-001 (P1) — DONE:**
+S-01 claims already ingested. Added 'eLo origin'/'eLo history' aliases to eLo entity + `memory_type: 'foundational'` on all 8 S-01 claims. AT-1 PASS: search_entities('eLo origin') → 1 result. AT-2 PASS: eLo entity has 7 S-01 foundational claims.
+
+**WO-DREAM-VERIFY-001 (P1) — DONE (already enforced, diagnostic confirmed):**
+DREAM_SIMULATION boundary enforced in `wkg_faculty.py:record_claim()`. AT-1 PASS: dream_simulation blocked with ValueError. AT-2 PASS: real_experience write succeeds.
+
+**WO-VESSEL-AUDIT-001 (P1) — DONE (diagnostic, no code changes):**
+Scenario 1 (provider switch): HOLDS — living_presence_spec injected per-turn, provider-independent.
+Scenario 2 (cold boot): HOLDS — personality, WKG, lessons persist; session context resets by design.
+Scenario 3 (significance): PARTIAL — direction correct; magnitude thin without world_delta (SP-29 calibration gap, known, awaiting David L3).
+Scenario 4 (correction resurrection): DRIFT RISK — contradicted_by field exists but NOT filtered in wkg_context assembly. Future WO needed.
+
+**WO-MEMORY-TYPES-001 (P2) — DONE (already implemented, retroactive fix):**
+`record_claim()` writes `memory_type` field from closed enum (`_MEMORY_TYPES`). Fixed retroactive error: S-01 claims had `memory_type: 'historical'` (not in enum) — corrected to `'foundational'`.
+
+**New drift surfaced (Vessel Audit Scenario 4):**
+WKG `contradicted_by` field is populated by `mark_contradicted()` but `assemble_cognitive_state()` doesn't filter contradicted claims from `wkg_context`. Corrected claims can re-enter Executive context. Board to file a new WO.
+
+**Test suite:** 1565 pass · 3 pre-existing failures unchanged.
+
+---
+
+## BOARD STATE UPDATE — 2026-09-08 (§57 — Builder: WO-WKG-CONTEXT-FIX-001 + WO-FACULTY-CHAIN-VERIFY-001)
+**Source:** Builder execution. [VERIFIED — code + tests]
+**Commits:** `a61bbb1` (WKG claim-text fix) · `7a2c50e` (faculty chain verification test)
+
+**Root cause found and fixed — C-01 PROOF GAP (WKG claim-text empty):**
+`runtime/spine/spine.py` `assemble_cognitive_state()` built `wkg_context` by calling `_cl.get('claim', '')` on WKG claims. WKG claims are stored as entity-relationship graphs (subject → relationship_type → object), not flat text — the `claim` field doesn't exist. Result: `wkg_context` was ALWAYS `""`, causing tier_snapshot to show `wkg_context = "unknown"` every turn.
+
+**Fix (WO-WKG-CONTEXT-FIX-001):** Now traverses the graph:
+- Loads `_wkg._load("entities")` to build entity_id → label map
+- Formats each claim as `[EPISTEMIC_CLASS] subject_label rel_type object_label`
+- Example output: `[SOURCE_ATTRIBUTED] eLo is persistent presence; [SOURCE_ATTRIBUTED] eLo associated with not a chatbot`
+- Tier: `"inferred"` (non-empty value)
+
+**Verified (WO-FACULTY-CHAIN-VERIFY-001):** 5/5 acceptance tests confirm:
+- AT-1: WKG context non-empty for known entity (101 chars)
+- AT-2: tier_fact() returns "inferred" for non-empty, "unknown" for empty
+- AT-3: Full TFR → 2 non-unknown tiers (mood="inferred", wkg_context="inferred")
+- AT-4: Personality traits: 8 traits loaded (top 2: wonder=0.80, empathy=0.72)
+- AT-5: wkg._load('entities') accessible (11 entities)
+
+**BA-19 sources 5-13 read:** All Game seat / Board seat — no Builder Python WOs implied. Sources 5 (UI Design), 6 (UI Menu), 7 (Marketing Strategy), 8 (Seat Prompts), 9 (Board Directive), 10 (Kickstarter roadmap), 11 (Sound list), 12 (Keep Going protocol), 13 (Game Build) — captured as read in BA-19.
+
+**Test suite:** 1565 pass · 3 pre-existing failures unchanged.
+
+---
+
+## BOARD STATE UPDATE — 2026-09-08 (§56 — Builder: 3 test fixes + WO-COMPANY-STATE-TIER-001)
+**Source:** Builder execution. [VERIFIED — code + tests]
+**Commits:** `3a7b59a` (CCM_DIMS) · `a792a0f` (the_moment tiers) · `1b14cf1` (company_state)
+
+**Fixed — CCM_DIMS missing street_language (27th dim):**
+`faculties/ccm/ccm_enricher.py`: `street_language` float was added as 27th dimension by WO-CCM-CATEGORY-C-001 but not added to the `CCM_DIMS` tuple. AT-1 test asserted 26 dims and failed. Both fixed. All 6 WO-CCM-SPINE ATs pass.
+
+**Fixed — WO-079 AT-3/AT-4: body tiers use "verified" not "observed":**
+`runtime/the_moment.py`: `pose_tier` and `surface_tier` were returning `"observed"` when acked/fresh; tests expected `"verified"` (the body-legacy alias documented in `_TIER`). Fixed. All 8 WO-079 ATs pass.
+
+**Built — WO-COMPANY-STATE-TIER-001:**
+`runtime/the_moment.py`: Per-turn company state snapshot added to the moment dict. Reads `blender/company_state.json` (max age 600s), extracts `voiced_briefing`, `company_focus`, `today_priorities`, `pending_david`. Tier: `"observed"` when fresh, `"unknown"` when absent. Source: BA-19 / ELO_INITIATIVE_PROTOCOL.rtf intent gap — eLo reads actual governed company state as context each turn, not generated output.
+
+**Test suite:** 1565 pass · 3 pre-existing failures unchanged (test_0054_heartbeat_owner T2: environmental — DesktopBuddy.app writes blender_state.json every 2s from outside Python; mp1/mp2: Unity MoodPalette gaps).
+
+**verified_done: unchanged** (test fixes + 1 new additive field — no new WO closed)
+
+---
+
 ## BOARD STATE UPDATE — 2026-09-08 (Root cause found — EXTRACTION GAP — all expression WOs unblocked)
 **Source:** Builder finding + Board verification of `server.py:2884-2912`. [VERIFIED — read code directly]  
 **Authority:** Builder self-reporting + Board read confirmation.
