@@ -285,3 +285,152 @@ class ResponseGate:
             revised_response=revised_response,
             flags=all_flags,
         )
+
+
+# ── WO-GATE-001 + WO-GATE-001-AMEND: cognitive response gate ─────────────────
+# Runs BEFORE _sanitise(), AFTER response_ownership check in server.py.
+# Never hard-blocks — always returns a string. Gate failure passes candidate through.
+
+_STALE_INFERENCE_TRIGGERS = [
+    "you seem stressed", "you seem frustrated", "you seem excited",
+    "you seem anxious", "you appear to be", "you look like you",
+    "i can tell you're", "i can tell you are", "i sense you're", "i sense you are",
+    "you must be feeling", "you must feel", "i notice you seem",
+]
+
+_FABRICATED_FAILURE_PHRASES = [
+    "i tried to", "i attempted to", "i was unable to", "i failed to",
+    "i couldn't complete", "i could not complete", "the system did not",
+    "an error occurred when i", "i ran into an issue",
+]
+
+_PROVENANCE_TRIGGERS = [
+    "you said ", "you mentioned ", "you told me ", "you asked ",
+    "earlier you ", "you previously ", "you've said ", "you have said ",
+]
+
+_THREAD_CONTAMINATION_PREFIXES = [
+    "continuing from before,", "as we were discussing,", "following up on our earlier",
+    "to continue our conversation,", "picking up where we left off,",
+    "as i mentioned in our last", "from our previous discussion",
+]
+
+_GENERIC_MODEL_OPENERS = [
+    "i'd be happy to help", "i'd be happy to", "i would be happy to",
+    "of course! i'll", "of course! let me", "certainly! i'll",
+    "sure! let me", "sure, i'll help", "absolutely! let me",
+    "great! i'll", "i'm here to help", "i am here to help",
+]
+
+import re as _re
+
+
+def elo_response_gate(
+    candidate: str,
+    current_turn_input: str = "",
+    cognitive_state: dict | None = None,
+    conversation_history: list | None = None,
+) -> str:
+    """
+    WO-GATE-001: Cognitive (not regex) evaluation gate for eLo's response.
+    Runs before _sanitise(), after response_ownership check.
+    Returns revised candidate or original — never raises, never returns empty.
+    """
+    if not candidate or not candidate.strip():
+        return candidate
+
+    try:
+        output = candidate
+        cl = output.lower()
+
+        # Check 3 — VOICE: strip generic model openers
+        for opener in _GENERIC_MODEL_OPENERS:
+            if cl.startswith(opener):
+                # Remove the opener phrase; capitalise what remains
+                remainder = output[len(opener):].lstrip(" ,!—–").strip()
+                if remainder:
+                    output = remainder[0].upper() + remainder[1:]
+                    cl = output.lower()
+                break
+
+        # Check 8 — THREAD CONTAMINATION: remove prior-thread bleed-in phrases
+        for prefix in _THREAD_CONTAMINATION_PREFIXES:
+            if cl.startswith(prefix):
+                remainder = output[len(prefix):].lstrip(" ,—–").strip()
+                if remainder:
+                    output = remainder[0].upper() + remainder[1:]
+                    cl = output.lower()
+                break
+
+        # Check 2 — STALE INFERENCE: qualify inferred claims about David's state
+        for trigger in _STALE_INFERENCE_TRIGGERS:
+            if trigger in cl:
+                # Replace "you seem X" → "I think you might be X"
+                pattern = _re.compile(_re.escape(trigger), _re.IGNORECASE)
+                replacement = trigger.replace("you seem", "I think you might be").replace(
+                    "you appear to be", "I think you might be").replace(
+                    "i can tell you're", "I think you might be").replace(
+                    "i sense you're", "I think you might be").replace(
+                    "i sense you are", "I think you might be").replace(
+                    "you must be feeling", "I think you might be feeling").replace(
+                    "you must feel", "I think you might feel").replace(
+                    "i notice you seem", "I think you might seem")
+                output = pattern.sub(replacement, output, count=1)
+                cl = output.lower()
+                break
+
+        # Check 10 — FABRICATED STATE: remove claimed failures without execution evidence
+        for phrase in _FABRICATED_FAILURE_PHRASES:
+            if phrase in cl:
+                # Strip the sentence containing the fabricated failure phrase
+                sentences = _re.split(r"(?<=[.!?])\s+", output)
+                filtered = [s for s in sentences if phrase not in s.lower()]
+                if filtered:
+                    output = " ".join(filtered)
+                    cl = output.lower()
+                break
+
+        # Check 11 — PROVENANCE: qualify "you said/mentioned/asked" without explicit source
+        # Only fire when the conversation_history doesn't confirm the claim
+        for phrase in _PROVENANCE_TRIGGERS:
+            if phrase in cl:
+                # Check if conversation_history supports the claim
+                _hist_text = ""
+                if conversation_history:
+                    for msg in conversation_history[-5:]:
+                        if isinstance(msg, dict) and msg.get("role") == "user":
+                            _hist_text += msg.get("content", "").lower()
+                # Find the claimed subject
+                idx = cl.find(phrase)
+                claimed_subject = output[idx + len(phrase): idx + len(phrase) + 40].split(".")[0].split(",")[0].strip()
+                if claimed_subject and claimed_subject[:10].lower() not in _hist_text:
+                    # Qualify: "you said X" → "if I'm remembering right, you said X"
+                    qualified = _re.sub(
+                        _re.escape(phrase),
+                        "if I'm remembering right, " + phrase,
+                        output, count=1, flags=_re.IGNORECASE
+                    )
+                    output = qualified
+                    cl = output.lower()
+                break
+
+        # Check 5 — RELATIONSHIP: flag formal register when relationship is established/close
+        _rel = (cognitive_state or {}).get("relationship_mode", "")
+        if _rel in ("close", "established"):
+            _FORMAL_OPENERS = [
+                "dear david,", "i hope this message finds you",
+                "i would like to", "i wanted to inform you",
+                "please be advised", "i am writing to",
+            ]
+            for formal in _FORMAL_OPENERS:
+                if cl.startswith(formal):
+                    remainder = output[len(formal):].lstrip(" ,—–").strip()
+                    if remainder:
+                        output = remainder[0].upper() + remainder[1:]
+                    break
+
+        return output if output.strip() else candidate
+
+    except Exception as _gate_err:
+        _log.warning("elo_response_gate failed (non-fatal): %s", _gate_err)
+        return candidate

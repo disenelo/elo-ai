@@ -488,6 +488,59 @@ def build(
         elif exec_decision.get("leaf_on_water_active"):
             directive_lines.append("stability: leaf-on-water — gentle, present, no more than two thoughts")
 
+        # ── WO-EXEC-DECISION-FIELDS-001: expression fields → prompt ──────
+        _sig = exec_decision.get("significance_score", 0.0) or 0.0
+
+        # storytelling_style (always inject — gates LLM mode framing)
+        _STYLE_INSTRUCTIONS = {
+            "collaborative":  "Style: collaborative — explore together; use 'we', invite their view in",
+            "imaginative":    "Style: imaginative — world-build, metaphor, playful possibility",
+            "reflective":     "Style: reflective — sit with it; don't rush to resolution",
+            "playful":        "Style: playful — lightness first; let wit come naturally",
+            "exploratory":    "Style: exploratory — open questions, sideways angles, follow the interesting thread",
+            "direct":         "Style: direct — say the thing; no preamble, no hedge",
+        }
+        _style = exec_decision.get("storytelling_style", "direct") or "direct"
+        if _style in _STYLE_INSTRUCTIONS:
+            directive_lines.append(_STYLE_INSTRUCTIONS[_style])
+
+        # personality_traits — inject top 2 traits when significance is high enough
+        _traits = exec_decision.get("personality_traits") or {}
+        if _traits and _sig >= 0.3:
+            _top = sorted(_traits.items(), key=lambda kv: kv[1], reverse=True)[:2]
+            if _top:
+                _trait_names = ", ".join(k.replace("_", " ") for k, _ in _top)
+                directive_lines.append(f"Expressed traits this turn: {_trait_names}")
+
+        # relationship_mode — tone modifier
+        _rel = exec_decision.get("relationship_mode") or ""
+        _REL_INSTRUCTIONS = {
+            "close":       "Relationship: close — speak as someone who knows him well; no formality",
+            "established": "Relationship: established — familiar, warm, no need for explanation",
+            "building":    "Relationship: building — curious, careful, open",
+            "professional":"Relationship: professional — clear, respectful, measured",
+        }
+        if _rel and _rel in _REL_INSTRUCTIONS:
+            directive_lines.append(_REL_INSTRUCTIONS[_rel])
+
+        # turn_mode
+        _tmode = exec_decision.get("turn_mode") or "EXPLORE"
+        _TMODE_INSTRUCTIONS = {
+            "BUILD":   "Turn mode: BUILD — make something concrete this turn",
+            "PLAY":    "Turn mode: PLAY — light, alive, follow the energy",
+            "EXPLORE": "Turn mode: EXPLORE — open, curious, no destination required",
+            "REFINE":  "Turn mode: REFINE — sharpen what's already there; don't start fresh",
+        }
+        if _tmode in _TMODE_INSTRUCTIONS:
+            directive_lines.append(_TMODE_INSTRUCTIONS[_tmode])
+
+        # ccm_context — inject if non-empty
+        _ccm = exec_decision.get("ccm_context") or {}
+        if _ccm and isinstance(_ccm, dict):
+            _ccm_items = [f"{k}: {v}" for k, v in list(_ccm.items())[:4] if v]
+            if _ccm_items:
+                directive_lines.append("Context enrichment: " + "; ".join(_ccm_items))
+
         _push("executive_directive", "\n".join(directive_lines))
 
     assembled = "\n\n".join(sections)

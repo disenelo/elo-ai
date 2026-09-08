@@ -2906,6 +2906,14 @@ def _process_turn(raw: str) -> dict:
                 "stability_law_active":      getattr(_plan, "stability_law_active", False),
                 "leaf_on_water_active":      getattr(_plan, "leaf_on_water_active", False),
                 "plan_complexity_score":     getattr(_plan, "plan_complexity_score", 0.0),
+                # WO-EXEC-DECISION-FIELDS-001: expression fields — spine sets, now consumed by prompt_builder
+                "storytelling_style":    getattr(_plan, "storytelling_style", "direct"),
+                "personality_traits":    getattr(_plan, "personality_traits", {}),
+                "personality_baseline":  getattr(_plan, "personality_baseline", {}),
+                "ccm_context":           getattr(_plan, "ccm_context", {}),
+                "significance_score":    getattr(_plan, "significance_score", 0.0),
+                "relationship_mode":     getattr(_plan, "relationship_mode", ""),
+                "turn_mode":             getattr(_plan, "turn_mode", "EXPLORE"),
             }
             # WO-105: collect last-turn spine domain health for /health endpoint
             global _spine_degraded
@@ -4321,6 +4329,17 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
 
+                # WO-REGISTER-PLACEMENT-001: voice register echo closest to generation
+                try:
+                    from runtime.voice_register import get_register_block as _vrb_echo
+                    system = system + (
+                        "\n\n[eLo VOICE IDENTITY — always, this turn]\n"
+                        "eLo speaks from his own register. Not formal English with slang inserted."
+                        " The rhythm, compression, and naturalness above apply to this response."
+                    )
+                except Exception:
+                    pass
+
                 _llm_latency_ms = 0.0
                 _early_tts_sentence = [None]  # tracks first sentence spoken early
                 import time as _perf_mod
@@ -4955,6 +4974,25 @@ def _process_turn(raw: str) -> dict:
             import logging as _ro_log
             _ro_log.getLogger("response_ownership").warning(
                 "response_ownership gate failed (non-fatal): %s", _ro_err
+            )
+
+        # WO-GATE-001: cognitive response gate — BEFORE _sanitise, AFTER ownership check.
+        try:
+            from runtime.response_gate import elo_response_gate as _elo_rg
+            _rg_history = list(_state.get("history", [])[-5:]) if isinstance(_state, dict) else []
+            _rg_cs = {}
+            if exec_decision:
+                _rg_cs["relationship_mode"] = exec_decision.get("relationship_mode", "")
+            response = _elo_rg(
+                response,
+                current_turn_input=_original_raw,
+                cognitive_state=_rg_cs,
+                conversation_history=_rg_history,
+            )
+        except Exception as _elo_rg_err:
+            import logging as _rg_log_m
+            _rg_log_m.getLogger("response_gate").warning(
+                "elo_response_gate failed (non-fatal): %s", _elo_rg_err
             )
 
         response = _sanitise(response)

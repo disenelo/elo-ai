@@ -423,16 +423,20 @@ def _executive_faculty(
         _is_dream  = plan.conversation_action in ("explore",)
         plan.cognitive_mode_inner_child = bool(_curiosity > 0.7 or (_is_play and _is_dream))
 
-        # ── WO-VESSEL-LOOP-001: vessel phase ───────────────────────────────
+        # ── WO-VESSEL-LOOP-001 / WO-VESSEL-PHASE-001: vessel phase ───────────
         if not plan.vessel_phase or plan.vessel_phase == "FEEL":
             if plan.stability_law_active:
                 plan.vessel_phase = "STABILISE"
             elif plan.conversation_action in ("build", "connect"):
                 plan.vessel_phase = "TRANSFORM"
-            elif plan.conversation_action in ("reflect", "witness"):
+            elif plan.conversation_action in ("reflect", "witness", "answer", "greet"):
                 plan.vessel_phase = "EXPRESS"
             elif plan.conversation_action == "ground":
                 plan.vessel_phase = "STABILISE"
+            elif plan.conversation_action == "rest":
+                plan.vessel_phase = "REST"
+            else:
+                plan.vessel_phase = "EXPRESS"
 
     except Exception as e:
         _log.warning("executive_faculty/exec_decide FAILED: %s", e)
@@ -501,6 +505,19 @@ def _executive_faculty(
             _world_dict["wkg_context"] = getattr(cognitive_state, "wkg_context", "")
             _et = getattr(cognitive_state, "emotional_tag", None)
             _world_dict["mood"] = getattr(_et, "dominant_emotion", "neutral") if _et else "neutral"
+            # WO-TIER-POPULATION-001: populate missing tier fields so never_pretend_certainty
+            # does not fire on every turn due to absent/unknown tiers
+            _world_dict["vault_context"] = getattr(cognitive_state, "vault_context", "")
+            _world_dict["capabilities"] = list(getattr(cognitive_state, "capability_candidates", ()) or ())
+            _hp = list(getattr(cognitive_state, "high_priority_memories", ()) or ())
+            _mp = list(getattr(cognitive_state, "medium_priority_memories", ()) or ())
+            if _hp or _mp:
+                _world_dict["lessons"] = _hp + _mp
+            _world_dict["pose"] = (
+                getattr(cognitive_state, "active_app", "") or
+                getattr(cognitive_state, "desktop_activity", "")
+            )
+            _world_dict["nearby"] = getattr(cognitive_state, "nearby_entities", "") or ""
         _tfr_results, _speech_licence = _TFR().evaluate(_world_dict, cognitive_state)
         plan.speech_licence = _speech_licence
         if _speech_licence.violations:
