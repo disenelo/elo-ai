@@ -1,7 +1,8 @@
 """
 runtime/significance_faculty.py — SP-29 schema layer (WO-NAV-006).
 
-Significance faculty: computes a 14-dimensional significance score from world delta.
+Significance faculty: computes a 14-dimensional significance score from world delta
+and (WO-SP29-CONV-SIGNIFICANCE-001) conversational text signals.
 
 [ESTIMATE] weights: all currently uniform / placeholder values.
 David L3 will specify final weights when behavioural decisions are made (D-gate SP-29).
@@ -15,6 +16,7 @@ Do NOT change weights without David L3 authorisation.
 from __future__ import annotations
 
 import logging
+import re as _re
 
 _log = logging.getLogger(__name__)
 
@@ -39,7 +41,52 @@ _WEIGHTS = {
 _DIMENSIONS = list(_WEIGHTS.keys())
 
 
-def compute_significance(world_delta: dict, elo_self_state: dict | None = None) -> dict:
+# ── WO-SP29-CONV-SIGNIFICANCE-001: conversational signal patterns ─────────────
+# [ESTIMATE] — pattern → (dimension, boost). Boosts are additive to world_delta scores.
+# David L3 must set final values at SP-29 D-gate. Do not change without authorisation.
+
+_CONV_SIGNALS: list[tuple[str, str, float]] = [
+    # Emotion / distress
+    (r"\b(?:overwhelm|anxious|scared|spiralling|spinning|panic)\b",    "relationship",  0.6),  # [ESTIMATE]
+    (r"\b(?:excited|breakthrough|figured\s+out|it\s+all\s+connects)\b", "creation",     0.7),  # [ESTIMATE]
+    (r"\b(?:amazing|incredible|finally|everything\s+makes\s+sense)\b",  "novelty",      0.6),  # [ESTIMATE]
+    # Creative / insight
+    (r"\b(?:i\s+figured\s+out|i\s+realised|i\s+understand\s+now)\b",   "learning",     0.65), # [ESTIMATE]
+    (r"\b(?:idea|concept|story|vision|arc|design|world)\b",             "creation",     0.35), # [ESTIMATE]
+    (r"\b(?:this\s+is\s+it|that(?:'s|\s+is)\s+it|got\s+it)\b",        "novelty",      0.5),  # [ESTIMATE]
+    # Conflict / disagreement
+    (r"\b(?:wrong|broken|doesn(?:'t|\s+not)\s+work|that\s+fails)\b",   "logic",        0.5),  # [ESTIMATE]
+    (r"\b(?:disagree|that(?:'s|\s+is)\s+not\s+right|actually)\b",      "logic",        0.4),  # [ESTIMATE]
+    # Relationship / connection
+    (r"\b(?:thank\s+you|means\s+a\s+lot|appreciate|grateful)\b",       "relationship", 0.55), # [ESTIMATE]
+    (r"\b(?:miss|lonely|tired|exhausted|burnt\s+out)\b",               "relationship", 0.5),  # [ESTIMATE]
+    # Deep question
+    (r"\b(?:why|what\s+does|what\s+is\s+the\s+point|meaning)\b",      "learning",     0.3),  # [ESTIMATE]
+    (r"\b(?:how\s+does|can\s+you\s+explain|walk\s+me\s+through)\b",   "learning",     0.25), # [ESTIMATE]
+]
+
+
+def _score_text_signals(text: str) -> dict[str, float]:
+    """
+    [ESTIMATE] Scan text for conversational significance signals.
+    Returns {dimension: boost} — boosts are NOT yet weighted; caller applies weights.
+    WO-SP29-CONV-SIGNIFICANCE-001: additive to world_delta scores.
+    """
+    if not text:
+        return {}
+    tl = text.lower()
+    boosts: dict[str, float] = {}
+    for pattern, dimension, boost in _CONV_SIGNALS:
+        if _re.search(pattern, tl):
+            boosts[dimension] = max(boosts.get(dimension, 0.0), boost)  # [ESTIMATE] max, not sum
+    return boosts
+
+
+def compute_significance(
+    world_delta: dict,
+    elo_self_state: dict | None = None,
+    text_input: str = "",                    # WO-SP29-CONV-SIGNIFICANCE-001
+) -> dict:
     """
     SP-29 schema layer: compute 14-dimensional significance score.
 
@@ -48,6 +95,8 @@ def compute_significance(world_delta: dict, elo_self_state: dict | None = None) 
                         gaze_changed, new_platforms_visible, lost_platforms_visible,
                         elapsed_turns, any_change.
         elo_self_state: Optional EloSelfState dict for mood/curiosity weighting.
+        text_input:     [WO-SP29-CONV-SIGNIFICANCE-001] Raw conversational text to score
+                        for emotional/creative/conflict signals. [ESTIMATE] boosts.
 
     Returns dict with 14 dimension scores (float 0.0–1.0) + "overall".
     All weights are [ESTIMATE] placeholders — D-gated to David L3.
@@ -83,6 +132,14 @@ def compute_significance(world_delta: dict, elo_self_state: dict | None = None) 
         "safety":        round(1.0 * _WEIGHTS["safety"], 4),                   # [ESTIMATE] safety always baseline
         "reward":        round(0.0 * _WEIGHTS["reward"], 4),                   # [ESTIMATE]
     }
+
+    # WO-SP29-CONV-SIGNIFICANCE-001: apply conversational signal boosts
+    # [ESTIMATE] boost * weight added to base score; capped at 1.0 per dimension.
+    _conv_boosts = _score_text_signals(text_input)
+    for dim, boost in _conv_boosts.items():
+        if dim in scores:
+            weighted_boost = round(boost * _WEIGHTS.get(dim, 0.1), 4)  # [ESTIMATE]
+            scores[dim] = round(min(1.0, scores[dim] + weighted_boost), 4)  # [ESTIMATE]
 
     # [ESTIMATE] overall = mean of all dimension scores
     scores["overall"] = round(sum(scores.values()) / len(scores), 4)           # [ESTIMATE]

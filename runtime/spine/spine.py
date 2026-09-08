@@ -1264,7 +1264,7 @@ def assemble_cognitive_state(
             _world_delta_sp29 = _wd_compute_sp29() or {}
         except Exception:
             pass
-        _sig_result = _csig_sp29(_world_delta_sp29)
+        _sig_result = _csig_sp29(_world_delta_sp29, text_input=_raw_input or "")  # WO-SP29-CONV-SIGNIFICANCE-001
         _significance_score = float(_sig_result.get("overall", 0.0))
     except Exception:
         _significance_score = 0.0
