@@ -1242,14 +1242,18 @@ def assemble_cognitive_state(
         if _topic:
             _entities = _wkg.search_entities(_topic)[:3]
             if _entities:
+                # Build entity-id → label map for resolving object labels in the graph
+                _ent_map = {e["entity_id"]: e.get("label", "") for e in _wkg._load("entities")}
                 _lines = []
                 for _ent in _entities:
                     _claims = _wkg.get_claims_about(_ent.get("entity_id", ""))[:2]
                     for _cl in _claims:
-                        _lines.append(
-                            f"[{_cl.get('epistemic_class','').upper()}] "
-                            f"{_ent.get('label','')} — {_cl.get('claim','')}"
-                        )
+                        _subj = _ent_map.get(_cl.get("subject_entity_id", ""), _ent.get("label", ""))
+                        _obj  = _ent_map.get(_cl.get("object_entity_id", ""), "")
+                        _rel  = _cl.get("relationship_type", "").replace("_", " ").lower()
+                        _epi  = _cl.get("epistemic_class", "").upper()
+                        if _obj:
+                            _lines.append(f"[{_epi}] {_subj} {_rel} {_obj}")
                 _wkg_context = "; ".join(_lines)
     except Exception:
         pass
