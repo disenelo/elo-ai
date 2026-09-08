@@ -6911,3 +6911,31 @@ Five WOs closed in one commit. Root cause targeted: spine set fields, exec_decis
 **Commit:** b46608c
 
 *Builder seat · 2026-09-08 (session 3)*
+
+### §55 PROGRAMME UPDATE — 2026-09-08 (session 3 continued — queue cleared)
+
+**Session result: all 4 pending Board WOs complete — commits b46608c, 10fa169, a313986, 7e02ae0**
+
+| WO | Files | Commit | Status |
+|---|---|---|---|
+| WO-MEMORY-TYPES-001 — `record_claim()` with `memory_type` + `significance_score` fields; 8-type frozenset, unknown → unclassified | `runtime/wkg_faculty.py` | b46608c | CLOSED ✅ |
+| WO-PROVENANCE-CONTEXT-001 — D-4 guard: unsourced "you are/were working on" context claims qualified with "I think you might be..." | `runtime/response_gate.py` | 10fa169 | CLOSED ✅ |
+| WO-INTENT-ACCURACY-001 — planning/creation/lookup/ground intents expanded; planning moved before lookup (ordering bug fix) | `runtime/router/intent_engine.py` | a313986 | CLOSED ✅ |
+| WO-SP29-CONV-SIGNIFICANCE-001 — conversational signal scoring in significance_faculty (12 patterns, [ESTIMATE] weights, additive) | `runtime/significance_faculty.py`, `runtime/spine/spine.py` | 7e02ae0 | CLOSED ✅ |
+
+**Test suite across session 3:** 1565 pass / 3 pre-existing failures (xi_ad2 intentionally RED, mp1/mp2 Unity-side gap) / 3 skipped / 1 xfailed.
+
+**Board queue: EMPTY** — all dispatched WOs now CLOSED.
+
+**Architecture state after session 3:**
+- Consumption gap: CLOSED (WO-EXEC-DECISION-FIELDS-001, prior sessions)
+- Vessel phase: all conversational actions route correctly (WO-VESSEL-PHASE-001)
+- Expression chain: storytelling style / personality traits / relationship mode / expression mode / voice register all reach prompt (sessions 1-2)
+- Cognitive gate: elo_response_gate + guard_d4_context_claim_provenance both active (WO-GATE-001, WO-PROVENANCE-CONTEXT-001)
+- Intent accuracy: planning/creation/lookup/ground phrasings now correctly classified (WO-INTENT-ACCURACY-001)
+- Conversational significance: emotional/creative/conflict signals now differentiated from casual (WO-SP29-CONV-SIGNIFICANCE-001)
+- Personality persistence: personality_vector.json created on boot (WO-PERSONALITY-PERSIST-001)
+- WKG write gate: DREAM_SIMULATION blocked; memory_type + significance_score written on every new claim (WO-DREAM-VERIFY-001, WO-MEMORY-TYPES-001)
+- Local-first: ELO_BACKEND=local; ollama first in TIER_REASONING; ollama fallback in intent_engine (WO-LOCAL-LLM-001)
+
+*Builder seat · 2026-09-08 (session 3 — queue cleared)*
