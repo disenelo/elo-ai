@@ -148,7 +148,10 @@ def load_personality() -> PersonalityVector:
         pv.preferences = data.get("preferences", {})
         return pv
     except (FileNotFoundError, json.JSONDecodeError, KeyError, TypeError):
-        return PersonalityVector()
+        _pv_default = PersonalityVector()
+        # WO-PERSONALITY-PERSIST-001: create file on first boot so drift can accumulate
+        save_personality(_pv_default)
+        return _pv_default
 
 
 def save_personality(pv: PersonalityVector) -> None:

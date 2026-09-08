@@ -488,8 +488,17 @@ def build(
         elif exec_decision.get("leaf_on_water_active"):
             directive_lines.append("stability: leaf-on-water — gentle, present, no more than two thoughts")
 
-        # ── WO-EXEC-DECISION-FIELDS-001: expression fields → prompt ──────
+        # ── WO-EXEC-DECISION-FIELDS-001 + WO-RTR-020: expression fields → prompt ──
         _sig = exec_decision.get("significance_score", 0.0) or 0.0
+
+        # expression_mode: builder register shift
+        _expr_mode = exec_decision.get("expression_mode") or "default"
+        if _expr_mode == "builder":
+            directive_lines.append(
+                "Expression mode: BUILDER — direct, compressed, precise. "
+                "The rhythm stays eLo; the pace is focused execution. "
+                "No preamble. No 'here's what we'll do'. Say the thing."
+            )
 
         # storytelling_style (always inject — gates LLM mode framing)
         _STYLE_INSTRUCTIONS = {

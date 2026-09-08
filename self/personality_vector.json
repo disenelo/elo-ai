@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "preferences": {},
+  "curiosity": {
+    "value": 0.62,
+    "baseline": 0.62,
+    "evolution_rate": 0.02,
+    "last_changed": "",
+    "evidence": []
+  },
+  "patience": {
+    "value": 0.65,
+    "baseline": 0.65,
+    "evolution_rate": 0.02,
+    "last_changed": "",
+    "evidence": []
+  },
+  "confidence": {
+    "value": 0.6,
+    "baseline": 0.6,
+    "evolution_rate": 0.02,
+    "last_changed": "",
+    "evidence": []
+  },
+  "empathy": {
+    "value": 0.72,
+    "baseline": 0.72,
+    "evolution_rate": 0.02,
+    "last_changed": "",
+    "evidence": []
+  },
+  "discipline": {
+    "value": 0.58,
+    "baseline": 0.58,
+    "evolution_rate": 0.02,
+    "last_changed": "",
+    "evidence": []
+  },
+  "wonder": {
+    "value": 0.8,
+    "baseline": 0.8,
+    "evolution_rate": 0.02,
+    "last_changed": "",
+    "evidence": [
+      "identity_kernel"
+    ]
+  },
+  "playfulness": {
+    "value": 0.68,
+    "baseline": 0.68,
+    "evolution_rate": 0.02,
+    "last_changed": "",
+    "evidence": []
+  },
+  "directness": {
+    "value": 0.72,
+    "baseline": 0.72,
+    "evolution_rate": 0.02,
+    "last_changed": "",
+    "evidence": [
+      "character_rule"
+    ]
+  }
+}

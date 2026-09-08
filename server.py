@@ -2906,7 +2906,8 @@ def _process_turn(raw: str) -> dict:
                 "stability_law_active":      getattr(_plan, "stability_law_active", False),
                 "leaf_on_water_active":      getattr(_plan, "leaf_on_water_active", False),
                 "plan_complexity_score":     getattr(_plan, "plan_complexity_score", 0.0),
-                # WO-EXEC-DECISION-FIELDS-001: expression fields — spine sets, now consumed by prompt_builder
+                # WO-EXEC-DECISION-FIELDS-001 + WO-RTR-020: expression fields — spine sets, now consumed by prompt_builder
+                "expression_mode":       getattr(_plan, "expression_mode", "default"),
                 "storytelling_style":    getattr(_plan, "storytelling_style", "direct"),
                 "personality_traits":    getattr(_plan, "personality_traits", {}),
                 "personality_baseline":  getattr(_plan, "personality_baseline", {}),

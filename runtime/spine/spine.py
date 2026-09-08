@@ -542,10 +542,23 @@ def _conversation_faculty(plan: CognitivePlan) -> CognitivePlan:
     reg    = plan.register
     raw_lower = plan.raw.lower().strip().rstrip(".,!")
 
-    # ── WO-SC-NEW-001 D-2: infer storytelling_style from voice/mode context ──
-    # Set unconditionally so every downstream path (direct or LLM) carries it.
+    # ── WO-RTR-020: infer expression_mode from intent/context signals ────────
     _mode_lower = (plan.mode or "").lower()
     _intent_lower = (plan.intent or "").lower()
+    _action_lower = (plan.conversation_action or "").lower()
+    _BUILDER_INTENTS = {"code", "debug", "draft", "creation", "vault_write", "planning", "build"}
+    _BUILDER_MODE_KEYS = ("studio", "builder", "creat", "code", "debug")
+    if (
+        _intent_lower in _BUILDER_INTENTS or
+        any(k in _mode_lower for k in _BUILDER_MODE_KEYS) or
+        _action_lower == "build"
+    ):
+        plan.expression_mode = "builder"
+    else:
+        plan.expression_mode = "default"
+
+    # ── WO-SC-NEW-001 D-2: infer storytelling_style from voice/mode context ──
+    # Set unconditionally so every downstream path (direct or LLM) carries it.
     if any(k in _mode_lower for k in ("studio", "builder", "creat")):
         plan.storytelling_style = "collaborative"
     elif "imaginat" in _mode_lower or _intent_lower == "creation":

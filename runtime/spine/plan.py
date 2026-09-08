@@ -163,6 +163,11 @@ class CognitivePlan:
     # ── WO-CONV-AUTHORITY-001: correction detection ─────────────────────────
     explicit_correction_detected: bool    = False
 
+    # ── WO-RTR-020: Builder Expression/Creative Mode ─────────────────────────
+    # Set by spine when intent/context signals Builder mode (code, plan, create, debug).
+    # Values: "builder" | "default". When "builder": register shifts to direct/compressed.
+    expression_mode: str = "default"
+
     def needs_llm(self) -> bool:
         return not self.direct_response and not self.system_immediate and not self.system_pending
 
