@@ -350,6 +350,87 @@ _CONTEXT_CLAIM_TRIGGERS = [
     "you've been working on", "you have been trying", "you've been trying",
 ]
 
+# ── WO-RESPONSE-GATE-COMPLETE-001: checks 1,4,6,7,9-personality,12,13,14,15 ──
+
+# Check 15 — AI-IDENTITY opener phrases eLo never uses
+_AI_ASSISTANT_OPENERS = [
+    "certainly!", "of course!", "absolutely!", "great question!",
+    "that's a great point.", "i appreciate your question",
+    "i should note that", "it's worth noting that",
+    "as an ai,", "as an ai assistant,", "as a language model,",
+    "i'm just an ai", "i'm an artificial intelligence",
+    "based on my training", "my knowledge cutoff",
+]
+
+# Check 15 — AI-IDENTITY inline phrases (sentence-level strip)
+_AI_IDENTITY_INLINE = [
+    "as an ai", "i am a language model", "i'm a language model",
+    "i don't have personal feelings", "i don't have personal experience",
+    "i cannot have opinions", "i'm not capable of feelings",
+    "as an artificial intelligence", "my training data",
+]
+
+# Check 9-personality — cold/corporate register that breaks eLo's relationship style
+_COLD_REGISTER_PHRASES = [
+    "i hope this finds you well", "as per your request",
+    "please let me know if you need anything else",
+    "feel free to reach out", "happy to help with that",
+    "let me know if you have any further questions",
+    "don't hesitate to contact", "i would like to inform you",
+    "kindly note that", "please be advised that",
+    "i trust this helps", "i would like to take this opportunity",
+]
+
+# Check 7 — internal faculty/system references that must never surface in LLM output
+_FACULTY_LEAK_PHRASES = [
+    "according to my memory faculty", "the significance faculty",
+    "based on my cognitive state", "my executive decision",
+    "the planner determined", "my attention model",
+    "the cognitive plan", "the conversation faculty",
+    "the emotional vector", "the presence plan",
+    "the executive faculty", "my significance score",
+    "the relevance filter", "my affective state",
+    "the spine decided", "the gate flagged",
+]
+
+# Check 4 — unverifiable factual invention signals
+_INVENTION_SIGNALS = [
+    "research shows that", "studies show that", "according to research",
+    "statistically speaking,", "the data shows that",
+    "experts say that", "it's been proven that",
+    "a study found that", "statistics show that",
+    "scientifically speaking,",
+]
+
+# Check 6 — cross-context import from a different session/thread
+_CROSS_CONTEXT_SIGNALS = [
+    "as we discussed in our other project",
+    "from the other conversation",
+    "in the other file we were working on",
+    "like we talked about in the other",
+    "from our other session",
+    "in the previous thread",
+    "from the last time we spoke about a different",
+]
+
+# Check 12 — extended false-failure phrases (complements Check 10)
+_EXTENDED_FAILURE_PHRASES = [
+    "i wasn't able to", "i was not able to",
+    "i couldn't do that", "i could not do that",
+    "i didn't manage to", "i did not manage to",
+    "the request failed", "the operation failed",
+    "i encountered an error", "something went wrong when i",
+    "i apologise, i was unable",
+]
+
+# Check 14 — off-topic tangent markers
+_TANGENT_MARKERS = [
+    "by the way,", "on a different note,", "unrelated but",
+    "i should also mention,", "also worth mentioning,",
+    "while we're on the topic,", "that reminds me,",
+    "on another note,", "speaking of which,",
+]
+
 import re as _re
 
 
@@ -549,6 +630,115 @@ def elo_response_gate(
             conversation_history=conversation_history,
             wkg_context=cognitive_state,
         )
+
+        # ── WO-RESPONSE-GATE-COMPLETE-001: checks 15, 9-personality, 1, 4, 6, 7, 12, 13, 14 ──
+
+        # Check 15 (HIGHEST) — VOICE IDENTITY: strip AI-assistant opener phrases
+        for _opener15 in _AI_ASSISTANT_OPENERS:
+            if cl.startswith(_opener15):
+                _rem15 = output[len(_opener15):].lstrip(" ,!—–").strip()
+                if _rem15:
+                    output = _rem15[0].upper() + _rem15[1:]
+                    cl = output.lower()
+                break
+
+        # Check 15 cont. — VOICE IDENTITY: strip sentences containing AI-identity inline phrases
+        for _phrase15 in _AI_IDENTITY_INLINE:
+            if _phrase15 in cl:
+                _sents15 = _re.split(r"(?<=[.!?])\s+", output)
+                _filtered15 = [s for s in _sents15 if _phrase15 not in s.lower()]
+                if _filtered15:
+                    output = " ".join(_filtered15)
+                    cl = output.lower()
+                else:
+                    _log.warning("elo_response_gate check-15: AI-identity phrase in all sentences — passing through unchanged")
+                break
+
+        # Check 9-personality — RELATIONSHIP STYLE: strip cold/corporate register sentences
+        for _phrase9p in _COLD_REGISTER_PHRASES:
+            if _phrase9p in cl:
+                _sents9p = _re.split(r"(?<=[.!?])\s+", output)
+                _filtered9p = [s for s in _sents9p if _phrase9p not in s.lower()]
+                if _filtered9p:
+                    output = " ".join(_filtered9p)
+                    cl = output.lower()
+                else:
+                    _log.warning("elo_response_gate check-9-personality: cold register phrase fills full response — passing through unchanged")
+                break
+
+        # Check 1 — RELEVANCE: lightweight overlap check (WARNING only, no modification)
+        if current_turn_input and len(current_turn_input.strip()) > 10:
+            _inp_words = set(_re.findall(r"\b[a-z]{4,}\b", current_turn_input.lower()))
+            _resp_words = set(_re.findall(r"\b[a-z]{4,}\b", cl))
+            if _inp_words and len(_inp_words & _resp_words) / len(_inp_words) < 0.05:
+                _log.warning(
+                    "elo_response_gate check-1: low input→response overlap (%.2f) — response may not answer current message",
+                    len(_inp_words & _resp_words) / max(1, len(_inp_words)),
+                )
+
+        # Check 4 — INVENTION: qualify unverifiable factual claims
+        for _phrase4 in _INVENTION_SIGNALS:
+            if _phrase4 in cl:
+                _log.warning("elo_response_gate check-4: invention signal %r detected — qualifying", _phrase4)
+                output = _re.sub(
+                    _re.escape(_phrase4), "I think " + _phrase4,
+                    output, count=1, flags=_re.IGNORECASE
+                )
+                cl = output.lower()
+                break
+
+        # Check 6 — CROSS-CONTEXT IMPORT: strip sentences with cross-session references
+        for _phrase6 in _CROSS_CONTEXT_SIGNALS:
+            if _phrase6 in cl:
+                _sents6 = _re.split(r"(?<=[.!?])\s+", output)
+                _filtered6 = [s for s in _sents6 if _phrase6 not in s.lower()]
+                if _filtered6:
+                    output = " ".join(_filtered6)
+                    cl = output.lower()
+                break
+
+        # Check 7 — FACULTY LEAK: strip sentences containing internal system-layer references
+        for _phrase7 in _FACULTY_LEAK_PHRASES:
+            if _phrase7 in cl:
+                _sents7 = _re.split(r"(?<=[.!?])\s+", output)
+                _filtered7 = [s for s in _sents7 if _phrase7 not in s.lower()]
+                if _filtered7:
+                    output = " ".join(_filtered7)
+                    cl = output.lower()
+                else:
+                    _log.warning("elo_response_gate check-7: faculty phrase in all sentences — passing through unchanged")
+                break
+
+        # Check 12 — FALSE FAILURE CLAIM: strip sentences claiming a failure that wasn't attempted
+        for _phrase12 in _EXTENDED_FAILURE_PHRASES:
+            if _phrase12 in cl:
+                _sents12 = _re.split(r"(?<=[.!?])\s+", output)
+                _filtered12 = [s for s in _sents12 if _phrase12 not in s.lower()]
+                if _filtered12:
+                    output = " ".join(_filtered12)
+                    cl = output.lower()
+                break
+
+        # Check 13 — INTENT ALIGNMENT: WARNING when response type mismatches turn intent
+        _turn_intent = (cognitive_state or {}).get("intent", "")
+        if _turn_intent == "celebrate" and _re.match(
+            r"^(the answer is|technically speaking|to be precise|in fact,)", cl
+        ):
+            _log.warning("elo_response_gate check-13: intent='celebrate' but response opens with analytical framing")
+        elif _turn_intent == "simplify" and _re.search(
+            r"\b(?:moreover|furthermore|in conclusion|therefore|consequently)\b", cl
+        ):
+            _log.warning("elo_response_gate check-13: intent='simplify' but response uses complex academic transition language")
+
+        # Check 14 — UNRELATED TANGENT: strip sentences beginning with off-topic markers
+        for _marker14 in _TANGENT_MARKERS:
+            if _marker14 in cl:
+                _sents14 = _re.split(r"(?<=[.!?])\s+", output)
+                _filtered14 = [s for s in _sents14 if _marker14 not in s.lower()]
+                if _filtered14 and len(_filtered14) >= len(_sents14) - 2:
+                    output = " ".join(_filtered14)
+                    cl = output.lower()
+                break
 
         return output if output.strip() else candidate
 
