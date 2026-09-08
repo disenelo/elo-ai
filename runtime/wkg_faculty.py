@@ -146,11 +146,31 @@ def record_claim(
     experience_id: str | None = None,
     confidence: float | None = None,
     contradicted_by: list | None = None,
+    memory_origin: str | None = None,
 ) -> dict:
     """
     MemoryFaculty sole entry point for WKG claim creation.
     SOURCE_ATTRIBUTED != VERIFIED — enforced at this boundary.
+    WO-DREAM-VERIFY-001: DREAM_SIMULATION origin blocked at write gate.
     """
+    # WO-DREAM-VERIFY-001: enforce dream boundary — DREAM_SIMULATION must never auto-enter WKG
+    if memory_origin is not None:
+        try:
+            from runtime.memory_origin import MemoryOrigin, is_auto_storable as _ias
+            _origin_enum = MemoryOrigin(memory_origin)
+            if not _ias(_origin_enum):
+                import logging as _wkg_log
+                _wkg_log.getLogger("wkg_faculty").warning(
+                    "WKG write blocked: memory_origin=%r is not auto-storable (DREAM_SIMULATION boundary enforced)",
+                    memory_origin,
+                )
+                raise ValueError(
+                    f"WKG write blocked: origin {memory_origin!r} is not eligible for automatic storage. "
+                    "DREAM_SIMULATION must pass significance gate (≥0.72) before entering the vault."
+                )
+        except ImportError:
+            pass  # memory_origin module unavailable — fail open, log only
+
     if epistemic_class not in _EPISTEMIC_CLASSES:
         raise ValueError(f"Invalid epistemic_class: {epistemic_class!r}")
     rel_types = _load("relationship_types")
