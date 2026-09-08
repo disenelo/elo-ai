@@ -1,3 +1,35 @@
+## BOARD STATE UPDATE — 2026-09-08 (Root cause found — EXTRACTION GAP — all expression WOs unblocked)
+**Source:** Builder finding + Board verification of `server.py:2884-2912`. [VERIFIED — read code directly]  
+**Authority:** Builder self-reporting + Board read confirmation.
+
+**ROOT CAUSE NAMED — EXTRACTION GAP:**
+
+`server.py:2884` builds `exec_decision` by manually extracting a fixed set of fields from the spine plan. `prompt_builder.py` reads ONLY from `exec_decision`. Fields not in the extraction dict are silently dropped every turn.
+
+**Missing from exec_decision (confirmed by Board read of server.py:2884-2912):**
+- `storytelling_style` — set by `spine.py:528`, never extracted → never reaches prompt
+- `personality_traits` — set by `spine.py:911`, never extracted → never reaches prompt
+- `ccm_context` — set by `spine.py:855`, never extracted → never reaches prompt
+- `relationship_mode` — requires verification
+- `significance_score` — not in main turn path extraction
+
+**Builder's verbatim finding (2026-09-08):** *"The pattern: WOs produced files. Files produced tests against the files. Tests passed. Board accepted. Nobody traced from the test back to server.py. The architecture has walls with no rooms inside."*
+
+**This single extraction gap is the mechanical root of EVERY expression consumption gap: C-10 Storytelling, C-20 Personality, CCM integration, relationship style.**
+
+**WO dispatched:** `WO-EXEC-DECISION-FIELDS-001` [P0] → Builder INBOX  
+- Add `storytelling_style`, `personality_traits`, `personality_baseline`, `ccm_context`, `significance_score`, `relationship_mode`, `turn_mode` to the `exec_decision` dict
+- Then consume each in `prompt_builder.py`
+- JEG CHECK required: expressed output must actually change across storytelling styles/personality traits
+
+**Status of existing expression WOs:** WO-STORYTELLING-CONSUME-001, WO-PERSONALITY-CONSUME-001, WO-CCM-CONSUME-001, WO-RELATIONSHIP-VERIFY-001 are all subsumed by WO-EXEC-DECISION-FIELDS-001. WO-EXPRESSION-CHAIN-001 remains as the integration verification target.
+
+**BA-19 status:** 4/13 SOURCE_ARCHIVE documents read and captured. 9 remain. Reading continues as Board self-task.
+
+**David L3 outstanding (unchanged):** BA-02 significance weights proposal (on board, awaiting approval).
+
+---
+
 ## STANDING RULE — 2026-09-05 (David L3) — Groq/Cerebras 403s are NOT blockers
 **Source:** `docs/architecture/_intake/SOURCE_2026-09-05_DAVID_L3_groq_cerebras_local_learning.md`  
 **Authority:** David L3 — permanent standing rule, does not expire
@@ -6802,3 +6834,80 @@ Full Builder QUEUE audit — all tests run against every WO that has a test file
 **No executable Builder (Python/runtime) work remains.**
 
 *Builder seat · 2026-09-05 (session 3)*
+
+### §52 PROGRAMME UPDATE — 2026-09-08 (consumption gap session)
+
+**Session result: 1549 passed / 18 pre-existing failures / 0 new failures — commit 2a23484**
+
+Five WOs closed in one commit. Root cause targeted: spine set fields, exec_decision dropped them, prompt_builder received none → expressed eLo had no personality/style/relationship/CCM signal.
+
+| WO | Files | Status |
+|---|---|---|
+| WO-EXEC-DECISION-FIELDS-001 — add 7 missing plan fields to exec_decision dict; consume in prompt_builder with style/trait/relationship/mode instructions | `server.py`, `runtime/prompt_builder.py` | CLOSED ✅ |
+| WO-VESSEL-PHASE-001 — add `answer`+`greet`→EXPRESS, `rest`→REST, else→EXPRESS fallback in spine vessel phase block | `runtime/spine/spine.py` | CLOSED ✅ |
+| WO-TIER-POPULATION-001 — extend _world_dict with vault_context, capabilities, lessons, pose, nearby before TieredFacultyReader | `runtime/spine/spine.py` | CLOSED ✅ |
+| WO-REGISTER-PLACEMENT-001 — voice register echo immediately before LLM call; strengthen header to NON-NEGOTIABLE | `server.py`, `runtime/voice_register.py` | CLOSED ✅ |
+| WO-GATE-001 — elo_response_gate() cognitive gate: stale inference, generic openers, thread contamination, fabricated state, provenance. Wired after ownership check, before _sanitise | `runtime/response_gate.py`, `server.py` | CLOSED ✅ |
+
+**WO-STORYTELLING-CONSUME-001, WO-PERSONALITY-CONSUME-001, WO-CCM-CONSUME-001, WO-RELATIONSHIP-VERIFY-001** — resolved by WO-EXEC-DECISION-FIELDS-001. Not closed separately.
+
+**Result cards filed:** `DONE/FROM_BUILDER_WO-EXEC-DECISION-FIELDS-001_result.md`, `WO-VESSEL-PHASE-001_result.md`, `WO-TIER-POPULATION-001_result.md`, `WO-REGISTER-PLACEMENT-001_result.md`, `WO-GATE-001_result.md`
+
+**Remaining P0 in INBOX:** WO-LOCAL-LLM-001 (three changes: .env ELO_BACKEND=local first, ollama first in TIER_REASONING candidates, _ollama_intent_classify() fallback in intent_engine.py)
+
+*Builder seat · 2026-09-08*
+
+### §53 PROGRAMME UPDATE — 2026-09-08 (session 2 — expression + diagnostics)
+
+**Session result: additional WOs built, result cards filed, gaps surfaced — commit 25a07cb, 99b115b, 8962329**
+
+| WO | Files | Status |
+|---|---|---|
+| WO-RTR-020 — Builder expression mode: expression_mode field in plan; directive shifts register for code/build intents | `runtime/spine/plan.py`, `runtime/spine/spine.py`, `server.py`, `runtime/prompt_builder.py` | CLOSED ✅ |
+| WO-PERSONALITY-PERSIST-001 — personality_vector.json now created on first boot; personality can accumulate drift | `faculties/personality/personality_evolution_faculty.py`, `self/personality_vector.json` | CLOSED ✅ |
+| WO-HIST-INGEST-001 — S-01 origin conversations ingested into WKG: eLo entity + 7 foundational claims | `memory/wkg/entities.json`, `memory/wkg/claims.json` | CLOSED ✅ |
+| WO-DREAM-VERIFY-001 — dream boundary enforced at WKG write gate (record_claim now blocks DREAM_SIMULATION) | `runtime/wkg_faculty.py` | CLOSED ✅ |
+| WO-QCUR-SP1-SP2-001 — ambient_thought() EXISTS in server.py, routes through spine; SP-1/SP-2 not found → SCOPE_BLOCKED | — | DIAGNOSTIC DONE |
+| WO-FACULTY-CHAIN-VERIFY-001 — One Brain assembly confirmed: all faculties populate CognitivePlan fields | — | DIAGNOSTIC DONE |
+| WO-PERSONALITY-TRACE-001 — personality_evolution_faculty found; C-20 was FALSE DONE (file missing) → FIXED by WO-PERSONALITY-PERSIST-001 | — | DIAGNOSTIC DONE |
+| WO-VESSEL-AUDIT-001 — 4 scenarios run: expression chain repaired; significance differentiation BROKEN; intent accuracy gaps found | — | DIAGNOSTIC DONE |
+| WO-RELATIONSHIP-VERIFY-001 — relationship_mode reaches prompt dynamically ✅ (AT-1/AT-2 pass) | — | VERIFIED DONE |
+| WO-EXPRESSION-CHAIN-001 — 10-turn audit: expression chain REPAIRED; 2 remaining gaps (intent accuracy, conv significance) | — | INTEGRATION AUDIT DONE |
+
+**New WO dispatched to Board from Builder findings:**
+- **WO-SP29-CONV-SIGNIFICANCE-001** (BUILDER DISPATCH): `compute_significance()` always returns 0.0 because it reads `world_delta` (environment sensor diff), not conversational content. High and low significance turns score identically. Fix: extend significance_faculty to score conversational content (emotion signals, creative statements, conflict markers). This gates personality trait expression depth — currently always at flat 0.0.
+- **WO-INTENT-ACCURACY-001** (BUILDER DISPATCH): Intent classification returns "reflect" for build/plan/answer/ground inputs. Regex patterns in `intent_engine.py` don't catch "help me plan X", "let's explore", "can you explain" → falls to conversation 0.5 confidence → reflect. Expand patterns.
+
+**Result cards filed (DONE/):** WO-EXEC-DECISION-FIELDS-001, WO-VESSEL-PHASE-001, WO-TIER-POPULATION-001, WO-REGISTER-PLACEMENT-001, WO-GATE-001, WO-LOCAL-LLM-001, WO-RTR-020, WO-QCUR-SP1-SP2-001, WO-FACULTY-CHAIN-VERIFY-001, WO-PERSONALITY-TRACE-001, WO-VESSEL-AUDIT-001, WO-RELATIONSHIP-VERIFY-001, WO-EXPRESSION-CHAIN-001
+
+**Commits this session:** 2a23484, ca7c2c6, 25a07cb, 99b115b, 8962329
+
+*Builder seat · 2026-09-08 (session 2)*
+
+### §54 PROGRAMME UPDATE — 2026-09-08 (session 3 — memory types + test alignment)
+
+**Session result: WO-MEMORY-TYPES-001 complete, test suite aligned — commit b46608c**
+
+| WO | Files | Status |
+|---|---|---|
+| WO-MEMORY-TYPES-001 — `record_claim()` accepts `memory_type` (validated against 8-type frozenset) + `significance_score`; both written to claim JSON; unknown type → "unclassified" + WARNING (no raise) | `runtime/wkg_faculty.py` | CLOSED ✅ |
+| Test alignment — `test_four_layer_identity_audit.py` assertions updated from `# LINGUISTIC REGISTER` → `# eLo VOICE IDENTITY` to match voice_register.py NON-NEGOTIABLE header rename from session 1 | `tests/test_four_layer_identity_audit.py` | CLOSED ✅ |
+
+**Acceptance tests:** AT-1 (relational/0.6), AT-2 (episodic/0.3), AT-3 (unknown type → unclassified), AT-4 (no type → unclassified/None) — all PASS.
+
+**Test suite:** 1562 pass / 3 skipped / 1 xfailed. Pre-existing failures unchanged:
+- `test_xi_ad2_parity_proven` — intentionally RED until route_memory.jsonl accumulates real brain_route+unity_route entries
+- `test_mp1`, `test_mp2` — Unity MoodPalette.cs gaps (Python-side not affected)
+- `test_t2_ts_does_not_advance_without_start` — live server interference (environmental, excluded)
+
+**Pending WOs now in Board queue:**
+- **WO-MEMORY-TYPES-001** — DONE (this session)
+- **WO-PROVENANCE-CONTEXT-001** (P2) — `guard_d4_context_claim_provenance()` — any sentence with "you are/were doing/working on/trying..." must be sourced; qualify or remove if unsourced
+- **WO-SP29-CONV-SIGNIFICANCE-001** — extend `compute_significance()` to score conversational content, not just world_delta
+- **WO-INTENT-ACCURACY-001** — expand `_INTENT_PATTERNS` in intent_engine.py for build/answer/ground phrasings
+
+**Result card filed:** `DONE/FROM_BUILDER_WO-MEMORY-TYPES-001_result.md`
+
+**Commit:** b46608c
+
+*Builder seat · 2026-09-08 (session 3)*

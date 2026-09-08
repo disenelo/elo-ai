@@ -322,7 +322,90 @@ _GENERIC_MODEL_OPENERS = [
     "great! i'll", "i'm here to help", "i am here to help",
 ]
 
+# ── WO-PROVENANCE-CONTEXT-001: context/action claim triggers ─────────────────
+_CONTEXT_CLAIM_TRIGGERS = [
+    "you are doing", "you're doing", "you are working on", "you're working on",
+    "you are trying to", "you're trying to", "you are building", "you're building",
+    "you were doing", "you were working on", "you were trying",
+    "you were building", "you are focused on", "you're focused on",
+    "you are currently", "you're currently", "you have been working on",
+    "you've been working on", "you have been trying", "you've been trying",
+]
+
 import re as _re
+
+
+def guard_d4_context_claim_provenance(
+    response: str,
+    current_turn: str = "",
+    conversation_history: list | None = None,
+    wkg_context: dict | None = None,
+) -> str:
+    """
+    WO-PROVENANCE-CONTEXT-001: D-4 context/action claim guard.
+
+    Any sentence asserting "you are/were doing/working on/trying..." is sourced
+    against: (1) current_turn text, (2) last 5 user messages in history,
+    (3) verified WKG claims in wkg_context. If unsourced, qualifies with
+    "I think" prefix. Logs WARNING. Never hard-blocks — always returns a string.
+    """
+    if not response or not response.strip():
+        return response
+
+    try:
+        rl = response.lower()
+        triggered = [t for t in _CONTEXT_CLAIM_TRIGGERS if t in rl]
+        if not triggered:
+            return response
+
+        # Build a search corpus from turn input + recent user history
+        corpus = (current_turn or "").lower()
+        if conversation_history:
+            for msg in conversation_history[-5:]:
+                if isinstance(msg, dict) and msg.get("role") == "user":
+                    corpus += " " + msg.get("content", "").lower()
+
+        # Add WKG claims as corpus entries (labels/descriptions)
+        if wkg_context and isinstance(wkg_context, dict):
+            for _v in wkg_context.values():
+                if isinstance(_v, str):
+                    corpus += " " + _v.lower()
+                elif isinstance(_v, list):
+                    for _item in _v:
+                        if isinstance(_item, str):
+                            corpus += " " + _item.lower()
+
+        output = response
+        for trigger in triggered:
+            # Find the subject after the trigger phrase (up to 30 chars)
+            idx = output.lower().find(trigger)
+            if idx < 0:
+                continue
+            after_trigger = output[idx + len(trigger):idx + len(trigger) + 50].split(".")[0].strip().lower()
+            # Check if any meaningful word from the claimed subject appears in corpus
+            subject_words = [w for w in after_trigger.split() if len(w) > 3]
+            sourced = any(w in corpus for w in subject_words[:4])
+
+            if not sourced:
+                _log.warning(
+                    "response_gate D-4: unsourced context claim %r — subject %r not in turn/history/wkg",
+                    trigger, after_trigger[:30],
+                )
+                # Qualify: "you are working on X" → "I think you might be working on X"
+                qualifier = trigger.replace("you are ", "I think you might be ").replace(
+                    "you're ", "I think you might be ").replace(
+                    "you were ", "I think you were ").replace(
+                    "you have been ", "I think you have been ").replace(
+                    "you've been ", "I think you've been ")
+                output = _re.sub(
+                    _re.escape(trigger), qualifier, output, count=1, flags=_re.IGNORECASE
+                )
+
+        return output if output.strip() else response
+
+    except Exception as _d4_err:
+        _log.warning("guard_d4_context_claim_provenance failed (non-fatal): %s", _d4_err)
+        return response
 
 
 def elo_response_gate(
@@ -428,6 +511,14 @@ def elo_response_gate(
                     if remainder:
                         output = remainder[0].upper() + remainder[1:]
                     break
+
+        # Check D-4 — CONTEXT CLAIM PROVENANCE
+        output = guard_d4_context_claim_provenance(
+            output,
+            current_turn=current_turn_input,
+            conversation_history=conversation_history,
+            wkg_context=cognitive_state,
+        )
 
         return output if output.strip() else candidate
 
