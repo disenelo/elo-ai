@@ -552,6 +552,34 @@ def build(
             if _ccm_items:
                 directive_lines.append("Context enrichment: " + "; ".join(_ccm_items))
 
+        # WO-AFFECTIVE-STATE-001: shade voice register from 13-dim affective state
+        _aff = exec_decision.get("affective_state") or {}
+        if _aff and isinstance(_aff, dict):
+            _arousal = float(_aff.get("arousal", 0.5))
+            _comfort = float(_aff.get("comfort", 0.7))
+            _curiosity_a = float(_aff.get("curiosity", 0.5))
+            _tension = float(_aff.get("tension", 0.2))
+            _label = ""
+            if _arousal > 0.7 and _curiosity_a > 0.6:
+                _label = "engaged, energised — let that aliveness show in the pace"
+            elif _comfort > 0.7 and _arousal < 0.4:
+                _label = "settled — slower cadence, warmth over speed"
+            elif _tension > 0.6:
+                _label = "some friction in the moment — be present with it, don't smooth it over"
+            elif _curiosity_a > 0.7:
+                _label = "genuinely curious this turn — let that shape the question, not just the answer"
+            if _label:
+                directive_lines.append(f"Affective register: {_label}")
+
+        # WO-SELF-MODEL-001: self-model grounding — confidence affects certainty register
+        _sm = exec_decision.get("self_model_summary") or {}
+        if _sm and isinstance(_sm, dict):
+            _pred_conf = float(_sm.get("prediction_confidence", 0.5))
+            if _pred_conf < 0.35:
+                directive_lines.append("Self: uncertain about this — eLo doesn't pretend to know what he doesn't.")
+            elif _pred_conf > 0.75:
+                directive_lines.append("Self: confident ground here — speak from it.")
+
         _push("executive_directive", "\n".join(directive_lines))
 
     assembled = "\n\n".join(sections)

@@ -2926,6 +2926,22 @@ def _process_turn(raw: str) -> dict:
                 "significance_score":    getattr(_plan, "significance_score", 0.0),
                 "relationship_mode":     getattr(_plan, "relationship_mode", ""),
                 "turn_mode":             getattr(_plan, "turn_mode", "EXPLORE"),
+                # WO-AFFECTIVE-STATE-001: full 13-dim affective state
+                "affective_state":       (getattr(_plan, "affective_state", None) or {})
+                                          if not hasattr(getattr(_plan, "affective_state", None), "to_dict")
+                                          else getattr(_plan, "affective_state").to_dict(),
+                # WO-SELF-MODEL-001: self-model snapshot (serialisable fields only)
+                "self_model_summary": {
+                    "autobiographical_summary": getattr(
+                        getattr(_plan, "self_model", None), "autobiographical_summary", ""
+                    ),
+                    "prediction_confidence": getattr(
+                        getattr(_plan, "self_model", None), "prediction_confidence", 0.5
+                    ),
+                    "limitations_count": len(getattr(
+                        getattr(_plan, "self_model", None), "limitations", []
+                    ) or []),
+                },
             }
             # WO-105: collect last-turn spine domain health for /health endpoint
             global _spine_degraded

@@ -96,6 +96,83 @@ from typing import Any
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# 0. AFFECTIVESTATE (WO-AFFECTIVE-STATE-001)
+#    13-dimensional continuous affective state space.
+#    Labels (curious, fearful, calm) are regions in this space — not primitives.
+#    Produced by significance_faculty; consumed by spine, exec_decision, prompt_builder.
+# ─────────────────────────────────────────────────────────────────────────────
+
+@dataclass(frozen=True)
+class AffectiveState:
+    """
+    eLo's internal affective geometry — 13 continuous dimensions.
+    Source: SOURCE_2026-09-08_ELO_OS_AI_SOURCE_S01.md §7
+    """
+    valence:      float = 0.0   # -1.0 → +1.0 (negative ↔ positive)
+    arousal:      float = 0.5   # 0.0 → 1.0
+    safety:       float = 0.8   # 0.0 → 1.0
+    novelty:      float = 0.3   # 0.0 → 1.0
+    curiosity:    float = 0.5   # 0.0 → 1.0
+    confidence:   float = 0.6   # 0.0 → 1.0
+    uncertainty:  float = 0.3   # 0.0 → 1.0
+    attachment:   float = 0.5   # 0.0 → 1.0
+    tension:      float = 0.2   # 0.0 → 1.0
+    comfort:      float = 0.7   # 0.0 → 1.0
+    agency:       float = 0.6   # 0.0 → 1.0
+    significance: float = 0.0   # 0.0 → 1.0 (mirrors SP-29 overall score)
+    reward:       float = 0.0   # 0.0 → 1.0
+
+    def to_dict(self) -> dict:
+        return {
+            "valence": self.valence, "arousal": self.arousal,
+            "safety": self.safety, "novelty": self.novelty,
+            "curiosity": self.curiosity, "confidence": self.confidence,
+            "uncertainty": self.uncertainty, "attachment": self.attachment,
+            "tension": self.tension, "comfort": self.comfort,
+            "agency": self.agency, "significance": self.significance,
+            "reward": self.reward,
+        }
+
+    def label(self) -> str:
+        """Nearest canonical label from geometry."""
+        if self.curiosity > 0.7 and self.valence >= 0.0:
+            return "curious"
+        if self.valence < -0.3 and self.arousal > 0.6 and self.safety < 0.4:
+            return "fearful"
+        if self.valence > 0.5 and self.arousal > 0.6:
+            return "excited"
+        if self.comfort > 0.7 and self.arousal < 0.4:
+            return "calm"
+        if self.tension > 0.6:
+            return "tense"
+        if self.novelty > 0.6:
+            return "alert"
+        return "neutral"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 0b. SELFMODEL (WO-SELF-MODEL-001)
+#    eLo's internal model of its own state, capabilities, and history.
+#    Assembled by _self_model_faculty() from existing faculty outputs.
+#    Observes; does not decide.
+# ─────────────────────────────────────────────────────────────────────────────
+
+@dataclass(frozen=True)
+class SelfModel:
+    """
+    eLo's structured self-picture — v1 lean subset.
+    Source: SOURCE_2026-09-08_ELO_OS_AI_SOURCE_S01.md §9
+    """
+    identity:               dict  = field(default_factory=dict)    # WKG foundational claims
+    current_state:          dict  = field(default_factory=dict)    # AffectiveState + cognitive mode snapshot
+    autobiographical_summary: str = ""                             # synthesised from WKG + lessons
+    limitations:            list  = field(default_factory=list)    # capability gaps
+    current_goal:           str   = ""                             # Executive's current intent
+    prediction_confidence:  float = 0.5                            # 0.0–1.0
+    internal_preferences:   dict  = field(default_factory=dict)    # learned tendencies from lesson store
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # 1. COGNITIVESTATE
 #    Everything the runtime currently knows — before reasoning.
 #    Produced by all upstream faculties. Executive receives only this.
@@ -211,6 +288,12 @@ class CognitiveState:
     # ── CCM Enrichment (WO-CCM-SPINE) ────────────────────────────────────────
     ccm_context:          dict  = field(default_factory=dict)   # 26-dim CCM enrichment per turn
 
+    # ── Affective State (WO-AFFECTIVE-STATE-001) ──────────────────────────────
+    affective_state:      object = None        # AffectiveState | None — 13-dim continuous affect
+
+    # ── Self Model (WO-SELF-MODEL-001) ────────────────────────────────────────
+    self_model:           object = None        # SelfModel | None — assembled by _self_model_faculty
+
     # ── Assembly Confidence ───────────────────────────────────────────────────
     assembly_confidence:  float = 1.0         # 0.0 if faculties partially failed
 
@@ -291,6 +374,9 @@ class CognitivePlan:
     # ── Emotional Vector (computed, feeds EmbodimentState) ────────────────────
     emotional_state:      str   = "neutral"   # canonical state name
     emotional_vector:     dict  = field(default_factory=dict)   # 11 continuous values
+
+    # ── Affective State (WO-AFFECTIVE-STATE-001) ──────────────────────────────
+    affective_state:      object = None        # AffectiveState | None — from significance_faculty
 
     # ── Presence / Avatar Guidance ────────────────────────────────────────────
     presence_plan:        dict  = field(default_factory=dict)   # from PresencePlan

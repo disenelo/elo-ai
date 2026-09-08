@@ -168,6 +168,12 @@ class CognitivePlan:
     # Values: "builder" | "default". When "builder": register shifts to direct/compressed.
     expression_mode: str = "default"
 
+    # ── WO-AFFECTIVE-STATE-001: 13-dim affective state (from significance_faculty) ──
+    affective_state: "AffectiveState | None" = None
+
+    # ── WO-SELF-MODEL-001: self-model snapshot ─────────────────────────────────
+    self_model: "SelfModel | None" = None
+
     def needs_llm(self) -> bool:
         return not self.direct_response and not self.system_immediate and not self.system_pending
 

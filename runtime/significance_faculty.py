@@ -161,3 +161,62 @@ def compute_significance(
         pass
 
     return scores
+
+
+def derive_affective_state(scores: dict, text_input: str = "") -> "AffectiveState":
+    """
+    WO-AFFECTIVE-STATE-001: Derive 13-dimensional AffectiveState from SP-29 scores.
+
+    Maps significance dimensions to affective geometry.
+    [ESTIMATE] — mappings are heuristic until David L3 calibration.
+    """
+    from runtime.contracts import AffectiveState
+
+    overall = scores.get("overall", 0.0)
+    novelty_s = scores.get("novelty", 0.0)
+    learning_s = scores.get("learning", 0.0)
+    relationship_s = scores.get("relationship", 0.0)
+    creation_s = scores.get("creation", 0.0)
+    safety_s = scores.get("safety", 0.0)
+    reward_s = scores.get("reward", 0.0)
+    logic_s = scores.get("logic", 0.0)
+
+    # [ESTIMATE] derive affective dims from significance dims
+    _tl = text_input.lower() if text_input else ""
+    _distress = bool(_re.search(r"\b(?:overwhelm|anxious|scared|panic|spiralling)\b", _tl))
+    _positive = bool(_re.search(r"\b(?:excited|amazing|breakthrough|incredible|finally)\b", _tl))
+    _creative = bool(_re.search(r"\b(?:idea|design|vision|story|concept|build)\b", _tl))
+
+    valence = min(1.0, max(-1.0,
+        (relationship_s * 2.0 + reward_s * 2.0 + creation_s - logic_s * 0.5)
+        + (0.4 if _positive else 0.0) - (0.5 if _distress else 0.0)
+    ))
+    arousal = min(1.0, overall * 1.5 + (0.3 if _positive else 0.0))
+    safety = min(1.0, safety_s * 5.0 + 0.5 - (0.4 if _distress else 0.0))
+    novelty = min(1.0, novelty_s * 8.0)
+    curiosity = min(1.0, (learning_s * 5.0 + novelty_s * 3.0)
+                    + (0.2 if _creative else 0.0))
+    confidence = min(1.0, 0.6 - logic_s * 2.0 + safety_s * 3.0)
+    uncertainty = min(1.0, 1.0 - confidence)
+    attachment = min(1.0, relationship_s * 6.0)
+    tension = min(1.0, (0.4 if _distress else 0.0) + logic_s * 2.0)
+    comfort = min(1.0, safety_s * 4.0 + (0.3 if not _distress else 0.0))
+    agency = min(1.0, 0.5 + creation_s * 3.0 - (0.2 if _distress else 0.0))
+    significance = min(1.0, overall)
+    reward_v = min(1.0, reward_s * 8.0)
+
+    return AffectiveState(
+        valence=round(valence, 3),
+        arousal=round(arousal, 3),
+        safety=round(max(0.0, safety), 3),
+        novelty=round(novelty, 3),
+        curiosity=round(curiosity, 3),
+        confidence=round(max(0.0, confidence), 3),
+        uncertainty=round(uncertainty, 3),
+        attachment=round(attachment, 3),
+        tension=round(tension, 3),
+        comfort=round(max(0.0, comfort), 3),
+        agency=round(max(0.0, agency), 3),
+        significance=round(significance, 3),
+        reward=round(reward_v, 3),
+    )

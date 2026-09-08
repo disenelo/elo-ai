@@ -418,7 +418,11 @@ def _executive_faculty(
             _log.debug("cognitive_principles check failed (non-fatal): %s", _cp_err)
 
         # ── WO-INNER-CHILD-001: inner child mode (curiosity threshold) ────────
-        _curiosity = getattr(cognitive_state, "curiosity_score", 0.0) if cognitive_state else 0.0
+        # WO-AFFECTIVE-STATE-001: prefer AffectiveState.curiosity over SP-29 proxy
+        _aff = getattr(cognitive_state, "affective_state", None) if cognitive_state else None
+        _curiosity = getattr(_aff, "curiosity", None)
+        if _curiosity is None:
+            _curiosity = getattr(cognitive_state, "curiosity_score", 0.0) if cognitive_state else 0.0
         _is_play   = (plan.mode or "").upper() in ("PLAY", "EXPLORE")
         _is_dream  = plan.conversation_action in ("explore",)
         plan.cognitive_mode_inner_child = bool(_curiosity > 0.7 or (_is_play and _is_dream))
@@ -698,6 +702,91 @@ def _conversation_faculty(plan: CognitivePlan) -> CognitivePlan:
         _log.debug("conversation_faculty: %s", e)
 
     return plan
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WO-SELF-MODEL-001: _self_model_faculty
+# Assembles SelfModel from existing faculty outputs. Observes; does not decide.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _self_model_faculty(
+    wkg_context: str = "",
+    affective_state=None,
+    lessons=None,
+):
+    """
+    Assemble lean SelfModel (v1) from existing data.
+    Does not call any external service or make any decision.
+    """
+    from runtime.contracts import SelfModel
+    try:
+        # identity: pull WKG foundational claims as key-value summary
+        _identity: dict = {}
+        try:
+            from runtime.wkg.wkg_faculty import WKGFaculty as _WKG
+            _wkg = _WKG()
+            _elo_ents = _wkg.search_entities("eLo")
+            if _elo_ents:
+                _eid = _elo_ents[0].get("entity_id", "")
+                _claims = [c for c in _wkg.get_claims_about(_eid) if c.get("memory_type") == "foundational"][:5]
+                _identity = {c.get("relationship_type", "property"): c.get("object", "") for c in _claims}
+        except Exception:
+            pass
+
+        # current_state: AffectiveState dict + label
+        _current_state: dict = {}
+        if affective_state is not None:
+            try:
+                _current_state = affective_state.to_dict()
+                _current_state["label"] = affective_state.label()
+            except Exception:
+                pass
+
+        # autobiographical_summary: from wkg_context (pre-assembled earlier in pipeline)
+        _auto_summary = wkg_context[:240] if wkg_context else ""
+
+        # limitations: capability gaps from registry
+        _limitations: list = []
+        try:
+            from runtime.capability_registry import CapabilityRegistry as _CR
+            _reg = _CR()
+            _all_caps = list(getattr(_reg, "_registry", {}).keys())
+            _expected = {"WORLD_VOICE_OUTPUT", "WORLD_VOICE_INPUT", "WORLD_CREATE", "WORLD_SEARCH"}
+            _missing = [c for c in _expected if c not in _all_caps]
+            _limitations = _missing
+        except Exception:
+            pass
+
+        # internal_preferences: top 3 lessons as preference summary
+        _prefs: dict = {}
+        try:
+            from self.lesson_store import LessonStore as _LS
+            _ls = _LS()
+            _top = _ls.recall(limit=3)
+            _prefs = {f"lesson_{i}": l.get("lesson", "") for i, l in enumerate(_top)}
+        except Exception:
+            pass
+
+        # prediction_confidence: inverse of uncertainty from affective state
+        _pred_conf = 0.5
+        if affective_state is not None:
+            try:
+                _pred_conf = round(1.0 - getattr(affective_state, "uncertainty", 0.5), 2)
+            except Exception:
+                pass
+
+        return SelfModel(
+            identity=_identity,
+            current_state=_current_state,
+            autobiographical_summary=_auto_summary,
+            limitations=_limitations,
+            current_goal="",  # filled by Executive; unknown here
+            prediction_confidence=_pred_conf,
+            internal_preferences=_prefs,
+        )
+    except Exception:
+        from runtime.contracts import SelfModel
+        return SelfModel()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1107,6 +1196,17 @@ def run(
     # empty response_text / display_text / tts_text on every direct-response turn.
     plan = _conversation_faculty(plan)
 
+    # ── WO-AFFECTIVE-STATE-001: propagate AffectiveState + SelfModel from cognitive_state → plan ──
+    try:
+        _cs_aff = getattr(cognitive_state, "affective_state", None)
+        if _cs_aff is not None:
+            plan.affective_state = _cs_aff
+        _cs_sm = getattr(cognitive_state, "self_model", None)
+        if _cs_sm is not None:
+            plan.self_model = _cs_sm
+    except Exception as _aff_err:
+        _log.warning("affective/self-model propagation failed (non-fatal): %s", _aff_err)
+
     # ── S6: Build EmbodimentState ─────────────────────────────────────────────
     # WO-097: runs AFTER conversation so response_text / display_text / tts_text
     # are populated when the body reads them.
@@ -1262,6 +1362,7 @@ def assemble_cognitive_state(
 
     # WO-SP29: compute per-turn significance score from world state
     _significance_score: float = 0.0
+    _sig_result: dict = {}
     try:
         from runtime.significance_faculty import compute_significance as _csig_sp29
         _world_delta_sp29: dict = {}
@@ -1274,6 +1375,25 @@ def assemble_cognitive_state(
         _significance_score = float(_sig_result.get("overall", 0.0))
     except Exception:
         _significance_score = 0.0
+
+    # WO-AFFECTIVE-STATE-001: derive 13-dim AffectiveState from significance scores
+    _affective_state = None
+    try:
+        from runtime.significance_faculty import derive_affective_state as _das
+        _affective_state = _das(_sig_result, text_input=_raw_input or "")
+    except Exception:
+        pass
+
+    # WO-SELF-MODEL-001: assemble lean SelfModel from existing faculty outputs
+    _self_model = None
+    try:
+        _self_model = _self_model_faculty(
+            wkg_context=_wkg_context,
+            affective_state=_affective_state,
+            lessons=None,  # populated from lesson_store if available in full turn
+        )
+    except Exception:
+        pass
 
     # D1 ruling (Card 0035): intent_signal is the COGNITIVE intent that the
     # Executive decides on — sourced from core/memory_relevance_filter (attention_model["intent"]).
@@ -1294,6 +1414,8 @@ def assemble_cognitive_state(
         significance_score=_significance_score,
         wkg_context=_wkg_context,
         ccm_context=ccm_context or {},
+        affective_state=_affective_state,
+        self_model=_self_model,
     )
 
 
