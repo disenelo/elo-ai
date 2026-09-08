@@ -1,3 +1,18 @@
+## BOARD STATE UPDATE — 2026-09-08 (§59 — Builder: WO-STORYTELLING/PERSONALITY/CCM-CONSUME closed — source intent verified)
+**Source:** Builder execution. [VERIFIED — source intent + code]
+**Commit:** `6022026`
+
+**WO-STORYTELLING-CONSUME-001 (P1) — DONE:**
+Implementation was already wired (WO-EXEC-DECISION-FIELDS-001 prior session) but instruction strings were label-style, not behavioural. Updated to exact WO-spec strings (e.g. "Slow the cadence. Name what this moment means before moving forward."). All 6 styles verified. JEG CHECK PASS: eLo's expressed text is legibly different across styles — cadence, posture, and vocabulary range all shift. Source intent: `voice is linguistic identity, not a mode` — served.
+
+**WO-PERSONALITY-CONSUME-001 (P1) — DONE:**
+Fixed: prompt_builder.py was taking top 2 traits (`:2]`). WO requires at least 3 traits minimum viable — corrected to `[:3]`. Significance gate (>= 0.3) preserved. JEG CHECK PASS: `wonder, empathy, curiosity` injection produces output with concrete trait texture — not generic model output. Personality reaches the voice.
+
+**WO-CCM-CONSUME-001 (P1) — DONE (investigation card):**
+AT-1 PASS: ccm_enricher.enrich() scores dims and differentiates across input types (slang: street_register=0.82; neutral: 0.0). AT-2: full chain traced — enricher → spine:885 → CognitiveState.ccm_context → server.py:2914 → prompt_builder.py:547 → "Context enrichment:" in prompt. AT-3: YES (confirmed at prompt layer) — CCM dims change what eLo says and how. PARTIAL: Executive internal action selection unverifiable (FREEZE_V1_LOCK). Board flag raised: if CCM must influence action selection, a non-executive shim WO is needed.
+
+---
+
 ## BOARD STATE UPDATE — 2026-09-08 (§58 — Builder: 6 INBOX WOs closed — Gate/CCM/Hist/Dream/Vessel/Memory)
 **Source:** Builder execution. [VERIFIED — code + tests]
 **Commits:** `8dbade2` (gate amend) · `54b8a44` (WKG hist ingest) · `ee56f64` (all result cards)
