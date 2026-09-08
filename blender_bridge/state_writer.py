@@ -324,6 +324,68 @@ def write_with_presence(
     return _write(payload)
 
 
+def write_from_embodiment_state(es: "EmbodimentState") -> bool:
+    """
+    WO-EMBODIMENT-PUBLISHER-001: Publish EmbodimentState contract → blender_state.json.
+
+    Constructs the blender_state.json payload from the EmbodimentState contract rather
+    than loose variables. Existing field names unchanged — Unity read-side unaffected.
+    """
+    _mc = es.motion_command or {}
+    _es_name = es.emotional_state or "calm"
+    _mood = _MOOD_ALIASES.get(_es_name, _es_name)
+    _speed = _mc.get("speed") or emotion_speed(_mood)
+
+    payload: dict = {
+        "motion": {
+            "animation": _mc.get("animation", "idle"),
+            "speed":     _speed,
+            "intensity": _mc.get("intensity", 0.5),
+            "duration":  _mc.get("duration", 4.0),
+            "mood":      _mood,
+            "mode":      _mc.get("mode", "idle"),
+        },
+        "state": {
+            "energy":          getattr(es, "unity_intensity", 0.5),
+            "mode":            es.unity_mode or "idle",
+            "emotion":         _es_name,
+            "emotional_state": _mood,
+            "intensity":       getattr(es, "unity_intensity", 0.3),
+        },
+        "_ts": round(time.time(), 3),
+    }
+
+    _ec = es.expression_command or {}
+    if _ec or es.head_lean:
+        payload["expression"] = {
+            "shape_keys": _ec.get("shape_keys", {}),
+            "head_lean":  es.head_lean,
+            "pacing":     _ec.get("pacing", "steady"),
+            "intensity":  _ec.get("intensity", 0.5),
+        }
+
+    payload["presence_plan"] = {
+        "primary_hue_h":     es.glow_hue_h,
+        "primary_hue_s":     es.glow_hue_s,
+        "primary_hue_v":     es.glow_hue_v,
+        "pulse_profile":     es.pulse_profile,
+        "pulse_speed":       es.pulse_speed,
+        "brightness":        es.brightness,
+        "bloom":             es.bloom,
+        "emotional_state":   _mood,
+        "transition_speed":  es.transition_speed,
+        "desktop_presence":  es.desktop_presence,
+        "robot_led_state":   es.robot_led_state,
+    }
+
+    if es.gaze_target is not None:
+        payload["gaze_target"] = str(es.gaze_target)
+    if es.lifecycle_state:
+        payload["lifecycle_state"] = es.lifecycle_state
+
+    return _write(payload)
+
+
 # Keys written by tool_router (nav, exit events) — must survive a state write
 # so Unity can poll them on its own cadence without them being overwritten mid-turn.
 # Core render fields (expression/motion/state/gaze/presence_plan) must survive

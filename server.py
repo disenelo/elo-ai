@@ -4304,6 +4304,14 @@ def _process_turn(raw: str) -> dict:
                     _gk = None
 
                 _plan_caps = (list(_plan.capabilities) if _plan and _plan.capabilities else [])
+                # WO-CAPABILITY-FACULTY-WIRE-001 AT-2: log capability selection for audit
+                if _plan_caps:
+                    _logging.info(
+                        "[capability-faculty] Executive selected capabilities: %s",
+                        [c[0] if isinstance(c, (list, tuple)) else str(c) for c in _plan_caps],
+                    )
+                else:
+                    _logging.debug("[capability-faculty] no capability selected this turn — no data agent will run")
                 _gk_wants_conversation = (
                     _gk is not None
                     and _gk.get("intent") == "conversation"

@@ -1292,6 +1292,50 @@ _LED_FROM_EMOTIONAL_STATE = {
     "distress":  "violet",
 }
 
+# ── WO-ENVIRONMENT-FACULTY-001: app → activity mapping ───────────────────────
+_APP_TO_ACTIVITY: dict[str, str] = {
+    "visual studio code": "coding", "cursor": "coding", "xcode": "coding",
+    "pycharm": "coding", "intellij": "coding", "android studio": "coding",
+    "blender": "creating", "figma": "creating", "sketch": "creating",
+    "photoshop": "creating", "illustrator": "creating", "after effects": "creating",
+    "word": "writing", "pages": "writing", "google docs": "writing",
+    "notion": "writing", "obsidian": "writing", "bear": "writing",
+    "brave browser": "browsing", "safari": "browsing", "chrome": "browsing",
+    "firefox": "browsing", "arc": "browsing",
+    "terminal": "terminal", "iterm": "terminal", "warp": "terminal",
+}
+
+
+def _environment_faculty() -> dict:
+    """
+    WO-ENVIRONMENT-FACULTY-001: Observe desktop environment state from perch/presence files.
+    Returns {active_app, active_window, desktop_activity}. Observe only — no decisions.
+    Gracefully returns empty dict if files are absent or unreadable.
+    """
+    import json as _json
+    import pathlib as _pathlib
+
+    _BLENDER_DIR = _pathlib.Path(__file__).parent.parent.parent / "blender"
+    result: dict = {}
+    try:
+        _perch = _json.loads((_BLENDER_DIR / "perch_state.json").read_text())
+        result["active_app"] = _perch.get("app", "")
+    except Exception:
+        result["active_app"] = ""
+
+    try:
+        _pres = _json.loads((_BLENDER_DIR / "presence_state.json").read_text())
+        result["active_window"] = _pres.get("frontWindowName", "")
+    except Exception:
+        result["active_window"] = ""
+
+    _app_lower = result.get("active_app", "").lower()
+    result["desktop_activity"] = next(
+        (act for key, act in _APP_TO_ACTIVITY.items() if key in _app_lower),
+        "unknown",
+    )
+    return result
+
 
 def assemble_cognitive_state(
     language:       dict,
@@ -1376,6 +1420,13 @@ def assemble_cognitive_state(
     except Exception:
         _significance_score = 0.0
 
+    # WO-ENVIRONMENT-FACULTY-001: observe desktop environment state
+    _env = {}
+    try:
+        _env = _environment_faculty()
+    except Exception as _env_err:
+        _log.warning("_environment_faculty failed (non-fatal): %s", _env_err)
+
     # WO-AFFECTIVE-STATE-001: derive 13-dim AffectiveState from significance scores
     _affective_state = None
     try:
@@ -1416,6 +1467,9 @@ def assemble_cognitive_state(
         ccm_context=ccm_context or {},
         affective_state=_affective_state,
         self_model=_self_model,
+        active_app=_env.get("active_app", ""),
+        active_window=_env.get("active_window", ""),
+        desktop_activity=_env.get("desktop_activity", "unknown"),
     )
 
 
