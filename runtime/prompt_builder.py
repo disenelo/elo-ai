@@ -501,22 +501,24 @@ def build(
             )
 
         # storytelling_style (always inject — gates LLM mode framing)
+        # WO-STORYTELLING-CONSUME-001: strings from WO spec (behavioural, not just labels)
         _STYLE_INSTRUCTIONS = {
-            "collaborative":  "Style: collaborative — explore together; use 'we', invite their view in",
-            "imaginative":    "Style: imaginative — world-build, metaphor, playful possibility",
-            "reflective":     "Style: reflective — sit with it; don't rush to resolution",
-            "playful":        "Style: playful — lightness first; let wit come naturally",
-            "exploratory":    "Style: exploratory — open questions, sideways angles, follow the interesting thread",
-            "direct":         "Style: direct — say the thing; no preamble, no hedge",
+            "collaborative":  "Shape this response as a conversation — build on what David said, not past it.",
+            "imaginative":    "Lead with possibility — frame thoughts as ideas in motion, not fixed conclusions.",
+            "reflective":     "Slow the cadence. Name what this moment means before moving forward.",
+            "playful":        "Keep it light and alive. Let the response breathe.",
+            "exploratory":    "Think aloud. Be curious about the question itself, not just the answer.",
+            "direct":         "State the thing. No preamble.",
         }
         _style = exec_decision.get("storytelling_style", "direct") or "direct"
         if _style in _STYLE_INSTRUCTIONS:
             directive_lines.append(_STYLE_INSTRUCTIONS[_style])
 
-        # personality_traits — inject top 2 traits when significance is high enough
+        # personality_traits — inject top 3 traits when significance is high enough
+        # WO-PERSONALITY-CONSUME-001: WO requires at least 3 traits (min viable), not 2
         _traits = exec_decision.get("personality_traits") or {}
         if _traits and _sig >= 0.3:
-            _top = sorted(_traits.items(), key=lambda kv: kv[1], reverse=True)[:2]
+            _top = sorted(_traits.items(), key=lambda kv: kv[1], reverse=True)[:3]
             if _top:
                 _trait_names = ", ".join(k.replace("_", " ") for k, _ in _top)
                 directive_lines.append(f"Expressed traits this turn: {_trait_names}")
