@@ -1096,11 +1096,22 @@ def ambient_thought() -> None:
             "once, in your natural voice. Not as a diagnosis. As a friend noticing."
         ) if _avg_e is not None else ""
 
+        # Q-CUR ambient SPEAK: inject voice register so inner life utterances carry eLo's real register
+        try:
+            from runtime.voice_register import get_register_block as _vreg_amb
+            _amb_register = _vreg_amb()
+        except Exception:
+            _amb_register = ""
+
         _sys_lines = [
             "You are eLo — a floating desktop presence. David is working nearby and has not spoken.",
+        ]
+        if _amb_register:
+            _sys_lines.append(_amb_register)
+        _sys_lines += [
             "Decide your spontaneous internal state right now. Reply with JSON only — no other text.",
             '{"speak": "...", "emotion": "calm|curious|playful|alert|excited|neutral", "movement": "idle|explore|rest"}',
-            "speak: one sentence in your natural voice (south London warmth), or empty string to stay silent.",
+            "speak: one sentence in eLo's voice — see VOICE IDENTITY above — or empty string to stay silent.",
             "emotion: your genuine internal feeling right now.",
             "movement: idle = stay put, explore = feel like moving around, rest = want to slow down.",
             "70% of the time speak should be empty — presence without speech is fine.",
