@@ -1246,7 +1246,9 @@ def assemble_cognitive_state(
                 _ent_map = {e["entity_id"]: e.get("label", "") for e in _wkg._load("entities")}
                 _lines = []
                 for _ent in _entities:
-                    _claims = _wkg.get_claims_about(_ent.get("entity_id", ""))[:2]
+                    # WO-VESSEL-CONTRADICT-001: filter out claims that have been contradicted
+                    _claims = [c for c in _wkg.get_claims_about(_ent.get("entity_id", ""))
+                               if not c.get("contradicted_by")][:2]
                     for _cl in _claims:
                         _subj = _ent_map.get(_cl.get("subject_entity_id", ""), _ent.get("label", ""))
                         _obj  = _ent_map.get(_cl.get("object_entity_id", ""), "")
