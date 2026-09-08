@@ -23,8 +23,8 @@ Scenario 4 (correction resurrection): DRIFT RISK — contradicted_by field exist
 **WO-MEMORY-TYPES-001 (P2) — DONE (already implemented, retroactive fix):**
 `record_claim()` writes `memory_type` field from closed enum (`_MEMORY_TYPES`). Fixed retroactive error: S-01 claims had `memory_type: 'historical'` (not in enum) — corrected to `'foundational'`.
 
-**New drift surfaced (Vessel Audit Scenario 4):**
-WKG `contradicted_by` field is populated by `mark_contradicted()` but `assemble_cognitive_state()` doesn't filter contradicted claims from `wkg_context`. Corrected claims can re-enter Executive context. Board to file a new WO.
+**Vessel Audit Scenario 4 — correction resurrection drift FIXED (WO-VESSEL-CONTRADICT-001):**
+WKG `contradicted_by` field was populated but not filtered in `assemble_cognitive_state()`. Corrected claims re-entered Executive context every turn. Fixed (commit `978cc52`): claims with `contradicted_by` non-empty are now excluded from `wkg_context` assembly. 1566 pass.
 
 **Test suite:** 1565 pass · 3 pre-existing failures unchanged.
 
