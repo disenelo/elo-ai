@@ -122,7 +122,7 @@ _TIER_CAPABILITY: dict[int, str] = {
 # CONVERSATIONAL: any provider; REASONING: cloud floor (no local 8b); DEEP: premium only.
 _TIER_PROVIDER_CANDIDATES: dict[int, list[str]] = {
     _TIER_CONVERSATIONAL: ["ollama", "groq", "cerebras", "gemini", "openai", "claude"],
-    _TIER_REASONING:      ["groq", "cerebras", "gemini", "openai", "claude"],
+    _TIER_REASONING:      ["ollama", "groq", "cerebras", "gemini", "openai", "claude"],
     _TIER_DEEP:           ["openai", "claude", "gemini"],
 }
 

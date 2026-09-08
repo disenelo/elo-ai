@@ -301,6 +301,68 @@ def detect(cleaned: str, session: dict | None = None) -> dict:
                 return {"intent": intent, "confidence": confidence, "chain": [],
                         "category": cat, "reason": reason}
 
+    # WO-LOCAL-LLM-001: ollama fallback for low-confidence classification
+    _ollama_result = _ollama_intent_classify(cleaned)
+    if _ollama_result:
+        cat, reason = _categorise(_ollama_result)
+        return {"intent": _ollama_result, "confidence": 0.7, "chain": [],
+                "category": cat, "reason": reason}
+
     cat, reason = _categorise("conversation")
     return {"intent": "conversation", "confidence": 0.5, "chain": [],
             "category": cat, "reason": reason}
+
+
+def _ollama_intent_classify(user_input: str) -> str | None:
+    """
+    WO-LOCAL-LLM-001: Ollama fallback for intent classification when regex
+    confidence is low. Asks local LLM for a single intent keyword from the
+    taxonomy. Returns None on any failure — never raises.
+    """
+    try:
+        import os
+        import json
+        import urllib.request
+
+        host = os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434")
+        model = os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
+
+        _known_intents = ", ".join(
+            "conversation, question, calculation, reminder, weather, "
+            "music, search, code, debug, write, summarise, translate, "
+            "image_gen, utility_vision, file_read, vault_write, draft, "
+            "lookup, social, planning, creation, navigation".split(", ")
+        )
+
+        prompt = (
+            f"Classify the user's intent as ONE word from this list: {_known_intents}.\n"
+            f"User: {user_input[:200]}\n"
+            f"Intent (one word only):"
+        )
+
+        body = json.dumps({
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {"temperature": 0.0, "num_predict": 8},
+        }).encode()
+
+        req = urllib.request.Request(
+            f"{host}/api/generate",
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read())
+            raw = data.get("response", "").strip().lower().split()[0].rstrip(".,;:")
+            # Validate against known intents
+            _known = {
+                "conversation", "question", "calculation", "reminder", "weather",
+                "music", "search", "code", "debug", "write", "summarise", "translate",
+                "image_gen", "utility_vision", "file_read", "vault_write", "draft",
+                "lookup", "social", "planning", "creation", "navigation",
+            }
+            return raw if raw in _known else None
+    except Exception:
+        return None

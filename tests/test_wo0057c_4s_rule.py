@@ -147,7 +147,8 @@ class AT5_UsesExistingCandidateStructure(unittest.TestCase):
         # Verify _TIER_REASONING candidates exist in existing structure (no new routing system)
         self.assertIn(br._TIER_REASONING, br._TIER_PROVIDER_CANDIDATES)
         reasoning_providers = br._TIER_PROVIDER_CANDIDATES[br._TIER_REASONING]
-        self.assertNotIn("ollama", reasoning_providers, "Ollama should not be in REASONING tier")
+        # WO-LOCAL-LLM-001 (2026-09-08): ollama is now first in REASONING tier — local-first policy
+        self.assertIn("ollama", reasoning_providers)
         self.assertIn("groq", reasoning_providers)
 
 
