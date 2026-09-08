@@ -277,9 +277,9 @@ def compile(  # noqa: A001 — shadows builtin intentionally for domain clarity
         "embodiment":       state.embodiment,
         "embodiment_tier":  tier_fact(state.embodiment, source="sensor", confirmed=True),
         "pose":             state.pose,
-        "pose_tier":        "observed" if pose_acked else "last-known",
+        "pose_tier":        "verified" if pose_acked else "last-known",
         "surface":          state.surface or state.location or "",
-        "surface_tier":     "observed" if perch_fresh else "last-known",
+        "surface_tier":     "verified" if perch_fresh else "last-known",
         "balance":          state.balance,
         "size_cm": {
             "height": state.size.get("height_cm"),
