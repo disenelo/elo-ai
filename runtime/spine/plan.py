@@ -174,6 +174,9 @@ class CognitivePlan:
     # ── WO-SELF-MODEL-001: self-model snapshot ─────────────────────────────────
     self_model: "SelfModel | None" = None
 
+    # ── WO-LIVING-PRESENCE-UPDATE-001: planetary voice pool for active mode ──
+    planet_voice_pool:  str   = ""    # formatted voice pool text for system prompt injection
+
     # ── WO-QBODY-CONSEQUENCES-001: Q-BODY proprioception ─────────────────────
     body_moving:       bool  = False
     body_gait:         str   = "idle"

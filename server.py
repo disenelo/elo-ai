@@ -2979,6 +2979,8 @@ def _process_turn(raw: str) -> dict:
                         getattr(_plan, "self_model", None), "limitations", []
                     ) or []),
                 },
+                # WO-LIVING-PRESENCE-UPDATE-001: active planet voice pool
+                "planet_voice_pool": getattr(_plan, "planet_voice_pool", ""),
                 # WO-QBODY-CONSEQUENCES-001: Q-BODY body awareness in exec_decision
                 "body_moving":       getattr(_plan, "body_moving", False),
                 "body_gait":         getattr(_plan, "body_gait", "idle"),

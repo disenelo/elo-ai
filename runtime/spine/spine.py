@@ -1073,10 +1073,11 @@ def run(
 
     # ── WO-PLANETARY-KERNEL: Mode selector — BUILD / PLAY / EXPLORE / REFINE ──
     _turn_mode: str = "EXPLORE"
+    _planet_voice_pool: str = ""
     try:
         from faculties.planetary_kernel import PlanetaryKernel as _PK
         _sig_for_mode = getattr(_cognitive_state, "significance_score", 0.0) if _cognitive_state else 0.0
-        _turn_mode = _PK().select_mode(
+        _turn_mode, _planet_voice_pool = _PK().select_mode_with_pool(
             _cognitive_state,
             turn=raw, language_output=language,
             ccm_context=_ccm_context,
@@ -1131,6 +1132,8 @@ def run(
         plan.mode = _turn_mode
     # WO-PLANETARY-KERNEL: active_mode is the canonical kernel mode field
     plan.active_mode = _turn_mode
+    # WO-LIVING-PRESENCE-UPDATE-001: pin planet voice pool for active mode
+    plan.planet_voice_pool = _planet_voice_pool
     # ── WO-CANON-XVI: Pin pre-assembled cognitive state to plan ──────────────
     plan.cognitive_state = _cognitive_state
     # ── WO-CANON-XV/XII: Store frozen world + perception on plan ──────────────

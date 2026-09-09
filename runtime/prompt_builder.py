@@ -500,6 +500,11 @@ def build(
                 "No preamble. No 'here's what we'll do'. Say the thing."
             )
 
+        # WO-LIVING-PRESENCE-UPDATE-001: inject active planet voice pool
+        _pvp = exec_decision.get("planet_voice_pool", "") or ""
+        if _pvp:
+            directive_lines.append(_pvp)
+
         # storytelling_style (always inject — gates LLM mode framing)
         # WO-STORYTELLING-CONSUME-001: strings from WO spec (behavioural, not just labels)
         _STYLE_INSTRUCTIONS = {
