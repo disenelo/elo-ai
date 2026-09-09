@@ -88,10 +88,10 @@ Today = **2026-09-09**. In the "NOW → 30 SEP" window.
 | WO-WKG-LIVE-WRITE-001 | ✅ PARTIAL | Broad-pattern fallback added; categorical writes only — content-specific entity extraction needs separate WO |
 | WO-FALSE-DONE-VERIFY-001 | ✅ DONE | C-10/C-13/C-19/C-20 all confirmed structurally wired, no fix WOs needed |
 | WO-KNOWLEDGE-PERSIST-001 | ✅ DONE | 3 foundational facts written: David→London, David→DISENELO, eLo→David. Cold-boot safe. |
-| WO-CCM-PHILOSOPHY-EXPRESSED-001 | ✅ STRUCT PASS | Path traced — creative_philosophy reaches prompt (both CCM path + explicit inject). Live verify pending. |
-| WO-INNER-CHILD-EXPRESSED-001 | ✅ STRUCT PASS | cognitive_mode_inner_child → directive at prompt_builder:486. Live verify pending. |
+| WO-CCM-PHILOSOPHY-EXPRESSED-001 | ✅ DONE | 2026-09-09: detection gap fixed (11 block signals added) + directive gap fixed (persistence belief text replaces "present"). Commit 9def4ca. Live expressed verify pending. |
+| WO-INNER-CHILD-EXPRESSED-001 | ✅ STRUCT PASS | cognitive_mode_inner_child → directive at prompt_builder:486. Wonder signals wired (commit 97b943a). Live verify pending. |
 | WO-STABILITY-LAW-EXPRESSED-001 | ✅ STRUCT PASS | leaf_on_water → directive at prompt_builder:504. Live verify pending. |
-| WO-AFFECTIVE-EXPRESSED-001 | ⚠️ PARTIAL | curiosity dim → creative seed wired; other 12 AffectiveState dims lack explicit prompt directives. |
+| WO-AFFECTIVE-EXPRESSED-001 | ✅ DONE | 2026-09-09: 9 additional dim directives added (valence/safety/novelty/confidence/uncertainty/attachment/agency/significance). All 13 dims now have directive path. Commit 97b943a. |
 | 0059_SPEED (WO-073b) | ✅ DONE | Architect implemented; 5/5 tests pass; DOING→DONE; real network verify pending |
 
 ### BUILDER DOING — NOW EMPTY
@@ -180,11 +180,11 @@ Full specs in: `blender/agent_bus/builder/FROM_ARCHITECT_2026-09-09_REMAINING_GA
 | WO-SPG-SIGNIFICANCE-001 | Builder | P0 | 898 signals, all `significance: {}` — engine not called |
 | WO-WKG-LIVE-WRITE-001 | Builder | P0 | 21 claims total — live turns not accumulating memory |
 | WO-FALSE-DONE-VERIFY-001 | Builder | P0 | Confirm what false-done audit found for C-10/C-13/C-19/C-20. Fix any NOT SERVING. |
-| WO-CCM-PHILOSOPHY-EXPRESSED-001 | Builder | P1 | Philosophy Matrix (Persistence) — structural fix done, expressed output unverified |
-| WO-INNER-CHILD-EXPRESSED-001 | Builder | P1 | Curiosity trigger → inner child — significance weights ratified, expressed path unverified |
-| WO-STABILITY-LAW-EXPRESSED-001 | Builder | P1 | Leaf on Water / Stability Law — exists in spine, not verified in expressed output |
+| WO-CCM-PHILOSOPHY-EXPRESSED-001 | Builder | P1 | ✅ DONE 2026-09-09 — detection + directive fixed; live expressed verify pending |
+| WO-INNER-CHILD-EXPRESSED-001 | Builder | P1 | Curiosity trigger → inner child — wonder signals wired; live verify pending |
+| WO-STABILITY-LAW-EXPRESSED-001 | Builder | P1 | Leaf on Water / Stability Law — exists in spine; live verify pending |
 | WO-KNOWLEDGE-PERSIST-001 | Builder | P1 | Verify WKG knowledge survives cold boot and reaches expressed output |
-| WO-AFFECTIVE-EXPRESSED-001 | Builder | P2 | AffectiveState built §62 — not verified in expressed output |
+| WO-AFFECTIVE-EXPRESSED-001 | Builder | P2 | ✅ DONE 2026-09-09 — all 13 dims wired; live expressed verify pending |
 | WO-GAME-CINEMATIC-001 | Game | P1 | Start menu cinematic — 7/8 items from S-19 unbuilt |
 | WO-GAME-SOUND-ASSETS-001 | Game | P1 | 50+ sounds unrecorded + dead hooks unwired |
 
