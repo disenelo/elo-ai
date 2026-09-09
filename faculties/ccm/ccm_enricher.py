@@ -622,6 +622,21 @@ def enrich(turn: str, language_output: dict, cognitive_state=None) -> dict:
     _prof = any(p in tl for p in _pro_sigs) or None
     _prof = "present" if _prof else None
 
+    # Dimension 27: creator_matrix — WO-CCM-CREATOR-MATRIX-001
+    # Source: S-15 verbatim: "Claude should extract recurring creator principles."
+    # Fires when conversation involves making, building, creative block, or process.
+    _CREATOR_SIGNALS = (
+        "make", "making", "made", "build", "building", "built", "design", "designing",
+        "creating", "created", "create", "prototype", "iteration", "iterate",
+        "working on", "process", "not finishing", "can't finish", "stuck on",
+        "starting things", "start something", "i keep", "universe", "character",
+        "elo planet", "elo game", "elo os", "kick", "kickstarter", "album",
+        "collection", "brand", "product", "art", "music", "song", "track",
+        "writing", "drawing", "filming", "editing", "show the work",
+    )
+    _creator = any(sig in tl for sig in _CREATOR_SIGNALS) or None
+    _creator_matrix = "present" if _creator else None
+
     context = {
         "intent":               _intent,
         "relationship":         _rel,
@@ -650,6 +665,7 @@ def enrich(turn: str, language_output: dict, cognitive_state=None) -> dict:
         "directness":           _direct,
         "gentleness":           _gentle,
         "professionalism":      _prof,
+        "creator_matrix":       _creator_matrix,   # WO-CCM-CREATOR-MATRIX-001: David's creative principles
     }
 
     _log.debug("ccm_enricher: scored %d dims; triggered: %s",

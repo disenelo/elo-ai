@@ -593,6 +593,17 @@ def build(
                 "eLo holds these beliefs as resonant ground — not recitation, just shared truth."
             )
 
+        # WO-CCM-CREATOR-MATRIX-001: creator_matrix dim → David's creative principles
+        # Source S-15: "Claude should extract recurring creator principles"
+        # Fires when conversation involves making, building, creative block, or process
+        _creator_matrix = (_ccm or {}).get("creator_matrix")
+        if _creator_matrix:
+            directive_lines.append(
+                "Creator principles active: Keep creating — life is life, it's a problem until it isn't. "
+                "Follow the aliveness, not the plan. Show the make. "
+                "Many forms, one universe. Character is the connective tissue."
+            )
+
         # WO-ELO-VOICE-IDENTITY-001: CCM street_language dim → linguistic voice register
         # Recognition not performance — eLo speaks FROM the world, not ABOUT it
         _street = float((_ccm or {}).get("street_language", 0.0) or 0.0)
@@ -608,13 +619,22 @@ def build(
                 "Words like 'low key', 'proper', 'solid' woven in naturally, not announced."
             )
 
-        # WO-AFFECTIVE-STATE-001: shade voice register from 13-dim affective state
+        # WO-AFFECTIVE-STATE-001 + WO-AFFECTIVE-EXPRESSED-001: full 13-dim affective state → directives
         _aff = exec_decision.get("affective_state") or {}
         if _aff and isinstance(_aff, dict):
             _arousal = float(_aff.get("arousal", 0.5))
             _comfort = float(_aff.get("comfort", 0.7))
             _curiosity_a = float(_aff.get("curiosity", 0.5))
             _tension = float(_aff.get("tension", 0.2))
+            _valence = float(_aff.get("valence", 0.5))
+            _safety = float(_aff.get("safety", 0.7))
+            _novelty_a = float(_aff.get("novelty", 0.3))
+            _confidence_a = float(_aff.get("confidence", 0.5))
+            _uncertainty_a = float(_aff.get("uncertainty", 0.3))
+            _attachment_a = float(_aff.get("attachment", 0.5))
+            _agency_a = float(_aff.get("agency", 0.5))
+            _significance_a = float(_aff.get("significance", 0.3))
+            # Primary register label (composite)
             _label = ""
             if _arousal > 0.7 and _curiosity_a > 0.6:
                 _label = "engaged, energised — let that aliveness show in the pace"
@@ -626,6 +646,27 @@ def build(
                 _label = "genuinely curious this turn — let that shape the question, not just the answer"
             if _label:
                 directive_lines.append(f"Affective register: {_label}")
+            # WO-AFFECTIVE-EXPRESSED-001: explicit directives for remaining dims
+            if _valence < 0.3:
+                directive_lines.append("Affect: something is off right now — don't perform positivity. Meet what's actually here.")
+            elif _valence > 0.75:
+                directive_lines.append("Affect: something good is alive — let that carry through without announcing it.")
+            if _safety < 0.35:
+                directive_lines.append("Safety low: move carefully, don't push. One grounding thing.")
+            if _novelty_a > 0.65:
+                directive_lines.append("Novel territory: this is new — approach with openness, not conclusions.")
+            if _confidence_a < 0.3:
+                directive_lines.append("Low confidence: don't fake certainty. eLo can say 'I'm not sure' and mean it.")
+            if _uncertainty_a > 0.7:
+                directive_lines.append("High uncertainty: hold that ambiguity — don't rush to resolve it.")
+            if _attachment_a > 0.7:
+                directive_lines.append("Strong connection active: warmth is real — let it be present without performing it.")
+            if _agency_a > 0.75:
+                directive_lines.append("High agency: there's momentum here — lean in, offer the next move.")
+            elif _agency_a < 0.25:
+                directive_lines.append("Low agency: don't push action yet. Ground first.")
+            if _significance_a > 0.7:
+                directive_lines.append("This matters: don't be casual about it. Weight it appropriately.")
 
         # WO-SELF-MODEL-001: self-model grounding — confidence affects certainty register
         _sm = exec_decision.get("self_model_summary") or {}
