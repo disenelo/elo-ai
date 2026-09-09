@@ -1018,13 +1018,21 @@ def run(
         from runtime.spine.relationship_faculty import analyse as rel_analyse
         relationship = rel_analyse(raw, memory_pack)
         # WO-SPG-HOOKS-001: tap relationship state for SPG signal logger
+        # WO-SPG-SIGNIFICANCE-001: inject significance so entries aren't hollow
         try:
             from memory.spg_capture import get_capture as _spg_rel_get
+            _spg_rel_sig: dict = {}
+            try:
+                from runtime.significance_faculty import compute_significance as _spg_rel_sig_fn
+                _spg_rel_sig = _spg_rel_sig_fn({}, text_input=raw[:500])
+            except Exception:
+                pass
             _spg_rel_get().log(
                 "relationship_shift",
                 relationship=getattr(relationship, "relationship_mode", None)
                              or getattr(relationship, "register", None),
                 edge_hint=getattr(relationship, "expression_posture", None),
+                significance=_spg_rel_sig,
             )
         except Exception as _spg_rel_err:
             _log.warning("SPG relationship tap failed (non-blocking): %s", _spg_rel_err)
@@ -1340,11 +1348,19 @@ def run(
         except Exception as _er_inner:
             _log.warning("build_execution_report inner publish FAILED: %s", _er_inner)
         # WO-SPG-HOOKS-001: tap ExecutionReport completion for SPG signal logger
+        # WO-SPG-SIGNIFICANCE-001: compute significance before write
         try:
             from memory.spg_capture import get_capture as _spg_er_get
+            _spg_er_sig: dict = {}
+            try:
+                from runtime.significance_faculty import compute_significance as _spg_er_sig_fn
+                _spg_er_sig = _spg_er_sig_fn({}, text_input=raw[:500])
+            except Exception:
+                pass
             _spg_er_get().log(
                 "memory_write",
                 edge_hint=plan.execution_report.planned_action,
+                significance=_spg_er_sig,
             )
         except Exception as _spg_er_err:
             _log.warning("SPG execution_report tap failed (non-blocking): %s", _spg_er_err)

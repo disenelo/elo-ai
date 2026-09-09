@@ -405,13 +405,21 @@ def run():
             pass
 
         # WO-SPG-HOOKS-001: SPG tap — memory_write after WKG write
+        # WO-SPG-SIGNIFICANCE-001: compute significance before write so entries aren't hollow
         try:
             from memory.spg_capture import get_capture as _spg_get
+            _spg_sig: dict = {}
+            try:
+                from runtime.significance_faculty import compute_significance as _spg_sig_compute
+                _spg_sig = _spg_sig_compute({}, text_input=(raw + " " + response)[:500])
+            except Exception:
+                pass
             _spg_get().log(
                 "memory_write",
                 memory_keys=_spg_wkg_cats[:1],
                 context_tags=_spg_wkg_cats[:2],
                 embodiment="terminal",
+                significance=_spg_sig,
             )
         except Exception:
             pass

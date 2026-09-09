@@ -4060,7 +4060,12 @@ def _process_turn(raw: str) -> dict:
                     _sys_exec(_plan.system_action, _plan.system_arg)
                 except Exception as _sys_err:
                     import sys as _sys_mod; print(f"[system] action failed: {_sys_err}", file=_sys_mod.stderr)
-                    response = "Couldn't get there — something on the system side blocked it."
+                    # FAILURE 5 (2026-09-09): error string must never reach David as speech
+                    import logging as _gate_log
+                    _gate_log.getLogger("server.system").error(
+                        "system_action failed (suppressed from voice): %s", _sys_err
+                    )
+                    response = None  # let turn fall through to LLM naturally
                     # WO-082: record failure so reliability drops and "why" readback is honest.
                     try:
                         from self.decision_journal import record_failure as _dj_fail
@@ -4685,6 +4690,53 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # WO-WKG-LIVE-WRITE-001: if _mem_cats fired no match, run a broader topic scan
+        # so more live turns produce WKG claims (the narrow regex bank misses code/debug turns).
+        try:
+            if not _mem_cats and len(raw.strip()) >= 15:
+                import re as _wkg_lw_re
+                _BROAD_PATTERNS = [
+                    (r"\b(code|debug|fix|error|bug|animation|script|build|function|class|method)\b", "technical"),
+                    (r"\b(feel|feeling|emotion|anxious|calm|happy|sad|worried|excited|uncertain)\b", "emotional"),
+                    (r"\b(idea|concept|thinking|vision|imagine|creative|design|create)\b", "creative"),
+                    (r"\b(remember|recall|last time|before|history|earlier|always|never)\b", "memory"),
+                    (r"\b(learn|understand|teach|explain|help me|what is|how do|why)\b", "learning"),
+                    (r"\b(music|sound|video|art|film|song|book|story|game|play)\b", "creative"),
+                ]
+                _broad_cats = [cat for pat, cat in _BROAD_PATTERNS
+                               if _wkg_lw_re.search(pat, raw.lower())]
+                if _broad_cats:
+                    from runtime.wkg_faculty import (
+                        search_entities as _wkg_lw_search, create_entity as _wkg_lw_create,
+                        record_claim as _wkg_lw_record,
+                    )
+                    _wkg_lw_david = _wkg_lw_search("David Charles")
+                    _wkg_lw_david_id = (
+                        _wkg_lw_david[0]["entity_id"] if _wkg_lw_david
+                        else _wkg_lw_create("PERSON", "David Charles",
+                                            aliases=["David"],
+                                            description="Creator of eLo and DISENELO")["entity_id"]
+                    )
+                    _wkg_lw_label = _broad_cats[0]
+                    _wkg_lw_topic = _wkg_lw_search(_wkg_lw_label)
+                    _wkg_lw_topic_id = (
+                        _wkg_lw_topic[0]["entity_id"] if _wkg_lw_topic
+                        else _wkg_lw_create("CONCEPT", _wkg_lw_label,
+                                            description=f"Topic from live turn: {raw[:80]}")["entity_id"]
+                    )
+                    _wkg_lw_record(
+                        subject_entity_id=_wkg_lw_david_id,
+                        relationship_type="ASSOCIATED_WITH",
+                        object_entity_id=_wkg_lw_topic_id,
+                        epistemic_class="SOURCE_ATTRIBUTED",
+                        source_id=f"turn_broad:{_action}",
+                        confidence=0.55,
+                        memory_type="episodic",
+                        context_action=_action,
+                    )
+        except Exception:
+            pass
+
         # WO-108 Row 5 LOOK: directed-look production wire.
         # Records an observation each turn when eLo's gaze is on an active window.
         # _perceive_target reads elo_spatial.json directly; this call just ensures
@@ -5300,11 +5352,19 @@ def _process_turn(raw: str) -> dict:
         # Synchronous by design: ensures audio plays in sequence with response.
         # See: engineering/proofs/08_cross_embodiment_proof.md § Voice positioning
         # WO-026: If streaming already fired the full single-sentence response, skip.
-        # Multi-sentence: let voice_speak handle the full text (cancels early partial).
+        # FAILURE 4 fix: also skip full-text call if early TTS already spoke the first sentence
+        # (voice engine would re-speak it as part of the full text, causing double-speak).
         try:
-            if not _is_user_away() and not _is_calm_mode():
+            if not _is_user_away() and not _is_calm_mode() and _tts_text.strip():
                 _es = _early_tts_sentence[0] if "_early_tts_sentence" in dir() else None
-                _skip_tts = bool(_es and _tts_text.strip() == _es.strip())
+                # Skip full TTS if: single-sentence response already spoken, OR early sentence
+                # is a leading prefix of the full text (avoid repeating the opening aloud).
+                if _es:
+                    _es_s = _es.strip()
+                    _full_s = _tts_text.strip()
+                    _skip_tts = (_full_s == _es_s) or _full_s.startswith(_es_s)
+                else:
+                    _skip_tts = False
                 if not _skip_tts:
                     _voice_speak(_tts_text)
         except Exception:
@@ -5365,13 +5425,24 @@ def _process_turn(raw: str) -> dict:
             if not response or not response.strip():
                 import logging as _sil_log
                 _sil = _sil_log.getLogger("elo.silent_turn")
-                _sil.warning(
-                    "D-6 silent-turn alarm: empty response for raw=%r "
-                    "action=%s backend=%s bubbles=%d",
-                    (raw or "")[:120], _action, backend_used, len(_bubbles),
-                )
-                response  = "One sec — that came back empty. Ask me again?"
-                _bubbles  = [response]
+                # Check if this was a repetition suppression (not a true silent turn)
+                try:
+                    from runtime.response_gate import last_was_repetition_suppression as _lwr
+                    _was_dedup = _lwr()
+                except Exception:
+                    _was_dedup = False
+                if _was_dedup:
+                    _sil.info("D-6: repetition suppressed — silent turn (no fallback)")
+                    # Do not send fallback; leave response empty so nothing is spoken
+                    _bubbles = []
+                else:
+                    _sil.warning(
+                        "D-6 silent-turn alarm: empty response for raw=%r "
+                        "action=%s backend=%s bubbles=%d",
+                        (raw or "")[:120], _action, backend_used, len(_bubbles),
+                    )
+                    response  = "One sec — that came back empty. Ask me again?"
+                    _bubbles  = [response]
         except Exception:
             pass
 

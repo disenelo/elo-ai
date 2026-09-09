@@ -43,6 +43,12 @@ _GENERIC_PHRASES = [
     "i'm just an ai", "i am just an ai", "i don't have feelings",
     "i do not have feelings", "i'm not able to", "i am not able to",
     "as a language model",
+    # LLM identity phrases — FAILURE 2 (2026-09-09): these reached David verbatim
+    "i'm a large language model", "i am a large language model",
+    "large language model", "my responses are generated based on",
+    "as a large language model", "i'm just a language model",
+    "i am just a language model", "generated based on complex computations",
+    "i'm an ai model", "i am an ai model",
 ]
 
 # ── Reflection-as-default phrasing — check 9 ─────────────────────────────────
@@ -507,6 +513,27 @@ def guard_d4_context_claim_provenance(
         return response
 
 
+# FAILURE 1 (2026-09-09): session-level repetition dedup — ring buffer of last 3 responses
+_SESSION_LAST_RESPONSES: list[str] = []
+_SESSION_DEDUP_WINDOW = 3
+_LAST_SUPPRESSED_REPETITION: bool = False  # flag checked by server.py D-6 handler
+
+
+def _record_response(text: str) -> None:
+    _SESSION_LAST_RESPONSES.append(text.strip())
+    if len(_SESSION_LAST_RESPONSES) > _SESSION_DEDUP_WINDOW:
+        _SESSION_LAST_RESPONSES.pop(0)
+
+
+def _is_repetition(text: str) -> bool:
+    normalised = text.strip()
+    return any(normalised == prev for prev in _SESSION_LAST_RESPONSES)
+
+
+def last_was_repetition_suppression() -> bool:
+    return _LAST_SUPPRESSED_REPETITION
+
+
 def elo_response_gate(
     candidate: str,
     current_turn_input: str = "",
@@ -520,6 +547,14 @@ def elo_response_gate(
     """
     if not candidate or not candidate.strip():
         return candidate
+
+    # FAILURE 1: block if this response is identical to one in the last 3 turns
+    global _LAST_SUPPRESSED_REPETITION
+    if _is_repetition(candidate):
+        _log.warning("elo_response_gate: repetition detected — suppressing duplicate response")
+        _LAST_SUPPRESSED_REPETITION = True
+        return ""  # caller must handle empty: fall through to LLM or produce variation
+    _LAST_SUPPRESSED_REPETITION = False
 
     try:
         output = candidate
@@ -740,8 +775,95 @@ def elo_response_gate(
                     cl = output.lower()
                 break
 
-        return output if output.strip() else candidate
+        # FAILURE 6 (2026-09-09): false memory gate
+        # "I remember..." must be backed by a WKG retrieval hit for David.
+        # If eLo claims to remember something with no WKG source, strip the claim.
+        try:
+            import re as _mem_re
+            _MEM_CLAIM_PATTERNS = [
+                r"\bi remember you\b",
+                r"\bi remember when you\b",
+                r"\byou (?:told|said|mentioned|asked) me\b",
+                r"\bwe (?:talked|discussed|spoke) about\b",
+                r"\byou (?:once|previously|earlier) (?:told|said|mentioned)\b",
+            ]
+            _has_mem_claim = any(_mem_re.search(p, cl) for p in _MEM_CLAIM_PATTERNS)
+            if _has_mem_claim:
+                # Only allow if WKG has claims about David
+                _wkg_hit = False
+                try:
+                    from runtime.wkg_faculty import search_entities as _wkg_srch, get_claims_about as _wkg_clms
+                    _wkg_d_hits = _wkg_srch("David Charles")
+                    if _wkg_d_hits:
+                        _wkg_clms_list = _wkg_clms(_wkg_d_hits[0]["entity_id"])
+                        _wkg_hit = len(_wkg_clms_list) > 0
+                except Exception:
+                    _wkg_hit = True  # fail open — don't strip if WKG unavailable
+                if not _wkg_hit:
+                    _sents_mem = _mem_re.split(r"(?<=[.!?])\s+", output)
+                    _clean_mem = [
+                        s for s in _sents_mem
+                        if not any(_mem_re.search(p, s.lower()) for p in _MEM_CLAIM_PATTERNS)
+                    ]
+                    if _clean_mem and len(_clean_mem) < len(_sents_mem):
+                        _log.warning("elo_response_gate: false memory claim stripped (no WKG source)")
+                        output = " ".join(_clean_mem)
+                        cl = output.lower()
+        except Exception:
+            pass
+
+        # FAILURE 3 (2026-09-09): location hallucination gate
+        # Strip sentences asserting a city/location for the user when it doesn't match
+        # the persisted user location. eLo must not invent or confabulate location.
+        try:
+            import re as _loc_re
+            _LOC_ASSERTION_PATTERNS = [
+                r"\byou(?:'?re| are) (?:in|from|based in|located in) ([\w\s]+?)(?:[.,!?]|$)",
+                r"\byou (?:live|stay|work) in ([\w\s]+?)(?:[.,!?]|$)",
+                r"\byou(?:'?re| are) (?:a|from) ([\w\s]+?) (?:person|resident|native)\b",
+            ]
+            _known_loc: str | None = None
+            try:
+                import json as _loc_json, os as _loc_os
+                _loc_file = _loc_os.path.join(
+                    _loc_os.path.dirname(_loc_os.path.dirname(_loc_os.path.abspath(__file__))),
+                    "blender", "user_location.json",
+                )
+                if _loc_os.path.exists(_loc_file):
+                    _known_loc = _loc_json.load(open(_loc_file)).get("city", "").lower().strip()
+            except Exception:
+                pass
+
+            if _known_loc:
+                _sents_loc = _loc_re.split(r"(?<=[.!?])\s+", output)
+                _clean_loc = []
+                for _s_loc in _sents_loc:
+                    _s_low = _s_loc.lower()
+                    _dropped = False
+                    for _lp in _LOC_ASSERTION_PATTERNS:
+                        _m_loc = _loc_re.search(_lp, _s_low)
+                        if _m_loc:
+                            _asserted = _m_loc.group(1).strip().lower()
+                            if _asserted and _known_loc not in _asserted and _asserted not in _known_loc:
+                                _log.warning(
+                                    "elo_response_gate: location assertion %r != known %r — sentence dropped",
+                                    _asserted, _known_loc,
+                                )
+                                _dropped = True
+                                break
+                    if not _dropped:
+                        _clean_loc.append(_s_loc)
+                if _clean_loc and len(_clean_loc) < len(_sents_loc):
+                    output = " ".join(_clean_loc)
+                    cl = output.lower()
+        except Exception:
+            pass
+
+        result = output if output.strip() else candidate
+        _record_response(result)
+        return result
 
     except Exception as _gate_err:
         _log.warning("elo_response_gate failed (non-fatal): %s", _gate_err)
+        _record_response(candidate)
         return candidate

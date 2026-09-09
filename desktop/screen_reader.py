@@ -39,11 +39,25 @@ class ScreenContent:
     captured_at: float = 0.0
 
 
+def _has_permission() -> bool:
+    """Check Screen Recording permission without triggering the macOS prompt.
+    FAILURE 7 fix: never call screencapture without this check first."""
+    try:
+        from Quartz import CGPreflightScreenCaptureAccess
+        return bool(CGPreflightScreenCaptureAccess())
+    except Exception:
+        return False  # Quartz unavailable — assume no permission
+
+
 def capture() -> Optional[str]:
     """
     Take a silent screenshot and return the path. Returns None on failure.
     Uses -x flag (no sound) and captures the main display only.
+    FAILURE 7 fix: gates on permission check — never triggers the macOS prompt.
     """
+    # FAILURE 7 (2026-09-09): check permission silently before calling screencapture
+    if not _has_permission():
+        return None
     path = os.path.join(_TMP_DIR, f"elo_screen_{int(time.time())}.png")
     try:
         result = subprocess.run(

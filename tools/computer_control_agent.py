@@ -345,6 +345,13 @@ def _type_text_applescript(text: str) -> None:
 
 
 def _take_screenshot() -> Path:
+    # FAILURE 7 (2026-09-09): check permission before calling screencapture
+    try:
+        from Quartz import CGPreflightScreenCaptureAccess
+        if not CGPreflightScreenCaptureAccess():
+            raise PermissionError("Screen Recording permission not granted")
+    except ImportError:
+        pass  # Quartz unavailable — proceed; screencapture will handle it
     out = Path(tempfile.mktemp(suffix=".png"))
     subprocess.run(["screencapture", "-x", str(out)], check=True)
     return out

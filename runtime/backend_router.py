@@ -521,7 +521,8 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    with _ureq.urlopen(req, timeout=60) as _r:
+    # FAILURE 8 (2026-09-09): hardcoded 60s timeout → cap to 10s (matches David's 4s rule with headroom)
+    with _ureq.urlopen(req, timeout=min(10.0, _cloud_timeout_s() * 1.25)) as _r:
         body = _json.loads(_r.read())
     # CT0031 Step 1: extract Ollama timing telemetry — all durations are nanoseconds
     _ns = lambda ns: round(ns / 1_000_000, 1) if ns else 0.0  # noqa: E731
@@ -944,7 +945,8 @@ def _ollama_stream(
     buffer = []
     first_sent_fired = False
     _ns = lambda ns: round(ns / 1_000_000, 1) if ns else 0.0  # noqa: E731
-    with _ureq.urlopen(req, timeout=120) as _resp:
+    # FAILURE 8: streaming Ollama — initial connection timeout 10s (matches non-stream cap)
+    with _ureq.urlopen(req, timeout=10.0) as _resp:
         for _raw in _resp:
             line = _raw.decode("utf-8", errors="replace").strip()
             if not line:

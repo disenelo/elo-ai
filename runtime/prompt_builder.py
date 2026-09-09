@@ -578,7 +578,7 @@ def build(
         # ccm_context — inject if non-empty
         _ccm = exec_decision.get("ccm_context") or {}
         if _ccm and isinstance(_ccm, dict):
-            _ccm_items = [f"{k}: {v}" for k, v in list(_ccm.items())[:4] if v]
+            _ccm_items = [f"{k}: {v}" for k, v in _ccm.items() if v not in (None, 0.0, [], {}, "") and v is not False]
             if _ccm_items:
                 directive_lines.append("Context enrichment: " + "; ".join(_ccm_items))
 
