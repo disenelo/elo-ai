@@ -257,6 +257,24 @@ class CognitiveState:
     active_topic_depth:   int   = 0           # how many turns on current topic
     creative_candidates:  tuple = field(default_factory=tuple)  # WO-CREATIVE-001: [({"candidate":…,"score":…}),…] epistemic_status="imagined"
 
+    # ── Q-BODY (proprioception) ───────────────────────────────────────────────
+    body_moving:          bool  = False       # eLo is locomoting right now
+    body_gait:            str   = "idle"      # idle | walk | run | jump | fall
+    body_heading:         str   = "none"      # right | left | up | down | up_left | … | none
+    body_position_x:      float = 0.0         # viewport x (0–1)
+    body_position_y:      float = 0.0         # viewport y (0–1)
+    body_on_window:       bool  = False       # perched on a window
+    body_window:          str   = ""          # window name eLo is perched on
+    body_edge:            str   = ""          # bottom | top | left | right | ""
+    body_embodiment:      str   = "desktop"   # desktop | mobile | robot
+
+    # ── Q-MOVEMENT (five lifecycle states) ──────────────────────────────────
+    movement_where_i_am:   str  = ""          # "window:<name> edge:<edge>" summary
+    movement_want_to_go:   int  = -1          # goal window ID (-1 = none)
+    movement_am_moving:    bool = False        # currently locomoting
+    movement_arrived:      bool = False        # arrived this turn
+    movement_what_happened: str = ""          # arrived | fell | interrupted | none
+
     # ── Lifecycle ─────────────────────────────────────────────────────────────
     lifecycle_state:      str   = "awake"     # LifecycleState.value — awake/engaged/recharging/etc.
 

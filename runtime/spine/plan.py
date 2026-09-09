@@ -174,6 +174,22 @@ class CognitivePlan:
     # ── WO-SELF-MODEL-001: self-model snapshot ─────────────────────────────────
     self_model: "SelfModel | None" = None
 
+    # ── WO-QBODY-CONSEQUENCES-001: Q-BODY proprioception ─────────────────────
+    body_moving:       bool  = False
+    body_gait:         str   = "idle"
+    body_heading:      str   = "none"
+    body_on_window:    bool  = False
+    body_window:       str   = ""
+    body_edge:         str   = ""
+    body_embodiment:   str   = "desktop"
+
+    # ── WO-QMOVEMENT-001: Q-MOVEMENT five lifecycle states ───────────────────
+    movement_where_i_am:    str  = ""
+    movement_want_to_go:    int  = -1
+    movement_am_moving:     bool = False
+    movement_arrived:       bool = False
+    movement_what_happened: str  = "none"
+
     def needs_llm(self) -> bool:
         return not self.direct_response and not self.system_immediate and not self.system_pending
 

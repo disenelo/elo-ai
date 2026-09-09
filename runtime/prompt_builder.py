@@ -580,6 +580,24 @@ def build(
             elif _pred_conf > 0.75:
                 directive_lines.append("Self: confident ground here — speak from it.")
 
+        # WO-QBODY-CONSEQUENCES-001 + WO-QMOVEMENT-001: body awareness context
+        _body_gait = exec_decision.get("body_gait", "idle")
+        _body_window = exec_decision.get("body_window", "")
+        _body_edge = exec_decision.get("body_edge", "")
+        _body_moving = exec_decision.get("body_moving", False)
+        _body_on_window = exec_decision.get("body_on_window", False)
+        _mov_arrived = exec_decision.get("movement_arrived", False)
+        _mov_what = exec_decision.get("movement_what_happened", "none")
+        _mov_where = exec_decision.get("movement_where_i_am", "")
+        if _body_moving:
+            _dir = exec_decision.get("body_heading", "none")
+            directive_lines.append(f"Body: in motion — gait={_body_gait}, heading={_dir}.")
+        elif _body_on_window and _body_window:
+            _loc = f"{_body_window}" + (f" ({_body_edge} edge)" if _body_edge else "")
+            directive_lines.append(f"Body: perched on {_loc}.")
+        if _mov_arrived and _mov_what not in ("none", ""):
+            directive_lines.append(f"Movement: just {_mov_what}. eLo knows where it is now.")
+
         _push("executive_directive", "\n".join(directive_lines))
 
     assembled = "\n\n".join(sections)

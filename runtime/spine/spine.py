@@ -1231,6 +1231,20 @@ def run(
     except Exception as _aff_err:
         _log.warning("affective/self-model propagation failed (non-fatal): %s", _aff_err)
 
+    # WO-QBODY-CONSEQUENCES-001 + WO-QMOVEMENT-001: propagate body + movement state → plan
+    try:
+        for _bf in (
+            "body_moving", "body_gait", "body_heading", "body_on_window",
+            "body_window", "body_edge", "body_embodiment",
+            "movement_where_i_am", "movement_want_to_go",
+            "movement_am_moving", "movement_arrived", "movement_what_happened",
+        ):
+            _bv = getattr(cognitive_state, _bf, None)
+            if _bv is not None:
+                setattr(plan, _bf, _bv)
+    except Exception as _body_prop_err:
+        _log.warning("body/movement propagation failed (non-fatal): %s", _body_prop_err)
+
     # ── S6: Build EmbodimentState ─────────────────────────────────────────────
     # WO-097: runs AFTER conversation so response_text / display_text / tts_text
     # are populated when the body reads them.
@@ -1368,6 +1382,66 @@ def _environment_faculty() -> dict:
     return result
 
 
+def _body_faculty() -> dict:
+    """
+    WO-QBODY-CONSEQUENCES-001 + WO-QMOVEMENT-001: read elo_spatial.json and return
+    Q-BODY proprioception + Q-MOVEMENT five-state lifecycle. Observe only — no decisions.
+    Gracefully returns empty dict if file is absent or unreadable.
+    """
+    import json as _json
+    import pathlib as _pathlib
+
+    _SPATIAL = _pathlib.Path(__file__).parent.parent.parent / "blender" / "elo_spatial.json"
+    try:
+        _s = _json.loads(_SPATIAL.read_text())
+    except Exception:
+        return {}
+
+    # Q-BODY
+    _moving = bool(_s.get("moving", False))
+    _gait = str(_s.get("gait", "idle"))
+    _heading = str(_s.get("heading", "none"))
+    _x = float(_s.get("x", 0.0))
+    _y = float(_s.get("y", 0.0))
+    _on_window = bool(_s.get("on_window", False))
+    _window_name = str(_s.get("window", ""))
+    _edge = str(_s.get("edge", ""))
+    _embodiment = str(_s.get("embodiment", "desktop"))
+
+    # Q-MOVEMENT WHERE I AM
+    _where = f"window:{_window_name} edge:{_edge}" if _window_name else ""
+
+    # Q-MOVEMENT WANT TO GO
+    _goal = _s.get("goal", -1)
+    if _goal is None:
+        _goal = -1
+
+    # Q-MOVEMENT AM MOVING
+    _am_moving = _moving
+
+    # Q-MOVEMENT ARRIVED + WHAT HAPPENED — from last_move
+    _last = _s.get("last_move") or {}
+    _arrived = bool(_last.get("arrived", False))
+    _what = str(_last.get("outcome", "none")) if _last else "none"
+
+    return {
+        "body_moving": _moving,
+        "body_gait": _gait,
+        "body_heading": _heading,
+        "body_position_x": _x,
+        "body_position_y": _y,
+        "body_on_window": _on_window,
+        "body_window": _window_name,
+        "body_edge": _edge,
+        "body_embodiment": _embodiment,
+        "movement_where_i_am": _where,
+        "movement_want_to_go": int(_goal) if isinstance(_goal, (int, float)) else -1,
+        "movement_am_moving": _am_moving,
+        "movement_arrived": _arrived,
+        "movement_what_happened": _what,
+    }
+
+
 def assemble_cognitive_state(
     language:       dict,
     memory_result,
@@ -1470,6 +1544,13 @@ def assemble_cognitive_state(
     except Exception as _env_err:
         _log.warning("_environment_faculty failed (non-fatal): %s", _env_err)
 
+    # WO-QBODY-CONSEQUENCES-001 + WO-QMOVEMENT-001: read proprioception + movement lifecycle
+    _body = {}
+    try:
+        _body = _body_faculty()
+    except Exception as _body_err:
+        _log.warning("_body_faculty failed (non-fatal): %s", _body_err)
+
     # WO-AFFECTIVE-STATE-001: derive 13-dim AffectiveState from significance scores
     _affective_state = None
     try:
@@ -1513,6 +1594,22 @@ def assemble_cognitive_state(
         active_app=_env.get("active_app", ""),
         active_window=_env.get("active_window", ""),
         desktop_activity=_env.get("desktop_activity", "unknown"),
+        # WO-QBODY-CONSEQUENCES-001: Q-BODY proprioception
+        body_moving=_body.get("body_moving", False),
+        body_gait=_body.get("body_gait", "idle"),
+        body_heading=_body.get("body_heading", "none"),
+        body_position_x=_body.get("body_position_x", 0.0),
+        body_position_y=_body.get("body_position_y", 0.0),
+        body_on_window=_body.get("body_on_window", False),
+        body_window=_body.get("body_window", ""),
+        body_edge=_body.get("body_edge", ""),
+        body_embodiment=_body.get("body_embodiment", "desktop"),
+        # WO-QMOVEMENT-001: Q-MOVEMENT five lifecycle states
+        movement_where_i_am=_body.get("movement_where_i_am", ""),
+        movement_want_to_go=_body.get("movement_want_to_go", -1),
+        movement_am_moving=_body.get("movement_am_moving", False),
+        movement_arrived=_body.get("movement_arrived", False),
+        movement_what_happened=_body.get("movement_what_happened", "none"),
     )
 
 

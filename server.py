@@ -2979,6 +2979,20 @@ def _process_turn(raw: str) -> dict:
                         getattr(_plan, "self_model", None), "limitations", []
                     ) or []),
                 },
+                # WO-QBODY-CONSEQUENCES-001: Q-BODY body awareness in exec_decision
+                "body_moving":       getattr(_plan, "body_moving", False),
+                "body_gait":         getattr(_plan, "body_gait", "idle"),
+                "body_heading":      getattr(_plan, "body_heading", "none"),
+                "body_on_window":    getattr(_plan, "body_on_window", False),
+                "body_window":       getattr(_plan, "body_window", ""),
+                "body_edge":         getattr(_plan, "body_edge", ""),
+                "body_embodiment":   getattr(_plan, "body_embodiment", "desktop"),
+                # WO-QMOVEMENT-001: Q-MOVEMENT lifecycle in exec_decision
+                "movement_where_i_am":    getattr(_plan, "movement_where_i_am", ""),
+                "movement_want_to_go":    getattr(_plan, "movement_want_to_go", -1),
+                "movement_am_moving":     getattr(_plan, "movement_am_moving", False),
+                "movement_arrived":       getattr(_plan, "movement_arrived", False),
+                "movement_what_happened": getattr(_plan, "movement_what_happened", "none"),
             }
             # WO-105: collect last-turn spine domain health for /health endpoint
             global _spine_degraded
@@ -3862,6 +3876,11 @@ def _process_turn(raw: str) -> dict:
             }.get(_plan.storytelling_style, "")
             if _ss_hint:
                 system = system + f"\n\n[STORYTELLING FRAME — this turn only]\n{_ss_hint}"
+        # WO-CONSEQUENCE-REPORT-001: inject prior-turn consequence context from plan.llm_context
+        _consequence_ctx = getattr(_plan, "llm_context", "") if _plan else ""
+        if _consequence_ctx:
+            system = system + f"\n\n{_consequence_ctx}"
+
         # WO-INNER-001 D-3: inner-child expression — inject top creative seed (RTR-015 / §5)
         _ci_srv_candidates = getattr(_plan, "creative_candidates", None) or ()
         if _ci_srv_candidates:
