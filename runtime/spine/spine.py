@@ -1399,7 +1399,19 @@ def assemble_cognitive_state(
                         _rel  = _cl.get("relationship_type", "").replace("_", " ").lower()
                         _epi  = _cl.get("epistemic_class", "").upper()
                         if _obj:
-                            _lines.append(f"[{_epi}] {_subj} {_rel} {_obj}")
+                            _line = f"[{_epi}] {_subj} {_rel} {_obj}"
+                            # WO-MEMORY-TRACE-001: include affective_snapshot label if present
+                            _aff_snap = _cl.get("affective_snapshot")
+                            if _aff_snap and isinstance(_aff_snap, dict):
+                                from runtime.contracts import AffectiveState as _AffS
+                                try:
+                                    _aff_obj = _AffS(**{k: v for k, v in _aff_snap.items() if hasattr(_AffS, k)})
+                                    _aff_label = _aff_obj.label()
+                                    if _aff_label:
+                                        _line += f" [felt: {_aff_label}]"
+                                except Exception:
+                                    pass
+                            _lines.append(_line)
                 _wkg_context = "; ".join(_lines)
     except Exception:
         pass

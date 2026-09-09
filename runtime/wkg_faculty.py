@@ -161,6 +161,9 @@ def record_claim(
     memory_origin: str | None = None,
     memory_type: str | None = None,
     significance_score: float | None = None,
+    affective_snapshot: "dict | None" = None,
+    cognitive_snapshot: "dict | None" = None,
+    context_action: "str | None" = None,
 ) -> dict:
     """
     MemoryFaculty sole entry point for WKG claim creation.
@@ -213,6 +216,10 @@ def record_claim(
         "significance_score": significance_score,
         "experience_id": experience_id,
         "contradicted_by": contradicted_by or [],
+        # WO-MEMORY-TRACE-001: multidimensional episodic trace fields (optional, backward-compatible)
+        "affective_snapshot": affective_snapshot or None,
+        "cognitive_snapshot": cognitive_snapshot or None,
+        "context_action":     context_action or None,
     }
     claims = _load("claims")
     claims.append(claim)
