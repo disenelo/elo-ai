@@ -1,82 +1,152 @@
-# FROM BUILDER — WO-CCM-CONSUME-001 RESULT
-
-**Status:** DONE — 2026-09-08  
-**Code changes:** None — investigation card. CCM wiring already present; confirmed per trace.
-
----
-
-## Source intent verification
-
-**Source:** Build List §4 — "CCM → One Brain integration" required. "Context → CCM" required.  
-
-David's intent: CCM (Contextual Cultural Meaning) dims should enrich what eLo knows about the moment — the cultural weight, the street register, the emotional texture — and this should actually change the decisions eLo makes. Not just assembly theatre: CCM must affect the output.
+# FROM_BUILDER — WO-CCM-CONSUME-001
+**Status:** DONE — investigation complete; trace documented; AT-3 answered YES with evidence
+**Date:** 2026-09-09
+**Builder:** Claude (session b15c1e7a)
 
 ---
 
-## AT-1: ccm_enricher.enrich() on real inputs
+## Intent
+
+Prove CCM dims reach Executive decision. Identify every consumer. Answer YES/NO: does CCM actually affect any decision eLo makes?
+
+---
+
+## AT-1 — `ccm_enricher.enrich()` on 3 real inputs
+
+### Input 1: casual / street
+```
+"bruv wagwan that was bare peak man allow it seen safe fam"
+```
+Scored dims (27 total, 9 non-null):
+```
+intent: conversation
+relationship: creator
+street_terminology: [bruv, wagwan, safe, allow it, fam, bare, peak, seen, man]
+street_language: 1.0
+cultural_references: [london_street]
+conversation_rhythm: medium
+vocabulary_preferences: [street]
+response_pacing: normal
+social_expectations: greeting
+```
+
+### Input 2: building / technical
+```
+"implement the WKG faculty trace from spine to the executive decision dict"
+```
+Scored dims (27 total, 6 non-null):
+```
+intent: conversation
+relationship: creator
+cultural_references: [film]
+conversation_rhythm: medium
+vocabulary_preferences: [simple]
+response_pacing: normal
+```
+No street_language. No emotional signals.
+
+### Input 3: creative / curious
+```
+"I wonder what if we built something that could actually feel real, curious about how curiosity itself works"
+```
+Scored dims (27 total, 12 non-null):
+```
+intent: question
+relationship: creator
+conversation_energy: reflective
+humour_style: absurd
+creative_philosophy: present
+conversation_rhythm: medium
+vocabulary_preferences: [simple]
+tone_shifts: present
+response_pacing: normal
+social_expectations: greeting
+context_transitions: present
+curiosity: present
+```
+
+---
+
+## AT-2 — ccm_context call chain trace
+
+**Full path: enricher → spine plan → exec_decision → prompt_builder**
+
+1. `runtime/spine/spine.py:1010-1011` — `_ccm_context = _ccm_enrich(raw, language, None)` — runs every turn
+2. `spine.py:1055` — passed to `executive_faculty(ccm_context=_ccm_context, ...)`
+3. `spine.py:1120` — passed to `planetary_kernel(ccm_context=_ccm_context, ...)`
+4. `spine.py:1695` — `plan.ccm_context = ccm_context or {}`
+5. `server.py:2971` — `"ccm_context": getattr(_plan, "ccm_context", {})` — in exec_decision dict
+6. `runtime/prompt_builder.py:579` — `_ccm = exec_decision.get("ccm_context") or {}` — consumed here
+
+---
+
+## AT-3 — Does CCM actually affect any decision eLo makes? **YES**
+
+**At what layer?** Not at Executive layer. At Prompt layer.
+
+### Executive layer: NO
 
 ```python
-from faculties.ccm.ccm_enricher import CCMEnricher
-e = CCMEnricher()
-
-# Sample 1 — casual greeting with slang
-e.enrich("wagwan bruv what's the vibe")
-# Returns: {"emotion": "casual_greeting", "street_register": 0.82, "cultural_ref_density": 0.3, ...}
-
-# Sample 2 — emotional-weight input  
-e.enrich("I'm actually really proud of what we built this year")
-# Returns: {"emotion": "pride", "street_register": 0.1, "emotional_weight": 0.75, ...}
-
-# Sample 3 — technical/neutral
-e.enrich("what's the significance score formula")
-# Returns: {"emotion": "neutral", "street_register": 0.0, "cultural_ref_density": 0.0, ...}
+grep "ccm" runtime/executive.py → 0 results
 ```
 
-All 3 return non-empty dicts with scored dims. ✅ Enricher fires and differentiates.
+`executive.py` receives `ccm_context` as a parameter (spine passes it in) but makes zero decisions based on it. The Executive decides action, tone_mode, agency_level, relationship_mode, vessel_phase — none of these are shaped by CCM dims.
+
+**This is not a bug.** FREEZE_V1_LOCK governs executive.py. The Executive was spec'd to decide from attention + affective state + cognitive state, not from CCM signals directly. CCM is a context enricher for the prompt layer.
+
+### Prompt layer: YES — three consumption points
+
+**Point 1 — Generic context injection (`prompt_builder.py:578-583`):**
+```python
+_ccm = exec_decision.get("ccm_context") or {}
+_ccm_items = [f"{k}: {v}" for k, v in list(_ccm.items())[:4] if v]
+if _ccm_items:
+    directive_lines.append("Context enrichment: " + "; ".join(_ccm_items))
+```
+Top 4 non-null CCM dims are injected as a context enrichment directive. For the casual/street input above, this would inject: `"Context enrichment: intent: conversation; relationship: creator; street_terminology: ['bruv', ...]; street_language: 1.0"`.
+
+**Point 2 — Creative philosophy (`prompt_builder.py:587`):**
+```python
+_creative_phil = (_ccm or {}).get("creative_philosophy")
+```
+When `creative_philosophy: present`, a creativity directive fires.
+
+**Point 3 — Street language register (`prompt_builder.py:594-607`):**
+```python
+_street = float((_ccm or {}).get("street_language", 0.0) or 0.0)
+if _street >= 0.65:
+    directive_lines.append("Voice register: South/West London...")
+elif _street >= 0.35:
+    directive_lines.append("Voice register: contemporary idiom...")
+```
+`street_language` float directly gates eLo's linguistic register instruction. This was broken (always 0.0) before WO-ELO-VOICE-IDENTITY-001 fixed `_STREET_TERMS`. Now live.
 
 ---
 
-## AT-2: Call chain — ccm_context to final consumer
+## Integration status summary
 
-```
-ccm_enricher.enrich(input_text)                    [faculties/ccm/ccm_enricher.py]
-  → _ccm_context (dict of dim_name: value)
-  → spine.py:885: _ccm_context = ccm_enricher.enrich(_user_text)
-  → assemble_cognitive_state(ccm_context=_ccm_context)  [spine.py:929]
-  → CognitiveState.ccm_context = _ccm_context        [spine.py:1296]
-  → server.py:2914: exec_decision["ccm_context"] = getattr(_plan, "ccm_context", {})
-  → prompt_builder.py:547: _ccm = exec_decision.get("ccm_context")
-  → injected as: "Context enrichment: street_register: 0.82; emotion: casual_greeting; ..."
-  → LLM prompt executive_directive block → expressed output
-```
+| CCM dim | Scored? | Reaches prompt_builder? | Affects decision? |
+|---|---|---|---|
+| street_language (float) | ✅ now live (WO-ELO-VOICE-IDENTITY-001) | ✅ via exec_decision.ccm_context | ✅ gates voice register directive |
+| creative_philosophy | ✅ (when philosophy signals present) | ✅ | ✅ fires creativity directive |
+| intent | ✅ every turn | ✅ (top-4 dump) | ⚠️ injected as context text only |
+| relationship | ✅ always "creator" | ✅ (top-4 dump) | ⚠️ injected as context text only |
+| conversation_energy | ✅ sometimes | ✅ (top-4 dump, position 4) | ⚠️ injected as context text only |
+| curiosity | ✅ when present | ✅ (top-4 dump) | ⚠️ injected as context text only |
+| cultural_references | ✅ when detected | ✅ | ⚠️ injected as context text only — no dedicated consumer |
+| 12 remaining dims | Scored but not individually consumed | — | No dedicated consumer |
 
-Complete chain traced. No breaks.
-
----
-
-## AT-3: Does CCM actually affect any decision eLo makes?
-
-**YES (confirmed at prompt layer) — PARTIAL (Executive internal decision unverifiable).**
-
-**What's proven:**
-
-CCM dims reach the LLM as a "Context enrichment" instruction in the prompt. This means:
-- When street_register = 0.82 → the LLM's output register shifts toward more natural, less formal language
-- When emotion = "pride" → the LLM's response mirrors and acknowledges that emotional texture
-- When cultural_ref_density = 0.3 → the LLM is primed to interpret cultural shorthand rather than expanding it
-
-This is a real decision effect on expressed output. Three sample pairs confirm the output differs when CCM is present vs absent for high-scoring dims.
-
-**What can't be verified:**
-
-Whether CCM dims affect the Executive's internal CAL action selection (which action: answer/build/reflect/etc.). `executive.py` is FREEZE_V1_LOCK — Builder cannot inspect the Executive's internal processing. The CCM context is passed to the Executive as part of `cognitive_state`, but whether it influences the action chosen is a black box.
-
-**Board flag:** If the Board needs CCM to influence Executive action selection (not just prompt texture), a shim at the executive boundary is needed — a non-executive mapping from CCM dims to action preference that the Executive reads as a pre-assembled signal. This is outside Builder's current authority without a new WO.
+**Gaps flagged to Board (not Builder's scope to fix without spec):**
+- The generic top-4 CCM dump is a weak consumer — it passes raw field names and values to the LLM, which may or may not act on them. Individual dims like `conversation_rhythm`, `response_pacing`, `tone_shifts`, `curiosity` deserve dedicated instructions (as `street_language` and `creative_philosophy` have).
+- WO-CCM-SPINE-19-001 (ratified 19 dims) addresses this gap — it is in the INBOX as a separate WO.
+- `executive.py` could consume `conversation_rhythm` or `response_pacing` to set `turn_mode`, but this is gated by FREEZE_V1_LOCK. Board must spec the shim.
 
 ---
 
-## Source intent verdict
+## INTENT PROOF
 
-CCM enrichment reaches eLo's expressed output and changes what he says and how he says it. The 19 ratified dims are scored per turn and flow through to the prompt. This serves the "Context → CCM" integration David specified. The portion of CCM that may not yet serve its intent is whether it changes the Executive's choice of what eLo does on a turn — that remains unverifiable without Executive inspection.
+The WO intent: "Prove CCM dims reach Executive decision."
 
-*Builder · 2026-09-08 · investigation card · source intent verified (prompt layer)*
+**Partial YES:** CCM dims reach exec_decision (board-visible). They are consumed by prompt_builder in 3 specific ways (street_language, creative_philosophy, top-4 context dump). The Executive itself does not consume CCM — this is by design given FREEZE_V1_LOCK.
+
+The 19-dim ratification spec (WO-CCM-SPINE-19-001) will add more dedicated consumers per dim.
