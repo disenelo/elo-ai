@@ -1092,13 +1092,37 @@ def run(
 
     # ── Executive Faculty — ONE DECISION ─────────────────────────────────────
     # WO-106: pass assembled state so the Executive decides from real context
+    # WO-CONSEQUENCE-REPORT-001: pass prior-turn ExecutionReport so Executive knows what happened
+    global _prev_execution_report
     plan = _executive_faculty(
         raw, language, attention, capabilities, system_det,
         world=_world,
         cognitive_state=_cognitive_state,
         working_memory=_wm,
         affordances=getattr(_snapshot, "surface_affordances", None) if _snapshot else None,
+        execution_report=_prev_execution_report,
     )
+
+    # WO-CONSEQUENCE-REPORT-001: build consequence context from prior turn and store on plan
+    if _prev_execution_report is not None:
+        try:
+            _er = _prev_execution_report
+            _er_completed = getattr(_er, "completed", True)
+            _er_action = getattr(_er, "planned_action", "") or ""
+            _er_state = getattr(_er, "completion_state", "delivered") or "delivered"
+            if _er_action:
+                if _er_completed:
+                    plan.llm_context = (
+                        f"[CONSEQUENCE — previous turn] eLo {_er_action} → {_er_state}. "
+                        "If relevant, eLo can acknowledge this naturally."
+                    )
+                else:
+                    plan.llm_context = (
+                        f"[CONSEQUENCE — previous turn] eLo attempted {_er_action} but did not complete ({_er_state}). "
+                        "eLo is aware of this and can acknowledge it honestly."
+                    )
+        except Exception as _cons_err:
+            _log.warning("consequence context build FAILED (non-fatal): %s", _cons_err)
 
     # ── WO-052: Store snapshot on plan (assembled before; now pinned to it) ───
     plan.snapshot = _snapshot
@@ -1259,6 +1283,13 @@ def run(
             _log.warning("SPG execution_report tap failed (non-blocking): %s", _spg_er_err)
     except Exception as _er_err:
         _log.warning("build_execution_report FAILED: %s", _er_err)
+
+    # WO-CONSEQUENCE-REPORT-001: persist this turn's report for the next turn's context
+    try:
+        if getattr(plan, "execution_report", None) is not None:
+            _prev_execution_report = plan.execution_report
+    except Exception as _cons_persist_err:
+        _log.warning("consequence_report persist FAILED (non-fatal): %s", _cons_persist_err)
 
     return plan
 
