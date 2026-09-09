@@ -102,7 +102,7 @@ No items remain in DOING. QUEUE items verified as already done (QUEUE/DONE has r
 
 | Item | Status | Blocker |
 |---|---|---|
-| WO-LIVE-EXPRESSED-AUDIT-001 (P0) | PENDING | Requires live server turns — cannot run from session |
+| WO-LIVE-EXPRESSED-AUDIT-001 (P0) | ⚠️ PARTIAL | 5 turns run. Repetition resolved. Identity: 1/5 pass. 8b model ignores FORBIDDEN opener constraints. Needs model routing or post-process fix. |
 | WO-GAME-CINEMATIC-001 (P1) | PENDING | GAME SEAT — 7/8 items unbuilt in Unity |
 | WO-GAME-SOUND-ASSETS-001 (P1) | PENDING | GAME SEAT — recording + dead hook code |
 | WO-KICKSTARTER-BOARD-001 (CRITICAL) | PENDING | BOARD lane — 31 Oct 2026, 52 days |
@@ -181,9 +181,9 @@ Full specs in: `blender/agent_bus/builder/FROM_ARCHITECT_2026-09-09_REMAINING_GA
 | WO-WKG-LIVE-WRITE-001 | Builder | P0 | ✅ PARTIAL — broad-pattern fallback added; content-specific entity extraction pending Board WO |
 | WO-FALSE-DONE-VERIFY-001 | Builder | P0 | ✅ DONE — 350 cards audited; 324/350 SERVING; 8 NOT SERVING; 10 fix WOs dispatched |
 | WO-CCM-PHILOSOPHY-EXPRESSED-001 | Builder | P1 | ✅ DONE 2026-09-09 — detection + directive fixed; live expressed verify pending |
-| WO-INNER-CHILD-EXPRESSED-001 | Builder | P1 | Curiosity trigger → inner child — wonder signals wired; live verify pending |
-| WO-STABILITY-LAW-EXPRESSED-001 | Builder | P1 | Leaf on Water / Stability Law — exists in spine; live verify pending |
-| WO-KNOWLEDGE-PERSIST-001 | Builder | P1 | Verify WKG knowledge survives cold boot and reaches expressed output |
+| WO-INNER-CHILD-EXPRESSED-001 | Builder | P1 | ✅ SERVING — sensory/wonder input → exploratory images, build mode, no paraphrase opener |
+| WO-STABILITY-LAW-EXPRESSED-001 | Builder | P1 | ✅ SERVING — redirect absorbed cleanly, no friction, one sentence, ground mode |
+| WO-KNOWLEDGE-PERSIST-001 | Builder | P1 | ❌ NOT SERVING — WKG has 65 claims all with subject/object=None. Entity extraction failing. Pending Board entity-extraction WO. |
 | WO-AFFECTIVE-EXPRESSED-001 | Builder | P2 | ✅ DONE 2026-09-09 — all 13 dims wired; live expressed verify pending |
 | WO-GAME-CINEMATIC-001 | Game | P1 | Start menu cinematic — 7/8 items from S-19 unbuilt |
 | WO-GAME-SOUND-ASSETS-001 | Game | P1 | 50+ sounds unrecorded + dead hooks unwired |
