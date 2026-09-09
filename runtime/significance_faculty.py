@@ -63,6 +63,14 @@ _CONV_SIGNALS: list[tuple[str, str, float]] = [
     # Deep question
     (r"\b(?:why|what\s+does|what\s+is\s+the\s+point|meaning)\b",      "learning",     0.3),  # [ESTIMATE]
     (r"\b(?:how\s+does|can\s+you\s+explain|walk\s+me\s+through)\b",   "learning",     0.25), # [ESTIMATE]
+    # Wonder / speculative / imaginative — WO-LIVE-EXPRESSED-AUDIT-001 FIX-2
+    # "what if eLo could dream in colour" scored 0 curiosity — none of these matched
+    (r"\bwhat\s+if\b",                                                 "creation",     0.6),  # [ESTIMATE] speculative
+    (r"\b(?:dream|dreaming|dreamt)\b",                                 "creation",     0.5),  # [ESTIMATE] imaginative
+    (r"\b(?:imagine|imagining|imagined)\b",                            "creation",     0.55), # [ESTIMATE] imaginative
+    (r"\b(?:wonder|wondering|wondered)\b",                             "learning",     0.5),  # [ESTIMATE] wonder
+    (r"\b(?:colour|color|colours|colors)\b",                           "creation",     0.3),  # [ESTIMATE] sensory/creative
+    (r"\b(?:could\s+(?:we|you|elo|i)|what\s+would|what\s+could)\b",  "creation",     0.4),  # [ESTIMATE] possibility
 ]
 
 
