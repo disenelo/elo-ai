@@ -1,3 +1,78 @@
+## BOARD STATE UPDATE — 2026-09-09 (§69 — KICKSTARTER BACKWARD ROADMAP — WO-KICKSTARTER-BOARD-001)
+
+**Source:** S-17 — `DROP/_SOURCE_ARCHIVE/DISENELO - TRACKER TO KICKSTARTER.rtf`
+**Authority:** Board — CRITICAL, 52 days to 31 Oct 2026.
+**Date translated:** 2026-09-09
+
+### BACKWARD ROADMAP — SEAT TASKS
+
+Today = **2026-09-09**. In the "NOW → 30 SEP" window.
+
+| Window | What | Seat / David |
+|---|---|---|
+| **NOW → 30 SEP** (21 days) | Drip Smiley test piece, 3 T-shirt samples pressed, product photos shot, video storyboard (1 page), video script draft, tier calculator (cost every tier), website pre-order built, campaign assets (posts from finished products) | DAVID (physical work: T-shirts, filming, photography) |
+| **1–6 OCT** | Video script LOCKED, video assembled day-by-day: script→edit→music→sound, first complete video | DAVID |
+| **7–14 OCT** | Shoot day — eLo in studio, T-shirts, clothing, artwork, packaging, 3D, hands, process video | DAVID |
+| **15–19 OCT** | Voiceover recorded + edited into storyboard, music + sound, first complete video, watch as stranger | DAVID |
+| **20 OCT** | Video FINAL — edit/colour/sound/voiceover/captions/logo/end card/CTA | DAVID |
+| **21 OCT** | Kickstarter copy FINAL — 14 sections (opening, DISENELO, story, philosophy, what making, why now, products, goal, money, rewards, production, risks, future, CTA) | DAVID |
+| **22 OCT** | Product photography final (all T-shirt + 3D shots) | DAVID |
+| **23 OCT** | Reward tiers LOCKED (prices don't change) | DAVID |
+| **24 OCT** | Website — landing page, pre-order, Kickstarter CTA, about, products | BOARD can draft copy; DAVID builds/publishes |
+| **25 OCT** | GIFs + social assets from photography/video | DAVID |
+| **26–27 OCT** | Assembly buffer — anything unfinished | DAVID |
+| **28 OCT** | Kickstarter READY — upload video/images/GIFs, enter tiers/shipping/goal, complete story/risks/production | DAVID |
+| **29 OCT** | Final QA — customer perspective test (5 questions: care/buying/cost/money/when) | DAVID |
+| **30 OCT** | LOCK — spelling/links/prices/technical checks only | DAVID |
+| **31 OCT** | LAUNCH | DAVID |
+
+### LAUNCH DAY CHECKLIST (must be true on 31 Oct)
+- Kickstarter page completely built
+- Video uploaded
+- Final campaign copy
+- Product photography
+- GIFs
+- Reward tiers with pricing
+- Shipping, funding goal, stretch goals, production plan, risks/challenges, creator story
+- Website live with T-shirt pre-order page
+- Social launch posts ready
+- Launch-day email/social content ready
+
+### TIER STRUCTURE (from S-17)
+| Tier | Price | Contents |
+|---|---|---|
+| THE SIGNAL | £10–15 | Digital thank-you / wallpaper / campaign art |
+| THE PRINT | £25–35 | Limited DISENELO art print |
+| THE FOUNDATION TEE | £52 | Premium T-shirt (art object positioning) |
+| TEE + PRINT | £75–100 | Foundation tee + limited print |
+| THE OBJECT | £150–250 | Limited 3D collectible / sculpture (numbered) |
+| THE ARTIST'S PIECE | £300+ | Original artwork / canvas / highly limited (very few) |
+| THE DISENELO COLLECTION | £500+ | T-shirt + print + object + artwork + certificate (3–5 only) |
+
+### FUNDING GOAL FORMULA (from S-17)
+`GOAL = Kickstarter fees + payment processing + Stanley/Stella blanks + Inktra transfers + printing + packaging + postage + 3D printing materials + packaging + campaign production + contingency`
+= **minimum viable DISENELO production run**
+
+### WHAT BOARD CAN DO NOW (not David physical work)
+1. ✅ DONE: Backward roadmap read + translated into seat tasks
+2. [ ] Draft video script copy (words only — David records his own voice)
+3. [ ] Draft Kickstarter 14-section copy (David edits, not first author)
+4. [ ] Draft website copy (landing page, about, pre-order CTAs)
+5. [ ] Build tier calculator (costs per unit at projected quantities)
+
+### DAVID L3 DECISIONS NEEDED BEFORE KICKSTARTER
+- [ ] Which 3 T-shirt designs ship in Drop 01
+- [ ] Final vinyl price (needs mould + production cost quote)
+- [ ] Is the Book included as a reward tier or stretch goal?
+- [ ] Funding goal amount (Board can calculate minimum — David confirms)
+
+### OPEN BLOCKERS
+- Drip Smiley test not started → blocks product photography window
+- T-shirt samples not pressed → blocks 7 OCT shoot day
+- Video script not started → blocks 15 OCT voiceover window (only 5 days left before 15 OCT)
+
+---
+
 ## BOARD STATE UPDATE — 2026-09-09 (§68 — SESSION b15c1e7a RESUMED — BUILDER LANE FULLY CLOSED)
 
 **Builder:** Claude (session b15c1e7a resumed after compaction). KEEP GOING MASTER PROTOCOL.
@@ -32,6 +107,41 @@ No items remain in DOING. QUEUE items verified as already done (QUEUE/DONE has r
 | WO-GAME-SOUND-ASSETS-001 (P1) | PENDING | GAME SEAT — recording + dead hook code |
 | WO-KICKSTARTER-BOARD-001 (CRITICAL) | PENDING | BOARD lane — 31 Oct 2026, 52 days |
 | WO-WKG-LIVE-WRITE-001 (content-specific part) | PENDING | Needs semantic entity extraction WO from Board |
+
+---
+
+## KICKSTARTER TRACKING — BA-20 — 31 OCTOBER 2026
+
+**Source:** S-17 (DISENELO - TRACKER TO KICKSTARTER.rtf) + MK-1 plan (`oka/outputs/DISENELO_MK-1_Kickstarter_Campaign_Plan.md`)  
+**Deadline:** 31 October 2026. As of 2026-09-09: **52 days.**
+
+### BACKWARD TIMELINE FROM LAUNCH
+
+| Week | Dates | Gate | Owner | Status |
+|---|---|---|---|---|
+| W-52 | Now | **Phase A: David chooses the one campaign product** | David L3 | ❌ DECISION REQUIRED |
+| W-45 | ~24 Sep | Phase B: Prototype/proof assets ready | Designer | ⛔ BLOCKED on Phase A |
+| W-38 | ~1 Oct | Phase C: BO-2 reward pricing + LG-1 legal gates closed | Board / Legal | ⛔ BLOCKED on Phase A |
+| W-35 | ~4 Oct | Phase D: Kickstarter pre-launch page active | Board | ⛔ BLOCKED on Phase C |
+| W-30 | ~9 Oct | Trusted preview feedback resolved | David | ⛔ BLOCKED on Phase D |
+| W-20 | ~19 Oct | Launch materials approved by David | David L3 | ⛔ BLOCKED |
+| W-0 | 31 Oct | **LAUNCH** | — | ❌ NOT STARTED |
+
+### WHAT BOARD NEEDS FROM DAVID NOW
+
+**Single decision:** What is the one campaign product? (A physical object — not the robot, not a general fund, not eLo OS. One finite, scoped thing David can prototype and deliver.)
+
+Once that decision lands: Designer proceeds to Phase B, Board opens BO-2 and LG-1, pre-launch page gets built.
+
+Without it: nothing moves and the Oct 31 date is unreachable.
+
+### WHAT BOARD OPERATES (no David input needed)
+
+Once product is chosen:
+- BO-2 reward pricing model → Board writes this
+- Kickstarter pre-launch page copy → Board drafts, David approves
+- LG-1 legal/safety checklist → `oka/outputs/DISENELO_LG-1_Pre-Kickstarter_Legal_Safety_Checklist.md` exists, Board reviews and closes remaining gates
+- Social/channel cadence → Board sets up, David approves concept
 
 ---
 
