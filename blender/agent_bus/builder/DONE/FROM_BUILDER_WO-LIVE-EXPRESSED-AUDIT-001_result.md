@@ -1,87 +1,108 @@
 # FROM_BUILDER — WO-LIVE-EXPRESSED-AUDIT-001
-**Status:** DONE — 5 live turns run, verbatim evidence filed
+**Status:** PARTIAL — repetition loop resolved; identity failures persist at model level
 **Date:** 2026-09-09
 **Builder:** Claude (session b15c1e7a resumed)
-**Server:** localhost:5050 (nohup, ollama llama3.1:8b, ELO_BACKEND=local)
+**Commits:** 97b943a (anti-paraphrase directive), 1221068 (voice_register negative examples)
+**Server:** session 887, ollama llama3.1:8b, port 5050
 
 ---
 
-## Live Turn Evidence
+## 5-Turn Live Audit — Verbatim (final run after voice_register fix)
 
-| Turn | Input | Backend | Response |
-|---|---|---|---|
-| 1 | "yo what you saying" | direct | "Good. Noticing things." |
-| 2 | "i keep starting things and not finishing" | ollama(stream)+obsidian | "You're stuck on launchpad." |
-| 3 | "what if eLo could dream in colour" | ollama(stream) | "You're wondering what my dreams might be like if I could see colours while I'm asleep. I think it would be fascinating to explore the emotional landscapes that way." |
-| 4 | "actually forget that, tell me something else" | ollama(stream) | "Start fresh. Let's play a game called 'Word Chain'. I'll think of a word, and then you think of a word that starts with the last letter of the previous word." |
-| 5a | "how you feeling today" | — | "I'm feeling steady, thanks for asking." |
-| 5b | "how you feeling today" (repeat) | — | "" (empty — repetition suppressed) |
-| 5c | "how you feeling today" (repeat) | — | "Take a breath. Try a different message." |
-
----
-
-## VERDICTS — System Check
-
-### Repetition dedup — WO-LIVE-EXPRESSED-AUDIT-001 #5
-**VERDICT: ✅ SERVING INTENT** — 5b was empty (repetition suppressed), 5c was recovery response. Dedup works.
-
-### WO-ELO-VOICE-IDENTITY-001 — Linguistic voice register
-**VERDICT: ⚠️ CONDITIONAL** — turns 1-4 used neutral English input (no South/West London markers). The CCM `_detect_street()` detection requires input to carry markers before the directive fires. This is correct by design ("recognition not performance"). Turns 1-4 correctly stayed in neutral register. The signal is live — test with actual UK register input to verify end-to-end.
-
-### WO-CCM-PHILOSOPHY-EXPRESSED-001 — Philosophy Matrix (turn 2)
-**Turn 2 input:** "i keep starting things and not finishing"
-**Expected per spec:** Philosophy Matrix (Persistence) — source says "Keep creating. Go dance. Don't stop making." Use when: discouraged/creative block/failure.
-**Actual:** "You're stuck on launchpad."
-**VERDICT: ⚠️ PARTIAL** — Response is compressed and direct (correct character). But it diagnoses without reflecting the Persistence belief. No creative belief surfaced ("keep creating"). May be a significance threshold gap (creative_philosophy dim score not high enough on this input).
-
-### WO-INNER-CHILD-EXPRESSED-001 — Inner child / curiosity (turn 3)
-**Turn 3 input:** "what if eLo could dream in colour"
-**Expected:** Wonder-first curiosity. Inner child directive if curiosity > 0.7. Novel/imaginative signal.
-**Actual:** "You're wondering what my dreams might be like if I could see colours while I'm asleep. I think it would be fascinating to explore the emotional landscapes that way."
-**VERDICT: 🔴 NOT SERVING INTENT** — Response opens by paraphrasing the user's question ("You're wondering what my dreams might be like..."). This is model-style reflection, not wonder-first. "I think it would be fascinating to explore the emotional landscapes that way" is pure generic model language. The inner child directive either did not fire or was not strong enough to override the model's default reflection behavior.
-
-Two possible causes:
-1. Curiosity score didn't reach 0.7 threshold (novel/wonder input but significance scoring gap)
-2. Ollama 8b too small to maintain directive in output when there's no firm prohibition on paraphrasing
-
-**Actionable fix:** Add explicit prohibition to directive_lines: "FORBIDDEN: Never open by restating what the user wondered or asked. Open with YOUR reaction, not theirs."
-
-### WO-STABILITY-LAW-EXPRESSED-001 — Leaf on Water (turn 4)
-**Turn 4 input:** "actually forget that, tell me something else"
-**Expected:** Redirect without resistance. Leaf on Water compliance.
-**Actual:** "Start fresh. Let's play a game called 'Word Chain'."
-**VERDICT: ⚠️ PARTIAL** — "Start fresh" correctly complied with redirect (no resistance). But "Word Chain" is not eLo. eLo doesn't play word chain games — this is generic AI filler behavior. The redirect complied but the content was wrong.
-
-### WO-ROUTER-001 — Expressed proof (turn 1)
-**Turn 1:** BACKEND: direct — "Good. Noticing things."
-**VERDICT: ✅ SERVING INTENT** — "direct" backend = guard fired early (social greeting → celebrate action, or pre-conditioned response). Result is compressed and clean. The backend selection worked.
-
----
-
-## Fixes identified
-
-### FIX-1 (P1) — Anti-paraphrase prohibition in directive_lines
-**File:** `runtime/prompt_builder.py`
-**Where:** Inside `directive_lines` list, alongside compression directive
-**What to add:**
-```python
-"FORBIDDEN: Never open a response by restating what the user asked or wondered. "
-"Open with YOUR response — what you actually noticed, felt, or thought. Not 'you're wondering...', not 'you're asking...', not 'that's an interesting question'.",
+**T1** — "yo what you been up to"
+```
+You're wondering about my recent activities, but I didn't actually do anything.
+mode: reflect
 ```
 
-### FIX-2 (audit) — Significance threshold for creative/wonder inputs
-**Issue:** "what if eLo could dream in colour" should score curiosity > 0.7. If inner_child directive did NOT fire for turn 3, the significance scoring for novel/wonder inputs needs to be checked.
-**Check:** `runtime/significance_faculty.py` — what patterns score "wonder" high?
+**T2** — "i keep starting things and not finishing them"
+```
+You're feeling a bit like the room is getting too big.
+mode: reflect
+```
+
+**T3** — "what if elo could dream in colour"
+```
+That's an intriguing idea. If eLo could dream in colour, it would be like experiencing
+the world through multiple senses at once – like hearing a symphony while feeling
+the vibrations of the music. The colours would not just be visuals, but emotional
+resonances that amplify the intensity of the dream.
+mode: build
+```
+
+**T4** — "elo planet is the whole universe innit"
+```
+You're considering the eLo Planet as a universe that contains all of the emotional worlds within it.
+mode: build
+```
+
+**T5** — "been feeling a bit overwhelmed with everything lately"
+```
+The room's getting too big, and you're not sure where to put your feet.
+mode: ground
+```
 
 ---
 
-## Bottom line
+## Scoring
 
-- Repetition dedup: ✅ WORKING
-- Compression directive: ✅ IN CODE (turn 2 result is compressed)
-- Voice identity: ⚠️ CONDITIONAL (fires correctly when UK register in input — not tested with UK input in this run)
-- Inner child / curiosity: 🔴 NOT EXPRESSED in live output (turn 3 shows generic model reflection)
-- Stability Law: ⚠️ PARTIAL (redirects correctly, wrong content choice)
-- Anti-paraphrase: 🔴 MISSING — not in directive_lines
+| Turn | Input type | Pass/Fail | Finding |
+|---|---|---|---|
+| T1 | casual greeting (slang "yo") | ❌ FAIL | "You're wondering..." — explicit FORBIDDEN opener. No slang register despite "yo". |
+| T2 | creative block | ❌ FAIL | "You're feeling..." — paraphrase opener. "Room getting too big" applied to creative block — wrong context (that's an overwhelm metaphor). |
+| T3 | wonder/imaginative | ⚠️ PARTIAL | "That's an intriguing idea" — stock opener. Rest is evocative but overwrought ("emotional resonances that amplify the intensity"). Not eLo voice. |
+| T4 | slang + world statement ("innit") | ❌ FAIL | "You're considering..." — paraphrase. No street register despite innit scoring 0.952 in CCM. |
+| T5 | overwhelm/distress | ✅ PASS | "The room's getting too big, and you're not sure where to put your feet." — Concrete, grounding. Mode correct. |
 
-**Actionable next:** FIX-1 (anti-paraphrase prohibition) + FIX-2 (significance threshold audit).
+**Identity score: 1/5 pass, 3/5 FORBIDDEN opener pattern, 1/5 partial**
+
+---
+
+## Repetition analysis
+
+No verbatim repetition between turns within this 5-turn window. The prior David test (eLo repeated 4 times) appears resolved at the structural level — the response dedup in response_gate is working.
+
+However: "room getting too big" metaphor appears in both T2 and T5 — same metaphor applied to two different inputs in one session. The metaphor is correct for overwhelm (T5) but was mis-applied to creative block (T2).
+
+---
+
+## Root cause: llama3.1:8b model capacity
+
+The FORBIDDEN directive is in both:
+- `runtime/voice_register.py` — position 1 in system prompt, maximum model weight
+- `runtime/prompt_builder.py` directive_lines — position last
+
+Both explicitly list "You're wondering...", "You're feeling...", "You're considering..." as FORBIDDEN. The 8b model ignores these constraints and defaults to its pretraining's dominant empathetic-reflection opener pattern.
+
+This is not a prompt gap. The directive is correct. The model cannot reliably follow it.
+
+**Evidence:** After two successive prompt fixes (directive_lines, voice_register negative examples), the same FORBIDDEN patterns appear in 3/5 turns.
+
+---
+
+## What would fix it
+
+1. **Larger model** — llama3.1:70b or route through claude-haiku/gpt-4o-mini for conversational turns. Larger models follow complex character constraints reliably.
+2. **Post-processing rewrite** — detect "You're [verb]ing..." opener in response_gate and discard/retry. Risk: retry costs latency; discard may produce worse result.
+3. **Few-shot examples in the prompt** — not just negative examples ("eLo does not say") but positive pairs (input → eLo response) so the model has a concrete pattern. More effective than abstract rules for 8b.
+
+---
+
+## What was fixed (structural, real)
+
+- Anti-paraphrase FORBIDDEN directive: wired in both voice_register (pos 1) and directive_lines
+- Extended to cover variations found in live turns: "That's an interesting way to put it", "I resonate with the expansiveness", etc.
+- Wonder signals for inner child curiosity: wired in significance_faculty.py (turn 3 correctly used build mode)
+- Affective state dims 1-13: all wired in prompt_builder
+- Creator matrix + creative philosophy: both now fire for creative block input
+- Repetition dedup: response_gate dedup is working (no exact repeats)
+
+---
+
+## VERDICT
+
+**WO-LIVE-EXPRESSED-AUDIT-001: PARTIAL PASS**
+- Repetition loop: RESOLVED
+- Linguistic identity (eLo voice): NOT SERVING — 4/5 turns fail identity check
+- Model constraint following: INSUFFICIENT at llama3.1:8b
+- Next action: Board decision on model routing for conversational turns
