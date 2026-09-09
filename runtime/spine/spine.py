@@ -427,6 +427,34 @@ def _executive_faculty(
         _is_dream  = plan.conversation_action in ("explore",)
         plan.cognitive_mode_inner_child = bool(_curiosity > 0.7 or (_is_play and _is_dream))
 
+        # ── WO-OVERLOAD-PROTOCOL-001: detect overload → REDUCE TO ONE LINE ─────
+        try:
+            _ovl_aff = getattr(cognitive_state, "affective_state", None) if cognitive_state else None
+            _ovl_sig = getattr(cognitive_state, "significance_score", 0.0) if cognitive_state else 0.0
+            _ovl_tension = getattr(_ovl_aff, "tension", 0.0) if _ovl_aff else 0.0
+            _ovl_agency = getattr(_ovl_aff, "agency", 1.0) if _ovl_aff else 1.0
+            _ovl_threads = len(getattr(cognitive_state, "open_threads", ())) if cognitive_state else 0
+            _ovl_topics = getattr(cognitive_state, "active_topic_depth", 0) if cognitive_state else 0
+
+            _overload = (
+                (_ovl_sig >= 0.90)
+                or (_ovl_tension > 0.80 and _ovl_agency < 0.30)
+                or (_ovl_threads >= 3)
+            )
+            plan.overload_protocol = _overload
+            plan.inner_child_mode_active = False
+
+            if _overload:
+                plan.vessel_phase = "STABILISE"
+                plan.stability_law_active = True
+                _log.info("[OVERLOAD-PROTOCOL] triggered — sig=%.2f tension=%.2f agency=%.2f threads=%d",
+                          _ovl_sig, _ovl_tension, _ovl_agency, _ovl_threads)
+            elif plan.vessel_phase == "FEEL":
+                # Inner child runtime: when uncertain and vessel=FEEL, fire inner child mode
+                plan.inner_child_mode_active = True
+        except Exception as _ovl_err:
+            _log.warning("overload protocol check failed (non-fatal): %s", _ovl_err)
+
         # ── WO-VESSEL-LOOP-001 / WO-VESSEL-PHASE-001: vessel phase ───────────
         if not plan.vessel_phase or plan.vessel_phase == "FEEL":
             if plan.stability_law_active:

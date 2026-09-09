@@ -482,6 +482,15 @@ def build(
         if exec_decision.get("cognitive_mode_inner_child"):
             directive_lines.append("mode: inner-child — wonder first; approach with curiosity, not conclusions")
 
+        # ── WO-OVERLOAD-PROTOCOL-001: overload → REDUCE TO ONE LINE ──────
+        if exec_decision.get("overload_protocol"):
+            directive_lines.append(
+                "OVERLOAD MODE: Reduce to ONE line. One focus. One action. One direction. "
+                "What is the next smallest usable action? What is true right now? What can be removed?"
+            )
+        elif exec_decision.get("inner_child_mode_active"):
+            directive_lines.append("inner-child active: Try it once. Move first, understand after. Small test is enough.")
+
         # ── WO-STABILITY-LAW-001: stability law active ───────────────────
         if exec_decision.get("stability_law_active"):
             directive_lines.append("stability: reduce — one line only; compress to single action")
