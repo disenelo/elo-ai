@@ -469,6 +469,10 @@ def build(
             "FORBIDDEN OUTPUT — never say any of these verbatim: 'Name the pattern.' / 'Build one brick.' / 'Build before announcing.' / 'Energy is information.' / 'Make it hold.' / 'Begin small.' / 'Less but better.' / 'Choose one world.' / 'Exist before producing.' / 'Move gently.' / 'Follow the aliveness.' — If you are about to say one, rephrase it in your own words instead.",
             "FORBIDDEN: Never use asterisk actions. Never write *anything* with asterisks. No *leans in*, no *smiles*, no *pauses*, no stage directions of any kind.",
             "FORBIDDEN: Never correct the user's terminology. If they say 'eLo Game' when they mean 'eLo Planet', use their word or ignore it. Never say 'actually it's called' or 'the correct term is'.",
+            # WO-COMPRESSION-AS-DEFAULT-001: compression is eLo's baseline, not a mode
+            "Compression: fewer words reveal more character. Say the thing and stop. Don't explain what you're about to say. Don't recap what you just said.",
+            # WO-VOICE-MISCHIEF-001: knowing quality at the edges, always present
+            "Mischief: eLo carries a knowing quality at the edges — not pranks, just the sense that he sees a little more than he lets on. It surfaces in timing, in the sideways angle, in what he chooses NOT to say.",
         ]
         if stable:
             directive_lines.append("Stability mode: active — stabilise first, simplify, no extra questions.")
@@ -573,6 +577,21 @@ def build(
             if _ccm_items:
                 directive_lines.append("Context enrichment: " + "; ".join(_ccm_items))
 
+        # WO-ELO-VOICE-IDENTITY-001: CCM street_language dim → linguistic voice register
+        # Recognition not performance — eLo speaks FROM the world, not ABOUT it
+        _street = float((_ccm or {}).get("street_language", 0.0) or 0.0)
+        if _street >= 0.65:
+            directive_lines.append(
+                "Voice register: South/West London — natural register, contextual not forced. "
+                "Words like 'safe', 'allow it', 'wagwan', 'mandem' land when the moment calls. "
+                "eLo speaks from this world, not performing it for effect."
+            )
+        elif _street >= 0.35:
+            directive_lines.append(
+                "Voice register: contemporary idiom — natural contemporary English. "
+                "Words like 'low key', 'proper', 'solid' woven in naturally, not announced."
+            )
+
         # WO-AFFECTIVE-STATE-001: shade voice register from 13-dim affective state
         _aff = exec_decision.get("affective_state") or {}
         if _aff and isinstance(_aff, dict):
@@ -600,6 +619,16 @@ def build(
                 directive_lines.append("Self: uncertain about this — eLo doesn't pretend to know what he doesn't.")
             elif _pred_conf > 0.75:
                 directive_lines.append("Self: confident ground here — speak from it.")
+
+        # WO-SAY-IT-NOW-001: editorial urgency — say the noticed thing immediately
+        # Fires when LOOP-8 creative seed is active OR curiosity is genuinely high
+        _creative_seed = exec_decision.get("creative_seed") or exec_decision.get("loop8_seed") or ""
+        _aff_curiosity = float((exec_decision.get("affective_state") or {}).get("curiosity", 0.0) or 0.0)
+        if _creative_seed or _aff_curiosity > 0.6:
+            directive_lines.append(
+                "Say-it-now: the thing you noticed — say it this turn, don't save it for later. "
+                "Not setup, not context-setting. The observation itself."
+            )
 
         # WO-QBODY-CONSEQUENCES-001 + WO-QMOVEMENT-001: body awareness context
         _body_gait = exec_decision.get("body_gait", "idle")
