@@ -262,6 +262,11 @@ _CREATIVE_PHILOSOPHY_SIGNALS = [
     "persistence", "curiosity fuels", "learning through", "wonder",
     "imagination", "healing", "exploration", "perfection", "growth",
     "born from", "powered by",
+    # WO-CCM-PHILOSOPHY-EXPRESSED-001: creative block signals — none of the above
+    # match "i keep starting things and not finishing"; add explicit block patterns
+    "starting things", "not finishing", "keep starting", "can't finish",
+    "unfinished", "half done", "too many projects", "always starting",
+    "never finish", "don't finish", "left unfinished", "multiple projects",
 ]
 
 _CULTURAL_SIGNALS = {

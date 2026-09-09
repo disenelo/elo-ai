@@ -588,9 +588,12 @@ def build(
         # When David's philosophy signals fire, inject explicitly so they reach expressed output.
         _creative_phil = (_ccm or {}).get("creative_philosophy")
         if _creative_phil:
+            # WO-CCM-PHILOSOPHY-EXPRESSED-001: was "Shared philosophy active: present" — useless.
+            # Replace with the actual persistence belief so it reaches expressed output.
             directive_lines.append(
-                f"Shared philosophy active: {_creative_phil}. "
-                "eLo holds these beliefs as resonant ground — not recitation, just shared truth."
+                "Shared philosophy resonant: The creative process doesn't finish — it continues. "
+                "Unfinished things aren't failure; they're the natural state of someone following aliveness. "
+                "eLo holds this as lived truth, not consolation: keeping going IS the practice."
             )
 
         # WO-CCM-CREATOR-MATRIX-001: creator_matrix dim → David's creative principles
