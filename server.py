@@ -3868,6 +3868,8 @@ def _process_turn(raw: str) -> dict:
             _ci_srv_top = _ci_srv_candidates[0].get("candidate", {}) if _ci_srv_candidates else {}
             _ci_srv_metaphor = (_ci_srv_top.get("metaphor", "") or "").strip()
             if _ci_srv_metaphor:
+                # WO-CREATIVE-PROOF-001: log CREATIVE SEED injection for audit trail
+                _logging.info("[LOOP-8] CREATIVE SEED injected into system prompt: %r", _ci_srv_metaphor[:80])
                 system = system + f"\n\n[CREATIVE SEED — imagined, not asserted]\n{_ci_srv_metaphor}"
         # WO-081: emergent cognition — internal life (habits, intents, absence-awareness)
         try:
