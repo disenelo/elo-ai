@@ -176,10 +176,10 @@ Full specs in: `blender/agent_bus/builder/FROM_ARCHITECT_2026-09-09_REMAINING_GA
 | WO | Seat | Priority | Gap |
 |---|---|---|---|
 | WO-LIVE-EXPRESSED-AUDIT-001 | Builder | P0 | David ran live test — eLo repeated himself 4 times. Real turn audit, not structural. Fix repetition. |
-| WO-CCM-FULL-DIMS-001 | Builder | P0 | `[:4]` slice — 23 of 27 CCM dims dropped every turn |
-| WO-SPG-SIGNIFICANCE-001 | Builder | P0 | 898 signals, all `significance: {}` — engine not called |
-| WO-WKG-LIVE-WRITE-001 | Builder | P0 | 21 claims total — live turns not accumulating memory |
-| WO-FALSE-DONE-VERIFY-001 | Builder | P0 | Confirm what false-done audit found for C-10/C-13/C-19/C-20. Fix any NOT SERVING. |
+| WO-CCM-FULL-DIMS-001 | Builder | P0 | ✅ DONE — [:4] removed; all non-null dims injected |
+| WO-SPG-SIGNIFICANCE-001 | Builder | P0 | ✅ DONE — significance computed before all 3 SPG write hooks |
+| WO-WKG-LIVE-WRITE-001 | Builder | P0 | ✅ PARTIAL — broad-pattern fallback added; content-specific entity extraction pending Board WO |
+| WO-FALSE-DONE-VERIFY-001 | Builder | P0 | ✅ DONE — 350 cards audited; 324/350 SERVING; 8 NOT SERVING; 10 fix WOs dispatched |
 | WO-CCM-PHILOSOPHY-EXPRESSED-001 | Builder | P1 | ✅ DONE 2026-09-09 — detection + directive fixed; live expressed verify pending |
 | WO-INNER-CHILD-EXPRESSED-001 | Builder | P1 | Curiosity trigger → inner child — wonder signals wired; live verify pending |
 | WO-STABILITY-LAW-EXPRESSED-001 | Builder | P1 | Leaf on Water / Stability Law — exists in spine; live verify pending |
