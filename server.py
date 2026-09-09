@@ -1183,6 +1183,15 @@ def ambient_thought() -> None:
         _emotion    = _decision.get("emotion", "neutral")
         _movement   = _decision.get("movement", "idle")
 
+        # WO-QCUR-SPEAK-INVESTIGATE-001: response gate on ambient speak text
+        # Same gate as conversational turns — catches generic openers, thread contamination.
+        if _speak_text:
+            try:
+                from runtime.response_gate import elo_response_gate as _amb_gate
+                _speak_text = _amb_gate(_speak_text, current_turn_input="…") or _speak_text
+            except Exception:
+                pass
+
         from blender_bridge.state_writer import patch as _bpatch
         _bpatch({"state": {"emotion": _emotion}})
 
