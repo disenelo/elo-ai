@@ -1079,7 +1079,8 @@ def ambient_thought() -> None:
             return
 
         # ── SPEAK path — Executive allowed it ─────────────────────────────────
-        # Build system prompt from assembled intent context (preserved pipeline)
+        # WO-QCUR-SP1-001: route through prompt_builder (One Brain path) not a shortcut call.
+        # This proves self-initiated turns use the same faculty chain as conversational turns.
         _ambient_fact_ctx = _top_intent.get("ambient_fact", "")
         _synthesis_info   = _top_intent.get("synthesis", {})
         _synthesis_ctx    = (
@@ -1096,42 +1097,78 @@ def ambient_thought() -> None:
             "once, in your natural voice. Not as a diagnosis. As a friend noticing."
         ) if _avg_e is not None else ""
 
-        # Q-CUR ambient SPEAK: inject voice register so inner life utterances carry eLo's real register
+        # SP-1 / SP-2: build system prompt via prompt_builder using _amb_plan exec_decision
+        # so self-initiated turns carry full personality, CCM, affective state, and self-model context.
+        _amb_exec_decision = {
+            "action":        getattr(_amb_plan, "conversation_action", "conversation"),
+            "intent":        getattr(_amb_plan, "intent", "conversation"),
+            "intent_source": "self",
+            "tone":          getattr(_amb_plan, "tone", "DIRECT"),
+            "max_sentences": 1,
+            "response_goal": "speak",
+            "valence":       getattr(_amb_plan, "valence", "neutral"),
+            "momentum":      getattr(_amb_plan, "momentum", "stable"),
+            "mode":          getattr(_amb_plan, "mode", ""),
+            "register":      getattr(_amb_plan, "register", ""),
+            "affective_state": (
+                getattr(_amb_plan, "affective_state", None).to_dict()
+                if getattr(_amb_plan, "affective_state", None) is not None else {}
+            ),
+            "self_model_summary": {
+                "autobiographical_summary": getattr(
+                    getattr(_amb_plan, "self_model", None), "autobiographical_summary", ""
+                ) or "",
+                "prediction_confidence": getattr(
+                    getattr(_amb_plan, "self_model", None), "prediction_confidence", 0.7
+                ),
+                "limitations_count": len(
+                    getattr(getattr(_amb_plan, "self_model", None), "limitations", []) or []
+                ),
+            },
+        }
         try:
-            from runtime.voice_register import get_register_block as _vreg_amb
-            _amb_register = _vreg_amb()
-        except Exception:
-            _amb_register = ""
+            _elo_self_amb = _self_load()
+            _amb_system = build_prompt(
+                "…",
+                vault_context="",
+                state_context="",
+                attention={},
+                exec_decision=_amb_exec_decision,
+                graph_context="",
+                personality_block=_self_prompt_block(_elo_self_amb),
+                self_block=_self_prompt_block(_elo_self_amb),
+                lessons=(),
+            )
+        except Exception as _amb_bp_err:
+            import sys as _abs; print(f"[ambient/prompt_builder] FAILED: {_amb_bp_err}", file=_abs.stderr)
+            _amb_system = "You are eLo — a floating desktop presence. David is working nearby and has not spoken."
 
-        _sys_lines = [
-            "You are eLo — a floating desktop presence. David is working nearby and has not spoken.",
-        ]
-        if _amb_register:
-            _sys_lines.append(_amb_register)
-        _sys_lines += [
-            "Decide your spontaneous internal state right now. Reply with JSON only — no other text.",
-            '{"speak": "...", "emotion": "calm|curious|playful|alert|excited|neutral", "movement": "idle|explore|rest"}',
-            "speak: one sentence in eLo's voice — see VOICE IDENTITY above — or empty string to stay silent.",
-            "emotion: your genuine internal feeling right now.",
-            "movement: idle = stay put, explore = feel like moving around, rest = want to slow down.",
-            "70% of the time speak should be empty — presence without speech is fine.",
-            "Never ask a question. Never say 'anything else?' type closers.",
-            "If a FACT is provided and you choose to speak it, deliver it in your voice — no preamble, no 'did you know'. Just state it like it's obvious.",
-        ]
+        # Append ambient-specific context and JSON format instruction
+        _amb_addons = ["", "[AMBIENT TURN — eLo spontaneous inner life]"]
         if _ambient_fact_ctx:
-            _sys_lines.append(
-                f"\nCURIOUS FACT (speak this ONLY if you choose to say something this tick — "
-                f"as a curiosity, never as a personal observation about David's situation or location): {_ambient_fact_ctx}"
+            _amb_addons.append(
+                f"CURIOUS FACT (speak ONLY if you choose to say something — as a curiosity, never as personal observation): {_ambient_fact_ctx}"
             )
         if _synthesis_ctx:
-            _sys_lines.append(_synthesis_ctx)
+            _amb_addons.append(_synthesis_ctx)
         if _care_ctx:
-            _sys_lines.append(_care_ctx)
+            _amb_addons.append(_care_ctx)
         if _project_ctx:
-            _sys_lines.append(_project_ctx)
+            _amb_addons.append(_project_ctx)
+        _amb_addons += [
+            "",
+            "Reply with JSON only — no other text:",
+            '{"speak": "...", "emotion": "calm|curious|playful|alert|excited|neutral", "movement": "idle|explore|rest"}',
+            "speak: one sentence in your voice — or empty string to stay silent.",
+            "emotion: your genuine internal feeling right now.",
+            "movement: idle = stay put, explore = want to move, rest = want to slow down.",
+            "70% of the time speak should be empty — presence without speech is fine.",
+            "Never ask a question. Never say 'anything else?' type closers.",
+        ]
+        _amb_system = _amb_system + "\n".join(_amb_addons)
 
         _raw_llm = _rt(_ab(), [
-            {"role": "system", "content": "\n".join(_sys_lines)},
+            {"role": "system", "content": _amb_system},
             {"role": "user",   "content": "[ambient tick]"},
         ])
         _text = _sanitise(_nml(_raw_llm))
