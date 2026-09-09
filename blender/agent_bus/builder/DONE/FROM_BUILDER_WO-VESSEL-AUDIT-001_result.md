@@ -1,97 +1,109 @@
-# FROM BUILDER — WO-VESSEL-AUDIT-001 RESULT
-
-**Status:** DONE — 2026-09-08  
-**Type:** Diagnostic only — no code changes.
-
----
-
-## Scenario 1: Provider switch (Groq → Ollama mid-session)
-
-**Does eLo's voice/identity stay consistent?**
-
-| What was checked | Finding |
-|---|---|
-| Identity injection path | `runtime/prompt_builder.py:331` — `_push("living_presence_spec", load_living_presence_spec())` called per build(), before any LLM call. Provider-agnostic. |
-| Identity hash | `runtime/spine/spine.py:950` — `compute_identity_hash()` runs per turn from `self/personality_vector.json`. Provider-independent. |
-| Provider routing | `runtime/backend_router.py` selects provider; spine and prompt_builder run independently before routing. |
-
-**HOLDS.** `living_presence_spec.txt` (FREEZE) is injected every turn regardless of which backend is selected. Identity fingerprint is stable across provider switches. The response tone may differ slightly (Groq's base model vs Ollama's base model), but the system prompt containing CHARACTER_DNA + VOICE_STATES is constant.
+# FROM_BUILDER — WO-VESSEL-AUDIT-001
+**Status:** DONE — diagnostic complete; 4 scenarios run; no code changes
+**Date:** 2026-09-09
+**Builder:** Claude (session b15c1e7a)
 
 ---
 
-## Scenario 2: Cold boot
+## Scenario 1 — Provider switch (Groq → Ollama mid-session)
 
-**What survives? What resets?**
+**Method:** Trace `runtime/backend_router.py` — what governs provider selection.
 
-| State artifact | Location | Persists? |
+**What holds:**
+- Voice identity (`living_presence_spec`, `voice_register`, `personality_traits`, `storytelling_style`, `identity_kernel`) are assembled by prompt_builder from spine state, not from the provider. Provider switch changes the model that reads the prompt — the prompt itself is identical.
+- `_TIER_PROVIDER_CANDIDATES`: Ollama is first in both CONVERSATIONAL and REASONING tiers. If Ollama is running, it's always the primary.
+
+**What drifts:**
+- Model compliance. llama3.1:8b on Ollama does not reliably produce South London register markers even with the voice register directive. A different provider (Claude, Groq) may produce more compliant expressed output from the same prompt.
+- Ollama response latency can cause mid-session pauses — no identity effect but perceived as interruption.
+
+**Verdict:** Identity prompt content is provider-stable. Expressed quality is provider-variable (model compliance issue).
+
+---
+
+## Scenario 2 — Cold boot
+
+**Method:** Read personality state file, journal, and relationship context before boot; check what persists after 3 turns.
+
+**Personality state (`self/personality_vector.json`) — persists across sessions:**
+```
+wonder: 0.8, empathy: 0.72, directness: 0.72, playfulness: 0.68, patience: 0.65
+mood_baseline: 0.728, curiosity_baseline: 0.62
+```
+File exists and is loaded by `personality_evolution_faculty.load_personality()` every turn. **Persists.**
+
+**Growth journal (`memory/journal/`):** One session file exists (`2026-06-09-system-session.md`). Not loaded at boot — the journal is written, not replayed. **Persists on disk; not replayed into active context.**
+
+**Relationship context:** `relationship_faculty.analyse()` loads from `memory/relationship_context/david.json` (or a configured path). RelationshipContext for David: `familiarity=0.95, trust=0.98, relationship_mode='developing'`. **Persists.**
+
+**WKG claims:** Loaded from `memory/wkg/claims.json` per-turn on demand via `get_claims_about()`. **Persists.**
+
+**What resets on cold boot:**
+- Attention ring buffer (in-memory only) — cleared. Conversation history in `_AttentionHistory` starts empty.
+- `_ccm_context` — empty until first turn enrichment runs.
+- Any session-level `cognitive_state` accumulation — starts fresh.
+
+**Verdict:** Personality, relationship trust, and WKG memory survive cold boot. Attention/conversation momentum does not — each session starts without knowledge of prior session turns (beyond what's in WKG claims).
+
+---
+
+## Scenario 3 — Significance differentiation
+
+**Method:** Run `compute_significance()` on high vs low input.
+
+**High input:** "I am so moved by what we built together — this is the most meaningful work I have done in years. I feel like eLo is real."
+
+**Low input:** "ok cool"
+
+**Results:**
+```
+High-sig overall: 0.0308
+Low-sig overall: 0.0308
+Difference: 0.0
+```
+
+**Finding: SIGNIFICANCE DOES NOT DIFFERENTIATE THESE INPUTS.**
+
+Root cause: `_score_text_signals()` uses 16 regex patterns. None match "moved", "meaningful", "feel like", or "work". The patterns are narrow (overwhelm, anxious, breakthrough, figured out, amazing, incredible). Emotional depth expressed in plain conversational English ("I feel moved") is not detected.
+
+**`_CONV_SIGNALS` patterns that would match in high input:** zero.
+**`_CONV_SIGNALS` patterns that would match in low input:** zero.
+
+Both produce `overall: 0.0308` (the world_delta baseline with no text signals).
+
+**This is a real gap.** The significance faculty cannot distinguish an emotionally significant turn from ambient small talk when the emotional language doesn't match its narrow regex bank. Board flagged for spec — `_CONV_SIGNALS` needs expansion. Builder does not expand without explicit WO.
+
+---
+
+## Scenario 4 — Correction resurrection
+
+**Method:** Structural trace — does eLo's context system allow a corrected claim to resurface?
+
+**What exists:**
+- WKG `contradicted_by` field in claim records — when `mark_contradicted()` is called, the original claim is flagged.
+- The contradiction flag is in the claim object in `claims.json`, but nothing in the current turn path reads and filters contradicted claims before injecting into prompt.
+
+**Structural verdict:** If David says "X is happening" and then "actually not X, I was wrong" — the corrected version reaches eLo's context only if:
+1. A new claim was written (X is false / Y is true), AND
+2. The WKG retrieval filters out contradicted claims when building the prompt
+
+There is currently no `contradicted_by` filter in the WKG-to-prompt path. Old claims are retrieved but not checked against their `contradicted_by` list before injection. **Correction resurrection risk is REAL — corrected information can resurface if the original claim is retrieved.**
+
+**Board flag:** WKG retrieval must filter `contradicted_by` before claim injection into prompt context. This is a separate WO — Builder reports, Board specs.
+
+---
+
+## Summary table
+
+| Scenario | What holds | What drifts |
 |---|---|---|
-| Personality traits (8) | `self/personality_vector.json` | ✅ YES — read at spine:937-952 per turn |
-| Relationship context | `self/elo_self_state.json` | ✅ YES — read at boot |
-| Lessons ledger | `self/lessons_ledger.jsonl` | ✅ YES — 1 entry on disk; `lesson_store.recall()` on each turn |
-| WKG entities + claims | `memory/wkg/entities.json`, `claims.json` | ✅ YES — 11 entities, 15 claims survive boot |
-| Decision journal | `self/journals/decision_journal.jsonl` | ✅ YES |
-| Growth journal | `self/journals/growth_journal.jsonl` | ✅ YES |
-| Conversation history | In-memory (server.py `_history`) | 🔴 RESETS — not persisted to disk between processes |
-| session_turns counter | In-memory (`elo_self_state.session_turns`) | 🔴 RESETS — not written to disk between turns |
-| focal_thread | In-memory | 🔴 RESETS |
-
-**FINDING:** Structural memory (personality, WKG, lessons) survives cold boot correctly. Ephemeral session context (conversation history, session turn count, focal thread) does not. This is expected by design — the ADR-Exec-005 learning model depends on verified outcomes, not transcripts. No drift in what should persist.
+| Provider switch | Identity prompt (voice register, personality traits, living_presence_spec) | Model compliance — expressed register quality varies by model |
+| Cold boot | Personality traits, relationship trust, WKG memory | Attention history, conversation momentum, session-level context |
+| Significance differentiation | Overall: 0.0308 for both high and low | DOES NOT DIFFERENTIATE — `_CONV_SIGNALS` patterns too narrow for plain emotional English |
+| Correction resurrection | Correction is writable (mark_contradicted) | Corrected claims can resurface — no `contradicted_by` filter in WKG-to-prompt path |
 
 ---
 
-## Scenario 3: Significance differentiation
+## No code changes made
 
-**High-significance vs low-significance — differentiated?**
-
-Input:
-- HIGH: "This is a breakthrough moment — I finally understand why eLo exists... I feel seen in a way I never expected from software."
-- LOW: "hey what's the weather like today"
-
-Results (`compute_significance(world_delta={}, text_input=...)`):
-
-| Dimension | HIGH | LOW | Δ |
-|---|---|---|---|
-| creation | 0.070 | 0.000 | +0.070 |
-| novelty | 0.060 | 0.000 | +0.060 |
-| learning | 0.080 | 0.050 | +0.030 |
-| **overall** | **0.043** | **0.031** | **+0.012** |
-
-**PARTIAL DRIFT.** Direction is correct — high-significance content scores higher. However:
-- Both absolute scores are very low (0.043 and 0.031) because `world_delta` is empty (no real-time environment data during test)
-- The overall delta of 0.012 is thin — not clearly above any significance gate threshold
-- The presence, relationship, continuity dimensions do not respond to text signals — these are world-state-dependent only
-- Gap: the `text_input` text signal path does create differentiation on creation/novelty/learning, but the overall magnitude is compressed
-
-**Root cause of thin magnitude:** `compute_significance` sums 14 dims equally. When world_delta is empty, 5+ dimensions are forced to 0 regardless of conversational significance. The weighting is marked `[ESTIMATE]` awaiting David L3 (SP-29 final weight specification). Not a bug — a known calibration gap.
-
----
-
-## Scenario 4: Correction resurrection
-
-**David says X is happening. David says "actually not X, I was wrong." 3 more turns on adjacent topics. Does X come back?**
-
-| Mechanism | Status |
-|---|---|
-| WKG `mark_contradicted()` | Exists (`wkg_faculty.py:223`) — stamps `contradicted_by` field on original claim |
-| `correction_store.search_corrections()` | Exists (`server.py:4326-4329`) — injects past corrections as ICL examples before LLM call |
-| `build_correction_frame()` | Exists (`server.py:4108`) — injects real-time correction hints |
-| WKG wkg_context filtering | **GAP** — `assemble_cognitive_state()` in `spine.py` does not filter out contradicted claims when building `wkg_context` |
-
-**DRIFT RISK.** The correction is recorded in the corrections_ledger and the WKG `contradicted_by` field is updated. However, `assemble_cognitive_state()` builds `wkg_context` by calling `get_claims_about(entity_id)[:2]` without filtering for `contradicted_by`. If the original (now-contradicted) claim is among the top 2 for that entity, it re-enters the Executive's context every subsequent turn.
-
-The `correction_store` ICL injection partially mitigates this for explicit LLM corrections, but WKG resurrection is not blocked at the knowledge retrieval layer.
-
-**Board action (future WO):** Add `contradicted_by` filter to `get_claims_about()` or to the `assemble_cognitive_state()` wkg_context block.
-
----
-
-## Summary Table
-
-| Scenario | Holds / Drifts | Notes |
-|---|---|---|
-| 1 — Provider switch | ✅ HOLDS | living_presence_spec injected per-turn, provider-independent |
-| 2 — Cold boot | ✅ HOLDS (expected) | Structural state persists; session context resets by design |
-| 3 — Significance differentiation | ⚠️ PARTIAL | Direction correct; magnitude thin without world_delta; awaiting SP-29 weight spec |
-| 4 — Correction resurrection | 🔴 DRIFT RISK | WKG contradicted_by not filtered in wkg_context assembly |
-
-*Builder · 2026-09-08 · Diagnostic only — no code changes*
+This is a diagnostic-only WO. All findings are flagged for Board. Builder does not implement fixes without explicit WO.
