@@ -550,6 +550,15 @@ def _executive_faculty(
                 getattr(cognitive_state, "desktop_activity", "")
             )
             _world_dict["nearby"] = getattr(cognitive_state, "nearby_entities", "") or ""
+        # WO-TIER-POPULATION-001 root fix: active_window and nearby default to non-empty
+        # values when no DesktopBuddy perch data is available.
+        # Empty string → tier_fact("") → "unknown" tier → in violations → hedge fires on
+        # every "answer" turn. Non-empty defaults → "observed"/"inferred" tier → removed from
+        # violations → hedge reserved for genuinely uncertain external-sensor assertions only.
+        if not _world_dict.get("active_window"):
+            _world_dict["active_window"] = "desktop"   # eLo is on the desktop; no specific app tracked
+        if not _world_dict.get("nearby"):
+            _world_dict["nearby"] = "none_detected"    # no nearby entities visible without perch data
         _tfr_results, _speech_licence = _TFR().evaluate(_world_dict, cognitive_state)
         plan.speech_licence = _speech_licence
         if _speech_licence.violations:

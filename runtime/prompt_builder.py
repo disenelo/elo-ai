@@ -328,19 +328,24 @@ def build(
         _audit_blocks.append({"name": name, "chars": len(text), "est_tokens": _est_tokens(text)})
 
     sections: list[str] = []
+
+    # ── WO-REGISTER-PLACEMENT-001: Voice register FIRST — maximum weight ──
+    # Source: Four-Layer Identity Model §1 ORIGINAL INTENT. "The register must
+    # be framed as non-negotiable: this is how eLo speaks." Moving to position 1
+    # so it is the first instruction the model reads — survives context pressure,
+    # not an optional style suggestion appended after core identity.
+    try:
+        from runtime.voice_register import get_register_block as _grb
+        _push("voice_register", _grb())
+    except Exception:
+        pass
+
     _push("living_presence_spec", load_living_presence_spec())
 
     # ── WO-SOURCE-001: Identity Anchor — who eLo IS (not what to say) ─────
     try:
         from runtime.identity_kernel import IdentityKernel as _IK
         _push("identity_anchor", _IK.load().as_anchor_block())
-    except Exception:
-        pass
-
-    # ── WO-VOICE-REGISTER-001: Linguistic register — always present ────────
-    try:
-        from runtime.voice_register import get_register_block as _grb
-        _push("voice_register", _grb())
     except Exception:
         pass
 
