@@ -224,5 +224,347 @@
     "significance_score": null,
     "experience_id": null,
     "contradicted_by": []
+  },
+  {
+    "claim_id": "ef3b7fd1-7822-4057-adfd-090aa040dda2",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "6c91f97d-dd9c-43d8-98fa-514f08f486b4",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:reflect"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788922141.7199948,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "d104c5cb-4281-4fc7-a6d9-5b377ac8afb2",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9ed7d1d3-5063-48aa-8b33-79c503365521",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:reflect"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788922167.300885,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "acbd9b0f-cfe7-4a06-8829-8a8c458f79b4",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "ebbfe451-d02e-44ce-8ae1-48dab7bab9af",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:reflect"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788922189.665056,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "a14bdb42-e909-430e-b310-107505f7b58b",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "903a2f12-a145-4401-9ab7-8c1eeb7803b1",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:reflect"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788922215.852242,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "553dc06b-8b2a-44e1-a06a-a53a87b4cead",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9ed7d1d3-5063-48aa-8b33-79c503365521",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:reflect"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788922253.898031,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "c5757fcb-1f83-415e-8b3f-5bdac7b9efd9",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "53eea5d9-fba2-430c-aff7-32869d209245",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:reflect"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788922279.6764328,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "337d41f1-6baa-4bae-aef0-9fc3606d7d85",
+    "subject_entity_id": "ca3d84b9-3e38-4261-a6cb-397d6dcff868",
+    "relationship_type": "IS",
+    "object_entity_id": "ec0a6380-2076-423c-8cb9-c7485606d413",
+    "epistemic_class": "HISTORICAL",
+    "source_ids": [
+      "S-01"
+    ],
+    "confidence": 1.0,
+    "created_at": 1788923348.617364,
+    "memory_type": "foundational",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "S-01 Jun 6 2026: eLo AI is the personality and intelligence layer of the entire eLo universe"
+  },
+  {
+    "claim_id": "82fb9408-8958-4cd9-b7ef-e5ad8f34aa20",
+    "subject_entity_id": "ca3d84b9-3e38-4261-a6cb-397d6dcff868",
+    "relationship_type": "IS",
+    "object_entity_id": "ec0a6380-2076-423c-8cb9-c7485606d413",
+    "epistemic_class": "HISTORICAL",
+    "source_ids": [
+      "S-01"
+    ],
+    "confidence": 1.0,
+    "created_at": 1788923348.620455,
+    "memory_type": "foundational",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "S-01: eLo is not just a chatbot \u2014 explicitly stated by David Jun 6 2026"
+  },
+  {
+    "claim_id": "f75590d5-672e-4154-a970-e5a93bea7969",
+    "subject_entity_id": "ca3d84b9-3e38-4261-a6cb-397d6dcff868",
+    "relationship_type": "OBSERVED_AS",
+    "object_entity_id": "0e963697-abfd-4344-bab5-7497a044a0f0",
+    "epistemic_class": "HISTORICAL",
+    "source_ids": [
+      "S-01"
+    ],
+    "confidence": 1.0,
+    "created_at": 1788923348.620904,
+    "memory_type": "foundational",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "S-01: personality traits defined Jun 6 2026 \u2014 Curious, Encouraging, Playful, Creative, Non-judgmental"
+  },
+  {
+    "claim_id": "f7038e3c-1535-4b12-843f-7ee8ecb215e4",
+    "subject_entity_id": "ca3d84b9-3e38-4261-a6cb-397d6dcff868",
+    "relationship_type": "OBSERVED_AS",
+    "object_entity_id": "c70f52c2-eb75-4499-9981-942bf2fbdd7a",
+    "epistemic_class": "HISTORICAL",
+    "source_ids": [
+      "S-01"
+    ],
+    "confidence": 1.0,
+    "created_at": 1788923348.621517,
+    "memory_type": "foundational",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "S-01: eLo was created by David Charles \u2014 the origin predates any code"
+  },
+  {
+    "claim_id": "e776cc03-6a5e-4182-b3af-c00180857644",
+    "subject_entity_id": "ca3d84b9-3e38-4261-a6cb-397d6dcff868",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "83e5cd4b-4114-486b-8071-701ee1e1044a",
+    "epistemic_class": "HISTORICAL",
+    "source_ids": [
+      "S-01"
+    ],
+    "confidence": 1.0,
+    "created_at": 1788923348.62206,
+    "memory_type": "foundational",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "S-01: eLo does not say you should do this. eLo says: I found three paths. Which one feels interesting?"
+  },
+  {
+    "claim_id": "cc54cd1a-7c24-4b24-9e20-42e944d047ec",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "PROPOSED_BY",
+    "object_entity_id": "ca3d84b9-3e38-4261-a6cb-397d6dcff868",
+    "epistemic_class": "HISTORICAL",
+    "source_ids": [
+      "S-01"
+    ],
+    "confidence": 1.0,
+    "created_at": 1788923348.62289,
+    "memory_type": "foundational",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "S-01: David Charles conceived eLo AI as both real assistant and character in the universe \u2014 Sat Jun 6 2026"
+  },
+  {
+    "claim_id": "87a05bf4-e4be-4aaa-a26d-ffdfdf755fec",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9ed7d1d3-5063-48aa-8b33-79c503365521",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:reflect"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788923443.4398441,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "80e08daa-71c4-4123-99fa-13adeeb0744a",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9ed7d1d3-5063-48aa-8b33-79c503365521",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:reflect"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788923468.5122828,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "9ea84cff-3ce6-4bad-8eb6-3a938ac6b04d",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "903a2f12-a145-4401-9ab7-8c1eeb7803b1",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:celebrate"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788923497.010785,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "acc73abb-63c7-4fe2-9025-d523558231c9",
+    "subject_entity_id": "ca3d84b9-3e38-4261-a6cb-397d6dcff868",
+    "relationship_type": "RELATED_TO",
+    "object_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "epistemic_class": "VERIFIED",
+    "source_ids": [
+      "AT-WO-MEMORY-TYPES-001"
+    ],
+    "confidence": 0.9,
+    "created_at": 1788923556.2477372,
+    "memory_type": "relational",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "AT-1 relational claim test"
+  },
+  {
+    "claim_id": "8882e8cf-5b45-4816-aa6a-269633391101",
+    "subject_entity_id": "ca3d84b9-3e38-4261-a6cb-397d6dcff868",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "epistemic_class": "VERIFIED",
+    "source_ids": [
+      "AT-WO-MEMORY-TYPES-001"
+    ],
+    "confidence": 1.0,
+    "created_at": 1788923556.252838,
+    "memory_type": "episodic",
+    "significance_score": 0.75,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "AT-2 episodic reflection consolidation test"
+  },
+  {
+    "claim_id": "01535ce0-8f5d-4c0c-846a-f477881add1d",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9ed7d1d3-5063-48aa-8b33-79c503365521",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:reflect"
+    ],
+    "confidence": 0.7,
+    "created_at": 1788923576.714139,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
   }
 ]

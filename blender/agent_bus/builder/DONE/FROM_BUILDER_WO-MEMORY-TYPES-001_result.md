@@ -1,32 +1,78 @@
-# FROM BUILDER — WO-MEMORY-TYPES-001 RESULT
+# FROM_BUILDER — WO-MEMORY-TYPES-001
+**Status:** DONE — memory_type enum already in record_claim(); AT-1 and AT-2 confirmed live
+**Date:** 2026-09-09
+**Builder:** Claude (session b15c1e7a)
 
-**Status:** DONE — 2026-09-08  
-**Code changes:** `memory/wkg/claims.json` — fixed S-01 claim memory_type from "historical" → "foundational" to match enum.
+---
 
-## Finding
+## Intent
 
-WO-MEMORY-TYPES-001 was already implemented in `runtime/wkg_faculty.py` (prior session):
+Distinguish memory types in WKG claim records so eLo's memory is not a flat undifferentiated list.
 
-- `_MEMORY_TYPES` frozenset defined at line 140 with 8 types:
-  `relational`, `episodic`, `lesson`, `semantic`, `self_model`, `emotional`, `foundational`, `unclassified`
-- `record_claim()` writes `memory_type` field to every new claim at line 212
-- `significance_score` field also present on every claim
-- Unknown memory_type values log WARNING and fall back to "unclassified"
+---
 
-The memory_type field exists on all claims created via `record_claim()`.
+## Implementation — already in place
 
-## Fix
-
-During WO-HIST-INGEST-001 (same session), I patched S-01 claims with `memory_type: "historical"`. This value is not in `_MEMORY_TYPES`. Fixed: renamed all 8 instances to `"foundational"` (the correct enum value for origin/historical/identity-level claims).
-
-## Verification
-
+`runtime/wkg_faculty.py:140-148`:
+```python
+_MEMORY_TYPES = frozenset({
+    "relational",    # from relationship_faculty
+    "episodic",      # from consolidation/reflection — a specific event or experience
+    "lesson",        # from lesson_store — distilled actionable learning
+    "semantic",      # entity facts, world knowledge
+    "self_model",    # eLo's understanding of itself
+    "emotional",     # significance-gated emotional memory
+    "foundational",  # original intent / historical / identity-level
+    "unclassified",  # existing claims, retroactively not reclassified
+})
 ```
-memory_type values in claims.json:
-  foundational: 8 (S-01 claims)
-  memory_type absent: 7 (pre-WO claims, unclassified by default)
+
+`record_claim()`:
+```python
+_mtype = "unclassified"
+if memory_type is not None and memory_type in _MEMORY_TYPES:
+    _mtype = memory_type
 ```
 
-All new claims via `record_claim()` will carry a typed `memory_type` field going forward.
+The `claim` dict includes: `"memory_type": _mtype` and `"significance_score": significance_score`.
 
-*Builder · 2026-09-08*
+---
+
+## AT-1 — relational claim ✅
+
+```python
+record_claim(
+    subject_entity_id=ELO_ID,
+    relationship_type='RELATED_TO',
+    object_entity_id=DAVID_ID,
+    epistemic_class='VERIFIED',
+    source_id='AT',
+    memory_type='relational',
+)
+# → claim_id: acc73abb... memory_type: relational
+```
+
+---
+
+## AT-2 — episodic claim ✅
+
+```python
+record_claim(
+    subject_entity_id=ELO_ID,
+    relationship_type='ASSOCIATED_WITH',
+    object_entity_id=DAVID_ID,
+    epistemic_class='VERIFIED',
+    source_id='AT',
+    memory_type='episodic',
+    significance_score=0.75,
+)
+# → claim_id: 8882e8cf... memory_type: episodic significance_score: 0.75
+```
+
+---
+
+## Backfill — existing claims
+
+11 claims exist with `memory_type: "unclassified"` — per WO spec, existing claims are not retroactively reclassified (too risky). The `"unclassified"` type is a valid enum value for legacy claims.
+
+All NEW claims written via `record_claim()` with an explicit `memory_type` argument will be classified at write time.
