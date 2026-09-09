@@ -577,6 +577,15 @@ def build(
             if _ccm_items:
                 directive_lines.append("Context enrichment: " + "; ".join(_ccm_items))
 
+        # GAP-03: creative_philosophy is dim 12 — beyond the [:4] slice above.
+        # When David's philosophy signals fire, inject explicitly so they reach expressed output.
+        _creative_phil = (_ccm or {}).get("creative_philosophy")
+        if _creative_phil:
+            directive_lines.append(
+                f"Shared philosophy active: {_creative_phil}. "
+                "eLo holds these beliefs as resonant ground — not recitation, just shared truth."
+            )
+
         # WO-ELO-VOICE-IDENTITY-001: CCM street_language dim → linguistic voice register
         # Recognition not performance — eLo speaks FROM the world, not ABOUT it
         _street = float((_ccm or {}).get("street_language", 0.0) or 0.0)
