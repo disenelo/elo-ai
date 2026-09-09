@@ -1,3 +1,107 @@
+## BOARD STATE UPDATE — 2026-09-09 (§64 — SESSION b15c1e7a CLOSES 7 WOs + 4 GAP TRACES)
+
+**Builder:** Claude (session b15c1e7a). KEEP GOING MASTER PROTOCOL continuous execution.
+
+### WOs CLOSED THIS SESSION
+
+| WO | Result | Commit |
+|---|---|---|
+| WO-SP31-ACTIVATE | Audit false-negative corrected — env var IS set, spine IS wired | 0fb602b |
+| WO-PRES-BUILD-001 | All 4 PRES specs already implemented — 32 tests pass | 0fb602b |
+| WO-LEGACY-RETIRE-001 | All 4 legacy paths verified as retired/correctly gated | d16a576 |
+| WO-QCUR-SPEAK-INVESTIGATE-001 | elo_response_gate wired on ambient SPEAK path | d16a576 |
+| WO-LEAF-ON-WATER-PROOF-001 | INTENT PROOF traced — dim 12 in ccm_enricher → spine → exec_decision → prompt | d16a576 |
+| GAP-03 (CCM Philosophy Matrix) | creative_philosophy dim 12 now explicitly injected past [:4] truncation | 1e95543 |
+| GAP-04 (CCM Creator Matrix) | SCOPE_BLOCKED — needs Board WO spec for principles definition | 1e95543 |
+
+### HONEST SUMMARY: WHAT IS NOW VERIFIED WORKING (§64 update)
+
+All items from §63 "NOT BUILT" are now DONE:
+- eLo linguistic voice (WO-ELO-VOICE-IDENTITY-001) ✅
+- Q-BODY consequence handlers (WO-QBODY-CONSEQUENCES-001) ✅
+- Q-MOVEMENT five states (WO-QMOVEMENT-001) ✅
+- Self-intent routing (WO-QCUR-SP1-001) ✅
+- CREATE capabilities (WO-CREATE-IMPL-001) ✅
+- Voice pools in living_presence_spec.txt (WO-LIVING-PRESENCE-UPDATE-001) ✅
+- Agency as faculty (WO-AGENCY-FACULTY-001) ✅
+- All 6 NEW GAP WOs from §63: SP31-ACTIVATE, PRES-BUILD-001, LEGACY-RETIRE-001, QCUR-SPEAK, LEAF-ON-WATER, GAP-03/04 ✅
+
+### REMAINING OPEN (Board/Game Seat lane — not Builder Python)
+
+- WO-GAME-CINEMATIC-001 → GAME SEAT
+- WO-GAME-SOUND-ASSETS-001 → GAME SEAT
+- WO-KICKSTARTER-BOARD-001 → BOARD (31 Oct 2026 deadline)
+- GAP-04 (Creator Matrix) → Board WO needed
+- GAP-07, GAP-12, GAP-13 → Board tracking items
+
+### TEST STATE
+
+1569 pass | 3 pre-existing failures unchanged | 3 skipped | 1 xfailed
+
+---
+
+## BOARD STATE UPDATE — 2026-09-09 (§63 — COMPLETE SOURCE ALIGNMENT REGISTER + 6 NEW GAP WOs)
+
+**Board:** Complete read of all 28 SOURCE_ARCHIVE documents. Full cross-reference against every WO on board.  
+**Register:** `docs/architecture/_intake/SOURCE_2026-09-09_COMPLETE_SOURCE_ALIGNMENT_REGISTER.md`  
+**Authority:** David L3 — "I need the ENTIRE DISPATCH BOARD, all items shown, checked against intent."
+
+### HONEST SUMMARY: WHAT IS VERIFIED WORKING
+- Expression chain (storytelling, personality, CCM, relationship mode reach prompt_builder) ✅
+- WKG write path (real claims writing from live turns) ✅
+- Contradicted claim filtering ✅
+- Response gate (15 checks wired) ✅
+- Lifecycle states ✅
+- Navigation / Q-NAV / PRES ✅
+- Planetary kernel exists ✅
+
+### HONEST SUMMARY: BUILT BUT UNVERIFIED IN EXPRESSED OUTPUT
+- AffectiveState (§62 DONE — no expressed proof yet)
+- SelfModel (§62 DONE — no expressed proof yet)
+- Environment Faculty (§62 DONE — no expressed proof yet)
+- All expression WOs (architecturally wired — WO-EXPRESSED-AUDIT-001 not yet run)
+- Last expressed audit result: 33/33 TIER_VIOLATION, 85% hedge prefix, vessel_phase=FEEL on all turns
+
+### HONEST SUMMARY: NOT BUILT (against source intent)
+- eLo linguistic voice — WO-ELO-VOICE-IDENTITY-001 in INBOX, not executed. **Single most visible gap.**
+- Q-BODY consequence handlers — WO-QBODY-CONSEQUENCES-001 in INBOX
+- Q-MOVEMENT five states — WO-QMOVEMENT-001 in INBOX
+- Self-intent routing — WO-QCUR-SP1-001 in INBOX
+- 17 CREATE capabilities — WO-CREATE-IMPL-001 in INBOX
+- Voice pools in living_presence_spec.txt — WO-LIVING-PRESENCE-UPDATE-001 in INBOX
+- Agency as faculty — WO-AGENCY-FACULTY-001 in INBOX
+
+### 6 NEW GAPS — DISPATCHED THIS SESSION
+
+| WO | Priority | Source | Description | Status |
+|---|---|---|---|---|
+| WO-LEGACY-RETIRE-001 | P0 | S-07/S-08/§60 | Legacy parallel path in server.py runs alongside spine. Until retired, spine doesn't govern. Retire: legacy tool routing → Cap Faculty; legacy intent → Executive; legacy blender writes → Embodiment Publisher; legacy env → Env Faculty. | INBOX → Builder |
+| WO-QCUR-SPEAK-INVESTIGATE-001 | P1 | S-08 | ambient_thought SPEAK path bypasses prompt_builder, voice register, response gate. eLo ambient voice ≠ conversational voice. Investigate and fix or justify. | INBOX → Builder |
+| WO-LEAF-ON-WATER-PROOF-001 | P1 | S-07 §2 | P9 Leaf on Water — no expressed proof exists. Builder traces runtime location and files INTENT PROOF. | INBOX → Builder |
+| WO-GAME-CINEMATIC-001 | P1 | S-19 | Start menu cinematic: 7/8 items unbuilt (frosted glass, Title cinematic recede, gradient text, frost fade, START animation, eLo detection gate). WO-GAME-005 only built basic text menu. | GAME SEAT — WO needed |
+| WO-GAME-SOUND-ASSETS-001 | P1 | S-20/S-21 | ~50 sounds unrecorded/uncreated. Dead hooks still exist: EnemySounds (0 code triggers), Water-exit/Boost/Powerup/Coin/Food (0 callers). Sound assets not a Python task. | GAME SEAT — WO needed |
+| WO-KICKSTARTER-BOARD-001 | CRITICAL | S-17 | 31 October 2026 — 52 days. Backward roadmap fully specified in source. Board has BA-20 but no WO, no seat, no tracking row, no backward-translated tasks. | BOARD — write Kickstarter WO immediately |
+
+### BOARD GAPS WITH NO WO (from alignment register — all active per standing rule)
+
+| Gap | Source | Description |
+|---|---|---|
+| GAP-03 | S-15 | CCM Philosophy Matrix — David's "Life is life. Keep creating." belief patterns. No WO verifying it reaches expressed output. |
+| GAP-04 | S-15 | CCM Creator Matrix — David's creator principles as cognitive weights. No WO. |
+| GAP-07 | S-07/S-14 | Five Engineering Milestones as board-level acceptance criteria not tracked (One Brain Verified / Presence Verified / Conversation Verified / Desktop Verified / Portable Brain). |
+| GAP-12 | S-03 | Portable Brain milestone — EmbodimentState publisher now exists. But Terminal/Unity/Robot/Voice multi-body verification not tracked. |
+| GAP-13 | S-27 | Marketing pipeline: Exhibition → Fashion → Toys → Art → Book → Game — entirely absent from board. 300 pre-launch signups target untracked. |
+| GAP-14 | S-02 | C-19 Reflection/Growth — false completion candidate. Dependent on WO-FALSE-DONE-AUDIT-001. |
+| GAP-15 | S-14 | C-20 Personality Evolution — false completion candidate. Dependent on WO-FALSE-DONE-AUDIT-001. |
+
+### DAVID L3 OUTSTANDING
+- BA-05 [P1]: Memory turn-type flagging
+- BA-08 [P2]: PE-037 hand ruling
+- K-7 seven form names (WO-GAME-006 blocker)
+- K-7/Chunk FBX export from Blender (WO-GAME-001 D-1–D-4)
+
+---
+
 ## BOARD STATE UPDATE — 2026-09-09 (§62 — SESSION b15c1e7a CLOSES 7 WOs, 1569 PASS)
 
 **Builder:** Claude (session b15c1e7a). KEEP GOING MASTER PROTOCOL continuous execution.
@@ -342,29 +446,52 @@ WKG `contradicted_by` field was populated but not filtered in `assemble_cognitiv
 
 **P1 — eLo linguistic voice** — never specced as a WO. Four-Layer Model source is explicit: South/West London, Jamaican patois, contemporary slang, Cockney elements. "Recognition not performance." WO-ELO-VOICE-IDENTITY-001 dispatched to Builder.
 
-**P1 — Living Presence Pool** — David's astrology/birth chart as internal voices for eLo's personality. BA-10 pending. Not built.
+**P1 — Living Presence Pool** — ✅ BA-10 CLOSED 2026-09-09. Full natal chart recovered from ELO_SOURCE_CONTENT_STRUCTURE. Voice pools verbatim in `_intake/SOURCE_2026-09-09_REMAINING_SOURCES_CROSSCHECK.md §DOCUMENT 5`. WO-LIVING-PRESENCE-UPDATE-001 dispatched to Builder.
 
 **P1 — Q-CUR SPEAK path** — ambient_thought routes through Executive (correct). But SPEAK path uses custom LLM prompt bypassing prompt_builder, voice register, response gate. eLo's ambient voice is not eLo's conversational voice. Builder to verify if intentional.
 
-**P2 — WO-CREATIVE-001** — creative imagination (LOOP-8) runtime wiring. In QUEUE, not done.
+**P2 — WO-CREATIVE-001** — creative imagination (LOOP-8) runtime wiring. WO-CREATIVE-PROOF-001 dispatched to Builder (supersedes) — trace LOOP-8 end to end, fix if broken, produce expressed proof.
 
-**P2 — WO-CREATE-CAPABILITY** — Build List §6 CREATE (files, specs, code, CAD, research). In QUEUE.
+**P2 — WO-CREATE-CAPABILITY** — WO-CREATE-IMPL-001 dispatched 2026-09-09. All 17 CREATE capabilities.
 
-**P2 — WO-WORLD-INTERFACE** — Build List §7 (calendar, reminders, web). In QUEUE.
+**P2 — WO-WORLD-INTERFACE** — In QUEUE. Not yet dispatched.
 
-**P2 — WO-VISUAL-BRAINISER** — In QUEUE.
+**P2 — WO-VISUAL-BRAINISER** — In QUEUE. Not yet dispatched.
 
-**P2 — WO-RESPONSE-GATE (original)** — In QUEUE. The AMEND and new WO together must close all 15.
+**P2 — WO-RESPONSE-GATE (original)** — WO-RESPONSE-GATE-COMPLETE-001 dispatched 2026-09-08 adds the 9 missing checks. Together with WO-GATE-001 and WO-GATE-001-AMEND closes all 15.
 
-### New WOs dispatched this session
+### New WOs dispatched this session (2026-09-08/09)
 - WO-RESPONSE-GATE-COMPLETE-001 [P0] → Builder
 - WO-ELO-VOICE-IDENTITY-001 [P1] → Builder
+- WO-LIVING-PRESENCE-UPDATE-001 [P1] → Builder
+- WO-OVERLOAD-PROTOCOL-001 [P1] → Builder
+- WO-EXPRESSED-AUDIT-001 [P1] → Builder
+- WO-COMPANY-INTERFACE-001 [P2] → Builder
+- WO-AFFECTIVE-STATE-001 [P0] → Builder
+- WO-SELF-MODEL-001 [P0] → Builder
+- WO-QBODY-CONSEQUENCES-001 [P0] → Builder
+- WO-QMOVEMENT-001 [P0] → Builder
+- WO-QCUR-SP1-001 [P0] → Builder (self-intent routing — NOT nav SP-1/SP-2, naming corrected 2026-09-09)
+- WO-CREATIVE-PROOF-001 [P1] → Builder
+- WO-CONSEQUENCE-REPORT-001 [P1] → Builder
+- WO-MEMORY-TRACE-001 [P2] → Builder
+- WO-INTENT-PROOF-AUDIT-001 [P0] → Builder
+- WO-FALSE-DONE-AUDIT-001 [P0] → Builder
+
+### START_HERE updated 2026-09-09
+Clean ordered 7-phase execution queue written to Builder's START_HERE — supersedes all 2026-08-24 Wave 1 content. 38 genuine unbuilt WOs ordered by phase. Governance directives separated from build tasks. False-done candidates flagged.
 
 ### David L3 outstanding
-- BA-02 [P0]: Significance weights — programme blocks on this for inner child, planetary, memory gate
-- BA-05 [P1]: Memory turn-type flagging
-- BA-08 [P2]: PE-037 hand ruling
-- BA-10 [P2]: Living Presence Pool ratification (astrology — birth chart as personality voices)
+- BA-05 [P1]: Memory turn-type flagging — awaiting David
+- BA-08 [P2]: PE-037 hand ruling — awaiting David
+
+### BA items closed (no longer pending)
+- BA-02 ✅ Significance weights ratified 2026-09-05
+- BA-03 ✅ CCM Category C ratified 2026-09-05
+- BA-06 ✅ CREATE capability approved 2026-09-05
+- BA-07 ✅ Relationship style spec authored 2026-08-30
+- BA-09 ✅ ChatGPT history confirmed in SOURCE_ARCHIVE as S-01
+- BA-10 ✅ CLOSED 2026-09-09 — natal chart retrieved
 
 ### Game seat (not yet dispatched — board tracking gap)
 - Start menu cinematic: 7/8 items not built per source spec
