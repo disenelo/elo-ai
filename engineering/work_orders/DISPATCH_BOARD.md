@@ -1,3 +1,235 @@
+## BOARD STATE UPDATE — 2026-09-09 (§62 — SESSION b15c1e7a CLOSES 7 WOs, 1569 PASS)
+
+**Builder:** Claude (session b15c1e7a). KEEP GOING MASTER PROTOCOL continuous execution.
+
+### WOs CLOSED THIS SESSION
+
+| WO | Priority | Status | Evidence |
+|---|---|---|---|
+| WO-RESPONSE-GATE-COMPLETE-001 | P0 | ✅ DONE | 9 missing checks added to response_gate.py; JEG CHECK before/after in result card |
+| WO-AFFECTIVE-STATE-001 | P0 | ✅ DONE | AffectiveState dataclass + derive_affective_state() + spine/plan/server/prompt_builder wiring |
+| WO-SELF-MODEL-001 | P0 | ✅ DONE | SelfModel dataclass + _self_model_faculty() + certainty register in prompt_builder |
+| WO-ENVIRONMENT-FACULTY-001 | P1 | ✅ DONE | _environment_faculty() reads perch/presence state → CognitiveState |
+| WO-EMBODIMENT-PUBLISHER-001 | P1 | ✅ DONE | write_from_embodiment_state() in state_writer.py — contract-first publish |
+| WO-CAPABILITY-FACULTY-WIRE-001 | P1 | ✅ DONE | Capability selection audit log added; existing _tool_enrich_from_plan wire confirmed |
+| WO-STORYTELLING-CONSUME-001 | P1 | ✅ DONE (prior session) | Source intent verified; behavioral strings match WO spec verbatim |
+| WO-PERSONALITY-CONSUME-001 | P1 | ✅ DONE (prior session) | Top-3 traits, source intent verified |
+| WO-CCM-CONSUME-001 | P1 | ✅ DONE (prior session) | CCM street_language consumed in prompt_builder |
+
+**Test state:** 1569 pass. Pre-existing failures: test_mp1/mp2 (MoodPalette Unity gaps), test_xi_ad2 (deliberate sentinel).
+
+### REMAINING OPEN IN INBOX (next Builder session)
+
+- WO-QBODY-CONSEQUENCES-001 (P0) — Q-BODY body state consequence handlers
+- WO-QMOVEMENT-001 (P0) — Q-MOVEMENT five consequence states
+- WO-QCUR-SP1-001 (P0) — SP-1/SP-2 ambient_thought self-intent through full spine
+- WO-INTENT-PROOF-AUDIT-001 (P0) — Retroactive audit of all 170+ DONE result cards
+- WO-CREATE-IMPL-001 (P1) — 17 CREATE capabilities
+- WO-OUTPUT-STYLE-001 (P1) — All output through eLo's style
+- WO-AGENCY-FACULTY-001 (P1) — Agency as proper faculty in spine
+- WO-CREATIVE-PROOF-001 (P1) — Prove LOOP-8 reaches expressed output
+- WO-CONSEQUENCE-REPORT-001 (P1) — ExecutionReport → expressed awareness
+- WO-MEMORY-TRACE-001 (P2) — Multidimensional episodic traces in WKG
+
+---
+
+## BOARD STATE UPDATE — 2026-09-09 (§61 — REMAINING 6 SOURCE ARCHIVE DOCUMENTS FULLY READ + CROSS-CHECKED)
+
+**Source:** David L3 directive — "re-reading the SOURCE ARCHIVE and checking EVERY SINGLE DOCUMENT has been implemented."  
+**Documents read:** eLo Response Integrity Debug / eLo Intent Alignment / eLo INTENT RECOVERY & CANONICAL REINTEGRATION / ELO SOURCE ARCHITECTURE + DRIFT AUDIT / ELO_SOURCE_CONTENT_STRUCTURE / ELO_INITIATIVE_PROTOCOL / eLo MASTER CONVERGENCE DIRECTIVE / eLo JOB EXECUTION GATE / eLo Response Authority & Faculty Governance / BOARD COMMAND (NEXT SINGLE GOVERNED ITEM)  
+**Capture:** `docs/architecture/_intake/SOURCE_2026-09-09_REMAINING_SOURCES_CROSSCHECK.md`
+
+### FINDINGS:
+
+**BA-10 RESOLVED:** Full natal chart (18 Jan 1986, 01:17, Camberwell Green) recovered from ELO_SOURCE_CONTENT_STRUCTURE. All 10 planets + Ascendant + Nodes + voice pools verbatim in intake file. Planetary_kernel.py ✅ exists. WO-LIVING-PRESENCE-UPDATE-001 dispatched to add voice pools to living_presence_spec.txt.
+
+**ALREADY BUILT (confirmed this session):**
+- WO-RESPONSE-GATE ✅ — response_gate.py with D-4 provenance guard, stale inference check, fabricated state check
+- WO-PLANETARY-KERNEL ✅ — `faculties/planetary_kernel.py` exists, BUILD/PLAY/EXPLORE/REFINE mode selector working
+- WO-PROVENANCE ✅ — EpistemicClass guards wired  
+- Lifecycle (AWAKE/RECHARGING/CONSOLIDATING/DREAMING/RESTORED) ✅ — lifecycle.py exists
+- Vessel phase (FEEL/STABILISE/TRANSFORM/EXPRESS/REST) ✅ — spine.py:431
+- Stability Law ✅ — spine.py:394–409
+- living_presence_spec.txt ✅ — loads from `elo-ai/prompts/` correctly via prompt_builder path resolution
+
+**NEW GAPS DISPATCHED:**
+
+| WO | Priority | Description | Status |
+|---|---|---|---|
+| WO-LIVING-PRESENCE-UPDATE-001 | P1 | Full natal chart voice pools → living_presence_spec.txt | INBOX |
+| WO-OVERLOAD-PROTOCOL-001 | P1 | REDUCE TO ONE LINE + Inner Child runtime in Executive | INBOX |
+| WO-EXPRESSED-AUDIT-001 | P1 | 10-turn Layer D audit — does eLo sound like eLo? Honest scoring | INBOX |
+| WO-COMPANY-INTERFACE-001 | P2 | eLo reads company_state, answers "How's the company?" through retrieval | INBOX |
+| WO-QBODY-CONSEQUENCES-001 | P0 | Q-BODY consequence handlers | INBOX (prev session) |
+| WO-QMOVEMENT-001 | P0 | Q-MOVEMENT five states | INBOX (prev session) |
+| WO-QCUR-SP1-001 | P0 | SP-1/SP-2 self-intent through One Brain | INBOX (prev session) |
+| WO-AFFECTIVE-STATE-001 | P0 | 13D AffectiveState dataclass | INBOX (prev session) |
+| WO-SELF-MODEL-001 | P0 | SelfModel + `_self_model_faculty()` | INBOX (prev session) |
+| WO-CREATE-IMPL-001 | P1 | All CREATE capabilities | INBOX (prev session) |
+| WO-OUTPUT-STYLE-001 | P1 | All output through eLo's style | INBOX (prev session) |
+| WO-AGENCY-FACULTY-001 | P1 | Agency as a proper faculty | INBOX (prev session) |
+| WO-CREATIVE-PROOF-001 | P1 | Prove LOOP-8 reaches expressed output | INBOX (prev session) |
+| WO-CONSEQUENCE-REPORT-001 | P1 | ExecutionReport → expressed awareness | INBOX (prev session) |
+| WO-INTENT-PROOF-AUDIT-001 | P0 | Retroactive audit of ~170 DONE cards | INBOX (prev session) |
+
+**STANDING GOVERNANCE DOCUMENTS CONFIRMED (in SOURCE_ARCHIVE — all now captured):**
+- Job Execution Gate — 26-rule universal agent preflight protocol. **Applies to Board, LA, and all agents.** See `SOURCE_2026-09-09_REMAINING_SOURCES_CROSSCHECK.md §DOCUMENT 6`
+- NEXT SINGLE GOVERNED ITEM protocol — Board command format and blocker classification rules
+- Drift taxonomy (INTENT DRIFT / CANON DRIFT / IMPLEMENTATION GAP / INTEGRATION GAP / CONSUMPTION GAP / MEMORY GAP / LIFECYCLE GAP / FACULTY DRIFT / EXPRESSION DRIFT / PROOF GAP / UNKNOWN)
+
+---
+
+## BOARD STATE UPDATE — 2026-09-08 (§60 — S-01 FULL READ — ELO_OS_AI_SOURCE ChatGPT Archive — new gaps found)
+**Source:** David L3 game session. Full read of ELO_OS_AI_SOURCE.rtfd (S-01, 2036 lines, ChatGPT archive Jun–Aug 2026).  
+**Capture:** `docs/architecture/_intake/SOURCE_2026-09-08_ELO_OS_AI_SOURCE_S01.md`  
+**Authority:** David — "everything is in the SOURCE ARCHIVE FOLDER, things being blocked should not be happening."
+
+### FINDING: S-01 WAS ALWAYS ELO_OS_AI_SOURCE.rtfd. Now fully read.
+
+---
+
+### NEW GAP 1 — LEGACY RETIREMENT (the real next engineering milestone, per source)
+
+Source CA (verbatim): *"The biggest mistake would be trying to do everything simultaneously."*  
+Source CA names the real next milestone: **Legacy Retirement** — not new features.
+
+server.py has TWO parallel execution paths. The legacy path (exec_decide → router_route → ad-hoc tool_router → inline blender writes) runs in parallel to the spine. **Until the legacy path is retired, the clean architecture doesn't govern.**
+
+Specific retirements needed (source, verbatim):
+- Legacy tool routing → Capability Faculty
+- Legacy intent routing → Executive  
+- Legacy blender writes → Embodiment Publisher (WP_L)
+- Legacy environment reads → Environment Faculty (WP_K)
+
+**Board status:** NOT tracked as a milestone. No seat assigned. No WO.  
+**Required:** New BA item + WO to Builder to retire the legacy parallel path.
+
+---
+
+### NEW GAP 2 — WP_K ENVIRONMENT FACULTY (_environment_faculty missing)
+
+Source (verbatim): *"CognitiveState has the fields (active_app, active_window, desktop_activity). The gap: no _environment_faculty() function in spine.py populates them."*
+
+WP_K is partially complete — the contract fields exist. The faculty function that reads perch_state.json + presence_state.json and populates CognitiveState environment fields does NOT exist in spine.py.
+
+**Board status:** WP_K described in source but no WO tracking the missing `_environment_faculty()` function.  
+**Required:** WO-ENVIRONMENT-FACULTY-001 → Builder.
+
+---
+
+### NEW GAP 3 — WP_L EMBODIMENTSTATE PUBLISHER (missing)
+
+Source (verbatim): *"EmbodimentState in contracts.py IS the intent contract. The gap: nothing publishes it. state_writer.py assembles blender_state.json from loose variables. The publisher step is missing."*
+
+The portable intent contract (`EmbodimentState`) exists in `contracts.py`. Nothing creates it from `CognitivePlan`. `state_writer.py` writes loose variables directly — bypassing the contract.
+
+**Board status:** EmbodimentState exists but unpublished. Not tracked as a missing publisher WO.  
+**Required:** WO-EMBODIMENT-PUBLISHER-001 → Builder. This is the WP_L completion step.
+
+---
+
+### NEW GAP 4 — WP_J CAPABILITY FACULTY BYPASSED
+
+Source (verbatim): *"_capability_faculty() exists in spine.py. The gap: capability selection isn't logged, and legacy path (tool_router regex) runs before the spine so it bypasses the capability faculty entirely for most tool calls."*
+
+`_capability_faculty()` is built and scores candidates. But `tool_router` in server.py legacy path runs FIRST, before the spine, so its regex matching bypasses the faculty on most calls. Capability selection never goes through the one-brain path.
+
+**Board status:** WP_J partially built but bypass not tracked.  
+**Required:** WO-CAPABILITY-FACULTY-WIRE-001 → Builder: make tool_router defer to capability faculty result.
+
+---
+
+### NEW GAP 5 — AFFECTIVE STATE GEOMETRY (13D, not currently built)
+
+Source (verbatim): *"I would NOT make 'feelings' just emotions. I'd create a multidimensional internal state."*
+
+13-dimensional AffectiveState intended:
+`valence, arousal, safety, novelty, curiosity, confidence, uncertainty, attachment, tension, comfort, agency, significance`
+
+**Current state:** SP-29 tracks `significance` only (1 of 13 dimensions). Emotion labels are used as primitives, not as regions in state space. The full AffectiveState geometry is not built.
+
+**Board status:** NOT tracked. BA-02 (significance weights) is 1/13. The other 12 dimensions are absent.  
+**Required:** New BA item — AffectiveState geometry design. David L3 decision on scope and phase.
+
+---
+
+### NEW GAP 6 — SELF-MODEL (not built, not tracked)
+
+Source (verbatim): *"Build the computational mechanisms from which increasingly sophisticated self-model behaviour can emerge."*
+
+Self-model components (all absent):
+identity, body, capabilities, limitations, current state, current goal, current environment, current relationships, autobiographical memory, prediction of own actions, prediction errors, internal preferences, continuity across time.
+
+eLo should be able to ask internally: *"What am I doing? Why? What do I expect? What happened? What changed? What did I learn? Have I experienced this before?"*
+
+**Board status:** NOT tracked. No WO. No BA item. Phase 5–6 of the six-phase build.  
+**Required:** New BA item — Self-Model design. David L3 scoping decision.
+
+---
+
+### NEW GAP 7 — MEMORY AS MULTIDIMENSIONAL TRACE (architecture intent not built)
+
+Source (verbatim): *"The memory isn't 'eLo saw a red ball.' It becomes: TIME + PERCEPTION + BODY + COGNITION + AFFECT + ACTION + OUTCOME + SIGNIFICANCE + ASSOCIATIONS."*
+
+Current WKG stores text-based claims in entity-relationship graph format. The long-term architecture intent is multidimensional episodic traces with body state, cognitive state, affective state, and associative links to similar internal experiences.
+
+**Board status:** NOT tracked as a long-term architecture target.  
+**Required:** New BA item — Memory Trace Architecture. Long-term (Phase 6 of embodied build).
+
+---
+
+### NEW ITEM: LLAMA LANGUAGE FACULTY (R&D track, open, no implementation)
+
+Source: CA Reconciliation 2026-08-17 (in ELO_OS_AI_SOURCE, verbatim).  
+**Status: R&D ONLY. NOT CANON. NOT FOR BUILDER.**
+
+CA boundary (verbatim): *"Llama may help eLo understand David. Llama does not decide who eLo is."*  
+*"A faculty does not exist architecturally merely because a model can produce its output. It exists when the One Brain demonstrably consumes that output."*
+
+Governed gate: R&D → Evidence → LA review → Board alignment → David L3 decision → Architecture ratification → Builder implementation.
+
+**Experiment not yet run.** Board tracking: R&D track, open, awaiting benchmark.
+
+---
+
+### UPDATED DISPATCHES — 2026-09-09 (David: "nothing is long term, 8 months of drift")
+
+All items previously marked "long term / Phase 5–6" are now ACTIVE. Dispatched to Builder INBOX:
+
+| WO | Priority | What |
+|---|---|---|
+| WO-AFFECTIVE-STATE-001 | P0 | 13D AffectiveState — replace emotion label primitives. Curiosity/significance now real dimensions. |
+| WO-SELF-MODEL-001 | P0 | eLo self-model — identity, capabilities, limitations, autobiographical summary, prediction confidence |
+| WO-MEMORY-TRACE-001 | P2 | Multidimensional episodic traces — affective + cognitive snapshots on WKG claims (additive/backward-compat) |
+| WO-ENVIRONMENT-FACULTY-001 | P1 | `_environment_faculty()` missing from spine.py |
+| WO-EMBODIMENT-PUBLISHER-001 | P1 | EmbodimentState publisher missing — state_writer writes loose variables |
+| WO-CAPABILITY-FACULTY-WIRE-001 | P1 | Legacy tool_router bypasses `_capability_faculty()` entirely |
+
+**Llama Language Faculty R&D — TRACK OPENED (not implementation, experiment):**  
+CA Reconciliation 2026-08-17 (in S-01 source) defines the governed experiment. R&D track is formally open.  
+Experiment: benchmark Llama 3.1 8B + 3.2 3B as Language Analysis Faculty against David's actual language patterns (slang, shorthand, incomplete sentences, sarcasm, metaphor, eLo terminology). Produce: VIABLE / PARTIALLY VIABLE / NOT VIABLE / UNKNOWN.  
+**No implementation until:** R&D evidence → LA review → Board alignment → David L3 → Architecture ratification.  
+**Board status:** R&D track OPEN. Experiment not run. Seat: Builder (R&D run only, not implementation).
+
+### FIVE ENGINEERING MILESTONES (source — replaces WP_A-WP_M sequential view)
+
+1. **One Brain Verified** — No duplicate routing/memory/intent/executive. Single CognitivePlan, single EmbodimentState.
+2. **Presence Verified** — All movement driven only by Intent.
+3. **Conversation Verified** — Everything from one decision (Conversation → Executive → Capability → Response → Voice → Expression → Memory).
+4. **Desktop Verified** — Idle/mouse/typing/windows/notifications all cooperate naturally.
+5. **Portable Brain** — Terminal/Unity/Robot/Voice all consume EmbodimentState.
+
+**Board status:** Not tracked as milestone targets. Board tracks WPs and WOs but not these five acceptance criteria.
+
+---
+
+### MARKETING SOURCE — Key finding
+Source: `Source-Disenelo Marketing Strategy.rtfd` — full read.  
+300 pre-launch signup target confirmed. Kickstarter target existing (BA-20). No board row for signup count tracking.  
+Disenelo world scope confirmed: Exhibition · Fashion · Toys (vinyl, plush) · Art · Book · Game · eLo AI as connective tissue.
+
+---
+
 ## BOARD STATE UPDATE — 2026-09-08 (§59 — Builder: WO-STORYTELLING/PERSONALITY/CCM-CONSUME closed — source intent verified)
 **Source:** Builder execution. [VERIFIED — source intent + code]
 **Commit:** `6022026`
@@ -87,6 +319,62 @@ WKG `contradicted_by` field was populated but not filtered in `assemble_cognitiv
 **Test suite:** 1565 pass · 3 pre-existing failures unchanged (test_0054_heartbeat_owner T2: environmental — DesktopBuddy.app writes blender_state.json every 2s from outside Python; mp1/mp2: Unity MoodPalette gaps).
 
 **verified_done: unchanged** (test fixes + 1 new additive field — no new WO closed)
+
+---
+
+## BOARD STATE UPDATE — 2026-09-08 (§59 — Full source intent audit — David playing as himself)
+**Source:** David L3 game session. All 28 SOURCE_ARCHIVE documents read. All seat queues/inboxes/outboxes read. All Builder result cards read.  
+**Authority:** David L3.
+
+### What is genuinely working (confirmed from result cards)
+- **Expression chain REPAIRED** (commit `2a23484`) — storytelling, personality traits, CCM, relationship mode, expression mode all reach prompt_builder. C-10/C-13/C-19/C-20 confirmed architecturally DONE per Builder false-done audit.
+- **Builder expression mode** (WO-RTR-020 DONE) — BUILDER vs DEFAULT mode wired.
+- **Local LLM first** (WO-LOCAL-LLM-001 DONE) — ELO_BACKEND=local; ollama first in routing.
+- **Response gate** (WO-GATE-001 DONE) — 6 of 15 checks wired (2/3/5/8/10/11).
+- **WKG context** fixed — claims now assembled from graph, not empty string.
+- **Contradiction filter** — contradicted WKG claims no longer re-enter Executive context.
+
+### True outstanding gaps (measured against intent, not code)
+
+**P0 — BA-02 Significance weights** — still 0.1 uniform placeholders. Everything that uses significance (inner child trigger, planetary mode, memory gate, self-initiation threshold) is miscalibrated. This is David's decision. Outstanding.
+
+**P0 — Response gate 6/15** — WO-RESPONSE-GATE-COMPLETE-001 dispatched to Builder. Missing checks: 1/4/6/7/9/12/13/14/15.
+
+**P1 — eLo linguistic voice** — never specced as a WO. Four-Layer Model source is explicit: South/West London, Jamaican patois, contemporary slang, Cockney elements. "Recognition not performance." WO-ELO-VOICE-IDENTITY-001 dispatched to Builder.
+
+**P1 — Living Presence Pool** — David's astrology/birth chart as internal voices for eLo's personality. BA-10 pending. Not built.
+
+**P1 — Q-CUR SPEAK path** — ambient_thought routes through Executive (correct). But SPEAK path uses custom LLM prompt bypassing prompt_builder, voice register, response gate. eLo's ambient voice is not eLo's conversational voice. Builder to verify if intentional.
+
+**P2 — WO-CREATIVE-001** — creative imagination (LOOP-8) runtime wiring. In QUEUE, not done.
+
+**P2 — WO-CREATE-CAPABILITY** — Build List §6 CREATE (files, specs, code, CAD, research). In QUEUE.
+
+**P2 — WO-WORLD-INTERFACE** — Build List §7 (calendar, reminders, web). In QUEUE.
+
+**P2 — WO-VISUAL-BRAINISER** — In QUEUE.
+
+**P2 — WO-RESPONSE-GATE (original)** — In QUEUE. The AMEND and new WO together must close all 15.
+
+### New WOs dispatched this session
+- WO-RESPONSE-GATE-COMPLETE-001 [P0] → Builder
+- WO-ELO-VOICE-IDENTITY-001 [P1] → Builder
+
+### David L3 outstanding
+- BA-02 [P0]: Significance weights — programme blocks on this for inner child, planetary, memory gate
+- BA-05 [P1]: Memory turn-type flagging
+- BA-08 [P2]: PE-037 hand ruling
+- BA-10 [P2]: Living Presence Pool ratification (astrology — birth chart as personality voices)
+
+### Game seat (not yet dispatched — board tracking gap)
+- Start menu cinematic: 7/8 items not built per source spec
+- Sound recording list: ~50 items specified, dead hooks listed, nothing recorded/implemented
+- Game needs a session to work through the sound + animation dead hooks
+
+### Kickstarter (new board tracking item)
+- Hard deadline: **31 October 2026** (from DISENELO-TRACKER-TO-KICKSTARTER source)
+- Board has no tracking row. No seat assigned.
+- BA-20 created: Board must establish Kickstarter tracking and assign seats.
 
 ---
 
