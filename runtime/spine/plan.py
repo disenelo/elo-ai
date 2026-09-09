@@ -160,6 +160,9 @@ class CognitivePlan:
     # ── WO-INNER-CHILD-001: inner child mode flag ───────────────────────────
     cognitive_mode_inner_child: bool      = False
 
+    # ── WO-AGENCY-FACULTY-001: agency level ──────────────────────────────────
+    agency_level:           float = 0.6   # 0.0 deferring → 1.0 full initiative
+
     # ── WO-OVERLOAD-PROTOCOL-001: overload detection ─────────────────────────
     overload_protocol:      bool = False  # REDUCE TO ONE LINE when True
     inner_child_mode_active: bool = False  # "Try it once. Move first." when True

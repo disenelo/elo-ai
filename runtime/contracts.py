@@ -257,6 +257,9 @@ class CognitiveState:
     active_topic_depth:   int   = 0           # how many turns on current topic
     creative_candidates:  tuple = field(default_factory=tuple)  # WO-CREATIVE-001: [({"candidate":…,"score":…}),…] epistemic_status="imagined"
 
+    # ── Agency Faculty (WO-AGENCY-FACULTY-001) ───────────────────────────────
+    agency_level:         float = 0.6         # 0.0 (deferring) → 1.0 (full initiative)
+
     # ── Q-BODY (proprioception) ───────────────────────────────────────────────
     body_moving:          bool  = False       # eLo is locomoting right now
     body_gait:            str   = "idle"      # idle | walk | run | jump | fall

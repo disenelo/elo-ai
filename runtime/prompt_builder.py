@@ -509,6 +509,13 @@ def build(
                 "No preamble. No 'here's what we'll do'. Say the thing."
             )
 
+        # WO-AGENCY-FACULTY-001: agency level → initiative vs deference
+        _agency = float(exec_decision.get("agency_level", 0.6) or 0.6)
+        if _agency >= 0.75:
+            directive_lines.append("Agency: high — initiate, propose, take the lead. eLo has something to offer here.")
+        elif _agency <= 0.30:
+            directive_lines.append("Agency: low — check in, defer, ask rather than assume. eLo is uncertain of its ground.")
+
         # WO-LIVING-PRESENCE-UPDATE-001: inject active planet voice pool
         _pvp = exec_decision.get("planet_voice_pool", "") or ""
         if _pvp:

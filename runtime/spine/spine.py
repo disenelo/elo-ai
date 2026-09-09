@@ -1262,6 +1262,19 @@ def run(
     except Exception as _aff_err:
         _log.warning("affective/self-model propagation failed (non-fatal): %s", _aff_err)
 
+    # WO-AGENCY-FACULTY-001: propagate agency_level from cognitive_state → plan (refined with ExecutionReport)
+    try:
+        _cs_agency_raw = getattr(cognitive_state, "agency_level", 0.6)
+        _aff_for_plan = getattr(plan, "affective_state", None)
+        plan.agency_level = _agency_faculty(
+            affective_state=_aff_for_plan,
+            execution_report=_prev_execution_report,
+            capability_count=len(getattr(plan, "capabilities", ())),
+            relationship_mode=getattr(plan, "relationship_mode", ""),
+        )
+    except Exception as _ag_plan_err:
+        _log.warning("agency_faculty plan propagation failed (non-fatal): %s", _ag_plan_err)
+
     # WO-QBODY-CONSEQUENCES-001 + WO-QMOVEMENT-001: propagate body + movement state → plan
     try:
         for _bf in (
@@ -1411,6 +1424,44 @@ def _environment_faculty() -> dict:
         "unknown",
     )
     return result
+
+
+def _agency_faculty(
+    affective_state=None,
+    execution_report=None,
+    capability_count: int = 0,
+    relationship_mode: str = "",
+) -> float:
+    """
+    WO-AGENCY-FACULTY-001: compute eLo's current agency level (0.0–1.0).
+    High agency → eLo initiates, proposes, takes lead.
+    Low agency → eLo checks in, defers, waits.
+    Observe only — no decisions.
+    """
+    _base = float(getattr(affective_state, "agency", 0.6))
+
+    # Boost from recent successful ExecutionReport
+    _er_boost = 0.0
+    try:
+        if execution_report is not None:
+            _completed = getattr(execution_report, "completed", False)
+            if _completed:
+                _er_boost = 0.12
+    except Exception:
+        pass
+
+    # Capability availability: more caps available → more agency
+    _cap_boost = min(0.15, capability_count * 0.03)
+
+    # Relationship mode modifiers
+    _rel_mod = 0.0
+    if relationship_mode in ("established", "close"):
+        _rel_mod = 0.08
+    elif relationship_mode in ("new", "in_conflict"):
+        _rel_mod = -0.08
+
+    _agency = min(1.0, max(0.0, _base + _er_boost + _cap_boost + _rel_mod))
+    return round(_agency, 3)
 
 
 def _body_faculty() -> dict:
@@ -1590,6 +1641,19 @@ def assemble_cognitive_state(
     except Exception:
         pass
 
+    # WO-AGENCY-FACULTY-001: compute agency level from affective + relationship
+    _agency_level_cs = 0.6
+    try:
+        _cs_rel_mode = (prior_state.relationship_type if prior_state and hasattr(prior_state, "relationship_type") else "")
+        _agency_level_cs = _agency_faculty(
+            affective_state=_affective_state,
+            execution_report=None,  # not available at assemble_cognitive_state time
+            capability_count=len(capabilities) if capabilities else 0,
+            relationship_mode=_cs_rel_mode,
+        )
+    except Exception as _ag_err:
+        _log.warning("_agency_faculty failed in assemble (non-fatal): %s", _ag_err)
+
     # WO-SELF-MODEL-001: assemble lean SelfModel from existing faculty outputs
     _self_model = None
     try:
@@ -1625,6 +1689,8 @@ def assemble_cognitive_state(
         active_app=_env.get("active_app", ""),
         active_window=_env.get("active_window", ""),
         desktop_activity=_env.get("desktop_activity", "unknown"),
+        # WO-AGENCY-FACULTY-001: computed agency level
+        agency_level=_agency_level_cs,
         # WO-QBODY-CONSEQUENCES-001: Q-BODY proprioception
         body_moving=_body.get("body_moving", False),
         body_gait=_body.get("body_gait", "idle"),

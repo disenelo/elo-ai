@@ -2981,6 +2981,8 @@ def _process_turn(raw: str) -> dict:
                 },
                 # WO-LIVING-PRESENCE-UPDATE-001: active planet voice pool
                 "planet_voice_pool": getattr(_plan, "planet_voice_pool", ""),
+                # WO-AGENCY-FACULTY-001: agency level
+                "agency_level":           getattr(_plan, "agency_level", 0.6),
                 # WO-OVERLOAD-PROTOCOL-001: overload detection fields
                 "overload_protocol":      getattr(_plan, "overload_protocol", False),
                 "inner_child_mode_active": getattr(_plan, "inner_child_mode_active", False),
