@@ -9,14 +9,18 @@ RULE: Never auto-executes destructive or hard-to-reverse actions (move/delete fi
 Always returns a description of the proposed action so eLo can confirm with the user.
 
 Capabilities:
-    window_fullscreen  — make a named app full screen
-    window_focus       — bring a named app to front
-    window_close       — close front window of a named app
-    app_open           — launch a named app
-    app_quit           — quit a named app
-    folder_open        — reveal a folder in Finder
-    folder_list        — list contents of a folder (read-only, safe)
-    folder_organise    — propose an organisation plan for a folder (plan only, no write)
+    window_fullscreen     — make a named app full screen
+    window_focus          — bring a named app to front
+    window_close          — close front window of a named app
+    app_open              — launch a named app
+    app_quit              — quit a named app
+    folder_open           — reveal a folder in Finder
+    folder_list           — list contents of a folder (read-only, safe)
+    folder_organise       — propose an organisation plan for a folder (plan only, no write)
+    volume_set            — set system output volume (0–100)
+    volume_mute           — mute system audio
+    windows_minimise_all  — minimise all visible windows
+    windows_restore_all   — restore all minimised windows
 
 Adding a new action:
     1. Add a handler function _do_<action>(args) → str
@@ -225,62 +229,151 @@ def _do_file_delete(args: str) -> str:
     return f"Moved {os.path.basename(path)} to Trash."
 
 
+def _do_volume_set(level: str) -> str:
+    """Set macOS output volume 0–100."""
+    m = re.search(r'\d+', level)
+    if not m:
+        raise ValueError("Need a number 0–100 for volume.")
+    vol = max(0, min(100, int(m.group())))
+    _osascript(f"set volume output volume {vol}")
+    return f"Volume set to {vol}%."
+
+
+def _do_volume_mute(_arg: str) -> str:
+    """Toggle mute on macOS output audio."""
+    _osascript("set volume with output muted")
+    return "Audio muted."
+
+
+_MINIMISE_ALL_SCRIPT = """\
+tell application "System Events"
+    repeat with p in (every application process whose visible is true and name is not "Dock")
+        try
+            set miniaturized of every window of p to true
+        end try
+    end repeat
+end tell
+"""
+
+_RESTORE_ALL_SCRIPT = """\
+tell application "System Events"
+    repeat with p in (every application process whose visible is true)
+        try
+            set miniaturized of every window of p to false
+        end try
+    end repeat
+end tell
+"""
+
+
+def _do_windows_minimise_all(_arg: str) -> str:
+    """Minimise all visible application windows via System Events."""
+    subprocess.run(["osascript"], input=_MINIMISE_ALL_SCRIPT,
+                   capture_output=True, text=True, timeout=30)
+    return "All windows minimised."
+
+
+def _do_windows_restore_all(_arg: str) -> str:
+    """Restore all minimised windows via System Events."""
+    subprocess.run(["osascript"], input=_RESTORE_ALL_SCRIPT,
+                   capture_output=True, text=True, timeout=30)
+    return "All windows restored."
+
+
 # ── Action registry ────────────────────────────────────────────────────────────
 
 _ACTIONS = {
-    "window_fullscreen": _do_window_fullscreen,
-    "window_focus":      _do_window_focus,
-    "window_close":      _do_window_close,
-    "app_open":          _do_app_open,
-    "app_quit":          _do_app_quit,
-    "folder_open":       _do_folder_open,
-    "folder_list":       _do_folder_list,
-    "folder_organise":   _do_folder_organise,
-    "file_copy":         _do_file_copy,
-    "file_move":         _do_file_move,
-    "file_rename":       _do_file_rename,
-    "file_delete":       _do_file_delete,
+    "window_fullscreen":    _do_window_fullscreen,
+    "window_focus":         _do_window_focus,
+    "window_close":         _do_window_close,
+    "app_open":             _do_app_open,
+    "app_quit":             _do_app_quit,
+    "folder_open":          _do_folder_open,
+    "folder_list":          _do_folder_list,
+    "folder_organise":      _do_folder_organise,
+    "file_copy":            _do_file_copy,
+    "file_move":            _do_file_move,
+    "file_rename":          _do_file_rename,
+    "file_delete":          _do_file_delete,
+    "volume_set":           _do_volume_set,
+    "volume_mute":          _do_volume_mute,
+    "windows_minimise_all": _do_windows_minimise_all,
+    "windows_restore_all":  _do_windows_restore_all,
 }
 
-# read-only actions — execute immediately without confirmation
-_SAFE_ACTIONS = {"folder_list", "folder_organise"}
+# safe actions — execute immediately without confirmation gate
+_SAFE_ACTIONS = {
+    "folder_list",
+    "folder_organise",
+    "volume_set",
+    "volume_mute",
+    "windows_minimise_all",
+    "windows_restore_all",
+}
 
 
 # ── Intent detection ───────────────────────────────────────────────────────────
 
-# (pattern, action, arg_extractor)
+# (pattern, action, arg_capture_group)
+# group=0 means full match (used when no capture group is needed for the arg)
 _SYSTEM_INTENTS = [
-    (r"\b(full.?screen|fullscreen)\b.*\b(\w+)\b",        "window_fullscreen", 2),
-    (r"\bmake\s+(\w[\w\s]*?)\s+(full.?screen|fullscreen)", "window_fullscreen", 1),
-    (r"\bopen\s+([\w\s]+?)\s+(?:app|application)\b",     "app_open",          1),
-    (r"\blaunch\s+([\w\s]+?)\b",                         "app_open",          1),
-    (r"\bquit\s+([\w\s]+?)\b",                           "app_quit",          1),
-    (r"\bclose\s+([\w\s]+?)\b",                          "window_close",      1),
-    (r"\bfocus\s+on\s+([\w\s]+?)\b",                     "window_focus",      1),
-    (r"\bbring\s+([\w\s]+?)\s+to\s+(?:the\s+)?front\b",  "window_focus",      1),
-    (r"\bopen\s+(~?[\w\/\.\-]+)\s+(?:folder|directory)", "folder_open",       1),
-    (r"\bshow\s+(?:me\s+)?(~?[\w\/\.\-]+)\s+(?:folder|in finder)", "folder_open", 1),
-    (r"\bwhat'?s?\s+in\s+(~?[\w\/\.\-]+)\b",             "folder_list",       1),
-    (r"\blist\s+(~?[\w\/\.\-]+)\b",                      "folder_list",       1),
-    (r"\borgan(?:ise|ize)\s+(~?[\w\/\.\-]+)\b",                                 "folder_organise", 1),
-    (r"\btidy\s+(?:up\s+)?(~?[\w\/\.\-]+)\b",                                   "folder_organise", 1),
-    (r"\bcp\s+(~?[\w\/\.\- ]+(?:->|–>|→)[\w\/\.\- ]+)\b",                       "file_copy",       1),
-    (r"\bcopy\s+(~?[\w\/\.\-]+)\s+(?:to|into)\s+(~?[\w\/\.\-]+)",               "file_copy",       0),
-    (r"\bmove\s+(~?[\w\/\.\-]+)\s+(?:to|into)\s+(~?[\w\/\.\-]+)",               "file_move",       0),
-    (r"\bmv\s+(~?[\w\/\.\- ]+(?:->|–>|→)[\w\/\.\- ]+)\b",                       "file_move",       1),
-    (r"\brename\s+(~?[\w\/\.\-]+)\s+(?:to|as)\s+([\w\.\-]+)",                   "file_rename",     0),
-    (r"\bdelete\s+(~?[\w\/\.\-]+)\b",                                            "file_delete",     1),
-    (r"\btrash\s+(~?[\w\/\.\-]+)\b",                                             "file_delete",     1),
+    # Volume control — must come before generic window patterns
+    (r"\b(?:turn|set|put)\s+(?:the\s+)?(?:volume|audio|sound)\s+(?:to\s+|at\s+)?(\d+)\s*%?", "volume_set",           1),
+    (r"\bvolume\s+(?:to\s+|at\s+)?(\d+)\s*%?",                                                "volume_set",           1),
+    (r"\b(\d+)\s*%?\s+(?:volume|audio)",                                                       "volume_set",           1),
+    (r"\bmute\b",                                                                              "volume_mute",          0),
+    # Minimise / restore all windows
+    (r"\b(?:minimise|minimize|hide)\s+all\b",                                                  "windows_minimise_all", 0),
+    (r"\b(?:minimise|minimize)\s+(?:my\s+)?windows?\b",                                        "windows_minimise_all", 0),
+    (r"\b(?:restore|unminimise|unminimize|show\s+all|bring\s+back)\s+(?:all\s+)?(?:my\s+)?windows?\b", "windows_restore_all", 0),
+    (r"\bshow\s+my\s+windows?\b",                                                              "windows_restore_all",  0),
+    # Window / app operations
+    (r"\b(full.?screen|fullscreen)\b.*\b(\w+)\b",                                              "window_fullscreen",    2),
+    (r"\bmake\s+(\w[\w\s]*?)\s+(full.?screen|fullscreen)",                                     "window_fullscreen",    1),
+    (r"\bopen\s+([\w\s]+?)\s+(?:app|application)\b",                                           "app_open",             1),
+    (r"\blaunch\s+([\w\s]+?)\b",                                                               "app_open",             1),
+    (r"\bquit\s+([\w\s]+?)\b",                                                                 "app_quit",             1),
+    (r"\bclose\s+([\w\s]+?)\b",                                                                "window_close",         1),
+    (r"\bfocus\s+on\s+([\w\s]+?)\b",                                                           "window_focus",         1),
+    (r"\bbring\s+([\w\s]+?)\s+to\s+(?:the\s+)?front\b",                                        "window_focus",         1),
+    # Folder / file operations
+    (r"\bopen\s+(~?[\w\/\.\-]+)\s+(?:folder|directory)",                                       "folder_open",          1),
+    (r"\bshow\s+(?:me\s+)?(~?[\w\/\.\-]+)\s+(?:folder|in finder)",                             "folder_open",          1),
+    (r"\bwhat'?s?\s+in\s+(~?[\w\/\.\-]+)\b",                                                   "folder_list",          1),
+    (r"\blist\s+(~?[\w\/\.\-]+)\b",                                                            "folder_list",          1),
+    (r"\borgan(?:ise|ize)\s+(~?[\w\/\.\-]+)\b",                                                "folder_organise",      1),
+    (r"\btidy\s+(?:up\s+)?(~?[\w\/\.\-]+)\b",                                                  "folder_organise",      1),
+    (r"\bcp\s+(~?[\w\/\.\- ]+(?:->|–>|→)[\w\/\.\- ]+)\b",                                      "file_copy",            1),
+    (r"\bcopy\s+(~?[\w\/\.\-]+)\s+(?:to|into)\s+(~?[\w\/\.\-]+)",                              "file_copy",            0),
+    (r"\bmove\s+(~?[\w\/\.\-]+)\s+(?:to|into)\s+(~?[\w\/\.\-]+)",                              "file_move",            0),
+    (r"\bmv\s+(~?[\w\/\.\- ]+(?:->|–>|→)[\w\/\.\- ]+)\b",                                      "file_move",            1),
+    (r"\brename\s+(~?[\w\/\.\-]+)\s+(?:to|as)\s+([\w\.\-]+)",                                  "file_rename",          0),
+    (r"\bdelete\s+(~?[\w\/\.\-]+)\b",                                                          "file_delete",          1),
+    (r"\btrash\s+(~?[\w\/\.\-]+)\b",                                                           "file_delete",          1),
 ]
+
+
+_LONG_INPUT_SAFE_ACTIONS = frozenset({
+    "volume_set", "volume_mute", "windows_minimise_all", "windows_restore_all",
+})
 
 
 def detect(user_input: str) -> Optional[tuple[str, str]]:
     """
     Detect a system action intent. Returns (action_name, arg) or None.
     The caller should confirm with the user before calling execute().
+
+    Guard: inputs > 10 words are treated as conversational — only unambiguous
+    actions (volume, minimise/restore all) are matched. This prevents command
+    verbs like 'close', 'open', 'list', 'launch', 'quit' from firing on
+    incidental appearances in natural speech (e.g. "not even close to what
+    the datasheet said" triggering window_close).
     """
     text = user_input.lower().strip()
+    word_count = len(text.split())
     for pattern, action, group in _SYSTEM_INTENTS:
+        if word_count > 10 and action not in _LONG_INPUT_SAFE_ACTIONS:
+            continue
         m = re.search(pattern, text, re.IGNORECASE)
         if m:
             try:
@@ -294,14 +387,18 @@ def detect(user_input: str) -> Optional[tuple[str, str]]:
 def describe(action: str, arg: str) -> str:
     """Return a human-readable description of what will happen — for eLo to say before doing it."""
     descriptions = {
-        "window_fullscreen": f"make {_resolve_app(arg)} full screen",
-        "window_focus":      f"bring {_resolve_app(arg)} to the front",
-        "window_close":      f"close the front window of {_resolve_app(arg)}",
-        "app_open":          f"open {_resolve_app(arg)}",
-        "app_quit":          f"quit {_resolve_app(arg)}",
-        "folder_open":       f"open {arg} in Finder",
-        "folder_list":       f"show you what's in {arg}",
-        "folder_organise":   f"suggest how to organise {arg}",
+        "window_fullscreen":    f"make {_resolve_app(arg)} full screen",
+        "window_focus":         f"bring {_resolve_app(arg)} to the front",
+        "window_close":         f"close the front window of {_resolve_app(arg)}",
+        "app_open":             f"open {_resolve_app(arg)}",
+        "app_quit":             f"quit {_resolve_app(arg)}",
+        "folder_open":          f"open {arg} in Finder",
+        "folder_list":          f"show you what's in {arg}",
+        "folder_organise":      f"suggest how to organise {arg}",
+        "volume_set":           f"set your volume to {arg}%",
+        "volume_mute":          "mute the audio",
+        "windows_minimise_all": "minimise all open windows",
+        "windows_restore_all":  "restore all minimised windows",
     }
     return descriptions.get(action, f"{action} {arg}")
 

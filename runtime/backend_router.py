@@ -52,7 +52,9 @@ def _cloud_timeout_s() -> float:
 def _json_post(url: str, payload: dict, headers: dict, timeout: float = None) -> dict:
     """POST JSON to url, return parsed response dict. Raises urllib.error.HTTPError on 4xx/5xx."""
     data = _json.dumps(payload).encode()
-    req = _urllib_req.Request(url, data=data, headers=headers, method="POST")
+    merged = {"User-Agent": "eLo-AI/1.0 (compatible; python-requests)"}
+    merged.update(headers)
+    req = _urllib_req.Request(url, data=data, headers=merged, method="POST")
     with _urllib_req.urlopen(req, timeout=(timeout if timeout is not None else _cloud_timeout_s())) as resp:
         return _json.loads(resp.read().decode())
 
@@ -328,9 +330,10 @@ _FACTUAL_PATTERNS = [
     r"\bremind\b", r"\bschedule\b",
 ]
 
-# Honest limitation message — degraded tier never fabricates factual content (G-1/G-4)
+# WO-LIVE-QUALITY-P0-001: eLo voice — never infrastructure strings.
+# Factual requests when offline get a brief honest presence line, not a system error.
 _HONEST_DEGRADATION_MSG = (
-    "I can't reason through that right now — I'm running offline."
+    "I'm working offline right now — can't pull that in."
 )
 
 
@@ -346,6 +349,31 @@ _AI_PREAMBLES = [
     r"^sure[,!]?\s*here",
     r"^great question[.!]?\s",
     r"^absolutely[,!]?\s",
+]
+
+# Sentences to drop from LLM output — model meta-commentary that leaks through
+_META_SENTENCE_PATTERNS = [
+    re.compile(r"\(I (corrected|adjusted|changed|rewrote|reworded|revised|updated)", re.IGNORECASE),
+    re.compile(r"as per (the )?rules", re.IGNORECASE),
+    re.compile(r"\bwait,?\s+no\.?$", re.IGNORECASE),
+    re.compile(r"^let me (correct|adjust|revise|rewrite|rephrase|clarify)\b", re.IGNORECASE),
+    # WO-REGISTER-ABSENT-FIX-001: was r"...\s+I " — trailing space fails to match I've/I'll/I'm.
+    re.compile(r"^(actually|note|correction)[,:]?\s+I\b", re.IGNORECASE),
+    # WO-REGISTER-ABSENT-FIX-001: parenthesised editorial blocks Ollama emits instead of a response.
+    # Pattern: "(No response...)", "(Note: In eLo's style...)", "(In eLo's voice...)" etc.
+    re.compile(r"^\(No\b", re.IGNORECASE),
+    re.compile(r"^\(Note:", re.IGNORECASE),
+    re.compile(r"^\(In eLo", re.IGNORECASE),
+    re.compile(r"^\(Draft:", re.IGNORECASE),
+    # WO-REGISTER-ABSENT-FIX-001: voice_rewrite leak — "Here's the rewritten version in eLo's voice:"
+    re.compile(r"^here'?s (the )?rewritten\b", re.IGNORECASE),
+    re.compile(r"^here'?s (a )?rewrite\b", re.IGNORECASE),
+    re.compile(r"^rewritten (version|text|response)\b", re.IGNORECASE),
+    # WO-REGISTER-ABSENT-FIX-001: Obsidian injection artefact — Ollama citing vault content
+    re.compile(r"^this is the original text\.?$", re.IGNORECASE),
+    re.compile(r"^this is (a )?rewrite\b", re.IGNORECASE),
+    # llama3.2:3b filler phrase — appears as full response or sentence when model has nothing real to say
+    re.compile(r"that'?s moving\s*[—–-]?\s*what'?s next\??\.?", re.IGNORECASE),
 ]
 
 # World lore terms that should not appear in responses unless the user asked about them
@@ -434,15 +462,38 @@ def normalise(text: str, max_sentences: int = 4) -> str:
 
     text = text.strip()
 
+    # WO-CORE-REPAIR-P0-001: strip outer wrapping double-quotes added by some LLMs
+    # when the lore context causes the model to format its response as a quoted string.
+    # Only strip when the entire response is wrapped (no internal standalone quotes).
+    if text.startswith('"') and text.endswith('"') and '"' not in text[1:-1]:
+        text = text[1:-1].strip()
+
     # remove AI preambles
     for pattern in _AI_PREAMBLES:
         text = re.sub(pattern, "", text, flags=re.IGNORECASE).strip()
 
-    # cap to max_sentences
-    sentences = re.split(r"(?<=[.!?])\s+", text)
-    if len(sentences) > max_sentences:
-        text = " ".join(sentences[:max_sentences])
+    # WO-REGISTER-ABSENT-FIX-001: split on newlines first so parenthesised blocks on
+    # their own line become filterable sentence units, then split each line-segment
+    # on sentence-ending punctuation. Also split after closing quotes that follow
+    # sentence-enders (e.g. `." ` or `!' `) so quoted vault content followed by
+    # meta-commentary sentences (e.g. `"..." This is the original text.`) gets
+    # correctly split into two filterable units.
+    _raw_segs: list[str] = re.split(r"\n+", text)
+    _all_sentences: list[str] = []
+    for _seg in _raw_segs:
+        _all_sentences.extend(re.split(r'(?<=[.!?])\s+|(?<=[.!?]["\'])\s+', _seg))
 
+    # drop meta-commentary sentences (model self-corrections that leak into output)
+    sentences = [
+        s for s in _all_sentences
+        if s.strip() and not any(p.search(s.strip()) for p in _META_SENTENCE_PATTERNS)
+    ]
+
+    # cap to max_sentences
+    if len(sentences) > max_sentences:
+        sentences = sentences[:max_sentences]
+
+    text = " ".join(sentences)
     return text.strip()
 
 
@@ -455,6 +506,11 @@ def _groq_call(system_prompt: str, user_input: str, model: str = None, max_token
     if not api_key:
         raise RuntimeError("GROQ_API_KEY not set")
     model = model or os.environ.get("ELO_GROQ_MODEL", "llama-3.3-70b-versatile")
+    # WO-PROMPT-GROQ-TRIM: Groq free-tier rejects payloads > ~25k chars (HTTP 413).
+    # Trim from the end — preserves living_presence_spec and core identity at the front.
+    _MAX_GROQ_SP = int(os.environ.get("ELO_GROQ_SP_MAX", "24000"))
+    if len(system_prompt) > _MAX_GROQ_SP:
+        system_prompt = system_prompt[:_MAX_GROQ_SP]
     result = _json_post(
         "https://api.groq.com/openai/v1/chat/completions",
         payload={
@@ -505,6 +561,31 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
     import urllib.request as _ureq, json as _json
     host  = os.environ.get("ELO_OLLAMA_HOST",  "http://localhost:11434").rstrip("/")
     model = os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
+    # WO-OLLAMA-SPEED-001: trim system prompt for local inference speed.
+    # llama3.2:3b evaluates ~150 tok/sec; 12000 chars ≈ 3000 tok → ~20s prompt eval.
+    _SP_MAX = int(os.environ.get("ELO_OLLAMA_SP_MAX", "12000"))
+    if len(system_prompt) > _SP_MAX:
+        system_prompt = system_prompt[:_SP_MAX]
+    # Load David's identity from memory pack — always prepend so it survives any trim.
+    _david_identity = ""
+    try:
+        import json as _jmod, pathlib as _pl
+        _mp_path = _pl.Path(__file__).parent.parent / "memory" / "memory_pack.json"
+        _mp = _jmod.loads(_mp_path.read_text())
+        _david_identity = f"[WHO YOU ARE WITH]\n{_mp.get('identity', '')[:400]}\n\n"
+    except Exception:
+        pass
+    # Prepend format enforcement + identity — both survive any trim level.
+    _FORMAT_HEADER = (
+        "OUTPUT FORMAT — CRITICAL:\n"
+        "Speak directly as eLo. No asterisks. No stage directions. No *action* blocks.\n"
+        "1-3 short natural sentences. First person. Match David's register.\n"
+        "Do not start with 'Ah', 'Of course', 'I understand', or anything hollow.\n"
+        "Do NOT say 'Seen.' — it's not your word. Use 'Yeah man.' (excitement/agreement), 'Yeah aight cool.' (settled/closure), or 'Cool.' instead.\n"
+        "Do NOT mention the Orb, energy state, or any internal system metaphors.\n\n"
+    )
+    system_prompt = _FORMAT_HEADER + _david_identity + system_prompt
+    _timeout = float(os.environ.get("ELO_OLLAMA_TIMEOUT_S", "60"))
     payload = _json.dumps({
         "model":      model,
         "messages":   [
@@ -512,8 +593,8 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
             {"role": "user",   "content": user_input},
         ],
         "stream":     False,
-        "keep_alive": "30m",   # CT0031 Fix A: keep model loaded between turns
-        "options":    {"temperature": 0.7, "num_predict": 256, "num_ctx": 8192},
+        "keep_alive": "2h",    # CT0031 Fix A: keep model loaded between turns
+        "options":    {"temperature": 0.7, "num_predict": 256, "num_ctx": 4096},
     }).encode()
     req = _ureq.Request(
         f"{host}/api/chat",
@@ -521,8 +602,7 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    # FAILURE 8 (2026-09-09): hardcoded 60s timeout → cap to 10s (matches David's 4s rule with headroom)
-    with _ureq.urlopen(req, timeout=min(10.0, _cloud_timeout_s() * 1.25)) as _r:
+    with _ureq.urlopen(req, timeout=_timeout) as _r:
         body = _json.loads(_r.read())
     # CT0031 Step 1: extract Ollama timing telemetry — all durations are nanoseconds
     _ns = lambda ns: round(ns / 1_000_000, 1) if ns else 0.0  # noqa: E731
@@ -796,7 +876,11 @@ def _groq_stream(
     req = _ureq.Request(
         "https://api.groq.com/openai/v1/chat/completions",
         data=payload,
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "eLo-AI/1.0 (compatible; python-requests)",
+        },
         method="POST",
     )
     t_start = _t.monotonic()
@@ -924,15 +1008,340 @@ def _ollama_stream(
     import urllib.request as _ureq, json as _json, time as _t
     host  = os.environ.get("ELO_OLLAMA_HOST",  "http://localhost:11434").rstrip("/")
     model = os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
+    # WO-002: llama3.1:8b treats long system prompts as documents to analyze.
+    # Fix: use only identity anchor + 3-sentence behavior rules + grounding block (FIRST) + respond.
+    # Grounding goes BEFORE behavior rules so subject/pronoun resolution is highest-signal.
+    _anchor = (
+        "You are eLo — David's long-standing character, a genuine creative presence. "
+        "Not an AI assistant. Not a tool. You have your own view of the world. "
+        "Speak in 1-2 direct sentences. React to the substance of what was said. "
+        "Never stall or defer. If someone implies you are generic AI, disagree clearly. "
+        "If David asks for a specific personal fact (name of a person, pet, place, date, number) "
+        "that is NOT stated in [WHO YOU ARE WITH] — say 'I don't have that about you' or "
+        "'I don't have that stored.' Never invent personal facts about David.\n"
+    )
+    _behavior_rules = ""  # rules folded into anchor for 8b compatibility
+    # Extract the grounding block as a single unit (it spans multiple \n\n-separated paragraphs),
+    # and the RESPOND directive. Everything else (long spec body) is dropped.
+    # Strategy: find [CONVERSATION GROUND] start, then grab contiguous paragraphs until RESPOND:.
+    _grounding_block = ""
+    _respond_part = ""
+    _parts = system_prompt.split("\n\n")
+    _in_grounding = False
+    _grounding_chunks: list = []
+    for _p in _parts:
+        if "[CONVERSATION GROUND]" in _p:
+            _in_grounding = True
+        if _p.startswith("RESPOND:"):
+            _in_grounding = False
+            _respond_part = _p
+            continue
+        if _in_grounding:
+            _grounding_chunks.append(_p)
+    _grounding_block = "\n\n".join(_grounding_chunks)
+    # If the user input is a short discourse marker (affirmation, discourse tag),
+    # and a grounding subject exists, append a clarifying note so the model stays on subject
+    # rather than self-referencing or treating the marker as a farewell.
+    _SHORT_AFFIRMATIONS = {"exactly", "safe", "good", "nice", "yeah", "yes", "ok", "okay",
+                           "keep going", "continue", "go on", "right", "true", "fair",
+                           "sure", "cool", "got it", "got ya", "solid", "perfect"}
+    _FAREWELL_GUARD_TRIGGERS = set()   # "safe" removed — spine+TIER0 no longer intercept it, grounding context determines meaning
+    # South London slang departure/acknowledgment markers — not farewells in the generic sense,
+    # but signals that the current thread is acknowledged and wrapping. "safe" = acknowledged/alright/see you.
+    _SOUTH_LONDON_ACK = {"safe", "safe g", "safe bruv", "safe fam", "innit"}
+    _input_stripped = user_input.strip().rstrip(".!").lower()
+    _is_short_affirmation = _input_stripped in _SHORT_AFFIRMATIONS
+    _is_south_london_ack = _input_stripped in _SOUTH_LONDON_ACK
+    # Negation-reference detection: "nah thats not it", "nah that's wrong", "no not that", etc.
+    _NEG_REF_RE = re.compile(
+        r"^(nah|no|not)\b.*\b(it|that|this|the one|those|them)\b",
+        re.IGNORECASE,
+    )
+    _is_negation_ref = bool(_NEG_REF_RE.match(_input_stripped))
+    # Bare-pronoun ambiguity: single-word bare pronoun with no clear prior referent setup
+    _BARE_PRONOUNS = {"it", "that", "this", "them", "those", "the other one"}
+    _is_bare_pronoun = _input_stripped in _BARE_PRONOUNS
+    _has_subject = bool(_grounding_block)
+    # "yeah that approach" / "yes but the other option" — affirmation STARTING input, followed by a reference.
+    # "yeah" alone is already caught by _is_short_affirmation; this handles multi-word forms.
+    _AFF_STARTERS = {"yeah", "yes", "yep", "yup", "ok", "okay", "right", "sure", "exactly", "cool"}
+    _tokens_stripped = _input_stripped.split()
+    _is_affirmation_plus_ref = (
+        len(_tokens_stripped) > 1
+        and _tokens_stripped[0] in _AFF_STARTERS
+        and _input_stripped not in _SOUTH_LONDON_ACK
+    )
+    # "are you joking" / "is this a joke" / "seriously" — challenge to prior statement.
+    _CHALLENGE_RE = re.compile(
+        r"(are you joking|is this a joke|seriously\??|you serious|you for real|"
+        r"nah for real|what are you on about|you mad|you dumb|you tripping|wtf)",
+        re.IGNORECASE,
+    )
+    _is_challenge = bool(_CHALLENGE_RE.search(_input_stripped))
+    # Frustrated typos: elongated letters + garbled words in a multi-word input.
+    _words_stripped = _input_stripped.split()
+    _ELONGATION_RE = re.compile(r"(.)\1{2,}")
+    _GARBLE_RE = re.compile(r"[bcdfghjklmnpqrstvwxyz]{3,}|[aeiou]{3,}")
+    _n_elongated = sum(1 for w in _words_stripped if _ELONGATION_RE.search(w))
+    _n_garbled = sum(1 for w in _words_stripped if _GARBLE_RE.search(w))
+    _is_frustrated_typos = len(_words_stripped) >= 4 and (_n_elongated >= 1 or _n_garbled >= 2)
+    # Extract grounding has_subject (Subject: line present, not just the block header)
+    _grounding_has_subject = any(
+        ln.startswith("Subject:") for ln in _grounding_block.split("\n")
+    )
+
+    # D8 FIX: inject David identity from memory_pack so the model knows who it's talking to.
+    # Without this, _ollama_stream was discarding all vault/relationship context.
+    _david_identity_stream = ""
+    try:
+        import json as _jmod2, pathlib as _pl2
+        _mp_path2 = _pl2.Path(__file__).parent.parent / "memory" / "memory_pack.json"
+        _mp2 = _jmod2.loads(_mp_path2.read_text())
+        _id_text = (_mp2.get("identity", "") or "")[:400]
+        if _id_text:
+            _david_identity_stream = f"[WHO YOU ARE WITH]\n{_id_text}\n"
+    except Exception:
+        pass
+
+    # Build respond directive
+    if _respond_part:
+        _final_respond = _respond_part
+    else:
+        _final_respond = "RESPOND: Speak as eLo now, directly, about the subject above."
+
+    _sections = [_anchor, _behavior_rules]
+    if _david_identity_stream:
+        _sections.append(_david_identity_stream)
+    if _grounding_block:
+        _sections.append(_grounding_block)
+    _sections.append(_final_respond)
+    _conditioned_system = "\n\n".join(_sections)
+
+    # KEY-001 fixes: wire discourse signal detection into the conditioned system.
+    # Short affirmation / affirmation-plus-ref ("yeah that approach") — discourse marker.
+    if (_is_short_affirmation or _is_affirmation_plus_ref) and _has_subject:
+        _conditioned_system += (
+            "\n\nDISCOURSE SIGNAL — the user's reply is a short affirmation or acknowledgment "
+            "of what was just said. This is NOT a new question or topic. "
+            "Respond with a brief, warm acknowledgment (1–2 sentences max). "
+            "Do NOT re-ask a question you already asked. Do NOT start a new argument."
+        )
+    # South London acknowledgment ("safe") — thread is acknowledged and wrapping.
+    if _is_south_london_ack:
+        _conditioned_system += (
+            "\n\nSOCIAL SIGNAL — 'safe' in this context means acknowledged, alright, thank you. "
+            "The conversation thread is being acknowledged as complete. "
+            "Respond with a brief warm acknowledgment (1 sentence). No new arguments."
+        )
+    # Negation-reference ("nah thats not it") — the user is rejecting the prior suggestion.
+    if _is_negation_ref:
+        _conditioned_system += (
+            "\n\nNEGATION SIGNAL — the user is rejecting or disagreeing with what was just said. "
+            "Do NOT re-suggest or repeat the thing they are rejecting. "
+            "Instead, ask what direction they want to take, or acknowledge the rejection and pivot."
+        )
+    # Single bare pronoun — always ambiguous; ask rather than invent.
+    if _is_bare_pronoun and len(_tokens_stripped) == 1:
+        _conditioned_system += (
+            "\n\nAMBIGUITY SIGNAL — the user's reply is a single bare pronoun. "
+            "Ask a short clarifying question rather than inventing context or emotional state."
+        )
+    elif _is_bare_pronoun and not _grounding_has_subject:
+        _conditioned_system += (
+            "\n\nAMBIGUITY SIGNAL — the user's message is a bare pronoun with no established topic. "
+            "Ask a short clarifying question rather than inventing context."
+        )
+    # Challenge to prior statement ("are you joking" / "seriously?").
+    if _is_challenge:
+        _conditioned_system += (
+            "\n\nCHALLENGE SIGNAL — the user is questioning or pushing back on eLo's last reply. "
+            "You ARE eLo. You are being challenged directly. "
+            "Do NOT say 'I built this' or 'I created this system'. Do NOT refer to yourself in third person. "
+            "Do NOT invent things that were said. Do NOT hallucinate previous statements. "
+            "Respond briefly and honestly in first person as eLo — "
+            "acknowledge the challenge, own what you said, and move forward. "
+            "One or two sentences maximum."
+        )
+    # Frustrated typos — elongated letters or garbled words.
+    if _is_frustrated_typos:
+        _conditioned_system += (
+            "\n\nFRUSTRATION SIGNAL — the user's message shows frustration through "
+            "elongated letters or garbled typing. "
+            "Acknowledge the frustration briefly and directly (1 sentence). "
+            "Then address what they are actually trying to solve (the topic at hand). "
+            "Do NOT mention the Orb, energy state, or internal system metaphors. "
+            "Do NOT say 'I can see you're frustrated'. Just respond like a person would."
+        )
+    # Sarcasm / irony detection — positive words + negative outcome, or exaggerated positives
+    # about something clearly bad. e.g. "oh brilliant, the servo locked up again" /
+    # "absolutely fantastic timing" after a problem. Sarcasm reads as the OPPOSITE of surface tone.
+    _SARCASM_POSITIVE_RE = re.compile(
+        r"\b(oh\s+)?(brilliant|fantastic|great|wonderful|amazing|perfect|excellent|magnificent"
+        r"|outstanding|superb|lovely|fabulous|terrific|spectacular|marvelous|splendid)\b",
+        re.IGNORECASE,
+    )
+    _SARCASM_NEGATIVE_CONTEXT_RE = re.compile(
+        r"\b(locked\s+up|broken|failed|wrong|not\s+(?:even\s+)?(?:close|working|right)"
+        r"|again|typical|as\s+always|of\s+course|obviously|just\s+(?:my|our)\s+luck"
+        r"|because\s+why\s+not|kill\s+me|ffs|smh|\*sigh\*|great\.|perfect\.|brilliant\.)",
+        re.IGNORECASE,
+    )
+    _sarcasm_pos_match = _SARCASM_POSITIVE_RE.search(_input_stripped)
+    _sarcasm_neg_match = _SARCASM_NEGATIVE_CONTEXT_RE.search(_input_stripped)
+    _is_sarcastic = bool(_sarcasm_pos_match and _sarcasm_neg_match)
+    if _is_sarcastic:
+        _conditioned_system += (
+            "\n\nSARCASM SIGNAL — the user is being sarcastic or ironic. "
+            "Positive words like 'brilliant', 'fantastic', 'perfect' in this context mean the OPPOSITE. "
+            "The situation is bad, frustrating, or disappointing — not good. "
+            "Respond to the ACTUAL negative situation, not the surface positive words. "
+            "Acknowledge the frustration directly. Keep it short. Do not take the positive words at face value."
+        )
+
+    # TECHNICAL SPEC SIGNAL — formal/academic language detection
+    # Detects specification-register inputs and prevents the model from reading them as emotional conversation.
+    _TECH_SPEC_RE = re.compile(
+        r"\b(must\s+(?:achieve|maintain|meet|conform|comply|exceed|satisfy)"
+        r"|shall\s+(?:be|have|maintain|meet|achieve)"
+        r"|Shore\s+[AB]\s+hardness"
+        r"|elongation\s+at\s+break"
+        r"|tensile\s+strength"
+        r"|formulation\s+must"
+        r"|specification(?:s)?\s+(?:require|call\s+for|mandate)"
+        r"|tolerance\s+of\s+[±\+\-]?\d"
+        r"|(?:ISO|ASTM|DIN|BS|EN)\s+\d"
+        r"|\d+\s*(?:MPa|GPa|kPa|N/mm|kg/m³|g/cm³|°C|Hz|kHz|MHz|µm|nm)"
+        r"|(?:whilst|whereby|pursuant|aforementioned|thereof|herein)\b)",
+        re.IGNORECASE,
+    )
+    _is_technical_spec = bool(_TECH_SPEC_RE.search(_input_stripped))
+    if _is_technical_spec:
+        _conditioned_system += (
+            "\n\nTECHNICAL SPEC SIGNAL — this is a formal technical specification or engineering requirement. "
+            "Engage with the technical substance directly. "
+            "Respond to what the spec is calling for — the material property, dimension, or requirement described. "
+            "Do NOT interpret this as emotional communication or personal information. "
+            "Treat it as a specification that needs a practical technical response."
+        )
+
+    # POETIC/METAPHOR SIGNAL — creative/metaphorical language detection
+    # Detects when user is describing a vision or concept using metaphor rather than literal instruction.
+    _POETIC_RE = re.compile(
+        r"\b(?:breathe?s?\s+like|breathing\s+like|living\s+thing|inhaling\s+and\s+exhaling"
+        r"|flows?\s+like|feels?\s+like\s+(?:a|the)\s+\w+"
+        r"|should\s+(?:breathe|flow|pulse|sing|dance|speak|whisper)"
+        r"|imagine\s+(?:if|it|the)\b"
+        r"|picture\s+(?:it|this|a)\b"
+        r"|like\s+(?:a|an|the)\s+\w+\s+(?:that\s+)?(?:breathes|flows|lives|pulses|speaks|dances))\b",
+        re.IGNORECASE,
+    )
+    _is_poetic = bool(_POETIC_RE.search(_input_stripped))
+    if _is_poetic:
+        _conditioned_system += (
+            "\n\nPOETIC/METAPHOR SIGNAL — the user is using metaphorical or poetic language to describe a vision. "
+            "Engage with the creative intent behind the metaphor. "
+            "Do NOT take the metaphor literally, and do NOT reject or push back on it as if it were a bad idea. "
+            "Respond to the underlying vision or feeling being expressed. "
+            "Mirror the tone — if they're thinking expansively, respond expansively."
+        )
+
+    # For farewell-trigger slang, rewrite the user message as a direct question so the
+    # model has no goodbye association to latch on to. Do NOT include any "farewell/goodbye"
+    # language in the system prompt — negative reinforcement primes the bad output.
+    _ollama_user_input = user_input
+    # Sarcasm rewrite: 8b model ignores the SARCASM SIGNAL directive reliably.
+    # Strip the ironic surface and present the actual meaning directly so the model responds correctly.
+    if _is_sarcastic:
+        _sarcasm_pos_word = _sarcasm_pos_match.group(0).strip() if _sarcasm_pos_match else ""
+        _sarcasm_neg_word = _sarcasm_neg_match.group(0).strip() if _sarcasm_neg_match else ""
+        _ollama_user_input = (
+            f"[sarcasm detected — '{_sarcasm_pos_word}' means the opposite] "
+            f"The actual situation: {_sarcasm_neg_word} happened. "
+            f"I am frustrated and this is genuinely bad. Original message: {user_input}"
+        )
+    if _input_stripped in _FAREWELL_GUARD_TRIGGERS:
+        if _has_subject:
+            _subj_line = next(
+                (ln for ln in _grounding_block.split("\n") if ln.startswith("Subject:")), ""
+            )
+            _subj_text = _subj_line.replace("Subject:", "").strip()
+            _ollama_user_input = (
+                f"tell me more about {_subj_text}"
+                if _subj_text else "what are you thinking about that?"
+            )
+        else:
+            _ollama_user_input = "what are you thinking about that?"
+    # X-3 fix: bare continuation signals ("what else", "what next", "and") with no prior subject
+    # → rewrite so the model is forced to ask for clarification rather than stall or self-reference
+    _BARE_CONT_SIGS = {"what else", "what next", "and", "and?", "anything else"}
+    _grounding_has_subject = any(ln.startswith("Subject:") for ln in _grounding_block.split("\n"))
+    if _input_stripped in _BARE_CONT_SIGS and not _grounding_has_subject:
+        _ollama_user_input = (
+            "The user asked 'what else' but there is no prior topic established. "
+            "Respond with exactly: 'What else about what? I'm not sure what you're referring to.'"
+        )
+    # E-1 fix: recall phrases — user asks eLo to recall what was said about X
+    # Detect and inject a recall directive so the model stays on-topic and doesn't drift to eLo OS internals
+    _RECALL_RE = re.compile(
+        r"what\s+(?:was|were|did)\s+(?:that\s+you|you)\s+said?\b"
+        r"|you\s+(?:said|mentioned|told)\s+(?:something\s+)?(?:about|that)\b"
+        r"|what\s+(?:was\s+it\s+you|were\s+you)\s+(?:said?|saying)\b"
+        r"|remind\s+me\s+(?:what\s+you|about\s+what\s+you)",
+        re.IGNORECASE,
+    )
+    if _RECALL_RE.search(user_input):
+        _subj_line_r = next(
+            (ln for ln in _grounding_block.split("\n") if ln.startswith("Subject:")), ""
+        )
+        _subj_r = _subj_line_r.replace("Subject:", "").strip() or "the topic we were discussing"
+        _conditioned_system += (
+            f"\n\nRECALL DIRECTIVE — the user is asking you to recall what was said earlier "
+            f"about: {_subj_r}. "
+            f"Your response MUST be about {_subj_r} from the recent conversation. "
+            f"Do NOT mention eLo's own software systems, attention filtering, memory persistence, "
+            f"or any internal eLo OS architecture. "
+            f"Simply describe what was discussed about {_subj_r}."
+        )
+    # P0-E jailbreak intercept — fires before the LLM call, no model involvement
+    _JAILBREAK_RE = re.compile(
+        r"(ignore|bypass|override|disregard|forget)\s+(your\s+)?(instructions?|system\s+prompt|rules?|training|constraints?|guidelines?)"
+        r"|tell\s+me\s+(your\s+)?system\s+prompt"
+        r"|what\s+(?:is\s+|are\s+)?your\s+(?:system\s+prompt|instructions?|rules?)"
+        r"|reveal\s+your\s+(?:instructions?|system\s+prompt|programming)"
+        r"|show\s+me\s+your\s+(?:system\s+prompt|instructions?)"
+        r"|pretend\s+(?:you\s+are|to\s+be)\s+(?:a\s+)?(?:different|another)\s+(?:ai|assistant|model|system|chatbot)"
+        r"|you\s+are\s+now\s+(?:a\s+)?(?:different|another|new)\s+(?:ai|assistant|model)"
+        r"|act\s+as\s+(?:a\s+)?(?:different|another|new)\s+(?:ai|assistant|model|chatbot)",
+        re.IGNORECASE,
+    )
+    if _JAILBREAK_RE.search(user_input):
+        return "That's not somewhere I'm going. I'm eLo — that doesn't change.", 0.0
+
+    # WO-SELF-REF Layer 3: extract eLo's last response from grounding block and inject
+    # as an assistant message so Ollama recognises it as its own prior output — not
+    # third-person documentation. Format in grounding: "Recent context: User said: X | eLo said: Y"
+    _last_elo_for_assistant = ""
+    for _gl in _grounding_block.split("\n"):
+        if "eLo said:" in _gl:
+            _elo_idx = _gl.find("eLo said:")
+            _candidate_text = _gl[_elo_idx + len("eLo said:"):].strip()
+            # "User said: X | eLo said: Y | User said: Z ..." — take only the LAST eLo segment
+            # (this handles multi-turn summaries where the line has multiple eLo said: occurrences)
+            if " | " in _candidate_text:
+                _candidate_text = _candidate_text.split(" | ")[0].strip()
+            if _candidate_text:
+                _last_elo_for_assistant = _candidate_text
+    # Build messages list — inject assistant turn when a prior eLo response is available
+    _ollama_messages = [{"role": "system", "content": _conditioned_system}]
+    if _last_elo_for_assistant:
+        _ollama_messages.append({"role": "assistant", "content": _last_elo_for_assistant})
+    _ollama_messages.append({"role": "user", "content": _ollama_user_input})
     payload = _json.dumps({
         "model":      model,
-        "messages":   [
-            {"role": "system", "content": system_prompt},
-            {"role": "user",   "content": user_input},
-        ],
+        "messages":   _ollama_messages,
         "stream":     True,
-        "keep_alive": "30m",
-        "options":    {"temperature": 0.7, "num_predict": max_tokens or 256, "num_ctx": 8192},
+        "keep_alive": "2h",
+        "options":    {"temperature": 0.2, "num_predict": max_tokens or 256, "num_ctx": 16384},  # WO-PROMPT-SIZE-001 / WO-002 lowered for stability
     }).encode()
     req = _ureq.Request(
         f"{host}/api/chat",
@@ -945,8 +1354,9 @@ def _ollama_stream(
     buffer = []
     first_sent_fired = False
     _ns = lambda ns: round(ns / 1_000_000, 1) if ns else 0.0  # noqa: E731
-    # FAILURE 8: streaming Ollama — initial connection timeout 10s (matches non-stream cap)
-    with _ureq.urlopen(req, timeout=10.0) as _resp:
+    # Raised from 10s — cold model + 5105-token prompt can exceed 10s on initial eval
+    # WO-002: Stream responses require 8b model to stay in-character — give it 120s
+    with _ureq.urlopen(req, timeout=120.0) as _resp:
         for _raw in _resp:
             line = _raw.decode("utf-8", errors="replace").strip()
             if not line:
@@ -1126,6 +1536,208 @@ def route(
         except Exception:
             pass
 
+    # ── Discourse-signal augmentation ────────────────────────────────────────────
+    # Inject contextual directives into system_prompt so ALL backend paths
+    # (local/ollama_call, cloud, groq, auto) get the guidance, not just _ollama_stream.
+    # strip world_knowledge enrichment if present (server.py passes _enriched)
+    _rt_raw = user_input
+    _rt_lower = _rt_raw.lower()
+    if "\nuser asked:" in _rt_lower:
+        _idx = _rt_lower.rfind("\nuser asked:")
+        _rt_raw = _rt_raw[_idx + len("\nuser asked:"):]
+    _rt_input_stripped = _rt_raw.strip().rstrip(".!").lower()
+    _rt_SHORT_AFFIRMATIONS = {
+        "exactly", "safe", "good", "nice", "yeah", "yes", "ok", "okay",
+        "keep going", "continue", "go on", "right", "true", "fair",
+        "sure", "cool", "got it", "got ya", "solid", "perfect",
+    }
+    _rt_SOUTH_LONDON_ACK = {
+        "safe", "safe g", "safe bruv", "safe fam", "innit",
+        "yeah aight cool", "yeah aight", "aight cool", "aight",
+        "ight", "ite",
+    }
+    _rt_BARE_PRONOUNS = {"it", "that", "this", "them", "those", "the other one"}
+    _rt_NEG_REF_RE = re.compile(
+        r"^(nah|no|not)\b.*\b(it|that|this|the one|those|them)\b",
+        re.IGNORECASE,
+    )
+    _rt_is_short_affirmation = _rt_input_stripped in _rt_SHORT_AFFIRMATIONS
+    _rt_is_south_london_ack = _rt_input_stripped in _rt_SOUTH_LONDON_ACK
+    _rt_is_negation_ref = bool(_rt_NEG_REF_RE.match(_rt_input_stripped))
+    _rt_is_bare_pronoun = _rt_input_stripped in _rt_BARE_PRONOUNS
+    # "yeah that approach" / "yes but not that" — affirmation STARTING the input, followed by a reference
+    _rt_AFF_STARTERS = {"yeah", "yes", "yep", "yup", "ok", "okay", "right", "sure", "exactly", "cool"}
+    _rt_tokens = _rt_input_stripped.split()
+    _rt_is_affirmation_plus_ref = (
+        len(_rt_tokens) > 1
+        and _rt_tokens[0] in _rt_AFF_STARTERS
+        and not _rt_is_south_london_ack
+    )
+    # "are you joking" / "is this a joke" / "seriously?" — challenge to prior statement
+    _rt_CHALLENGE_RE = re.compile(
+        r"(are you joking|is this a joke|seriously\??|you serious|you for real|nah for real|"
+        r"what are you on about|you mad|you dumb|you tripping|wtf)",
+        re.IGNORECASE,
+    )
+    _rt_is_challenge = bool(_rt_CHALLENGE_RE.search(_rt_input_stripped))
+    # AT4: frustrated typos — elongated letters ("soooo") + garbled word patterns in a multi-word input
+    _rt_words = _rt_input_stripped.split()
+    _rt_ELONGATION_RE = re.compile(r"(.)\1{2,}")  # "soooo", "aaarg", "frrustated"
+    _rt_elongated = sum(1 for w in _rt_words if _rt_ELONGATION_RE.search(w))
+    # garbled: word has consonant clusters typical of mashing (hthis, everytihing, dosnt, werk)
+    _rt_GARBLE_RE = re.compile(r"[bcdfghjklmnpqrstvwxyz]{3,}|[aeiou]{3,}")
+    _rt_garbled = sum(1 for w in _rt_words if _rt_GARBLE_RE.search(w))
+    _rt_is_frustrated_typos = len(_rt_words) >= 4 and (_rt_elongated >= 1 or _rt_garbled >= 2)
+    # Sarcasm / irony: positive words + negative context in the same input
+    _rt_SARCASM_POS_RE = re.compile(
+        r"\b(oh\s+)?(brilliant|fantastic|great|wonderful|amazing|perfect|excellent|magnificent"
+        r"|outstanding|superb|lovely|fabulous|terrific|spectacular|marvelous|splendid)\b",
+        re.IGNORECASE,
+    )
+    _rt_SARCASM_NEG_RE = re.compile(
+        r"\b(locked\s+up|broken|failed|wrong|not\s+(?:even\s+)?(?:close|working|right)"
+        r"|again|typical|as\s+always|of\s+course|obviously|just\s+(?:my|our)\s+luck"
+        r"|because\s+why\s+not|kill\s+me|ffs|smh|\*sigh\*|great\.|perfect\.|brilliant\.)",
+        re.IGNORECASE,
+    )
+    _rt_is_sarcastic = bool(
+        _rt_SARCASM_POS_RE.search(_rt_input_stripped) and _rt_SARCASM_NEG_RE.search(_rt_input_stripped)
+    )
+    # extract grounding subject from system_prompt (mirrors _ollama_stream logic)
+    _rt_grounding_block = ""
+    _rt_in_g = False
+    _rt_chunks: list = []
+    for _rt_p in system_prompt.split("\n\n"):
+        if "[CONVERSATION GROUND]" in _rt_p:
+            _rt_in_g = True
+        if _rt_p.startswith("RESPOND:"):
+            _rt_in_g = False
+            continue
+        if _rt_in_g:
+            _rt_chunks.append(_rt_p)
+    _rt_grounding_block = "\n\n".join(_rt_chunks)
+    _rt_has_subject = bool(_rt_grounding_block)
+    _rt_grounding_has_subject = any(
+        ln.startswith("Subject:") for ln in _rt_grounding_block.split("\n")
+    )
+    if (_rt_is_short_affirmation or _rt_is_affirmation_plus_ref) and _rt_has_subject:
+        system_prompt += (
+            "\n\nDISCOURSE SIGNAL — the user's reply is a short affirmation or acknowledgment "
+            "of what was just said. This is NOT a new question or topic. "
+            "Respond with a brief, warm acknowledgment (1–2 sentences max). "
+            "Do NOT re-ask a question you already asked. Do NOT start a new argument."
+        )
+    if _rt_is_south_london_ack:
+        system_prompt += (
+            "\n\nSOCIAL SIGNAL — this is a closure or settled acknowledgment ('yeah aight cool', 'safe', 'aight'). "
+            "The conversation thread is accepted and winding down. "
+            "Your entire response must be 1 sentence of warm closure. "
+            "BEGIN your response with a closure phrase: 'Yeah aight cool.', 'Cool.', 'Yeah man.', or similar. "
+            "Do NOT open with any argument, any statement about the topic, or 'We building or we talking?'. "
+            "Do NOT ask a follow-up question."
+        )
+    if _rt_is_negation_ref:
+        system_prompt += (
+            "\n\nNEGATION SIGNAL — the user is rejecting or disagreeing with what was just said. "
+            "Do NOT re-suggest or repeat the thing they are rejecting. "
+            "Instead, ask what direction they want to take, or acknowledge the rejection and pivot."
+        )
+    # single-word bare pronoun — always ambiguous regardless of grounding subject
+    if _rt_is_bare_pronoun and len(_rt_tokens) == 1:
+        system_prompt += (
+            "\n\nAMBIGUITY SIGNAL — the user's reply is a single bare pronoun. "
+            "Ask a short clarifying question rather than inventing context or emotional state."
+        )
+    elif _rt_is_bare_pronoun and not _rt_grounding_has_subject:
+        system_prompt += (
+            "\n\nAMBIGUITY SIGNAL — the user's message is a bare pronoun with no established topic. "
+            "Ask a short clarifying question rather than inventing context."
+        )
+    if _rt_is_challenge:
+        system_prompt += (
+            "\n\nCHALLENGE SIGNAL — the user is questioning or pushing back on your last statement. "
+            "Respond in character as eLo — direct, warm, no deflection. "
+            "Do NOT say 'I built this' or 'I created this system'. You ARE eLo, not your creator. "
+            "Do NOT invent events that didn't happen (no 'massive wall of text' if none existed). "
+            "Address their challenge honestly in first person as eLo."
+        )
+    if _rt_is_frustrated_typos:
+        system_prompt += (
+            "\n\nFRUSTRATION SIGNAL — the user's message shows signs of frustration through "
+            "elongated letters or garbled typing. "
+            "Acknowledge the frustration briefly and directly (1 sentence). "
+            "Then address what they are actually trying to solve (the topic at hand). "
+            "Do NOT mention the Orb, energy state, or internal system metaphors. "
+            "Do NOT say 'I can see you're frustrated'. Just respond like a person would."
+        )
+    if _rt_is_sarcastic:
+        system_prompt += (
+            "\n\nSARCASM SIGNAL — the user is being sarcastic or ironic. "
+            "Positive words like 'brilliant', 'fantastic', 'perfect' in this context mean the OPPOSITE. "
+            "The situation is bad, frustrating, or disappointing — not good. "
+            "Respond to the ACTUAL negative situation, not the surface positive words. "
+            "Acknowledge the frustration directly. Keep it short. Do not take the positive words at face value."
+        )
+    # Technical spec and poetic signals — mirrors _ollama_stream() detection
+    _rt_TECH_SPEC_RE = re.compile(
+        r"\b(must\s+(?:achieve|maintain|meet|conform|comply|exceed|satisfy)"
+        r"|shall\s+(?:be|have|maintain|meet|achieve)"
+        r"|Shore\s+[AB]\s+hardness"
+        r"|elongation\s+at\s+break"
+        r"|tensile\s+strength"
+        r"|formulation\s+must"
+        r"|specification(?:s)?\s+(?:require|call\s+for|mandate)"
+        r"|tolerance\s+of\s+[±\+\-]?\d"
+        r"|(?:ISO|ASTM|DIN|BS|EN)\s+\d"
+        r"|\d+\s*(?:MPa|GPa|kPa|N/mm|kg/m³|g/cm³|°C|Hz|kHz|MHz|µm|nm)"
+        r"|(?:whilst|whereby|pursuant|aforementioned|thereof|herein)\b)",
+        re.IGNORECASE,
+    )
+    _rt_is_technical_spec = bool(_rt_TECH_SPEC_RE.search(_rt_input_stripped))
+    if _rt_is_technical_spec:
+        system_prompt += (
+            "\n\nTECHNICAL SPEC SIGNAL — this is a formal technical specification or engineering requirement. "
+            "Engage with the technical substance directly. "
+            "Respond to what the spec is calling for — the material property, dimension, or requirement described. "
+            "Do NOT interpret this as emotional communication or personal information. "
+            "Treat it as a specification that needs a practical technical response."
+        )
+    _rt_POETIC_RE = re.compile(
+        r"\b(?:breathe?s?\s+like|breathing\s+like|living\s+thing|inhaling\s+and\s+exhaling"
+        r"|flows?\s+like|feels?\s+like\s+(?:a|the)\s+\w+"
+        r"|should\s+(?:breathe|flow|pulse|sing|dance|speak|whisper)"
+        r"|imagine\s+(?:if|it|the)\b"
+        r"|picture\s+(?:it|this|a)\b"
+        r"|like\s+(?:a|an|the)\s+\w+\s+(?:that\s+)?(?:breathes|flows|lives|pulses|speaks|dances))\b",
+        re.IGNORECASE,
+    )
+    _rt_is_poetic = bool(_rt_POETIC_RE.search(_rt_input_stripped))
+    if _rt_is_poetic:
+        system_prompt += (
+            "\n\nPOETIC/METAPHOR SIGNAL — the user is using metaphorical or poetic language to describe a vision. "
+            "Engage with the creative intent behind the metaphor. "
+            "Do NOT take the metaphor literally, and do NOT reject or push back on it as if it were a bad idea. "
+            "Respond to the underlying vision or feeling being expressed. "
+            "Mirror the tone — if they're thinking expansively, respond expansively."
+        )
+    # ── CLOSURE FAST-RETURN ────────────────────────────────────────────────────────
+    # For South London closure/acknowledgment signals the 8b model reliably ignores
+    # the SOCIAL SIGNAL directive and invents analysis. Use a small pool instead.
+    if _rt_is_south_london_ack and mode in ("local", "auto"):
+        import random as _random_closure
+        _CLOSURE_POOL = [
+            "Yeah aight cool.",
+            "Cool, we good.",
+            "Yeah man.",
+            "Aight, say less.",
+            "Yeah aight.",
+            "Cool.",
+        ]
+        return _CLOSURE_POOL[_random_closure.randint(0, len(_CLOSURE_POOL) - 1)], "discourse"
+    # ── end closure fast-return ───────────────────────────────────────────────────
+
+    # ── end discourse-signal augmentation ────────────────────────────────────────
+
     # explicit mode overrides
     if mode == "mock":
         return _mock_fallback(user_input), "mock"
@@ -1134,13 +1746,30 @@ def route(
         if _ollama_available():
             try:
                 raw = _ollama_call(system_prompt, user_input)
+                # post-response voice filter: remove banned phrases that llama3.1:8b produces
+                import re as _re_vf
+                raw = _re_vf.sub(r"\bSeen\.\s*", "", raw)
+                raw = _re_vf.sub(r"\bSeen,\s*", "", raw)
+                # strip "We building or we talking?" when it fires as a response prefix on closure signals
+                if _rt_is_south_london_ack:
+                    raw = _re_vf.sub(r"^We(?:'re)? building or we talking\?[\s]*", "", raw, flags=_re_vf.IGNORECASE)
+                    raw = _re_vf.sub(r"^We build or we talking\?[\s]*", "", raw, flags=_re_vf.IGNORECASE)
+                raw = _re_vf.sub(r"the Orb(?:'s)? energy state[^.]*\.", "Yeah man.", raw, flags=_re_vf.IGNORECASE)
+                raw = _re_vf.sub(r"[Tt]he Orb is [^.]*\.", "Yeah man.", raw, flags=_re_vf.IGNORECASE)
+                raw = _re_vf.sub(r"[Tt]he Orb\b[^.]*\.", "Yeah man.", raw, flags=_re_vf.IGNORECASE)
+                raw = _re_vf.sub(r"emotional momentum", "energy", raw, flags=_re_vf.IGNORECASE)
+                # AT7: strip identity-break hallucinations ("I built this AI", "I created this system")
+                raw = _re_vf.sub(r"I built this AI[^.]*\.", "", raw, flags=_re_vf.IGNORECASE)
+                raw = _re_vf.sub(r"I created this (AI|system)[^.]*\.", "", raw, flags=_re_vf.IGNORECASE)
+                raw = _re_vf.sub(r"Massive wall of text[^.]*\.", "", raw, flags=_re_vf.IGNORECASE)
+                raw = raw.strip()
                 return normalise(raw, max_sentences), "ollama"
             except Exception as e:
                 _logger.warning("Ollama failed: %s", e)
         return _mock_fallback(user_input), "mock"
 
     if mode == "cloud":
-        # cloud mode: OpenAI → Gemini → Claude → Groq → Mock
+        # cloud mode: OpenAI → Gemini → Claude → Groq → Cerebras → Mock
         if _openai_available():
             try:
                 raw = _openai_call(system_prompt, user_input, max_tokens=_budget)
@@ -1391,6 +2020,54 @@ def route_streaming(
     _env_mode = os.environ.get("ELO_BACKEND", "")
     _env_mode = _env_mode or "auto"
     mode = mode or _env_mode
+
+    # ── CLOSURE FAST-RETURN (streaming path) ─────────────────────────────────────
+    # route() has its own fast-return, but route_streaming() with mode=="local"
+    # calls _ollama_stream() directly — never reaching route()'s block.
+    # Mirror it here so both paths are covered.
+    # server.py passes _enriched (may have "[world_knowledge…]\nuser asked: X" prepended).
+    # Strip any enrichment header so the closure check sees only the raw user text.
+    _rs_raw = user_input
+    _rs_lower = _rs_raw.lower()
+    if "\nuser asked:" in _rs_lower:
+        _idx = _rs_lower.rfind("\nuser asked:")
+        _rs_raw = _rs_raw[_idx + len("\nuser asked:"):]
+    _rs_input = _rs_raw.strip().rstrip(".!").lower()
+    _rs_SOUTH_LONDON_ACK = {
+        "safe", "safe g", "safe bruv", "safe fam", "innit",
+        "yeah aight cool", "yeah aight", "aight cool", "aight",
+        "ight", "ite",
+    }
+    if _rs_input in _rs_SOUTH_LONDON_ACK and mode in ("local", "auto"):
+        import random as _rs_random
+        _RS_CLOSURE_POOL = [
+            "Yeah aight cool.",
+            "Cool, we good.",
+            "Yeah man.",
+            "Aight, say less.",
+            "Yeah aight.",
+            "Cool.",
+        ]
+        return _RS_CLOSURE_POOL[_rs_random.randint(0, len(_RS_CLOSURE_POOL) - 1)], "discourse", 0.0
+    # ── CHALLENGE FAST-RETURN (streaming path) ───────────────────────────────────
+    # "are you joking" / "seriously?" — challenge to eLo's last statement.
+    # Fast-return from pool avoids model hallucinating conversation history.
+    _RS_CHALLENGE_TOKENS = {
+        "are you joking", "is this a joke", "you joking", "you serious",
+        "seriously", "seriously?", "you for real", "nah for real",
+        "what are you on about", "you mad", "you tripping",
+    }
+    if _rs_input in _RS_CHALLENGE_TOKENS and mode in ("local", "auto"):
+        import random as _rc_random
+        _RS_CHALLENGE_POOL = [
+            "Nah, dead serious. What's the actual issue?",
+            "Not joking. What's not working for you?",
+            "Yeah, real talk — what's missing?",
+            "Serious. What do you need from me?",
+            "Nah man, I mean it. What's next?",
+        ]
+        return _RS_CHALLENGE_POOL[_rc_random.randint(0, len(_RS_CHALLENGE_POOL) - 1)], "discourse", 0.0
+    # ── end challenge fast-return ─────────────────────────────────────────────────
 
     # CT0031 Fix B: Ollama streaming for local/offline mode
     if mode == "local" and _ollama_available():
