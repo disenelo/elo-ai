@@ -1245,10 +1245,47 @@ def _ollama_stream(
             "Mirror the tone — if they're thinking expansively, respond expansively."
         )
 
+    # TOPIC SHIFT SIGNAL — explicit topic-change markers
+    # When the user signals a subject change ("anyway", "what about X", "moving on", etc.),
+    # tell the model to engage with the NEW topic fresh and not invent context from prior discussion.
+    _TOPIC_SHIFT_RE = re.compile(
+        r"(?:^|\b)(?:anyway|any(?:\s+)?way|moving\s+on|lets?\s+move\s+on|forget\s+that"
+        r"|different\s+question|while\s+we(?:'re|re)\s+at\s+it"
+        r"|what\s+about\s+the\s+\w+"
+        r"|how\s+about\s+the\s+\w+"
+        r"|back\s+to\s+the\s+\w+"
+        r"|switching\s+(?:to|topics?)"
+        r"|on\s+a\s+(?:different|separate)\s+note)\b",
+        re.IGNORECASE,
+    )
+    _is_topic_shift = bool(_TOPIC_SHIFT_RE.search(_input_stripped))
+    if _is_topic_shift:
+        _conditioned_system += (
+            "\n\nTOPIC SHIFT SIGNAL — the user is changing the subject to a new topic. "
+            "Engage with ONLY what is in the current message. "
+            "Do NOT carry over conclusions, problems, or context from the previous topic. "
+            "Do NOT invent prior history for the new topic — start fresh. "
+            "If the new topic needs clarification, ask a single focused question about it."
+        )
+
     # For farewell-trigger slang, rewrite the user message as a direct question so the
     # model has no goodbye association to latch on to. Do NOT include any "farewell/goodbye"
     # language in the system prompt — negative reinforcement primes the bad output.
     _ollama_user_input = user_input
+    # Topic shift rewrite: 8b model ignores the TOPIC SHIFT SIGNAL directive — also rewrite the input
+    # to strip the shift marker and explicitly flag it as a first-mention topic so the model can't invent history.
+    if _is_topic_shift:
+        _ts_new_topic_match = re.search(
+            r'(?:what|how)\s+about\s+(?:the\s+)?(.+?)(?:\?|$)',
+            _input_stripped, re.IGNORECASE,
+        )
+        if _ts_new_topic_match:
+            _ts_topic = _ts_new_topic_match.group(1).strip()
+            _ollama_user_input = (
+                f"[new topic — no prior context in this conversation] "
+                f"I want to talk about {_ts_topic}. "
+                f"This hasn't come up yet. What should I know or where should we start?"
+            )
     # Sarcasm rewrite: 8b model ignores the SARCASM SIGNAL directive reliably.
     # Strip the ironic surface and present the actual meaning directly so the model responds correctly.
     if _is_sarcastic:
@@ -1720,6 +1757,27 @@ def route(
             "Respond to the underlying vision or feeling being expressed. "
             "Mirror the tone — if they're thinking expansively, respond expansively."
         )
+    # TOPIC SHIFT SIGNAL — route_streaming path
+    _rt_TOPIC_SHIFT_RE = re.compile(
+        r"(?:^|\b)(?:anyway|any(?:\s+)?way|moving\s+on|lets?\s+move\s+on|forget\s+that"
+        r"|different\s+question|while\s+we(?:'re|re)\s+at\s+it"
+        r"|what\s+about\s+the\s+\w+"
+        r"|how\s+about\s+the\s+\w+"
+        r"|back\s+to\s+the\s+\w+"
+        r"|switching\s+(?:to|topics?)"
+        r"|on\s+a\s+(?:different|separate)\s+note)\b",
+        re.IGNORECASE,
+    )
+    _rt_is_topic_shift = bool(_rt_TOPIC_SHIFT_RE.search(_rt_input_stripped))
+    if _rt_is_topic_shift:
+        system_prompt += (
+            "\n\nTOPIC SHIFT SIGNAL — the user is changing the subject to a new topic. "
+            "Engage with ONLY what is in the current message. "
+            "Do NOT carry over conclusions, problems, or context from the previous topic. "
+            "Do NOT invent prior history for the new topic — start fresh. "
+            "If the new topic needs clarification, ask a single focused question about it."
+        )
+
     # ── CLOSURE FAST-RETURN ────────────────────────────────────────────────────────
     # For South London closure/acknowledgment signals the 8b model reliably ignores
     # the SOCIAL SIGNAL directive and invents analysis. Use a small pool instead.
