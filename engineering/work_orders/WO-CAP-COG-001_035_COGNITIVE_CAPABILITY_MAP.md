@@ -165,7 +165,7 @@ Board reads source §3 verbatim. Board reads evidence. For each line of the sour
 ## WO-CAP-COG-004 — FORMAL LANGUAGES
 
 **Source:** [SPEC: SOURCE_2026-09-19_eLo_COGNITIVE_CAPABILITY_MAP.md §4]
-**Status:** VOID — single-turn isolated test filed under wrong WO label. Not valid evidence. Awaiting contextual multi-turn evaluation per David L3 ruling 2026-09-20: "continuation, witty, honesty, the characteristics that make eLo not the AI model." Not BOARD VERIFIED.
+**Status:** LIVE VERIFIED — 8/26 PASS · 12/26 PARTIAL · 6/26 FAIL (2026-09-20). Infrastructure routing bug fixed: time agent no longer intercepts algorithm queries ("time complexity", "at runtime"). Genuine time queries intact. All FAIL items are model-quality (brief/off-topic responses), not routing failures. Evidence: `engineering/evidence/CAP/COG/WO-CAP-COG-004_evidence.md`. Awaiting David L3 acceptance.
 **Gate:** P0. David L3 gate override 2026-09-20.
 
 **VERBATIM SOURCE — §4:**

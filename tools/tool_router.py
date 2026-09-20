@@ -458,6 +458,63 @@ def _detect_intent(user_input: str) -> Optional[str]:
 
 # ── agent implementations ──────────────────────────────────────────────────────
 
+# WO-CAP-COG-004: only fire the time agent for genuine clock/date queries.
+# Rejects "time complexity", "runtime", "response time", "real-time", etc.
+_TIME_TECH_BLOCK = re.compile(
+    r"\b(?:"
+    r"time\s+complex(?:ity)?"
+    r"|run(?:-?\s*)time"
+    r"|real\s*-?\s*time"
+    r"|response\s+time"
+    r"|time\s*out"
+    r"|time\s*stamp"
+    r"|time\s+base[d]?"
+    r"|time\s+series"
+    r"|time\s+delay"
+    r"|time\s+zone"
+    r"|time\s+limit"
+    r"|time\s+frame"
+    r"|time\s+line"
+    r"|time\s+step"
+    r"|time\s+slot"
+    r"|start\s+time"
+    r"|end\s+time"
+    r"|execution\s+time"
+    r"|processing\s+time"
+    r"|at\s+runtime"
+    r")\b",
+    re.IGNORECASE,
+)
+
+_TIME_INTENT_P = [
+    r"\bwhat(?:'s| is)\s+the\s+(time|date|day)\b",
+    r"\bwhat\s+(time|day|date)\s+is\s+it\b",
+    r"\btell\s+me\s+the\s+(time|date|day)\b",
+    r"\bcan\s+you\s+tell\s+me\s+the\s+(time|date|day)\b",
+    r"\bthe\s+time\s+please\b",
+    r"\btoday(?:'s)?\s+date\b",
+    r"\bwhat\s+day\b",
+    r"\bright\s+now\b.*\btime\b",
+    r"\btime\b.*\bright\s+now\b",
+    r"\btime\s+is\s+it\b",
+    r"\bwhat\s+time\s+it\s+is\b",
+    r"\bknow\s+what\s+time\b",
+    r"\bknow\s+the\s+(time|date|day)\b",
+    r"\bgot\s+the\s+time\b",
+    r"\bcurrent\s+(time|date|day)\b",
+    r"\bwhat(?:'s| is)\s+today\b",
+    r"\bwhat\s+is\s+the\s+current\s+time\b",
+]
+
+def _is_time_of_day_intent(text: str) -> bool:
+    """Return True only when the user is asking for the current clock time, date, or day."""
+    t = text.lower().strip()
+    # Block known technical time contexts before pattern-matching
+    if _TIME_TECH_BLOCK.search(t):
+        return False
+    return any(re.search(p, t, re.IGNORECASE) for p in _TIME_INTENT_P)
+
+
 def _agent_time(query: str) -> str:
     from datetime import datetime
     now = datetime.now()
@@ -470,7 +527,7 @@ def _agent_time(query: str) -> str:
     # "Friday the?" — follow-up asking for the ordinal
     if re.search(r"^\s*(?:mon|tues|wednes|thurs|fri|satur|sun)day\s+the\??\s*$", q):
         return f"{day_ord}."
-    wants_time = bool(re.search(r"\btime\b", q))
+    wants_time = bool(re.search(r"\btime\b", q)) and _is_time_of_day_intent(q)
     wants_date = bool(re.search(r"\bdate\b", q))
     wants_day  = bool(re.search(r"\bday\b", q))
     if wants_time and (wants_date or wants_day):
@@ -1649,7 +1706,7 @@ def enrich_from_plan(
         r"\bgot\s+the\s+time\b",
         r"\bcurrent\s+(time|date|day)\b",
     ]
-    if any(re.search(p, user_input, re.IGNORECASE) for p in _TIME_FAST_P):
+    if any(re.search(p, user_input, re.IGNORECASE) for p in _TIME_FAST_P) and _is_time_of_day_intent(user_input):
         try:
             _time_data = _agent_time(user_input)
             if _time_data:
@@ -1741,6 +1798,26 @@ def enrich_from_plan(
                     continue
             except Exception as _ti_err:
                 _logger.warning("WO-CAP-COG-003: timer intent check failed: %s", _ti_err)
+
+        # WO-CAP-COG-004: time agent requires genuine time-of-day intent — strip technical contexts
+        if ag_name == "time":
+            try:
+                _time_query = ag_query or user_input
+                if not _is_time_of_day_intent(_time_query):
+                    _logger.info(
+                        "WO-CAP-COG-004: time STRIPPED — no time-of-day intent in query %r",
+                        _time_query[:80],
+                    )
+                    if _current_trace is not None:
+                        _current_trace.capabilities_stripped.append(CapabilityRecord(
+                            capability="time",
+                            status="STRIPPED_NO_TIME_INTENT",
+                            authority="RUNTIME_VERIFIED",
+                            query=_time_query[:200],
+                        ))
+                    continue
+            except Exception as _toi_err:
+                _logger.warning("WO-CAP-COG-004: time intent check failed: %s", _toi_err)
 
         ag_fn = _AGENTS.get(ag_name)
         if ag_fn is None:
