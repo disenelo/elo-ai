@@ -89,6 +89,10 @@ _logger.propagate = False
 _last_agent:   Optional[str] = None   # e.g. "weather", "wikipedia"
 _last_arg:     Optional[str] = None   # e.g. "London", "black holes"
 _last_weather_condition: str = ""    # WO-058: last fetched condition, published to blender_state.json
+_last_direct_result: Optional[str] = None  # set when a DIRECT_RETURN_AGENT fires; caller skips LLM
+
+# Agents whose output is factual and deterministic — LLM must not rewrite these.
+_DIRECT_RETURN_AGENTS: frozenset = frozenset({"time", "calculator", "timer"})
 
 # ── WO-005: per-turn ExecutionTrace ───────────────────────────────────────────
 _current_trace: Optional[ExecutionTrace] = None
@@ -104,6 +108,15 @@ def begin_trace(turn_id: str, session_id: str) -> ExecutionTrace:
 def get_trace() -> Optional[ExecutionTrace]:
     """WO-005: return the current turn's ExecutionTrace (None if begin_trace not called yet)."""
     return _current_trace
+
+
+def get_direct_result() -> Optional[str]:
+    """Return the direct result from a DIRECT_RETURN_AGENT, or None if no such agent ran.
+
+    Caller (server.py) checks this after enrich_from_plan. If truthy, skip the LLM and
+    use this string as the response. Resets to None at the start of each enrich_from_plan call.
+    """
+    return _last_direct_result
 
 
 def _trace_executed(capability: str, query: str = "", result_summary: str = "") -> None:
@@ -368,7 +381,13 @@ _INTENT_MAP = [
         r"\btoday(?:'s)?\s+date\b",
         r"\bwhat\s+day\b",
         r"\bright now\b.*\btime\b",
+        r"\btime\b.*\bright now\b",
         r"\btime\s+is\s+it\b",
+        r"\bwhat\s+time\s+it\s+is\b",
+        r"\bknow\s+what\s+time\b",
+        r"\bknow\s+the\s+(time|date|day)\b",
+        r"\bgot\s+the\s+time\b",
+        r"\bcurrent\s+(time|date|day)\b",
     ]),
     ("weather", [
         r"\bweather\b",
@@ -487,16 +506,25 @@ def _agent_calculator(query: str) -> str:
                 raise ValueError("unsupported op")
             return op(_safe_eval(node.operand))
         raise ValueError("unsupported node")
-    # extract expression from query
-    match = re.search(r"[\d\(\)\+\-\*\/\.\^ ]+", query)
+    # normalise word operators → symbols before extraction
+    q = re.sub(r'\bdivided\s+by\b', '/', query, flags=re.IGNORECASE)
+    q = re.sub(r'\btimes\b',        '*', q,     flags=re.IGNORECASE)
+    q = re.sub(r'\bplus\b',         '+', q,     flags=re.IGNORECASE)
+    q = re.sub(r'\bminus\b',        '-', q,     flags=re.IGNORECASE)
+    q = re.sub(r'(?<=\d)\s*[xX]\s*(?=\d)', '*', q)  # "5 x 5" → "5 * 5"
+    # extract arithmetic expression from normalised query
+    match = re.search(r"[\d\(\)\+\-\*\/\.\^ ]+", q)
     if not match:
         raise ValueError("no expression found")
     expr = match.group(0).strip().replace("^", "**")
+    if not expr or not re.search(r'\d', expr):
+        raise ValueError("no numeric expression found")
     tree = ast.parse(expr, mode="eval")
     result = _safe_eval(tree.body)
     if isinstance(result, float) and result.is_integer():
         result = int(result)
-    return f"{expr.replace('**', '^')} = {result}"
+    display = expr.replace('**', '^')
+    return f"{display} = {result}"
 
 
 def _cache_weather_condition(result_str: str) -> None:
@@ -859,6 +887,19 @@ def _agent_obsidian(query: str) -> str:
     return result
 
 
+# ── WO-WORLD-CREATE-WIRE-001: dispatch_create executor ────────────────────────
+
+def _agent_create(query: str) -> str:
+    """Routes WORLD_CREATE capability to dispatch_create(CREATE_FILE)."""
+    try:
+        from runtime.capability_registry import dispatch_create
+        result = dispatch_create(query, sub_capability="CREATE_FILE")
+        return result.get("notification", "")
+    except Exception as _e:
+        _logger.warning("_agent_create FAILED: %s", _e)
+        return ""
+
+
 # ── agent registry ─────────────────────────────────────────────────────────────
 
 _AGENTS = {
@@ -883,6 +924,7 @@ _AGENTS = {
     "notes":       _agent_notes,
     "messages":    _agent_messages,
     "truth_sync":  _agent_truth_sync,
+    "create":      _agent_create,       # WO-WORLD-CREATE-WIRE-001
 }
 
 # agents that accept a direct subject string for follow-up re-runs
@@ -915,6 +957,7 @@ _ROUTER_TO_CAP_ID: dict[str, str] = {
     "messages":         "messages",
     "truth_sync":       "truth_sync",
     "wikipedia":        "wikipedia",
+    "create":           "WORLD_CREATE",  # WO-WORLD-CREATE-WIRE-001
 }
 
 
@@ -1089,15 +1132,23 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     """
     _lower = user_input.lower()
 
+    # WO-CORE-REPAIR-P0-001: if the world-knowledge gate already injected a
+    # [WORLD_KNOWLEDGE] block into user_input (happens before enrich_from_plan),
+    # the lore intercept is redundant AND harmful — it matches "eLo" mentions
+    # inside the injected context rather than the original query.  Skip it.
+    _has_wk = "[world_knowledge" in _lower
+
     # ── eLo universe lore intercept ──
     _LORE_INTERCEPTS = [
         (r"\bk-?7\b",        "K-7 is eLo's spirit animal companion — a shapeshifting entity that can take 7 different forms. K-7 travels with eLo through the universe."),
         (r"\bchunk\b",       "Chunk is eLo's friend — a modular character whose body transforms into different vehicles and structures to help navigate the world."),
         (r"\bdisenelo\b",    "DISENELO is David's creative brand — home of eLo the character, the game, the book, the robot, and a series of free maker tools."),
-        (r"\belo(?:\s+the\s+(?:character|book|game))?\b", "eLo is an original character — an adorable childhood imagination paired with adult reality. The book, game, robot, and art all radiate from eLo."),
+        # WO-CORE-REPAIR-P0-001: negative lookahead excludes "eLo Planet" / "eLo-Planet" so
+        # game-status queries ("what is the status of eLo Planet") don't hit character lore.
+        (r"\belo(?:\s+the\s+(?:character|book|game))?(?!\s*[-]?\s*planet)\b", "eLo is an original character — an adorable childhood imagination paired with adult reality. The book, game, robot, and art all radiate from eLo."),
     ]
     _LORE_TRIGGER = r"\b(?:what(?:'s| is)|who(?:'s| is)|tell\s+me\s+about|explain|describe)\b"
-    if re.search(_LORE_TRIGGER, _lower):
+    if not _has_wk and re.search(_LORE_TRIGGER, _lower):
         for _lore_pat, _lore_fact in _LORE_INTERCEPTS:
             if re.search(_lore_pat, _lower, re.IGNORECASE):
                 return f"[CONTEXT: {_lore_fact}]\n\n{user_input}", "lore"
@@ -1184,9 +1235,34 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
         except Exception as _e:
             _logger.debug("screen visibility (early) failed: %s", _e)
 
+    # ── Calculator — direct intercept (fires regardless of Executive) ──
+    # Patterns that indicate a clear arithmetic query. Must contain a digit AND
+    # at least one operator (word or symbol) so we don't grab "what is eLo?" etc.
+    _MATH_DIRECT_PATS = [
+        r"\bwhat(?:'s| is)\s+\(?\d[\d\s]*(?:times|plus|minus|divided\s+by|[xX*+\-\/^])\s*[\d\(]",
+        r"\bhow\s+much\s+is\s+\(?\d[\d\s]*(?:times|plus|minus|divided\s+by|[xX*+\-\/^])\s*[\d\(]",
+        r"\bcalculate\s+\(?\d",
+        r"\b\d[\d\s]*(?:times|plus|minus|divided\s+by)\s+\d",
+        r"\b\d+\s*[\*\/\^]\s*\d",   # symbolic * / ^ (not + or - to avoid "I need 5 - 3 items")
+    ]
+    if any(re.search(p, _lower) for p in _MATH_DIRECT_PATS):
+        try:
+            global _last_direct_result
+            _calc_result = _agent_calculator(user_input)
+            _last_direct_result = _calc_result
+            return _calc_result, "calculator"
+        except Exception as _ce:
+            _logger.debug("math direct intercept failed: %s", _ce)
+
     # ── System agent (OS control, gated confirmations) ──
     sys_ctx = _check_system(user_input)
     if sys_ctx:
+        if sys_ctx.startswith("[SYSTEM: ") and sys_ctx.endswith("]"):
+            # Safe action already executed — bypass LLM, return clean result
+            clean_result = sys_ctx[9:-1].strip()
+            _last_direct_result = clean_result
+            return clean_result, "system"
+        # Confirmation or error — pass to LLM with context for natural phrasing
         return f"{sys_ctx}\n\n{user_input}", "system"
 
     # ── Location setting — direct user configuration action ──
@@ -1198,6 +1274,31 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
             f"Acknowledge warmly and confirm you'll use {new_city} for weather from now on.]\n\n{user_input}",
             "location_set",
         )
+
+    # ── Weather — intercept before capability path to prevent screen_visibility bleed ──
+    # When weather is asked but no API/location is available, return an honest
+    # "no data" context rather than letting the pipeline fall through to screen_visibility.
+    _WEATHER_DIRECT_PATS = [
+        r"\bweather\b",
+        r"\bforecast\b",
+        r"\btemperature\s+(?:like|today|outside|right\s+now)\b",
+        r"\bwhat.s\s+it\s+like\s+outside\b",
+        r"\brain(?:ing)?\s+outside\b",
+    ]
+    if any(re.search(p, _lower) for p in _WEATHER_DIRECT_PATS):
+        try:
+            _wx = _agent_weather(user_input)
+            if _wx and "No location saved" not in _wx:
+                return f"[CONTEXT: {_wx}]\n\n{user_input}", "weather"
+            # No location set or no weather API — honest fallback (D7-compliant)
+            return (
+                "[CONTEXT: No weather data available — no location saved and no weather API "
+                "is connected. Tell the user honestly that you can't check the weather, and "
+                "if they want to enable it they can tell you their city (e.g. 'I\\'m in London').]\n\n"
+                + user_input
+            ), "weather"
+        except Exception as _we:
+            _logger.debug("weather direct intercept failed: %s", _we)
 
     return None
 
@@ -1326,6 +1427,13 @@ def enrich(user_input: str) -> Tuple[str, Optional[str]]:
                     _cap_id = _ROUTER_TO_CAP_ID.get(_ag_name)
                     if _cap_id and _cap_id not in _enabled_cap_ids:
                         continue
+                # WO-CAP-COG-003: timer requires genuine timer intent
+                if _ag_name == "timer" and not is_timer_intent(_ag_query or user_input):
+                    _logger.info(
+                        "WO-CAP-COG-003: pipeline timer STRIPPED — no genuine timer intent in %r",
+                        (_ag_query or user_input)[:80],
+                    )
+                    continue
                 _ag_fn = _AGENTS.get(_ag_name)
                 if _ag_fn:
                     try:
@@ -1510,11 +1618,46 @@ def enrich_from_plan(
       5. Executor and reason recorded in the return value (executor name) and
          logs (route source, capability, why).
     """
+    # Reset per-turn direct result before any dispatch.
+    global _last_direct_result
+    _last_direct_result = None
+
     # 1. Direct intercepts (WO-122) — always fire regardless of Executive choice.
     _di = _direct_intercepts(user_input)
     if _di is not None:
         _logger.info("WO-122 ROUTE: direct intercept fired — executor=%r", _di[1])
         return _di
+
+    # 1b. Current-time fast path — must live here too because server.py calls
+    #     enrich_from_plan, not enrich. Without this, "What's the time?" falls
+    #     through to the Executive's capability selection which may pick timer.
+    _TIME_FAST_P = [
+        r"\bcan\s+you\s+tell\s+me\s+the\s+(time|date|day)\b",
+        r"\btell\s+me\s+the\s+(time|date|day)\b",
+        r"\bthe\s+time\s+please\b",
+        r"\bwhat(?:'s| is)\s+the\s+(time|date|day)\b",
+        r"\bwhat\s+(time|day|date)\s+is\s+it\b",
+        r"\btime\s+is\s+it\b",
+        r"\bwhat.s\s+day\s+is\s+it\b",
+        r"\bwhat\s+day\s+is\s+it\s+today\b",
+        # FIX 5: intent variants — "do you actually know what time it is right now"
+        r"\bwhat\s+time\s+it\s+is\b",
+        r"\btime\b.*\bright now\b",
+        r"\bright now\b.*\btime\b",
+        r"\bknow\s+what\s+time\b",
+        r"\bknow\s+the\s+(time|date|day)\b",
+        r"\bgot\s+the\s+time\b",
+        r"\bcurrent\s+(time|date|day)\b",
+    ]
+    if any(re.search(p, user_input, re.IGNORECASE) for p in _TIME_FAST_P):
+        try:
+            _time_data = _agent_time(user_input)
+            if _time_data:
+                _last_direct_result = _time_data
+                _logger.info("WO-122 ROUTE: time fast path fired in enrich_from_plan")
+                return _time_data, "time"
+        except Exception:
+            pass
 
     # 2. Executive selected no capability → do NOT fall back to keyword dispatch.
     #    Two deciders is the fault, not the fallback (WO-122).
@@ -1579,6 +1722,26 @@ def enrich_from_plan(
             except Exception as _si_err:
                 _logger.warning("WO-RS-004: save-intent check failed: %s", _si_err)
 
+        # WO-CAP-COG-003: timer requires genuine timer intent — strip emotional metaphors
+        if ag_name == "timer":
+            try:
+                _timer_query = ag_query or user_input
+                if not is_timer_intent(_timer_query):
+                    _logger.info(
+                        "WO-CAP-COG-003: timer STRIPPED — no genuine timer intent in query %r",
+                        _timer_query[:80],
+                    )
+                    if _current_trace is not None:
+                        _current_trace.capabilities_stripped.append(CapabilityRecord(
+                            capability="timer",
+                            status="STRIPPED_NO_TIMER_INTENT",
+                            authority="RUNTIME_VERIFIED",
+                            query=_timer_query[:200],
+                        ))
+                    continue
+            except Exception as _ti_err:
+                _logger.warning("WO-CAP-COG-003: timer intent check failed: %s", _ti_err)
+
         ag_fn = _AGENTS.get(ag_name)
         if ag_fn is None:
             # Unknown capability — LOUD, never silently fall through.
@@ -1635,8 +1798,26 @@ def enrich_from_plan(
         global _last_agent, _last_arg
         _last_agent = last_used
         _last_arg = user_input
+        # Verified utilities return their result directly — no LLM rewriting.
+        # The LLM cannot improve a clock reading or a calculated number.
+        # Exception: if Executive misclassified a non-time query as "time"
+        # (e.g. "How do you record your day?"), pass the result as context
+        # for the LLM instead of short-circuiting the pipeline.
+        _is_genuine_direct = (
+            last_used != "time"
+            or any(re.search(p, user_input, re.IGNORECASE) for p in _TIME_FAST_P)
+        )
+        if last_used in _DIRECT_RETURN_AGENTS and _is_genuine_direct:
+            _last_direct_result = context_parts[0]
+            return context_parts[0], last_used
+        _last_direct_result = None
         combined = " | ".join(context_parts)
-        return f"[CONTEXT: {combined}]\n\n{user_input}", last_used
+        # Put the question FIRST so Ollama's generation starts from the task,
+        # then provide capability data as background — prevents verbatim echo.
+        return (
+            f"{user_input}\n\n"
+            f"[Background — use to inform your response, do not repeat verbatim: {combined}]"
+        ), last_used
 
     # Executive selected capabilities but none produced data — no fallback.
     _logger.info(

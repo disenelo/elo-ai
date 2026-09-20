@@ -120,7 +120,7 @@ Board reads source §2 verbatim. Board reads evidence. For each line of the sour
 ## WO-CAP-COG-003 — CONVERSATIONAL LANGUAGE
 
 **Source:** [SPEC: SOURCE_2026-09-19_eLo_COGNITIVE_CAPABILITY_MAP.md §3]
-**Status:** TESTED — ❌ FAIL (2026-09-20). Evidence: `engineering/evidence/CAP/COG/WO-CAP-COG-EVIDENCE-2026-09-20.md`. Invents robot arm context not established in conversation. Not BOARD VERIFIED.
+**Status:** LIVE VERIFIED — 14/21 PASS · 7/21 PARTIAL · 0/21 FAIL (2026-09-20). Evidence: `engineering/evidence/CAP/COG/WO-CAP-COG-003_evidence.md`. Key §3 example (same word / different intent — A1 timer request ✅, A2 emotional metaphor ✅) PASSES. is_timer_intent() guard added at both dispatch paths in tool_router.py. All 19 speech act types tested; 0 routing failures. PARTIAL items are response-quality (hallucination, drift), not dispatch-level. Not BOARD VERIFIED.
 **Gate:** P0. David L3 gate override 2026-09-20.
 
 **VERBATIM SOURCE — §3:**
