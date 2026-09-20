@@ -111,11 +111,12 @@ code should be understood as structured meaning, not merely text.
 
 ## Systemic issues uncovered during re-score
 
-**1. FRUSTRATION SIGNAL misfires on neutral code inputs**
+**1. FRUSTRATION SIGNAL misfires on neutral code inputs — FIXED `755d9a9` 2026-09-20**
 - C4 (C# coroutine): "Frustration's gonna show up in the typing" — no frustrated input
 - C6 (Rust borrow code): "That's moving" — no emotional input
 - C23 (pseudocode): "User's frustration... elongated letters and garbled typing" — no elongated letters or garbled typing
-- The detector is triggering on code density, structural patterns, or something in the code syntax. This is a SYSTEMIC BUG that must be addressed before COG-004 can be re-run.
+- Root cause: `_GARBLE_RE = r"[bcdfghjklmnpqrstvwxyz]{3,}"` matched 3+ consecutive consonants in code identifier names after lowercasing. `CanvasGroup` → "sgr", `cg.alpha` → "lph", `argmax` → "rgm", `threshold` → "thr". Any code snippet with two identifier tokens triggers `_n_garbled >= 2`.
+- Fix: Added `_CODE_SIGNAL_RE` guard at both frustration-check occurrences in `runtime/backend_router.py`. Detects braces/semicolons, arrow operators, compound operators, hex literals, function declaration keywords, pseudocode keywords. If code markers present → `_is_frustrated_typos = False`. Genuine frustrated text (no code markers) still detected correctly.
 
 **2. Context contamination C8 → C10, C12**
 - C10 (YAML): hallucinated CSS connection from C8
@@ -131,7 +132,7 @@ code should be understood as structured meaning, not merely text.
 
 ## Re-run requirements before COG-004 can reach LIVE VERIFIED
 
-1. Fix FRUSTRATION SIGNAL misfire on neutral code (separate WO or sub-task)
+1. ~~Fix FRUSTRATION SIGNAL misfire on neutral code~~ **DONE `755d9a9`**
 2. Design C8 with both HTML and CSS (e.g. `<div class="elo-bubble">` + corresponding CSS)
 3. Run clean server session — cold start, no cross-turn contamination
 4. Longer prompts for C13/C15/C19 to force substantive responses

@@ -4,7 +4,7 @@
 **WO:** WO-CAP-COG-004
 **Source:** `docs/architecture/_intake/SOURCE_2026-09-19_eLo_KEY_CAPABILITY_MAP.md §4`
 **Seat:** Builder
-**Status:** REVERTED — 5/26 PASS · 21/26 FAIL (PARTIAL = FAIL applied 2026-09-20)
+**Status:** REVERTED — 5/26 PASS · 21/26 FAIL (PARTIAL = FAIL applied 2026-09-20) · FRUSTRATION SIGNAL fix committed `755d9a9` · awaiting re-run
 **Original filed (incorrect):** 8/26 PASS · 12/26 PARTIAL · 6/26 FAIL
 
 ---
