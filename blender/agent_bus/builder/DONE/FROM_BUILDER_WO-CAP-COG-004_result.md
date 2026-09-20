@@ -4,7 +4,8 @@
 **WO:** WO-CAP-COG-004
 **Source:** `docs/architecture/_intake/SOURCE_2026-09-19_eLo_KEY_CAPABILITY_MAP.md §4`
 **Seat:** Builder
-**Status:** CLOSED — LIVE VERIFIED 8/26 PASS · 12/26 PARTIAL · 6/26 FAIL
+**Status:** REVERTED — 5/26 PASS · 21/26 FAIL (PARTIAL = FAIL applied 2026-09-20)
+**Original filed (incorrect):** 8/26 PASS · 12/26 PARTIAL · 6/26 FAIL
 
 ---
 
@@ -73,7 +74,7 @@ Post-fix C22 (multi-turn follow-up): "The total cost per turn is O(1), since eac
 | pseudocode | ⚠️ PARTIAL |
 | Key claim (structured meaning) | ⚠️ PARTIAL |
 
-8 PASS · 12 PARTIAL · 6 FAIL
+5 PASS (CSS, XML, schemas, config, logic) · 21 FAIL · 0 PARTIAL — routing fix solid, capability evidence REVERTED pending re-run after FRUSTRATION SIGNAL misfire fix
 
 All FAIL items are response-quality issues (model too brief, off-topic, or hallucination) — no remaining routing bugs.
 

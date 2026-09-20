@@ -165,7 +165,7 @@ Board reads source §3 verbatim. Board reads evidence. For each line of the sour
 ## WO-CAP-COG-004 — FORMAL LANGUAGES
 
 **Source:** [SPEC: SOURCE_2026-09-19_eLo_COGNITIVE_CAPABILITY_MAP.md §4]
-**Status:** LIVE VERIFIED — 8/26 PASS · 12/26 PARTIAL · 6/26 FAIL (2026-09-20). Infrastructure routing bug fixed: time agent no longer intercepts algorithm queries ("time complexity", "at runtime"). Genuine time queries intact. All FAIL items are model-quality (brief/off-topic responses), not routing failures. Evidence: `engineering/evidence/CAP/COG/WO-CAP-COG-004_evidence.md`. Awaiting David L3 acceptance.
+**Status:** TESTED — REVERTED from LIVE VERIFIED (2026-09-20). Routing fix (time agent) is solid and committed. Capability evidence re-scored applying PARTIAL = FAIL: 5/26 PASS (CSS, XML, schemas, config, logic) · 21/26 FAIL. Critical systemic issues found: (1) FRUSTRATION SIGNAL misfires on neutral code inputs (C4, C6, C23 — no frustrated text in prompts); (2) context contamination C8→C10/C12 (CSS hallucinated into YAML/Markdown responses); (3) HTML never tested (C8 was CSS-only). Re-run required after FRUSTRATION SIGNAL misfire fix. Evidence: `engineering/evidence/CAP/COG/WO-CAP-COG-004_evidence.md`.
 **Gate:** P0. David L3 gate override 2026-09-20.
 
 **VERBATIM SOURCE — §4:**
