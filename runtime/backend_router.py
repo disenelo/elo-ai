@@ -1084,7 +1084,28 @@ def _ollama_stream(
     _GARBLE_RE = re.compile(r"[bcdfghjklmnpqrstvwxyz]{3,}|[aeiou]{3,}")
     _n_elongated = sum(1 for w in _words_stripped if _ELONGATION_RE.search(w))
     _n_garbled = sum(1 for w in _words_stripped if _GARBLE_RE.search(w))
-    _is_frustrated_typos = len(_words_stripped) >= 4 and (_n_elongated >= 1 or _n_garbled >= 2)
+    # Code-content guard: code identifiers contain 3-consonant clusters (e.g.
+    # CanvasGroup→"sgr", alpha→"lph", argmax→"rgm", threshold→"thr") and hex
+    # values contain repeated chars (0x000000) that trip the garble/elongation
+    # checks on completely neutral inputs. Suppress frustrated-typos when the
+    # input contains clear code markers — these are identifier patterns, not
+    # angry keyboard-mashing. COG-004 root cause fix 2026-09-20.
+    _CODE_SIGNAL_RE = re.compile(
+        r"[{};\[\]]"            # braces, brackets, semicolons
+        r"|=>|->"               # arrow operators (JS/TS/Rust/C)
+        r"|::"                  # namespace separator (C++, Rust)
+        r"|\+=|-=|\*=|/=|%="   # compound assignment operators
+        r"|0x[0-9a-fA-F]+"     # hex literals (0x000000 triggers elongation)
+        r"|\bdef\s+\w|\bfn\s+\w|\bfunc\s+\w|\bvoid\s+\w|\bclass\s+\w"
+        r"|\bFOR\s+each\b|\bWHILE\s+\w|\bIF\s+\w",
+        re.IGNORECASE,
+    )
+    _input_has_code = bool(_CODE_SIGNAL_RE.search(user_input))
+    _is_frustrated_typos = (
+        not _input_has_code
+        and len(_words_stripped) >= 4
+        and (_n_elongated >= 1 or _n_garbled >= 2)
+    )
     # Extract grounding has_subject (Subject: line present, not just the block header)
     _grounding_has_subject = any(
         ln.startswith("Subject:") for ln in _grounding_block.split("\n")
@@ -1624,7 +1645,23 @@ def route(
     # garbled: word has consonant clusters typical of mashing (hthis, everytihing, dosnt, werk)
     _rt_GARBLE_RE = re.compile(r"[bcdfghjklmnpqrstvwxyz]{3,}|[aeiou]{3,}")
     _rt_garbled = sum(1 for w in _rt_words if _rt_GARBLE_RE.search(w))
-    _rt_is_frustrated_typos = len(_rt_words) >= 4 and (_rt_elongated >= 1 or _rt_garbled >= 2)
+    # Code-content guard: same root cause as primary path — identifier names and hex
+    # values trigger the garble/elongation checks on clean technical input.
+    # COG-004 root cause fix 2026-09-20.
+    _rt_CODE_SIGNAL_RE = re.compile(
+        r"[{};\[\]]|=>|->|::"
+        r"|\+=|-=|\*=|/=|%="
+        r"|0x[0-9a-fA-F]+"
+        r"|\bdef\s+\w|\bfn\s+\w|\bfunc\s+\w|\bvoid\s+\w|\bclass\s+\w"
+        r"|\bFOR\s+each\b|\bWHILE\s+\w|\bIF\s+\w",
+        re.IGNORECASE,
+    )
+    _rt_input_has_code = bool(_rt_CODE_SIGNAL_RE.search(user_input))
+    _rt_is_frustrated_typos = (
+        not _rt_input_has_code
+        and len(_rt_words) >= 4
+        and (_rt_elongated >= 1 or _rt_garbled >= 2)
+    )
     # Sarcasm / irony: positive words + negative context in the same input
     _rt_SARCASM_POS_RE = re.compile(
         r"\b(oh\s+)?(brilliant|fantastic|great|wonderful|amazing|perfect|excellent|magnificent"
