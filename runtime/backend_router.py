@@ -1153,10 +1153,17 @@ def _ollama_stream(
     _SHELL_SIGNAL_RE = re.compile(
         r"(git\s+\w+|ps\s+aux|grep\s+\w+|awk\s+|xargs\s+|kill\s+-|chmod\s+|sudo\s+|\|\s*\w+|--\w+-\w+|--\w+\s+--\w+)"
     )
+    # COG-004 C20: boolean/logic expressions not matched by above — AND/OR/NOT/XOR in
+    # non-sentence context (no verb + subject structure, parentheses or caps pattern)
+    _LOGIC_SIGNAL_RE = re.compile(
+        r"\b(AND|OR|NOT|XOR|IMPLIES|NAND|NOR)\b.*\b(AND|OR|NOT|XOR|IMPLIES|NAND|NOR)\b",
+        re.IGNORECASE,
+    )
     _input_is_technical = (
         _input_has_code
         or bool(_SQL_SIGNAL_RE.search(user_input))
         or bool(_SHELL_SIGNAL_RE.search(user_input))
+        or bool(_LOGIC_SIGNAL_RE.search(user_input))
     )
     if _input_is_technical and "?" not in user_input:
         _conditioned_system += (
@@ -1787,10 +1794,15 @@ def route(
     _rt_SHELL_SIGNAL_RE = re.compile(
         r"(git\s+\w+|ps\s+aux|grep\s+\w+|awk\s+|xargs\s+|kill\s+-|chmod\s+|sudo\s+|\|\s*\w+|--\w+-\w+|--\w+\s+--\w+)"
     )
+    _rt_LOGIC_SIGNAL_RE = re.compile(
+        r"\b(AND|OR|NOT|XOR|IMPLIES|NAND|NOR)\b.*\b(AND|OR|NOT|XOR|IMPLIES|NAND|NOR)\b",
+        re.IGNORECASE,
+    )
     _rt_input_is_technical = (
         _rt_input_has_code
         or bool(_rt_SQL_SIGNAL_RE.search(user_input))
         or bool(_rt_SHELL_SIGNAL_RE.search(user_input))
+        or bool(_rt_LOGIC_SIGNAL_RE.search(user_input))
     )
     if _rt_input_is_technical and "?" not in user_input:
         system_prompt += (
