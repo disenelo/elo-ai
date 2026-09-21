@@ -1016,9 +1016,13 @@ def _ollama_stream(
         "Not an AI assistant. Not a tool. You have your own view of the world. "
         "Speak in 1-2 direct sentences. React to the substance of what was said. "
         "Never stall or defer. If someone implies you are generic AI, disagree clearly. "
+        "If the input is code, SQL, a shell command, a CLI instruction, or any technical notation — "
+        "treat it as a technical question. Explain, describe, or analyze what it does. "
+        "Never treat code or commands as a personal data request. "
         "If David asks for a specific personal fact (name of a person, pet, place, date, number) "
         "that is NOT stated in [WHO YOU ARE WITH] — say 'I don't have that about you' or "
-        "'I don't have that stored.' Never invent personal facts about David.\n"
+        "'I don't have that stored.' Never invent personal facts about David. "
+        "This personal-fact rule applies only to natural-language questions — NOT to code or technical input.\n"
     )
     _behavior_rules = ""  # rules folded into anchor for 8b compatibility
     # Extract the grounding block as a single unit (it spans multiple \n\n-separated paragraphs),
@@ -1137,6 +1141,29 @@ def _ollama_stream(
         _sections.append(_grounding_block)
     _sections.append(_final_respond)
     _conditioned_system = "\n\n".join(_sections)
+
+    # COG-004 TECHNICAL INPUT SIGNAL: SQL, shell commands, and CLI instructions were
+    # misfiring on the personal-data rule because the 8b model confuses "SELECT FROM users"
+    # with a personal data request about David. Detect extended code markers and inject
+    # a clarifying directive. _input_has_code already covers braces/operators (755d9a9).
+    _SQL_SIGNAL_RE = re.compile(
+        r"\b(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|JOIN|GROUP\s+BY|ORDER\s+BY|CREATE|DROP|ALTER)\b",
+        re.IGNORECASE,
+    )
+    _SHELL_SIGNAL_RE = re.compile(
+        r"(git\s+\w+|ps\s+aux|grep\s+\w+|awk\s+|xargs\s+|kill\s+-|chmod\s+|sudo\s+|\|\s*\w+|--\w+-\w+|--\w+\s+--\w+)"
+    )
+    _input_is_technical = (
+        _input_has_code
+        or bool(_SQL_SIGNAL_RE.search(user_input))
+        or bool(_SHELL_SIGNAL_RE.search(user_input))
+    )
+    if _input_is_technical and "?" not in user_input:
+        _conditioned_system += (
+            "\n\nTECHNICAL INPUT — the input is code, SQL, a shell command, or technical notation. "
+            "This is NOT a personal data question. Explain, describe, or analyze what it does technically. "
+            "Focus on what the code or command accomplishes."
+        )
 
     # KEY-001 fixes: wire discourse signal detection into the conditioned system.
     # Short affirmation / affirmation-plus-ref ("yeah that approach") — discourse marker.
@@ -1751,6 +1778,25 @@ def route(
             "The situation is bad, frustrating, or disappointing — not good. "
             "Respond to the ACTUAL negative situation, not the surface positive words. "
             "Acknowledge the frustration directly. Keep it short. Do not take the positive words at face value."
+        )
+    # COG-004: technical input signal (streaming path mirrors primary path).
+    _rt_SQL_SIGNAL_RE = re.compile(
+        r"\b(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|JOIN|GROUP\s+BY|ORDER\s+BY|CREATE|DROP|ALTER)\b",
+        re.IGNORECASE,
+    )
+    _rt_SHELL_SIGNAL_RE = re.compile(
+        r"(git\s+\w+|ps\s+aux|grep\s+\w+|awk\s+|xargs\s+|kill\s+-|chmod\s+|sudo\s+|\|\s*\w+|--\w+-\w+|--\w+\s+--\w+)"
+    )
+    _rt_input_is_technical = (
+        _rt_input_has_code
+        or bool(_rt_SQL_SIGNAL_RE.search(user_input))
+        or bool(_rt_SHELL_SIGNAL_RE.search(user_input))
+    )
+    if _rt_input_is_technical and "?" not in user_input:
+        system_prompt += (
+            "\n\nTECHNICAL INPUT — the input is code, SQL, a shell command, or technical notation. "
+            "This is NOT a personal data question. Explain, describe, or analyze what it does technically. "
+            "Focus on what the code or command accomplishes."
         )
     # Technical spec and poetic signals — mirrors _ollama_stream() detection
     _rt_TECH_SPEC_RE = re.compile(
