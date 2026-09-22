@@ -565,10 +565,16 @@ def _agent_calculator(query: str) -> str:
         raise ValueError("unsupported node")
     # normalise word operators → symbols before extraction
     q = re.sub(r'\bdivided\s+by\b', '/', query, flags=re.IGNORECASE)
+    q = re.sub(r'\bmultiplied\s+by\b', '*', q, flags=re.IGNORECASE)
     q = re.sub(r'\btimes\b',        '*', q,     flags=re.IGNORECASE)
     q = re.sub(r'\bplus\b',         '+', q,     flags=re.IGNORECASE)
     q = re.sub(r'\bminus\b',        '-', q,     flags=re.IGNORECASE)
+    q = re.sub(r'[×✕]', '*', q)  # unicode multiply signs
     q = re.sub(r'(?<=\d)\s*[xX]\s*(?=\d)', '*', q)  # "5 x 5" → "5 * 5"
+    # strip leading arithmetic verb ("Add 3/8 and 5/12" → "3/8 and 5/12")
+    q = re.sub(r'^\s*(add|subtract|find|calculate|compute|what\s+is)\s+', '', q, flags=re.IGNORECASE)
+    # "X and Y" → "X + Y" for additive phrasing
+    q = re.sub(r'\s+and\s+', ' + ', q, flags=re.IGNORECASE)
     # extract arithmetic expression from normalised query
     match = re.search(r"[\d\(\)\+\-\*\/\.\^ ]+", q)
     if not match:

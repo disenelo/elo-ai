@@ -1101,7 +1101,22 @@ def _ollama_stream(
         r"|\+=|-=|\*=|/=|%="   # compound assignment operators
         r"|0x[0-9a-fA-F]+"     # hex literals (0x000000 triggers elongation)
         r"|\bdef\s+\w|\bfn\s+\w|\bfunc\s+\w|\bvoid\s+\w|\bclass\s+\w"
-        r"|\bFOR\s+each\b|\bWHILE\s+\w|\bIF\s+\w",
+        r"|\bFOR\s+each\b|\bWHILE\s+\w|\bIF\s+\w"
+        # COG-004 expanded detection — covers formal languages missed above
+        r"|&&|\|\|"                       # C-style boolean AND/OR (C20 logic: isGrounded && ...)
+        r"|<\w[\w-]*\s"                   # HTML/XML opening tag (C8 HTML, C11 XML)
+        r"|\bO\s*\(n\b"                   # Big-O notation (C19 math: O(n log n))
+        r"|[A-Z][A-Z0-9_]{3,}="          # ENV_VAR=value config pattern (C18 config)
+        r"|\^[a-zA-Z(]"                  # regex start anchor (C14 regex: ^idle)
+        r"|\\[dwsDWSbBnrtvf$]"            # regex escapes \d \w \s \D \W \S \$ etc.
+        r"|\bfloat\s+\w{2,}|\bint\s+\w{2,}|\bbool\s+\w{2,}"  # typed declarations (C4 C#)
+        r"|\brecursive(?:ly)?\b|\btraversal\b"                 # algorithm terms (C22)
+        r"|\bformal\s+languages?\b"                            # formal language meta (C25/C26)
+        r"|\btype\s+\w+\s*="                                   # TypeScript type alias (C3: type EloMode = ...)
+        r"|\binterface\s+\w+\s*\{"                             # TypeScript/Java interface
+        r"|POST\s+/\w|GET\s+/\w|PUT\s+/\w|DELETE\s+/\w"       # HTTP method + path (C16 APIs)
+        r"|HTTP/\d\.\d"                                        # HTTP version string
+        ,
         re.IGNORECASE,
     )
     _input_has_code = bool(_CODE_SIGNAL_RE.search(user_input))
@@ -1165,11 +1180,19 @@ def _ollama_stream(
         or bool(_SHELL_SIGNAL_RE.search(user_input))
         or bool(_LOGIC_SIGNAL_RE.search(user_input))
     )
-    if _input_is_technical and "?" not in user_input:
+    if _input_is_technical:
         _conditioned_system += (
-            "\n\nTECHNICAL INPUT — the input is code, SQL, a shell command, or technical notation. "
-            "This is NOT a personal data question. Explain, describe, or analyze what it does technically. "
-            "Focus on what the code or command accomplishes."
+            "\n\nTECHNICAL INPUT OVERRIDE — the input is a formal language construct "
+            "(code, SQL, shell command, regex, config, schema, pseudocode, or similar). "
+            "The 1-2 sentence limit does NOT apply here. "
+            "eLo reads formal languages fluently. "
+            f"EXPLAIN ONLY THIS SPECIFIC INPUT — disregard everything said in prior turns:\n{user_input}\n"
+            "Explain what the code, command, or construct does. "
+            "Do NOT begin with 'does the following:' or a numbered list. "
+            "Answer in direct prose sentences. "
+            "Do NOT deflect. Do NOT ask a question back. Do NOT respond with slang or casual filler. "
+            "Give a clear, direct technical explanation. "
+            "This is eLo demonstrating technical fluency, not casual conversation."
         )
 
     # KEY-001 fixes: wire discourse signal detection into the conditioned system.
@@ -1321,6 +1344,43 @@ def _ollama_stream(
             "Do NOT carry over conclusions, problems, or context from the previous topic. "
             "Do NOT invent prior history for the new topic — start fresh. "
             "If the new topic needs clarification, ask a single focused question about it."
+        )
+
+    # COG-005 Fix 1 + Fix 2: math query detection.
+    # Fix 1: inject computation directive so model doesn't stop at formula.
+    # Fix 2: prepend CURRENT QUESTION anchor to prevent contamination cascade from prior turn subject.
+    _MATH_QUERY_RE = re.compile(
+        r"(?:"
+        r"\d.*[+\-*/^×]"                          # digit + operator
+        r"|\bsolve\b|\bderive\b|\bintegrate\b"
+        r"|\bcalculate\b|\bcompute\b"
+        r"|\bwhat\s+is\b.*\d|\bhow\s+much\b.*\d"
+        r"|\bsum\s+of\b|\bmean\s+of\b|\baverage\s+of\b"
+        r"|\bprobability\b|\bfactorial\b|\bpermut|\bcombinati"
+        r"|\barea\s+of\b|\bvolume\s+of\b|\bdistance\s+between\b"
+        r"|\bderivative\s+of\b|\bintegral\s+of\b|\bstandard\s+deviation\b"
+        r"|\blog\s+base\b|\bexponent|\bfind\b.*\d"
+        r"|\bsin\b|\bcos\b|\btan\b"
+        r"|\bsequence\b.*\d|\bterms?\s+of\b"
+        r"|\bcompound\s+interest\b|\bsimple\s+interest\b"
+        r"|\bratio\b.*\d|\bfraction\b|\bpercentage\b|\bdiscount\b"
+        r")",
+        re.IGNORECASE,
+    )
+    _is_math_query = bool(_MATH_QUERY_RE.search(user_input))
+    if _is_math_query:
+        # Fix 2: per-turn subject anchor prevents prior-turn contamination cascade
+        _conditioned_system = (
+            f"CURRENT QUESTION: {user_input}\n\n"
+            + _conditioned_system
+        )
+        # Fix 1: computation directive — model must not stop at the formula
+        _conditioned_system += (
+            "\n\nMATH COMPUTATION DIRECTIVE — the user is asking a mathematics question. "
+            "ALWAYS compute the numerical result. "
+            "State the method or formula briefly, then calculate and give the actual number. "
+            "Do NOT stop at the formula alone. "
+            "Give a specific numerical answer."
         )
 
     # For farewell-trigger slang, rewrite the user message as a direct question so the
@@ -1687,7 +1747,21 @@ def route(
         r"|\+=|-=|\*=|/=|%="
         r"|0x[0-9a-fA-F]+"
         r"|\bdef\s+\w|\bfn\s+\w|\bfunc\s+\w|\bvoid\s+\w|\bclass\s+\w"
-        r"|\bFOR\s+each\b|\bWHILE\s+\w|\bIF\s+\w",
+        r"|\bFOR\s+each\b|\bWHILE\s+\w|\bIF\s+\w"
+        r"|&&|\|\|"
+        r"|<\w[\w-]*\s"
+        r"|\bO\s*\(n\b"
+        r"|[A-Z][A-Z0-9_]{3,}="
+        r"|\^[a-zA-Z(]"
+        r"|\\[dwsDWSbBnrtvf$]"
+        r"|\bfloat\s+\w{2,}|\bint\s+\w{2,}|\bbool\s+\w{2,}"
+        r"|\brecursive(?:ly)?\b|\btraversal\b"
+        r"|\bformal\s+languages?\b"
+        r"|\btype\s+\w+\s*="
+        r"|\binterface\s+\w+\s*\{"
+        r"|POST\s+/\w|GET\s+/\w|PUT\s+/\w|DELETE\s+/\w"
+        r"|HTTP/\d\.\d"
+        ,
         re.IGNORECASE,
     )
     _rt_input_has_code = bool(_rt_CODE_SIGNAL_RE.search(user_input))
@@ -1804,11 +1878,19 @@ def route(
         or bool(_rt_SHELL_SIGNAL_RE.search(user_input))
         or bool(_rt_LOGIC_SIGNAL_RE.search(user_input))
     )
-    if _rt_input_is_technical and "?" not in user_input:
+    if _rt_input_is_technical:
         system_prompt += (
-            "\n\nTECHNICAL INPUT — the input is code, SQL, a shell command, or technical notation. "
-            "This is NOT a personal data question. Explain, describe, or analyze what it does technically. "
-            "Focus on what the code or command accomplishes."
+            "\n\nTECHNICAL INPUT OVERRIDE — the input is a formal language construct "
+            "(code, SQL, shell command, regex, config, schema, pseudocode, or similar). "
+            "The 1-2 sentence limit does NOT apply here. "
+            "eLo reads formal languages fluently. "
+            f"EXPLAIN ONLY THIS SPECIFIC INPUT — disregard everything said in prior turns:\n{user_input}\n"
+            "Explain what the code, command, or construct does. "
+            "Do NOT begin with 'does the following:' or a numbered list. "
+            "Answer in direct prose sentences. "
+            "Do NOT deflect. Do NOT ask a question back. Do NOT respond with slang or casual filler. "
+            "Give a clear, direct technical explanation. "
+            "This is eLo demonstrating technical fluency, not casual conversation."
         )
     # Technical spec and poetic signals — mirrors _ollama_stream() detection
     _rt_TECH_SPEC_RE = re.compile(
