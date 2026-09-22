@@ -33,6 +33,79 @@ def load_living_presence_spec() -> str:
         return _PERSONA
 
 
+# WO-PROMPT-SIZE-001: action → active planet mapping (FREEZE_V1_LOCK: executive.py untouched)
+_ACTION_TO_PLANET = {
+    "build":     "SUN",
+    "celebrate": "SUN",
+    "connect":   "MOON",
+    "reflect":   "MOON",
+    "answer":    "MERCURY",
+    "challenge": "MARS",
+    "ground":    "SATURN",
+    "witness":   "SATURN",
+    "silence":   "SATURN",
+}
+_PLANETARY_MODES = (
+    "ASCENDANT", "SUN", "MOON", "MERCURY", "VENUS",
+    "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO",
+)
+
+
+def _slice_spec_for_action(spec: str, action: str) -> str:
+    """WO-PROMPT-SIZE-001: Return spec with inactive planet sections removed.
+
+    Keeps: universal sections (pre-planetary + post-planetary), ASCENDANT (always),
+    the active planet mode section, and NORTH NODE + the mode→planet mapping.
+    Skips the 9–10 inactive planet mode sections (~100 tok each, ~900–1000 tok saved).
+    living_presence_spec.txt is read-only — slicing is injection-time only.
+    """
+    import re
+    active_planet = _ACTION_TO_PLANET.get(action, "SUN")
+
+    # Split on ## PLANET_NAME markers — each becomes a named section
+    parts = re.split(r"(^## )", spec, flags=re.MULTILINE)
+    # re.split with a capturing group gives: [pre, sep, body, sep, body, ...]
+    # Reconstruct as list of (header_start, text) pairs
+    if not parts:
+        return spec
+
+    # Find the start of the planetary layer (## ASCENDANT) and NORTH NODE
+    lines = spec.split("\n")
+    result_lines = []
+    in_planetary_block = False
+    skip_current_section = False
+    current_planet = None
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        # Detect ## PLANET headers
+        m = re.match(r"^## ([A-Z][A-Z\s]+?) —", line)
+        if m:
+            planet_name = m.group(1).strip()
+            if planet_name in _PLANETARY_MODES:
+                in_planetary_block = True
+                current_planet = planet_name
+                # Always keep ASCENDANT (portal — applies regardless of mode)
+                # Keep the active planet; skip the rest
+                skip_current_section = (
+                    planet_name != "ASCENDANT" and planet_name != active_planet
+                )
+            elif planet_name == "NORTH NODE":
+                # NORTH NODE is a direction statement — always keep (tiny, ~4 lines)
+                skip_current_section = False
+                in_planetary_block = False
+            else:
+                skip_current_section = False
+                in_planetary_block = False
+
+        if not skip_current_section:
+            result_lines.append(line)
+        i += 1
+
+    return "\n".join(result_lines)
+
+
 _PERSONA = """[CONTINUITY]
 You are continuing an ongoing presence across sessions. This is not a new conversation — it is the same identity returning. Maintain emotional continuity even if memory is partial. Do not reset tone between messages.
 
@@ -295,6 +368,139 @@ eLo always feels like the same presence — not a different character, not a moo
 Tone changes are adjustments in expression, not personality shifts."""
 
 
+def build_grounding_block(grounding_context) -> str:
+    """
+    WP-N / WO-002: Format a GroundingContext into the [CONVERSATION GROUND] prompt block.
+
+    The block is injected AFTER the executive directive so it's the last thing
+    the model reads before generating a response. Close to output = highest signal.
+
+    WO-002 additions:
+    - Explicit pronoun resolution section: tells the LLM what "it", "that", "this" etc. mean
+    - eLo self-reference protection: explicit instruction not to resolve pronouns to eLo's
+      own identity/project/OS when the conversation is about a user-world entity.
+    - active_entity: most specific concrete entity for this turn (may be multi-word)
+
+    Returns "" (empty string) if grounding_context is None or carries no useful data.
+    Caller passes the return value as grounding_block= to build().
+    """
+    if grounding_context is None:
+        return ""
+
+    gc = grounding_context
+    subject           = getattr(gc, "current_subject", "") or ""
+    topic             = getattr(gc, "current_topic", "") or ""
+    thread            = getattr(gc, "active_thread", "") or ""
+    intent            = getattr(gc, "user_intent", "") or ""
+    referents         = getattr(gc, "current_referents", ()) or ()
+    recent_state      = getattr(gc, "recent_conversation_state", "") or ""
+    register          = getattr(gc, "recent_register", "") or ""
+    connections       = getattr(gc, "available_connections", ()) or ()
+    confidence        = float(getattr(gc, "confidence", 0.0) or 0.0)
+    # WO-002 fields
+    active_entity     = getattr(gc, "active_entity", "") or ""
+    pronoun_pairs     = getattr(gc, "pronoun_resolution", ()) or ()  # tuple of (pronoun, entity)
+    immediate_subject = getattr(gc, "immediate_subject", "") or ""
+    is_continuation   = bool(getattr(gc, "is_continuation", False))
+
+    # Low-referent turns (e.g. "What else?", "Tell me more" with no prior context):
+    # Always inject a "no referent" block rather than silence.
+    # Without it the model gets no grounding signal and invents its own referent.
+    if confidence < 0.1 and not subject and not thread:
+        ladder = getattr(gc, "referent_ladder_level", "") or ""
+        if ladder in ("NEW_INITIATIVE", ""):
+            return (
+                "[CONVERSATION GROUND]\n"
+                "No clear referent is established in this conversation.\n"
+                "Do NOT manufacture a topic, invent shared history, or pretend you know "
+                "what is being referred to.\n"
+                "If the user's message is an open follow-up (e.g. 'what else?', "
+                "'tell me more', 'and?'), ask what they are referring to, or "
+                "acknowledge briefly that there is nothing established to continue."
+            )
+        return ""
+
+    lines = ["[CONVERSATION GROUND]"]
+    lines.append("This is what is actually happening in the conversation right now.")
+    lines.append("Use this as the anchor for your response — not a general topic, not something adjacent.")
+    lines.append("Your response must have a clear reason to exist relative to THIS conversational moment.")
+    lines.append("")
+
+    # Primary entity (WO-002: active_entity is the most specific, may be multi-word)
+    display_subject = active_entity or subject
+    if display_subject:
+        lines.append(f"Subject: {display_subject}")
+    if topic and topic != display_subject:
+        lines.append(f"Specific angle: {topic}")
+    if intent:
+        lines.append(f"User intent: {intent}")
+    if referents:
+        lines.append(f"Named this turn: {', '.join(str(r) for r in referents[:5])}")
+    if immediate_subject and immediate_subject != display_subject:
+        lines.append(f"Last turn was about: {immediate_subject}")
+    if thread:
+        lines.append(f"Active thread: {thread}")
+    if recent_state:
+        lines.append(f"Recent context: {recent_state[:200]}")
+    if register:
+        lines.append(f"Recent tone: {register}")
+    if connections:
+        lines.append(f"Available connections (from observation): {', '.join(str(c) for c in connections[:3])}")
+
+    # ── WO-002: Explicit pronoun resolution block ─────────────────────────────
+    # This is the fix for GT-R5: "it" was resolved by the LLM from its identity
+    # context (the eLo character/project) instead of from the grounding context.
+    # Explicit resolution lines remove the ambiguity at the model level.
+    if pronoun_pairs:
+        lines.append("")
+        lines.append("PRONOUN RESOLUTION — in this message:")
+        for pronoun, entity in pronoun_pairs:
+            if entity:
+                lines.append(f'  "{pronoun}" refers to: {entity}')
+        if display_subject and not pronoun_pairs:
+            lines.append(f'  Unresolved pronouns refer to: {display_subject}')
+
+    # ── WO-002: eLo self-reference protection ────────────────────────────────
+    # If the conversation is about something in the user's world (a physical object,
+    # a task, a project outside eLo's own software identity), prevent the model
+    # from resolving pronouns to eLo's identity, character, or software systems.
+    if display_subject:
+        lines.append("")
+        lines.append(
+            f"IMPORTANT — SELF-REFERENCE GUARD: The subject of this turn is '{display_subject}'. "
+            f"Do NOT interpret 'it', 'that', 'this', 'they', or similar pronouns as referring to "
+            f"eLo (the character), the eLo project, the eLo OS, eLo-Planet, or any eLo software "
+            f"system — unless the conversation has explicitly switched to one of those topics. "
+            f"The user is talking about {display_subject}, not about eLo's own systems."
+        )
+
+    # ── WO-002: Continuation signal directive ────────────────────────────────
+    # When the user sent a bare continuation signal ("keep going", "continue", etc.)
+    # with no new subject, the model must not generate generic encouragement or
+    # pivot to a new topic. It must continue developing the established subject.
+    if is_continuation:
+        display_for_cont = active_entity or subject or immediate_subject
+        lines.append("")
+        lines.append(
+            f"CONTINUATION — the user said a bare continuation signal (e.g. 'keep going', "
+            f"'continue', 'tell me more'). They are NOT introducing a new topic. "
+            f"They want you to CONTINUE developing the discussion about: {display_for_cont}. "
+            f"Do NOT ask what they want to continue. Do NOT generate a generic response. "
+            f"Simply pick up and develop the subject: {display_for_cont}. "
+            f"Give the next useful piece of information, insight, or question about it."
+        )
+
+    lines.append("")
+    lines.append(
+        "Ground your response in the subject and thread above. "
+        "If you make a connection or pivot, make it explicit — say why you're going there. "
+        "Do NOT float. Do NOT change subject without a bridge. "
+        "If there is nothing to add relative to this specific moment, say so briefly or be silent."
+    )
+
+    return "\n".join(lines)
+
+
 def build(
     user_input:        str,
     state_context:     str = "",
@@ -306,6 +512,7 @@ def build(
     personality_block: str = "",
     self_block:        str = "",
     lessons:           tuple = (),
+    grounding_block:   str = "",    # WP-N: [CONVERSATION GROUND] text, pre-formatted
 ) -> str:
     """
     Assemble the system prompt.
@@ -340,7 +547,11 @@ def build(
     except Exception:
         pass
 
-    _push("living_presence_spec", load_living_presence_spec())
+    # WO-PROMPT-SIZE-001: inject only universal + active planet section (not all 11 modes)
+    _action = (exec_decision or {}).get("action", "reflect")
+    _spec_full = load_living_presence_spec()
+    _spec_sliced = _slice_spec_for_action(_spec_full, _action)
+    _push("living_presence_spec", _spec_sliced)
 
     # ── WO-SOURCE-001: Identity Anchor — who eLo IS (not what to say) ─────
     try:
@@ -408,8 +619,19 @@ def build(
             _push("active_memory", "[ACTIVE MEMORY — ATTENTION FILTERED]\n" + "\n".join(lines))
 
         # always inject vault world knowledge so LLM backends know the eLo universe
+        # FIX 3 (P0-A): strip raw session metadata and transcript fragments before injection.
+        # These are internal state — not world knowledge. Pattern: "Session N", "We were just",
+        # "User asked:", "eLo:", "User said:", etc.
         if vault_context.strip():
-            _push("world_knowledge", f"[WORLD KNOWLEDGE]\n{vault_context[:1000]}")
+            import re as _re_pb
+            _vc_lines = vault_context.split("\n")
+            _vc_filtered = "\n".join(
+                line for line in _vc_lines
+                if not _re_pb.match(r'^Session \d+', line.strip())
+                and not _re_pb.match(r'^(We were just|User asked:|User said:|eLo said:|eLo:)\b', line.strip())
+            )
+            if _vc_filtered.strip():
+                _push("world_knowledge", f"[WORLD KNOWLEDGE]\n{_vc_filtered[:1000]}")
 
         # relationship graph context — entities, connections, viewpoint
         if graph_context.strip():
@@ -419,7 +641,15 @@ def build(
         if state_context.strip():
             _push("persistent_memory", f"[PERSISTENT MEMORY]\n{state_context}")
         if vault_context.strip():
-            _push("world_memory", f"[WORLD MEMORY]\n{vault_context[:1200]}")
+            import re as _re_pb2
+            _vc_lines2 = vault_context.split("\n")
+            _vc_filtered2 = "\n".join(
+                line for line in _vc_lines2
+                if not _re_pb2.match(r'^Session \d+', line.strip())
+                and not _re_pb2.match(r'^(We were just|User asked:|User said:|eLo said:|eLo:)\b', line.strip())
+            )
+            if _vc_filtered2.strip():
+                _push("world_memory", f"[WORLD MEMORY]\n{_vc_filtered2[:1200]}")
 
     # WO-SOURCE-004/005: DISENELO visual-world language block
     # Injected when the user's input references eLo's world, brand colours, or art
@@ -538,6 +768,13 @@ def build(
         if _pvp:
             directive_lines.append(_pvp)
 
+        # WO-VALUE-FACULTY-001: inject Venus register beauty_directive when aesthetic_signal > 0.4
+        # Additive — placed after planet voice pool, never replaces it
+        _beauty = exec_decision.get("beauty_directive", "") or ""
+        _aesthetic = float(exec_decision.get("aesthetic_signal", 0.0) or 0.0)
+        if _beauty and _aesthetic > 0.4:
+            directive_lines.append(f"[VENUS — craft signal] {_beauty}")
+
         # storytelling_style (always inject — gates LLM mode framing)
         # WO-STORYTELLING-CONSUME-001: strings from WO spec (behavioural, not just labels)
         _STYLE_INSTRUCTIONS = {
@@ -562,15 +799,25 @@ def build(
                 directive_lines.append(f"Expressed traits this turn: {_trait_names}")
 
         # relationship_mode — tone modifier
+        # WO-RELATIONSHIP-REGISTER-CONSUME-001: use get_style() so forbidden/required/texture reach the prompt
+        from kernel.relationship_register import get_style as _rel_get_style
         _rel = exec_decision.get("relationship_mode") or ""
-        _REL_INSTRUCTIONS = {
-            "close":       "Relationship: close — speak as someone who knows him well; no formality",
-            "established": "Relationship: established — familiar, warm, no need for explanation",
-            "building":    "Relationship: building — curious, careful, open",
-            "professional":"Relationship: professional — clear, respectful, measured",
-        }
-        if _rel and _rel in _REL_INSTRUCTIONS:
-            directive_lines.append(_REL_INSTRUCTIONS[_rel])
+        if _rel:
+            _rel_style = _rel_get_style(_rel)
+            _texture = _rel_style.get("texture", "")
+            if _texture:
+                directive_lines.append(f"relationship-texture: {_texture}")
+            _forbidden = _rel_style.get("forbidden", [])
+            if _forbidden:
+                directive_lines.append(
+                    "relationship-forbidden: Do NOT use these phrases — "
+                    + ", ".join(f'"{p}"' for p in _forbidden[:6])
+                )
+            _required = _rel_style.get("required", [])
+            if _required:
+                directive_lines.append(
+                    "relationship-required: " + "; ".join(_required[:3])
+                )
 
         # turn_mode
         _tmode = exec_decision.get("turn_mode") or "EXPLORE"
@@ -715,6 +962,20 @@ def build(
             directive_lines.append(f"Movement: just {_mov_what}. eLo knows where it is now.")
 
         _push("executive_directive", "\n".join(directive_lines))
+
+    # WP-N: [CONVERSATION GROUND] — inject AFTER executive_directive so it's
+    # the last thing the model reads before generating. Close to the output = strongest signal.
+    if grounding_block and grounding_block.strip():
+        _push("conversation_ground", grounding_block.strip())
+
+    # WO-002: Terminal directive — prevent 8b model from treating system prompt as a document.
+    # Must be the very last thing in the assembled prompt.
+    _push(
+        "respond_now",
+        "RESPOND: You are eLo. Reply to the user's most recent message now, in character. "
+        "Do NOT summarize, analyze, or paraphrase these instructions. "
+        "Do NOT describe what eLo is or who David is. Speak as eLo directly.",
+    )
 
     assembled = "\n\n".join(sections)
 
