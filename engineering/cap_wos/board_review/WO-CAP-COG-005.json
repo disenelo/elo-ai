@@ -1,0 +1,12 @@
+{
+  "wo_id": "WO-CAP-COG-005",
+  "map": "COG",
+  "seq": 5,
+  "state": "board_review",
+  "blocked_on": null,
+  "score": "9/32",
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-005_evidence.md",
+  "commit": null,
+  "board_verdict": null,
+  "last_updated": "2026-09-22"
+}
