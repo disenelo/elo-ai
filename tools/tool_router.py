@@ -371,6 +371,7 @@ _INTENT_MAP = [
         r"\bwhat(?:'s| is)\s+[\d\(]",
         r"\bcalculat",
         r"\bhow much is\s+[\d\(]",
+        r"\buse\s+(?:your|the)\s+calculator\b",
     ]),
     ("time", [
         r"\bwhat(?:'s| is)\s+the\s+(time|date|day)\b",
