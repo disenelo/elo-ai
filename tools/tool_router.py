@@ -841,9 +841,15 @@ def _agent_math_solver(query: str) -> str:
             an = a1 + (n - 1) * d
             total = n * (a1 + an) // 2
             return f"Sum = {n}/2 × ({a1}+{an}) = {total}"
+        range_m = _re.search(r'from\s+(\d+)\s+to\s+(\d+)', q)
+        if range_m:
+            a1_r, an_r = int(range_m.group(1)), int(range_m.group(2))
+            n_r = an_r - a1_r + 1
+            total_r = n_r * (a1_r + an_r) // 2
+            return f"Sum from {a1_r} to {an_r} = {n_r}/2 × ({a1_r}+{an_r}) = {total_r}"
 
     # ── TRIANGLE — angle sum ─────────────────────────────────────────────────
-    if _re.search(r'\btriangle\b', q) and _re.search(r'\bangle\b', q):
+    if _re.search(r'\btriangle\b', q) and _re.search(r'\bangles?\b', q):
         angle_vals = [float(x) for x in _re.findall(r'(\d+(?:\.\d+)?)\s*(?:°|degrees?|deg\b)', q)]
         if len(angle_vals) >= 2 and sum(angle_vals) < 180:
             third = 180 - sum(angle_vals)
@@ -877,10 +883,10 @@ def _agent_math_solver(query: str) -> str:
     # ── PROBABILITY — consecutive events ────────────────────────────────────
     if _re.search(r'\bprobability\b', q) and \
        _re.search(r'\b(?:consecutive|days?|times?|in\s+a\s+row)\b', q):
-        p_m = _re.search(r'probability\b.*?(\d+(?:\.\d+)?)', q)
+        p_m = _re.search(r'(\d+(?:\.\d+)?)\s*%', q)
         n_m = _re.search(r'(\d+)\s*(?:consecutive|days?|times?)', q)
         if p_m and n_m:
-            p_val = float(p_m.group(1))
+            p_val = float(p_m.group(1)) / 100
             n_val = int(n_m.group(1))
             if _re.search(r'\b(?:no |not |does not)\b', q):
                 comp = 1 - p_val
@@ -888,6 +894,25 @@ def _agent_math_solver(query: str) -> str:
                 return f"P(no event for {n_val} days) = (1-{p_val})^{n_val} ≈ {result:.5f}"
             result = p_val ** n_val
             return f"P({n_val} consecutive) = {p_val}^{n_val} ≈ {result:.5f}"
+
+    # ── PROBABILITY — drawing from bag ──────────────────────────────────────
+    if _re.search(r'\bprobability\b', q) and \
+       _re.search(r'\b(?:drawing?|picking?|selecting?|choosing?)\b', q):
+        ball_counts = {}
+        for bm in _re.finditer(r'(\d+)\s+(\w+)\s+balls?', q):
+            ball_counts[bm.group(2).lower()] = int(bm.group(1))
+        if ball_counts:
+            total_b = sum(ball_counts.values())
+            target_bm = _re.search(
+                r'(?:drawing?|picking?|selecting?|choosing?)\s+a(?:n)?\s+(\w+)\s+ball', q)
+            if target_bm:
+                target = target_bm.group(1).lower()
+                count = ball_counts.get(target, 0)
+                if total_b > 0 and count > 0:
+                    from math import gcd as _gcd_p
+                    g = _gcd_p(count, total_b)
+                    return (f"P(drawing {target}) = {count}/{total_b}"
+                            f" = {count//g}/{total_b//g} ≈ {count/total_b:.4f}")
 
     # ── PERCENTAGE — X% of Y ─────────────────────────────────────────────────
     if _re.search(r'\b\d+\s*%\s+of\s+\d+', q):
@@ -899,8 +924,10 @@ def _agent_math_solver(query: str) -> str:
             return f"{pct:.0f}% of {base:.0f} = {r_str}"
 
     # ── PERCENTAGE — sale price / discount ─────────────────────────────────
-    if _re.search(r'\d+%\s+off\b|\bon\s+sale\b.*\d+%', q):
+    if _re.search(r'\d+%\s+off\b|\bon\s+sale\b.*\d+%|\bdiscount\b.*\d+%|\d+%.*\bdiscount\b', q):
         price_m = _re.search(r'(?:costs?|price[sd]?|for)\s+\$?(\d+(?:\.\d+)?)', q)
+        if not price_m:
+            price_m = _re.search(r'\$\s*(\d+(?:\.\d+)?)', q)
         pct_m = _re.search(r'(\d+(?:\.\d+)?)\s*%', q)
         if price_m and pct_m:
             price = float(price_m.group(1))
@@ -908,9 +935,10 @@ def _agent_math_solver(query: str) -> str:
             sale = price * (1 - pct / 100)
             return f"Sale price = {price:.2f} × (1 - {pct:.0f}%) = ${sale:.2f}"
 
-    # ── PERMUTATIONS — letter arrangements ─────────────────────────────────
-    if _re.search(r'\b(?:arrangements?|permutations?)\b.*\b(?:letters?|word)\b', q) or \
-       _re.search(r'\bletters?\s+in\b.*\b[A-Z]{3,}\b', query):
+    # ── PERMUTATIONS — letter arrangements or distinct items ────────────────
+    if _re.search(r'\b(?:arrangements?|permutations?)\b.*\b(?:letters?|word|books?|items?|objects?|people)\b', q) or \
+       _re.search(r'\bletters?\s+in\b.*\b[A-Z]{3,}\b', query) or \
+       _re.search(r'\bhow\s+many\s+ways\b.*\b(?:books?|items?|objects?|people)\b', q):
         word_m = _re.search(r'\b([A-Z]{3,})\b', query)
         if word_m:
             word = word_m.group(1)
@@ -924,6 +952,11 @@ def _agent_math_solver(query: str) -> str:
             arrangements = _fac2(n_w) // denom
             freq_str = "×".join(f"{c}!" for c in freq.values())
             return f"Arrangements of {word}: {n_w}!/({freq_str}) = {arrangements:,}"
+        n_items_m = _re.search(r'(\d+)\s+(?:different\s+)?(?:books?|items?|objects?|people|students?)', q)
+        if n_items_m:
+            n_items = int(n_items_m.group(1))
+            from math import factorial as _fac_items
+            return f"P({n_items},{n_items}) = {n_items}! = {_fac_items(n_items):,} ways"
 
     # ── POLYNOMIAL DERIVATIVE ───────────────────────────────────────────────
     if _re.search(r'\b(?:derivative|differentiat)\b', q):
@@ -967,6 +1000,9 @@ def _agent_math_solver(query: str) -> str:
         integ_m = _re.search(r'(?:integral|integrat)\w*\s+of\s+(.+?)(?:\s+from\b|\s+dx|\?|$)', q)
         if integ_m and len(lim_m) >= 2:
             raw_expr = integ_m.group(1).strip()
+            fx_eq_m = _re.match(r'f\s*\(\s*x\s*\)\s*=\s*(.+)', raw_expr)
+            if fx_eq_m:
+                raw_expr = fx_eq_m.group(1).strip()
             a_lim, b_lim = float(lim_m[0]), float(lim_m[1])
             def _eval_fx(x_val, _re=_re, raw=raw_expr):
                 try:
@@ -984,6 +1020,70 @@ def _agent_math_solver(query: str) -> str:
             result = s_sum * h_s / 3
             r_str = f"{result:.2f}".rstrip('0').rstrip('.')
             return f"∫({raw_expr})dx from {int(a_lim)} to {int(b_lim)} = {r_str}"
+
+    # ── FACTORIAL ────────────────────────────────────────────────────────────
+    fact_m = _re.search(r'(\d+)\s*!|factorial\s+(?:of\s+)?(\d+)|(\d+)\s+factorial', q)
+    if fact_m:
+        n_fact = int(fact_m.group(1) or fact_m.group(2) or fact_m.group(3))
+        from math import factorial as _fac_f
+        return f"{n_fact}! = {_fac_f(n_fact)}"
+
+    # ── LINEAR EQUATION — solve for x ────────────────────────────────────────
+    if _re.search(r'\b(?:solve|find)\b', q) and _re.search(r'\d+\s*x\b', q):
+        eq_m = _re.search(
+            r'(\d+(?:\.\d+)?)\s*x\s*([+-])\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)', q)
+        if eq_m:
+            a_eq = float(eq_m.group(1))
+            sign_eq = eq_m.group(2)
+            b_eq = float(eq_m.group(3))
+            c_eq = float(eq_m.group(4))
+            b_signed = b_eq if sign_eq == '+' else -b_eq
+            x_val = (c_eq - b_signed) / a_eq
+            x_str = f"{x_val:.4f}".rstrip('0').rstrip('.')
+            return (f"{a_eq:.0f}x {sign_eq} {b_eq:.0f} = {c_eq:.0f} → "
+                    f"x = ({c_eq:.0f} - ({b_signed:.0f})) / {a_eq:.0f} = {x_str}")
+
+    # ── CUBE VOLUME ───────────────────────────────────────────────────────────
+    if _re.search(r'\bvolume\b.*\bcube\b|\bcube\b.*\bvolume\b', q):
+        side_m = _re.search(
+            r'side(?:\s+length)?\s+(?:of\s+)?(?:is\s+|=\s*)?(\d+(?:\.\d+)?)', q)
+        if side_m:
+            s_cube = float(side_m.group(1))
+        else:
+            nums_cube = _re.findall(r'\b(\d+(?:\.\d+)?)\b', q)
+            s_cube = float(nums_cube[-1]) if nums_cube else None
+        if s_cube is not None:
+            return f"Volume = s³ = {s_cube:.0f}³ = {s_cube**3:.2f}"
+
+    # ── PERIMETER — rectangle / square ───────────────────────────────────────
+    if _re.search(r'\bperimeter\b.*\b(?:rectangle|square)\b|\b(?:rectangle|square)\b.*\bperimeter\b', q):
+        l_m_p = _re.search(r'length\b.*?(\d+(?:\.\d+)?)', q)
+        w_m_p = _re.search(r'width\b.*?(\d+(?:\.\d+)?)', q)
+        if l_m_p and w_m_p:
+            l_d, w_d = float(l_m_p.group(1)), float(w_m_p.group(1))
+        else:
+            nums_p = [float(x) for x in _re.findall(r'\b(\d+(?:\.\d+)?)\b', q)]
+            l_d, w_d = (nums_p[0], nums_p[1]) if len(nums_p) >= 2 else (None, None)
+        if l_d is not None:
+            p_d = 2 * (l_d + w_d)
+            return f"Perimeter = 2(l+w) = 2({l_d:.0f}+{w_d:.0f}) = {p_d:.2f}"
+
+    # ── TEMPERATURE CONVERSION ────────────────────────────────────────────────
+    if _re.search(r'\b(?:fahrenheit|celsius|celcius|centigrade)\b', q):
+        f_m_t = _re.search(r'(\d+(?:\.\d+)?)\s*(?:°\s*f\b|degrees?\s+fahrenheit\b|°f\b)', q)
+        if not f_m_t:
+            f_m_t = _re.search(r'(\d+(?:\.\d+)?)\s*°?\s*f\b', q)
+        c_m_t = _re.search(r'(\d+(?:\.\d+)?)\s*(?:°\s*c\b|degrees?\s+celsius\b|degrees?\s+celcius\b|degrees?\s+centigrade\b|°c\b)', q)
+        if not c_m_t:
+            c_m_t = _re.search(r'(\d+(?:\.\d+)?)\s*°?\s*c\b', q)
+        if f_m_t and _re.search(r'\b(?:celsius|celcius|centigrade)\b', q):
+            f_t = float(f_m_t.group(1))
+            c_t = (f_t - 32) * 5 / 9
+            return f"{f_t}°F = ({f_t}-32) × 5/9 = {c_t:.2f}°C"
+        if c_m_t and _re.search(r'\bfahrenheit\b', q):
+            c_t = float(c_m_t.group(1))
+            f_t = c_t * 9 / 5 + 32
+            return f"{c_t}°C = {c_t} × 9/5 + 32 = {f_t:.2f}°F"
 
     # ── FALL BACK to arithmetic calculator ─────────────────────────────────
     return _agent_calculator(query)
@@ -1755,6 +1855,13 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
         r"\bcompound(?:ed)?\s+(?:interest|monthly|annually)\b.*\d",
         r"\binvest\b.*\d.*%",
         r"\b(?:find|calculate|compute|evaluat)\b.*\b(?:area|volume|force|velocity|mean|median|probability|distance|angle)\b.*\d",
+        r"\btriangle\b.*\bangles?\b|\bangles?\b.*\btriangle\b",
+        r"\b\d+\s*!|\bfactorial\b.*\d|\b\d+\s+factorial\b",
+        r"\bsolve\b.*\d+x|\b\d+x\s*[+-]\s*\d+\s*=\s*\d|\bsolve\s+for\s+[a-z]\b",
+        r"\bhow\s+many\s+ways\b.*\b(?:books?|items?|objects?|people)\b|\b(?:books?|items?|objects?|people)\b.*\b(?:arrang\w*|order\w*)\b.*\d",
+        r"\bdiscount\b.*\d+%|\d+%.*\bdiscount\b",
+        r"\b(?:fahrenheit|celsius|celcius|centigrade)\b",
+        r"\bbag\b.*\bprobability\b|\bprobability\b.*\b(?:ball|bag|drawing?|picking?)\b",
     ]
     if any(re.search(p, _lower) for p in _MATH_DOMAIN_PATS):
         try:
