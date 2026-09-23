@@ -572,7 +572,11 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
         import json as _jmod, pathlib as _pl
         _mp_path = _pl.Path(__file__).parent.parent / "memory" / "memory_pack.json"
         _mp = _jmod.loads(_mp_path.read_text())
-        _david_identity = f"[WHO YOU ARE WITH]\n{_mp.get('identity', '')[:400]}\n\n"
+        _id_raw = _mp.get('identity', '')
+        # ID-051: strip pattern-observer session summary appended by state_manager
+        # ("| User explored ... with a ... tone.") — must not leak into identity answers.
+        _id_raw = _id_raw.split(" | User explored")[0].strip()
+        _david_identity = f"[WHO YOU ARE WITH]\n{_id_raw[:400]}\n\n"
     except Exception:
         pass
     # Prepend format enforcement + identity — both survive any trim level.
@@ -1138,7 +1142,9 @@ def _ollama_stream(
         import json as _jmod2, pathlib as _pl2
         _mp_path2 = _pl2.Path(__file__).parent.parent / "memory" / "memory_pack.json"
         _mp2 = _jmod2.loads(_mp_path2.read_text())
-        _id_text = (_mp2.get("identity", "") or "")[:400]
+        _id_text = (_mp2.get("identity", "") or "")
+        # ID-051: strip pattern-observer session summary — must not leak into identity answers.
+        _id_text = _id_text.split(" | User explored")[0].strip()[:400]
         if _id_text:
             _david_identity_stream = f"[WHO YOU ARE WITH]\n{_id_text}\n"
     except Exception:
