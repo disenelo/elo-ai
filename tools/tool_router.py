@@ -372,6 +372,22 @@ _INTENT_MAP = [
         r"\bcalculat",
         r"\bhow much is\s+[\d\(]",
         r"\buse\s+(?:your|the)\s+calculator\b",
+        # FIX A — WO-CAP-COG-005: domain keywords for word problems
+        r"\b(?:area|volume|circumference|perimeter)\b.*\d",
+        r"\b(?:circle|sphere|cylinder|cone|triangle|rectangle)\b.*\d",
+        r"\b(?:sin|cos|tan|sine|cosine|tangent)\b.*\d",
+        r"\bright\s+triangle\b.*\d",
+        r"\b(?:mean|median|mode|average)\b.*\b\d+\b.*\b\d+\b",
+        r"\bprobability\b.*\b(?:dice?|rolling|six)\b",
+        r"\b(?:choose|combinations?|permutations?)\b.*\d",
+        r"\b\d+\s*[Cc]\s*\d+\b",
+        r"\b(?:force|velocity|speed|acceleration)\b.*\d.*\b(?:kg|m/s|meter|second|Newton)\b",
+        r"\bF\s*=\s*ma\b",
+        r"\bcompound\s+interest\b",
+        r"\bratio\b.*\d+\s*:\s*\d+",
+        r"\b(?:sum\s+of|arithmetic\s+series)\b.*\d",
+        r"\b(?:derivative|integral|differentiat|integrat)\b.*\d",
+        r"\bdistance\b.*\(\s*-?\d",
     ]),
     ("time", [
         r"\bwhat(?:'s| is)\s+the\s+(time|date|day)\b",
@@ -589,6 +605,210 @@ def _agent_calculator(query: str) -> str:
         result = int(result)
     display = expr.replace('**', '^')
     return f"{display} = {result}"
+
+
+def _agent_math_solver(query: str) -> str:
+    """Domain-aware Python math solver for word problems. FIX A — WO-CAP-COG-005."""
+    import math as _math
+    import re as _re
+
+    q = query.lower().strip()
+
+    # ── GEOMETRY — circle area / circumference ──────────────────────────────
+    if _re.search(r'\b(?:area|circumference)\b', q) and _re.search(r'\bcircle\b', q):
+        r_m = (_re.search(r'radius\s+(?:of\s+)?(?:is\s+)?(?:=\s*)?(\d+(?:\.\d+)?)', q) or
+               _re.search(r'(\d+(?:\.\d+)?)\s*(?:cm|m|mm)?\s*(?:radius)', q))
+        if r_m:
+            r = float(r_m.group(1))
+            if 'circumference' in q:
+                v = 2 * _math.pi * r
+                return f"Circumference = 2π × {r} ≈ {v:.4f}"
+            v = _math.pi * r ** 2
+            return f"Area = π × {r}² ≈ {v:.4f}"
+
+    # ── GEOMETRY — cylinder volume ──────────────────────────────────────────
+    if _re.search(r'\bvolume\b', q) and _re.search(r'\bcylinder\b', q):
+        r_m = _re.search(r'radius\s+(?:of\s+)?(?:is\s+)?(?:=\s*)?(\d+(?:\.\d+)?)', q)
+        h_m = _re.search(r'height\s+(?:of\s+)?(?:is\s+)?(?:=\s*)?(\d+(?:\.\d+)?)', q)
+        if r_m and h_m:
+            r, h = float(r_m.group(1)), float(h_m.group(1))
+            v = _math.pi * r ** 2 * h
+            return f"Volume = π × {r}² × {h} ≈ {v:.4f}"
+
+    # ── GEOMETRY — sphere volume ────────────────────────────────────────────
+    if _re.search(r'\bvolume\b', q) and _re.search(r'\bsphere\b', q):
+        r_m = _re.search(r'radius\s+(?:of\s+)?(?:is\s+)?(?:=\s*)?(\d+(?:\.\d+)?)', q)
+        if r_m:
+            r = float(r_m.group(1))
+            v = (4 / 3) * _math.pi * r ** 3
+            return f"Volume = (4/3)π × {r}³ ≈ {v:.4f}"
+
+    # ── GEOMETRY — Euclidean distance ───────────────────────────────────────
+    if _re.search(r'\bdistance\b', q):
+        coords = _re.findall(r'\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)', q)
+        if len(coords) >= 2:
+            x1, y1 = float(coords[0][0]), float(coords[0][1])
+            x2, y2 = float(coords[1][0]), float(coords[1][1])
+            d_sq = (x2 - x1) ** 2 + (y2 - y1) ** 2
+            v = _math.sqrt(d_sq)
+            sq_str = int(d_sq) if d_sq == int(d_sq) else f"{d_sq:.2f}"
+            return f"Distance = √(({x2}-{x1})² + ({y2}-{y1})²) = √{sq_str} ≈ {v:.4f}"
+
+    # ── TRIGONOMETRY ────────────────────────────────────────────────────────
+    trig_fns = _re.findall(r'\b(sin|cos|tan|sine|cosine|tangent)\b', q)
+    angles = _re.findall(r'(\d+(?:\.\d+)?)\s*(?:°|degrees?|deg\b)', q)
+    if trig_fns and angles:
+        results = []
+        for fn_raw in trig_fns:
+            fn = fn_raw.lower()
+            math_fn = (_math.sin if fn in ('sin', 'sine') else
+                       _math.cos if fn in ('cos', 'cosine') else _math.tan)
+            for ang_str in angles:
+                ang = float(ang_str)
+                val = round(math_fn(_math.radians(ang)), 10)
+                if abs(val - 0.5) < 1e-9:
+                    disp = "0.5 (= 1/2)"
+                elif abs(val - _math.sqrt(3) / 2) < 1e-9:
+                    disp = "≈0.8660 (= √3/2)"
+                elif abs(val - _math.sqrt(2) / 2) < 1e-9:
+                    disp = "≈0.7071 (= √2/2)"
+                elif abs(val + 0.5) < 1e-9:
+                    disp = "-0.5 (= -1/2)"
+                elif abs(val - 1.0) < 1e-9:
+                    disp = "1"
+                elif abs(val - 0.0) < 1e-9:
+                    disp = "0"
+                else:
+                    disp = f"{val:.6f}".rstrip('0').rstrip('.')
+                results.append(f"{fn_raw}({ang_str}°) = {disp}")
+        if results:
+            return " | ".join(results)
+
+    # ── RIGHT TRIANGLE — sin ratio from sides ───────────────────────────────
+    if _re.search(r'\bright\s+triangle\b', q) and _re.search(r'\b(?:sin|sine|hypotenuse)\b', q):
+        nums = [float(x) for x in _re.findall(r'\b(\d+(?:\.\d+)?)\b', q)]
+        if len(nums) >= 2:
+            for i in range(len(nums)):
+                for j in range(len(nums)):
+                    if i != j and nums[j] > nums[i]:
+                        sin_val = nums[i] / nums[j]
+                        if 0 < sin_val < 1:
+                            return (f"sin = opposite/hypotenuse = "
+                                    f"{nums[i]}/{nums[j]} ≈ {sin_val:.4f}")
+
+    # ── STATISTICS — mean, median, mode ────────────────────────────────────
+    if _re.search(r'\b(?:mean|median|mode|average)\b', q):
+        nums_raw = _re.findall(r'\b(\d+)\b', q)
+        if len(nums_raw) >= 4:
+            data = [int(n) for n in nums_raw[:20]]
+            parts = []
+            if 'mean' in q or 'average' in q:
+                m = sum(data) / len(data)
+                parts.append(f"mean = {sum(data)}/{len(data)} = {m:.4f}".rstrip('0').rstrip('.'))
+            if 'median' in q:
+                s = sorted(data)
+                n = len(s)
+                med = s[n // 2] if n % 2 else (s[n // 2 - 1] + s[n // 2]) / 2
+                parts.append(f"median = {med}")
+            if 'mode' in q:
+                from collections import Counter as _Ctr
+                c = _Ctr(data)
+                mode_val = c.most_common(1)[0][0]
+                parts.append(f"mode = {mode_val}")
+            if parts:
+                return f"For {data}: {', '.join(parts)}"
+
+    # ── PROBABILITY — dice ──────────────────────────────────────────────────
+    if _re.search(r'\bprobability\b', q) and _re.search(r'\b(?:dice?|rolling)\b', q):
+        if _re.search(r'\bdouble\b', q):
+            if _re.search(r'\bsix\b|\b6\b', q):
+                return "P(double six) = (1/6) × (1/6) = 1/36 ≈ 0.0278"
+            return "P(doubles on two 6-sided dice) = 6/36 = 1/6 ≈ 0.1667"
+
+    # ── COMBINATORICS — C(n, k) ─────────────────────────────────────────────
+    comb_m = _re.search(r'(\d+)\s*[Cc]\s*(\d+)', q)
+    if comb_m:
+        n, k = int(comb_m.group(1)), int(comb_m.group(2))
+        return f"C({n},{k}) = {_math.comb(n, k)}"
+    comb_m = _re.search(r'[Cc]\s*\(\s*(\d+)\s*,\s*(\d+)', q)
+    if comb_m:
+        n, k = int(comb_m.group(1)), int(comb_m.group(2))
+        return f"C({n},{k}) = {_math.comb(n, k)}"
+    ch_m = (_re.search(r'(\d+)\s+choose\s+(\d+)', q) or
+            _re.search(r'(?:choose|select|pick)\s+(\d+)\s+(?:from|out\s+of)\s+(\d+)', q))
+    if not ch_m:
+        wm = _re.search(r'(\d+)\s+(?:people?|items?|objects?)\s+from\s+(?:a\s+group\s+of\s+)?(\d+)', q)
+        if wm:
+            a, b = int(wm.group(1)), int(wm.group(2))
+            n, k = max(a, b), min(a, b)
+            return f"C({n},{k}) = {_math.comb(n, k)}"
+    if ch_m:
+        a, b = int(ch_m.group(1)), int(ch_m.group(2))
+        n, k = max(a, b), min(a, b)
+        return f"C({n},{k}) = {_math.comb(n, k)}"
+
+    # ── PHYSICS — F = ma ────────────────────────────────────────────────────
+    if _re.search(r'\b(?:force|Newton|F\s*=\s*ma)\b', q, _re.IGNORECASE):
+        m_m = _re.search(r'(\d+(?:\.\d+)?)\s*kg\b', q, _re.IGNORECASE)
+        a_m = (_re.search(r'(\d+(?:\.\d+)?)\s*m/?s[²2]', q, _re.IGNORECASE) or
+               _re.search(r'(?:acceler[a-z]+\s+(?:at\s+)?|at\s+)(\d+(?:\.\d+)?)', q))
+        if m_m and a_m:
+            m_v, a_v = float(m_m.group(1)), float(a_m.group(1))
+            return f"F = ma = {m_v} × {a_v} = {m_v * a_v} N"
+
+    # ── PHYSICS — velocity / speed ──────────────────────────────────────────
+    if _re.search(r'\b(?:velocity|speed)\b', q):
+        d_m = _re.search(r'(\d+(?:\.\d+)?)\s*(?:m\b|meter|metre)', q)
+        t_m = _re.search(r'(\d+(?:\.\d+)?)\s*(?:s\b|sec|second)', q)
+        if d_m and t_m:
+            d_v, t_v = float(d_m.group(1)), float(t_m.group(1))
+            if t_v != 0:
+                return f"velocity = {d_v} ÷ {t_v} = {d_v / t_v} m/s"
+
+    # ── FINANCE — compound interest ─────────────────────────────────────────
+    if _re.search(r'\bcompound\s+interest\b|\binvestment\s+grow', q, _re.IGNORECASE):
+        p_m = _re.search(r'(?:£|\$)?\s*(\d[\d,]*(?:\.\d+)?)', q)
+        r_m = _re.search(r'(\d+(?:\.\d+)?)\s*(?:%|percent)', q)
+        t_m = _re.search(r'(\d+)\s*(?:year|yr)', q)
+        if p_m and r_m and t_m:
+            p_v = float(p_m.group(1).replace(',', ''))
+            r_v = float(r_m.group(1)) / 100
+            t_v = int(t_m.group(1))
+            result = p_v * (1 + r_v) ** t_v
+            return f"A = {p_v}(1+{r_m.group(1)}%)^{t_v} ≈ £{result:.2f}"
+
+    # ── RATIOS ──────────────────────────────────────────────────────────────
+    if _re.search(r'\bratio\b', q):
+        ratio_m = _re.search(r'(\d+)\s*:\s*(\d+)', q)
+        total_m = (_re.search(r'(\d+(?:\.\d+)?)\s*g(?:rams?)?\s+total', q) or
+                   _re.search(r'total\s+(?:of\s+)?(\d+(?:\.\d+)?)\s*g', q) or
+                   _re.search(r'(\d+(?:\.\d+)?)\s*(?:g|grams?)\b(?!.*:)', q))
+        if ratio_m and total_m:
+            a_r, b_r = int(ratio_m.group(1)), int(ratio_m.group(2))
+            t_g = float(total_m.group(1))
+            a_amt = t_g * a_r / (a_r + b_r)
+            b_amt = t_g * b_r / (a_r + b_r)
+            return (f"Ratio {a_r}:{b_r} in {t_g}g total: "
+                    f"part A = {a_amt:.1f}g, part B = {b_amt:.1f}g")
+
+    # ── ARITHMETIC SERIES ───────────────────────────────────────────────────
+    if _re.search(r'\b(?:sum|arithmetic\s+(?:series|sequence))\b', q):
+        n_m = _re.search(r'first\s+(\d+)', q)
+        if n_m:
+            n = int(n_m.group(1))
+            a1_m = _re.search(r'(?:starting|first\s+term|a1)\s+(?:is\s+|=\s*)?(\d+)', q)
+            d_m = _re.search(r'(?:common\s+difference|d)\s+(?:is\s+|=\s*)?(\d+)', q)
+            a1 = int(a1_m.group(1)) if a1_m else 1
+            d = int(d_m.group(1)) if d_m else 1
+            if a1 == 1 and d == 1:
+                total = n * (n + 1) // 2
+                return f"Sum of 1 to {n} = {n}×(n+1)/2 = {total}"
+            an = a1 + (n - 1) * d
+            total = n * (a1 + an) // 2
+            return f"Sum = {n}/2 × ({a1}+{an}) = {total}"
+
+    # ── FALL BACK to arithmetic calculator ─────────────────────────────────
+    return _agent_calculator(query)
 
 
 def _cache_weather_condition(result_str: str) -> None:
@@ -1318,6 +1538,40 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
             return _calc_result, "calculator"
         except Exception as _ce:
             _logger.debug("math direct intercept failed: %s", _ce)
+
+    # FIX A — WO-CAP-COG-005: domain-keyword routing for word problems
+    _MATH_DOMAIN_PATS = [
+        r"\b(?:area|volume|circumference|perimeter)\b.*\b(?:circle|cylinder|sphere|cone|triangle|rectangle|cube)\b.*\d",
+        r"\b(?:circle|cylinder|sphere|cone|triangle|rectangle)\b.*\b(?:area|volume|circumference|perimeter)\b.*\d",
+        r"\bdistance\b.*\(\s*-?\d+",
+        r"\b(?:sin|cos|tan|sine|cosine|tangent)\b.*\d+\s*(?:°|degrees?|deg\b)",
+        r"\b(?:sin|cos|tan)\s*\(?(?:\d+°?)",
+        r"\bright\s+triangle\b.*\d",
+        r"\bhypotenuse\b.*\d",
+        r"\b(?:mean|median|mode|average)\b.*\b\d+\b.*\b\d+\b.*\b\d+\b",
+        r"\b(?:choose|ways?\s+to|combinations?|permutations?)\b.*\d",
+        r"\b\d+\s*[Cc]\s*\d+\b",
+        r"\bC\s*\(\s*\d+\s*,\s*\d+",
+        r"\b(?:force|Newton)\b.*\b\d+\s*kg\b",
+        r"\b(?:mass|F\s*=\s*ma)\b.*\baccelerates?\b.*\d",
+        r"\b(?:velocity|speed)\b.*\b\d+\s*(?:m|meters?)\b.*\b\d+\s*(?:s|sec|seconds?)\b",
+        r"\bcompound\s+interest\b.*\d",
+        r"\binvestment\b.*(?:grows?|rate)\b.*\d",
+        r"\bratio\b.*\d+\s*:\s*\d+.*\d+",
+        r"\b(?:sum\s+of|first\s+\d+\s+terms?|arithmetic\s+series)\b.*\d",
+        r"\bprobability\b.*\b(?:dice?|six.sided|rolling)\b",
+        r"\b(?:derivative|differentiat)\b.*f\s*\(\s*x\s*\)",
+        r"\b(?:integral|integrat)\b.*\d",
+        r"\b(?:find|calculate|compute|evaluat)\b.*\b(?:area|volume|force|velocity|mean|median|probability|distance|angle)\b.*\d",
+    ]
+    if any(re.search(p, _lower) for p in _MATH_DOMAIN_PATS):
+        try:
+            global _last_direct_result
+            _math_result = _agent_math_solver(user_input)
+            _last_direct_result = _math_result
+            return _math_result, "calculator"
+        except Exception as _me:
+            _logger.debug("math domain intercept failed: %s", _me)
 
     # ── System agent (OS control, gated confirmations) ──
     sys_ctx = _check_system(user_input)

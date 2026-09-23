@@ -6119,6 +6119,43 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # ── FIX C — WO-CAP-COG-005: Pong leak guard (M14 — heartbeat in user channel)
+        try:
+            _PONG_SIGNALS = frozenset({"pong", "pong!", "pong.\n", "pong.", "ok", "alive", "ping"})
+            if response and len(response.strip()) <= 8 and response.strip().lower() in _PONG_SIGNALS:
+                import logging as _pong_log
+                _pong_log.getLogger("elo.pong_leak").error(
+                    "PONG LEAK GUARD: internal signal '%s' reached user response channel "
+                    "(raw=%r) — suppressed",
+                    response.strip(), (raw or "")[:60]
+                )
+                response = "I lost track for a moment — could you ask me again?"
+                _bubbles = [response]
+        except Exception:
+            pass
+
+        # ── FIX D — WO-CAP-COG-005: abort/partial generation guard (M26)
+        try:
+            _ABORT_FRAGMENTS = (
+                "alright man, let's break it down",
+                "let me break it down",
+                "let's break this down",
+                "alright, let me",
+                "okay, let me",
+            )
+            if response and len(response.strip()) < 60 and response.strip().endswith("."):
+                _resp_lower_chk = response.strip().lower()
+                if any(_resp_lower_chk.startswith(_frag) for _frag in _ABORT_FRAGMENTS):
+                    import logging as _abort_log
+                    _abort_log.getLogger("elo.abort_guard").error(
+                        "ABORT GUARD: partial/aborted generation detected '%s' — suppressed",
+                        response.strip()[:80]
+                    )
+                    response = "I ran into an issue — let me try again."
+                    _bubbles = [response]
+        except Exception:
+            pass
+
         # ── D-6 (card 0020): silent turn = loud log + honest fallback ─────────
         # WO-097's response/display/tts publish could go empty on direct turns
         # ("What is your name?" / "Can you wave?"). Rule 1 alarm: a silent turn

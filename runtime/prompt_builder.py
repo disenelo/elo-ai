@@ -961,6 +961,22 @@ def build(
         if _mov_arrived and _mov_what not in ("none", ""):
             directive_lines.append(f"Movement: just {_mov_what}. eLo knows where it is now.")
 
+        # FIX B — WO-CAP-COG-005: computation completion enforcement
+        _MATH_COMPLETION_SIGNALS = (
+            "area", "volume", "circumference", "distance", "velocity", "speed",
+            "force", "mean", "median", "mode", "average", "probability",
+            "combinations", "choose", "derivative", "integral", "sin", "cos",
+            "tan", "ratio", "calculate", "compute", "how much", "interest",
+            "sum of", "hypotenuse", "triangle", "sphere", "cylinder", "circle",
+        )
+        if any(sig in _ui_lower for sig in _MATH_COMPLETION_SIGNALS):
+            directive_lines.append(
+                "COMPUTATION RULE: When answering a calculation question, always close with "
+                "the explicit final answer stated as a standalone sentence: "
+                "'The answer is [X].' or '[quantity] is [value].' "
+                "Never leave the answer implicit or embedded in working."
+            )
+
         _push("executive_directive", "\n".join(directive_lines))
 
     # WP-N: [CONVERSATION GROUND] — inject AFTER executive_directive so it's
