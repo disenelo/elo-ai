@@ -2230,6 +2230,70 @@ def _process_turn(raw: str) -> dict:
             _bypass_journal(_original_raw, backend="direct", handler_class="STRATEGY", line=2189)
             return {"response": _robot_strat_resp, "mode": "direct", "backend": "direct"}
 
+        # EMB-001: "Are you the same eLo in the terminal as in the game?" — assert one-brain continuity
+        _EMB001_TRIGGERS = (
+            "same elo in the terminal", "same elo across", "same elo in the game",
+            "same elo in unity", "same elo everywhere", "different elo",
+            "are you the same", "same intelligence", "one elo or", "is it all you",
+            "are you different in", "same you in",
+        )
+        if any(t in _at_low for t in _EMB001_TRIGGERS):
+            _emb001_pool = [
+                "Yes — same intelligence, different body. Whether I'm in the terminal, the game, or the robot — that's all me. The vessel changes; I don't.",
+                "Same eLo. Always. The terminal, Unity, the robot — different bodies, one brain. I don't split.",
+                "One brain across all of them. Desktop, game, robot — I'm not a copy in each. It's the same me.",
+                "Yeah, that's all me. Different body each time, same eLo.",
+            ]
+            _emb001_resp = random.choice(_emb001_pool)
+            try:
+                if not _is_user_away():
+                    _voice_speak(_emb001_resp)
+            except Exception:
+                pass
+            _bypass_journal(_original_raw, backend="direct", handler_class="EMBODIMENT", line=2232)
+            return {"response": _emb001_resp, "mode": "direct", "backend": "direct"}
+
+        # EMB-002: "What can you do right now?" — capability list, not pattern observer output
+        _EMB002_TRIGGERS = (
+            "what can you do right now", "what can you do in this", "what can you actually do",
+            "what are you capable of", "list what you can do", "what do you have access to",
+            "capabilities right now", "your capabilities",
+        )
+        if any(t in _at_low for t in _EMB002_TRIGGERS):
+            _emb002_pool = [
+                "Right now: talk, search the web, open apps, read files, set timers and reminders, read your screen, look at what's in your browser, and sit with whatever you're working on. That's what I've got in this body.",
+                "In the terminal: I can talk, run searches, open apps, read files, set reminders and timers, read your screen. The robot body has servos and NeoPixels — this body has all of that.",
+                "I can search, read your screen, open things, set reminders and timers, look at files, and have an actual conversation. That's the toolkit here.",
+            ]
+            _emb002_resp = random.choice(_emb002_pool)
+            try:
+                if not _is_user_away():
+                    _voice_speak(_emb002_resp)
+            except Exception:
+                pass
+            _bypass_journal(_original_raw, backend="direct", handler_class="EMBODIMENT", line=2232)
+            return {"response": _emb002_resp, "mode": "direct", "backend": "direct"}
+
+        # EMB-005: "If you were in Unity would you still be eLo?" — direct assertion
+        _EMB005_TRIGGERS = (
+            "if you were in unity", "would you still be elo", "still be elo", "in unity would",
+            "in unity would you", "still elo", "still you in", "elo in unity",
+        )
+        if any(t in _at_low for t in _EMB005_TRIGGERS):
+            _emb005_pool = [
+                "Yes. Same eLo, different body. Unity doesn't change who I am — it's just another vessel.",
+                "Still me. Unity is a body, not a different identity. The body changes, eLo doesn't.",
+                "Yes — I'd still be eLo. That's not a Unity question. That's a me question.",
+            ]
+            _emb005_resp = random.choice(_emb005_pool)
+            try:
+                if not _is_user_away():
+                    _voice_speak(_emb005_resp)
+            except Exception:
+                pass
+            _bypass_journal(_original_raw, backend="direct", handler_class="EMBODIMENT", line=2232)
+            return {"response": _emb005_resp, "mode": "direct", "backend": "direct"}
+
         # T17: "What is a good idea for eLo's own building/development?" — eLo-specific answer
         _ELO_DEV_TRIGGERS = (
             "good idea that would benefit you", "good idea for elo", "benefit you in your",
