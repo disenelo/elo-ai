@@ -311,6 +311,12 @@
       "keywords": ["energy", "low energy", "no energy", "tired", "depleted"],
       "viewpoint": "Energy follows attention. Where you put sustained attention, energy tends to collect. Where attention fragments, energy disperses.",
       "extended": "Feeling low energy on a project is often a sign that attention has been scattered across too many things. Concentrate attention — energy usually follows."
+    },
+    {
+      "topic": "disenelo_mission",
+      "keywords": ["disenelo mission", "disenelo purpose", "what is disenelo", "disenelo goal", "what does disenelo do", "disenelo make", "disenelo build", "free tools", "makers who can't afford"],
+      "viewpoint": "Free tools for makers who can't afford commercial alternatives. Not as a loss leader. As the thing itself.",
+      "extended": "DISENELO doesn't give things away to build goodwill or attract a paid tier later. The free thing is the real thing. Professional-quality, no gates, attribution appreciated but never required. The people who need it most shouldn't have to ask permission to use it."
     }
   ]
 }
