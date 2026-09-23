@@ -593,6 +593,19 @@ def _agent_calculator(query: str) -> str:
         _result_pow = _base ** _exp
         if isinstance(_result_pow, float) and _result_pow.is_integer(): _result_pow = int(_result_pow)
         return f"{_base:.0f}^{_exp:.0f} = {_result_pow}"
+    # Radians intercept — handles "calculate X degrees to radians" before expression eval
+    if re.search(r'\bradians?\b', query, re.IGNORECASE) and re.search(r'\bdegrees?\b', query, re.IGNORECASE):
+        _deg_m3 = re.search(r'(\d+(?:\.\d+)?)\s*degrees?', query, re.IGNORECASE)
+        if _deg_m3:
+            import math as _math3
+            from fractions import Fraction as _Fr3
+            _deg_v3 = float(_deg_m3.group(1))
+            _rad_v3 = _deg_v3 * _math3.pi / 180
+            _fr3 = _Fr3(_deg_v3 / 180).limit_denominator(100)
+            if _fr3.numerator == 1:   _pi3 = f"π/{_fr3.denominator}"
+            elif _fr3.denominator == 1: _pi3 = f"{int(_fr3.numerator)}π"
+            else:                       _pi3 = f"{_fr3.numerator}π/{_fr3.denominator}"
+            return f"{_deg_v3:.0f}° = {_pi3} ≈ {_rad_v3:.4f} radians"
     # normalise word operators → symbols before extraction
     q = re.sub(r'\bdivided\s+by\b', '/', query, flags=re.IGNORECASE)
     q = re.sub(r'\bmultiplied\s+by\b', '*', q, flags=re.IGNORECASE)
@@ -723,6 +736,15 @@ def _agent_math_solver(query: str) -> str:
 
     # ── RIGHT TRIANGLE — sin ratio from sides ───────────────────────────────
     if _re.search(r'\bright\s+triangle\b', q) and _re.search(r'\b(?:sin|sine|hypotenuse)\b', q):
+        _opp_m18 = _re.search(r'\bopposite\s*[=:]\s*(\d+(?:\.\d+)?)', q)
+        _hyp_m18 = _re.search(r'\bhypotenuse\s*[=:]\s*(\d+(?:\.\d+)?)', q)
+        if _opp_m18 and _hyp_m18:
+            _opp_v = float(_opp_m18.group(1))
+            _hyp_v = float(_hyp_m18.group(1))
+            if _hyp_v > 0:
+                sin_val = _opp_v / _hyp_v
+                return (f"sin = opposite/hypotenuse = "
+                        f"{_opp_v:.4g}/{_hyp_v:.4g} ≈ {sin_val:.4f}")
         nums = [float(x) for x in _re.findall(r'\b(\d+(?:\.\d+)?)\b', q)]
         if len(nums) >= 2:
             for i in range(len(nums)):
@@ -736,7 +758,7 @@ def _agent_math_solver(query: str) -> str:
     # ── STATISTICS — mean, median, mode ────────────────────────────────────
     if _re.search(r'\b(?:mean|median|mode|average)\b', q):
         nums_raw = _re.findall(r'\b(\d+)\b', q)
-        if len(nums_raw) >= 4:
+        if len(nums_raw) >= 2:
             data = [int(n) for n in nums_raw[:20]]
             parts = []
             if 'mean' in q or 'average' in q:
@@ -932,6 +954,20 @@ def _agent_math_solver(query: str) -> str:
             result = p_val ** n_val
             return f"P({n_val} consecutive) = {p_val}^{n_val} ≈ {result:.5f}"
 
+    # ── PROBABILITY — coin flip / fair event N times ─────────────────────────
+    if _re.search(r'\bprobability\b', q) and \
+       _re.search(r'\b(?:flip|toss|flipping|tossing)\b', q) and \
+       _re.search(r'\b(?:coin|coins)\b', q):
+        _flip_n_m = _re.search(r'(\d+)\s+times?', q)
+        if _flip_n_m:
+            _n_flips = int(_flip_n_m.group(1))
+            from fractions import Fraction as _FrC
+            _coin_prob = _FrC(1, 2) ** _n_flips
+            _coin_dec = float(_coin_prob)
+            _coin_side = 'heads' if 'head' in q else 'tails'
+            return (f"P(all {_coin_side}) = (1/2)^{_n_flips}"
+                    f" = {_coin_prob} ≈ {_coin_dec:.4f}")
+
     # ── PROBABILITY — drawing from bag ──────────────────────────────────────
     if _re.search(r'\bprobability\b', q) and \
        _re.search(r'\b(?:drawing?|picking?|selecting?|choosing?)\b', q):
@@ -942,9 +978,17 @@ def _agent_math_solver(query: str) -> str:
             total_b = sum(ball_counts.values())
             target_bm = _re.search(
                 r'(?:drawing?|picking?|selecting?|choosing?)\s+a(?:n)?\s+(\w+)\s+ball', q)
+            if not target_bm:
+                target_bm = _re.search(
+                    r'(?:drawing?|picking?|selecting?|choosing?)\s+(\w+)(?:\s+ball)?', q)
             if target_bm:
                 target = target_bm.group(1).lower()
                 count = ball_counts.get(target, 0)
+                if not count:
+                    for _col in ball_counts:
+                        if _col in q:
+                            target, count = _col, ball_counts[_col]
+                            break
                 if total_b > 0 and count > 0:
                     from math import gcd as _gcd_p
                     g = _gcd_p(count, total_b)
@@ -1034,6 +1078,10 @@ def _agent_math_solver(query: str) -> str:
     # ── DEFINITE INTEGRAL ────────────────────────────────────────────────────
     if _re.search(r'\b(?:integral|integrat)\b', q):
         lim_m = _re.findall(r'x\s*=\s*(-?\d+(?:\.\d+)?)', q)
+        if len(lim_m) < 2:
+            _from_to_m = _re.search(r'\bfrom\s+(-?\d+(?:\.\d+)?)\s+to\s+(-?\d+(?:\.\d+)?)\b', q)
+            if _from_to_m:
+                lim_m = [_from_to_m.group(1), _from_to_m.group(2)]
         integ_m = _re.search(r'(?:integral|integrat)\w*\s+of\s+(.+?)(?:\s+from\b|\s+dx|\?|$)', q)
         if integ_m and len(lim_m) >= 2:
             raw_expr = integ_m.group(1).strip()
@@ -1899,7 +1947,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
         r"\b(?:sin|cos|tan)\s*\(?(?:\d+°?)",
         r"\bright\s+triangle\b.*\d",
         r"\bhypotenuse\b.*\d",
-        r"\b(?:mean|median|mode|average)\b.*\b\d+\b.*\b\d+\b.*\b\d+\b",
+        r"\b(?:mean|median|mode|average)\b.*\b\d+\b",
         r"\b(?:choose|ways?\s+to|combinations?|permutations?)\b.*\d",
         r"\b\d+\s*[Cc]\s*\d+\b",
         r"\bC\s*\(\s*\d+\s*,\s*\d+",
