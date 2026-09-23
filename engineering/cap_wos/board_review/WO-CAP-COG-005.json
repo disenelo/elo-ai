@@ -5,6 +5,7 @@
   "state": "board_review",
   "blocked_on": null,
   "score": "13/32",
+  "runs_completed": 5,
   "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-005_evidence.md",
   "commit": null,
   "board_verdict": null,

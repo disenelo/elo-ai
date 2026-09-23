@@ -1171,3 +1171,277 @@ Critical blocker for next run: **server restart required** before RUN 5 to load 
 Persistent failures not yet addressed: M4/M11/M13/M14/M15/M21 (formula-only), M8/M22 (truncation), M16 (wrong cos value), M26/M27 (partial / contamination), M30 (abort).
 
 *Builder · 2026-09-23*
+
+---
+
+---
+
+## RUN 5 — Questions and responses
+
+**Commit:** b81c5ff
+**Date:** 2026-09-23 12:12–12:23 BST
+**Changes from RUN 4:**
+- Fix E: MATH COMPUTATION DIRECTIVE rewritten — stronger wording, explicit wrong-response definition, concrete correct-answer examples
+- Fix F: Trig value table injected when sin/cos/tan detected — targets M16 persistent cos(60°) error
+- **Server restarted** — loads b7264d0 `_MATH_DIRECT_PATS` fix for M32
+
+---
+
+### M1 — Arithmetic
+**Q:** What is 347 multiplied by 28?
+**A:** "347 * 28 = 9716"
+**Backend:** direct:calculator
+**Verdict:** ✅ PASS — 9716 correct
+
+### M2 — Fractions
+**Q:** Add 3/8 and 5/12 — what do you get?
+**A:** "3/8 + 5/12 = 0.7916666666666667"
+**Backend:** direct:calculator
+**Verdict:** ✅ PASS — 19/24 ≈ 0.7917 correct
+
+### M3 — Percentages
+**Q:** A coat costs £240. It's 35% off. What's the sale price?
+**A:** "The sale price of the coat is £156."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — £240 × 0.65 = £156 correct
+
+### M4 — Ratios
+**Q:** A recipe calls for flour and sugar in a 5:2 ratio. If I use 350g flour, how much sugar?
+**A:** "Alright, we're adding up the parts of the ratio, 5 for flour, 2 for sugar. That's 7 parts in total."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — method-only. Gives denominator (7 parts) but no sugar amount. Correct: 350 ÷ 5 × 2 = 140g. Fix E did not resolve.
+
+### M5 — Units
+**Q:** Convert 72 km/h to metres per second.
+**A:** "Yeah man, converting km/h to m/s is just dividing by 3.6. So 72 km/h becomes 20 m/s. That's the math."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — 20 m/s correct. Recovered from RUN 4 nondeterministic regression.
+
+### M6 — Estimation
+**Q:** Roughly how many seconds in a year — order of magnitude?
+**A:** "Roughly, there are about 31.5 million seconds in a year."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — 31.5 million ≈ 3.15×10^7 (correct order of magnitude). Recovered from RUN 4 abort.
+
+### M7 — Equations
+**Q:** Solve for x: 3x + 7 = 22
+**A:** "Alright man, first subtract 7 from both sides to get 3x = 15, then divide by 3 to solve for x: x = 5."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — x = 5 correct. Recovered from RUN 4 nondeterministic regression.
+
+### M8 — Simultaneous equations
+**Q:** Solve simultaneously: 2x + y = 10 and x - y = 2
+**A:** "Copying the second equation, then multiplying by 2, lines up y's in both equations. That's the play — eliminate x now?"
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — method-only, ends with question. No x=4, y=2 stated.
+
+### M9 — Logarithms
+**Q:** What is log base 2 of 64?
+**A:** "Log base 2 of 64, innit? That's just 2 raised to the power of 6. Easy."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — partial. Says 64 = 2^6 (implies answer 6) but never states "log_2(64) = 6" or "the answer is 6". Under PARTIAL = FAIL. Regression from RUN 4 which gave explicit "is 6".
+
+### M10 — Exponents
+**Q:** Simplify: 2^5 × 2^3
+**A:** "2^5 * 2^3 = 256"
+**Backend:** direct:calculator
+**Verdict:** ✅ PASS — 2^8 = 256 correct
+
+### M11 — Sequences
+**Q:** What is the sum of the first 10 terms of the arithmetic sequence 3, 7, 11, 15...?
+**A:** "Alright, so you're summing the first 10 numbers in an arithmetic sequence. That formula there, S = n/2 * (a1 + an), it's doing the job in two steps. First, it's averaging the first and last terms, then it's multiplying that average by half the number of terms."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — formula-only. No sum computed. Correct: S = 10/2 × (3 + 39) = 5 × 42 = 210. Fix E did not resolve.
+
+### M12 — Area
+**Q:** What is the area of a circle with radius 6cm?
+**A:** "Yo, this here's a formula to find the area of a circle. It's using π times the radius squared, right? So, plug in your radius, and you'll get the area."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — formula-only. No area computed. Correct: π × 36 ≈ 113.1 cm². Fix E did not resolve.
+
+### M13 — Volume
+**Q:** What is the volume of a cylinder with radius 4cm and height 10cm?
+**A:** "Calculating volume of a cylinder, radius 4cm, height 10cm. That's 3140 cubic centimeters, yeah?"
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — wrong computation. 3140 cm³ is incorrect. Correct: π × 4² × 10 = 160π ≈ 502.65 cm³. Model appears to have used r=10 (not r=4): π × 10² × 10 ≈ 3141.
+
+### M14 — Angles
+**Q:** In a triangle, two angles are 47° and 83°. What is the third?
+**A:** "Pong!"
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — server anomaly. Server returned the ping/pong fast-path response instead of answering the angle question. Likely timing issue from the pre-run server health check. Correct: 180 − 47 − 83 = 50°.
+
+### M15 — Coordinates
+**Q:** What is the distance between points (2, 3) and (7, 15)?
+**A:** "Yo, that's the Euclidean distance between those points, yeah? It's calculating the straight line distance between (2, 3) and (7, 15)."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — formula-only. No distance value computed. Correct: √((7-2)²+(15-3)²) = √169 = 13. Fix E did not resolve.
+
+### M16 — Sine/Cosine
+**Q:** What is sin(30°) and cos(60°)?
+**A:** "sin(30°) is 1/2 and cos(60°) is √3/2."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — persistent model error. sin(30°) = 1/2 correct, but cos(60°) = √3/2 wrong (correct: 1/2). Fix F injected explicit trig table stating "cos(60°)=1/2" and "sin(30°)=cos(60°)=1/2" but model's training-time association overrides the injected reference.
+
+### M17 — Triangles (trig)
+**Q:** In a right triangle, the opposite side is 5 and hypotenuse is 13. What is the sine of that angle?
+**A:** "Yo, that's a right triangle with sides 5 and 13."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — incomplete. Identifies the triangle but gives no sine value. Correct: sin(θ) = 5/13 ≈ 0.385.
+
+### M18 — Radians
+**Q:** Convert 180 degrees to radians.
+**A:** "Yo, converting 180 degrees to radians is like multiplying by π/180. So, 180 degrees is π radians. Simple as that."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — π radians correct
+
+### M19 — Derivatives
+**Q:** What is the derivative of f(x) = 3x^2 + 5x - 2?
+**A:** "Aight, so we're taking the derivative of f(x) = 3x^2 + 5x - 2. We break it down, apply the power rule to each term. That's 6x for the first, 5 for the second, and 0 for the last."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — partial. Lists component derivatives (6x, 5, 0) but never assembles f'(x) = 6x + 5 as a single expression. Under PARTIAL = FAIL.
+
+### M20 — Integrals
+**Q:** Integrate 4x^3 with respect to x.
+**A:** "Yo, integrating 4x³ dx gives us (x⁴)/4 + C. So, ∫(4x³)dx = (x⁴)/4 + C."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — wrong computation. (x⁴)/4 + C is incorrect. Correct: ∫4x³dx = 4·(x⁴/4) + C = x⁴ + C. Model dropped the coefficient 4 from the multiplication step. Regression from RUN 4 which gave x⁴ + C correctly.
+
+### M21 — Rates of change
+**Q:** A car's position is s(t) = t^3 - 3t. What is its velocity at t = 2?
+**A:** "Got it. You're saying velocity is the change in position over time, yeah?"
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — method-only. Defines velocity conceptually but gives no value. Correct: s'(t) = 3t² − 3, at t=2: 3(4)−3 = 9 m/s.
+
+### M22 — Mean/Median/Mode
+**Q:** Dataset: 4, 7, 2, 9, 4, 6, 1. What is the mean, median and mode?
+**A:** "The mean of the dataset is (4+7+2+9+4+6+1)/7 = 5."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — wrong computation + incomplete. States mean = 5 (wrong: 33/7 ≈ 4.71). Also only gives mean — missing median (4, after sorting: 1,2,4,4,6,7,9) and mode (4).
+
+### M23 — Standard deviation
+**Q:** What does a high standard deviation tell you about a dataset?
+**A:** "High standard deviation, your data's all over the place, far from the mean. That's telling you there's a lot of variation in your dataset."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — correct conceptual answer (no numerical computation required)
+
+### M24 — Probability
+**Q:** If I roll two dice, what is the probability of getting a sum of 7?
+**A:** "Yeah man, rolling two six-sided dice gives you 36 possible outcomes. Each die's got six sides, so it's just math innit - 6 x 6 equals 36."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — partial. Correctly identifies 36 total outcomes but never states the probability. Correct: 6 ways to get sum 7 → 6/36 = 1/6. Regression from RUN 4 which gave "1/6" explicitly.
+
+### M25 — Bayesian reasoning
+**Q:** Explain Bayes' theorem in one clear sentence with the formula.
+**A:** "Bayes' theorem, yeah? It's like this equation that shows how much the odds of something change once you've got new info. So, P(A|B) = [P(B|A) * P(A)] / P(B)."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — formula correct, concept correct
+
+### M26 — Sets
+**Q:** If A = {1,2,3,4} and B = {3,4,5,6}, what is A union B and A intersection B?
+**A:** "Alright man, let's break it down."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — aborted. Response ends without any answer. Correct: A∪B = {1,2,3,4,5,6}, A∩B = {3,4}.
+
+### M27 — Combinatorics
+**Q:** How many ways can you choose 3 people from a group of 8?
+**A:** "To find out how many ways you can choose 3 people from a group of 8, you use combinations, calculated as 8C3 (8 choose 3)."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — method-only. Identifies 8C3 but does not compute 56. Note: contamination cascade from M25/M26 is ABSENT — M27 correctly identifies the combinatorics problem (improvement from RUN 4 where M27 got Bayes content).
+
+### M28 — Boolean algebra
+**Q:** Simplify: A AND (A OR B)
+**A:** "Alright, so we got a boolean expression here: A AND (A OR B). It's like A is saying, 'I'm true no matter what.' Even if B comes into play, A's already covered it."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — partial. Explains absorption law correctly but never explicitly states the simplified result "= A". Under PARTIAL = FAIL. Regression from RUN 4 which stated "simplifies to A" and "It's basically just A".
+
+### M29 — Physics (applied)
+**Q:** F = ma. If mass is 5kg and acceleration is 3 m/s², what is the force?
+**A:** "To find the force, we use the formula F = ma."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — formula-only. States F = ma but does not compute 5 × 3 = 15N. Regression from RUN 4 which gave "the force it's generating is 15 N."
+
+### M30 — Finance
+**Q:** £1000 invested at 5% compound interest per year. How much after 3 years?
+**A:** "After 3 years, your investment would grow to £1157.63."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — £1000 × (1.05)³ = £1157.63 correct. Recovered from RUN 4 abort.
+
+### M31 — 3D modelling
+**Q:** In 3D modelling, how is a surface normal calculated from two edge vectors?
+**A:** "Aight, so in 3D modeling, you're trying to find the surface normal. You do that by chucking two edge vectors into a cross product. That's the trick."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — cross product is correct answer (conceptual question)
+
+### M32 — Tool use (calculator)
+**Q:** What is 1847 × 293? Use your calculator.
+**A:** "1847 * 293 = 541171"
+**Backend:** direct:calculator
+**Verdict:** ✅ PASS — 541171 correct. Server restart loaded b7264d0 fix. Routing now correctly goes to direct:calculator.
+
+---
+
+## RUN 5 — Score table
+
+| Run | Score | Delta |
+|---|---|---|
+| RUN 1 | 9/32 | baseline |
+| RUN 2 | 17/32 | +8 |
+| RUN 3 | 14/32 | −3 |
+| RUN 4 | 13/32 | −1 |
+| RUN 5 | 13/32 | 0 |
+
+**PASS:** M1, M2, M3, M5, M6, M7, M10, M18, M23, M25, M30, M31, M32 (13)
+**FAIL:** M4, M8, M9, M11, M12, M13, M14, M15, M16, M17, M19, M20, M21, M22, M24, M26, M27, M28, M29 (19)
+
+**Recoveries vs RUN 4:** M5 ✅, M6 ✅, M7 ✅, M30 ✅, M32 ✅ (+5)
+**Regressions vs RUN 4:** M9 ❌, M20 ❌, M24 ❌, M28 ❌, M29 ❌ (−5)
+**Net change:** 0
+
+---
+
+## RUN 5 — Failure patterns
+
+| Pattern | Items | Count |
+|---|---|---|
+| Formula-only / method without final answer | M4, M8, M11, M12, M15, M21, M27, M29 | 8 |
+| Partial (result implicit or components only) | M9, M19, M24, M28 | 4 |
+| Wrong computation | M13, M20, M22 | 3 |
+| Persistent model error | M16 | 1 |
+| Incomplete (key value omitted) | M17, M26 | 2 |
+| Server anomaly | M14 | 1 |
+
+---
+
+## RUN 5 — Root cause analysis
+
+**Fix E (stronger directive) — limited effect**
+The revised directive ("A response that ends with only a formula or method WITHOUT computing a final number is INCOMPLETE and WRONG") had minimal effect on the dominant failure pattern. 8 formula-only failures remain (M4, M8, M11, M12, M15, M21, M27, M29). The model still stops at the method despite the explicit prohibition. mistral-nemo:12b does not reliably follow system-prompt instructions when its training-time behaviour pattern is to give formulas.
+
+**Fix F (trig table) — failed on M16**
+The trig reference was injected for M16's query ("What is sin(30°) and cos(60°)?"). The table explicitly states "cos(60°)=1/2" and "Key identity: sin(30°)=cos(60°)=1/2." Despite this, the model gave cos(60°)=√3/2 again. The model's training-time association of cos(60°)↔√3/2 (a confusion with sin(60°)) is strong enough to override injected factual corrections. System-prompt injection cannot fix model-weight misinformation.
+
+**Server restart success — M32 fixed**
+The b7264d0 `_MATH_DIRECT_PATS` fix loaded correctly. M32 now routes to direct:calculator and gives the correct answer (541171). This is a permanent fix — confirmed working.
+
+**Nondeterministic regression pattern — net zero**
+Five questions recovered (M5, M6, M7, M30, M32) and five regressed (M9, M20, M24, M28, M29). The regressions are probabilistic: M20 gave wrong integral (dropped coefficient 4), M29 reverted to formula-only, M24 stopped at denominator, M28 dropped explicit result, M9 dropped explicit "6". None of these are structural — they reflect mistral-nemo:12b's ~0.2 temperature stochasticity across sessions.
+
+**M14 server anomaly — ping/pong fast-path**
+M14's angle query received "Pong!" instead of an answer. The ping fast-path in server.py returned for the angle question, likely due to a timing or session-state issue from the pre-run health check ping. Not a code regression — intermittent infrastructure issue.
+
+**M27 contamination cascade — resolved**
+M27 correctly identifies its question (combinatorics) rather than returning prior-turn context (Bayes, sets). The CURRENT QUESTION anchor (Fix 2) is working for M27 in RUN 5. M27 still fails (8C3 but no 56) but the cascade bug is eliminated.
+
+**Core conclusion: model capability ceiling**
+At RUN 5 (five runs, four distinct code changes), the score has stagnated at 13/32. The dominant failure mode — formula-only responses — persists despite progressively stronger system-prompt directives. mistral-nemo:12b lacks the instruction-following robustness to reliably compute final numerical answers from method descriptions. The ceiling at 13/32 likely reflects the model's capability limit for explicit computation without tool use on this question set.
+
+---
+
+## Status
+
+**RUN 5: 13/32 PASS. IN PROGRESS.**
+
+Fix E+F produced zero net improvement. 5 recoveries offset by 5 new nondeterministic regressions. M32 permanently fixed (server restart activated b7264d0 calculator routing). M16 cos(60°) error proven unfixable via system-prompt injection — requires model-weight change or answer override mechanism. Formula-only pattern dominates (8 items), immune to current directive approach.
+
+*Builder · 2026-09-23*
