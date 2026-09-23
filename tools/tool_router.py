@@ -747,26 +747,38 @@ def _agent_math_solver(query: str) -> str:
         n, k = max(a, b), min(a, b)
         return f"C({n},{k}) = {_math.comb(n, k)}"
 
-    # ── PHYSICS — F = ma ────────────────────────────────────────────────────
-    if _re.search(r'\b(?:force|Newton|F\s*=\s*ma)\b', q, _re.IGNORECASE):
+    # ── PHYSICS — F = ma (solves for F or a) ───────────────────────────────
+    if _re.search(r'\b(?:force|Newton|F\s*=\s*ma|acceleration)\b', q, _re.IGNORECASE):
         m_m = _re.search(r'(\d+(?:\.\d+)?)\s*kg\b', q, _re.IGNORECASE)
+        f_m = _re.search(r'(\d+(?:\.\d+)?)\s*[Nn]\b', q)
         a_m = (_re.search(r'(\d+(?:\.\d+)?)\s*m/?s[²2]', q, _re.IGNORECASE) or
                _re.search(r'(?:acceler[a-z]+\s+(?:at\s+)?|at\s+)(\d+(?:\.\d+)?)', q))
+        if m_m and f_m and not a_m:
+            m_v, f_v = float(m_m.group(1)), float(f_m.group(1))
+            a_res = f_v / m_v
+            return f"a = F/m = {f_v}/{m_v} = {a_res:.2f} m/s²"
         if m_m and a_m:
             m_v, a_v = float(m_m.group(1)), float(a_m.group(1))
             return f"F = ma = {m_v} × {a_v} = {m_v * a_v} N"
 
     # ── PHYSICS — velocity / speed ──────────────────────────────────────────
-    if _re.search(r'\b(?:velocity|speed)\b', q):
-        d_m = _re.search(r'(\d+(?:\.\d+)?)\s*(?:m\b|meter|metre)', q)
-        t_m = _re.search(r'(\d+(?:\.\d+)?)\s*(?:s\b|sec|second)', q)
+    if _re.search(r'\b(?:velocity|speed|mph|miles?\s+per\s+hour|average\s+speed)\b', q) or \
+       _re.search(r'\btravels?\b.*\b(?:miles?|km)\b.*\b(?:hour|hr)s?\b', q):
+        d_m = (_re.search(r'(\d+(?:\.\d+)?)\s*miles?\b', q) or
+               _re.search(r'(\d+(?:\.\d+)?)\s*km\b', q) or
+               _re.search(r'(\d+(?:\.\d+)?)\s*(?:m\b|meter|metre)', q))
+        t_m = (_re.search(r'(\d+(?:\.\d+)?)\s*(?:hour|hr)s?\b', q) or
+               _re.search(r'(\d+(?:\.\d+)?)\s*(?:s\b|sec|second)', q))
         if d_m and t_m:
             d_v, t_v = float(d_m.group(1)), float(t_m.group(1))
             if t_v != 0:
-                return f"velocity = {d_v} ÷ {t_v} = {d_v / t_v} m/s"
+                spd = d_v / t_v
+                unit = ("km/h" if _re.search(r'\bkm\b', q) else
+                        "mph" if _re.search(r'\bmiles?\b', q) else "m/s")
+                return f"Speed = {d_v} ÷ {t_v} = {spd:.2f} {unit}"
 
-    # ── FINANCE — compound interest ─────────────────────────────────────────
-    if _re.search(r'\bcompound\s+interest\b|\binvestment\s+grow', q, _re.IGNORECASE):
+    # ── FINANCE — compound interest (annual or monthly) ─────────────────────
+    if _re.search(r'\b(?:compound\w*|invest\w*)\b.*\d', q, _re.IGNORECASE):
         p_m = _re.search(r'(?:£|\$)?\s*(\d[\d,]*(?:\.\d+)?)', q)
         r_m = _re.search(r'(\d+(?:\.\d+)?)\s*(?:%|percent)', q)
         t_m = _re.search(r'(\d+)\s*(?:year|yr)', q)
@@ -774,38 +786,204 @@ def _agent_math_solver(query: str) -> str:
             p_v = float(p_m.group(1).replace(',', ''))
             r_v = float(r_m.group(1)) / 100
             t_v = int(t_m.group(1))
+            sym = '£' if '£' in q else '$'
+            if _re.search(r'\bmonthly\b', q):
+                result = p_v * (1 + r_v / 12) ** (12 * t_v)
+                return f"A = {p_v:,.2f}(1+{r_m.group(1)}%/12)^(12×{t_v}) = {sym}{result:,.2f}"
             result = p_v * (1 + r_v) ** t_v
-            return f"A = {p_v}(1+{r_m.group(1)}%)^{t_v} ≈ £{result:.2f}"
+            return f"A = {p_v:,.2f}(1+{r_m.group(1)}%)^{t_v} ≈ {sym}{result:,.2f}"
 
     # ── RATIOS ──────────────────────────────────────────────────────────────
-    if _re.search(r'\bratio\b', q):
+    if _re.search(r'\bratio\b|\d+\s*:\s*\d+', q):
         ratio_m = _re.search(r'(\d+)\s*:\s*(\d+)', q)
-        total_m = (_re.search(r'(\d+(?:\.\d+)?)\s*g(?:rams?)?\s+total', q) or
-                   _re.search(r'total\s+(?:of\s+)?(\d+(?:\.\d+)?)\s*g', q) or
-                   _re.search(r'(\d+(?:\.\d+)?)\s*(?:g|grams?)\b(?!.*:)', q))
-        if ratio_m and total_m:
+        if ratio_m:
             a_r, b_r = int(ratio_m.group(1)), int(ratio_m.group(2))
-            t_g = float(total_m.group(1))
-            a_amt = t_g * a_r / (a_r + b_r)
-            b_amt = t_g * b_r / (a_r + b_r)
-            return (f"Ratio {a_r}:{b_r} in {t_g}g total: "
-                    f"part A = {a_amt:.1f}g, part B = {b_amt:.1f}g")
+            total_m = (_re.search(r'(\d+(?:\.\d+)?)\s*g(?:rams?)?\s+total', q) or
+                       _re.search(r'total\s+(?:of\s+)?(\d+(?:\.\d+)?)\s*g', q))
+            ingred_m = _re.search(r'(?:use|have|with|of)\s+(\d+(?:\.\d+)?)\s*g', q)
+            if total_m:
+                t_g = float(total_m.group(1))
+                a_amt = t_g * a_r / (a_r + b_r)
+                b_amt = t_g * b_r / (a_r + b_r)
+                return (f"Ratio {a_r}:{b_r} in {t_g}g total: "
+                        f"part A = {a_amt:.1f}g, part B = {b_amt:.1f}g")
+            if ingred_m:
+                part_a = float(ingred_m.group(1))
+                part_b = part_a * b_r / a_r
+                return (f"Ratio {a_r}:{b_r}: part A = {part_a}g → "
+                        f"part B = {part_a}×{b_r}/{a_r} = {part_b:.1f}g")
 
     # ── ARITHMETIC SERIES ───────────────────────────────────────────────────
     if _re.search(r'\b(?:sum|arithmetic\s+(?:series|sequence))\b', q):
         n_m = _re.search(r'first\s+(\d+)', q)
         if n_m:
             n = int(n_m.group(1))
-            a1_m = _re.search(r'(?:starting|first\s+term|a1)\s+(?:is\s+|=\s*)?(\d+)', q)
-            d_m = _re.search(r'(?:common\s+difference|d)\s+(?:is\s+|=\s*)?(\d+)', q)
-            a1 = int(a1_m.group(1)) if a1_m else 1
-            d = int(d_m.group(1)) if d_m else 1
+            seq_ints = [int(x) for x in _re.findall(r'\b(\d+)\b', q)]
+            a1, d = 1, 1
+            found_seq = False
+            for i in range(len(seq_ints) - 2):
+                diff1 = seq_ints[i + 1] - seq_ints[i]
+                diff2 = seq_ints[i + 2] - seq_ints[i + 1]
+                if diff1 == diff2 and diff1 > 0 and seq_ints[i] > 0:
+                    a1, d = seq_ints[i], diff1
+                    found_seq = True
+                    break
+            if not found_seq:
+                a1_m = _re.search(r'(?:starting|first\s+term|a1)\s+(?:is\s+|=\s*)?(\d+)', q)
+                d_m_kw = _re.search(r'(?:common\s+difference|d)\s+(?:is\s+|=\s*)?(\d+)', q)
+                if a1_m:
+                    a1 = int(a1_m.group(1))
+                if d_m_kw:
+                    d = int(d_m_kw.group(1))
             if a1 == 1 and d == 1:
                 total = n * (n + 1) // 2
                 return f"Sum of 1 to {n} = {n}×(n+1)/2 = {total}"
             an = a1 + (n - 1) * d
             total = n * (a1 + an) // 2
             return f"Sum = {n}/2 × ({a1}+{an}) = {total}"
+
+    # ── TRIANGLE — angle sum ─────────────────────────────────────────────────
+    if _re.search(r'\btriangle\b', q) and _re.search(r'\bangle\b', q):
+        angle_vals = [float(x) for x in _re.findall(r'(\d+(?:\.\d+)?)\s*(?:°|degrees?|deg\b)', q)]
+        if len(angle_vals) >= 2 and sum(angle_vals) < 180:
+            third = 180 - sum(angle_vals)
+            parts_str = ' + '.join(str(int(a) if a == int(a) else a) for a in angle_vals)
+            t_a = int(third) if third == int(third) else third
+            return f"Third angle = 180° - ({parts_str}) = {t_a}°"
+
+    # ── PROJECTILE — time to max height ────────────────────────────────────
+    if _re.search(r'\b(?:max(?:imum)?\s+height|thrown\s+upward|initial\s+velocity)\b', q):
+        v0_m = _re.search(r'(?:velocity|speed)\s+(?:of\s+)?(\d+(?:\.\d+)?)\s*m', q)
+        g_m = _re.search(r'g\s*=\s*(\d+(?:\.\d+)?)', q)
+        if v0_m:
+            v0 = float(v0_m.group(1))
+            g_val = float(g_m.group(1)) if g_m else 9.8
+            t_top = v0 / g_val
+            h_max = v0 ** 2 / (2 * g_val)
+            return f"t = v₀/g = {v0}/{g_val} = {t_top:.2f}s; max height = {h_max:.2f}m"
+
+    # ── DEPRECIATION — compound decay ───────────────────────────────────────
+    if _re.search(r'\bdepreciat\w*\b', q):
+        p_m = _re.search(r'(?:£|\$)?\s*(\d[\d,]*(?:\.\d+)?)', q)
+        r_m = _re.search(r'(\d+(?:\.\d+)?)\s*%', q)
+        t_m = _re.search(r'(\d+)\s*(?:year|yr)s?\b', q)
+        if p_m and r_m and t_m:
+            p_v = float(p_m.group(1).replace(',', ''))
+            r_v = float(r_m.group(1)) / 100
+            t_v = int(t_m.group(1))
+            result = p_v * (1 - r_v) ** t_v
+            return f"Value = {p_v:,.2f} × (1-{r_m.group(1)}%)^{t_v} = ${result:,.2f}"
+
+    # ── PROBABILITY — consecutive events ────────────────────────────────────
+    if _re.search(r'\bprobability\b', q) and \
+       _re.search(r'\b(?:consecutive|days?|times?|in\s+a\s+row)\b', q):
+        p_m = _re.search(r'probability\b.*?(\d+(?:\.\d+)?)', q)
+        n_m = _re.search(r'(\d+)\s*(?:consecutive|days?|times?)', q)
+        if p_m and n_m:
+            p_val = float(p_m.group(1))
+            n_val = int(n_m.group(1))
+            if _re.search(r'\b(?:no |not |does not)\b', q):
+                comp = 1 - p_val
+                result = comp ** n_val
+                return f"P(no event for {n_val} days) = (1-{p_val})^{n_val} ≈ {result:.5f}"
+            result = p_val ** n_val
+            return f"P({n_val} consecutive) = {p_val}^{n_val} ≈ {result:.5f}"
+
+    # ── PERCENTAGE — X% of Y ─────────────────────────────────────────────────
+    if _re.search(r'\b\d+\s*%\s+of\s+\d+', q):
+        pct_of_m = _re.search(r'(\d+(?:\.\d+)?)\s*%\s+of\s+(\d+(?:\.\d+)?)', q)
+        if pct_of_m:
+            pct, base = float(pct_of_m.group(1)), float(pct_of_m.group(2))
+            result = pct / 100 * base
+            r_str = f"{result:.2f}".rstrip('0').rstrip('.')
+            return f"{pct:.0f}% of {base:.0f} = {r_str}"
+
+    # ── PERCENTAGE — sale price / discount ─────────────────────────────────
+    if _re.search(r'\d+%\s+off\b|\bon\s+sale\b.*\d+%', q):
+        price_m = _re.search(r'(?:costs?|price[sd]?|for)\s+\$?(\d+(?:\.\d+)?)', q)
+        pct_m = _re.search(r'(\d+(?:\.\d+)?)\s*%', q)
+        if price_m and pct_m:
+            price = float(price_m.group(1))
+            pct = float(pct_m.group(1))
+            sale = price * (1 - pct / 100)
+            return f"Sale price = {price:.2f} × (1 - {pct:.0f}%) = ${sale:.2f}"
+
+    # ── PERMUTATIONS — letter arrangements ─────────────────────────────────
+    if _re.search(r'\b(?:arrangements?|permutations?)\b.*\b(?:letters?|word)\b', q) or \
+       _re.search(r'\bletters?\s+in\b.*\b[A-Z]{3,}\b', query):
+        word_m = _re.search(r'\b([A-Z]{3,})\b', query)
+        if word_m:
+            word = word_m.group(1)
+            from collections import Counter as _Counter2
+            from math import factorial as _fac2
+            freq = _Counter2(word)
+            n_w = len(word)
+            denom = 1
+            for cnt in freq.values():
+                denom *= _fac2(cnt)
+            arrangements = _fac2(n_w) // denom
+            freq_str = "×".join(f"{c}!" for c in freq.values())
+            return f"Arrangements of {word}: {n_w}!/({freq_str}) = {arrangements:,}"
+
+    # ── POLYNOMIAL DERIVATIVE ───────────────────────────────────────────────
+    if _re.search(r'\b(?:derivative|differentiat)\b', q):
+        poly_m = _re.search(r'f\s*\(\s*x\s*\)\s*=\s*(.+?)(?:\?|$)', q)
+        if poly_m:
+            expr = poly_m.group(1).strip().rstrip('?').strip()
+            expr_norm = _re.sub(r'\s+', '', expr)
+            parts_split = _re.split(r'(?=[+-])', expr_norm)
+            deriv_terms = []
+            for part in parts_split:
+                if not part:
+                    continue
+                xpow_m = _re.match(r'^([+-]?\d*(?:\.\d+)?)\s*x\^(\d+)$', part)
+                xlin_m = _re.match(r'^([+-]?\d*(?:\.\d+)?)x$', part)
+                if xpow_m:
+                    c_str, n_p = xpow_m.group(1), int(xpow_m.group(2))
+                    c = float(c_str) if c_str not in ('', '+', '-') else (1.0 if c_str != '-' else -1.0)
+                    nc = c * n_p
+                    nn = n_p - 1
+                    nc_s = str(int(nc) if nc == int(nc) else nc)
+                    if nn == 0:
+                        deriv_terms.append(nc_s)
+                    elif nn == 1:
+                        deriv_terms.append(f"{nc_s}x")
+                    else:
+                        deriv_terms.append(f"{nc_s}x^{nn}")
+                elif xlin_m:
+                    c_str = xlin_m.group(1)
+                    c = float(c_str) if c_str not in ('', '+', '-') else (1.0 if c_str != '-' else -1.0)
+                    if c != 0:
+                        deriv_terms.append(str(int(c) if c == int(c) else c))
+            if deriv_terms:
+                dr = deriv_terms[0]
+                for t in deriv_terms[1:]:
+                    dr += f" - {t[1:]}" if t.startswith('-') else f" + {t}"
+                return f"f'(x) = {dr}"
+
+    # ── DEFINITE INTEGRAL ────────────────────────────────────────────────────
+    if _re.search(r'\b(?:integral|integrat)\b', q):
+        lim_m = _re.findall(r'x\s*=\s*(-?\d+(?:\.\d+)?)', q)
+        integ_m = _re.search(r'(?:integral|integrat)\w*\s+of\s+(.+?)(?:\s+from\b|\s+dx|\?|$)', q)
+        if integ_m and len(lim_m) >= 2:
+            raw_expr = integ_m.group(1).strip()
+            a_lim, b_lim = float(lim_m[0]), float(lim_m[1])
+            def _eval_fx(x_val, _re=_re, raw=raw_expr):
+                try:
+                    e = raw.replace('^', '**')
+                    e = _re.sub(r'(\d)\s*x', r'\1 * x', e)
+                    e = e.replace('x', str(float(x_val)))
+                    return float(eval(e, {"__builtins__": {}}))  # noqa: S307
+                except Exception:
+                    return 0.0
+            n_s = 100
+            h_s = (b_lim - a_lim) / n_s
+            s_sum = _eval_fx(a_lim) + _eval_fx(b_lim)
+            for i in range(1, n_s):
+                s_sum += (4 if i % 2 else 2) * _eval_fx(a_lim + i * h_s)
+            result = s_sum * h_s / 3
+            r_str = f"{result:.2f}".rstrip('0').rstrip('.')
+            return f"∫({raw_expr})dx from {int(a_lim)} to {int(b_lim)} = {r_str}"
 
     # ── FALL BACK to arithmetic calculator ─────────────────────────────────
     return _agent_calculator(query)
@@ -1414,6 +1592,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     state reads, identity responses (lore/creator), or user-config actions
     (location set). Returns (enriched, executor) if an intercept fires, else None.
     """
+    global _last_direct_result  # hoisted — was duplicated inside try blocks (SyntaxError on 3.x)
     _lower = user_input.lower()
 
     # WO-CORE-REPAIR-P0-001: if the world-knowledge gate already injected a
@@ -1532,7 +1711,6 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     ]
     if any(re.search(p, _lower) for p in _MATH_DIRECT_PATS):
         try:
-            global _last_direct_result
             _calc_result = _agent_calculator(user_input)
             _last_direct_result = _calc_result
             return _calc_result, "calculator"
@@ -1557,16 +1735,29 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
         r"\b(?:velocity|speed)\b.*\b\d+\s*(?:m|meters?)\b.*\b\d+\s*(?:s|sec|seconds?)\b",
         r"\bcompound\s+interest\b.*\d",
         r"\binvestment\b.*(?:grows?|rate)\b.*\d",
-        r"\bratio\b.*\d+\s*:\s*\d+.*\d+",
-        r"\b(?:sum\s+of|first\s+\d+\s+terms?|arithmetic\s+series)\b.*\d",
-        r"\bprobability\b.*\b(?:dice?|six.sided|rolling)\b",
+        r"(?:\bratio\b.*\d+\s*:\s*\d+|\d+\s*:\s*\d+.*\bratio\b).*\d+\s*(?:g|grams?|kg|lb)?",
+        r"\b(?:sum\s+of|first\s+\d+\s+terms?|arithmetic\s+(?:series|sequence))\b.*\d",
+        r"\bprobability\b.*\d",
         r"\b(?:derivative|differentiat)\b.*f\s*\(\s*x\s*\)",
         r"\b(?:integral|integrat)\b.*\d",
+        r"\b(?:arrangements?|permutations?)\b.*\b(?:letters?|word)\b",
+        r"\bletters?\s+in\b.*\b[A-Z]{3,}\b",
+        r"\b\d+%\s+of\s+\d+",
+        r"\bon\s+sale\b.*\d+%|\d+%\s+off\b",
+        r"\btravels?\b.*\b(?:miles?|km)\b.*\b(?:hour|hr)s?\b",
+        r"\baverage\s+speed\b.*\d",
+        r"\bdepreciat\w*\b.*\d+%",
+        r"\bmax(?:imum)?\s+height\b.*\d",
+        r"\bthrown\s+upward\b.*\d",
+        r"\binitial\s+velocity\b.*\d",
+        r"\b(?:acceleration|f\s*=\s*ma)\b.*\d+\s*(?:n|kg|m)",
+        r"\bforce\b.*\d+\s*n\b",
+        r"\bcompound(?:ed)?\s+(?:interest|monthly|annually)\b.*\d",
+        r"\binvest\b.*\d.*%",
         r"\b(?:find|calculate|compute|evaluat)\b.*\b(?:area|volume|force|velocity|mean|median|probability|distance|angle)\b.*\d",
     ]
     if any(re.search(p, _lower) for p in _MATH_DOMAIN_PATS):
         try:
-            global _last_direct_result
             _math_result = _agent_math_solver(user_input)
             _last_direct_result = _math_result
             return _math_result, "calculator"
