@@ -580,6 +580,19 @@ def _agent_calculator(query: str) -> str:
                 raise ValueError("unsupported op")
             return op(_safe_eval(node.operand))
         raise ValueError("unsupported node")
+    # Factorial intercept — handles "8 factorial", "factorial of 8", "8!"
+    _fact_m = re.search(r'(\d+)\s*!|\bfactorial\s+(?:of\s+)?(\d+)|(\d+)\s+factorial\b', query, re.IGNORECASE)
+    if _fact_m:
+        from math import factorial as _fac_f
+        _n_fact = int(_fact_m.group(1) or _fact_m.group(2) or _fact_m.group(3))
+        return f"{_n_fact}! = {_fac_f(_n_fact)}"
+    # Power intercept — handles "7 to the power of 4"
+    _pow_m = re.search(r'(\d+(?:\.\d+)?)\s+to\s+the\s+power\s+of\s+(\d+(?:\.\d+)?)', query, re.IGNORECASE)
+    if _pow_m:
+        _base, _exp = float(_pow_m.group(1)), float(_pow_m.group(2))
+        _result_pow = _base ** _exp
+        if isinstance(_result_pow, float) and _result_pow.is_integer(): _result_pow = int(_result_pow)
+        return f"{_base:.0f}^{_exp:.0f} = {_result_pow}"
     # normalise word operators → symbols before extraction
     q = re.sub(r'\bdivided\s+by\b', '/', query, flags=re.IGNORECASE)
     q = re.sub(r'\bmultiplied\s+by\b', '*', q, flags=re.IGNORECASE)
@@ -599,6 +612,15 @@ def _agent_calculator(query: str) -> str:
     expr = match.group(0).strip().replace("^", "**")
     if not expr or not re.search(r'\d', expr):
         raise ValueError("no numeric expression found")
+    # Fraction arithmetic — exact rational result when expression contains fractions
+    if re.search(r'\d+/\d+', expr) and re.search(r'[+\-\*]', expr):
+        from fractions import Fraction
+        try:
+            _frac_expr = re.sub(r'(\d+)/(\d+)', r'Fraction(\1,\2)', expr)
+            _frac_result = eval(_frac_expr, {"__builtins__": {}, "Fraction": Fraction})
+            return f"{expr} = {_frac_result}"
+        except Exception:
+            pass
     tree = ast.parse(expr, mode="eval")
     result = _safe_eval(tree.body)
     if isinstance(result, float) and result.is_integer():
@@ -625,6 +647,10 @@ def _agent_math_solver(query: str) -> str:
                 return f"Circumference = 2π × {r} ≈ {v:.4f}"
             v = _math.pi * r ** 2
             return f"Area = π × {r}² ≈ {v:.4f}"
+        else:
+            if 'circumference' in q:
+                return "Circumference of a circle: C = 2πr ≈ 6.2832 × r"
+            return "Area of a circle: A = πr² ≈ 3.1416 × r²"
 
     # ── GEOMETRY — cylinder volume ──────────────────────────────────────────
     if _re.search(r'\bvolume\b', q) and _re.search(r'\bcylinder\b', q):
@@ -642,6 +668,17 @@ def _agent_math_solver(query: str) -> str:
             r = float(r_m.group(1))
             v = (4 / 3) * _math.pi * r ** 3
             return f"Volume = (4/3)π × {r}³ ≈ {v:.4f}"
+
+    # ── GEOMETRY — regular polygon interior angles ────────────────────────────
+    _poly_m = _re.search(r'\b(hexagon|pentagon|heptagon|octagon|triangle|square|decagon)\b', q)
+    if _poly_m and _re.search(r'\bangle', q):
+        _poly_sides = {'triangle': 3, 'square': 4, 'pentagon': 5, 'hexagon': 6,
+                       'heptagon': 7, 'octagon': 8, 'decagon': 10}
+        _n_sides = _poly_sides.get(_poly_m.group(1))
+        if _n_sides:
+            _int_angle = (_n_sides - 2) * 180 / _n_sides
+            return (f"Interior angles of a regular {_poly_m.group(1)} = "
+                    f"({_n_sides}-2)×180/{_n_sides} = {_int_angle:.0f}°")
 
     # ── GEOMETRY — Euclidean distance ───────────────────────────────────────
     if _re.search(r'\bdistance\b', q):
@@ -1028,6 +1065,13 @@ def _agent_math_solver(query: str) -> str:
         from math import factorial as _fac_f
         return f"{n_fact}! = {_fac_f(n_fact)}"
 
+    # ── GCD — greatest common divisor ────────────────────────────────────────
+    if _re.search(r'\b(?:greatest\s+common\s+divisor|gcd)\b', q):
+        _nums_gcd = [int(x) for x in _re.findall(r'\b(\d+)\b', q)]
+        if len(_nums_gcd) >= 2:
+            _g = _math.gcd(_nums_gcd[0], _nums_gcd[1])
+            return f"GCD({_nums_gcd[0]}, {_nums_gcd[1]}) = {_g}"
+
     # ── LINEAR EQUATION — solve for x ────────────────────────────────────────
     if _re.search(r'\b(?:solve|find)\b', q) and _re.search(r'\d+\s*x\b', q):
         eq_m = _re.search(
@@ -1055,6 +1099,19 @@ def _agent_math_solver(query: str) -> str:
         if s_cube is not None:
             return f"Volume = s³ = {s_cube:.0f}³ = {s_cube**3:.2f}"
 
+    # ── AREA — rectangle / square ─────────────────────────────────────────────
+    if _re.search(r'\barea\b.*\b(?:rectangle|square)\b|\b(?:rectangle|square)\b.*\barea\b', q):
+        _l_m_a = _re.search(r'length\b.*?(\d+(?:\.\d+)?)', q)
+        _w_m_a = _re.search(r'width\b.*?(\d+(?:\.\d+)?)', q)
+        if _l_m_a and _w_m_a:
+            _l_a, _w_a = float(_l_m_a.group(1)), float(_w_m_a.group(1))
+        else:
+            _nums_a = [float(x) for x in _re.findall(r'\b(\d+(?:\.\d+)?)\b', q)]
+            _l_a, _w_a = (_nums_a[0], _nums_a[1]) if len(_nums_a) >= 2 else (None, None)
+        if _l_a is not None:
+            _area_a = _l_a * _w_a
+            return f"Area = l × w = {_l_a:.0f} × {_w_a:.0f} = {_area_a:.2f}"
+
     # ── PERIMETER — rectangle / square ───────────────────────────────────────
     if _re.search(r'\bperimeter\b.*\b(?:rectangle|square)\b|\b(?:rectangle|square)\b.*\bperimeter\b', q):
         l_m_p = _re.search(r'length\b.*?(\d+(?:\.\d+)?)', q)
@@ -1067,6 +1124,22 @@ def _agent_math_solver(query: str) -> str:
         if l_d is not None:
             p_d = 2 * (l_d + w_d)
             return f"Perimeter = 2(l+w) = 2({l_d:.0f}+{w_d:.0f}) = {p_d:.2f}"
+
+    # ── DEGREES → RADIANS ─────────────────────────────────────────────────────
+    if _re.search(r'\bradians?\b', q) and _re.search(r'\bdegrees?\b', q):
+        _deg_m2 = _re.search(r'(\d+(?:\.\d+)?)\s*degrees?', q)
+        if _deg_m2:
+            _deg_v = float(_deg_m2.group(1))
+            _rad_v = _deg_v * _math.pi / 180
+            from fractions import Fraction as _Frac2
+            _frac2 = _Frac2(_deg_v / 180).limit_denominator(100)
+            if _frac2.numerator == 1:
+                _pi_str2 = f"π/{_frac2.denominator}"
+            elif _frac2.denominator == 1:
+                _pi_str2 = f"{int(_frac2.numerator)}π"
+            else:
+                _pi_str2 = f"{_frac2.numerator}π/{_frac2.denominator}"
+            return f"{_deg_v:.0f}° = {_pi_str2} ≈ {_rad_v:.4f} radians"
 
     # ── TEMPERATURE CONVERSION ────────────────────────────────────────────────
     if _re.search(r'\b(?:fahrenheit|celsius|celcius|centigrade)\b', q):
@@ -1862,6 +1935,11 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
         r"\bdiscount\b.*\d+%|\d+%.*\bdiscount\b",
         r"\b(?:fahrenheit|celsius|celcius|centigrade)\b",
         r"\bbag\b.*\bprobability\b|\bprobability\b.*\b(?:ball|bag|drawing?|picking?)\b",
+        r"\b(?:greatest\s+common\s+divisor|gcd)\b",
+        r"\b\d+\s*degrees?\s+(?:to|in)\s+radians?\b|\bconvert\b.*\bdegrees?\b.*\bradians?\b|\bradians?\b.*\b\d+\s*degrees?\b|\bcalculate\b.*\bdegrees?\b.*\bradians?\b",
+        r"\bhexagon\b.*\bang\w+|\bang\w+.*\bhexagon\b|\bpentagon\b.*\bang\w+|\bang\w+.*\bpentagon\b|\boctagon\b.*\bang\w+|\bang\w+.*\boctagon\b",
+        r"\barea\b.*\brectangle\b|\brectangle\b.*\barea\b",
+        r"\bcircumference\b.*\bcircle\b|\bcircle\b.*\bcircumference\b",
     ]
     if any(re.search(p, _lower) for p in _MATH_DOMAIN_PATS):
         try:
