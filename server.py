@@ -4967,22 +4967,37 @@ def _process_turn(raw: str) -> dict:
                 # D8: never veto Executive's capability decision. Only skip enrichment
                 # when the Executive chose no capabilities AND the gatekeeper confirms
                 # conversation — i.e. both agree there is no tool to run.
-                _direct = None  # set by direct-return agents (time, calculator, timer)
-                if _gk_wants_conversation and not _exec_wants_tools:
-                    _enriched, _agent = raw, "direct"
-                else:
-                    # WO-118 Row 14 ROUTE: use Executive's capability choice when available.
-                    # plan.capabilities = [(agent_name, query)] chosen by spine's capability
-                    # faculty. Trust that over re-running keyword matching on the same raw input.
-                    _enriched, _agent = _tool_enrich_from_plan(raw, _plan_caps)
-
-                    # Direct-return agents (time, calculator, timer) produce authoritative
-                    # factual results that must not be rewritten by the LLM.
-                    _direct = _get_direct_result()
-                    if _direct:
+                # HOTFIX 2 — WO-CAP-COG-005: fire _direct_intercepts before Gatekeeper.
+                # Handles bare arithmetic and domain word problems (geometry, trig, stats,
+                # probability, physics, finance) without touching the LLM.
+                _direct = None
+                try:
+                    from tools.tool_router import _direct_intercepts as _di_fn
+                    _di_hit = _di_fn(raw)
+                    if _di_hit:
+                        _direct, _agent = _di_hit
                         response = _direct
                         backend_used = f"direct:{_agent}"
                         _llm_latency_ms = 0.0
+                        _enriched = raw
+                except Exception:
+                    _di_hit = None
+                if not _direct:
+                    if _gk_wants_conversation and not _exec_wants_tools:
+                        _enriched, _agent = raw, "direct"
+                    else:
+                        # WO-118 Row 14 ROUTE: use Executive's capability choice when available.
+                        # plan.capabilities = [(agent_name, query)] chosen by spine's capability
+                        # faculty. Trust that over re-running keyword matching on the same raw input.
+                        _enriched, _agent = _tool_enrich_from_plan(raw, _plan_caps)
+
+                        # Direct-return agents (time, calculator, timer) produce authoritative
+                        # factual results that must not be rewritten by the LLM.
+                        _direct = _get_direct_result()
+                        if _direct:
+                            response = _direct
+                            backend_used = f"direct:{_agent}"
+                            _llm_latency_ms = 0.0
 
                 # WO-027 Seam A — inject relevant past corrections as few-shot ICL examples
                 try:
