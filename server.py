@@ -1311,6 +1311,8 @@ _BARE_FAREWELLS = frozenset({
     # "safe" alone is removed — it's ambiguous South London slang (acknowledgement or farewell)
     # and must reach the LLM so context determines meaning. Qualified forms stay.
     "safe g", "safe bruv", "safe blud", "safe bro", "safe fam", "safe man",
+    # COG-003: "ight" is a South London departure token — must close, not probe
+    "ight", "ight g", "ight fam", "ight bruv", "ight blud",
     "in a bit", "laters", "later", "later g", "later fam", "later bruv", "later blud",
     "peace out", "peace", "one love",
     "i'm out", "i'm gone", "i'm off", "i'm heading out", "i'm heading off",

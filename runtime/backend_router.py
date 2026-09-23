@@ -1350,6 +1350,55 @@ def _ollama_stream(
             "If the new topic needs clarification, ask a single focused question about it."
         )
 
+    # COG-003: INCOMING NARRATIVE SIGNAL — David begins narrating an experience or story.
+    # "I built...", "So we were...", "What happened was...", "Right so basically..."
+    # eLo must RECEIVE, not retrieve. Do not search memory — listen to what is being told.
+    _NARRATIVE_START_RE = re.compile(
+        r"(?:^|\.\s+)(?:so\s+(?:basically|we|I|it)|what\s+happened\s+(?:was|is)"
+        r"|right\s+so|I\s+was\s+just|I\s+built|I\s+made|I\s+started|I\s+tried|I\s+found"
+        r"|we\s+were|we\s+tried|we\s+built|we\s+made|picture\s+this|so\s+get\s+this"
+        r"|long\s+story|anyway\s+so|you\s+know\s+how)\b",
+        re.IGNORECASE,
+    )
+    _is_incoming_narrative = bool(_NARRATIVE_START_RE.search(_input_stripped)) and len(_words_stripped) >= 6
+    if _is_incoming_narrative:
+        _conditioned_system += (
+            "\n\nINCOMING NARRATIVE SIGNAL — David is narrating an experience, story, or event. "
+            "RECEIVE what is being told. Do NOT search memory or ask about prior context. "
+            "Do NOT say 'I don't have that' or 'I don't have information about that'. "
+            "Listen to the story being shared. Respond to what is actually in the message — "
+            "acknowledge it, reflect it back, or respond to the specific thing being described. "
+            "You are hearing this now. That is enough."
+        )
+
+    # COG-003: CORRECTION SIGNAL — David is correcting eLo or updating eLo's understanding.
+    # "actually...", "no, I...", "that's not right", "just to clarify..."
+    # Must trigger receive-and-update, NOT a memory-lookup response.
+    _CORRECTION_RE = re.compile(
+        r"(?:^|\.\s+)(?:actually[,\s]|no[,\s]+(?:I|it|that|we|the)|that'?s\s+not\s+(?:right|correct|accurate|what)"
+        r"|just\s+to\s+clarify|to\s+be\s+clear|correction[:\s]|I\s+should\s+clarify"
+        r"|let\s+me\s+correct|what\s+I\s+meant|I\s+didn'?t\s+mean)\b",
+        re.IGNORECASE,
+    )
+    _is_correction = bool(_CORRECTION_RE.search(_input_stripped))
+    if _is_correction:
+        _conditioned_system += (
+            "\n\nCORRECTION SIGNAL — David is correcting or clarifying something. "
+            "RECEIVE the correction. Update your understanding. "
+            "Do NOT say 'I don't have that about you' or 'I don't have information on that'. "
+            "Acknowledge what has been corrected and respond from the updated understanding. "
+            "One or two sentences. Do not over-explain the update."
+        )
+
+    # COG-003: THIRD-PERSON ADDRESS GUARD — always enforce second-person address.
+    # Failures in B10 (challenge) and B14 (brainstorming) showed drift to "the user", "he has".
+    # This guard is injected unconditionally to catch all drift points in both branches.
+    _conditioned_system += (
+        "\n\n[ADDRESS RULE] Always address David directly in second person: 'you', 'your', 'you're'. "
+        "NEVER say 'the user', 'he', 'his', 'him', 'David's frustration', 'he has' when referring to the person you are talking to. "
+        "You are speaking TO David. Address him directly."
+    )
+
     # COG-005 Fix 1 + Fix 2: math query detection.
     # Fix 1: inject computation directive so model doesn't stop at formula.
     # Fix 2: prepend CURRENT QUESTION anchor to prevent contamination cascade from prior turn subject.
@@ -1974,6 +2023,51 @@ def route(
             "Do NOT invent prior history for the new topic — start fresh. "
             "If the new topic needs clarification, ask a single focused question about it."
         )
+
+    # COG-003: INCOMING NARRATIVE SIGNAL — rt-path equivalent.
+    _rt_NARRATIVE_START_RE = re.compile(
+        r"(?:^|\.\s+)(?:so\s+(?:basically|we|I|it)|what\s+happened\s+(?:was|is)"
+        r"|right\s+so|I\s+was\s+just|I\s+built|I\s+made|I\s+started|I\s+tried|I\s+found"
+        r"|we\s+were|we\s+tried|we\s+built|we\s+made|picture\s+this|so\s+get\s+this"
+        r"|long\s+story|anyway\s+so|you\s+know\s+how)\b",
+        re.IGNORECASE,
+    )
+    _rt_is_incoming_narrative = (
+        bool(_rt_NARRATIVE_START_RE.search(_rt_input_stripped)) and len(_rt_tokens) >= 6
+    )
+    if _rt_is_incoming_narrative:
+        system_prompt += (
+            "\n\nINCOMING NARRATIVE SIGNAL — David is narrating an experience, story, or event. "
+            "RECEIVE what is being told. Do NOT search memory or ask about prior context. "
+            "Do NOT say 'I don't have that' or 'I don't have information about that'. "
+            "Listen to the story being shared. Respond to what is actually in the message — "
+            "acknowledge it, reflect it back, or respond to the specific thing being described. "
+            "You are hearing this now. That is enough."
+        )
+
+    # COG-003: CORRECTION SIGNAL — rt-path equivalent.
+    _rt_CORRECTION_RE = re.compile(
+        r"(?:^|\.\s+)(?:actually[,\s]|no[,\s]+(?:I|it|that|we|the)|that'?s\s+not\s+(?:right|correct|accurate|what)"
+        r"|just\s+to\s+clarify|to\s+be\s+clear|correction[:\s]|I\s+should\s+clarify"
+        r"|let\s+me\s+correct|what\s+I\s+meant|I\s+didn'?t\s+mean)\b",
+        re.IGNORECASE,
+    )
+    _rt_is_correction = bool(_rt_CORRECTION_RE.search(_rt_input_stripped))
+    if _rt_is_correction:
+        system_prompt += (
+            "\n\nCORRECTION SIGNAL — David is correcting or clarifying something. "
+            "RECEIVE the correction. Update your understanding. "
+            "Do NOT say 'I don't have that about you' or 'I don't have information on that'. "
+            "Acknowledge what has been corrected and respond from the updated understanding. "
+            "One or two sentences. Do not over-explain the update."
+        )
+
+    # COG-003: THIRD-PERSON ADDRESS GUARD — always enforce second-person address (rt-path).
+    system_prompt += (
+        "\n\n[ADDRESS RULE] Always address David directly in second person: 'you', 'your', 'you're'. "
+        "NEVER say 'the user', 'he', 'his', 'him', 'David's frustration', 'he has' when referring to the person you are talking to. "
+        "You are speaking TO David. Address him directly."
+    )
 
     # ── CLOSURE FAST-RETURN ────────────────────────────────────────────────────────
     # For South London closure/acknowledgment signals the 8b model reliably ignores
