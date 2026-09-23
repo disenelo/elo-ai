@@ -4,9 +4,9 @@
   "seq": 5,
   "state": "board_review",
   "blocked_on": null,
-  "score": "17/32",
+  "score": "14/32",
   "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-005_evidence.md",
   "commit": null,
   "board_verdict": null,
-  "last_updated": "2026-09-22"
+  "last_updated": "2026-09-23"
 }

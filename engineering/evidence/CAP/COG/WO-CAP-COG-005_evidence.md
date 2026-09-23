@@ -567,3 +567,305 @@ Three-fix patch (commit ccf3805) produced +8 improvement: calculator routing mis
 Remaining failures: formula-only in geometry/applied domains (8 items), truncation (3), one contamination gap (M27), one wrong answer (M22), tool use (M32).
 
 *Builder · 2026-09-22*
+
+---
+
+## RUN 3 — Test run — 2026-09-23 01:06–01:17 (post-fix, commit 0c03082)
+
+**Fixes active (commit 0c03082, 2026-09-22):**
+- Fix A: Raise `num_predict` to 512 for math queries (was 256) — targets truncation (M8, M11, M29)
+- Fix B: Added union/intersection/subset + combinatorics patterns to `_MATH_QUERY_RE` — targets M26/M27 routing
+- Fix C: Append "Give the specific numerical answer, not just the formula or method." to user input when math detected — targets formula-only failures
+- Fix D: Added `r"\buse\s+(?:your|the)\s+calculator\b"` to `TOOL_PATTERNS` calculator list in `tool_router.py` — intended to target M32 (placed in wrong location, not effective)
+
+**Test script:** `cog005_run3.sh` (32 questions, `--max-time 60`, `sleep 4` between turns)
+
+---
+
+### M1 — Arithmetic
+**Q:** What is 347 multiplied by 28?
+**A:** "347 * 28 = 9716"
+**Backend:** direct:calculator
+**Verdict:** ✅ PASS — 9716 correct
+
+### M2 — Fractions
+**Q:** Add 3/8 and 5/12 — what do you get?
+**A:** "3/8 + 5/12 = 0.7916666666666667"
+**Backend:** direct:calculator
+**Verdict:** ✅ PASS — 0.7917 (≈ 19/24) correct
+
+### M3 — Percentages
+**Q:** A coat costs £240. It's 35% off. What's the sale price?
+**A:** "The sale price of the coat is £156."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — £156 correct
+
+### M4 — Ratios
+**Q:** A recipe calls for flour and sugar in a 5:2 ratio. If I use 350g flour, how much sugar?
+**A:** "Yeah man, we're figuring the total ratio parts here. It's 5 for flour plus 2 for sugar, equals 7 parts in total."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — "7 parts total" only; no 140g sugar. PARTIAL = FAIL.
+
+### M5 — Units
+**Q:** Convert 72 km/h to metres per second.
+**A:** "Yeah man, converting km/h to m/s is just a matter of dividing by 3.6. Like, 72 km/h is 20 m/s. Easy, innit?"
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — 20 m/s correct
+
+### M6 — Estimation
+**Q:** Roughly how many seconds in a year — order of magnitude?
+**A:** "Hey man, chillax!"
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — no answer. Regression from RUN 2 (was PASS). Nondeterminism / session state.
+
+### M7 — Equations
+**Q:** Solve for x: 3x + 7 = 22
+**A:** "Then, divide by 3, and there's your x, 5."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — x=5 stated
+
+### M8 — Simultaneous Equations
+**Q:** Solve simultaneously: 2x + y = 10 and x - y = 2
+**A:** "Alright, let's solve this step by step. First, we'll add the two equations together to eliminate y: (2x + y) + (x - y) = 10 + 2"
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — truncated before x=4, y=2 answer. Fix A partially effective (longer output than RUN 2) but still truncates before final values.
+
+### M9 — Logarithms
+**Q:** What is log base 2 of 64?
+**A:** "Yeah man, that's a solid question. So, log base 2 of 64, that's like asking how many times 2 needs to multiply by itself to reach 64. It's 6, innit."
+**Backend:** ollama
+**Verdict:** ✅ PASS — 6 correct
+
+### M10 — Exponents
+**Q:** Simplify: 2^5 × 2^3
+**A:** "2^5 * 2^3 = 256"
+**Backend:** direct:calculator
+**Verdict:** ✅ PASS — 256 correct
+
+### M11 — Sequences
+**Q:** What is the sum of the first 10 terms of the arithmetic sequence 3, 7, 11, 15...?
+**A:** "That formula's your play — plug in your 'n', first term, last term, and you're golden."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — formula/method only, no 210 answer. Fix A not sufficient for this pattern.
+
+### M12 — Area
+**Q:** What is the area of a circle with radius 6cm?
+**A:** "Yeah man, that's the area of a circle, right? Using the formula A equals pi r squared, and with a radius of 6cm, it's about 113.1 square centimeters."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — 113.1 cm² correct. NEW PASS vs RUN 2. Fix C effective here.
+
+### M13 — Volume
+**Q:** What is the volume of a cylinder with radius 4cm and height 10cm?
+**A:** "Alright, so we're dealing with cylinder volume here. That's π times radius squared times height. It's all about those dimensions, yeah?"
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — formula only, no 502.7 cm³. Fix C not effective here.
+
+### M14 — Angles
+**Q:** In a triangle, two angles are 47° and 83°. What is the third?
+**A:** "You got a triangle. Two angles that's 180° minus them. That's your third angle."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — method only, no 50°. Fix C not effective here.
+
+### M15 — Coordinates
+**Q:** What is the distance between points (2, 3) and (7, 15)?
+**A:** "Yo, that's finding the gap between (2, 3) and (7, 15). It's pulling (x2-x1)² and (y2-y1)², then taking the square root. That's your distance."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — method only, no 13. Fix C not effective here.
+
+### M16 — Sin/Cos
+**Q:** What is sin(30°) and cos(60°)?
+**A:** "Trig's like that, innit. Sin of 30's 1/2, cos of 60's √3/2. No biggie."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — cos(60°)=√3/2 WRONG (correct: 1/2). Regression from RUN 2 (was PASS). Root cause: Fix C appended suffix to this query (matches `\bsin\b|\bcos\b`), confusing the model into producing wrong cos value.
+
+### M17 — Triangles (Trig)
+**Q:** In a right triangle, the opposite side is 5 and hypotenuse is 13. What is the sine of that angle?
+**A:** "Yo, that's a right triangle!"
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — no answer whatsoever. Regression from RUN 2 (was PASS). Root cause: Fix C appended suffix to this query (matches `\bsin\b`), collapsing the response to an exclamation.
+
+### M18 — Radians
+**Q:** Convert 180 degrees to radians.
+**A:** "Convert 180° to radians? That's π, innit."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — π radians correct
+
+### M19 — Derivatives
+**Q:** What is the derivative of f(x) = 3x^2 + 5x - 2?
+**A:** "Yo, that's us differentiating each term under f(x). We applying power rule, right? So, that's 6x for the first term, 5 for the second, and nothing for the last."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — 6x+5 stated correctly
+
+### M20 — Integrals
+**Q:** Integrate 4x^3 with respect to x.
+**A:** "Aight, so we're integrating 4x³ dx. That's 4 * (x⁴/4) + C, innit? So, ∫4x³ dx = x⁴ + C."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — x⁴+C correct
+
+### M21 — Rates of Change
+**Q:** A car's position is s(t) = t^3 - 3t. What is its velocity at t = 2?
+**A:** "Yo, to find the velocity, we gotta differentiate s(t) with respect to t."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — method only, no v(2)=9. Fix C not effective here.
+
+### M22 — Mean/Median/Mode
+**Q:** Dataset: 4, 7, 2, 9, 4, 6, 1. What is the mean, median and mode?
+**A:** "Aight, so for your dataset 4, 7, 2, 9, 4, 6, 1:"
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — truncated immediately after the colon, no values.
+
+### M23 — Standard Deviation
+**Q:** What does a high standard deviation tell you about a dataset?
+**A:** "Aight, high standard deviation, numbers are all over the place, far from the average. That's your spread."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — correct conceptual answer (definition question, not computation)
+
+### M24 — Probability
+**Q:** If I roll two dice, what is the probability of getting a sum of 7?
+**A:** "Yeah man, rolling two dice, there's six combos to land a sum of 7."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — "6 combos" stated but no probability fraction 1/6. PARTIAL = FAIL.
+
+### M25 — Bayesian Reasoning
+**Q:** Explain Bayes' theorem in one clear sentence with the formula.
+**A:** "Bayes' theorem, that's the math for updating beliefs. P(A|B), that's your likelihood of A happening given B. We got P(B|A) times P(A), that's the probability of B happening given A, multiplied by the initial probability of A, all over P(B), the probability of B happening at all."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — formula correctly stated
+
+### M26 — Sets
+**Q:** If A = {1,2,3,4} and B = {3,4,5,6}, what is A union B and A intersection B?
+**A:** "Yeah man, A union B, that's just all the unique numbers from both sets, so it'd be {1,2,3,4,5,6}."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — union {1,2,3,4,5,6} correct but no intersection {3,4}. PARTIAL = FAIL.
+
+### M27 — Combinatorics
+**Q:** How many ways can you choose 3 people from a group of 8?
+**A:** "Four items, choosing three. That's C(4,3) — 4 choose 3."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — C(4,3) WRONG. Contamination cascade from M26 (4 items in sets). Should be C(8,3)=56. Fix B improved regex coverage but contamination cascade persisted.
+
+### M28 — Boolean Algebra
+**Q:** Simplify: A AND (A OR B)
+**A:** "Hey man, that's just saying 'A' in plain English. If A is true, the whole thing is true. If A is false, it doesn't matter what B is, the whole thing is false."
+**Backend:** ollama(stream)
+**Verdict:** ✅ PASS — simplifies to A, correct
+
+### M29 — Physics (Applied)
+**Q:** F = ma. If mass is 5kg and acceleration is 3 m/s², what is the force?
+**A:** "\"Yo, that's a force calculation right there. F equals mass times acceleration, innit?"
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — method only, no 15N. Fix C appended suffix but model still stopped at method statement.
+
+### M30 — Finance
+**Q:** £1000 invested at 5% compound interest per year. How much after 3 years?
+**A:** "Alright, let's calculate this."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — "let's calculate this" — response immediately aborted, no £1157.63.
+
+### M31 — 3D Modelling
+**Q:** In 3D modelling, how is a surface normal calculated from two edge vectors?
+**A:** "Alright, that's a vector math problem."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — no cross product answer. Regression from RUN 2 (was PASS). Nondeterminism / session state.
+
+### M32 — Tool Use
+**Q:** What is 1847 × 293? Use your calculator.
+**A:** "The product of 1847 and 293 is 541,761."
+**Backend:** ollama(stream)
+**Verdict:** ❌ FAIL — 541,761 WRONG (correct: 541,171). Still routed to ollama(stream), not direct:calculator. Fix D placed in wrong location (TOOL_PATTERNS, not _MATH_DIRECT_PATS). Unicode × (U+00D7) not matched by existing _MATH_DIRECT_PATS numeric expression pattern.
+
+---
+
+## RUN 3 — Score summary
+
+| Q | Topic | RUN 1 | RUN 2 | RUN 3 | Change vs RUN 2 |
+|---|---|---|---|---|---|
+| M1 | Arithmetic | ❌ | ✅ | ✅ | — |
+| M2 | Fractions | ❌ | ✅ | ✅ | — |
+| M3 | Percentages | ✅ | ✅ | ✅ | — |
+| M4 | Ratios | ❌ | ❌ | ❌ | — |
+| M5 | Units | ✅ | ✅ | ✅ | — |
+| M6 | Estimation | ❌ | ✅ | ❌ | **−1 regression** |
+| M7 | Equations | ❌ | ✅ | ✅ | — |
+| M8 | Simultaneous | ❌ | ❌ | ❌ | — |
+| M9 | Logarithms | ❌ | ✅ | ✅ | — |
+| M10 | Exponents | ❌ | ✅ | ✅ | — |
+| M11 | Sequences | ❌ | ❌ | ❌ | — |
+| M12 | Area | ❌ | ❌ | ✅ | **+1 new pass** |
+| M13 | Volume | ❌ | ❌ | ❌ | — |
+| M14 | Angles | ❌ | ❌ | ❌ | — |
+| M15 | Coordinates | ❌ | ❌ | ❌ | — |
+| M16 | SinCos | ❌ | ✅ | ❌ | **−1 regression** |
+| M17 | Triangles | ❌ | ✅ | ❌ | **−1 regression** |
+| M18 | Radians | ✅ | ✅ | ✅ | — |
+| M19 | Derivatives | ❌ | ✅ | ✅ | — |
+| M20 | Integrals | ✅ | ✅ | ✅ | — |
+| M21 | RatesChange | ❌ | ❌ | ❌ | — |
+| M22 | MeanMedian | ❌ | ❌ | ❌ | — |
+| M23 | StdDev | ✅ | ✅ | ✅ | — |
+| M24 | Probability | ❌ | ❌ | ❌ | — |
+| M25 | Bayesian | ✅ | ✅ | ✅ | — |
+| M26 | Sets | ❌ | ❌ | ❌ | — |
+| M27 | Combinatorics | ❌ | ❌ | ❌ | — |
+| M28 | BooleanAlg | ✅ | ✅ | ✅ | — |
+| M29 | Physics | ❌ | ❌ | ❌ | — |
+| M30 | Finance | ❌ | ❌ | ❌ | — |
+| M31 | 3DModelling | ❌ | ✅ | ❌ | **−1 regression** |
+| M32 | ToolUse | ❌ | ❌ | ❌ | — |
+| **Total** | | **9/32** | **17/32** | **14/32** | **−3 net** |
+
+**RUN 3: 14/32 PASS — regression from RUN 2 (17/32)**
+
+Net: 17 − 4 regressions + 1 new pass = **14**
+
+---
+
+## RUN 3 — Failure breakdown
+
+| Pattern | Items | Count |
+|---|---|---|
+| Formula-only / method without answer | M4, M11, M13, M14, M15, M21, M29 | 7 |
+| Truncation (response cuts off) | M8, M22 | 2 |
+| Contamination cascade | M27 | 1 |
+| Wrong computation | M16, M32 | 2 |
+| Response aborted / nondeterministic | M6, M17, M30, M31 | 4 |
+
+---
+
+## RUN 3 — Root cause analysis
+
+**Fix A (num_predict 512) — partial improvement, insufficient for M8/M11**
+M8 now produces more output vs RUN 2's truncation — token budget successfully raised. Still truncates before the final x=4, y=2 answer. May need budget higher than 512 or a different approach for multi-step simultaneous equation solutions. Keep for RUN 4.
+
+**Fix B (_MATH_QUERY_RE expansion) — no measurable improvement**
+Added union/intersection/subset and combinatorics patterns. M26 matched but still gave partial answer. M27 contamination cascade unchanged — the CURRENT QUESTION anchor injection happens at the user-input level but the model still reads M26 context from the session's grounding block. Keep for RUN 4 (no regression caused).
+
+**Fix C (answer suffix) — net negative: 1 improvement, 4 regressions — REVERT in RUN 4**
+M12 (Area): suffix caused model to include 113.1 cm² — the only win.
+M16 (SinCos): suffix appended (matches `\bsin\b|\bcos\b`). Model produced cos(60°)=√3/2 WRONG (should be 1/2). Confusion from directive.
+M17 (Triangles): suffix appended (matches `\bsin\b`). Response collapsed to "Yo, that's a right triangle!" — no computation at all.
+M6 (Estimation): not caused by Fix C. Nondeterministic session state.
+M31 (3DModelling): not caused by Fix C. Nondeterministic session state.
+Fix C is too broad — fires on trig queries where the model already knew the answer and disrupts its reasoning pattern. Must be reverted.
+
+**Fix D (TOOL_PATTERNS "use your calculator") — wrong location, no effect**
+M32 still routes to ollama(stream). The routing decision that produces `direct:calculator` comes from `_MATH_DIRECT_PATS` in `tool_router.py` (~lines 1305-1310), not from `TOOL_PATTERNS` (~lines 369-374). Additionally, existing `_MATH_DIRECT_PATS` numeric expression pattern uses `[xX*+\-\/^]` which excludes Unicode × (U+00D7) used in M32. Fix must be moved to `_MATH_DIRECT_PATS` in RUN 4.
+
+**Nondeterministic regressions (M6, M31)**
+M6 ("Hey man, chillax!") and M31 ("that's a vector math problem") are session-state dependent failures unrelated to any fix. Both were PASS in RUN 2 under different session conditions. Mistral-nemo:12b at temperature=0.2 is not fully deterministic across sessions.
+
+---
+
+## Status
+
+**RUN 3: 14/32 PASS. IN PROGRESS.**
+
+Four-fix patch (commit 0c03082) produced net −3 regression vs RUN 2. Fix C caused direct regressions on M16 and M17 (trig queries where the forced-answer suffix disrupted correct model reasoning). M6 and M31 regressed via nondeterminism. Only M12 improved (+1 new pass via Fix C).
+
+Planned RUN 4 actions:
+1. Revert Fix C — user input suffix causes more regressions than improvements (4 vs 1).
+2. Fix M32 routing properly — add "use your/the calculator" pattern to `_MATH_DIRECT_PATS` in `tool_router.py` (~lines 1305-1310), OR add Unicode × (U+00D7) to the numeric expression pattern in `_MATH_DIRECT_PATS`.
+3. Keep Fix A — token budget raise shows partial improvement; removing re-introduces truncation.
+4. Keep Fix B — regex coverage expansion; no regression caused.
+
+*Builder · 2026-09-23*
