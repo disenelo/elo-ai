@@ -1377,13 +1377,24 @@ def _ollama_stream(
             + _conditioned_system
         )
         # Fix 1: computation directive — model must not stop at the formula
-        _conditioned_system += (
+        # Fix E (COG-005 RUN 5): stronger directive with wrong-response definition + examples
+        _math_directive = (
             "\n\nMATH COMPUTATION DIRECTIVE — the user is asking a mathematics question. "
-            "ALWAYS compute the numerical result. "
-            "State the method or formula briefly, then calculate and give the actual number. "
-            "Do NOT stop at the formula alone. "
-            "Give a specific numerical answer."
+            "You MUST provide the specific numerical answer in your response. "
+            "State the formula, substitute the values, and compute the result. "
+            "A response that ends with only a formula or method WITHOUT computing a final number is INCOMPLETE and WRONG. "
+            "Examples of correct final answers: 'x = 5', '140 g', \"f'(x) = 6x + 5\", '502.7 cm³', '1/6'. "
+            "Always state the final answer explicitly."
         )
+        # Fix F (COG-005 RUN 5): trig value table for sin/cos/tan queries — fixes M16 cos(60°) model error
+        if re.search(r'\b(?:sin|cos|tan|sine|cosine|tangent)\b', user_input, re.IGNORECASE):
+            _math_directive += (
+                "\n\nTRIG REFERENCE (exact values): "
+                "sin(0°)=0, sin(30°)=1/2, sin(45°)=√2/2, sin(60°)=√3/2, sin(90°)=1. "
+                "cos(0°)=1, cos(30°)=√3/2, cos(45°)=√2/2, cos(60°)=1/2, cos(90°)=0. "
+                "Key identity: sin(30°) = cos(60°) = 1/2. sin(60°) = cos(30°) = √3/2."
+            )
+        _conditioned_system += _math_directive
 
     # For farewell-trigger slang, rewrite the user message as a direct question so the
     # model has no goodbye association to latch on to. Do NOT include any "farewell/goodbye"
