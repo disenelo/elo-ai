@@ -2155,10 +2155,14 @@ def _process_turn(raw: str) -> dict:
             return {"response": _dn_resp, "mode": "direct", "backend": "direct"}
 
         # T03-B: "Where am I from?" — surface from facts.json / user_profile
+        # ID-035 fix: also cover third-person "where is David from" queries so
+        # web search never fires and returns "David Frum is from Canada".
         _LOC_Q_TRIGGERS = (
             "where am i from", "where are you from", "where's my studio",
             "where do i live", "where do i work", "what city am i in",
             "what's my location", "where am i based", "where is my studio",
+            "where is david from", "where does david live", "where's david from",
+            "where does david come from", "where david from",
         )
         if any(t in _at_low for t in _LOC_Q_TRIGGERS):
             _loc_fact = "South London, Camberwell Green"
@@ -5041,6 +5045,11 @@ def _process_turn(raw: str) -> dict:
                             system, _enriched, max_sentences=_max_s, action=_action
                         )
                         _llm_latency_ms = (_perf_mod.perf_counter() - _t0) * 1000
+                        if _llm_latency_ms > 5000:
+                            _logging.getLogger("elo.latency").warning(
+                                "SLOW RESPONSE: %.1fs (backend=%s) — Ollama may be loading model",
+                                _llm_latency_ms / 1000, backend_used
+                            )
                     if _agent:
                         backend_used = f"{backend_used}+{_agent}"
                 # WO-BRAIN-AUTHORS task 1: capture raw before any post-generation scrubs.
