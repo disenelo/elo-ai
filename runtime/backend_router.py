@@ -1389,13 +1389,6 @@ def _ollama_stream(
     # model has no goodbye association to latch on to. Do NOT include any "farewell/goodbye"
     # language in the system prompt — negative reinforcement primes the bad output.
     _ollama_user_input = user_input
-    # Fix C (COG-005): for math queries, suffix the user input with an explicit numerical demand
-    # so the model can't stop at formula-only even if the system directive is ignored.
-    if _is_math_query:
-        _ollama_user_input = (
-            user_input
-            + " Give the specific numerical answer, not just the formula or method."
-        )
     # Topic shift rewrite: 8b model ignores the TOPIC SHIFT SIGNAL directive — also rewrite the input
     # to strip the shift marker and explicitly flag it as a first-mention topic so the model can't invent history.
     if _is_topic_shift:

@@ -1303,11 +1303,12 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     # Patterns that indicate a clear arithmetic query. Must contain a digit AND
     # at least one operator (word or symbol) so we don't grab "what is eLo?" etc.
     _MATH_DIRECT_PATS = [
-        r"\bwhat(?:'s| is)\s+\(?\d[\d\s]*(?:times|plus|minus|divided\s+by|[xX*+\-\/^])\s*[\d\(]",
-        r"\bhow\s+much\s+is\s+\(?\d[\d\s]*(?:times|plus|minus|divided\s+by|[xX*+\-\/^])\s*[\d\(]",
+        r"\bwhat(?:'s| is)\s+\(?\d[\d\s]*(?:times|plus|minus|divided\s+by|[xX×*+\-\/^])\s*[\d\(]",
+        r"\bhow\s+much\s+is\s+\(?\d[\d\s]*(?:times|plus|minus|divided\s+by|[xX×*+\-\/^])\s*[\d\(]",
         r"\bcalculate\s+\(?\d",
         r"\b\d[\d\s]*(?:times|plus|minus|divided\s+by)\s+\d",
-        r"\b\d+\s*[\*\/\^]\s*\d",   # symbolic * / ^ (not + or - to avoid "I need 5 - 3 items")
+        r"\b\d+\s*[×\*\/\^]\s*\d",  # symbolic × * / ^ (Unicode × added for M32)
+        r"\buse\s+(?:your|the)\s+calculator\b",  # explicit calculator directive (M32)
     ]
     if any(re.search(p, _lower) for p in _MATH_DIRECT_PATS):
         try:
