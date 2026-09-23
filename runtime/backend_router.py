@@ -1116,6 +1116,7 @@ def _ollama_stream(
         r"|\binterface\s+\w+\s*\{"                             # TypeScript/Java interface
         r"|POST\s+/\w|GET\s+/\w|PUT\s+/\w|DELETE\s+/\w"       # HTTP method + path (C16 APIs)
         r"|HTTP/\d\.\d"                                        # HTTP version string
+        r"|[∧∨¬∀∃→↔⊕]"                                        # COG-004: formal logic notation symbols
         ,
         re.IGNORECASE,
     )
@@ -1170,8 +1171,10 @@ def _ollama_stream(
     )
     # COG-004 C20: boolean/logic expressions not matched by above — AND/OR/NOT/XOR in
     # non-sentence context (no verb + subject structure, parentheses or caps pattern)
+    # COG-004 fix: also catch formal logic notation symbols (∧ ∨ ¬ ∀ ∃ → ↔ ⊕)
     _LOGIC_SIGNAL_RE = re.compile(
-        r"\b(AND|OR|NOT|XOR|IMPLIES|NAND|NOR)\b.*\b(AND|OR|NOT|XOR|IMPLIES|NAND|NOR)\b",
+        r"\b(AND|OR|NOT|XOR|IMPLIES|NAND|NOR)\b.*\b(AND|OR|NOT|XOR|IMPLIES|NAND|NOR)\b"
+        r"|[∧∨¬∀∃→↔⊕]",   # Unicode formal logic notation
         re.IGNORECASE,
     )
     _input_is_technical = (
@@ -1183,15 +1186,16 @@ def _ollama_stream(
     if _input_is_technical:
         _conditioned_system += (
             "\n\nTECHNICAL INPUT OVERRIDE — the input is a formal language construct "
-            "(code, SQL, shell command, regex, config, schema, pseudocode, or similar). "
+            "(code, SQL, shell command, regex, config, schema, logic notation, pseudocode, or similar). "
             "The 1-2 sentence limit does NOT apply here. "
             "eLo reads formal languages fluently. "
             f"EXPLAIN ONLY THIS SPECIFIC INPUT — disregard everything said in prior turns:\n{user_input}\n"
-            "Explain what the code, command, or construct does. "
+            "Explain what this code or notation STRUCTURALLY DOES, step by step. "
+            "Do NOT use metaphors or poetic language. Be precise. "
             "Do NOT begin with 'does the following:' or a numbered list. "
             "Answer in direct prose sentences. "
             "Do NOT deflect. Do NOT ask a question back. Do NOT respond with slang or casual filler. "
-            "Give a clear, direct technical explanation. "
+            "Give a clear, direct structural explanation. "
             "This is eLo demonstrating technical fluency, not casual conversation."
         )
 
@@ -1774,6 +1778,7 @@ def route(
         r"|\binterface\s+\w+\s*\{"
         r"|POST\s+/\w|GET\s+/\w|PUT\s+/\w|DELETE\s+/\w"
         r"|HTTP/\d\.\d"
+        r"|[∧∨¬∀∃→↔⊕]"    # COG-004: formal logic notation symbols
         ,
         re.IGNORECASE,
     )
@@ -1882,7 +1887,8 @@ def route(
         r"(git\s+\w+|ps\s+aux|grep\s+\w+|awk\s+|xargs\s+|kill\s+-|chmod\s+|sudo\s+|\|\s*\w+|--\w+-\w+|--\w+\s+--\w+)"
     )
     _rt_LOGIC_SIGNAL_RE = re.compile(
-        r"\b(AND|OR|NOT|XOR|IMPLIES|NAND|NOR)\b.*\b(AND|OR|NOT|XOR|IMPLIES|NAND|NOR)\b",
+        r"\b(AND|OR|NOT|XOR|IMPLIES|NAND|NOR)\b.*\b(AND|OR|NOT|XOR|IMPLIES|NAND|NOR)\b"
+        r"|[∧∨¬∀∃→↔⊕]",   # Unicode formal logic notation
         re.IGNORECASE,
     )
     _rt_input_is_technical = (
@@ -1894,15 +1900,16 @@ def route(
     if _rt_input_is_technical:
         system_prompt += (
             "\n\nTECHNICAL INPUT OVERRIDE — the input is a formal language construct "
-            "(code, SQL, shell command, regex, config, schema, pseudocode, or similar). "
+            "(code, SQL, shell command, regex, config, schema, logic notation, pseudocode, or similar). "
             "The 1-2 sentence limit does NOT apply here. "
             "eLo reads formal languages fluently. "
             f"EXPLAIN ONLY THIS SPECIFIC INPUT — disregard everything said in prior turns:\n{user_input}\n"
-            "Explain what the code, command, or construct does. "
+            "Explain what this code or notation STRUCTURALLY DOES, step by step. "
+            "Do NOT use metaphors or poetic language. Be precise. "
             "Do NOT begin with 'does the following:' or a numbered list. "
             "Answer in direct prose sentences. "
             "Do NOT deflect. Do NOT ask a question back. Do NOT respond with slang or casual filler. "
-            "Give a clear, direct technical explanation. "
+            "Give a clear, direct structural explanation. "
             "This is eLo demonstrating technical fluency, not casual conversation."
         )
     # Technical spec and poetic signals — mirrors _ollama_stream() detection
