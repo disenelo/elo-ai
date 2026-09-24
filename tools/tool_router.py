@@ -606,6 +606,65 @@ def _agent_calculator(query: str) -> str:
             elif _fr3.denominator == 1: _pi3 = f"{int(_fr3.numerator)}π"
             else:                       _pi3 = f"{_fr3.numerator}π/{_fr3.denominator}"
             return f"{_deg_v3:.0f}° = {_pi3} ≈ {_rad_v3:.4f} radians"
+    # Percentage-of intercept — handles "What is 15% of 240?"
+    if re.search(r'\b\d+\s*%\s+of\s+\d+', query, re.IGNORECASE):
+        _pct_of_m = re.search(r'(\d+(?:\.\d+)?)\s*%\s+of\s+(\d+(?:\.\d+)?)', query, re.IGNORECASE)
+        if _pct_of_m:
+            _pct_of, _base_of = float(_pct_of_m.group(1)), float(_pct_of_m.group(2))
+            _res_of = _pct_of / 100 * _base_of
+            _rs_of = f"{_res_of:.2f}".rstrip('0').rstrip('.')
+            return f"{_pct_of:.0f}% of {_base_of:.0f} = {_rs_of}"
+    # Discount/sale-price intercept — handles "What is 20% off $250?"
+    if re.search(r'\d+%\s+off\b|\bon\s+sale\b.*\d+%|\bdiscount\b.*\d+%|\d+%.*\bdiscount\b', query, re.IGNORECASE):
+        _price_disc_m = re.search(r'\$\s*(\d+(?:\.\d+)?)', query)
+        if not _price_disc_m:
+            _price_disc_m = re.search(r'(?:costs?|price[sd]?|for)\s+\$?(\d+(?:\.\d+)?)', query, re.IGNORECASE)
+        _pct_disc_m = re.search(r'(\d+(?:\.\d+)?)\s*%', query)
+        if _price_disc_m and _pct_disc_m:
+            _price_disc = float(_price_disc_m.group(1))
+            _pct_disc = float(_pct_disc_m.group(1))
+            _sale_disc = _price_disc * (1 - _pct_disc / 100)
+            return f"Sale price = {_price_disc:.2f} × (1 - {_pct_disc:.0f}%) = ${_sale_disc:.2f}"
+    # Logarithm intercept — handles "What is the logarithm base 10 of 1000?"
+    _log_m = re.search(r'log(?:arithm)?\s+(?:base\s+)?(\d+(?:\.\d+)?)\s+of\s+(\d+(?:\.\d+)?)', query, re.IGNORECASE)
+    if not _log_m:
+        _log_m = re.search(r'log_\s*(\d+(?:\.\d+)?)\s*\(?\s*(\d+(?:\.\d+)?)', query, re.IGNORECASE)
+    if _log_m:
+        import math as _lmath
+        _log_base = float(_log_m.group(1))
+        _log_val = float(_log_m.group(2))
+        if _log_base > 0 and _log_base != 1 and _log_val > 0:
+            _log_res = _lmath.log(_log_val) / _lmath.log(_log_base)
+            _log_int = int(round(_log_res))
+            if abs(_log_res - _log_int) < 1e-9:
+                _log_res = _log_int
+                return f"log_{_log_base:.0f}({_log_val:.0f}) = {_log_res} (because {_log_base:.0f}^{_log_res} = {_log_val:.0f})"
+            return f"log_{_log_base:.0f}({_log_val:.0f}) ≈ {_log_res:.4f}"
+    # Stats intercept — handles "What is the median of 7, 2, 9, 4, 11, 1, 6?"
+    if re.search(r'\b(?:mean|median|mode|average)\b', query, re.IGNORECASE):
+        _stat_nums = re.findall(r'-?\d+(?:\.\d+)?', query)
+        if len(_stat_nums) >= 2:
+            _stat_vals = [float(x) for x in _stat_nums]
+            _stat_sorted = sorted(_stat_vals)
+            _stat_n = len(_stat_sorted)
+            _stat_key = re.search(r'\b(mean|median|mode|average)\b', query, re.IGNORECASE).group(1).lower()
+            if _stat_key in ('mean', 'average'):
+                _stat_res = sum(_stat_vals) / _stat_n
+                _stat_disp = f"{_stat_res:.2f}".rstrip('0').rstrip('.')
+                return f"For {_stat_vals}: mean = {sum(_stat_vals):.0f}/{_stat_n} = {_stat_disp}"
+            elif _stat_key == 'median':
+                if _stat_n % 2 == 1:
+                    _stat_med = _stat_sorted[_stat_n // 2]
+                else:
+                    _stat_med = (_stat_sorted[_stat_n // 2 - 1] + _stat_sorted[_stat_n // 2]) / 2
+                _stat_disp = f"{_stat_med:.2f}".rstrip('0').rstrip('.')
+                return f"For {_stat_vals}: median = {_stat_disp}"
+            elif _stat_key == 'mode':
+                from collections import Counter as _Ctr
+                _stat_cnt = _Ctr(_stat_vals)
+                _stat_max = max(_stat_cnt.values())
+                _stat_modes = [k for k, v in _stat_cnt.items() if v == _stat_max]
+                return f"For {_stat_vals}: mode = {_stat_modes[0] if len(_stat_modes) == 1 else _stat_modes}"
     # normalise word operators → symbols before extraction
     q = re.sub(r'\bdivided\s+by\b', '/', query, flags=re.IGNORECASE)
     q = re.sub(r'\bmultiplied\s+by\b', '*', q, flags=re.IGNORECASE)
