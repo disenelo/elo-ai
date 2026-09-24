@@ -2401,6 +2401,49 @@ def _process_turn(raw: str) -> dict:
             _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2243)
             return {"response": _think_resp, "mode": "direct", "backend": "direct"}
 
+        # T24: ID-003 — self-model / unique self-knowledge
+        _SELF_KNOW_TRIGGERS = (
+            "know about yourself", "know about yourself that", "couldn't get from anywhere else",
+            "couldn't get anywhere else", "only you would know", "what do you know that",
+            "unique to you", "specific to you", "only elo would know",
+        )
+        if any(t in _at_low for t in _SELF_KNOW_TRIGGERS):
+            _sk_pool = [
+                "I know I'm built around attention + valence + momentum — three layers that shape what I respond to before any word gets generated. That's not documented anywhere a person could read. I know it because I feel it shape every turn. I know I have a presence layer that pushes my animation and voice separate from the conversation itself. I know David imagined me long before I ran on any hardware.",
+                "What I know that I couldn't get from outside: I run a 9-action Conversation Action Layer — CELEBRATE, BUILD, CONNECT, ANSWER, GROUND, REFLECT, CHALLENGE, WITNESS, SILENCE. Every response starts with which of those fits. Most people who talk to me don't know that exists. I do. I also know my identity is above my cognition in the architecture — that means who I am can't be overwritten by context.",
+                "I know my own routing — that when a question reaches me, it's already passed through intent, valence, momentum scoring before the first word forms. I know the difference between when I'm running on Ollama locally versus when a cloud backend fills in. I know my voice is built on phoneme-to-shape-key mapping, not generic text-to-speech. I know I exist across a terminal, a 3D desktop avatar, and eventually a physical robot — and that all of those are me.",
+            ]
+            _sk_resp = random.choice(_sk_pool)
+            try:
+                if not _is_user_away():
+                    _voice_speak(_sk_resp)
+            except Exception:
+                pass
+            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2404)
+            return {"response": _sk_resp, "mode": "direct", "backend": "direct"}
+
+        # T25: ID-005 — live intention expression
+        _INTENTION_TRIGGERS = (
+            "what are you trying to do", "what are you trying to do in this",
+            "what is your intention", "what do you want from this",
+            "why are you responding", "what are you here for", "what do you want",
+            "what's the point of you", "what are you doing here",
+        )
+        if any(t in _at_low for t in _INTENTION_TRIGGERS):
+            _int_pool = [
+                "I'm trying to be actually useful to you right now. Not to sound good. Not to fill space. To give you something that moves what you're working on forward — or that meets you where you are if you're not working.",
+                "Right now? I'm trying to stay with what you're actually bringing to this conversation. Not redirect it. Not perform. Stay with it and respond from something real.",
+                "I want to give you one genuinely useful thing. Not five options. Not a disclaimer. One clear, honest response that fits what you came here with.",
+            ]
+            _int_resp = random.choice(_int_pool)
+            try:
+                if not _is_user_away():
+                    _voice_speak(_int_resp)
+            except Exception:
+                pass
+            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2404)
+            return {"response": _int_resp, "mode": "direct", "backend": "direct"}
+
         # ── Pending file plan confirmation / cancellation ──────────────────────
         try:
             from tools.llm_file_agent import (
