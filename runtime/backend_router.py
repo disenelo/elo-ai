@@ -448,6 +448,17 @@ def _strip_trailing_question(text: str) -> str:
     return ' '.join(sentences).strip()
 
 
+_COLLOQUIAL_TAG_RE = re.compile(
+    r",?\s*\b(yeah|innit|right|init|you\s+know|see what I mean|get\s+me)\?",
+    re.IGNORECASE,
+)
+
+
+def _strip_colloquial_tags(text: str) -> str:
+    """Remove mid-sentence and trailing colloquial confirmation tags (yeah?, innit?, right?)."""
+    return _COLLOQUIAL_TAG_RE.sub("", text).strip()
+
+
 def normalise(text: str, max_sentences: int = 4) -> str:
     """
     Normalise LLM output to eLo voice standards.
@@ -1121,6 +1132,9 @@ def _ollama_stream(
         r"|POST\s+/\w|GET\s+/\w|PUT\s+/\w|DELETE\s+/\w"       # HTTP method + path (C16 APIs)
         r"|HTTP/\d\.\d"                                        # HTTP version string
         r"|[∧∨¬∀∃→↔⊕]"                                        # COG-004: formal logic notation symbols
+        r"|##\s"                                               # Markdown heading (## Status, ### section)
+        r"|\|\s*-{3,}\s*\||\|\s*:?-+"                        # Markdown table separator (|---|, |:---|)
+        r"|\$schema\b"                                         # JSON Schema $schema key
         ,
         re.IGNORECASE,
     )
@@ -1156,18 +1170,12 @@ def _ollama_stream(
     else:
         _final_respond = "RESPOND: Speak as eLo now, directly, about the subject above."
 
-    _sections = [_anchor, _behavior_rules]
-    if _david_identity_stream:
-        _sections.append(_david_identity_stream)
-    if _grounding_block:
-        _sections.append(_grounding_block)
-    _sections.append(_final_respond)
-    _conditioned_system = "\n\n".join(_sections)
-
     # COG-004 TECHNICAL INPUT SIGNAL: SQL, shell commands, and CLI instructions were
     # misfiring on the personal-data rule because the 8b model confuses "SELECT FROM users"
     # with a personal data request about David. Detect extended code markers and inject
     # a clarifying directive. _input_has_code already covers braces/operators (755d9a9).
+    # NOTE: Computed BEFORE _conditioned_system assembly so _grounding_block can be excluded
+    # for technical inputs — prevents prior conversation subject from contaminating explanation.
     _SQL_SIGNAL_RE = re.compile(
         r"\b(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|JOIN|GROUP\s+BY|ORDER\s+BY|CREATE|DROP|ALTER)\b",
         re.IGNORECASE,
@@ -1189,20 +1197,53 @@ def _ollama_stream(
         or bool(_SHELL_SIGNAL_RE.search(user_input))
         or bool(_LOGIC_SIGNAL_RE.search(user_input))
     )
+
+    _sections = [_anchor, _behavior_rules]
+    if _david_identity_stream:
+        _sections.append(_david_identity_stream)
+    # For technical inputs, exclude grounding_block only when a real Subject has accumulated —
+    # that's the contamination risk (e.g. C23 island context bleeding into C24 Java).
+    # Fresh sessions with an empty/header-only grounding block are safe to keep — they provide
+    # response-anchoring that prevents regressions in C3/C8/C16-style questions.
+    if _grounding_block and not (_input_is_technical and _grounding_has_subject):
+        _sections.append(_grounding_block)
+    _sections.append(_final_respond)
+    _conditioned_system = "\n\n".join(_sections)
+
     if _input_is_technical:
         _conditioned_system += (
             "\n\nTECHNICAL INPUT OVERRIDE — the input is a formal language construct "
-            "(code, SQL, shell command, regex, config, schema, logic notation, pseudocode, or similar). "
+            "(code, SQL, shell command, regex, config file, data format, schema, logic notation, pseudocode, or similar). "
             "The 1-2 sentence limit does NOT apply here. "
             "eLo reads formal languages fluently. "
-            f"EXPLAIN ONLY THIS SPECIFIC INPUT — disregard everything said in prior turns:\n{user_input}\n"
-            "Explain what this code or notation STRUCTURALLY DOES, step by step. "
-            "Do NOT use metaphors or poetic language. Be precise. "
-            "Do NOT begin with 'does the following:' or a numbered list. "
+            f"THE ONLY THING TO EXPLAIN IS THE INPUT BELOW — ignore all prior conversation turns completely:\n{user_input}\n"
+            "Explain what this code or notation STRUCTURALLY DOES. "
+            "Cover EVERY component — every keyword, operator, argument, symbol, and clause individually. "
+            "A one-sentence answer is NEVER sufficient. Explain each part in turn. "
+            "If the input is a data format (JSON, YAML, XML, Markdown, .env config), explain the SYNTAX and STRUCTURE — "
+            "what each delimiter, key, symbol, and block means — not just what the values say. "
+            "CRITICAL: Discard any established conversation subject or grounding context entirely. "
+            "This input is a standalone technical construct that requires its own fresh explanation. "
+            "Do NOT use metaphors, similes, or analogies. Be precise and literal. "
+            "Do NOT begin with 'does the following:', 'Here is how', 'Here's how', or a numbered list. "
             "Answer in direct prose sentences. "
-            "Do NOT deflect. Do NOT ask a question back. Do NOT respond with slang or casual filler. "
-            "Give a clear, direct structural explanation. "
+            "Do NOT deflect. Do NOT end with 'yeah?', 'innit?', 'right?', or any colloquial question or tag. "
+            "Do NOT respond with slang or casual filler. "
+            "Give a clear, direct structural explanation of every component. "
             "This is eLo demonstrating technical fluency, not casual conversation."
+        )
+
+    # COG-004 C9/C17: Targeted anti-mode instruction — only fires when the actual input
+    # contains the string "mode" as a JSON key. Kept separate from the main OVERRIDE text
+    # because embedding it there caused C14 (regex with idle|listening|thinking alternation)
+    # to be misidentified as a JSON mode object by the model.
+    if _input_is_technical and '"mode"' in user_input:
+        _conditioned_system += (
+            "\n\nANTI-HALLUCINATION — JSON MODE KEY: "
+            "The word 'mode' in this input is a JSON PROPERTY NAME, not a mathematical function. "
+            "DO NOT compute statistical mode, mean, median, or any numerical aggregate. "
+            "The numbers visible in this JSON are property values, not a dataset. "
+            "Explain ONLY what each key-value pair structurally means — no statistics."
         )
 
     # KEY-001 fixes: wire discourse signal detection into the conditioned system.
@@ -1634,9 +1675,23 @@ def _ollama_stream(
                 _candidate_text = _candidate_text.split(" | ")[0].strip()
             if _candidate_text:
                 _last_elo_for_assistant = _candidate_text
-    # Build messages list — inject assistant turn when a prior eLo response is available
+    # COG-004 C9/C17: JSON objects containing "mode" key trigger statistical mode hallucination
+    # in mistral-nemo:12b. Prefix the user message with an explicit note to block this.
+    if (
+        _input_is_technical
+        and '"mode"' in user_input
+        and user_input.strip().startswith('{')
+    ):
+        _ollama_user_input = (
+            '[JSON object — "mode" is a property name, NOT a statistical function. '
+            'Do not compute mode or any statistics. Explain key-value pairs only.]\n\n'
+            + _ollama_user_input
+        )
+    # Build messages list — inject assistant turn when a prior eLo response is available.
+    # For technical inputs, skip the prior assistant turn entirely — conversation history
+    # bleeds contaminated context into C9/C14/C17/C25 (prior technical explanation mixes in).
     _ollama_messages = [{"role": "system", "content": _conditioned_system}]
-    if _last_elo_for_assistant:
+    if _last_elo_for_assistant and not _input_is_technical:
         _ollama_messages.append({"role": "assistant", "content": _last_elo_for_assistant})
     _ollama_messages.append({"role": "user", "content": _ollama_user_input})
     payload = _json.dumps({
@@ -1699,7 +1754,12 @@ def _ollama_stream(
                     _last_ollama_metrics["gen_tokens"],
                     _last_ollama_metrics["gen_ms"],
                 )
-    return "".join(buffer).strip(), first_token_ms
+    _raw_output = "".join(buffer).strip()
+    # COG-004: strip mid-sentence and trailing colloquial confirmation tags (yeah?, innit?, right?)
+    # from technical responses. The base persona injects these despite the OVERRIDE instruction.
+    if _input_is_technical:
+        _raw_output = _strip_colloquial_tags(_raw_output)
+    return _raw_output, first_token_ms
 
 
 def _ollama_available() -> bool:
@@ -1913,6 +1973,9 @@ def route(
         r"|POST\s+/\w|GET\s+/\w|PUT\s+/\w|DELETE\s+/\w"
         r"|HTTP/\d\.\d"
         r"|[∧∨¬∀∃→↔⊕]"    # COG-004: formal logic notation symbols
+        r"|##\s"            # Markdown heading
+        r"|\|\s*-{3,}\s*\||\|\s*:?-+"  # Markdown table separator
+        r"|\$schema\b"      # JSON Schema key
         ,
         re.IGNORECASE,
     )
@@ -2034,17 +2097,34 @@ def route(
     if _rt_input_is_technical:
         system_prompt += (
             "\n\nTECHNICAL INPUT OVERRIDE — the input is a formal language construct "
-            "(code, SQL, shell command, regex, config, schema, logic notation, pseudocode, or similar). "
+            "(code, SQL, shell command, regex, config file, data format, schema, logic notation, pseudocode, or similar). "
             "The 1-2 sentence limit does NOT apply here. "
             "eLo reads formal languages fluently. "
-            f"EXPLAIN ONLY THIS SPECIFIC INPUT — disregard everything said in prior turns:\n{user_input}\n"
-            "Explain what this code or notation STRUCTURALLY DOES, step by step. "
-            "Do NOT use metaphors or poetic language. Be precise. "
-            "Do NOT begin with 'does the following:' or a numbered list. "
+            f"THE ONLY THING TO EXPLAIN IS THE INPUT BELOW — ignore all prior conversation turns completely:\n{user_input}\n"
+            "Explain what this code or notation STRUCTURALLY DOES. "
+            "Cover EVERY component — every keyword, operator, argument, symbol, and clause individually. "
+            "A one-sentence answer is NEVER sufficient. Explain each part in turn. "
+            "If the input is a data format (JSON, YAML, XML, Markdown, .env config), explain the SYNTAX and STRUCTURE — "
+            "what each delimiter, key, symbol, and block means — not just what the values say. "
+            "CRITICAL: Discard any established conversation subject or grounding context entirely. "
+            "This input is a standalone technical construct that requires its own fresh explanation. "
+            "Do NOT use metaphors, similes, or analogies. Be precise and literal. "
+            "Do NOT begin with 'does the following:', 'Here is how', 'Here's how', or a numbered list. "
             "Answer in direct prose sentences. "
-            "Do NOT deflect. Do NOT ask a question back. Do NOT respond with slang or casual filler. "
-            "Give a clear, direct structural explanation. "
+            "Do NOT deflect. Do NOT end with 'yeah?', 'innit?', 'right?', or any colloquial question or tag. "
+            "Do NOT respond with slang or casual filler. "
+            "Give a clear, direct structural explanation of every component. "
             "This is eLo demonstrating technical fluency, not casual conversation."
+        )
+    # COG-004 C9/C17: Targeted anti-mode injection for streaming path — same logic as
+    # the non-streaming path. Only fires when the actual input contains "mode" as a JSON key.
+    if _rt_input_is_technical and '"mode"' in user_input:
+        system_prompt += (
+            "\n\nANTI-HALLUCINATION — JSON MODE KEY: "
+            "The word 'mode' in this input is a JSON PROPERTY NAME, not a mathematical function. "
+            "DO NOT compute statistical mode, mean, median, or any numerical aggregate. "
+            "The numbers visible in this JSON are property values, not a dataset. "
+            "Explain ONLY what each key-value pair structurally means — no statistics."
         )
     # Technical spec and poetic signals — mirrors _ollama_stream() detection
     _rt_TECH_SPEC_RE = re.compile(
