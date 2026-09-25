@@ -1,0 +1,12 @@
+{
+  "wo_id": "WO-CAP-COG-004",
+  "map": "COG",
+  "seq": 4,
+  "state": "board_review",
+  "blocked_on": null,
+  "score": { "pass": 13, "fail": 13, "total": 26 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-004_evidence.md",
+  "commit": "4e99e82",
+  "failing": ["C4", "C5", "C6", "C8", "C9", "C10", "C13", "C17", "C18", "C20", "C23", "C24", "C25"],
+  "last_updated": "2026-09-25"
+}
