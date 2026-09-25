@@ -4,9 +4,11 @@
   "seq": 4,
   "state": "board_review",
   "blocked_on": null,
-  "score": { "pass": 13, "fail": 13, "total": 26 },
+  "score": { "pass": 14, "fail": 12, "total": 26 },
   "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-004_evidence.md",
-  "commit": "4e99e82",
-  "failing": ["C4", "C5", "C6", "C8", "C9", "C10", "C13", "C17", "C18", "C20", "C23", "C24", "C25"],
-  "last_updated": "2026-09-25"
+  "commit": "79d5704",
+  "failing": ["C2", "C3", "C4", "C7", "C9", "C10", "C13", "C15", "C20", "C21", "C23", "C25"],
+  "last_updated": "2026-09-25",
+  "run": "RE-RUN 18",
+  "notes": "Reverted voice_rewrite bypass (Fix C from cbeaae9). Revert recovered 5 regressions (C8, C11, C14, C16, C24) but lost 9 items (C2, C3, C4, C7, C9, C10, C20, C21, C23) that were passing in RR17. Net: 14/26. Fix A (JSON guard) and Fix B (C25 anchor) still in place. C13 still truncated mid-sentence (streaming truncation root cause unresolved). C20 new regression: direct:calculator returned '2 = 2' for system-of-equations input. C25 Unity/C# hallucination persists (Fix B trigger condition does not match 'eLo reads code fluently' — only matches exactly-quoted 'eLo'). voice_rewrite unconditional is cutting short multi-step technical explanations (C2/C3/C4/C7/C10/C21/C23). Board review required."
 }

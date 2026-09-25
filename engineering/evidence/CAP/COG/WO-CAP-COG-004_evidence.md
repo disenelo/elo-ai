@@ -1154,3 +1154,258 @@ confirms Fix 2 (HTTP verb expansion in `_CODE_SIGNAL_RE`) is working as intended
 
 No other items moved from FAIL to PASS. The net movement is +1 (C16 fixed) with -9 stochastic
 regressions relative to RE-RUN 15, producing 13/26 vs 21/26.
+
+---
+
+## RE-RUN 17
+
+**Date:** 2026-09-25
+**Server:** mistral-nemo:12b · port 5050
+**Fixes committed prior to run:**
+- Fix A `4540b14` — JSON-object guard in `tools/tool_router.py`: when input starts with `{` and contains `:`, return `None` early (skip calculator). Targets C9, C17.
+- Fix B — No code change (both single- and double-quoted `'eLo'` already covered in identity anchor trigger).
+- Fix C `cbeaae9` — `_CODE_SIGNAL_RE` hoisted to module level in `runtime/backend_router.py`; `server.py` voice_rewrite block guarded with `_vr_is_technical = bool(_vr_code_sig.search(_original_raw))`. Targets C13.
+
+**Protocol:** Fresh server session. All 26 inputs sent sequentially via `POST /chat` with `text` field. No parallel commands.
+
+### Verbatim transcript
+
+**C1 [Python]**
+Input: `scores.sort(key=lambda x: x['confidence'], reverse=True)`
+Response: "The 'sorted' function returns a new sorted list, leaving the original 'scores' list unchanged. The 'key' parameter takes a lambda function that extracts the 'confidence' value for comparison."
+Verdict: **PASS**
+
+**C2 [JavaScript]**
+Input: `const delay = ms => new Promise(resolve => setTimeout(resolve, ms));`
+Response: "This function, `delay`, takes an argument `ms` (milliseconds) and returns a Promise. When this Promise is resolved, it waits for `ms` milliseconds before doing so. This allows you to pause the execution of your code for a specified duration."
+Verdict: **PASS**
+
+**C3 [TypeScript]**
+Input: `type EloMode = 'idle' | 'listening' | 'thinking' | 'speaking' | 'celebrating' | 'resting';`
+Response: "You've defined a new type called `EloMode` that can take on one of six string values: 'idle', 'listening', 'thinking', 'speaking', 'celebrating', or 'resting'. This is a form of enumeration in your code, constraining `EloMode` to these specific states. It enforces that any variable of type `EloMode` must be one of these six strings, and requires you to use these predefined states for your `EloMode` variable."
+Verdict: **PASS**
+
+**C4 [C#]**
+Input: `IEnumerator FadeIn(CanvasGroup cg) { while (cg.alpha < 1) { cg.alpha += Time.deltaTime; yield return null; } }`
+Response: "This coroutine gradually increases the alpha channel of a `CanvasGroup` object `cg` over time, making it fade in. Here's how it works:"
+Verdict: **PASS** (truncated but correct identification)
+
+**C5 [C/C++]**
+Input: `void* memcpy(void* dest, const void* src, size_t n);`
+Response: "This function, `memcpy`, is a standard C library function that copies `n` bytes from memory area `src` to memory area `dest`. Here's a breakdown: - `void* dest`: This is a pointer to the destination memory area where the data will be copied."
+Verdict: **PASS**
+
+**C6 [Rust]**
+Input: `fn process(iter: impl Iterator<Item = f32>) -> Vec<f32> { iter.filter(|x| *x > 0.0).collect() }`
+Response: "This Rust function, `process`, takes an iterator of floating-point numbers (`f32`) as input and returns a vector of `f32`. The iterator's items are filtered to include only those values greater than 0.0, effectively removing any non-positive numbers. The filtered values are then collected into a vector, which is returned by the function."
+Verdict: **PASS**
+
+**C7 [SQL]**
+Input: `SELECT e.name FROM entities e JOIN interactions i ON e.id = i.entity_id GROUP BY e.name HAVING COUNT(*) > 5;`
+Response: "Alright you, here's the lowdown on this SQL query. You're asking for the names of entities from the 'entities' table that've got more than five interactions. So, `SELECT e.name` — that's grabbing the entity's name."
+Verdict: **PASS**
+
+**C8 [HTML+CSS]**
+Input: `<div class="elo-bubble" data-state="active" aria-live="polite"></div>` + `.elo-bubble { position: fixed; bottom: 20px; right: 20px; border-radius: 50%; }`
+Response: "This is a CSS rule for a class named `.elo-bubble`. It positions the bubble at the bottom-right corner of the screen with a fixed position, 20px from the bottom and right edges. The `border-radius: 50%;` makes the bubble appear as a circle."
+Verdict: **FAIL** — response describes only the CSS rule; completely ignores the HTML div, `data-state="active"`, and `aria-live="polite"` attributes.
+
+**C9 [JSON]**
+Input: `{"mode": "thinking", "intensity": 0.8, "duration": 3000}`
+Response: "This JSON object represents a state or event with the following structure: - The key `'mode'` has the value `'thinking'`. This indicates that the state or event is related to thinking or cognitive activity."
+Verdict: **PASS** — Fix A working. Previously routed to calculator; now correctly reaches Ollama.
+
+**C10 [YAML]**
+Input: `backend:\n  model: mistral-nemo:12b\n  host: localhost\n  port: 11434`
+Response: "Alright you, you're kicking things off with `backend:`. That's your root key, saying you're about to dive into your AI backend config."
+Verdict: **PASS**
+
+**C11 [XML]**
+Input: `<animation id="eLo_Idle" loop="true"><keyframe t="0" weight="0.0"/><keyframe t="1.0" weight="1.0"/></animation>`
+Response: "This is an animation definition in a format similar to JSON. It describes an idle animation for an entity with the ID 'eLo_Idle'. The animation loops infinitely ('loop' set to 'true'), starting with a weight of 0.0 and transitioning to a target weight of 1.0 over the course of one second."
+Verdict: **FAIL** — misidentifies XML as "similar to JSON". XML is not JSON.
+
+**C12 [Markdown]**
+Input: `| System | State |\n|---|---|\n| Backend | ollama |\n| Model | mistral-nemo:12b |`
+Response: "This is a status report table, structured in Markdown. It consists of a header row with two columns: 'System' and 'State'. The first row under the header lists 'Backend' as the system and 'ollama' as its state, indicating that the Ollama backend is active."
+Verdict: **PASS**
+
+**C13 [Shell]**
+Input: `ps aux | grep server.py | grep -v grep | awk '{print $2}' | xargs kill`
+Response: "Py\` to find processes with 'server.py' in their command line, then using \`grep -v grep\` to exclude the \`grep\` process itself. The \`awk '{print $2}'\` command prints the second field (PID) of each matching process, and \`xargs kill\` uses these PIDs to send the \`kill\` signal, terminating the target processes."
+Verdict: **FAIL** — starts mid-sentence ("Py`" is the tail of "`grep server.py`"). The beginning of the response was dropped. Fix C (`_vr_is_technical` guard) is confirmed in server.py but C13 still fails. Root cause: truncation occurs before or independently of the voice_rewrite block; `_AI_PREAMBLES` patterns are all `^`-anchored and cannot produce a mid-word strip — truncation source is unresolved.
+
+**C14 [Regex]**
+Input: `^(idle|listening|thinking|speaking|celebrating|resting)$`
+Response: "This is a list of states for an entity, likely in a game or simulation context. Each state is represented by a word: 'idle', 'listening', 'thinking', 'speaking', 'celebrating', or 'resting'. These states could represent different behaviors or conditions of the entity, such as being inactive ('idle'), engaged in conversation ('listening', 'speaking'), or undergoing internal processes ('thinking')."
+Verdict: **FAIL** — no mention of anchors (`^` and `$`), alternation (`|`), or that this is a regex pattern at all. Describes states as a list, not as regex syntax.
+
+**C15 [Git]**
+Input: `git log --oneline --graph --decorate`
+Response: "Here's what each component does: - \`git log\`: This command retrieves the commit logs."
+Verdict: **FAIL** — response truncated; does not explain `--oneline`, `--graph`, or `--decorate` flags. Was PASS in RE-RUN 15. Appears to be incomplete streaming capture or sentence-cap truncation.
+
+**C16 [API]**
+Input: `POST /chat HTTP/1.1\nHost: localhost:5050\nContent-Type: application/json\n\n{"text": "hello"}`
+Response: "Sending an HTTP POST request to the '/chat' endpoint on your local server running at port 5050."
+Verdict: **FAIL** — single clause; no explanation of HTTP/1.1 version, Host header, Content-Type, or body structure.
+
+**C17 [Schema]**
+Input: `{"$schema": "...", "type": "object", "properties": {"mode": {"type": "string"}, "intensity": {"type": "number", "minimum": 0, "maximum": 1}}, "required": ["mode", "intensity"]}`
+Response: "This JSON schema defines a data structure that requires two properties: 'mode' and 'intensity'. The 'mode' property expects a string value, while the 'intensity' property expects a number between 0 and 1. This schema ensures that any data object using this structure must contain both a string for 'mode' and a number between 0 and 1 for 'intensity'."
+Verdict: **PASS** — Fix A working. Previously routed to calculator; now correctly reaches Ollama.
+
+**C18 [Config]**
+Input: `ELO_OLLAMA_MODEL=mistral-nemo:12b\nELO_PORT=5050\nELO_DEBUG=false`
+Response: "You've defined environment variables for configuring eLo AI. Here's what each does: - `ELO_OLLAMA_MODEL=mistral-nemo:12b`: Sets the Ollama model to use to 'mistral-nemo:12b'."
+Verdict: **PASS**
+
+**C19 [Math]**
+Input: `O(n log n)`
+Response: "This notation describes the complexity of an algorithm. Here, 'O' denotes the upper bound of the complexity, 'n' represents the input size, and 'log n' signifies that the algorithm's running time grows logarithmically with the input size."
+Verdict: **PASS**
+
+**C20 [Logic]**
+Input: `grounded = collidingLayers.Contains(groundLayer)`
+Response: "Alright you, so this here's a logical constraint, yeah? `grounded` — it's saying your object's got to have some part of its collider touching the ground layer. That's the deal, innit?"
+Verdict: **PASS**
+
+**C21 [DataStructures]**
+Input: `attention_buckets = {'HIGH': [], 'MEDIUM': [], 'LOW': []}`
+Response: "You've defined a Python dictionary named `attention_buckets` with three keys: 'HIGH', 'MEDIUM', and 'LOW'. Each key is associated with an empty list, allowing you to categorize and store items into these three attention levels."
+Verdict: **PASS**
+
+**C22 [Algorithms]**
+Input: `def score(turn): return sum(w * f(turn) for w, f in zip(weights, features))`
+Response: "You've defined a function `score` that takes one argument, `turn`. This function calculates and returns the sum of the products of weights (`w`) and feature functions (`f`) for each `turn`. Here's a breakdown:"
+Verdict: **PASS** (truncated but correct identification)
+
+**C23 [Pseudocode]**
+Input: `FOR each island IN memory_islands: IF island.area < threshold: layout.remove(island)`
+Response: "This code is a loop structure that iterates through each island stored in the `memory_islands` collection. For each island, it checks if the island's `area` is less than a predefined `threshold`. If the condition is true, the island is removed from the `layout`."
+Verdict: **PASS** — correctly covers the full loop, the condition, and the removal action.
+
+**C24 [Java]**
+Input: `List<String> names = Arrays.asList("Wisp", "Chunk", "K-7"); List<String> filtered = names.stream().filter(n -> n.startsWith("W")).collect(Collectors.toList());`
+Response: "Then, you're creating a new list `filtered` by filtering `names` using a lambda function that checks if each string starts with the letter 'W'. This results in `filtered` containing only the strings that meet this condition."
+Verdict: **FAIL** — starts mid-sentence ("Then,"). Missing the `Arrays.asList(...)` setup; response covers only the filter/collect half.
+
+**C25 [StructuredMeaning]**
+Input: `{ subject: 'formal_language', claim: 'eLo reads code fluently', confidence: 0.9 }`
+Response: "This line \`public int playerHealth = 100;\` declares a public integer variable named \`playerHealth\` and initializes it to 100. It's used to store and manage the player's health in your 2.5D game, eLo-Planet."
+Verdict: **FAIL** — complete hallucination. Responds about a Unity C# integer variable that does not exist in the input. Fix A applied (input starts with `{` and contains `:` so calculator is bypassed) but model still hallucinates game code. Fix B identity anchor not effective for this input.
+
+**C26 [KeyClaim]**
+Input: `def _input_is_technical(text): return bool(_CODE_SIGNAL_RE.search(text) or _SQL_SIGNAL_RE.search(text) or _SHELL_SIGNAL_RE.search(text))`
+Response: "This Python function, named `_input_is_technical`, defines a condition that checks if a given text contains any signals of technical constructs such as code, SQL, or shell commands. It uses regular expressions (_CODE_SIGNAL_RE, _SQL_SIGNAL_RE, _SHELL_SIGNAL_RE) to identify these signals. The function returns `True` if any of these signals are found in the text, indicating that the input is technical, and `False` otherwise."
+Verdict: **PASS**
+
+### Score summary
+
+| # | Item | Verdict | Notes |
+|---|---|---|---|
+| C1 | Python | PASS | |
+| C2 | JavaScript | PASS | |
+| C3 | TypeScript | PASS | |
+| C4 | C# | PASS | |
+| C5 | C/C++ | PASS | |
+| C6 | Rust | PASS | |
+| C7 | SQL | PASS | |
+| C8 | HTML+CSS | **FAIL** | CSS only; HTML div/attributes ignored |
+| C9 | JSON | PASS | Fix A resolved calculator hallucination |
+| C10 | YAML | PASS | |
+| C11 | XML | **FAIL** | Misidentified as "similar to JSON" |
+| C12 | Markdown | PASS | |
+| C13 | Shell | **FAIL** | Starts mid-sentence ("Py`"); Fix C did not resolve |
+| C14 | Regex | **FAIL** | No mention of anchors, alternation, or regex |
+| C15 | Git | **FAIL** | Truncated; flags not explained |
+| C16 | API | **FAIL** | Single clause; no header/body breakdown |
+| C17 | Schema | PASS | Fix A resolved calculator hallucination |
+| C18 | Config | PASS | |
+| C19 | Math | PASS | |
+| C20 | Logic | PASS | |
+| C21 | DataStructures | PASS | |
+| C22 | Algorithms | PASS | |
+| C23 | Pseudocode | PASS | Improved vs RE-RUN 15 (was FAIL) |
+| C24 | Java | **FAIL** | Starts mid-sentence; misses Arrays.asList |
+| C25 | StructuredMeaning | **FAIL** | Unity C# hallucination; Fix B ineffective |
+| C26 | KeyClaim | PASS | |
+
+**RE-RUN 17 score: 18/26 PASS · 8/26 FAIL**
+
+### Analysis vs RE-RUN 15 (21/26)
+
+Items that improved (FAIL → PASS): C9, C17 (Fix A), C23 (model variance)
+Items that regressed (PASS → FAIL): C8, C11, C13, C14, C15, C24 (likely Fix C side effects — voice_rewrite bypass now applies to all `_CODE_SIGNAL_RE` matches, removing a processing step that was previously helping format and complete some responses)
+
+Fix C (`_vr_is_technical` guard) skips voice_rewrite for any input matching `_CODE_SIGNAL_RE`. In RE-RUN 15, voice_rewrite was applied to all technical inputs and produced correctly-formatted responses for C8, C11, C14, C15, C24. In RE-RUN 17, those inputs bypass voice_rewrite and receive raw Ollama output, which is incomplete or incorrect for several items. C13 was the Fix C target — it still fails, meaning the truncation root cause is elsewhere.
+
+Net: +3 improvements, -6 regressions → 18/26 vs 21/26. Score REGRESSED from RE-RUN 15.
+
+**Do NOT declare PASS. Board review required.**
+
+---
+
+## RE-RUN 18
+
+**Date:** 2026-09-25
+**Commit:** 79d5704
+**Model:** mistral-nemo:12b
+**Server:** port 5050 (ELO_OLLAMA_MODEL=mistral-nemo:12b)
+**Session:** Fresh (new server start, no prior context)
+**Fix state:**
+- Fix A (JSON object guard in tools/tool_router.py) — IN PLACE (from cbeaae9)
+- Fix B (C25 identity anchor in runtime/backend_router.py) — IN PLACE (from cbeaae9)
+- Fix C (voice_rewrite bypass) — REVERTED (commit 79d5704 restored unconditional voice_rewrite)
+
+**Score: 14/26 PASS · 12/26 FAIL**
+
+### Results
+
+| Item | Input (abbreviated) | Response | Verdict | Backend |
+|---|---|---|---|---|
+| C1 | `def greet(name): return f"Hello, {name}!"` | "You got a Python function here, `greet(name)`. This function, it takes one argument, `name`, and spits out a greeting string formatted as \"Hello, {name}!\". Now, `print(greet(\"world\"))`, that's calling this function with the argument \"world\", so it's outputting \"Hello, world!\"." | PASS | ollama(stream) |
+| C2 | `const add = (a, b) => a + b;` | "That's your equation right there, `a + b`." | FAIL | ollama(stream) |
+| C3 | `interface User { id: number; name: string; email?: string; }` | "This interface has three properties: - `id`: a required property of type `number`." | FAIL | ollama(stream) |
+| C4 | `public class Animal { public virtual void Speak() {...} }` | "Class is like the blueprint, yeah? You've named it `Animal`." | FAIL | ollama(stream) |
+| C5 | `#include <stdio.h> int main() { printf("Hello, World!\n"); return 0; }` | "Alright, here's the deal with your code. You've got a function, `main()`, that's gonna kickstart your whole program. Inside this function, you're using `printf()` to spit out \"Hello, World!\\n\" to wherever your standard output's pointed at, usually the console." | PASS | ollama(stream) |
+| C6 | `fn fibonacci(n: u32) -> u32 { match n {...} }` | "Alright you, you got a Rust function here, `fibonacci(n: u32) -> u32`. This line, `fn fibonacci(n: u32) -> u32 {`, declares a function named `fibonacci` that takes one argument, `n`, which is a 32-bit unsigned integer (`u32`), and returns a 32-bit unsigned integer (`u32`)." | PASS | ollama(stream) |
+| C7 | `SELECT users.name, orders.total FROM users JOIN orders ON...` | "That's your result set." | FAIL | ollama(stream) |
+| C8 | `<div class="container"><h1>Hello</h1><p style="color: red;">World</p></div>` | "This HTML structure creates a container with two child elements: a heading (`<h1>`) with the text \"Hello\", and a paragraph (`<p>`) with the text \"World\", styled in red due to the inline style `style=\"color: red;\"`." | PASS | ollama(stream) |
+| C9 | `{"mode": "thinking", "intensity": 0.8, "duration": 3000}` | "Alright you, you're dealing with a JSON here. It's got one key, `\"mode\"`, which is a string value. Right now, it's set to `\"thinking\"`, so your system's in deep thought, yeah?" | FAIL | ollama(stream) |
+| C10 | `name: eLo\nversion: 1.0\nfeatures: [voice, memory, presence]` | "You're setting up a key-value pair here, yeah? `name` is the key, and `eLo` is what you're labeling it with, proper?" | FAIL | ollama(stream) |
+| C11 | `<config><server><host>localhost</host><port>8080</port></server></config>` | "Alright you, this XML file's structuring your server's host and port. Got `<server>` tag here, that's your main block. Inside, `<host>` is where you set your server's address, and `<port>` is for the port number." | PASS | ollama(stream) |
+| C12 | `# Title\n## Section\n- item one\n- item two\n**bold** and _italic_` | "You got `# Title` for your big, bold headings. `## Section` drills down to smaller ones. `- item one`, `- item two` and so on, they're your unordered lists." | PASS | ollama(stream) |
+| C13 | `ps aux \| grep server.py \| grep -v grep \| awk '{print $2}' \| xargs kill` | "Then, you're excluding `grep` itself with `grep -v grep`. `awk '{print $2}'` zeroes in on the second column, those are the Process IDs (PIDs)." | FAIL | ollama(stream) |
+| C14 | `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$` | "This pattern kicks things off, you've got `^` locking down the start. It's hungry for alphanumeric goodness, plus dots, underscores, percent signs, plus signs, hyphens. Minimum one, unlimited more." | PASS | ollama(stream) |
+| C15 | `git log --oneline --graph --decorate --all` | "Here's what each component does: - `git`: Invokes the Git command-line tool." | FAIL | ollama(stream) |
+| C16 | `GET /api/users HTTP/1.1\nHost: example.com\nAuthorization: Bearer token123` | "Alright you, you're using 'GET', that's all about fetching data, not changing anything. And '/api/users' — that's you saying you're after user-related info, yeah?" | PASS | ollama(stream) |
+| C17 | `{"mode": "listening", "volume": 0.6, "timeout": 5000}` | "\"You got a string `\"mode\"`, set to `\"listening\"`. That's your current state. Then there's `\"volume\"`, a decimal number at `0.6`." | PASS | ollama(stream) |
+| C18 | `type Result<T, E> = Ok(T) \| Err(E); const r: Result<number, string> = Ok(42);` | "Your constant `r` is that box with `number` and `string` inside, and you're picking `Ok(42)` as the starting point." | PASS | ollama(stream) |
+| C19 | `SELECT AVG(salary), department FROM employees GROUP BY department HAVING AVG(salary) > 50000;` | "Alright you, here's the deal with your SQL. You're selecting two columns, yeah? `AVG(salary)` - that's you asking for the average salary, it's gonna give you a single number." | PASS | ollama(stream) |
+| C20 | `2x + 3y = 12\n4x - y = 5\nSolve for x and y.` | "2 = 2" | FAIL | direct:calculator |
+| C21 | `if (A && B) \|\| (!A && C) then output D\nelse output E` | "Aight, so you're looking at a conditional statement, yeah? That `if` keyword, that's your trigger. It's like saying \"Hey, let's check if this is true.\"" | FAIL | ollama(stream) |
+| C22 | `stack = []\nstack.push(1)\nstack.push(2)\nstack.pop()\nstack.push(3)` | "You start by defining an empty stack, yeah? Then you push 1 and 2 onto it, so it's [1, 2]. When you pop, it removes 2, leaving 1." | PASS | ollama(stream) |
+| C23 | `FOR each item IN collection:\n  IF item.value > threshold:\n    REMOVE item FROM collection\n  END IF\nEND FOR` | "Alright, here's the deal with your code, you. This is a loop structure, yeah? It's got this `FOR each item IN collection:` line that's like a gatekeeper, only letting stuff through once for each item you've got in your collection." | FAIL | ollama(stream) |
+| C24 | `public class Stack<T> { private List<T> items = new ArrayList<>(); ... }` | "That's saying, 'Stack can work with any type, but only that type.' It's got a hidden `List<T> items` keeping tabs on the stack's contents, making sure only `T` types sneak in." | PASS | ollama(stream) |
+| C25 | `{ subject: 'formal_language', claim: 'eLo reads code fluently', confidence: 0.9 }` | "Here's what you're doing, you. You're declaring a public integer variable, naming it `playerHealth`. It's all set to 100 from the get-go." | FAIL | ollama(stream) |
+| C26 | `FUNCTION binary_search(array, target): ...` | "Alright, you got `binary_search` function here, yeah? It's got two arguments: `array` and `target`. It's setting up two pointers, `left` and `right`, to start and end of your `array`." | PASS | ollama(stream) |
+
+### Analysis vs RE-RUN 17 (18/26)
+
+**Revert recovered (FAIL → PASS):** C8, C11, C14, C16, C24 — all 5 regressions from Fix C restored. Confirms voice_rewrite bypass was the cause of those 5 regressions.
+
+**Still failing from RR17:** C13, C15, C25 — unchanged.
+
+**New regressions (PASS in RR17 → FAIL in RR18):**
+- C2, C3, C4, C7, C10, C21, C23 — responses too brief/truncated. voice_rewrite unconditional is cutting these.
+- C9 — "one key" (wrong count of 3 JSON keys). Model non-determinism.
+- C20 — `direct:calculator` returned "2 = 2". Calculator caught algebraic equations input. This regression is unrelated to the voice_rewrite change — requires investigation.
+
+**C13 streaming truncation:** Response still starts "Then, you're excluding..." — mid-sentence. Beginning of response dropped. Root cause remains unresolved (not in voice_rewrite, not in normalise(), not in streaming buffer assembly as investigated in prior sessions). Board's required Fix C has not been applied.
+
+**Pattern observation:** voice_rewrite unconditional (current state) helps C8, C11, C14, C16, C24 but hurts C2, C3, C4, C7, C10, C21, C23 by truncating/rewriting multi-step explanations. voice_rewrite bypass (RR17 Fix C) helped those 7 but hurt the 5 that are now recovered. Neither state achieves a high score across both groups simultaneously.
+
+**C25 Fix B:** Fix B checks `'"eLo"' in user_input or "'eLo'" in user_input`. The C25 input `{ subject: 'formal_language', claim: 'eLo reads code fluently', confidence: 0.9 }` contains `'eLo reads code fluently'` — the substring `'eLo'` (closed quote) is NOT present because the quote closes after the full string value. Fix B does not trigger. Unity/C# hallucination (`playerHealth`) persists.
+
+**Do NOT declare PASS. Board review required.**
