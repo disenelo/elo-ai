@@ -5887,26 +5887,18 @@ def _process_turn(raw: str) -> dict:
         # Uses router_route as llm_caller so Ollama/backend handles the rewrite locally.
         try:
             from runtime.voice_rewrite import voice_rewrite as _vr
-            from runtime.backend_router import _CODE_SIGNAL_RE as _vr_code_sig
-            # COG-004 RR17 Fix C: technical inputs must NOT be voice-rewritten.
-            # voice_rewrite truncates technical explanations to 3 sentences via normalise()
-            # and garbles structured content. The TECHNICAL INPUT OVERRIDE already shapes
-            # the response correctly — a second LLM pass corrupts it.
-            _vr_is_technical = bool(_vr_code_sig.search(_original_raw))
-            if not _vr_is_technical:
-                def _vr_llm(_msgs):
-                    _sys = _msgs[0]["content"] if _msgs else ""
-                    _usr = _msgs[1]["content"] if len(_msgs) > 1 else ""
-                    _txt, _ = router_route(_sys, _usr, max_sentences=3, action="voice_rewrite", tier=0)
-                    return normalise(_txt, max_sentences=3)
-                response = _vr(
-                    response,
-                    exec_decision=exec_decision if exec_decision else None,
-                    ccm=None,
-                    llm_caller=_vr_llm,
-                    user_text=_original_raw,
-                )
-            # else: technical input — skip voice_rewrite, preserve the full explanation
+            def _vr_llm(_msgs):
+                _sys = _msgs[0]["content"] if _msgs else ""
+                _usr = _msgs[1]["content"] if len(_msgs) > 1 else ""
+                _txt, _ = router_route(_sys, _usr, max_sentences=3, action="voice_rewrite", tier=0)
+                return normalise(_txt, max_sentences=3)
+            response = _vr(
+                response,
+                exec_decision=exec_decision if exec_decision else None,
+                ccm=None,
+                llm_caller=_vr_llm,
+                user_text=_original_raw,
+            )
         except Exception as _vr_err:
             import logging as _vr_log
             _vr_log.getLogger("voice_rewrite").warning(
