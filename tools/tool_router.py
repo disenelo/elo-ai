@@ -1978,6 +1978,12 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
         except Exception as _e:
             _logger.debug("screen visibility (early) failed: %s", _e)
 
+    # Fix A — COG-004 RR17: JSON-object-shaped inputs (C9/C17) must NOT route to calculator.
+    # When input looks like a JSON object ({...key: value...}), route to Ollama for explanation.
+    _stripped_input = user_input.strip()
+    if _stripped_input.startswith("{") and ":" in _stripped_input:
+        return None  # skip all direct intercepts; let Ollama handle JSON objects
+
     # ── Calculator — direct intercept (fires regardless of Executive) ──
     # Patterns that indicate a clear arithmetic query. Must contain a digit AND
     # at least one operator (word or symbol) so we don't grab "what is eLo?" etc.

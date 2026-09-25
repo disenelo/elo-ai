@@ -489,6 +489,17 @@ def normalise(text: str, max_sentences: int = 4) -> str:
     # sentence-enders (e.g. `." ` or `!' `) so quoted vault content followed by
     # meta-commentary sentences (e.g. `"..." This is the original text.`) gets
     # correctly split into two filterable units.
+    # Fix C — COG-004 RR17: protect backtick code spans from sentence splitting.
+    # Shell/code responses use `command.ext` notation; a period inside a span (e.g.
+    # `server.py`) can be misread as a sentence boundary and split the span mid-word.
+    # Replace spans with null-byte-delimited placeholders before splitting, restore after.
+    _codespan_ph: dict[str, str] = {}
+    def _protect_span(m: "re.Match[str]") -> str:
+        key = f"\x00CS{len(_codespan_ph)}\x00"
+        _codespan_ph[key] = m.group(0)
+        return key
+    text = re.sub(r"```[\s\S]*?```|`[^`\n]+`", _protect_span, text)
+
     _raw_segs: list[str] = re.split(r"\n+", text)
     _all_sentences: list[str] = []
     for _seg in _raw_segs:
@@ -505,6 +516,11 @@ def normalise(text: str, max_sentences: int = 4) -> str:
         sentences = sentences[:max_sentences]
 
     text = " ".join(sentences)
+
+    # Fix C — restore backtick code spans now that splitting/filtering is complete
+    for _k, _v in _codespan_ph.items():
+        text = text.replace(_k, _v)
+
     return text.strip()
 
 
