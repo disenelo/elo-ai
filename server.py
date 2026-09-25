@@ -1281,6 +1281,31 @@ def ambient_thought() -> None:
 
         if _speak_text:
             _voice_speak(_speak_text)
+            # S2 Phase 0 Bug 2 — every spoken string must appear in the chat log.
+            # Ambient speech fires from a background path with no HTTP response,
+            # so it was previously invisible to chat. Write to ambient_speech.json
+            # (Unity polls this) and to the ConversationTracker for session history.
+            try:
+                import json as _asl_json, time as _asl_time
+                _asl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                         "blender", "ambient_speech.json")
+                _asl_tmp = _asl_path + ".tmp"
+                with open(_asl_tmp, "w", encoding="utf-8") as _asl_f:
+                    _asl_json.dump({"text": _speak_text, "_ts": _asl_time.time(),
+                                    "source": "ambient"}, _asl_f, ensure_ascii=False)
+                os.replace(_asl_tmp, _asl_path)
+            except Exception:
+                pass
+            try:
+                from faculties.grounding.conversation_tracker import get_tracker as _ct_amb
+                _ct_amb().record(
+                    session_id=(_state or {}).get("person_id", "default"),
+                    user_msg="",
+                    elo_response=_speak_text,
+                    subject="ambient",
+                )
+            except Exception:
+                pass
 
     except Exception:
         pass
@@ -5141,6 +5166,15 @@ def _process_turn(raw: str) -> dict:
                     if os.environ.get("ELO_STREAM", "1") != "0":
                         def _early_tts(sentence: str) -> None:
                             try:
+                                # S2 Phase 0 Bug 1 — apply Rule G (second-person address) to the
+                                # early sentence BEFORE speaking, so TTS and chat share the same
+                                # conditioned string. Store the conditioned form so the skip-check
+                                # at line ~6201 compares apples-to-apples.
+                                try:
+                                    from runtime.address_rule_guard import enforce_second_person_to_david as _arg_et
+                                    sentence = _arg_et(sentence)
+                                except Exception:
+                                    pass
                                 _early_tts_sentence[0] = sentence
                                 _voice_speak(sentence)
                             except Exception:
