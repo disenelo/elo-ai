@@ -376,6 +376,41 @@ _META_SENTENCE_PATTERNS = [
     re.compile(r"that'?s moving\s*[—–-]?\s*what'?s next\??\.?", re.IGNORECASE),
 ]
 
+# COG-004 RR17 Fix C: module-level technical-input detection regex.
+# Exposed here so server.py can import it to skip voice_rewrite for technical inputs.
+# Also used inside _ollama_call() (local re-definition removed — Python scoping finds this).
+_CODE_SIGNAL_RE = re.compile(
+    r"[{};\[\]]"            # braces, brackets, semicolons
+    r"|=>|->"               # arrow operators (JS/TS/Rust/C)
+    r"|::"                  # namespace separator (C++, Rust)
+    r"|\+=|-=|\*=|/=|%="   # compound assignment operators
+    r"|0x[0-9a-fA-F]+"     # hex literals
+    r"|\bdef\s+\w|\bfn\s+\w|\bfunc\s+\w|\bvoid\s+\w|\bclass\s+\w"
+    r"|\bFOR\s+each\b|\bFOR\s+\w|\bFOREACH\b|\bWHILE\s+\w|\bIF\s+\w|\bEND\s+IF\b|\bEND\s+FOR\b|\bRETURN\b|\bREMOVE\b|\bPRINT\b"
+    r"|&&|\|\|"                       # C-style boolean AND/OR
+    r"|<\w[\w-]*\s"                   # HTML/XML opening tag
+    r"|\bO\s*\(n\b"                   # Big-O notation
+    r"|[A-Z][A-Z0-9_]{3,}="          # ENV_VAR=value config pattern
+    r"|\^[a-zA-Z(]"                  # regex start anchor
+    r"|\\[dwsDWSbBnrtvf$]"            # regex escapes \d \w \s etc.
+    r"|\bfloat\s+\w{2,}|\bint\s+\w{2,}|\bbool\s+\w{2,}"  # typed declarations
+    r"|\brecursive(?:ly)?\b|\btraversal\b"                 # algorithm terms
+    r"|\bformal\s+languages?\b"                            # formal language meta
+    r"|\btype\s+\w+\s*="                                   # TypeScript type alias
+    r"|\binterface\s+\w+\s*\{"                             # TypeScript/Java interface
+    r"|\bGET\s|\bPOST\s|\bPUT\s|\bDELETE\s|\bPATCH\s|\bHEAD\s"  # bare HTTP verbs
+    r"|POST\s+/\w|GET\s+/\w|PUT\s+/\w|DELETE\s+/\w"       # HTTP method + path
+    r"|HTTP/\d\.\d"                                        # HTTP version string
+    r"|[∧∨¬∀∃→↔⊕]"                                        # formal logic symbols
+    r"|##\s"                                               # Markdown heading
+    r"|\|\s*-{3,}\s*\||\|\s*:?-+"                        # Markdown table separator
+    r"|\$schema\b"                                         # JSON Schema $schema key
+    r"|\bps\s+aux\b|\bgrep\s+\w|\bawk\s+|\bxargs\s+|\bkill\s+-|\bchmod\s+|\bsudo\s+"  # shell signals
+    r"|\|\s*\w+"                                           # pipe to command
+    ,
+    re.IGNORECASE,
+)
+
 # World lore terms that should not appear in responses unless the user asked about them
 _WORLD_LORE_TERMS = [
     "sugarcore", "jellydrop", "dessert desert", "gummy lands",
@@ -1125,36 +1160,7 @@ def _ollama_stream(
     # checks on completely neutral inputs. Suppress frustrated-typos when the
     # input contains clear code markers — these are identifier patterns, not
     # angry keyboard-mashing. COG-004 root cause fix 2026-09-20.
-    _CODE_SIGNAL_RE = re.compile(
-        r"[{};\[\]]"            # braces, brackets, semicolons
-        r"|=>|->"               # arrow operators (JS/TS/Rust/C)
-        r"|::"                  # namespace separator (C++, Rust)
-        r"|\+=|-=|\*=|/=|%="   # compound assignment operators
-        r"|0x[0-9a-fA-F]+"     # hex literals (0x000000 triggers elongation)
-        r"|\bdef\s+\w|\bfn\s+\w|\bfunc\s+\w|\bvoid\s+\w|\bclass\s+\w"
-        r"|\bFOR\s+each\b|\bFOR\s+\w|\bFOREACH\b|\bWHILE\s+\w|\bIF\s+\w|\bEND\s+IF\b|\bEND\s+FOR\b|\bRETURN\b|\bREMOVE\b|\bPRINT\b"
-        # COG-004 expanded detection — covers formal languages missed above
-        r"|&&|\|\|"                       # C-style boolean AND/OR (C20 logic: isGrounded && ...)
-        r"|<\w[\w-]*\s"                   # HTML/XML opening tag (C8 HTML, C11 XML)
-        r"|\bO\s*\(n\b"                   # Big-O notation (C19 math: O(n log n))
-        r"|[A-Z][A-Z0-9_]{3,}="          # ENV_VAR=value config pattern (C18 config)
-        r"|\^[a-zA-Z(]"                  # regex start anchor (C14 regex: ^idle)
-        r"|\\[dwsDWSbBnrtvf$]"            # regex escapes \d \w \s \D \W \S \$ etc.
-        r"|\bfloat\s+\w{2,}|\bint\s+\w{2,}|\bbool\s+\w{2,}"  # typed declarations (C4 C#)
-        r"|\brecursive(?:ly)?\b|\btraversal\b"                 # algorithm terms (C22)
-        r"|\bformal\s+languages?\b"                            # formal language meta (C25/C26)
-        r"|\btype\s+\w+\s*="                                   # TypeScript type alias (C3: type EloMode = ...)
-        r"|\binterface\s+\w+\s*\{"                             # TypeScript/Java interface
-        r"|\bGET\s|\bPOST\s|\bPUT\s|\bDELETE\s|\bPATCH\s|\bHEAD\s"  # bare HTTP verbs (C16)
-        r"|POST\s+/\w|GET\s+/\w|PUT\s+/\w|DELETE\s+/\w"       # HTTP method + path (C16 APIs)
-        r"|HTTP/\d\.\d"                                        # HTTP version string
-        r"|[∧∨¬∀∃→↔⊕]"                                        # COG-004: formal logic notation symbols
-        r"|##\s"                                               # Markdown heading (## Status, ### section)
-        r"|\|\s*-{3,}\s*\||\|\s*:?-+"                        # Markdown table separator (|---|, |:---|)
-        r"|\$schema\b"                                         # JSON Schema $schema key
-        ,
-        re.IGNORECASE,
-    )
+    # _CODE_SIGNAL_RE is module-level (defined near top of file) — no local re-definition needed.
     _input_has_code = bool(_CODE_SIGNAL_RE.search(user_input))
     _is_frustrated_typos = (
         not _input_has_code
