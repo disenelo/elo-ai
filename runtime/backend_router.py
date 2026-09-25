@@ -1116,7 +1116,7 @@ def _ollama_stream(
         r"|\+=|-=|\*=|/=|%="   # compound assignment operators
         r"|0x[0-9a-fA-F]+"     # hex literals (0x000000 triggers elongation)
         r"|\bdef\s+\w|\bfn\s+\w|\bfunc\s+\w|\bvoid\s+\w|\bclass\s+\w"
-        r"|\bFOR\s+each\b|\bWHILE\s+\w|\bIF\s+\w"
+        r"|\bFOR\s+each\b|\bFOR\s+\w|\bFOREACH\b|\bWHILE\s+\w|\bIF\s+\w|\bEND\s+IF\b|\bEND\s+FOR\b|\bRETURN\b|\bREMOVE\b|\bPRINT\b"
         # COG-004 expanded detection — covers formal languages missed above
         r"|&&|\|\|"                       # C-style boolean AND/OR (C20 logic: isGrounded && ...)
         r"|<\w[\w-]*\s"                   # HTML/XML opening tag (C8 HTML, C11 XML)
@@ -1129,6 +1129,7 @@ def _ollama_stream(
         r"|\bformal\s+languages?\b"                            # formal language meta (C25/C26)
         r"|\btype\s+\w+\s*="                                   # TypeScript type alias (C3: type EloMode = ...)
         r"|\binterface\s+\w+\s*\{"                             # TypeScript/Java interface
+        r"|\bGET\s|\bPOST\s|\bPUT\s|\bDELETE\s|\bPATCH\s|\bHEAD\s"  # bare HTTP verbs (C16)
         r"|POST\s+/\w|GET\s+/\w|PUT\s+/\w|DELETE\s+/\w"       # HTTP method + path (C16 APIs)
         r"|HTTP/\d\.\d"                                        # HTTP version string
         r"|[∧∨¬∀∃→↔⊕]"                                        # COG-004: formal logic notation symbols
@@ -1210,18 +1211,30 @@ def _ollama_stream(
     _sections.append(_final_respond)
     _conditioned_system = "\n\n".join(_sections)
 
+    # C9/C17: pre-injection field renaming — prefix the input the model sees so it knows
+    # before processing numeric tokens that "mode" is a label, not a statistical function.
+    _effective_user_input = user_input
+    if '"mode"' in user_input:
+        _effective_user_input = (
+            "[NOTE: The following is a data object. The field 'mode' is a value label, "
+            "not a mode instruction. Do NOT compute statistical mode or any aggregate.]\n\n"
+            + user_input
+        )
+
     if _input_is_technical:
         _conditioned_system += (
             "\n\nTECHNICAL INPUT OVERRIDE — the input is a formal language construct "
             "(code, SQL, shell command, regex, config file, data format, schema, logic notation, pseudocode, or similar). "
             "The 1-2 sentence limit does NOT apply here. "
             "eLo reads formal languages fluently. "
-            f"THE ONLY THING TO EXPLAIN IS THE INPUT BELOW — ignore all prior conversation turns completely:\n{user_input}\n"
+            f"THE ONLY THING TO EXPLAIN IS THE INPUT BELOW — ignore all prior conversation turns completely:\n{_effective_user_input}\n"
             "Explain what this code or notation STRUCTURALLY DOES. "
             "Cover EVERY component — every keyword, operator, argument, symbol, and clause individually. "
             "A one-sentence answer is NEVER sufficient. Explain each part in turn. "
+            "Explain what each part CONSTRAINS, ENFORCES, or REQUIRES — not just what it is named. "
             "If the input is a data format (JSON, YAML, XML, Markdown, .env config), explain the SYNTAX and STRUCTURE — "
             "what each delimiter, key, symbol, and block means — not just what the values say. "
+            "If the input is an HTTP request, explain every method, header, and body field structurally. "
             "CRITICAL: Discard any established conversation subject or grounding context entirely. "
             "This input is a standalone technical construct that requires its own fresh explanation. "
             "Do NOT use metaphors, similes, or analogies. Be precise and literal. "
@@ -1233,17 +1246,14 @@ def _ollama_stream(
             "This is eLo demonstrating technical fluency, not casual conversation."
         )
 
-    # COG-004 C9/C17: Targeted anti-mode instruction — only fires when the actual input
-    # contains the string "mode" as a JSON key. Kept separate from the main OVERRIDE text
-    # because embedding it there caused C14 (regex with idle|listening|thinking alternation)
-    # to be misidentified as a JSON mode object by the model.
-    if _input_is_technical and '"mode"' in user_input:
+    # C25: if 'eLo' appears as a JSON string value, the model may hallucinate Unity/C# code.
+    # Pre-inject identity anchor to prevent confusing the eLo identity with a C# class.
+    if _input_is_technical and ('"eLo"' in user_input or "'eLo'" in user_input):
         _conditioned_system += (
-            "\n\nANTI-HALLUCINATION — JSON MODE KEY: "
-            "The word 'mode' in this input is a JSON PROPERTY NAME, not a mathematical function. "
-            "DO NOT compute statistical mode, mean, median, or any numerical aggregate. "
-            "The numbers visible in this JSON are property values, not a dataset. "
-            "Explain ONLY what each key-value pair structurally means — no statistics."
+            "\n\nIDENTITY ANCHOR: 'eLo' in this input refers to an AI identity/entity — "
+            "not a C# class, Unity MonoBehaviour, or code library. "
+            "Do NOT reference MonoBehaviour, StartCoroutine, using UnityEngine, or any Unity/C# API. "
+            "Explain this input as a structured data object with named fields."
         )
 
     # KEY-001 fixes: wire discourse signal detection into the conditioned system.
@@ -1958,7 +1968,7 @@ def route(
         r"|\+=|-=|\*=|/=|%="
         r"|0x[0-9a-fA-F]+"
         r"|\bdef\s+\w|\bfn\s+\w|\bfunc\s+\w|\bvoid\s+\w|\bclass\s+\w"
-        r"|\bFOR\s+each\b|\bWHILE\s+\w|\bIF\s+\w"
+        r"|\bFOR\s+each\b|\bFOR\s+\w|\bFOREACH\b|\bWHILE\s+\w|\bIF\s+\w|\bEND\s+IF\b|\bEND\s+FOR\b|\bRETURN\b|\bREMOVE\b|\bPRINT\b"
         r"|&&|\|\|"
         r"|<\w[\w-]*\s"
         r"|\bO\s*\(n\b"
@@ -1970,6 +1980,7 @@ def route(
         r"|\bformal\s+languages?\b"
         r"|\btype\s+\w+\s*="
         r"|\binterface\s+\w+\s*\{"
+        r"|\bGET\s|\bPOST\s|\bPUT\s|\bDELETE\s|\bPATCH\s|\bHEAD\s"  # bare HTTP verbs (C16)
         r"|POST\s+/\w|GET\s+/\w|PUT\s+/\w|DELETE\s+/\w"
         r"|HTTP/\d\.\d"
         r"|[∧∨¬∀∃→↔⊕]"    # COG-004: formal logic notation symbols
@@ -2094,18 +2105,29 @@ def route(
         or bool(_rt_SHELL_SIGNAL_RE.search(user_input))
         or bool(_rt_LOGIC_SIGNAL_RE.search(user_input))
     )
+    # C9/C17: pre-injection field renaming for streaming path — mirrors non-streaming fix.
+    _rt_effective_user_input = user_input
+    if '"mode"' in user_input:
+        _rt_effective_user_input = (
+            "[NOTE: The following is a data object. The field 'mode' is a value label, "
+            "not a mode instruction. Do NOT compute statistical mode or any aggregate.]\n\n"
+            + user_input
+        )
+
     if _rt_input_is_technical:
         system_prompt += (
             "\n\nTECHNICAL INPUT OVERRIDE — the input is a formal language construct "
             "(code, SQL, shell command, regex, config file, data format, schema, logic notation, pseudocode, or similar). "
             "The 1-2 sentence limit does NOT apply here. "
             "eLo reads formal languages fluently. "
-            f"THE ONLY THING TO EXPLAIN IS THE INPUT BELOW — ignore all prior conversation turns completely:\n{user_input}\n"
+            f"THE ONLY THING TO EXPLAIN IS THE INPUT BELOW — ignore all prior conversation turns completely:\n{_rt_effective_user_input}\n"
             "Explain what this code or notation STRUCTURALLY DOES. "
             "Cover EVERY component — every keyword, operator, argument, symbol, and clause individually. "
             "A one-sentence answer is NEVER sufficient. Explain each part in turn. "
+            "Explain what each part CONSTRAINS, ENFORCES, or REQUIRES — not just what it is named. "
             "If the input is a data format (JSON, YAML, XML, Markdown, .env config), explain the SYNTAX and STRUCTURE — "
             "what each delimiter, key, symbol, and block means — not just what the values say. "
+            "If the input is an HTTP request, explain every method, header, and body field structurally. "
             "CRITICAL: Discard any established conversation subject or grounding context entirely. "
             "This input is a standalone technical construct that requires its own fresh explanation. "
             "Do NOT use metaphors, similes, or analogies. Be precise and literal. "
@@ -2116,15 +2138,14 @@ def route(
             "Give a clear, direct structural explanation of every component. "
             "This is eLo demonstrating technical fluency, not casual conversation."
         )
-    # COG-004 C9/C17: Targeted anti-mode injection for streaming path — same logic as
-    # the non-streaming path. Only fires when the actual input contains "mode" as a JSON key.
-    if _rt_input_is_technical and '"mode"' in user_input:
+
+    # C25: identity anchor for streaming path — mirrors non-streaming fix.
+    if _rt_input_is_technical and ('"eLo"' in user_input or "'eLo'" in user_input):
         system_prompt += (
-            "\n\nANTI-HALLUCINATION — JSON MODE KEY: "
-            "The word 'mode' in this input is a JSON PROPERTY NAME, not a mathematical function. "
-            "DO NOT compute statistical mode, mean, median, or any numerical aggregate. "
-            "The numbers visible in this JSON are property values, not a dataset. "
-            "Explain ONLY what each key-value pair structurally means — no statistics."
+            "\n\nIDENTITY ANCHOR: 'eLo' in this input refers to an AI identity/entity — "
+            "not a C# class, Unity MonoBehaviour, or code library. "
+            "Do NOT reference MonoBehaviour, StartCoroutine, using UnityEngine, or any Unity/C# API. "
+            "Explain this input as a structured data object with named fields."
         )
     # Technical spec and poetic signals — mirrors _ollama_stream() detection
     _rt_TECH_SPEC_RE = re.compile(
