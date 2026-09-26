@@ -1269,9 +1269,12 @@ def _ollama_stream(
             "This is eLo demonstrating technical fluency, not casual conversation."
         )
 
-    # C25: if 'eLo' appears as a JSON string value, the model may hallucinate Unity/C# code.
-    # Pre-inject identity anchor to prevent confusing the eLo identity with a C# class.
-    if _input_is_technical and "eLo" in user_input:
+    # C25: if 'eLo' appears in a non-technical input, the model may hallucinate Unity/C# code.
+    # RR20 Fix B v2: guard is now NOT _input_is_technical — fires for inputs that contain "eLo"
+    # but did NOT match the code-signal regex (e.g. JS-object with single quotes). Technical
+    # inputs already route through the TECHNICAL INPUT OVERRIDE block which prevents hallucination;
+    # the identity anchor is only needed for the non-technical path where "eLo" appears as a value.
+    if "eLo" in user_input and not _input_is_technical:
         _conditioned_system += (
             "\n\nIDENTITY ANCHOR: 'eLo' in this input refers to an AI identity/entity — "
             "not a C# class, Unity MonoBehaviour, or code library. "
@@ -2163,8 +2166,9 @@ def route(
             "This is eLo demonstrating technical fluency, not casual conversation."
         )
 
-    # C25: identity anchor for streaming path — mirrors non-streaming fix.
-    if _rt_input_is_technical and "eLo" in user_input:
+    # C25: identity anchor for streaming path — RR20 Fix B v2: guard is now NOT _rt_input_is_technical.
+    # Fires for inputs that contain "eLo" but did NOT match the code-signal regex.
+    if "eLo" in user_input and not _rt_input_is_technical:
         system_prompt += (
             "\n\nIDENTITY ANCHOR: 'eLo' in this input refers to an AI identity/entity — "
             "not a C# class, Unity MonoBehaviour, or code library. "
