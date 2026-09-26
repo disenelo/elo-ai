@@ -85,18 +85,43 @@ def should_dream(elo_self, idle_seconds: float, energy_history: list) -> bool:
     recent_events = set(getattr(elo_self, "inner_events", [])[-4:])
     has_inner_signal = bool(recent_events & _dream_events)
 
-    energy_list = list(energy_history or [])
-    has_exhaustion = (
-        len(energy_list) >= 4 and
-        sum(energy_list[-4:]) / 4 < 0.32
-    )
+    # Exhaustion is eLo's OWN battery, not David's emotional energy.
+    # WO-HEALTH-BATTERY-001: `energy_history` (David's affect, sampled per turn
+    # in server.py) was the wrong signal for whether eLo needs to sleep.
+    # The parameter is kept so existing callers keep working; it is no longer
+    # the exhaustion source.
+    try:
+        from core.health_battery import (
+            get_energy as _get_elo_energy,
+            ENERGY_LOW as _LOW,
+            ENERGY_CRITICAL as _CRITICAL,
+        )
+        elo_energy = _get_elo_energy()
+        has_exhaustion = elo_energy < _LOW
+        critical_energy = elo_energy < _CRITICAL
+    except Exception:
+        # Battery unavailable — fall back to the original David-energy heuristic
+        # rather than never dreaming.
+        energy_list = list(energy_history or [])
+        has_exhaustion = (
+            len(energy_list) >= 4 and
+            sum(energy_list[-4:]) / 4 < 0.32
+        )
+        critical_energy = False
 
     has_focal_persistence = (
         bool(getattr(elo_self, "focal_thread", "")) and
         idle_seconds > 1800  # 30 min
     )
 
-    return has_inner_signal or has_exhaustion or has_focal_persistence
+    # At CRITICAL the inner-event requirement is relaxed: long idle alone is
+    # enough. Cooldown is still respected above, and low energy only makes
+    # sleep MORE LIKELY — it never forces it.
+    return has_inner_signal or has_exhaustion or has_focal_persistence or (
+        critical_energy and (
+            has_inner_signal or has_focal_persistence or idle_seconds > 1200
+        )
+    )
 
 
 # ── Dream phases ──────────────────────────────────────────────────────────────
