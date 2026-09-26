@@ -24,24 +24,20 @@ from presence.presence_state import PresenceMode
 # Values are target blend amounts within each key's safe range
 _MODE_EXPRESSION: dict[str, dict] = {
     "idle": {
-        "MouthOpen.Slightly":  0.1,
         "Smile.L":             0.15,
         "Smile.R":             0.15,
         "Satisfied/LittleJoy": 0.1,
     },
     "thinking": {
-        "MouthOpen.Slightly": 0.25,
         "Huh":                0.45,
         "Confident":          0.3,
     },
     "observing": {
-        "MouthOpen.Slightly":  0.3,
         "Smile.L":             0.25,
         "Smile.R":             0.25,
         "Satisfied/LittleJoy": 0.2,
     },
     "building": {
-        "MouthOpen.Slightly":  0.35,
         "Smile.L":             0.45,
         "Smile.R":             0.45,
         "Confident":           0.5,
@@ -55,13 +51,11 @@ _MODE_EXPRESSION: dict[str, dict] = {
         "Satisfied/LittleJoy": 1.0,
     },
     "resting": {
-        "MouthOpen.Slightly":  0.05,
         "Smile.L":             0.25,
         "Smile.R":             0.25,
         "Satisfied/LittleJoy": 0.2,
     },
     "exploring": {
-        "MouthOpen.Slightly":  0.4,
         "Huh":                 0.35,
         "Smile.L":             0.25,
         "Smile.R":             0.25,
@@ -74,11 +68,11 @@ _ACTION_BONUS: dict[str, dict] = {
     "CELEBRATE": {"MouthOpen.Wide": 0.3,  "Smile-Cheeks": 0.4,  "Satisfied/LittleJoy": 0.2},
     "BUILD":     {"Smile.L":        0.2,  "Smile.R": 0.2,        "Confident": 0.2},
     "CONNECT":   {"Smile.L":        0.15, "Smile.R": 0.15,       "Satisfied/LittleJoy": 0.15},
-    "CHALLENGE": {"Confident":      0.4,  "MouthOpen.Slightly":  0.2},
-    "REFLECT":   {"Huh":            0.3,  "MouthOpen.Slightly":  0.1},
+    "CHALLENGE": {"Confident":      0.4},
+    "REFLECT":   {"Huh":            0.3},
     "WITNESS":   {"Smile.L":        0.2,  "Smile.R": 0.2},
-    "GROUND":    {"MouthOpen.Slightly": 0.05, "Satisfied/LittleJoy": 0.1},
-    "ANSWER":    {"MouthOpen.Slightly": 0.15, "Confident": 0.15},
+    "GROUND":    {"Satisfied/LittleJoy": 0.1},
+    "ANSWER":    {"Confident": 0.15},
 }
 
 # mode → head lean on c_head.x bone (Euler Y rotation, radians, small values)
@@ -109,11 +103,11 @@ _ACTION_PACING: dict[str, str] = {
 # Ambient flicker pool — mild, brief expression pulses for idle moments.
 # Never dramatic; used by ambient_engine._pulse_emotion().
 _AMBIENT_FLICKER_POOL: list[dict[str, float]] = [
-    {"Smile.L": 0.3,  "Smile.R": 0.3,  "MouthOpen.Slightly": 0.1},
+    {"Smile.L": 0.3,  "Smile.R": 0.3},
     {"Satisfied/LittleJoy": 0.35, "Smile.L": 0.2, "Smile.R": 0.2},
-    {"Huh": 0.3, "MouthOpen.Slightly": 0.2},
+    {"Huh": 0.3},
     {"Smile.L": 0.45, "Smile.R": 0.45, "Smile-Cheeks": 0.2},
-    {"Confident": 0.25, "MouthOpen.Slightly": 0.15},
+    {"Confident": 0.25},
 ]
 
 
