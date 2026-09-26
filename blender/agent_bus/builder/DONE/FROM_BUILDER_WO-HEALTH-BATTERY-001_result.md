@@ -1,0 +1,136 @@
+# WO-HEALTH-BATTERY-001 — Result: eLo Health Battery (S4)
+
+**Date:** 2026-09-26 / 27
+**WO:** WO-HEALTH-BATTERY-001 PART A/B/D + ADDENDUM A (Physical Activity)
+**Source:** `blender/agent_bus/builder/FROM_ARCHITECT_2026-09-22_HEALTH_BATTERY.md`
+· `_intake/SOURCE_2026-09-24_DAVID_physical_activity_energy.md`
+**Seat:** Builder 2
+**Runtime:** `/Users/Disenelo/miniconda3/bin/python3` — 3.13.13, pytest 9.1.1
+**Evidence:** `engineering/evidence/HEALTH/WO-HEALTH-BATTERY-001-ADDENDUM-A_evidence.md`
+
+**STATUS: PARTIAL** — module built, all six integration points wired.
+Nothing LIVE VERIFIED. Robot path never run on hardware.
+
+---
+
+## REQUESTED
+
+`core/health_battery.py` with the full drain/restore/tick API, the physical
+fatigue track from Addendum A, and six integration points.
+
+## CHANGED
+
+| Commit | File | What |
+|---|---|---|
+| `644876d` | `core/health_battery.py` | new — PART A/B/D + Addendum A |
+| `9c69801` | `server.py:3678` | per-turn drain + publish |
+| `8bb9a90` | `faculties/dream/dream_faculty.py` | `should_dream()` reads the battery |
+| `963e5f4` | `faculties/dream/dream_faculty.py` | wake restores +0.30 / +0.12 |
+| `967793f` | `ambient/ambient_engine.py` | battery tick on the 0.5s poll loop |
+| `6d62e96` | `blender_bridge/state_writer.py` | battery fields survive a full state write |
+| `274a980` | `tests/` | stop the suite writing to live state |
+
+### Integration points
+
+| WO point | Where | Commit |
+|---|---|---|
+| ambient loop → `tick(motion_state)` | `ambient_engine.py` 0.5s poll | `967793f` |
+| after each turn → `on_conversation_turn()` | `server.py:3678` | `9c69801` |
+| `wake_from_dream()` → restore | `dream_faculty.py` | `963e5f4` |
+| calm tick → `calm_tick()` | inside `_battery_tick()` | `967793f` |
+| `should_dream()` → `get_energy()` | `dream_faculty.py` | `8bb9a90` |
+| `blender_state.json` each tick → `publish()` | ambient + per turn | `967793f` / `9c69801` |
+
+## TEST RESULTS
+
+```
+test_health_battery                     34 passed
+test_s4_battery_wiring                   6 passed
+test_s4_should_dream_battery             8 passed
+test_s4_wake_restore                     8 passed
+test_s4_ambient_tick                     9 passed
+test_state_writer_preserves_battery     12 passed
+test_no_live_state_writes                5 passed
+                                        -----------
+                                        82 passed
+```
+
+## LIVE EVIDENCE
+
+**NONE.** Tier 5 is not satisfied. Server PID 28626 is on pre-fix code; a
+restart was attempted and correctly refused by the host permission layer.
+
+Observed out of process, verbatim in the evidence file: cognitive drain and
+thresholds, dream restore (0.10 → 0.40 full cycle / 0.22 NREM), calm restore,
+the "standing all day" arc reaching `fatigued` and emitting David's verbatim
+line, per-event jump/parkour charging, sitting restore, and game events
+(`food +0.20`, `crate +0.159` randomised, unknown `+0.10`, cursor persisted).
+
+## THE ONE THAT WOULD HAVE BITTEN — `6d62e96`
+
+With all six points wired but before this fix, **S4 would have appeared to
+work and then visibly failed in front of David.**
+
+`state_writer._write()` REPLACES `blender_state.json` wholesale, keeping only
+`_PRESERVE_KEYS`. `publish()` writes via `patch()` (a merge), so the fields
+landed — and the next full `_write()` deleted them. The ambient tick
+republishes every 0.5s, so the indicator would have flickered on and off with
+nothing wrong in Unity. Designer would have debugged their own code.
+
+The file documents the trap — *"absent from this set = droppable"* — and
+WO-MOBILE-PHASE2 hit it first and fixed it the same way.
+
+## A TEST SUITE WAS WRITING INTO THE RUNNING SYSTEM — `274a980`
+
+Live `elo_battery` read `0.4` when it had been set to `1.0` by hand.
+`test_s4_wake_restore.py` → `wake_from_dream()` → real `publish()` → live
+`blender_state.json`. `0.4` is exactly `0.10 + 0.30` from
+`test_full_cycle_restores_thirty`.
+
+Had it not been caught, the live-evidence run would have captured values this
+suite had partly written and filed them as a live result. Guard added:
+`tests/test_no_live_state_writes.py`.
+
+## DECISIONS NEEDING BOARD CONFIRMATION
+
+1. **Combination weights** were "TBD by Builder". Physical folds into
+   `elo_battery` **only once motion is reported**. On desktop there is no
+   motion sensor, so physical sits at 1.0; averaging it in unconditionally
+   would floor `elo_battery` and make `ENERGY_CRITICAL` (0.10) unreachable,
+   silently breaking the parent WO's dream trigger. No motion → `elo_battery`
+   IS cognitive. 0.6 / 0.4 once live.
+2. **Hardware override gated** behind `ELO_HARDWARE_BATTERY=1`, default OFF.
+   Section 6 applied literally also fires on David's MacBook and eLo's energy
+   would track the laptop charge.
+3. **Tick location.** PART A.1 says "server's ambient loop", but
+   `ambient_thought()` is the ambient *callback* and fires every 8–20 minutes
+   — it cannot carry a per-minute rate. The tick went on the ambient engine's
+   0.5s poll loop. Confirm or relocate.
+4. **`emotional_intensity` has no source.** `emotional_context` carries
+   `energy` and `valence`, no intensity field. `energy` used as the magnitude.
+5. **All Addendum A rates are `[ESTIMATE]`** per the addendum itself.
+
+## ⚠ NOTE FOR DESIGNER
+
+`state.energy` (live, 0.35) is **not** the battery. It is
+`attention_model.emotional_context.energy` — David's conversational affect,
+also feeding `presence_plan.voice_energy`. eLo's battery is the new
+top-level **`elo_battery`**. Binding the indicator to `state.energy` will look
+plausible and be wrong. `test_battery_is_not_wired_into_state_energy` pins
+them apart.
+
+Related: `should_dream()` was deciding whether *eLo* needed sleep by reading
+*David's* energy history. That is now eLo's own battery.
+
+## REMAINING
+
+- LIVE VERIFICATION — needs a server restart (David).
+- Pi hardware path never run on hardware.
+- Designer: battery indicator + calm animation (Part C).
+- Game: `game_events.jsonl` writes on item collection (Part D) — the reader
+  is built and tested, nothing writes the file yet.
+
+## BUILDER STATUS
+
+**PARTIAL.** Built, wired, unit-tested, evidence filed. Not live verified.
+Not declaring PASS — Board crosschecks.
