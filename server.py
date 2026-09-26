@@ -5885,28 +5885,27 @@ def _process_turn(raw: str) -> dict:
         # voice_rewrite.py was built but never wired — root cause of 34% REGISTER_ABSENT.
         # Fires when candidate has no eLo register markers (same check as the audit).
         # Uses router_route as llm_caller so Ollama/backend handles the rewrite locally.
-        # COG-004 RR20 Fix D v2: skip voice_rewrite entirely for technical inputs.
-        # RR19 Fix D raised the cap to 12 sentences but voice_rewrite still summarised
-        # multi-step explanations (C5, C6, C22, C23) to a single construct. The raw
-        # LLM output already contains the full explanation — voice_rewrite only adds
-        # register for conversational inputs; for technical inputs it loses content.
+        # COG-004 RR21 Fix D (reverted to RR19 state): cap voice_rewrite at 12 sentences
+        # for technical inputs, 3 for non-technical. RR20 Fix D v2 (bypass entirely) caused
+        # 5 regressions (C11/C13/C15/C16/C18) — voice_rewrite was cleaning garbled streaming
+        # prefixes ("Py`", "Com`") that RR20 bypass exposed in raw output.
         try:
             from runtime.backend_router import _CODE_SIGNAL_RE as _vr_code_sig
             _vr_is_technical = bool(_vr_code_sig.search(_original_raw))
-            if not _vr_is_technical:
-                from runtime.voice_rewrite import voice_rewrite as _vr
-                def _vr_llm(_msgs):
-                    _sys = _msgs[0]["content"] if _msgs else ""
-                    _usr = _msgs[1]["content"] if len(_msgs) > 1 else ""
-                    _txt, _ = router_route(_sys, _usr, max_sentences=3, action="voice_rewrite", tier=0)
-                    return normalise(_txt, max_sentences=3)
-                response = _vr(
-                    response,
-                    exec_decision=exec_decision if exec_decision else None,
-                    ccm=None,
-                    llm_caller=_vr_llm,
-                    user_text=_original_raw,
-                )
+            _vr_max = 12 if _vr_is_technical else 3
+            from runtime.voice_rewrite import voice_rewrite as _vr
+            def _vr_llm(_msgs):
+                _sys = _msgs[0]["content"] if _msgs else ""
+                _usr = _msgs[1]["content"] if len(_msgs) > 1 else ""
+                _txt, _ = router_route(_sys, _usr, max_sentences=_vr_max, action="voice_rewrite", tier=0)
+                return normalise(_txt, max_sentences=_vr_max)
+            response = _vr(
+                response,
+                exec_decision=exec_decision if exec_decision else None,
+                ccm=None,
+                llm_caller=_vr_llm,
+                user_text=_original_raw,
+            )
         except Exception as _vr_err:
             import logging as _vr_log
             _vr_log.getLogger("voice_rewrite").warning(
