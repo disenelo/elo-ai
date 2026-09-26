@@ -3675,6 +3675,23 @@ def _process_turn(raw: str) -> dict:
         if len(_eh) > 10:
             _eh = _eh[-10:]
         _state["energy_history"] = _eh
+
+        # ── eLo's own battery — WO-HEALTH-BATTERY-001 PART A section 2 ────────
+        # NOT the same signal as energy_history above. That tracks DAVID's
+        # emotional energy; this drains eLo's personal energy level.
+        # emotional_context carries `energy` and `valence` but no `intensity`
+        # field, so the WO's `emotional_intensity > 0.7` has no direct source —
+        # `energy` is used as the affect magnitude. [BUILDER SUBSTITUTION]
+        try:
+            from core.health_battery import (
+                on_conversation_turn as _batt_turn,
+                publish as _batt_publish,
+            )
+            _batt_turn(emotional_intensity=_energy_now)
+            _batt_publish()
+        except Exception:
+            pass
+
         _runtime_state  = sm.update(_runtime_state, attention_model, exec_decision, loop_signal=False)
 
         # D7 ruling (Card 0035): post-Executive action rewrites must use the
