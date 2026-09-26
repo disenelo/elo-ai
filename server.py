@@ -162,6 +162,9 @@ _unity_world_state: "dict | None" = None  # WO-UNITY-GAZE: latest world_state fr
 from runtime.lifecycle import LifecycleManager as _LifecycleManager
 _lifecycle_mgr = _LifecycleManager()
 
+# S4: health battery ambient tick timestamp tracker (mutable list for closure mutability)
+_batt_tick_ts: list[float] = [0.0]
+
 
 def _parse_unity_events_tolerant(path: str) -> tuple[list[dict], int]:
     """W0: Read all JSON objects from unity_events.json, tolerating concatenated/corrupt records.
@@ -937,6 +940,48 @@ def ambient_thought() -> None:
     # SP-31: world-event check runs first, fail-quiet, non-blocking
     _world_event_thought()
 
+    # ── S4: Health battery ambient tick (fires even in calm / user-away mode) ──
+    try:
+        import time as _hb_time
+        from core.health_battery import (
+            tick as _hb_tick,
+            calm_tick as _hb_calm_tick,
+            should_auto_calm as _hb_auto_calm,
+        )
+        _hb_now = _hb_time.time()
+        _hb_dt  = max(1.0, _hb_now - _batt_tick_ts[0]) if _batt_tick_ts[0] else 120.0
+        _batt_tick_ts[0] = _hb_now
+        if _is_calm_mode():
+            _hb_calm_tick(_hb_dt)
+        else:
+            try:
+                import json as _hb_json
+                with open(_BLENDER_STATE_PATH, encoding="utf-8") as _hbf:
+                    _hb_bs = _hb_json.load(_hbf)
+            except Exception:
+                _hb_bs = {}
+            _hb_idle = _hb_now - (_state or {}).get("last_user_ts", _hb_now)
+            _hb_snap = _hb_tick(
+                _hb_bs.get("motion"),
+                idle_seconds=float(_hb_idle),
+                dt_seconds=_hb_dt,
+            )
+            try:
+                from blender_bridge.state_writer import patch as _hb_patch
+                _hb_patch({k: v for k, v in _hb_snap.items() if v is not None})
+            except Exception:
+                pass
+            # Physical exhaustion auto-triggers calm mode (ADDENDUM A)
+            if _hb_auto_calm():
+                try:
+                    from blender_bridge.state_writer import patch as _hb_calm_patch
+                    _hb_calm_patch({"meditation_state": {"phase": "enter",
+                                                         "source": "physical_exhaustion"}})
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
     if _is_user_away() or _is_calm_mode():
         return
     if not _lock.acquire(blocking=False):
@@ -991,6 +1036,15 @@ def ambient_thought() -> None:
                 _dream_result = run_dream(_elo_self, _dream_topics, _dream_llm)
                 # Integrate insight into self-state — 0037: through single-authority mutator
                 _elo_self = _self_mutate(lambda s: wake_from_dream(_dream_result, s))
+                # S4: restore health battery on dream wake (NREM+REM vs NREM-only)
+                try:
+                    from core.health_battery import on_wake_from_dream as _hb_wake
+                    _dream_phase = getattr(_dream_result, "phase", None) or (
+                        _dream_result.get("phase") if isinstance(_dream_result, dict) else None
+                    )
+                    _hb_wake(str(_dream_phase or "NREM"))
+                except Exception:
+                    pass
                 # Lifecycle: exit dream → RESTORED
                 _lifecycle_mgr.exit_dream()
                 try:
