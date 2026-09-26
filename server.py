@@ -6660,11 +6660,15 @@ def _process_turn(raw: str) -> dict:
             pass
 
         print(f"[eLo] backend={backend_used} action={_action}", flush=True)
+        _it_emotion = (exec_decision.get("valence", "neutral") if exec_decision else "neutral")
         return {
-            "response": response,
-            "bubbles":  _bubbles,
-            "mode":     _action,
-            "backend":  backend_used,
+            "inner_thought": "",
+            "response":      response,
+            "emotion":       _it_emotion,
+            "intent":        _action,
+            "bubbles":       _bubbles,
+            "mode":          _action,
+            "backend":       backend_used,
         }
 
 
@@ -6680,7 +6684,7 @@ def _turn_worker() -> None:
             result_holder.append(result)
         except Exception as _tw_exc:
             _logging.warning("turn worker error: %s", _tw_exc)
-            result_holder.append({"response": "", "mode": "error", "backend": "error"})
+            result_holder.append({"inner_thought": "", "response": "", "emotion": "neutral", "intent": "error", "mode": "error", "backend": "error"})
         finally:
             done_event.set()
             _turn_queue.task_done()
@@ -6692,7 +6696,7 @@ def _process_turn_queued(text: str) -> dict:
     _done = threading.Event()
     _turn_queue.put((text, _result, _done))
     _done.wait()
-    return _result[0] if _result else {"response": "", "mode": "error", "backend": "error"}
+    return _result[0] if _result else {"inner_thought": "", "response": "", "emotion": "neutral", "intent": "error", "mode": "error", "backend": "error"}
 
 
 # ── HTTP handler ──────────────────────────────────────────────────────────────
