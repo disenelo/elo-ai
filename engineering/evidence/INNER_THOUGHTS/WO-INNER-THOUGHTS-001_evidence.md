@@ -98,3 +98,51 @@ Unity's `JsonUtility` ignores unknown fields so prior clients are unaffected.
 ## Status
 
 PASS — Phase 1 structural change committed `83bf8a9`. Board crosscheck required before Phase 1 close.
+
+---
+
+# Phase 2 — Inner Thought Generation (Second LLM Pass)
+
+**Date**: 2026-09-26  
+**Commit**: `6aaac44`  
+**File changed**: `server.py` (+69 lines, -2 lines)
+
+---
+
+## Change
+
+After the ConversationTracker record in `_process_turn`, a second lightweight Ollama call generates `inner_thought`:
+
+**Option A (direct Ollama API, temp 0.85, num_predict 96, num_ctx 2048):**
+- Fetches last 2 turns via `ConversationTracker.get_context(session_id)["recent_turns"]`
+- Prompt: eLo's inner voice — unguarded, first-person, 1-2 sentences, not a summary of the reply
+- Timeout: 3.0s; latency guard: >2000ms triggers Option B fallback + warning log
+
+**Option B (rule-based fallback, fires when LLM >2s or empty response):**
+```python
+_it_vmap = {
+    "positive_high": "Something feels really right here.",
+    "positive_low":  "This is landing well.",
+    "negative_high": "I need to be careful with this one.",
+    "negative_low":  "Something feels off, but I'm staying with it.",
+}
+_inner_thought = _it_vmap.get(_it_emotion, "I'm present for this.")
+```
+
+**`_it_emotion`** moved before the Phase 2 block so Option B fallback can reference it.
+
+**Return dict** now uses `_inner_thought` (populated string) instead of `""`.
+
+## Location
+
+`server.py` ~line 6673 — between ConversationTracker record and final return in `_process_turn`
+
+## Not yet done (Phase 3)
+
+- Unity-side: speak `inner_thought` via TTS before `response` (Phase 3 routing)
+- S5 Item 6: `physical_conditioning()` hook into inner_thought conditioning
+- Dream state integration (after S3 Phase 1 live)
+
+## Status
+
+PASS — Phase 2 LLM pass committed `6aaac44`. Board crosscheck required before Phase 2 close.
