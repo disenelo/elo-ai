@@ -163,6 +163,76 @@ def _is_away() -> bool:
         return False  # file absent = assume present
 
 
+_PRESENCE_STATE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                    "blender", "presence_state.json")
+
+# Battery tick bookkeeping — dt is measured, so the restore/drain rates stay
+# correct regardless of how the poll interval is tuned.
+_last_battery_ts = 0.0
+
+
+def _is_calm() -> bool:
+    """
+    True while eLo is in calm/meditation.
+
+    Mirrors the primary signal of server._is_calm_mode(): presence_state.json,
+    written by Unity's PresenceEngine. Not imported from server.py — server is
+    run as __main__, so importing it here would load a second copy of the
+    module. Keep in sync with server._is_calm_mode if that signal changes.
+    IDLE is deliberately NOT calm.
+    """
+    try:
+        with open(_PRESENCE_STATE_PATH, encoding="utf-8") as f:
+            return json.load(f).get("state") in ("CALM_IDLE", "MEDITATION")
+    except Exception:
+        return False
+
+
+def _read_state() -> dict:
+    try:
+        with open(_STATE_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _battery_tick() -> None:
+    """
+    WO-HEALTH-BATTERY-001 PART A.1/B — the per-cycle battery tick.
+
+    This 0.5s poll is the only real ambient loop in the system; the registered
+    ambient callback fires every 8-20 minutes and is far too coarse for a rate.
+    Motion drain, idle restore, calm restore and game-event consumption all
+    happen here, then the level is published for Unity.
+
+    Fail-quiet: the battery must never be able to stop ambient presence.
+    """
+    global _last_battery_ts
+    try:
+        from core import health_battery as _hb
+
+        now = time.time()
+        dt = (now - _last_battery_ts) if _last_battery_ts else _POLL_INTERVAL
+        _last_battery_ts = now
+        dt = max(0.0, min(dt, 60.0))   # clamp after a sleep/suspend gap
+
+        state = _read_state()
+        motion = state.get("motion", {}) or {}
+
+        if _is_calm():
+            _hb.calm_tick(dt)
+            _hb.consume_game_events()
+        else:
+            _hb.tick(
+                motion,
+                idle_seconds=_user_idle_secs if _user_is_idle else 0.0,
+                dt_seconds=dt,
+            )
+        _hb.publish()
+    except Exception:
+        pass
+
+
 def _is_speaking() -> bool:
     try:
         from voice.voice_engine import is_speaking
@@ -534,6 +604,11 @@ def _run(unity_present: bool) -> None:
         _last_ambient = time.time()
 
     while not _stop_ev.is_set():
+        # ── eLo's battery — WO-HEALTH-BATTERY-001 PART A.1/B ──────────────────
+        # Runs every cycle, before any early-exit branch below, so drain and
+        # restore keep accruing whether or not eLo speaks.
+        _battery_tick()
+
         # ── Event polling ─────────────────────────────────────────────────────
         data = _read_events()
         if data:
