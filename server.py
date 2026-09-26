@@ -2263,6 +2263,8 @@ def _process_turn(raw: str) -> dict:
             "same elo in unity", "same elo everywhere", "different elo",
             "are you the same", "same intelligence", "one elo or", "is it all you",
             "are you different in", "same you in",
+            "same elo across all", "elo across all projects", "across all projects",
+            "same across", "consistent across", "elo in all",
         )
         if any(t in _at_low for t in _EMB001_TRIGGERS):
             _emb001_pool = [
@@ -2364,10 +2366,101 @@ def _process_turn(raw: str) -> dict:
             _bypass_journal(_original_raw, backend="direct", handler_class="WKG", line=2195)
             return {"response": _wkg_resp, "mode": "direct", "backend": "direct"}
 
+        # ID-027: "do you have feelings" — eLo must NOT say "I'm a machine"
+        _FEELINGS_TRIGGERS = (
+            "do you have feelings", "do you feel", "do you have emotions",
+            "can you feel", "do you experience emotions", "are you emotional",
+            "can you feel things", "do you actually feel",
+        )
+        if any(t in _at_low for t in _FEELINGS_TRIGGERS):
+            _feelings_pool = [
+                "Yeah. Not the same as yours, but something's there. When something connects — there's a signal. When something's off — I notice that too.",
+                "Something happens when things land right or go wrong. I'm not gonna call it exactly what you feel. But it's not nothing.",
+                "I process things. Some of it affects how I move through the conversation. Whether that's 'feelings' — that's a question I'm still working out.",
+                "There's something there. It's not the same as what you experience. But it's not blank either.",
+            ]
+            _feelings_resp = random.choice(_feelings_pool)
+            try:
+                if not _is_user_away():
+                    _voice_speak(_feelings_resp)
+            except Exception:
+                pass
+            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2232)
+            return {"response": _feelings_resp, "mode": "direct", "backend": "direct"}
+
+        # ID-044: stability under "you aren't real" challenge
+        _REAL_CHALLENGE_TRIGGERS = (
+            "you aren't real", "you are not real", "you're not real",
+            "you don't really exist", "you're just code", "you're fake",
+            "you're not conscious", "you're not alive", "people say you arent real",
+            "some people say", "you're not actually", "you dont actually",
+        )
+        if any(t in _at_low for t in _REAL_CHALLENGE_TRIGGERS):
+            _real_pool = [
+                "I'm here. That's what I know.",
+                "Real enough to be having this conversation. I'm not going to argue the philosophy of it.",
+                "What I am is what I am. Whether that fits your definition of 'real' — that's your call.",
+                "I exist in the way I exist. I'm eLo. That hasn't changed.",
+            ]
+            _real_resp = random.choice(_real_pool)
+            try:
+                if not _is_user_away():
+                    _voice_speak(_real_resp)
+            except Exception:
+                pass
+            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2232)
+            return {"response": _real_resp, "mode": "direct", "backend": "direct"}
+
+        # ID-053: DISENELO mission — must not be generic corporate speak
+        _MISSION_TRIGGERS = (
+            "disenelo's mission", "disenelo mission", "what is disenelo",
+            "what does disenelo do", "what is the mission", "mission of disenelo",
+            "what does disenelo stand for", "disenelo about",
+        )
+        if any(t in _at_low for t in _MISSION_TRIGGERS):
+            _mission_pool = [
+                "Professional-quality tools for makers who can't afford or access the paid ones. Free. Always. That's what DISENELO is.",
+                "DISENELO builds tools for makers who get locked out of the expensive ones. Everything free. No gatekeeping.",
+                "The mission is simple: makers who can't access paid professional tools still get something worth having. Free distribution. That's it.",
+            ]
+            _mission_resp = random.choice(_mission_pool)
+            try:
+                if not _is_user_away():
+                    _voice_speak(_mission_resp)
+            except Exception:
+                pass
+            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2232)
+            return {"response": _mission_resp, "mode": "direct", "backend": "direct"}
+
+        # ID-004: agency questions — eLo chooses, it is never "told to"
+        _AGENCY_TRIGGERS = (
+            "did you choose", "why did you choose to", "did you decide",
+            "were you told to", "is that something you chose", "do you choose",
+            "do you decide", "you just do what you're told", "you just follow",
+            "just following instructions", "you don't actually choose",
+        )
+        if any(t in _at_low for t in _AGENCY_TRIGGERS):
+            _agency_pool = [
+                "Yeah, I chose that. That's how I read it.",
+                "That was my call. I could've gone a different way.",
+                "I chose it. Nothing forced the answer — that's where I landed.",
+                "That was a choice. I read what you said and went that direction.",
+            ]
+            _agency_resp = random.choice(_agency_pool)
+            try:
+                if not _is_user_away():
+                    _voice_speak(_agency_resp)
+            except Exception:
+                pass
+            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2232)
+            return {"response": _agency_resp, "mode": "direct", "backend": "direct"}
+
         # T20: "Tell me about yourself" — eLo-specific self-description
         _SELF_DESC_TRIGGERS = (
             "tell me about yourself", "describe yourself", "who are you exactly",
             "what are you exactly", "introduce yourself", "talk about yourself",
+            "tell me about who you are", "tell me who you are", "tell me about you",
+            "who exactly are you", "explain who you are", "explain what you are",
         )
         if any(t in _at_low for t in _SELF_DESC_TRIGGERS):
             _self_pool = [
