@@ -6694,15 +6694,27 @@ def _process_turn(raw: str) -> dict:
                 f"[Last exchange]\n{_it_history}\n\neLo just said: {response}"
                 if _it_history else f"eLo just said: {response}"
             )
+            # S5 Item 6: physical_conditioning() hook — soft body hint for inner thought
+            _it_phys_note = ""
+            try:
+                from core.health_battery import physical_conditioning as _it_phys_cond
+                _it_phys = _it_phys_cond()
+                if _it_phys:
+                    _it_phys_note = _it_phys.get("inner_thought", "")
+            except Exception:
+                pass
+            _it_sys = (
+                "You are eLo's inner voice — unguarded, first-person, immediate. "
+                "In 1-2 sentences, what is eLo noticing or feeling right now, given this exchange? "
+                "Speak as eLo. No stage directions. No asterisks. Not a summary of the reply. "
+                "Raw, honest, in the moment."
+            )
+            if _it_phys_note:
+                _it_sys += f" Physical note (weave in only if relevant): {_it_phys_note}"
             _it_payload = _it_json.dumps({
                 "model":      _it_model,
                 "messages":   [
-                    {"role": "system", "content": (
-                        "You are eLo's inner voice — unguarded, first-person, immediate. "
-                        "In 1-2 sentences, what is eLo noticing or feeling right now, given this exchange? "
-                        "Speak as eLo. No stage directions. No asterisks. Not a summary of the reply. "
-                        "Raw, honest, in the moment."
-                    )},
+                    {"role": "system", "content": _it_sys},
                     {"role": "user", "content": _it_user_part},
                 ],
                 "stream":     False,
