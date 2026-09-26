@@ -4,11 +4,11 @@
   "seq": 4,
   "state": "board_review",
   "blocked_on": null,
-  "score": { "pass": 18, "fail": 8, "total": 26 },
+  "score": { "pass": 14, "fail": 12, "total": 26 },
   "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-004_evidence.md",
-  "commit": "64720dc",
-  "failing": ["C3", "C5", "C6", "C10", "C21", "C22", "C23", "C25"],
+  "commit": "3e8dd0c",
+  "failing": ["C3", "C5", "C6", "C10", "C11", "C13", "C14", "C15", "C16", "C18", "C21", "C25"],
   "last_updated": "2026-09-26",
-  "run": "RE-RUN 19",
-  "notes": "RR19 fixes applied (B+C+D+E all in commit 64720dc). Fix E (algebra guard) confirmed: C20 now routes to ollama(stream), not direct:calculator. Fix C (double-embedding removal) confirmed: C13 now produces complete response from start of pipeline command. Fix D (voice_rewrite cap raised to 12 for technical inputs) partially confirmed: C2 and C7 recovered, but C3/C5/C6/C21/C22/C23 still truncated. Fix B (bare-word eLo check) still failing for C25: _input_is_technical is False for the C25 input pattern (single-quoted JS object without code-signal tokens), so the identity anchor never fires. C25 hallucinated 'name: you' (field does not exist). Regressions vs RR18: C5, C6, C22 (voice_rewrite still truncating multi-part explanations for these items). Improvements vs RR18: C2, C4, C7, C9, C13, C15, C20. Net score: 18/26 (+4 vs RR18 14/26). Board review required."
+  "run": "RE-RUN 20",
+  "notes": "RR20 fixes applied (Fix B v2 + Fix D v2, commit 3e8dd0c). Fix D v2 (skip voice_rewrite for technical inputs) caused 5 regressions: C11, C13, C15, C16, C18. voice_rewrite was performing implicit cleanup of garbled raw LLM prefixes ('Py`', 'Com`') — skipping it exposed these streaming artifacts. C22 and C23 recovered (voice_rewrite was truncating them in RR19). Net: 14/26 — REGRESSION from RR19 18/26. Fix B v2 (identity anchor guard inverted: 'eLo in input and not _input_is_technical') still failing for C25: mistral-nemo:12b hallucinates a Unity/C# PlayerController class regardless of the anchor instruction. C10 YAML garbling persists (18/19/20 — root cause unknown). Board review required."
 }

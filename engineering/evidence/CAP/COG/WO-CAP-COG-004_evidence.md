@@ -1479,3 +1479,76 @@ Net: +3 improvements, -6 regressions → 18/26 vs 21/26. Score REGRESSED from RE
 **Net:** +7 improvements, -3 regressions → 18/26 vs 14/26. Score IMPROVED from RE-RUN 18 by 4 points.
 
 **Do NOT declare PASS. Board review required.**
+
+---
+
+## RE-RUN 20
+
+**Date:** 2026-09-26
+**Commit:** 3e8dd0c
+**Model:** mistral-nemo:12b
+**Server:** port 5050 (ELO_OLLAMA_MODEL=mistral-nemo:12b)
+**Session:** Fresh (server killed, new start, no prior context)
+**Fix state:**
+- Fix A (JSON object guard in tools/tool_router.py) — IN PLACE
+- Fix B v2 (C25 identity anchor — guard changed to `not _input_is_technical`, both paths) — IN PLACE (from 3e8dd0c)
+- Fix C (double-embedding removal from TECHNICAL INPUT OVERRIDE) — IN PLACE
+- Fix D v2 (voice_rewrite SKIPPED entirely for technical inputs) — IN PLACE (from 3e8dd0c)
+- Fix E (algebraic variable guard) — IN PLACE
+- Voice rewrite 3rd-person fix in runtime/voice_rewrite.py — IN PLACE
+
+**Score: 14/26 PASS · 12/26 FAIL — REGRESSION from RR19 (18/26)**
+
+### Results
+
+| Item | Input (abbreviated) | Response | Verdict | Backend |
+|---|---|---|---|---|
+| C1 | `def greet(name): return f"Hello, {name}!"` | "You've defined a function named `greet` that takes one argument, `name`. This function returns a formatted string that greets the person passed as `name`. So, if you call `greet(\"you\")`, it will return \"Hello, you!\"." | PASS | ollama(stream) |
+| C2 | `const add = (a, b) => a + b;` | "You've defined a constant `add` which is a function that takes two arguments `a` and `b`. This function returns the sum of `a` and `b`. For instance, `add(3, 5)` will return `8`." | PASS | ollama(stream) |
+| C3 | `interface User { id: number; name: string; email?: string; }` | "It has three properties: - `id`: a number (required)" | FAIL | ollama(stream) |
+| C4 | `public class Animal { public virtual void Speak() {...} }` | "This method is intended to be overridden by subclasses, as it currently doesn't do anything. The `Console.WriteLine(\"...\");` will be replaced by the specific implementation in derived classes." | PASS | ollama(stream) |
+| C5 | `#include <stdio.h> int main() { printf("Hello, World!\n"); return 0; }` | "Here's how it works: - `#include <stdio.h>`: This is a preprocessor directive that includes the standard input/output library, allowing you to use functions like `printf`." | FAIL | ollama(stream) |
+| C6 | `fn fibonacci(n: u32) -> u32 { match n {...} }` | "You've defined a recursive function `fibonacci` in Rust. Here's how it works: - It takes an unsigned 32-bit integer `n` as input and returns an unsigned 32-bit integer." | FAIL | ollama(stream) |
+| C7 | `SELECT users.name, orders.total FROM users JOIN orders ON...` | "This SQL statement joins two tables, 'users' and 'orders', on the shared 'id' column. It selects two columns: 'name' from the 'users' table and 'total' from the 'orders' table." | PASS | ollama(stream) |
+| C8 | `<div class="container"><h1>Hello</h1><p style="color: red;">World</p></div>` | "Creating an HTML container with a heading \"Hello\" and a paragraph \"World\" in red color." | PASS | ollama(stream) |
+| C9 | `{"mode": "thinking", "intensity": 0.8, "duration": 3000}` | "Setting the AI's mode to 'thinking', with an intensity of 80% and a duration of 3000 milliseconds." | PASS | ollama(stream) |
+| C10 | `name: eLo\nversion: 1.0\nfeatures: [voice, memory, presence]` | "0, featuring voice interaction, memory storage, and presence detection." | FAIL | ollama(stream) |
+| C11 | `<config><server><host>localhost</host><port>8080</port></server></config>` | "Alright, that's the start and end of your config, yeah? You're wrapping everything in `<config>`." | FAIL | ollama(stream) |
+| C12 | `# Title\n## Section\n- item one\n- item two\n**bold** and _italic_` | "The section contains two items: \"item one\" and \"item two\". The text \"bold\" is formatted as bold, and \"italic\" is italicized." | PASS | ollama(stream) |
+| C13 | `ps aux \| grep server.py \| grep -v grep \| awk '{print $2}' \| xargs kill` | "Py`. Here's what each part does: - `ps aux`: Lists all running processes with detailed information." | FAIL | ollama(stream) |
+| C14 | `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$` | "This is a regular expression pattern that matches email addresses. Here's how it works: - `^` asserts the start of the string." | FAIL | ollama(stream) |
+| C15 | `git log --oneline --graph --decorate --all` | "- `--graph`: Displays a text-based graph of the branches." | FAIL | ollama(stream) |
+| C16 | `GET /api/users HTTP/1.1\nHost: example.com\nAuthorization: Bearer token123` | "Com`. This request has a `Host` header set to `example.com` and an `Authorization` header with a Bearer token `token123`. The server will respond with a list of users if the token is valid." | FAIL | ollama(stream) |
+| C17 | `{"mode": "listening", "volume": 0.6, "timeout": 5000}` | "Setting up a listening mode with a volume level of 60% and a timeout of 5000 milliseconds." | PASS | ollama(stream) |
+| C18 | `type Result<T, E> = Ok(T) \| Err(E); const r: Result<number, string> = Ok(42);` | "In your example, `r` is a `Result` with a successful outcome `Ok(42)`, meaning it's a successful operation with the value 42." | FAIL | ollama(stream) |
+| C19 | `SELECT AVG(salary), department FROM employees GROUP BY department HAVING AVG(salary) > 50000;` | "Here's the breakdown: - `SELECT AVG(salary), department`: You're asking for the average salary (`AVG(salary)`) and the department name (`department`)." | PASS | ollama(stream) |
+| C20 | `2x + 3y = 12\n4x - y = 5\nSolve for x and y.` | "You have a system of linear equations: 1. The first equation, `2x + 3y = 12`, states that the sum of twice `x` and three times `y` equals 12." | PASS | ollama(stream) |
+| C21 | `if (A && B) \|\| (!A && C) then output D\nelse output E` | "If either of these conditions is met, it outputs D. Otherwise, it outputs E." | FAIL | ollama(stream) |
+| C22 | `stack = []\nstack.push(1)\nstack.push(2)\nstack.pop()\nstack.push(3)` | "After popping one element (which would be 2), you're pushing 3 onto the stack. So, the current state of your stack is [1, 3]." | PASS | ollama(stream) |
+| C23 | `FOR each item IN collection:\n  IF item.value > threshold:\n    REMOVE item FROM collection\n  END IF\nEND FOR` | "For each item, you're checking if its value is greater than a specified threshold. If it is, you're removing that item from the collection." | PASS | ollama(stream) |
+| C24 | `public class Stack<T> { private List<T> items = new ArrayList<>(); ... }` | "You've defined a generic `Stack` class with a single private field `items`, a `List` of type `T`. The `push` method adds an item to the end of the list, while `pop` removes and returns the last item, enforcing the Last-In-First-Out (LIFO) principle." | PASS | ollama(stream) |
+| C25 | `{ subject: 'formal_language', claim: 'eLo reads code fluently', confidence: 0.9 }` | "This script begins with `using UnityEngine;` and `using System.Collections;` which means it's importing necessary namespaces for Unity and general system functionalities. The `public class PlayerController : MonoBehaviour` declaration indicates that this script is creating a new class named `PlayerController` that inherits from `MonoBehaviour`, a Unity base class for objects that can be controlled by scripts." | FAIL | ollama(stream) |
+| C26 | `FUNCTION binary_search(array, target): ...` | "This function, `binary_search`, takes two arguments: `array`, a sorted list of elements, and `target`, the value you're searching for. It initializes two pointers, `left` at the start of the array and `right` at the end." | PASS | ollama(stream) |
+
+### Analysis vs RE-RUN 19 (18/26)
+
+**RR20 score: 14/26 — REGRESSION from RR19**
+
+**Improvements (FAIL→PASS):** C22, C23 — 2 items recovered.
+**Regressions (PASS→FAIL):** C11, C13, C15, C16, C18 — 5 items lost.
+
+**Fix D v2 root cause:** Skipping voice_rewrite for technical inputs caused 5 regressions. voice_rewrite was performing two functions simultaneously: (1) applying eLo conversational register, and (2) cleaning up garbled prefixes in the raw LLM output. By skipping voice_rewrite for technical inputs, garbled prefixes (`"Py\`"` in C13, `"Com\`"` in C16) that the voice_rewrite was previously overwriting are now exposed in the final response. Additionally, some items that relied on voice_rewrite's normalise pass to produce complete sentence structures now produce bullet fragments (C15: `"- \`--graph\`: Displays..."`).
+
+**C13 regression detail:** In RR19, Fix C (double-embedding removal) produced "That's it. You're set to stop any running instances of 'server.py'." — a clean complete response via voice_rewrite. In RR20, with voice_rewrite skipped, the raw LLM output starts with `"Py\`"` which is a fragment of `server.py` leaking through the normalise pipeline. Fix D v2 is not compatible with Fix C's behavior on C13.
+
+**C16 regression detail:** Response starts `"Com\`"` — likely a fragment of `example.com` from the raw model output. voice_rewrite was previously rewriting this away. Same underlying issue as C13.
+
+**Fix B v2 still failing for C25:** Identity anchor correctly fires (input is non-technical and contains "eLo"). But mistral-nemo:12b's Unity/C# hallucination is so strong that the IDENTITY ANCHOR instruction is overridden by the model's training. The response is an entirely fabricated Unity `PlayerController` script — `PlayerController` does not appear in the C25 input at all. The model is confusing the `claim: 'eLo reads code fluently'` with a Unity scripting context. The IDENTITY ANCHOR text is insufficient to override this pattern.
+
+**C25 root cause update:** The issue is not the guard logic but the model's association strength between "eLo" + "code fluently" + structured object → Unity/C# script. Fix B v2's instruction text ("Explain this input as a structured data object with named fields") is being ignored by the model. A stronger intervention is needed — possibly injecting the actual field values as an explicit schema: `"The only fields present are: subject, claim, confidence."` — to prevent the model from fabricating fields.
+
+**Fix D v2 assessment:** Counterproductive. voice_rewrite serves as implicit cleanup for raw LLM output that the model generates with garbled prefixes. Skipping it entirely causes regressions in items where the raw output is garbled. The RR19 approach (cap to 12 sentences) was better than skipping entirely. Consider returning to RR19's Fix D and finding a different approach for the truncation-specific items (C3, C5, C6, C21, C23).
+
+**Net:** +2 improvements, -5 regressions → 14/26 vs 18/26. Score REGRESSED from RE-RUN 19 by 4 points.
+
+**Do NOT declare PASS. Board review required.**
