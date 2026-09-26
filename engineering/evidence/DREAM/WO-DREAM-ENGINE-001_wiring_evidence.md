@@ -15,34 +15,55 @@ MISSING → IMPLEMENTED → WIRED → TESTED → LIVE VERIFIED → BOARD VERIFIE
 ```
 
 - **IMPLEMENTED** — 5 files built.
-- **TESTED** — unit level only, 66 tests. The modules are exercised directly.
-- **NOT WIRED** — nothing in the running system calls these modules yet.
-  `dream_faculty.py` still runs its original single-cycle path. Tier 3
-  (REAL RUNTIME PATH) of the 7-tier standard is **NOT** satisfied.
-- **NOT LIVE VERIFIED** — no live server run.
+- **TESTED** — unit level only, 72 tests. The modules are exercised directly.
+- **WIRED (partial)** — the S3 wiring defect is fixed: `server.py` now writes
+  `intent = "dream"` on the dream path. The 5 new faculty modules
+  (sleep_cycle / dream_input / dream_work / prompt_builder) are still NOT
+  called by anything — `dream_faculty.py` runs its original single-cycle path.
+  Tier 3 (REAL RUNTIME PATH) is satisfied for the intent fix ONLY.
+- **NOT LIVE VERIFIED** — the running server (PID 28626) is executing pre-fix
+  code. Needs a restart and a real dream trigger.
 
 **Do not read this file as PASS.** It records what was built and what was
 observed. Board crosschecks.
 
 ---
 
-## THE WIRING FIX IS NOT IN
+## THE WIRING FIX — APPLIED (was NOT IN at first filing)
+
+*Updated after the first filing. The section below originally recorded this as
+NOT APPLIED; it is now in. The original finding is preserved verbatim.*
 
 `QUEUE/S3-DREAM-WIRING-DEFECT.md` asks for one line at `server.py:~974`:
 write `intent = "dream"` alongside `state.mode = "dreaming"`.
 
-**NOT APPLIED.** `server.py` is Builder 1's file for COG-004 RR20 and the
-Builder 2 brief says server.py comes last. RR20 has since landed
-(`3e8dd0c`, plus evidence `d6af7b8`), so the file is now free — the fix is
-unblocked and outstanding, not blocked.
-
-Verified still absent at time of filing:
+**Original finding (NOT APPLIED):** `server.py` was Builder 1's file for
+COG-004 RR20 and the Builder 2 brief sequences server.py last. Confirmed
+absent against the running system at first filing:
 
 ```
-$ grep -n 'state.mode = "dreaming"' -A3 -B3 server.py | head -20
+$ grep -c 'intent.*=.*"dream"' server.py
+0
 ```
 
-(see COMMAND OUTPUT below)
+**Now APPLIED — commit `55c7bd7`.** RR20 landed (`3e8dd0c`), then RR21
+(`081f663` / `51c2b6b`); `server.py` was clean in the working tree and the
+builder seat lock read RELEASED, so the file was taken.
+
+| Line | Change |
+|---|---|
+| `server.py:981` | enter dream — adds `"intent": "dream"` alongside the existing `state.mode` / `motion.animation` / `lifecycle_state` writes. Nothing replaced. |
+| `server.py:1002` | exit dream — adds `"intent": "idle"`, `dream_phase: None`, `dream_cycle: 0`, `dream_intensity: 0.0` (PHASE 9). |
+
+The defect card asks for one field on the enter path. Shipping only that half
+would strand eLo in dream intent after waking and Unity would never stand him
+up, so the exit half is part of the same fix, not scope creep.
+
+Guarded by `tests/test_s3_dream_wiring.py` — 6 passed, including a check that
+the emitted value is one Unity actually accepts
+(`EloOSAvatarReceiver.cs:482-485`: `dream` / `dreaming` / `daydream`).
+
+**STILL NOT PROVEN:** Unity receiving it. Source-level guards only.
 
 ---
 

@@ -16,21 +16,29 @@ MISSING → IMPLEMENTED → WIRED → TESTED → LIVE VERIFIED → BOARD VERIFIE
 ```
 
 - **IMPLEMENTED** — `core/health_battery.py`, full API.
-- **TESTED** — unit level only, 34 tests.
-- **NOT WIRED** — nothing calls it. Tier 3 (REAL RUNTIME PATH) of the 7-tier
-  standard is **NOT** satisfied. Every integration point below is outstanding:
-  - `server.py` ambient loop → `tick(motion_state)` — NOT DONE
-  - after each conversation turn → `on_conversation_turn()` — NOT DONE
-  - `dream_faculty.wake_from_dream()` → `on_wake_from_dream()` — NOT DONE
-  - calm mode tick → `calm_tick()` — NOT DONE
-  - `should_dream()` → `get_energy()` replacing `energy_history` — NOT DONE
-  - `blender_state.json` write each tick → `publish()` — NOT DONE
-- **NOT LIVE VERIFIED** — no live server run, no Pi hardware run.
+- **TESTED** — unit level, 34 module tests + 23 wiring tests.
+- **WIRED** — all six integration points are in. *(This section originally
+  recorded all six as NOT DONE; updated after the wiring landed. The original
+  state is preserved in the table below.)*
+- **NOT LIVE VERIFIED** — the running server (PID 28626) is executing pre-fix
+  code. No live turn, no Pi hardware run. Tier 5 (OBSERVED RESULT on a live
+  path) is **NOT** satisfied.
 
-All six wiring points live in `server.py` / `dream_faculty.py`. `server.py`
-is Builder 1's file for COG-004 RR20 and the Builder 2 brief sequences it
-last. RR20 has since landed (`3e8dd0c`), so these are unblocked and
-outstanding, not blocked.
+| Integration point | First filing | Now | Commit |
+|---|---|---|---|
+| ambient loop → `tick(motion_state)` | NOT DONE | `ambient/ambient_engine.py` 0.5s poll loop | `967793f` |
+| after each turn → `on_conversation_turn()` | NOT DONE | `server.py:3678` | `9c69801` |
+| `wake_from_dream()` → `on_wake_from_dream()` | NOT DONE | `faculties/dream/dream_faculty.py` | `963e5f4` |
+| calm tick → `calm_tick()` | NOT DONE | inside `_battery_tick()` | `967793f` |
+| `should_dream()` → `get_energy()` | NOT DONE | `faculties/dream/dream_faculty.py` | `8bb9a90` |
+| `blender_state.json` each tick → `publish()` | NOT DONE | ambient loop + per turn | `967793f` / `9c69801` |
+
+**One deviation from the WO, flagged:** PART A section 1 says "call
+`tick_motion_drain()` from the server's ambient loop". `server.py`'s
+`ambient_thought()` is the ambient *callback* and fires on the idle-utterance
+schedule — every 8–20 minutes — which cannot carry a per-minute restore rate.
+The tick went on `ambient/ambient_engine.py`'s 0.5s poll loop instead, the only
+real per-cycle loop in the system. Board to confirm or relocate.
 
 **Do not read this file as PASS.** Board crosschecks.
 
