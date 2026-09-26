@@ -975,6 +975,10 @@ def ambient_thought() -> None:
                         "motion":          {"animation": "sleep", "speed": 0.1,
                                             "intensity": 0.2, "duration": 120.0},
                         "lifecycle_state": "dreaming",
+                        # S3-DREAM-WIRING-DEFECT: Unity's lay-down pose triggers on
+                        # `intent`, not `state.mode` (EloOSAvatarReceiver.cs:482-485).
+                        # Without this the Brain dream path never reaches the animation.
+                        "intent":          "dream",
                     })
                 except Exception:
                     pass
@@ -994,6 +998,11 @@ def ambient_thought() -> None:
                     _dp({
                         "state":           {"mode": "idle", "emotion": "calm"},
                         "lifecycle_state": "restored",
+                        # PHASE 9: clear the dream intent, or Unity never stands up.
+                        "intent":          "idle",
+                        "dream_phase":     None,
+                        "dream_cycle":     0,
+                        "dream_intensity": 0.0,
                     })
                 except Exception:
                     pass
