@@ -1,0 +1,77 @@
+{
+  "COG-004": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-19_eLo_KEY_CAPABILITY_MAP.md",
+    "wo": "engineering/cap_wos/board_review/WO-CAP-COG-004.json",
+    "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-004_evidence.md"
+  },
+  "COG-003": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-19_eLo_COGNITIVE_CAPABILITY_MAP.md",
+    "wo": "engineering/cap_wos/in_progress/WO-CAP-COG-003.json",
+    "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-003_evidence.md"
+  },
+  "inner thoughts": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-24_DAVID_inner_thoughts_discovery.md",
+    "wo": "engineering/work_orders/WO-INNER-THOUGHTS-001_eLo_Dual_Stream_Output.md",
+    "evidence": "engineering/evidence/INNER_THOUGHTS/WO-INNER-THOUGHTS-001_evidence.md"
+  },
+  "dream": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-22_DAVID_eLo_DREAM_STATE_COMPLETE_ARCHITECTURE.md",
+    "wo": "engineering/work_orders/WO-DREAM-ENGINE-001_eLo_Dream_State_Complete.md",
+    "evidence": "engineering/evidence/DREAM/WO-DREAM-ENGINE-001_wiring_evidence.md"
+  },
+  "dream engine": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-22_DAVID_dream_engine_architecture.md",
+    "wo": "engineering/work_orders/WO-DREAM-ENGINE-001_eLo_Dream_State_Complete.md",
+    "evidence": "engineering/evidence/DREAM/WO-DREAM-ENGINE-001_wiring_evidence.md"
+  },
+  "health": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-24_DAVID_physical_activity_energy.md",
+    "wo": "engineering/work_orders/WO-HEALTH-BATTERY-001_eLo_Energy_System.md",
+    "evidence": "engineering/evidence/HEALTH/WO-HEALTH-BATTERY-001-ADDENDUM-A_evidence.md"
+  },
+  "energy": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-24_DAVID_physical_activity_energy.md",
+    "wo": "engineering/work_orders/WO-HEALTH-BATTERY-001_eLo_Energy_System.md",
+    "evidence": "engineering/evidence/HEALTH/WO-HEALTH-BATTERY-001-ADDENDUM-A_evidence.md"
+  },
+  "P0": {
+    "source": "engineering/00_CURRENT_TRUTH/RELEASE_GATE.md",
+    "wo": "engineering/work_orders/WO-CORE-REPAIR-P0-001.md",
+    "evidence": "engineering/evidence/P0/DAVID_ACCEPTANCE_TEST_RESULTS_2026-09-20.md"
+  },
+  "identity": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-19_DAVID_L3_route_c_expressed_output.md",
+    "wo": "engineering/cap_wos/in_progress/WO-CAP-ID-001.json",
+    "evidence": "engineering/evidence/CAP/ID/"
+  },
+  "ID-035": {
+    "source": "blender/agent_bus/builder/QUEUE/S1-ID035-WEB-SEARCH-GUARD.md",
+    "wo": null,
+    "evidence": "engineering/evidence/ID/S1-ID035-WEB-SEARCH-GUARD_evidence.md"
+  },
+  "embodiment": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-19_eLo_EMBODIMENT_LEARNING_MEMORY.md",
+    "wo": "engineering/cap_wos/in_progress/WO-CAP-EMB-001.json",
+    "evidence": "engineering/evidence/CAP/EMB/"
+  },
+  "intent align": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-26_DAVID_intent_alignment_ruling.md",
+    "wo": "engineering/work_orders/WO-INTENT-ALIGN-001_live_turn_check.md",
+    "evidence": "engineering/evidence/GOVERNANCE/WO-INTENT-ALIGN-001_hook_evidence.md"
+  },
+  "stack": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-25_DAVID_stack_workflow_ruling.md",
+    "wo": null,
+    "evidence": null
+  },
+  "conversation grounding": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-17_DAVID_conversation_grounding_layer.md",
+    "wo": null,
+    "evidence": null
+  },
+  "trigger phrases": {
+    "source": "docs/architecture/_intake/SOURCE_2026-09-26_DAVID_trigger_phrases.md",
+    "wo": null,
+    "evidence": null
+  }
+}
