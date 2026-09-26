@@ -3081,10 +3081,24 @@ def _process_turn(raw: str) -> dict:
                 "pending", "open", "closed", "next", "back", "forward", "stop",
                 "go", "hey", "right", "sure", "cool", "good", "great", "fine", "nice",
             })
+            # ID-035 guard: personal identity queries about David must NEVER
+            # go to web search. "where is David from" → "David from" → David Frum.
+            # Match on the extracted query, not raw, so all phrasings are caught.
+            _DAVID_PERSONAL_TERMS = frozenset({
+                "from", "live", "based", "location", "born", "hometown", "city",
+                "studio", "background", "nationality", "country", "london",
+                "camberwell", "south london",
+            })
             if not _world_graph_hit and is_search_intent(raw):
                 _sq_text = _sq(raw)
-                if _sq_text.strip().lower() in _WS_AMBIGUOUS:
+                _sq_lower = _sq_text.strip().lower()
+                if _sq_lower in _WS_AMBIGUOUS:
                     raise ValueError("seam-b-guard: ambiguous bare word, skipping web search")
+                # Block personal-identity queries about David from hitting web search.
+                # "David from", "david location", "david born", etc. all blocked here.
+                _sq_words = set(_sq_lower.replace("'", " ").split())
+                if "david" in _sq_words and _sq_words & _DAVID_PERSONAL_TERMS:
+                    raise ValueError("id-035-guard: personal David query blocked from web search")
                 _ws_results = _wsearch(_sq_text, max_results=4)
                 if _ws_results:
                     _ws_ctx = _wfmt(_ws_results)
