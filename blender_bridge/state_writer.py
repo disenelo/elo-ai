@@ -403,6 +403,17 @@ _PRESERVE_KEYS = {
     "gaze_target",
     # Lifecycle: current cognitive lifecycle state — survives all non-lifecycle writes
     "lifecycle_state",
+    # WO-HEALTH-BATTERY-001: eLo's energy level, published by the ambient tick
+    # (every 0.5s) and per turn. Without these the battery fields are dropped by
+    # the next full _write() and Unity's indicator flickers on and off.
+    # NOTE: elo_battery is NOT state.energy — that is David's conversational
+    # affect. Different quantity, same word.
+    "elo_battery", "elo_battery_state",
+    "physical_battery", "physical_state",
+    "activity_recent", "activity_duration_minutes",
+    # WO-DREAM-ENGINE-001 PHASE 9: sleep schedule signals. Written on each phase
+    # transition; a dream outlives many state writes, so they must survive them.
+    "dream_cycle", "dream_phase", "dream_intensity",
 }
 
 _VISION_DEFAULT = {"active": False, "attention": 0.0, "focus": {"x": 0.5, "y": 0.5}, "app": ""}
