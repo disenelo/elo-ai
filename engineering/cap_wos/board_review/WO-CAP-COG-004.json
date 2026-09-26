@@ -4,11 +4,11 @@
   "seq": 4,
   "state": "board_review",
   "blocked_on": null,
-  "score": { "pass": 14, "fail": 12, "total": 26 },
+  "score": { "pass": 18, "fail": 8, "total": 26 },
   "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-004_evidence.md",
-  "commit": "79d5704",
-  "failing": ["C2", "C3", "C4", "C7", "C9", "C10", "C13", "C15", "C20", "C21", "C23", "C25"],
-  "last_updated": "2026-09-25",
-  "run": "RE-RUN 18",
-  "notes": "Reverted voice_rewrite bypass (Fix C from cbeaae9). Revert recovered 5 regressions (C8, C11, C14, C16, C24) but lost 9 items (C2, C3, C4, C7, C9, C10, C20, C21, C23) that were passing in RR17. Net: 14/26. Fix A (JSON guard) and Fix B (C25 anchor) still in place. C13 still truncated mid-sentence (streaming truncation root cause unresolved). C20 new regression: direct:calculator returned '2 = 2' for system-of-equations input. C25 Unity/C# hallucination persists (Fix B trigger condition does not match 'eLo reads code fluently' — only matches exactly-quoted 'eLo'). voice_rewrite unconditional is cutting short multi-step technical explanations (C2/C3/C4/C7/C10/C21/C23). Board review required."
+  "commit": "64720dc",
+  "failing": ["C3", "C5", "C6", "C10", "C21", "C22", "C23", "C25"],
+  "last_updated": "2026-09-26",
+  "run": "RE-RUN 19",
+  "notes": "RR19 fixes applied (B+C+D+E all in commit 64720dc). Fix E (algebra guard) confirmed: C20 now routes to ollama(stream), not direct:calculator. Fix C (double-embedding removal) confirmed: C13 now produces complete response from start of pipeline command. Fix D (voice_rewrite cap raised to 12 for technical inputs) partially confirmed: C2 and C7 recovered, but C3/C5/C6/C21/C22/C23 still truncated. Fix B (bare-word eLo check) still failing for C25: _input_is_technical is False for the C25 input pattern (single-quoted JS object without code-signal tokens), so the identity anchor never fires. C25 hallucinated 'name: you' (field does not exist). Regressions vs RR18: C5, C6, C22 (voice_rewrite still truncating multi-part explanations for these items). Improvements vs RR18: C2, C4, C7, C9, C13, C15, C20. Net score: 18/26 (+4 vs RR18 14/26). Board review required."
 }

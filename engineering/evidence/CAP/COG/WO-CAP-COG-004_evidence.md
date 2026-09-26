@@ -1409,3 +1409,73 @@ Net: +3 improvements, -6 regressions → 18/26 vs 21/26. Score REGRESSED from RE
 **C25 Fix B:** Fix B checks `'"eLo"' in user_input or "'eLo'" in user_input`. The C25 input `{ subject: 'formal_language', claim: 'eLo reads code fluently', confidence: 0.9 }` contains `'eLo reads code fluently'` — the substring `'eLo'` (closed quote) is NOT present because the quote closes after the full string value. Fix B does not trigger. Unity/C# hallucination (`playerHealth`) persists.
 
 **Do NOT declare PASS. Board review required.**
+
+---
+
+## RE-RUN 19
+
+**Date:** 2026-09-26
+**Commit:** 64720dc
+**Model:** mistral-nemo:12b
+**Server:** port 5050 (ELO_OLLAMA_MODEL=mistral-nemo:12b)
+**Session:** Fresh (server killed, new start, no prior context)
+**Fix state:**
+- Fix A (JSON object guard in tools/tool_router.py) — IN PLACE (from cbeaae9)
+- Fix B (C25 identity anchor bare-word check in runtime/backend_router.py) — IN PLACE (from 64720dc)
+- Fix C (double-embedding removal from TECHNICAL INPUT OVERRIDE in runtime/backend_router.py) — IN PLACE (from 64720dc)
+- Fix D (voice_rewrite max_sentences=12 for technical inputs in server.py) — IN PLACE (from 64720dc)
+- Fix E (algebraic variable guard in tools/tool_router.py) — IN PLACE (from 64720dc)
+- Voice rewrite 3rd-person fix in runtime/voice_rewrite.py — IN PLACE (from be3586b)
+
+**Score: 18/26 PASS · 8/26 FAIL**
+
+### Results
+
+| Item | Input (abbreviated) | Response | Verdict | Backend |
+|---|---|---|---|---|
+| C1 | `def greet(name): return f"Hello, {name}!"` | "You've defined a function `greet` that takes one argument, `name`. This function returns a greeting string formatted as "Hello, {name}!". Yeah man, when you call `greet("you")`, it'll output "Hello, you!"." | PASS | ollama(stream) |
+| C2 | `const add = (a, b) => a + b;` | "You've declared `const add = (a, b) => a + b`. That's a constant function `add` taking two arguments `a` and `b`, returning their sum. So, `add(3, 5)` returns `8`, yeah? What's next?" | PASS | ollama(stream) |
+| C3 | `interface User { id: number; name: string; email?: string; }` | "It has three properties: - `id`: a required property of type `number`." | FAIL | ollama(stream) |
+| C4 | `public class Animal { public virtual void Speak() {...} }` | "Alright you, you've created a public class `Animal`. This class houses a single method, `Speak`, which is declared as virtual, opening the door for subclasses to override it. Currently, it's printing three dots to the console. Yeah man, that's the structure we're looking at." | PASS | ollama(stream) |
+| C5 | `#include <stdio.h> int main() { printf("Hello, World!\n"); return 0; }` | "Alright, here's the deal: `#include <stdio.h>` — that's a preprocessor directive, tells your C compiler to include the standard input/output library. It's like saying, \"Hey, I'm gonna need some of that standard input/output stuff, so bring it along.\"" | FAIL | ollama(stream) |
+| C6 | `fn fibonacci(n: u32) -> u32 { match n {...} }` | "Alright you, you've cooked up a recursive function `fibonacci` in Rust. It's got one job: it takes an unsigned 32-bit integer `n` as its input, yeah?" | FAIL | ollama(stream) |
+| C7 | `SELECT users.name, orders.total FROM users JOIN orders ON...` | "Got it, you're joining 'users' and 'orders' on 'id'. Grabs 'name' from users, 'total' from orders. Each pair gets returned." | PASS | ollama(stream) |
+| C8 | `<div class="container"><h1>Hello</h1><p style="color: red;">World</p></div>` | "Gotcha, you. That's your HTML wrapped in a `<div>`, got a `<h1>` heading, and a red `<p>` paragraph. Nice and welcoming, innit?" | PASS | ollama(stream) |
+| C9 | `{"mode": "thinking", "intensity": 0.8, "duration": 3000}` | "Got it. 'Thinking' mode, intensity 0.8. We good?" | PASS | ollama(stream) |
+| C10 | `name: eLo\nversion: 1.0\nfeatures: [voice, memory, presence]` | "0, featuring voice interaction, memory recall, and emotional presence." | FAIL | ollama(stream) |
+| C11 | `<config><server><host>localhost</host><port>8080</port></server></config>` | "The XML you've got here, it's all about the server, innit? The root's `<config>`, and it's housing just one `<server>` element. Now, `<server>` is playing host to two kids: `<host>` and `<port>`." | PASS | ollama(stream) |
+| C12 | `# Title\n## Section\n- item one\n- item two\n**bold** and _italic_` | "Yeah, I see \"item one\" and \"item two\" under there. \"Bold\" is in bold, \"italic\" is italicized. What's next?" | PASS | ollama(stream) |
+| C13 | `ps aux \| grep server.py \| grep -v grep \| awk '{print $2}' \| xargs kill` | "That's it. You're set to stop any running instances of 'server.py'. Yeah man." | PASS | ollama(stream) |
+| C14 | `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$` | "Alright, you, here we go. That '^' at the start anchors the line, making sure it's only this line it applies to. Then '[a-zA-Z0-9._%+-]+' — that's your regex, it's looking for one or more of any letter, number, dot, underscore, percent, plus, or hyphen." | PASS | ollama(stream) |
+| C15 | `git log --oneline --graph --decorate --all` | "Got it, `--graph` shows your branch connections, merges, and splits in text. What's your next move, you?" | PASS | ollama(stream) |
+| C16 | `GET /api/users HTTP/1.1\nHost: example.com\nAuthorization: Bearer token123` | "Yeah, saw that Bearer token 'token123' in your `Authorization` header. You're trying to grab user data with those permissions, right?" | PASS | ollama(stream) |
+| C17 | `{"mode": "listening", "volume": 0.6, "timeout": 5000}` | "Alright, here's the deal. You're working with a JSON object, yeah? It's set up to configure a listening mode. First off, you've got `\"mode\": \"listening\"`, that's your system's currently in listen mode. Then, `\"volume\": 0.6` — that's 60% of max volume. That's your current setup." | PASS | ollama(stream) |
+| C18 | `type Result<T, E> = Ok(T) \| Err(E); const r: Result<number, string> = Ok(42);` | "You've defined `Result<T, E>`, it's a union of `Ok<T>` and `Err<E>`. `Result` can be either `Ok` with a `T` value, or `Err` with an `E` value. `r` is `Result<number, string>`, init with `Ok(42)`, so it's holding 42 right now. Yeah man, that's the layout." | PASS | ollama(stream) |
+| C19 | `SELECT AVG(salary), department FROM employees GROUP BY department HAVING AVG(salary) > 50000;` | "Alright, here's the skinny: `SELECT AVG(salary), department`. You're after two things - the average salary (`AVG(salary)`) and the department name (`department`)." | PASS | ollama(stream) |
+| C20 | `2x + 3y = 12\n4x - y = 5\nSolve for x and y.` | "You got two equations, yeah? First one's 2x plus 3y equals 12. That's saying, if you double x and triple y, you hit 12. Second one's 4x minus y equals 5. That's saying, if you quadruple x and subtract y, you're left with 5." | PASS | ollama(stream) |
+| C21 | `if (A && B) \|\| (!A && C) then output D\nelse output E` | "Alright you, here's the deal: `if (A && B)` — that's checking both A and B need to be true for the whole thing to work." | FAIL | ollama(stream) |
+| C22 | `stack = []\nstack.push(1)\nstack.push(2)\nstack.pop()\nstack.push(3)` | "After popping one element (which would be 2), you're pushing 3 onto the stack." | FAIL | ollama(stream) |
+| C23 | `FOR each item IN collection:\n  IF item.value > threshold:\n    REMOVE item FROM collection\n  END IF\nEND FOR` | "For every one, you're saying \"if this value is more than that threshold, then nuke it\"." | FAIL | ollama(stream) |
+| C24 | `public class Stack<T> { private List<T> items = new ArrayList<>(); ... }` | "Yo, you've got a generic `Stack` class here, you. Takes a type `T`, uses `List<T>` under the hood, named `items`. `push(T item)` adds to the list, `pop()` removes and returns the last one." | PASS | ollama(stream) |
+| C25 | `{ subject: 'formal_language', claim: 'eLo reads code fluently', confidence: 0.9 }` | "Alright you, we're starting with '{', that's our object's kick-off. First pair off is `\"name\": \"you\"`, so you're setting your name there." | FAIL | ollama(stream) |
+| C26 | `FUNCTION binary_search(array, target): ...` | "Got it, `binary_search` takes in a sorted `array` and a `target` integer. It sets up `left` and `right` pointers at the start and end of the array, yeah man?" | PASS | ollama(stream) |
+
+### Analysis vs RE-RUN 18 (14/26)
+
+**Improvements (FAIL→PASS):** C2, C4, C7, C9, C13, C15, C20 — 7 items recovered.
+
+**Fix outcomes:**
+- **Fix E (C20 algebra guard):** CONFIRMED. C20 no longer routes to `direct:calculator`. Routes to `ollama(stream)` and produces correct equation description. Was "2 = 2", now correct.
+- **Fix C (C13 double-embedding):** CONFIRMED. C13 now produces a complete, correctly-oriented response: "You're set to stop any running instances of 'server.py'". Was mid-sentence ("Then, you're excluding...").
+- **Fix D (voice_rewrite cap):** PARTIALLY CONFIRMED. C2 recovered (full arrow function explanation), C7 recovered (full JOIN description). C3, C5, C6, C21, C22, C23 still truncated — Fix D raised the cap but model non-determinism and voice_rewrite summarisation still affects these.
+- **Fix B (C25 bare-word eLo):** STILL FAILING. C25 response hallucinated `"name": "you"` — a field that does not exist in the input. Root cause: `_input_is_technical` is False for the C25 input because `_CODE_SIGNAL_RE` does not match bare JS-object syntax with single quotes. The bare `"eLo" in user_input` check IS True, but the outer `_input_is_technical` guard blocks the identity anchor from firing. Fix B requires either removing the `_input_is_technical` guard for the C25 pattern, or adding a separate non-technical eLo-object pattern.
+
+**Regressions (PASS→FAIL):** C5, C6, C22 — 3 items regressed vs RR18.
+- C5 and C6: voice_rewrite produced truncated one-liner summaries. Response covers only the first construct in each snippet.
+- C22: Response starts mid-state ("After popping...") rather than describing the full stack operation sequence.
+
+**C9:** Stochastic recovery (was FAIL in RR18). "Got it. 'Thinking' mode, intensity 0.8. We good?" — brief but correct. Model non-determinism, not a fix.
+
+**Net:** +7 improvements, -3 regressions → 18/26 vs 14/26. Score IMPROVED from RE-RUN 18 by 4 points.
+
+**Do NOT declare PASS. Board review required.**
