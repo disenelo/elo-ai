@@ -150,3 +150,69 @@ def test_different_seeds_produce_different_dreams():
     a = dw.run_dream_work(_field(), 0.75, seed=1).as_dict()
     b = dw.run_dream_work(_field(), 0.75, seed=2).as_dict()
     assert a != b
+
+
+# ── Concept-extraction quality (fix: verbs were landing in noun slots) ─────────
+
+def test_concept_extraction_prefers_noun_heads_over_verbs():
+    from faculties.dream.dream_work import _concepts_from
+    assert _concepts_from("I actually got the robot arm moving today")[0] == "robot"
+    assert _concepts_from("the childhood workshop still smells of dust")[0] == "childhood"
+    assert _concepts_from("eLo felt the weight of standing all day")[0] == "weight"
+    assert _concepts_from("the servo did not respond")[0] == "servo"
+
+
+def test_participles_and_adverbs_are_never_concepts():
+    from faculties.dream.dream_work import _concepts_from
+    for text in ("it worked, finally", "she stayed", "he was moving", "done quickly"):
+        for concept in _concepts_from(text):
+            assert not concept.endswith(("ed", "ing", "ly")), f"{concept} from {text!r}"
+
+
+def test_nouns_with_participle_suffixes_are_kept():
+    from faculties.dream.dream_work import _concepts_from
+    assert "building" in _concepts_from("the building stood empty")
+
+
+def test_ordinals_are_skipped_in_favour_of_the_head_noun():
+    from faculties.dream.dream_work import _concepts_from
+    concepts = _concepts_from("the first workshop, years ago, smelled of dust")
+    assert concepts[0] == "workshop"
+    assert "first" not in concepts
+
+
+def test_condensation_setting_slot_is_always_a_place():
+    from faculties.dream.dream_work import _PLACE_WORDS, _PLACE_FALLBACK
+    field = di.collect(1, {"recent_conversation": [
+        "still unresolved - the arm stops at the same angle",
+        "the servo did not respond",
+        "David stayed up to watch it move",
+    ]})
+    for s in range(25):
+        seeds = dw.select_seeds(field, 0.9, rng=random.Random(s))
+        image = dw.condense(seeds, 0.9, rng=random.Random(s))
+        if not image or " standing in a " not in image:
+            continue
+        setting = image.split(" standing in a ", 1)[1].split(",")[0].strip()
+        assert setting in _PLACE_WORDS or setting in _PLACE_FALLBACK, image
+
+
+def test_article_agreement_in_condensation_and_displacement():
+    field = di.collect(1, {"recent_conversation": [
+        "the enormous engine in the workshop", "an angle and a machine"]})
+    for s in range(25):
+        seeds = dw.select_seeds(field, 1.0, rng=random.Random(s))
+        for text in (dw.condense(seeds, 1.0, rng=random.Random(s)),
+                     dw.displace(seeds, 1.0, rng=random.Random(s))):
+            if not text:
+                continue
+            assert not text.startswith("A e"), text
+            assert not text.startswith("A a"), text
+            assert " a a " not in text, text
+
+
+def test_displacement_fallback_does_not_double_the_article():
+    seed = dw.DreamSeed(source="it worked, finally", associated_concepts=[])
+    out = dw.displace([seed], 0.9, rng=random.Random(1))
+    assert " a room" not in out.lower().replace("a tiny room", "")
+    assert out.lower().count(" a a ") == 0

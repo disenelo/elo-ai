@@ -109,26 +109,96 @@ _TENSIONS = (
 
 _SECONDARY_EMOTIONS = ("nostalgia", "unease", "tenderness", "anticipation", "distance")
 
+# The condensation template puts a concept in a "standing in a ___" slot.
+# Only a place reads correctly there; anything else produced "standing in a
+# stops". Non-place concepts fall back to a place drawn from this pool.
+_PLACE_WORDS = frozenset(
+    "workshop hallway yard station room corridor kitchen garage attic cellar "
+    "basement garden street city town house building field forest shore beach "
+    "library museum theatre factory warehouse tunnel bridge stairwell landing "
+    "orchard playground school office studio shed barn".split()
+)
+_PLACE_FALLBACK = ("workshop", "hallway", "yard", "station", "room", "corridor")
+
+
 _WORD_RE = re.compile(r"[a-z0-9']+")
 _CONCEPT_STOP = frozenset(
     "a an the and or but if then that this those these of to in on at for with "
     "from by is are was were be been being it its as i me my we us our you your "
     "he she they them so not no do did does have has had about really just very "
-    "got get went came keep still back into out up down".split()
+    "got get went came keep still back into out up down own all any each more "
+    "most some such than too when while where what which who how why".split()
+)
+
+# Determiners and prepositions that introduce a noun phrase. The token run
+# after one of these is the closest cheap approximation of a noun head without
+# a POS tagger (no nltk/spacy dependency — this module stays stdlib-only).
+_NP_INTRODUCERS = frozenset(
+    "the a an of in on at my your his her its their our this that these those "
+    "with from about".split()
+)
+
+# Ordinals and quantifiers sit between the determiner and the head noun.
+_PRE_HEAD_MODIFIERS = frozenset(
+    "first second third last next other another same new old every one two "
+    "three few many several".split()
+)
+
+# Participles and adverbs. Rejected because they landed in noun slots and
+# produced "a worked the size of a building" / "standing in a stayed".
+_VERBAL_SUFFIXES = ("ed", "ing", "ly")
+
+# Nouns that happen to carry a participle/adverb suffix and are worth keeping.
+_SUFFIX_ALLOW = frozenset(
+    "building ceiling clothing drawing evening feeling meaning morning "
+    "opening painting reading recording string thing wedding shed bed "
+    "world child field shield friend weekend legend".split()
 )
 
 
+def _article(word: str) -> str:
+    """"a" / "an" agreement. "A enormous" was reaching the prompt text."""
+    return "an" if word[:1] in "aeiou" else "a"
+
+
+def _is_concept_token(word: str) -> bool:
+    if len(word) <= 3 or word in _CONCEPT_STOP or word in _PRE_HEAD_MODIFIERS:
+        return False
+    if word in _SUFFIX_ALLOW:
+        return True
+    return not word.endswith(_VERBAL_SUFFIXES)
+
+
 def _concepts_from(text: str, limit: int = 6) -> list[str]:
-    """Content words usable as concept tokens."""
-    seen: list[str] = []
-    for word in _WORD_RE.findall(text.lower()):
-        if word in _CONCEPT_STOP or len(word) <= 3:
+    """
+    Concept tokens usable as the SUBJECT of an image.
+
+    Prefers noun-phrase heads: the run of content words following a determiner
+    or preposition. Falls back to plain content-word order when the text has
+    no noun phrase. Verbs, participles and adverbs are excluded either way —
+    a dream image needs a thing, not an action, in its noun slots.
+    """
+    words = _WORD_RE.findall(text.lower())
+    heads: list[str] = []
+    fallback: list[str] = []
+
+    in_phrase = False
+    for word in words:
+        if word in _NP_INTRODUCERS:
+            in_phrase = True
             continue
-        if word not in seen:
-            seen.append(word)
-        if len(seen) >= limit:
-            break
-    return seen
+        if word in _PRE_HEAD_MODIFIERS:
+            continue  # skip the modifier, keep looking for the head
+        if not _is_concept_token(word):
+            in_phrase = False
+            continue
+        if in_phrase and word not in heads:
+            heads.append(word)
+        elif word not in fallback:
+            fallback.append(word)
+
+    ordered = heads + [w for w in fallback if w not in heads]
+    return ordered[:limit]
 
 
 # ── 3a. Dream Seed ─────────────────────────────────────────────────────────────
@@ -257,10 +327,11 @@ def condense(
     material = rng.choice(_MATERIAL_WORDS)
 
     head = merged[0]
-    setting = merged[1] if len(merged) > 1 else "workshop"
-    tail = merged[2:]
+    candidate = merged[1] if len(merged) > 1 else ""
+    setting = candidate if candidate in _PLACE_WORDS else rng.choice(_PLACE_FALLBACK)
+    tail = [c for c in merged[2:] if c != setting]
 
-    image = f"A {scale} {head} standing in a {setting}"
+    image = f"{_article(scale).capitalize()} {scale} {head} standing in a {setting}"
     if tail:
         image += f", its {tail[0]} built from {material}"
         for extra in tail[1:]:
@@ -289,7 +360,8 @@ def displace(
     others = [s for s in seeds if s is not carrier] or list(seeds)
     host = rng.choice(others)
 
-    host_concept = host.associated_concepts[0] if host.associated_concepts else "a room"
+    # Bare noun — the template supplies the article ("A tiny a room stands").
+    host_concept = host.associated_concepts[0] if host.associated_concepts else "room"
     scale = "tiny" if intensity >= 0.5 else "small"
     magnitude = "enormous" if intensity >= 0.5 else "large"
 
