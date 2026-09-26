@@ -6669,10 +6669,77 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
-        print(f"[eLo] backend={backend_used} action={_action}", flush=True)
         _it_emotion = (exec_decision.get("valence", "neutral") if exec_decision else "neutral")
+
+        # ── S2 Phase 2: inner thought generation (second lightweight LLM pass) ─
+        _inner_thought = ""
+        try:
+            import time as _it_time, urllib.request as _it_req, json as _it_json
+            _it_t0 = _it_time.time()
+            _it_host  = os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
+            _it_model = os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
+            _it_history = ""
+            try:
+                from faculties.grounding.conversation_tracker import get_tracker as _it_get_ct
+                _it_ct = _it_get_ct()
+                _it_sk = (_state or {}).get("person_id", "default")
+                _it_ctx = _it_ct.get_context(_it_sk)
+                _it_recent = _it_ctx.get("recent_turns", [])[-2:]
+                _it_history = "\n".join(
+                    f"User: {u}\neLo: {e}" for u, e in _it_recent if u or e
+                )
+            except Exception:
+                pass
+            _it_user_part = (
+                f"[Last exchange]\n{_it_history}\n\neLo just said: {response}"
+                if _it_history else f"eLo just said: {response}"
+            )
+            _it_payload = _it_json.dumps({
+                "model":      _it_model,
+                "messages":   [
+                    {"role": "system", "content": (
+                        "You are eLo's inner voice — unguarded, first-person, immediate. "
+                        "In 1-2 sentences, what is eLo noticing or feeling right now, given this exchange? "
+                        "Speak as eLo. No stage directions. No asterisks. Not a summary of the reply. "
+                        "Raw, honest, in the moment."
+                    )},
+                    {"role": "user", "content": _it_user_part},
+                ],
+                "stream":     False,
+                "keep_alive": "2h",
+                "options":    {"temperature": 0.85, "num_predict": 96, "num_ctx": 2048},
+            }).encode()
+            _it_req_obj = _it_req.Request(
+                f"{_it_host}/api/chat",
+                data=_it_payload,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with _it_req.urlopen(_it_req_obj, timeout=3.0) as _it_r:
+                _it_body = _it_json.loads(_it_r.read())
+            _it_text = (_it_body.get("message", {}).get("content") or "").strip()
+            _it_ms = (_it_time.time() - _it_t0) * 1000
+            if _it_text and _it_ms < 2000:
+                _inner_thought = _it_text
+            else:
+                import logging as _it_log
+                if _it_ms >= 2000:
+                    _it_log.getLogger("elo.inner_thought").warning(
+                        "inner_thought LLM pass too slow (%.0fms) — using rule-based fallback", _it_ms
+                    )
+                _it_vmap = {
+                    "positive_high": "Something feels really right here.",
+                    "positive_low":  "This is landing well.",
+                    "negative_high": "I need to be careful with this one.",
+                    "negative_low":  "Something feels off, but I'm staying with it.",
+                }
+                _inner_thought = _it_vmap.get(_it_emotion, "I'm present for this.")
+        except Exception:
+            pass
+
+        print(f"[eLo] backend={backend_used} action={_action}", flush=True)
         return {
-            "inner_thought": "",
+            "inner_thought": _inner_thought,
             "response":      response,
             "emotion":       _it_emotion,
             "intent":        _action,
