@@ -44,6 +44,50 @@ real per-cycle loop in the system. Board to confirm or relocate.
 
 ---
 
+## THE WIRING WAS BROKEN UNTIL `6d62e96` — read this before testing
+
+With the six points wired but before this fix, **S4 would have appeared to
+work and then visibly failed in front of David.**
+
+`state_writer._write()` REPLACES `blender_state.json` wholesale and carries
+over only the keys in `_PRESERVE_KEYS`. `health_battery.publish()` writes via
+`patch()` (a merge), so the fields landed — and the next full `_write()`
+deleted them.
+
+The ambient tick republishes every 0.5s. So the battery fields would appear,
+vanish on the next state write, reappear 0.5s later. Unity's indicator
+flickering on and off, with nothing wrong in Unity — Designer would have spent
+the afternoon debugging their own code.
+
+The file already documents the trap: *"absent from this set = droppable on any
+patch"*. WO-MOBILE-PHASE2 hit it first and fixed it the same way, so this
+follows precedent rather than inventing a mechanism.
+
+Added to `_PRESERVE_KEYS`: `elo_battery`, `elo_battery_state`,
+`physical_battery`, `physical_state`, `activity_recent`,
+`activity_duration_minutes` (plus the three dream keys for PHASE 9).
+
+Proof is behavioural, not set-membership — a real `publish()` followed by a
+full `_write()` that knows nothing about the battery, asserting the value
+survives unchanged. `tests/test_state_writer_preserves_battery.py`, 12 passed.
+
+---
+
+## A TEST SUITE WAS WRITING INTO THE RUNNING SYSTEM — `274a980`
+
+Live `elo_battery` read `0.4` when it had been set to `1.0` by hand. Nothing
+else in the codebase writes that field.
+
+`tests/test_s4_wake_restore.py` calls `wake_from_dream()` → `publish()` →
+the REAL `blender/blender_state.json`. `0.4` is exactly `0.10 + 0.30` from
+`test_full_cycle_restores_thirty`.
+
+Had this not been caught, the live-evidence run would have captured values
+this test suite had partly written and filed them as a live result. Fixed,
+plus `tests/test_no_live_state_writes.py` as a standing guard.
+
+---
+
 ## THREE BUILDER DECISIONS — flagged for confirmation
 
 ### 1. Combination weights (ADDENDUM A left these "TBD by Builder")

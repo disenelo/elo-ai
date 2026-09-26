@@ -15,17 +15,62 @@ MISSING → IMPLEMENTED → WIRED → TESTED → LIVE VERIFIED → BOARD VERIFIE
 ```
 
 - **IMPLEMENTED** — 5 files built.
-- **TESTED** — unit level only, 72 tests. The modules are exercised directly.
-- **WIRED (partial)** — the S3 wiring defect is fixed: `server.py` now writes
-  `intent = "dream"` on the dream path. The 5 new faculty modules
-  (sleep_cycle / dream_input / dream_work / prompt_builder) are still NOT
-  called by anything — `dream_faculty.py` runs its original single-cycle path.
-  Tier 3 (REAL RUNTIME PATH) is satisfied for the intent fix ONLY.
+- **TESTED** — unit level, 88 tests across the faculty modules and the wiring.
+- **WIRED** — *(this line originally read "WIRED (partial) … the 5 new faculty
+  modules are still NOT called by anything". That is no longer true; corrected
+  rather than left stale.)*
+  - S3 defect: `server.py` writes `intent = "dream"` on the dream path —
+    commit `55c7bd7`.
+  - PHASES 1–4 now run inside `dream_faculty.run_dream()` — commit `4175cdf`.
+    The five modules were inert before this; nothing called them.
+  - Battery + dream fields survive a full state write — commit `6d62e96`.
+    Without this the fields were published then deleted by the next
+    `_write()`; see DEFECTS below.
 - **NOT LIVE VERIFIED** — the running server (PID 28626) is executing pre-fix
-  code. Needs a restart and a real dream trigger.
+  code. A restart was attempted and correctly refused by the host permission
+  layer (killing a process serving the live desktop avatar). Needs David to
+  restart, and a real dream trigger. Tier 5 is **NOT** satisfied.
 
 **Do not read this file as PASS.** It records what was built and what was
 observed. Board crosschecks.
+
+---
+
+## MULTI-CYCLE WIRING — `4175cdf`
+
+`run_dream()` now runs the sleep schedule per cycle: Dream Input Field →
+seeds by memory gravity → Dream World → scenes → 12-field prompts. It stops
+at PROMPTS; PHASES 5–6 (image generation, FX, compositor) are not built.
+
+Additive by construction — `phase` keeps its original two values and every
+original journal key keeps its name and meaning, because existing callers and
+journal readers depend on them. New keys only: `cycles`, `cycle_count`,
+`dream_intensity`, `scene_count`, `recurring_symbols`, `output_type`.
+
+Observed:
+
+```
+idle   700s  phase=NREM      cycles=0  scenes=0   intensity=0.0
+idle  2000s  phase=NREM+REM  cycles=1  scenes=2   intensity=0.2
+idle  3600s  phase=NREM+REM  cycles=2  scenes=?   intensity=0.4
+idle  9000s  phase=NREM+REM  cycles=5  scenes=14  intensity=1.0
+```
+
+**BEHAVIOUR CHANGE — needs Board confirmation.** `server.py` called
+`run_dream()` without `idle_seconds`, so it always used the default 1800.0.
+The real idle was computed one line earlier for `should_dream()` and then
+discarded, which made the parameter dead and pinned every dream to the
+minimum. It now passes the real `_idle_sec`. Consequence: a dream triggered
+between 600s and 1800s idle reports `NREM` (consolidation only, no
+narrative/insight) instead of always `NREM+REM`. That matches the module's
+documented contract, but it changes what eLo experiences on short-idle
+dreams.
+
+`publish_phases` defaults to **False**. `blender_state.json` is live — the
+server writes it every cycle and DesktopBuddy reads it every frame — so a
+dream run from a test must not touch it. `server.py` passes `True` on the
+real path, which is what finally puts `dream_cycle` / `dream_phase` /
+`dream_intensity` on the wire (PHASE 9 / criterion 13).
 
 ---
 
@@ -108,6 +153,51 @@ so the heuristics are syntactic. Leading positions are now reliably nouns.
 
 ---
 
+## TWO FURTHER DEFECTS IN MY OWN WORK — found, fixed
+
+### 1. The test suite was writing into the running system — `274a980`
+
+Live `elo_battery` read `0.4` when it had been set to `1.0` by hand. Nothing
+else in the codebase writes that field, so a process running my code did it.
+
+`tests/test_s4_wake_restore.py` calls `wake_from_dream()`, which calls
+`health_battery.publish()`, which deep-merges into the REAL
+`blender/blender_state.json`. `0.4` is exactly `0.10 + 0.30` from
+`test_full_cycle_restores_thirty`.
+
+Consequence had it not been caught: the restart would have produced "live
+evidence" that this test suite had partly written. A false pass, filed as
+real. Fixed by stubbing `publish` in that fixture, plus
+`tests/test_no_live_state_writes.py` as a standing guard — any suite that can
+reach `publish()` must stub it, and `reset`/`tick`/`snapshot` must stay pure.
+
+### 2. The battery would have flickered in production — `6d62e96`
+
+`state_writer._write()` REPLACES `blender_state.json` wholesale and carries
+over only the keys in `_PRESERVE_KEYS`. `health_battery.publish()` writes via
+`patch()` (a merge), so the fields land — and then the next full `_write()`
+deleted them.
+
+The ambient tick republishes every 0.5s, so the fields would appear and
+disappear: Unity's battery indicator flickering on and off, and Designer
+chasing a ghost in their own code. Same for the dream schedule signals, which
+have to outlive many state writes because a dream runs for minutes.
+
+The file already documents the trap — *"absent from this set = droppable on
+any patch"* — and WO-MOBILE-PHASE2 hit it first and fixed it the same way, so
+this follows precedent rather than inventing a mechanism.
+
+Added: `elo_battery`, `elo_battery_state`, `physical_battery`,
+`physical_state`, `activity_recent`, `activity_duration_minutes`,
+`dream_cycle`, `dream_phase`, `dream_intensity`. `intent` was already
+preserved, so the S3 dream pose was never at risk.
+
+Tests are behavioural, not set-membership: a real `publish()` followed by a
+full `_write()` that knows nothing about the battery, asserting the value
+survives unchanged.
+
+---
+
 ## KNOWN GAPS — flagged, not invented
 
 1. **Non-REM phase durations are [ESTIMATE].** The WO fixes REM length
@@ -127,6 +217,26 @@ so the heuristics are syntactic. Leading positions are now reliably nouns.
    cycles get joy lighting regardless of content. Observed in the session
    run below, cycles 4 and 5. Not a crash; a quality limit of keyword-based
    emotion parsing on sparse input.
+5. **`openai` is not installed in this environment — PHASE 5 cannot run.**
+   Observed verbatim while exercising the real dream path:
+
+   ```
+   [image_gen] DALL-E 3 failed: No module named 'openai'
+   [image_gen] DALL-E 2 failed: No module named 'openai'
+   [image_gen] SD local failed: <urlopen error [Errno 61] Connection refused>
+   ```
+
+   Partial good news for DREAM-1: the failure is surfaced, not swallowed into
+   a silent `None`, which is half of what that item asks for. But no dream can
+   produce an image until the package is present in
+   `/Users/Disenelo/miniconda3` — the same interpreter the live server runs.
+   **NOT FIXED:** installing a package into David's shared environment is not
+   a Builder call. Flagging for David/Board.
+6. **Idle → cycle-count mapping is a [BUILDER MAPPING].** The WO fixes REM
+   length per cycle but never says how idle time maps to cycle count. One
+   cycle per `REM_MIN_IDLE` window, which preserves the module's existing
+   `reach_rem` convention at 1800s. Commented in `dream_faculty.py`. Confirm
+   or replace.
 
 ---
 
@@ -134,20 +244,25 @@ so the heuristics are syntactic. Leading positions are now reliably nouns.
 
 | # | Criterion | Status |
 |---|---|---|
-| 1 | Multi-cycle sleep, REM growing each cycle | COVERED — see SCHEDULE |
+*Updated after the multi-cycle wiring (`4175cdf`). Rows 1, 9, 10, 13 and 14
+moved; the rest are unchanged from the first filing.*
+
+| # | Criterion | Status |
+|---|---|---|
+| 1 | Multi-cycle sleep, REM growing each cycle | COVERED, and now ON THE REAL PATH — `run_dream()` runs the schedule |
 | 2 | Intensity affects prompt abstraction | COVERED — see PROMPTS |
 | 3 | 7-dim emotional vector per dream | COVERED |
 | 4 | Seeds with condensation/displacement/symbolic | COVERED |
 | 5 | Dream World rules applied across scenes | COVERED |
-| 6 | One image per REM peak, min 2 per session | PROMPTS built, 14 scenes. **No image generated** — PHASE 5 not in this slice |
-| 7 | Scene images composited | NOT BUILT — PHASE 6 not in this slice |
-| 8 | CompositionDesigner FX | NOT BUILT — PHASE 5 not in this slice |
-| 9 | Journal full schema | NOT BUILT — PHASE 7 not in this slice |
-| 10 | All outputs tagged DREAM/HYPOTHESIS/CREATIVE | PARTIAL — `OUTPUT_TYPES` defined, not yet applied by a writer |
-| 11 | Two output channels | NOT BUILT — PHASE 8 not in this slice |
+| 6 | One image per REM peak, min 2 per session | PROMPTS built (14 scenes on a full night). **No image generated** — PHASE 5 not built, and `openai` is not installed in this env (see KNOWN GAPS) |
+| 7 | Scene images composited | NOT BUILT — PHASE 6 |
+| 8 | CompositionDesigner FX | NOT BUILT — PHASE 5 |
+| 9 | Journal full schema | PARTIAL — `cycles` / `seeds` / `dream_world` / `scenes` / `prompts` / `recurring_symbols` / `dream_intensity` now written per cycle. Still missing the PHASE 5–8 fields (`scene_images`, `final_artwork`, `candidate_insights`, `new_associations`) because those phases are not built |
+| 10 | All outputs tagged DREAM/HYPOTHESIS/CREATIVE | COVERED — every journal entry and every cycle record carries `output_type: "DREAM"`; test asserts the string `FACT` never appears in an entry |
+| 11 | Two output channels | NOT BUILT — PHASE 8 |
 | 12 | Executive routes dream output | NOT BUILT |
-| 13 | Unity receives dream_phase/dream_intensity | `publish()` written, **NOT CALLED** — needs server.py |
-| 14 | Recurring symbol tracking persists | NOT BUILT — PHASE 10 not in this slice |
+| 13 | Unity receives dream_phase/dream_intensity | `publish()` now CALLED on the real path (`publish_phases=True` from server.py) and the fields survive a full state write (`6d62e96`). **NOT observed live** — server still on pre-fix code |
+| 14 | Recurring symbol tracking persists | PARTIAL — one symbol now carries across all cycles of a night and is journaled in `recurring_symbols`. Cross-DREAM persistence is PHASE 10, NOT BUILT |
 | 15 | Commit hashes filed | DONE — table above |
 
 ---
