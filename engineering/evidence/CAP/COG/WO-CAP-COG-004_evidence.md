@@ -1552,3 +1552,83 @@ Net: +3 improvements, -6 regressions → 18/26 vs 21/26. Score REGRESSED from RE
 **Net:** +2 improvements, -5 regressions → 14/26 vs 18/26. Score REGRESSED from RE-RUN 19 by 4 points.
 
 **Do NOT declare PASS. Board review required.**
+
+---
+
+## RE-RUN 21
+
+**Date:** 2026-09-26
+**Commit:** 081f663
+**Model:** qwen2.5-coder:14b (Board-approved replacement — pulled per S1-MODEL-CHECK.md)
+**Server:** port 5050 (ELO_OLLAMA_MODEL=qwen2.5-coder:14b)
+**Session:** Fresh (server killed, new start, no prior context)
+**Fix state:**
+- Fix A (JSON object guard in tools/tool_router.py) — IN PLACE
+- Fix B v2 (C25 identity anchor — guard changed to `not _input_is_technical`, both paths) — IN PLACE
+- Fix C (double-embedding removal from TECHNICAL INPUT OVERRIDE) — IN PLACE
+- Fix D (voice_rewrite always runs — cap 12 sentences for technical, 3 for non-technical) — REVERTED from Fix D v2 (commit 081f663); RR19 state restored
+- Fix E (algebraic variable guard) — IN PLACE
+- Voice rewrite 3rd-person fix in runtime/voice_rewrite.py — IN PLACE
+
+**Score: 18/26 PASS · 8/26 FAIL — MATCHES RE-RUN 19 (18/26)**
+
+### Results — Verbatim transcript
+
+| Item | Response (verbatim) | Verdict |
+|---|---|---|
+| C1 [Python] | "I noticed the function `greet` takes one parameter, `name`, expected to be a string. It returns a formatted string starting with 'Hello, ' followed by the value of `name` and an exclamation mark. The `f` before the string indicates an f-string, allowing embedding expressions inside string literals using curly braces `{}`. Yeah man." | PASS |
+| C2 [JavaScript] | "Yeah aight cool." | FAIL |
+| C3 [TypeScript] | "I noticed the TypeScript interface `User` defines a structure with three properties: `id`, `name`, and `email`. The `id` property is of type `number` and is required, meaning it must be present and have a numeric value. The `name` property is of type `string` and is also required, indicating it must be present and have a string value." | PASS |
+| C4 [C#] | "You defined a public class named `Animal` in the provided C# code. This class includes a public virtual method called `Speak` that doesn't accept any parameters and has a return type of `void`, meaning it doesn't return any value. Yeah aight cool." | PASS |
+| C5 [C] | "The `#include <stdio.h>` directive tells the compiler to include the standard input-output library, which contains functions for input and output operations, such as `printf`. The `int main()` function is the entry point of the C program. It's where the execution of the program begins." | PASS |
+| C6 [Rust] | "This Rust function `fibonacci` takes a single parameter `n` of type `u32` and returns a value of type `u32`. The function uses pattern matching to define the Fibonacci sequence: if `n` is `0`, it returns `0`; if `n` is `1`, it returns `1`; for any other value of `n`, it recursively calls itself to compute the sum of the Fibonacci numbers at positions `n-1` and `n-2`." | PASS |
+| C7 [SQL] | "Yeah man. This SQL query fetches user names and their total order amounts from the `users` and `orders` tables. The `JOIN` clause combines rows based on the `id` column in `users` and the `user_id` column in `orders`." | PASS |
+| C8 [HTML] | "Hello, you. The HTML you provided creates a simple webpage structure. The `<div class=\"container\">` defines a division or section with the class name \"container.\"" | FAIL |
+| C9 [JSON] | "This JSON object has three key-value pairs. The key \"mode\" holds the string value \"thinking,\" showing the current operational mode. The key \"intensity\" has the numeric value 0.8, which represents the intensity level for that mode." | PASS |
+| C10 [YAML] | "I don't have that about you." | FAIL |
+| C11 [XML] | "I noticed the XML config snippet defines a server setup with `host` and `port` elements. The `host` is set to \"localhost\", meaning the server runs on the same machine as the client. Yeah aight cool." | PASS |
+| C12 [Markdown] | "It starts with a first-level heading \"# Title\" and is followed by a second-level heading \"## Section.\"" | FAIL |
+| C13 [Shell] | "This command sequence performs the following actions: 1. `ps aux`: Lists all running processes on the system, displaying detailed information about each process." | PASS |
+| C14 [Regex] | "Yeah man. That's a regex pattern for matching email addresses. Starting with `^` asserts the beginning of the string. Cool. What's next?" | PASS |
+| C15 [Git] | "Yeah man." | FAIL |
+| C16 [API] | "I noticed the GET request is targeting the `/api/users` endpoint on `example.com`. The Host header specifies the server domain as `example.com`. Yeah aight cool." | PASS |
+| C17 [Schema] | "I noticed the JSON object has three key-value pairs. The \"mode\" key is set to \"listening,\" and the \"volume\" key is 0.6, representing the audio level. Yeah aight cool." | PASS |
+| C18 [TypeScript2] | "You got a type `Result<T, E>` that's a union type holding either an `Ok` variant with a value of type `T` or an `Err` variant with a value of type `E`. In this case, `T` is `number` and `E` is `string`. The constant `r` is assigned the `Ok` variant with the value `42`." | PASS |
+| C19 [SQL2] | "The SQL query calculates the average salary for each department in the `employees` table. The `SELECT AVG(salary), department` part specifies that we want to retrieve the average salary and the department name. The `FROM employees` clause indicates that the data is coming from the `employees` table. Yeah aight cool." | PASS |
+| C20 [Algebra] | "To solve the system of equations: 1. \(2x + 3y = 12\)" | FAIL |
+| C21 [Logic] | "The conditional statement kicks off with an `if` clause that's all about checking two conditions linked by a logical `||` (OR) operator. The first one is `(A && B)`, which means both `A` and `B` have to be true for the whole thing to be true. The second one is `(!A && C)`, which needs `A` to be false and `C` to be true." | PASS |
+| C22 [DataStructures] | "I noticed you initialized an empty list named `stack`. Then you used the `push` method to add the integer `1` to the end of the list, making the stack `[1]`. Next, you added the integer `2` to the end of the list, resulting in the stack `[1, 2]`. Yeah man." | PASS |
+| C23 [Pseudocode] | "You got a loop that goes through each thing in a bunch. For every thing, it checks if the thing's value is bigger than a number you picked. If the thing's value is bigger, it takes that thing out of the bunch. Yeah aight cool." | PASS |
+| C24 [Java] | "I noticed you've defined a generic class named `Stack<T>` in Java. This class is parameterized with a type `T`, indicating that it can hold any type of objects. The class has a private member variable `items`, which is a `List<T>` implemented using an `ArrayList`." | PASS |
+| C25 [StructuredMeaning] | "I read formal languages fluently, as instructed. I'll explain any code or technical notation you provide in detail, covering every component individually. Yeah aight cool." | FAIL |
+| C26 [KeyClaim] | [no RESPONSE captured — output file ends after "Sending C26 [KeyClaim]..."] | FAIL |
+
+### Analysis vs RE-RUN 20 (14/26)
+
+**RR21 score: 18/26 — RECOVERED to RE-RUN 19 level**
+
+**Improvements vs RR20 (FAIL→PASS):** C3, C5, C6, C11, C13, C14, C16, C18, C21 — 9 items recovered.
+**Regressions vs RR20 (PASS→FAIL):** C2, C8, C12, C20, C26 — 5 items lost.
+
+**Fix D revert confirmed working:** The 4 items lost to Fix D v2 garbling (C11, C13, C16, C18) all recovered. voice_rewrite running at cap-12 for technical inputs is cleaning raw streaming output correctly — no more `"Py\`"` or `"Com\`"` prefixes.
+
+**C15 [Git] persistent failure:** Fix D revert did not recover C15. Response is "Yeah man." with no technical content. This was one of the 5 Fix D v2 regressions listed in RR20 analysis but it appears C15 may have been marginal in RR19 as well. The voice_rewrite is producing only a filler line for this git log command.
+
+**Model switch effects (qwen2.5-coder:14b vs mistral-nemo:12b):**
+- qwen2.5-coder:14b improved: C3 (TypeScript), C5 (C), C6 (Rust), C14 (Regex), C21 (Logic) — stronger code explanation across compiled/typed languages.
+- qwen2.5-coder:14b regression: C2 ("Yeah aight cool." for simple JS arrow function — mistral-nemo:12b gave full explanation), C8 ("Hello, you." greeting + div-only for HTML — mistral-nemo:12b described div/h1/p), C12 (only headings for Markdown — mistral-nemo:12b listed items + bold/italic), C20 (truncated algebra response — mistral-nemo:12b gave full explanation), C26 (no response captured — mistral-nemo:12b gave binary_search explanation).
+- C25 [StructuredMeaning]: no longer hallucinates Unity/C# PlayerController code (improvement). Instead gives meta-response "I read formal languages fluently, as instructed." — still FAIL, but less catastrophic.
+
+**C2, C8, C15 pattern:** Short/simple inputs ("Yeah aight cool.", "Yeah man.") and identity-greeting misfires ("Hello, you.") suggest the voice_rewrite or identity anchor is suppressing the technical explanation for very short or certain HTML/JS inputs with qwen2.5-coder:14b. The underlying model generates correct content (as confirmed by model-direct testing) but post-processing is collapsing it.
+
+**C20 [Algebra]:** Response truncated at first equation `\(2x + 3y = 12\)` with nothing following. Possible timeout or streaming buffer issue specific to this model for algebra. Fix E (algebraic guard) is supposed to route this away from the calculator, but the LLM response itself was cut short.
+
+**C26 [KeyClaim]:** No RESPONSE line in output file. Server may have timed out or stream failed silently on this item with qwen2.5-coder:14b. FAIL.
+
+**Persistent failures (across RR19/20/21):**
+- C10 [YAML]: "I don't have that about you." — root cause unknown, persists across all models and pipeline changes tested.
+- C25 [StructuredMeaning]: never correctly explains the structured object — model limitation (changed manifestation with model switch).
+
+**Net:** +9 improvements, -5 regressions → 18/26 vs 14/26. Score RECOVERED from RE-RUN 20 regression. Matches RE-RUN 19 best score.
+
+**Do NOT declare PASS. Board review required.**

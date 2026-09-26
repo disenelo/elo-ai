@@ -4,11 +4,12 @@
   "seq": 4,
   "state": "board_review",
   "blocked_on": null,
-  "score": { "pass": 14, "fail": 12, "total": 26 },
+  "score": { "pass": 18, "fail": 8, "total": 26 },
   "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-004_evidence.md",
-  "commit": "3e8dd0c",
-  "failing": ["C3", "C5", "C6", "C10", "C11", "C13", "C14", "C15", "C16", "C18", "C21", "C25"],
+  "commit": "081f663",
+  "failing": ["C2", "C8", "C10", "C12", "C15", "C20", "C25", "C26"],
   "last_updated": "2026-09-26",
-  "run": "RE-RUN 20",
-  "notes": "RR20 fixes applied (Fix B v2 + Fix D v2, commit 3e8dd0c). Fix D v2 (skip voice_rewrite for technical inputs) caused 5 regressions: C11, C13, C15, C16, C18. voice_rewrite was performing implicit cleanup of garbled raw LLM prefixes ('Py`', 'Com`') — skipping it exposed these streaming artifacts. C22 and C23 recovered (voice_rewrite was truncating them in RR19). Net: 14/26 — REGRESSION from RR19 18/26. Fix B v2 (identity anchor guard inverted: 'eLo in input and not _input_is_technical') still failing for C25: mistral-nemo:12b hallucinates a Unity/C# PlayerController class regardless of the anchor instruction. C10 YAML garbling persists (18/19/20 — root cause unknown). Board review required."
+  "run": "RE-RUN 21",
+  "model": "qwen2.5-coder:14b",
+  "notes": "RR21: Fix D reverted from v2 (bypass entirely) back to RR19 state (cap 12 for technical / 3 for non-technical). Model switched from mistral-nemo:12b to Board-approved qwen2.5-coder:14b (per S1-MODEL-CHECK.md). Score recovered to 18/26, matching RR19 best. Fix D revert recovered 4 of 5 Fix D v2 regressions (C11, C13, C16, C18 recovered; C15 still FAIL). qwen2.5-coder:14b improved C3/C5/C6/C14/C21 vs mistral-nemo:12b but introduced new failures C2/C8/C12/C20/C26. C10 YAML garbling persists (root cause unknown, all runs). C25 no longer hallucinates Unity/C# code but gives meta-response instead — still FAIL. C26 no response captured (timeout/stream failure). Board review required."
 }
