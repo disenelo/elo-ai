@@ -1980,9 +1980,15 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
 
     # Fix A — COG-004 RR17: JSON-object-shaped inputs (C9/C17) must NOT route to calculator.
     # When input looks like a JSON object ({...key: value...}), route to Ollama for explanation.
+    import re as _re_calc
     _stripped_input = user_input.strip()
-    if _stripped_input.startswith("{") and ":" in _stripped_input:
-        return None  # skip all direct intercepts; let Ollama handle JSON objects
+    _is_json_object = _stripped_input.startswith("{") and ":" in _stripped_input
+    # Fix E — COG-004 RR19: algebraic variable equations (2x + 3y = 12) must NOT route to calculator.
+    # direct:calculator cannot solve symbolic algebra and returns garbage (e.g. "2 = 2").
+    _ALGEBRA_VAR_RE = _re_calc.compile(r'\b\d+[a-zA-Z]\b|\b[a-zA-Z]\s*[+\-*/=]\s*\d|\bsolve\b|\bfor\s+[a-zA-Z]\b', _re_calc.IGNORECASE)
+    _is_symbolic_algebra = bool(_ALGEBRA_VAR_RE.search(user_input))
+    if _is_json_object or _is_symbolic_algebra:
+        return None  # fall through to Ollama
 
     # ── Calculator — direct intercept (fires regardless of Executive) ──
     # Patterns that indicate a clear arithmetic query. Must contain a digit AND

@@ -5887,11 +5887,17 @@ def _process_turn(raw: str) -> dict:
         # Uses router_route as llm_caller so Ollama/backend handles the rewrite locally.
         try:
             from runtime.voice_rewrite import voice_rewrite as _vr
+            from runtime.backend_router import _CODE_SIGNAL_RE as _vr_code_sig
+            # COG-004 RR19 Fix D: technical explanations need more than 3 sentences.
+            # voice_rewrite still runs (preserves register), but the inner normalise cap
+            # is raised for technical inputs so multi-step explanations are not truncated.
+            _vr_is_technical = bool(_vr_code_sig.search(_original_raw))
+            _vr_max = 12 if _vr_is_technical else 3
             def _vr_llm(_msgs):
                 _sys = _msgs[0]["content"] if _msgs else ""
                 _usr = _msgs[1]["content"] if len(_msgs) > 1 else ""
-                _txt, _ = router_route(_sys, _usr, max_sentences=3, action="voice_rewrite", tier=0)
-                return normalise(_txt, max_sentences=3)
+                _txt, _ = router_route(_sys, _usr, max_sentences=_vr_max, action="voice_rewrite", tier=0)
+                return normalise(_txt, max_sentences=_vr_max)
             response = _vr(
                 response,
                 exec_decision=exec_decision if exec_decision else None,

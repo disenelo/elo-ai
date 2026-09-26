@@ -1249,7 +1249,8 @@ def _ollama_stream(
             "(code, SQL, shell command, regex, config file, data format, schema, logic notation, pseudocode, or similar). "
             "The 1-2 sentence limit does NOT apply here. "
             "eLo reads formal languages fluently. "
-            f"THE ONLY THING TO EXPLAIN IS THE INPUT BELOW — ignore all prior conversation turns completely:\n{_effective_user_input}\n"
+            "The user's input is in their next message. Start your explanation from the VERY FIRST token of that input — "
+            "do NOT skip any component or assume anything has been explained already. "
             "Explain what this code or notation STRUCTURALLY DOES. "
             "Cover EVERY component — every keyword, operator, argument, symbol, and clause individually. "
             "A one-sentence answer is NEVER sufficient. Explain each part in turn. "
@@ -1270,7 +1271,7 @@ def _ollama_stream(
 
     # C25: if 'eLo' appears as a JSON string value, the model may hallucinate Unity/C# code.
     # Pre-inject identity anchor to prevent confusing the eLo identity with a C# class.
-    if _input_is_technical and ('"eLo"' in user_input or "'eLo'" in user_input):
+    if _input_is_technical and "eLo" in user_input:
         _conditioned_system += (
             "\n\nIDENTITY ANCHOR: 'eLo' in this input refers to an AI identity/entity — "
             "not a C# class, Unity MonoBehaviour, or code library. "
@@ -2142,7 +2143,8 @@ def route(
             "(code, SQL, shell command, regex, config file, data format, schema, logic notation, pseudocode, or similar). "
             "The 1-2 sentence limit does NOT apply here. "
             "eLo reads formal languages fluently. "
-            f"THE ONLY THING TO EXPLAIN IS THE INPUT BELOW — ignore all prior conversation turns completely:\n{_rt_effective_user_input}\n"
+            "The user's input is in their next message. Start your explanation from the VERY FIRST token of that input — "
+            "do NOT skip any component or assume anything has been explained already. "
             "Explain what this code or notation STRUCTURALLY DOES. "
             "Cover EVERY component — every keyword, operator, argument, symbol, and clause individually. "
             "A one-sentence answer is NEVER sufficient. Explain each part in turn. "
@@ -2162,7 +2164,7 @@ def route(
         )
 
     # C25: identity anchor for streaming path — mirrors non-streaming fix.
-    if _rt_input_is_technical and ('"eLo"' in user_input or "'eLo'" in user_input):
+    if _rt_input_is_technical and "eLo" in user_input:
         system_prompt += (
             "\n\nIDENTITY ANCHOR: 'eLo' in this input refers to an AI identity/entity — "
             "not a C# class, Unity MonoBehaviour, or code library. "
