@@ -394,4 +394,16 @@ def wake_from_dream(dream_result: DreamResult, elo_self):
     elo_self.inner_events = events
     elo_self.session_read = new_read
     elo_self.last_updated = _t.time()
+
+    # ── Battery restore — WO-HEALTH-BATTERY-001 PART A.3 / DREAM PHASE 11 ─────
+    # A full NREM+REM cycle restores +0.30; NREM alone +0.12. The phase comes
+    # from the journal entry this dream just wrote. Lying down rests the body
+    # too, so the physical track restores with it (once engaged).
+    try:
+        from core.health_battery import on_wake_from_dream as _batt_wake, publish as _batt_publish
+        _batt_wake((dream_result.journal_entry or {}).get("phase", "NREM"))
+        _batt_publish()
+    except Exception:
+        pass
+
     return elo_self
