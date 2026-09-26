@@ -22,8 +22,13 @@ class _Self:
 
 
 @pytest.fixture(autouse=True)
-def _clean():
+def _clean(monkeypatch):
     hb.reset()
+    # wake_from_dream() calls health_battery.publish(), which deep-merges into
+    # the REAL blender/blender_state.json. Without this stub the suite mutates
+    # live runtime state on every run — observed writing elo_battery=0.4
+    # (0.10 + 0.30) into the running system.
+    monkeypatch.setattr(hb, "publish", lambda: True)
     yield
     hb.reset()
 
