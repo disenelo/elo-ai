@@ -49,3 +49,52 @@ to the session.
 ## Status
 
 PASS — both bugs fixed, committed `b4d2fe4`. Board crosscheck required before WO Phase 0 close.
+
+---
+
+# Phase 1 — Output Object Restructure
+
+**Date**: 2026-09-26  
+**Commit**: `83bf8a9`  
+**Files changed**: `server.py` (+10 lines, -6 lines) · `unity-desktop-avatar/Scripts/EloConversationUI.cs` (+2 fields)
+
+---
+
+## Change
+
+Every `_process_turn` return dict now includes four fields instead of one:
+
+```python
+{
+    "inner_thought": "",          # Phase 2 will populate via second LLM pass
+    "response":      response,    # unchanged — chat displays this
+    "emotion":       _it_emotion, # exec_decision valence ("positive_high", "neutral", etc.)
+    "intent":        _action,     # CAL action for this turn
+    "bubbles":       _bubbles,
+    "mode":          _action,
+    "backend":       backend_used,
+}
+```
+
+Error fallbacks in `_turn_worker` and `_process_turn_queued` updated to match.
+
+## EloConversationUI.cs
+
+`_ChatResponse` schema extended to deserialize new fields:
+```csharp
+public string inner_thought;
+public string response;
+public string emotion;
+public string intent;
+```
+Unity's `JsonUtility` ignores unknown fields so prior clients are unaffected.
+
+## Not yet done (Phase 2)
+
+- `inner_thought` field is always `""` — Phase 2 will run a second lightweight LLM pass (temp 0.85+, 1-3 sentences) to generate it
+- TTS sequencing (speak inner_thought before response) is Phase 2 Unity-side routing
+- `physical_conditioning()` hook into inner_thought is S5 Item 6 / Phase 2 dependency
+
+## Status
+
+PASS — Phase 1 structural change committed `83bf8a9`. Board crosscheck required before Phase 1 close.
