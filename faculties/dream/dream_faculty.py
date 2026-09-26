@@ -222,6 +222,143 @@ def _extract_personality_proposal(insight: str) -> dict | None:
     return None
 
 
+# ── Multi-cycle generative sleep — WO-DREAM-ENGINE-001 PHASES 1-4 ─────────────
+
+def _cycles_for_idle(idle_seconds: float) -> int:
+    """
+    How many sleep cycles the available idle window reaches, 0-5.
+
+    [BUILDER MAPPING — flagged] The WO fixes REM length per cycle but never
+    says how idle time maps to cycle count. One cycle per REM_MIN_IDLE window
+    keeps the module's existing convention intact (reach_rem at 1800s):
+    1800s -> 1 cycle, 3600s -> 2, 9000s+ -> 5.
+    """
+    from faculties.dream.sleep_cycle import TOTAL_CYCLES
+
+    if idle_seconds < REM_MIN_IDLE:
+        return 0
+    return max(1, min(TOTAL_CYCLES, int(idle_seconds // REM_MIN_IDLE)))
+
+
+def _dream_context(elo_self, recent_topics: list[str]) -> dict:
+    """
+    Map what this layer actually holds onto the 13 Dream Input Field sources.
+
+    Sources with nothing behind them here are left EMPTY rather than filled
+    with a plausible substitute — an empty source is honest, a wrong one is
+    not. WKG, emotional significance, failure/achievement and embodiment
+    arrive when those faculties are wired in.
+    """
+    inner_events = [str(e) for e in (getattr(elo_self, "inner_events", []) or [])]
+    focal_thread = getattr(elo_self, "focal_thread", "") or ""
+    session_read = getattr(elo_self, "session_read", "") or ""
+    threads = [
+        t[0] for t in (getattr(elo_self, "lifetime_threads", []) or [])[:6]
+        if isinstance(t, (list, tuple)) and t
+    ]
+
+    return {
+        "recent_conversation":    list(recent_topics or []),
+        "recent_experiences":     inner_events,
+        "memory":                 [session_read] if session_read else [],
+        "project_memory":         [focal_thread] if focal_thread else [],
+        "wkg":                    [],
+        "spg":                    threads,
+        "emotional_significance": [],
+        "unfinished_threads":     [focal_thread] if focal_thread else [],
+        "novelty":                [],
+        "failure":                [],
+        "achievement":            [],
+        "relationship":           [],
+        "embodiment":             [],
+    }
+
+
+def _run_sleep_cycles(
+    elo_self,
+    recent_topics: list[str],
+    idle_seconds: float,
+    *,
+    dream_id: str,
+    publish_phases: bool = False,
+) -> tuple[list[dict], float]:
+    """
+    Run the sleep schedule: seeds -> Dream World -> scenes -> prompts per cycle.
+
+    Returns (cycle_records, peak_intensity).
+
+    No LLM, no network, no image generation — PHASES 5-6 (image_gen, FX,
+    compositor) are not built, so this produces the PROMPTS and stops there.
+    Every record is tagged DREAM, never FACT.
+
+    RNG is seeded from dream_id + cycle number, so re-reading a journal entry
+    can reproduce exactly the dream it records.
+    """
+    from faculties.dream import dream_input as _di
+    from faculties.dream import dream_work as _dw
+    from faculties.dream import prompt_builder as _pb
+    from faculties.dream import sleep_cycle as _sc
+
+    n_cycles = _cycles_for_idle(idle_seconds)
+    if n_cycles <= 0:
+        return [], 0.0
+
+    try:
+        seed_base = int(dream_id, 16)
+    except (TypeError, ValueError):
+        seed_base = 0
+
+    context = _dream_context(elo_self, recent_topics)
+    records: list[dict] = []
+    peak = 0.0
+    recurring: str | None = None
+
+    for phase in _sc.SleepCycle(cycles=n_cycles):
+        if publish_phases:
+            _sc.publish(phase)          # dream_cycle / dream_phase / dream_intensity
+        if not phase.is_rem:
+            continue
+
+        field = _di.collect(phase.cycle_number, context)
+        work = _dw.run_dream_work(
+            field,
+            phase.dream_intensity,
+            seed=seed_base + phase.cycle_number,
+            recurring_symbol=recurring,
+        )
+        if not work.seeds or work.world is None:
+            continue
+
+        # The first cycle's symbol carries through the night — that recurrence
+        # is what symbol_history (PHASE 10) will later track across dreams.
+        recurring = recurring or work.world.recurring_symbol
+
+        prompts = _pb.build_prompts(
+            work.scenes, work.world, field.emotion_vector,
+            seed=seed_base + phase.cycle_number,
+        )
+        peak = max(peak, phase.dream_intensity)
+
+        records.append({
+            "cycle":            phase.cycle_number,
+            "sleep_phase":      phase.phase,
+            "dream_intensity":  phase.dream_intensity,
+            "intensity_label":  _sc.intensity_label(phase.dream_intensity),
+            "content_band":     phase.content_band,
+            "rem_duration_s":   phase.rem_duration_s,
+            "emotion_vector":   field.emotion_vector,
+            "dominant_emotion": field.dominant_emotion,
+            "seeds":            [s.as_dict() for s in work.seeds],
+            "dream_world":      work.world.as_dict(),
+            "transformations":  work.transformations,
+            "scenes":           [s.as_dict() for s in work.scenes],
+            "prompts":          [p.text for p in prompts],
+            "output_type":      "DREAM",
+        })
+
+    return records, round(peak, 2)
+
+
 # ── Dream pipeline ─────────────────────────────────────────────────────────────
 
 def run_dream(
@@ -230,15 +367,23 @@ def run_dream(
     llm_fn: Callable,
     *,
     idle_seconds: float = 1800.0,
+    publish_phases: bool = False,
 ) -> DreamResult:
     """
     Run one complete dream cycle.
 
-    elo_self      — EloSelfState
-    recent_topics — list of topic strings from recent sessions (can be empty)
-    llm_fn        — callable(messages: list[dict]) → str
-    idle_seconds  — seconds of inactivity; controls which phases run
-                    (< REM_MIN_IDLE → NREM only; >= REM_MIN_IDLE → NREM + REM)
+    elo_self       — EloSelfState
+    recent_topics  — list of topic strings from recent sessions (can be empty)
+    llm_fn         — callable(messages: list[dict]) → str
+    idle_seconds   — seconds of inactivity; controls which phases run
+                     (< REM_MIN_IDLE → NREM only; >= REM_MIN_IDLE → NREM + REM)
+                     and how many sleep cycles the schedule reaches
+    publish_phases — write dream_cycle / dream_phase / dream_intensity to
+                     blender_state.json on each phase transition. Defaults to
+                     False: blender_state.json is LIVE (the server writes it
+                     every cycle, DesktopBuddy reads it every frame), so a
+                     dream run from a test must not touch it. server.py passes
+                     True for the real path.
 
     Returns DreamResult with phase, memory_refs, personality_delta_proposed, image_ref.
     """
@@ -266,6 +411,26 @@ def run_dream(
         # 3. Phase determination
         reach_rem = idle_seconds >= REM_MIN_IDLE
         phase = "NREM+REM" if reach_rem else "NREM"
+
+        # 3b. Multi-cycle generative sleep — WO-DREAM-ENGINE-001 PHASES 1-4.
+        # Additive: `phase` above keeps its original two values so existing
+        # callers and journal readers are unaffected. This runs the sleep
+        # schedule, builds the Dream Input Field per cycle, applies Dream-Work
+        # and generates structured image prompts. Failure here must never stop
+        # the original narrative path below.
+        cycle_records: list[dict] = []
+        dream_intensity = 0.0
+        if reach_rem:
+            try:
+                cycle_records, dream_intensity = _run_sleep_cycles(
+                    elo_self,
+                    recent_topics,
+                    idle_seconds,
+                    dream_id=dream_id,
+                    publish_phases=publish_phases,
+                )
+            except Exception:
+                cycle_records, dream_intensity = [], 0.0
 
         # 4. REM narrative (recombination) — only when idle long enough
         narrative = ""
@@ -340,6 +505,18 @@ def run_dream(
             "curiosity":                 curiosity,
             "session_read":              session_read,
             "focal_thread":              focal_thread,
+            # ── WO-DREAM-ENGINE-001 PHASES 1-4, additive ──────────────────────
+            # Every key above keeps its original name and meaning; readers of
+            # the old schema are unaffected. `phase` is still NREM / NREM+REM.
+            "cycles":                    cycle_records,
+            "cycle_count":               len(cycle_records),
+            "dream_intensity":           dream_intensity,
+            "scene_count":               sum(len(c["scenes"]) for c in cycle_records),
+            "recurring_symbols":         sorted({
+                c["dream_world"]["recurring_symbol"] for c in cycle_records
+            }),
+            # Nothing here is ever a verified fact (WO: "What must NOT happen").
+            "output_type":               "DREAM",
         }
         try:
             _JOURNAL_PATH.parent.mkdir(parents=True, exist_ok=True)

@@ -1033,7 +1033,17 @@ def ambient_thought() -> None:
                 def _dream_llm(msgs):
                     return _rt(_ab(), msgs)
 
-                _dream_result = run_dream(_elo_self, _dream_topics, _dream_llm)
+                # publish_phases=True: this is the real dream path, so the
+                # sleep schedule writes dream_cycle / dream_phase /
+                # dream_intensity to blender_state.json on each transition
+                # (WO-DREAM-ENGINE-001 PHASE 9 / criterion 13). It defaults to
+                # False everywhere else so a dream run from a test cannot
+                # touch live state.
+                _dream_result = run_dream(
+                    _elo_self, _dream_topics, _dream_llm,
+                    idle_seconds=_idle_sec,
+                    publish_phases=True,
+                )
                 # Integrate insight into self-state — 0037: through single-authority mutator
                 _elo_self = _self_mutate(lambda s: wake_from_dream(_dream_result, s))
                 # S4: restore health battery on dream wake (NREM+REM vs NREM-only)
