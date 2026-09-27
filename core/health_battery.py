@@ -99,6 +99,12 @@ PHYSICAL_STATES: tuple[tuple[float, str], ...] = (
 
 HIGH_INTENSITY_ACTIVITIES = ("running", "jumping", "parkour")
 
+# The complete recognised activity vocabulary. A motion value outside this set
+# does NOT engage the physical track — see _tick_physical().
+PHYSICAL_ACTIVITIES: frozenset[str] = frozenset(PHYSICAL_TICK_RATES) | frozenset(
+    PHYSICAL_EVENT_COSTS
+)
+
 # Canonical physical expressions (ADDENDUM A). These are NOT templates that
 # get pasted into a response — they are soft conditioning passed to the
 # inner_thought pipeline (WO-INNER-THOUGHTS-001 Phase 2) when physical_state
@@ -296,7 +302,15 @@ def _tick_physical(physical: str, dt_seconds: float) -> None:
     global _physical_engaged, _activity_recent, _activity_started_ts
     global _last_physical_state, _last_high_intensity_ts
 
-    if not physical:
+    # Only a RECOGNISED activity engages the physical track. Anything else —
+    # "idle", "floating", "perched", a value Unity adds later — is ignored.
+    #
+    # Without this, any non-empty string engaged the track, physical sat at
+    # 1.0 forever with no rate to drain it, and elo_battery was floored at
+    # WEIGHT_PHYSICAL (0.4) — making ENERGY_CRITICAL (0.10) unreachable and
+    # silently killing the dream trigger. That is the exact failure the
+    # combination-weight decision above exists to prevent.
+    if physical not in PHYSICAL_ACTIVITIES:
         return
 
     _physical_engaged = True

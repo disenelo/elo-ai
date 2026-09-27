@@ -327,3 +327,42 @@ def test_hardware_override_used_when_explicitly_enabled(monkeypatch):
 
     hb.reset(cognitive=0.42)
     assert hb.get_energy() == 0.64
+
+
+# ── Physical track engages only on a RECOGNISED activity ──────────────────────
+# Regression: any non-empty string used to engage the track. physical then sat
+# at 1.0 with no rate to drain it and elo_battery was floored at
+# WEIGHT_PHYSICAL (0.4), making ENERGY_CRITICAL unreachable — silently killing
+# the dream trigger, which is the exact failure the weighting exists to avoid.
+
+@pytest.mark.parametrize("value", ["idle", "floating", "perched", "unknown", ""])
+def test_unrecognised_motion_does_not_engage_physical(value):
+    hb.reset()
+    hb.tick({"physical": value})
+    assert hb.get_physical() == 1.0
+    assert "physical_battery" not in hb.snapshot()
+
+
+@pytest.mark.parametrize("value", sorted(hb.PHYSICAL_ACTIVITIES))
+def test_every_recognised_activity_engages_physical(value):
+    hb.reset()
+    hb.tick({"physical": value})
+    assert "physical_battery" in hb.snapshot()
+    assert hb.snapshot()["activity_recent"] == value
+
+
+def test_critical_stays_reachable_when_unity_reports_idle():
+    """The floor bug: elo_battery could not drop below 0.4."""
+    hb.reset(cognitive=0.05)
+    hb.tick({"physical": "idle"})
+    assert hb.get_state() == "critical"
+    assert hb.get_energy() < hb.ENERGY_CRITICAL
+
+
+def test_activity_vocabulary_covers_rates_and_events():
+    assert hb.PHYSICAL_ACTIVITIES == (
+        frozenset(hb.PHYSICAL_TICK_RATES) | frozenset(hb.PHYSICAL_EVENT_COSTS)
+    )
+    for name in ("standing", "walking", "running", "sitting",
+                 "lying_down", "sleeping", "jumping", "parkour"):
+        assert name in hb.PHYSICAL_ACTIVITIES
