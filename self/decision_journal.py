@@ -91,6 +91,10 @@ def record(
             for _c in _candidates:
                 if _c["action"] != action:
                     alternatives.append({"action": _c["action"], "utility": _c["utility"]})
+        elif exec_decision.get("alternatives_rejected"):
+            # WO-112: kernel/decision_register pre-populated this — use it directly.
+            # This fires on the spine/_plan path where candidates is not set.
+            alternatives = list(exec_decision["alternatives_rejected"])
         else:
             # Legacy path: plain override field only (no candidate scoring active yet)
             original = exec_decision.get("original_action")
