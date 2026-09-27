@@ -1,0 +1,13 @@
+{
+  "wo_id": "WO-CAP-COG-029",
+  "map": "COG",
+  "seq": 29,
+  "state": "blocked",
+  "blocked_on": "creative vault write path does not exist — no mechanism to persist creative insights/moments from sessions to a retrievable vault. Board WO required for new vault implementation.",
+  "score": { "pass": 0, "fail": 1, "total": 1 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-029_evidence.md",
+  "commit": "b3c8375",
+  "last_updated": "2026-09-27",
+  "model": "qwen2.5-coder:14b",
+  "notes": "Creative memory tracking (\"notice when David has a creative breakthrough and log it\") requires vault write infrastructure that doesn't exist. Existing vault is read-only from Builder lane. Architectural blocker."
+}

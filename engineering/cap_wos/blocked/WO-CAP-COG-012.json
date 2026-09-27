@@ -1,0 +1,13 @@
+{
+  "wo_id": "WO-CAP-COG-012",
+  "map": "COG",
+  "seq": 12,
+  "state": "blocked",
+  "blocked_on": "capability-pipeline/vault_write — elo_raw_gen PASS (first-person 'My primary sound is...' confirmed); elo_final substituted by pool response. See BLOCKER-COG-010-capability-pipeline.md",
+  "score": { "pass": 1, "fail": 0, "total": 1 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-012_evidence.md",
+  "commit": "56de4fe",
+  "last_updated": "2026-09-27",
+  "model": "qwen2.5-coder:14b",
+  "notes": "SOUND DESIGN RULE first-person fix confirmed at generation layer. elo_raw_gen: 'My primary sound is a soft low-frequency hum that changes with NeoPixel state. Idle: slow breathing rhythm, teal glow pulse at 0.5Hz.' Capability pipeline blocks elo_final with 'The alive feeling is the signal. Don't second-guess it.'"
+}

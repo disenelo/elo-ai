@@ -1,0 +1,13 @@
+{
+  "wo_id": "WO-CAP-COG-011",
+  "map": "COG",
+  "seq": 11,
+  "state": "blocked",
+  "blocked_on": "model-resistance — parametric inflatable-shell engineering knowledge overrides injected DESIGN CONSTRAINTS section; NeoPixel diffusion and Plushies pipeline absent in all test responses. Requires WKG entity for eLo design constraints or user-turn injection mechanism.",
+  "score": { "pass": 0, "fail": 1, "total": 1 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-011_evidence.md",
+  "commit": "8ec2a58",
+  "last_updated": "2026-09-27",
+  "model": "qwen2.5-coder:14b",
+  "notes": "DESIGN CONSTRAINTS section injected correctly (code path verified). TPU mentioned but NeoPixel diffusion and Plushies pipeline still absent. Model ignores injected context, substitutes parametric knowledge. Same model-resistance mechanism as COG-010. Architectural blocker — anchor-layer fix exhausted."
+}

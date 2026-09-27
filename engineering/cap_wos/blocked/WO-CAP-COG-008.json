@@ -1,0 +1,13 @@
+{
+  "wo_id": "WO-CAP-COG-008",
+  "map": "COG",
+  "seq": 8,
+  "state": "blocked",
+  "blocked_on": "capability-pipeline/vault_write — understudy_shadow substitutes elo_final with short pool responses on engineering queries; generation layer PASS confirmed. See BLOCKER-COG-010-capability-pipeline.md",
+  "score": { "pass": 1, "fail": 0, "total": 1 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-008_evidence.md",
+  "commit": "d14ceb4",
+  "last_updated": "2026-09-27",
+  "model": "qwen2.5-coder:14b",
+  "notes": "Generation layer PASS: elo_raw_gen contains all three options (Bowden cable, gear reduction, motor upgrade) with tradeoffs and synthesis sentence in semicolon format. elo_final blocked by vault_write capability pipeline. Board decision required on capability pipeline."
+}

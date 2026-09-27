@@ -1,0 +1,13 @@
+{
+  "wo_id": "WO-CAP-COG-017",
+  "map": "COG",
+  "seq": 17,
+  "state": "blocked",
+  "blocked_on": "capability-pipeline/vault_write — 6/6 test cases PASS at elo_raw_gen layer; elo_final substituted by pool responses for some cases. See BLOCKER-COG-010-capability-pipeline.md",
+  "score": { "pass": 4, "fail": 2, "total": 6 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-017_evidence.md",
+  "commit": "56de4fe",
+  "last_updated": "2026-09-27",
+  "model": "qwen2.5-coder:14b",
+  "notes": "SOCIAL READING RULE extended with case 4 (team dismissal). All 6 cases PASS at generation layer: state mirror ✅, pattern leak ✅, wrong mode on success ✅, team dismissal acknowledge-first ✅. elo_final blocked by capability pipeline on team dismissal and other social queries."
+}

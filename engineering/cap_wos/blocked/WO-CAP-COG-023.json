@@ -1,0 +1,13 @@
+{
+  "wo_id": "WO-CAP-COG-023",
+  "map": "COG",
+  "seq": 23,
+  "state": "blocked",
+  "blocked_on": "session-event feed not implemented — SPG observations are LLM-generated generics, not real session data; no delta between sessions tracked. Board WO required for session-event logging infrastructure.",
+  "score": { "pass": 0, "fail": 1, "total": 1 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-023_evidence.md",
+  "commit": "b3c8375",
+  "last_updated": "2026-09-27",
+  "model": "qwen2.5-coder:14b",
+  "notes": "SPG (session presence generation) produces generic observations ('you've been working on eLo', 'you seem focused') with no grounding in actual session events. No session-event feed connected to server. Architectural blocker — anchor-layer fix cannot fabricate real session data."
+}

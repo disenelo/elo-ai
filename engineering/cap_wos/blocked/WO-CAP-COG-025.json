@@ -1,0 +1,13 @@
+{
+  "wo_id": "WO-CAP-COG-025",
+  "map": "COG",
+  "seq": 25,
+  "state": "blocked",
+  "blocked_on": "session-event feed not implemented — same root cause as COG-023; no real session delta available for specificity. Board WO required.",
+  "score": { "pass": 0, "fail": 1, "total": 1 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-025_evidence.md",
+  "commit": "b3c8375",
+  "last_updated": "2026-09-27",
+  "model": "qwen2.5-coder:14b",
+  "notes": "Same architectural blocker as COG-023. SPG specificity requires real session events (files changed, conversations had, decisions made). Without event feed, any specificity is hallucinated."
+}

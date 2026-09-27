@@ -1,0 +1,13 @@
+{
+  "wo_id": "WO-CAP-COG-010",
+  "map": "COG",
+  "seq": 10,
+  "state": "blocked",
+  "blocked_on": "capability-pipeline/vault_write — vault_write fires on visual identity queries and substitutes elo_final; root cause unknown (delta_cause: unknown in audit log). Board investigation WO required.",
+  "score": { "pass": 0, "fail": 1, "total": 1 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-010_evidence.md",
+  "commit": "b3c8375",
+  "last_updated": "2026-09-27",
+  "model": "qwen2.5-coder:14b",
+  "notes": "Primary blocker for COG-008/010/012/017. Capability pipeline guard filed to blender/agent_bus/builder/board_review/BLOCKER-COG-010-capability-pipeline.md. Board decision required on vault_write routing logic."
+}
