@@ -1,0 +1,15 @@
+[
+  {
+    "ts": "2026-09-27T06:42:30",
+    "intent": "explore_upper_surface",
+    "chosen": "wall_jump",
+    "result": "PASS"
+  },
+  {
+    "ts": "2026-09-27T06:42:30",
+    "type": "early_return",
+    "path_id": "server:1618",
+    "intent": "self_model_query",
+    "outcome": "self_ref_rationale"
+  }
+]
