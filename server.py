@@ -5860,10 +5860,13 @@ def _process_turn(raw: str) -> dict:
                         leg.get("expected_ms", 0) for leg in _rt_legs if isinstance(leg, dict)
                     )
                     _PENDING_MOVE["route_timeout_s"] = max(8.0, _rt_exp_ms / 1000.0 * 1.5) if _rt_exp_ms else 8.0
-                    # XI-AD-2: store brain's chosen win_id sequence for parity logging at ACK
+                    # XI-AD-2: store brain's chosen win_id sequence for parity logging at ACK.
+                    # Route legs use from_win_id (wrap) or goal_win_id (jump), not win_id.
                     _PENDING_MOVE["brain_route"] = [
-                        leg.get("win_id") for leg in _rt_legs
-                        if isinstance(leg, dict) and leg.get("win_id") is not None
+                        leg.get("win_id") or leg.get("from_win_id") or leg.get("goal_win_id")
+                        for leg in _rt_legs
+                        if isinstance(leg, dict)
+                        if (leg.get("win_id") or leg.get("from_win_id") or leg.get("goal_win_id")) is not None
                     ] or None
                 elif _mv_intent == "step_out":
                     # Exit intent — activate pending tracker; gate "stepping away" on exit_complete
