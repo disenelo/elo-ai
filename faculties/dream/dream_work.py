@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import random
 import re
+import zlib
 from dataclasses import dataclass, field as _field
 from typing import Sequence
 
@@ -399,6 +400,26 @@ def symbolic_transform(
 
 # ── 3c. Dream World ────────────────────────────────────────────────────────────
 
+def _symbol_for_theme(concepts: Sequence[str], emotion: str) -> str:
+    """
+    Pick the cycle's recurring symbol FROM THE DREAM'S CONTENT, not at random.
+
+    PHASE 10 promotes a symbol into eLo's lexicon once it has appeared in
+    three dreams. If the symbol were drawn randomly each time, recurrence
+    would be luck and the lexicon would never bootstrap — observed live:
+    symbols stalled at count 2 and `most_established()` stayed empty across
+    four consecutive dreams.
+
+    Keying off the dream's dominant concept means a recurring THEME produces
+    a recurring SYMBOL, which is what the WO means by "observed, not
+    hardcoded". crc32, not hash() — Python salts string hashes per process,
+    so hash() would break recurrence across restarts.
+    """
+    theme = (concepts[0] if concepts else emotion) or "presence"
+    index = zlib.crc32(theme.encode("utf-8")) % len(_RECURRING_SYMBOLS)
+    return _RECURRING_SYMBOLS[index]
+
+
 @dataclass
 class DreamWorld:
     """The rule set every scene in a cycle obeys. Produces coherence."""
@@ -454,7 +475,7 @@ def build_dream_world(
         location=location,
         physical_rule=rng.choice(_PHYSICAL_RULES),
         emotional_rule=rng.choice(emotional_rules),
-        recurring_symbol=recurring_symbol or rng.choice(_RECURRING_SYMBOLS),
+        recurring_symbol=recurring_symbol or _symbol_for_theme(concepts, primary),
         primary_emotion=primary,
         secondary_emotion=rng.choice(_SECONDARY_EMOTIONS),
         narrative_tension=rng.choice(_TENSIONS),

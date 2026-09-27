@@ -41,6 +41,9 @@ NREM_MIN_IDLE         = 600    # minimum idle for NREM (consolidation) phase
 REM_MIN_IDLE          = 1800   # minimum idle for REM (recombination) phase — 30 min
 
 _JOURNAL_PATH = Path(__file__).parent.parent.parent / "self" / "dream_journal.jsonl"
+# None = symbol_history uses its own default location. Tests point this at a
+# tmp path so a dream run never writes the real lexicon.
+_SYMBOL_HISTORY_PATH = None
 _last_dream_ts: float = 0.0
 _is_dreaming: bool = False
 
@@ -311,7 +314,15 @@ def _run_sleep_cycles(
     context = _dream_context(elo_self, recent_topics)
     records: list[dict] = []
     peak = 0.0
-    recurring: str | None = None
+
+    # PHASE 10: a symbol already established in eLo's lexicon carries into
+    # this dream. Empty until something has recurred >= 3 times — the lexicon
+    # builds over time, it is never seeded.
+    try:
+        from faculties.dream import symbol_history as _sh
+        recurring: str | None = _sh.most_established(_SYMBOL_HISTORY_PATH) or None
+    except Exception:
+        recurring = None
 
     for phase in _sc.SleepCycle(cycles=n_cycles):
         if publish_phases:
@@ -378,12 +389,18 @@ def run_dream(
     idle_seconds   — seconds of inactivity; controls which phases run
                      (< REM_MIN_IDLE → NREM only; >= REM_MIN_IDLE → NREM + REM)
                      and how many sleep cycles the schedule reaches
-    publish_phases — write dream_cycle / dream_phase / dream_intensity to
-                     blender_state.json on each phase transition. Defaults to
-                     False: blender_state.json is LIVE (the server writes it
-                     every cycle, DesktopBuddy reads it every frame), so a
-                     dream run from a test must not touch it. server.py passes
-                     True for the real path.
+    publish_phases — THIS IS A REAL DREAM, not a rehearsal. Governs every
+                     side effect on shared state:
+                       - dream_cycle / dream_phase / dream_intensity written
+                         to blender_state.json on each phase transition
+                       - symbols recorded into eLo's dream lexicon (PHASE 10)
+                     Defaults to False. Both stores are LIVE and both feed
+                     back into eLo: blender_state drives the avatar every
+                     frame, and the lexicon decides which symbol the NEXT
+                     dream carries. A test run wrote 28 fabricated
+                     appearances of one symbol into the real lexicon before
+                     this gate existed — enough to make a test artifact eLo's
+                     dominant lifelong motif. server.py passes True.
 
     Returns DreamResult with phase, memory_refs, personality_delta_proposed, image_ref.
     """
@@ -518,6 +535,30 @@ def run_dream(
             # Nothing here is ever a verified fact (WO: "What must NOT happen").
             "output_type":               "DREAM",
         }
+
+        # ── PHASE 10: record this dream's symbols in eLo's lexicon ───────────
+        # The meaning is OBSERVED from what this dream was actually about —
+        # its insight if it produced one, otherwise the Dream World's own
+        # narrative tension. Never inferred by symbol_history, which has no
+        # opinion about meaning. Best-effort: a lexicon write must not be able
+        # to break a dream.
+        try:
+            from faculties.dream import symbol_history as _sh
+            _symbols_seen = [
+                c["dream_world"]["recurring_symbol"] for c in cycle_records
+                if c.get("dream_world", {}).get("recurring_symbol")
+            ]
+            if _symbols_seen and publish_phases:
+                _observed = insight or (
+                    cycle_records[0]["dream_world"].get("narrative_tension", "")
+                )
+                _sh.record_dream(
+                    dream_id, _symbols_seen,
+                    meaning=_observed, path=_SYMBOL_HISTORY_PATH,
+                )
+                entry["symbol_lexicon"] = _sh.lexicon_summary(_SYMBOL_HISTORY_PATH)
+        except Exception:
+            pass
         try:
             _JOURNAL_PATH.parent.mkdir(parents=True, exist_ok=True)
             with open(_JOURNAL_PATH, "a", encoding="utf-8") as f:

@@ -73,3 +73,48 @@ def test_live_state_stays_valid_json():
     data = json.loads(LIVE_STATE.read_text(encoding="utf-8"))
     assert isinstance(data, dict)
     assert "state" in data and "motion" in data
+
+
+# ── The dream lexicon is live state too ───────────────────────────────────────
+# Found the hard way, again. run_dream() records symbols into
+# self/dream_symbols.json. Test runs wrote 28 fabricated appearances of one
+# symbol into eLo's real lexicon before this was gated — and the lexicon feeds
+# FORWARD: most_established() decides which symbol the next real dream carries,
+# so a test artifact was on its way to becoming his dominant lifelong motif.
+
+LIVE_LEXICON = ROOT / "self" / "dream_symbols.json"
+
+
+def test_a_dream_run_does_not_write_the_real_lexicon(tmp_path, monkeypatch):
+    import faculties.dream.dream_faculty as df
+
+    before = LIVE_LEXICON.read_bytes() if LIVE_LEXICON.exists() else None
+
+    monkeypatch.setattr(df, "_JOURNAL_PATH", tmp_path / "journal.jsonl")
+    monkeypatch.setattr(df, "_generate_dream_image", lambda symbols: None)
+    df._last_dream_ts = 0.0
+
+    class _Self:
+        inner_events = ["creative_spark"]
+        focal_thread = "the arm stops at the same angle"
+        session_read = "we got the robot arm moving"
+        mood = 0.5
+        curiosity = 0.6
+
+    df.run_dream(_Self(), ["robot arm"], lambda m: '{"narrative":"n","insight":"i"}',
+                 idle_seconds=9000)          # publish_phases defaults False
+
+    after = LIVE_LEXICON.read_bytes() if LIVE_LEXICON.exists() else None
+    assert after == before, "a default dream run wrote the real dream lexicon"
+
+
+def test_symbol_recording_is_gated_on_the_live_run_flag():
+    """One flag governs every shared-state side effect of a dream."""
+    import inspect
+    import faculties.dream.dream_faculty as df
+
+    src = inspect.getsource(df.run_dream)
+    assert "_symbols_seen and publish_phases" in src, (
+        "lexicon recording is not gated on the live-run flag"
+    )
+    assert inspect.signature(df.run_dream).parameters["publish_phases"].default is False
