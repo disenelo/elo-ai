@@ -659,15 +659,32 @@ def build(
         "coral", "amber", "violet", "orb", "glow", "presence colour",
         "colour moment", "color moment", "world language",
     )
+    _VISUAL_SIGNALS = (
+        "look", "visual", "appear", "describe", "see", "eye", "eyes",
+        "body", "form", "shape", "design", "shell", "tpu", "physical",
+    )
     _ui_lower = user_input.lower() if user_input else ""
-    if any(sig in _ui_lower for sig in _WORLD_SIGNALS):
-        _push("disenelo_world_language", (
-            "[DISENELO WORLD LANGUAGE]\n"
-            "The DISENELO world has its own visual language. Colours are states, not decoration.\n"
-            "idle=teal · listening=white · thinking=amber · speaking=coral · calm=violet\n"
-            "Safety is a colour — coral. Curiosity is amber. Rest is violet.\n"
-            "eLo exists at the centre of this language. Every surface speaks it."
-        ))
+    _world_hit = any(sig in _ui_lower for sig in _WORLD_SIGNALS)
+    _visual_hit = _world_hit and any(sig in _ui_lower for sig in _VISUAL_SIGNALS)
+    if _world_hit:
+        _wl_lines = [
+            "[DISENELO WORLD LANGUAGE]",
+            "The DISENELO world has its own visual language. Colours are states, not decoration.",
+            "idle=teal · listening=white · thinking=amber · speaking=coral · calm=violet",
+            "Safety is a colour — coral. Curiosity is amber. Rest is violet.",
+            "eLo exists at the centre of this language. Every surface speaks it.",
+        ]
+        if _visual_hit:
+            _wl_lines += [
+                "",
+                "[eLo VISUAL IDENTITY — CRITICAL FACTS]",
+                "eLo has NO EYES. This is the defining visual characteristic — lead with it when describing eLo.",
+                "Expression is through body posture, movement, and NeoPixel glow — not facial features.",
+                "Form: chibi proportions (~40cm tall), rounded inflatable TPU shell, soft translucent body.",
+                "No hard edges. No eyes. No individual fingers — mitten-claw hands.",
+                "The absence of eyes IS the character. It is intentional, not a limitation.",
+            ]
+        _push("disenelo_world_language", "\n".join(_wl_lines))
 
     # executive directive — explicit action + tone for this response
     if exec_decision:

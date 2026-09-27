@@ -43,6 +43,7 @@ class IdentityKernel:
     narrative_consistency:  str
     embodiment_independence: str
     name_nature:            str = "eLo is a character name — not an acronym. Do not invent an etymology."
+    physical_identity:      str = ""
 
     @classmethod
     def load(cls) -> "IdentityKernel":
@@ -84,13 +85,16 @@ class IdentityKernel:
         anchor LLM reasoning — do not inject all 10.
         FIX 2 (P0-C + P0-E): boundaries field now carries explicit identity-protection constraints.
         """
-        return (
-            "[IDENTITY ANCHOR]\n"
-            f"name: {self.name_nature}\n"
-            f"purpose: {self.purpose}\n"
-            f"philosophy: {self.core_philosophy}\n"
-            f"hard constraints: {self.communication_boundaries}"
-        )
+        parts = [
+            "[IDENTITY ANCHOR]",
+            f"name: {self.name_nature}",
+            f"purpose: {self.purpose}",
+            f"philosophy: {self.core_philosophy}",
+            f"hard constraints: {self.communication_boundaries}",
+        ]
+        if self.physical_identity:
+            parts.append(f"physical identity: {self.physical_identity}")
+        return "\n".join(parts)
 
 
 # Module-level singleton — loaded once at import, frozen for the session lifetime
