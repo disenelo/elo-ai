@@ -1,338 +1,557 @@
 """
-tools/dream_fx.py — CompositionDesigner FX pipeline for dream imagery.
+tools/dream_fx.py — CompositionDesigner FX pipeline for dream scenes.
 
-WO-DREAM-006 §5c.
+WO-DREAM-ENGINE-001 PHASE 5c.
 
-Implements Python equivalents of the four DISENELO CompositionDesigner effects,
-applied in order: blob_tracking → datamosh → vcr → summagator.
+Ported from the live compositor at
+`~/Desktop/Output/DISENELO-CompositionDesigner/transparent_video_compositor.html`
+— read from the source, not from the WO's summary. Where the two differ, the
+source wins and the difference is noted below.
 
-Scaling: all effects are modulated by a dream_intensity 0.0–1.0 value so
-early-cycle (gentle) dreams look different from peak-REM (surreal) dreams.
+Order, per the WO: blob tracking → datamosh → VCR → summagator.
 
-Requires: Pillow (PIL). No numpy dependency.
+**Divergence from the compositor, deliberate.** In the compositor,
+`fxDatamosh` and `fxSlitscan` are TEMPORAL effects: datamosh consumes the
+previous frame, slit-scan samples a ring buffer of recent frames. A dream
+scene is a single still — there is no previous frame and no history. The WO
+specifies the single-image equivalents (block displacement within one image;
+slit-scan as a per-row sine displacement), and that is what is implemented
+here. The temporal versions are meaningless on a still and are not faked.
+
+FX selection is driven by the emotion vector, never random (WO PHASE 5c).
+Strength scales with dream_intensity: early REM scenes get one subtle
+effect, late REM scenes get several at full strength.
+
+Deterministic: every effect takes a seeded RNG, so a dream's images can be
+reproduced from its journal entry.
+
+Requires PIL and numpy, both already present. No network, no paid API, no
+server.py.
 """
 from __future__ import annotations
 
 import math
-import os
 import random
-import struct
-from typing import Mapping, Sequence
+from dataclasses import dataclass, field as _field
+from typing import Sequence
 
-from PIL import Image, ImageChops, ImageDraw, ImageFilter
+import numpy as np
+from PIL import Image, ImageDraw, ImageFilter
+
+# ── Blob tracking (fxBlobTracking) ────────────────────────────────────────────
+# Source constants, verbatim from the compositor.
+BLOB_DETECT_W, BLOB_DETECT_H = 160, 90      # detection buffer, not full res
+BLOB_UNIFORM_RANGE = 30                     # solid-colour guard: skip if range < 30
+BLOB_AUTO_THRESH = 0.7                      # Nth percentile cutoff
+BLOB_MEAN_SPLIT = 128                       # mean < 128 -> detect brights
+LUMA = (0.299, 0.587, 0.114)
+
+# Teal / violet, per the WO.
+BLOB_TEAL = (64, 200, 196)
+BLOB_VIOLET = (150, 110, 220)
+
+# ── Datamosh (single-image form) ──────────────────────────────────────────────
+DATAMOSH_BLOCK = 16
+DATAMOSH_FRACTION = (0.30, 0.40)
+DATAMOSH_OFFSET = (8, 24)
+
+# ── VCR ───────────────────────────────────────────────────────────────────────
+SCANLINE_THICKNESS = 2                      # compositor: clamp(thickness, 1, 8)
+SCANLINE_GAP = 4                            # compositor: clamp(gap, 1, 16)
+SCANLINE_ALPHA = (0.08, 0.12)
+VHS_BANDS = (3, 6)
+VHS_BAND_OFFSET = (4, 12)
+CHROMA_SHIFT = 2                            # R +2px, B -2px
+GRAIN_SIGMA = (4.0, 8.0)
+
+# ── Summagator ────────────────────────────────────────────────────────────────
+SUMMAGATOR_SCALES = (1.00, 0.95, 0.90)
+SUMMAGATOR_OPACITIES = (1.00, 0.40, 0.20)
+SLITSCAN_AMPLITUDE = (8, 16)
+
+# ── Emotion → FX table (WO PHASE 5c) ──────────────────────────────────────────
+# Driven by the emotion vector, NOT random.
+EMOTION_FX: dict[str, dict[str, tuple[str, ...]]] = {
+    "anxiety_fear": {
+        "primary": ("glitch", "vcr", "night_vision"),
+        "secondary": ("chromatic_warp", "vignette"),
+    },
+    "joy_wonder": {
+        "primary": ("bloom", "hue_cycle", "kaleidoscope"),
+        "secondary": ("chromatic_warp", "recolor"),
+    },
+    "sadness_grief": {
+        "primary": ("posterize", "dither", "trails"),
+        "secondary": ("receipt_paper", "recolor"),
+    },
+    "achievement": {
+        "primary": ("bloom", "edge_detect"),
+        "secondary": ("slitscan_up",),
+    },
+    "nostalgia": {
+        "primary": ("oil_paint", "trails", "receipt_paper"),
+        "secondary": ("recolor",),
+    },
+    "curiosity": {
+        "primary": ("edge_detect", "frame_diff"),
+        "secondary": ("depth_overlay",),
+    },
+}
+
+# Above this, everything combines (WO: "Maximum surreal (intensity > 0.85)").
+MAX_SURREAL_INTENSITY = 0.85
+MAX_SURREAL_FX = ("invert", "kaleidoscope", "hue_cycle")
+
+# Same emotion → row mapping the prompt builder uses, so a scene's FX and its
+# lighting agree instead of describing two different dreams.
+_EMOTION_TO_ROW = {
+    "joy": "joy_wonder", "wonder": "joy_wonder",
+    "fear": "anxiety_fear", "anxiety": "anxiety_fear", "anger": "anxiety_fear",
+    "sadness": "sadness_grief", "grief": "sadness_grief",
+    "curiosity": "curiosity", "achievement": "achievement", "nostalgia": "nostalgia",
+}
+
+# The four the WO names as the base pipeline, always applied in this order.
+BASE_PIPELINE = ("blob_tracking", "datamosh", "vcr", "summagator")
+
+# "fxVignette + fxGrain — always present at low levels as base texture."
+# Applied last, at every intensity, so they sit over whatever else ran.
+BASE_TEXTURE = ("vignette", "grain")
+BASE_TEXTURE_STRENGTH = 0.18
 
 
-# ── Teal / violet palette for blob overlays ────────────────────────────────────
-_TEAL   = (0, 200, 180, 120)   # RGBA
-_VIOLET = (140, 60, 200, 100)
+def row_for_emotion(emotion: str) -> str:
+    return _EMOTION_TO_ROW.get((emotion or "").strip().lower(), "joy_wonder")
 
 
-# ── 1. Blob tracking (fxBlobTracking) ─────────────────────────────────────────
-
-def blob_tracking(
-    img: Image.Image,
-    intensity: float,
-    *,
-    dark_source: bool = True,
-    blob_boxes: bool = True,
-    blob_dots: bool = True,
-) -> Image.Image:
+def select_fx(emotion: str, intensity: float) -> list[str]:
     """
-    Adaptive luminance blob detection.
+    Which effects this scene gets. Emotion picks them; intensity decides how
+    many. Never random — the same emotion and intensity always select the
+    same set.
 
-    Dark source (default): detect bright regions.
-    Light source (inverted): detect dark regions.
-    70th-percentile adaptive threshold.
-    Solid-colour guard: skip if lumMax-lumMin < 30.
-    Draws detected regions as semi-transparent teal/violet shapes.
+    Early REM (low intensity): one primary effect.
+    Late REM (high intensity): primary + secondary.
+    Above MAX_SURREAL_INTENSITY: everything, plus invert/kaleidoscope/hue.
     """
-    img = img.convert("RGBA")
-    lum = img.convert("L")
+    value = max(0.0, min(1.0, float(intensity)))
+    row = EMOTION_FX[row_for_emotion(emotion)]
 
-    pixels = list(lum.getdata())
-    lum_min, lum_max = min(pixels), max(pixels)
+    chosen: list[str] = []
+    if value >= MAX_SURREAL_INTENSITY:
+        chosen = list(row["primary"]) + list(row["secondary"]) + list(MAX_SURREAL_FX)
+    elif value >= 0.5:
+        take = 1 + int(round((value - 0.5) * 4))     # 1..3 primaries
+        chosen = list(row["primary"][:take]) + list(row["secondary"][:1])
+    else:
+        # "Early REM scenes: subtle (single FX, low strength)" — one effect,
+        # not none. A low-intensity scene is still a dream.
+        chosen = list(row["primary"][:1])
 
-    if lum_max - lum_min < 30:
-        return img  # solid-colour guard
-
-    sorted_px = sorted(pixels)
-    threshold = sorted_px[int(0.70 * len(sorted_px))]
-
-    if not dark_source:
-        threshold = lum_max - (threshold - lum_min)
-
-    overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
-
-    w, h = img.size
-    block = max(8, int(16 * (1.0 - intensity * 0.5)))  # smaller blocks at high intensity
-    blob_color = _TEAL if intensity < 0.5 else _VIOLET
-
-    for y in range(0, h, block):
-        for x in range(0, w, block):
-            region_pixels = []
-            for py in range(y, min(y + block, h)):
-                for px in range(x, min(x + block, w)):
-                    region_pixels.append(lum.getpixel((px, py)))
-            if not region_pixels:
-                continue
-            avg = sum(region_pixels) / len(region_pixels)
-            detected = avg > threshold if dark_source else avg < threshold
-            if detected:
-                alpha_scale = min(1.0, intensity * 1.4)
-                color = blob_color[:3] + (int(blob_color[3] * alpha_scale),)
-                if blob_boxes:
-                    draw.rectangle(
-                        [x, y, min(x + block - 1, w - 1), min(y + block - 1, h - 1)],
-                        fill=color,
-                    )
-                if blob_dots:
-                    cx, cy = x + block // 2, y + block // 2
-                    r = max(2, block // 4)
-                    dot_color = blob_color[:3] + (min(255, color[3] + 40),)
-                    draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=dot_color)
-
-    return ImageChops.composite(overlay, img, overlay.split()[3])
-
-
-# ── 2. Datamosh (fxDatamosh) ─────────────────────────────────────────────────
-
-def datamosh(
-    img: Image.Image,
-    intensity: float,
-    *,
-    amount: float = 0.4,
-) -> Image.Image:
-    """
-    Pixel-block displacement. 30-40% of 16×16 blocks copied from a nearby
-    offset. Simulates P-frame compression corruption.
-    """
-    img = img.convert("RGBA")
-    out = img.copy()
-    w, h = img.size
-    rng = random.Random(int(intensity * 1000))
-
-    block = 16
-    effective_amount = max(0.1, min(0.7, amount * intensity))
-    max_offset = int(8 + 16 * intensity)  # 8-24px
-
-    for y in range(0, h, block):
-        for x in range(0, w, block):
-            if rng.random() > effective_amount:
-                continue
-            ox = rng.randint(-max_offset, max_offset)
-            oy = rng.randint(-max_offset // 2, max_offset // 2)
-            src_x = max(0, min(w - block, x + ox))
-            src_y = max(0, min(h - block, y + oy))
-            bw = min(block, w - x, w - src_x)
-            bh = min(block, h - y, h - src_y)
-            if bw <= 0 or bh <= 0:
-                continue
-            region = img.crop((src_x, src_y, src_x + bw, src_y + bh))
-            out.paste(region, (x, y))
-
+    out: list[str] = []
+    for name in chosen:
+        if name not in out:
+            out.append(name)
     return out
 
 
-# ── 3. VCR (fxVhsTrackError + fxScanlines + fxCrt) ──────────────────────────
+# ── Helpers ───────────────────────────────────────────────────────────────────
 
-def vcr(img: Image.Image, intensity: float) -> Image.Image:
+def _as_rgb(image: Image.Image) -> Image.Image:
+    return image if image.mode == "RGB" else image.convert("RGB")
+
+
+def _luma(arr: np.ndarray) -> np.ndarray:
+    return (arr[..., 0] * LUMA[0] + arr[..., 1] * LUMA[1] + arr[..., 2] * LUMA[2])
+
+
+def _lerp(a: float, b: float, t: float) -> float:
+    return a + (b - a) * max(0.0, min(1.0, t))
+
+
+# ── 1. Blob tracking ──────────────────────────────────────────────────────────
+
+def detect_blobs(image: Image.Image, auto_thresh: float = BLOB_AUTO_THRESH) -> list[dict]:
     """
-    Three sub-layers:
-    - Scanlines: dark horizontal lines every 3-4px, alpha 0.08-0.12
-    - Tracking error: 3-6 horizontal bands offset 4-12px
-    - Chromatic aberration: R +2px / B -2px horizontal
-    - Gaussian grain: σ=4-8
+    Adaptive-percentile blob detection, ported from the compositor.
+
+    1. Downsample to a 160x90 detection buffer.
+    2. Luminance histogram over that buffer.
+    3. Skip entirely if lumMax - lumMin < 30 — refuse to hallucinate blobs on
+       a flat surface. This is the compositor's own "solid-colour guard".
+    4. mean < 128 -> the source is dark, so detect the BRIGHT pixels;
+       otherwise detect the darks (inverted compare).
+    5. Cutoff = Nth percentile via a CDF walk over the histogram.
+    6. Connected-component labelling (union-find), boxes in detect space
+       scaled back to image space.
     """
-    img = img.convert("RGBA")
-    out = img.copy()
-    w, h = img.size
-    rng = random.Random(int(intensity * 999))
+    small = _as_rgb(image).resize((BLOB_DETECT_W, BLOB_DETECT_H), Image.BILINEAR)
+    arr = np.asarray(small, dtype=np.float32)
+    lum = _luma(arr).astype(np.int32)
 
-    # Chromatic aberration (shift R right, B left)
-    shift = max(1, int(2 + intensity * 4))
-    r, g, b, a = out.split()
-    r = r.transform(r.size, Image.AFFINE, (1, 0, -shift, 0, 1, 0))
-    b = b.transform(b.size, Image.AFFINE, (1, 0, shift, 0, 1, 0))
-    out = Image.merge("RGBA", (r, g, b, a))
+    lum_min, lum_max = int(lum.min()), int(lum.max())
+    if auto_thresh > 0 and (lum_max - lum_min) < BLOB_UNIFORM_RANGE:
+        return []                                   # solid-colour guard
 
-    overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    if auto_thresh <= 0:
+        cutoff = 0.5 * 255                          # legacy fixed path
+        detect_bright = True
+    else:
+        detect_bright = float(lum.mean()) < BLOB_MEAN_SPLIT
+        clamp_p = max(0.05, min(0.95, float(auto_thresh)))
+        hist = np.bincount(lum.ravel(), minlength=256)
+        target = clamp_p * lum.size
+        cutoff = int(np.searchsorted(np.cumsum(hist), target))
+
+    mask = (lum >= cutoff) if detect_bright else (lum <= cutoff)
+    if not mask.any():
+        return []
+
+    # Connected components, 4-connectivity, iterative flood fill.
+    labels = np.zeros_like(mask, dtype=np.int32)
+    blobs: list[dict] = []
+    current = 0
+    h, w = mask.shape
+    sx, sy = image.width / w, image.height / h
+
+    for y0 in range(h):
+        for x0 in range(w):
+            if not mask[y0, x0] or labels[y0, x0]:
+                continue
+            current += 1
+            stack = [(y0, x0)]
+            labels[y0, x0] = current
+            min_x = max_x = x0
+            min_y = max_y = y0
+            area = 0
+            while stack:
+                cy, cx = stack.pop()
+                area += 1
+                min_x, max_x = min(min_x, cx), max(max_x, cx)
+                min_y, max_y = min(min_y, cy), max(max_y, cy)
+                for ny, nx in ((cy - 1, cx), (cy + 1, cx), (cy, cx - 1), (cy, cx + 1)):
+                    if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not labels[ny, nx]:
+                        labels[ny, nx] = current
+                        stack.append((ny, nx))
+            if area < 4:
+                continue                            # noise
+            blobs.append({
+                "area": area,
+                "box": (int(min_x * sx), int(min_y * sy),
+                        int((max_x + 1) * sx), int((max_y + 1) * sy)),
+                "centroid": (int((min_x + max_x) / 2 * sx), int((min_y + max_y) / 2 * sy)),
+            })
+
+    blobs.sort(key=lambda b: b["area"], reverse=True)
+    return blobs
+
+
+def fx_blob_tracking(
+    image: Image.Image,
+    strength: float,
+    rng: random.Random,
+    *,
+    boxes: bool = True,
+    dots: bool = True,
+) -> Image.Image:
+    """Draw detected regions as semi-transparent teal/violet shapes."""
+    blobs = detect_blobs(image)
+    if not blobs:
+        return image
+
+    base = _as_rgb(image).convert("RGBA")
+    overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
+    alpha = int(_lerp(40, 140, strength))
 
-    # Scanlines
-    scanline_step = rng.randint(3, 4)
-    scanline_alpha = int(255 * rng.uniform(0.08, 0.12) * intensity)
-    for y in range(0, h, scanline_step):
-        draw.line([(0, y), (w - 1, y)], fill=(0, 0, 0, scanline_alpha))
+    for i, blob in enumerate(blobs[:12]):
+        colour = BLOB_TEAL if i % 2 == 0 else BLOB_VIOLET
+        if boxes:
+            draw.rectangle(blob["box"], outline=colour + (alpha,), width=2)
+        if dots:
+            cx, cy = blob["centroid"]
+            r = max(2, int(3 + strength * 4))
+            draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=colour + (alpha,))
 
-    # Tracking error bands
-    n_bands = rng.randint(2, max(2, int(6 * intensity)))
+    return Image.alpha_composite(base, overlay).convert("RGB")
+
+
+# ── 2. Datamosh (single-image block displacement) ─────────────────────────────
+
+def fx_datamosh(image: Image.Image, strength: float, rng: random.Random) -> Image.Image:
+    """
+    Pixel-block displacement — simulates P-frame compression corruption.
+
+    30-40% of 16x16 blocks copied from a nearby offset of 8-24px. The
+    compositor's version consumes the previous video frame; a still has none,
+    so blocks are sourced from elsewhere in the same image.
+    """
+    src = _as_rgb(image)
+    arr = np.asarray(src).copy()
+    h, w = arr.shape[:2]
+    fraction = _lerp(DATAMOSH_FRACTION[0], DATAMOSH_FRACTION[1], strength)
+
+    for by in range(0, h - DATAMOSH_BLOCK, DATAMOSH_BLOCK):
+        for bx in range(0, w - DATAMOSH_BLOCK, DATAMOSH_BLOCK):
+            if rng.random() > fraction:
+                continue
+            dx = rng.randint(*DATAMOSH_OFFSET) * rng.choice((-1, 1))
+            dy = rng.randint(*DATAMOSH_OFFSET) * rng.choice((-1, 1))
+            sy, sx = by + dy, bx + dx
+            if not (0 <= sy < h - DATAMOSH_BLOCK and 0 <= sx < w - DATAMOSH_BLOCK):
+                continue
+            arr[by:by + DATAMOSH_BLOCK, bx:bx + DATAMOSH_BLOCK] = \
+                arr[sy:sy + DATAMOSH_BLOCK, sx:sx + DATAMOSH_BLOCK]
+
+    return Image.fromarray(arr)
+
+
+# ── 3. VCR ────────────────────────────────────────────────────────────────────
+
+def fx_vcr(image: Image.Image, strength: float, rng: random.Random) -> Image.Image:
+    """
+    Scanlines + tracking error + chromatic aberration + grain.
+
+    Tracking-error band geometry follows the compositor: a band whose height
+    scales with the effect amount, with per-row horizontal jitter inside it.
+    """
+    src = _as_rgb(image)
+    arr = np.asarray(src).astype(np.float32)
+    h, w = arr.shape[:2]
+
+    # -- tracking error: horizontal bands, each row inside jittered --
+    n_bands = rng.randint(*VHS_BANDS)
     for _ in range(n_bands):
-        band_y = rng.randint(0, h - 1)
-        band_h = rng.randint(1, max(2, int(8 * intensity)))
-        band_off = rng.randint(-12, 12)
-        band_region = out.crop((0, band_y, w, min(h, band_y + band_h)))
-        shifted = band_region.transform(
-            band_region.size,
-            Image.AFFINE,
-            (1, 0, -band_off, 0, 1, 0),
-        )
-        out.paste(shifted, (0, band_y))
+        band_h = max(2, int((40 + strength * 60) / 20 * rng.uniform(1.0, 2.0)))
+        y0 = rng.randint(0, max(0, h - band_h - 1))
+        for y in range(y0, min(h, y0 + band_h)):
+            dx = int(rng.uniform(-1, 1) * _lerp(*VHS_BAND_OFFSET, strength))
+            if dx:
+                arr[y] = np.roll(arr[y], dx, axis=0)
+        # desaturate inside the band, as the compositor does
+        band = arr[y0:min(h, y0 + band_h)]
+        grey = _luma(band)[..., None]
+        arr[y0:min(h, y0 + band_h)] = band * 0.55 + grey * 0.45
 
-    out = ImageChops.composite(overlay, out, overlay.split()[3])
+    # -- chromatic aberration: R +2px, B -2px, horizontal --
+    shift = max(1, int(CHROMA_SHIFT * _lerp(0.5, 1.5, strength)))
+    arr[..., 0] = np.roll(arr[..., 0], shift, axis=1)
+    arr[..., 2] = np.roll(arr[..., 2], -shift, axis=1)
 
-    # Gaussian grain (simulated via ImageFilter)
-    if intensity > 0.2:
-        grain_strength = int(4 + intensity * 4)
-        grain_strength = min(grain_strength, 8)
-        grain = Image.new("L", img.size, 128)
-        for _ in range(grain_strength):
-            grain = grain.filter(ImageFilter.GaussianBlur(0.5))
-        # Add random noise to grain layer
-        grain_px = list(grain.getdata())
-        noisy = [max(0, min(255, v + rng.randint(-20, 20))) for v in grain_px]
-        grain.putdata(noisy)
-        grain_rgba = grain.convert("RGBA")
-        strength = int(30 * intensity)
-        faded = Image.new("RGBA", img.size, (0, 0, 0, 0))
-        faded.paste(grain_rgba, (0, 0), grain.point(lambda v: strength))
-        out = ImageChops.screen(out, faded)
+    # -- scanlines: dark horizontal lines every thickness+gap px --
+    step = SCANLINE_THICKNESS + SCANLINE_GAP
+    alpha = _lerp(*SCANLINE_ALPHA, strength)
+    for y in range(0, h, step):
+        arr[y:y + SCANLINE_THICKNESS] *= (1.0 - alpha)
 
-    return out
+    # -- gaussian grain --
+    sigma = _lerp(*GRAIN_SIGMA, strength)
+    arr += np.asarray(
+        [[rng.gauss(0, sigma) for _ in range(w)] for _ in range(h)],
+        dtype=np.float32,
+    )[..., None]
+
+    return Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
 
 
-# ── 4. Summagator (fxSlitscan + fxTrails) ────────────────────────────────────
+# ── 4. Summagator ─────────────────────────────────────────────────────────────
 
-def summagator(img: Image.Image, intensity: float) -> Image.Image:
+def fx_summagator(
+    image: Image.Image,
+    strength: float,
+    rng: random.Random,
+    *,
+    upward: bool = False,
+) -> Image.Image:
     """
-    3 copies at scales 1.0/0.95/0.90, opacities 1.0/0.4/0.2.
-    Slit-scan vertical displacement: sin(row/H×π) × 8-16px per row.
-    Screen or soft-light composite.
+    Three scaled copies screen-composited, with a per-row slit-scan
+    displacement of sin(row/H * pi) * 8-16px.
+
+    The compositor's slit-scan samples a ring buffer of past frames. A still
+    has no history, so the WO's single-image form is used: a sine
+    displacement across the rows.
     """
-    img = img.convert("RGBA")
-    w, h = img.size
+    src = _as_rgb(image)
+    w, h = src.size
+    amplitude = _lerp(*SLITSCAN_AMPLITUDE, strength)
+    if upward:
+        amplitude = -amplitude
 
-    max_disp = int(8 + 8 * intensity)  # 8-16px
+    base = np.zeros((h, w, 3), dtype=np.float32)
 
-    # Slit-scan displacement on the base image
-    slitted = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    for row in range(h):
-        disp = int(math.sin(row / max(1, h) * math.pi) * max_disp * intensity)
-        src_x = max(0, min(w - 1, abs(disp)))
-        if disp >= 0:
-            row_strip = img.crop((0, row, w - disp, row + 1))
-            slitted.paste(row_strip, (disp, row))
+    for scale, opacity in zip(SUMMAGATOR_SCALES, SUMMAGATOR_OPACITIES):
+        if scale != 1.0:
+            sw, sh = max(1, int(w * scale)), max(1, int(h * scale))
+            layer = src.resize((sw, sh), Image.BILINEAR)
+            canvas = Image.new("RGB", (w, h), (0, 0, 0))
+            canvas.paste(layer, ((w - sw) // 2, (h - sh) // 2))
         else:
-            row_strip = img.crop((src_x, row, w, row + 1))
-            slitted.paste(row_strip, (0, row))
+            canvas = src
 
-    # Three copies at different scales and opacities
-    layers = [
-        (slitted,                              1.0, 1.0),
-        (slitted.resize((int(w * 0.95), int(h * 0.95)), Image.LANCZOS), 0.4, 0.95),
-        (slitted.resize((int(w * 0.90), int(h * 0.90)), Image.LANCZOS), 0.2, 0.90),
-    ]
+        arr = np.asarray(canvas).astype(np.float32)
+        for y in range(h):
+            dx = int(math.sin(y / max(1, h) * math.pi) * amplitude)
+            if dx:
+                arr[y] = np.roll(arr[y], dx, axis=0)
 
-    out = img.copy()
-    for layer_img, opacity, scale in layers:
-        if scale < 1.0:
-            # Centre the scaled layer
-            lw, lh = layer_img.size
-            padded = Image.new("RGBA", img.size, (0, 0, 0, 0))
-            ox, oy = (w - lw) // 2, (h - lh) // 2
-            padded.paste(layer_img, (ox, oy))
-            layer_img = padded
+        # screen composite: 1 - (1-a)(1-b)
+        contribution = arr * opacity
+        base = 255.0 - (255.0 - base) * (255.0 - contribution) / 255.0
 
-        # Apply opacity
-        r2, g2, b2, a2 = layer_img.split()
-        a2 = a2.point(lambda v: int(v * opacity))
-        layer_img = Image.merge("RGBA", (r2, g2, b2, a2))
-
-        if intensity > 0.5:
-            out = ImageChops.screen(out, layer_img)
-        else:
-            out = ImageChops.soft_light(out, layer_img)
-
-    return out
+    return Image.fromarray(np.clip(base, 0, 255).astype(np.uint8))
 
 
-# ── 5. Selective FX (by emotion) ─────────────────────────────────────────────
+# ── Additional FX named by the WO ─────────────────────────────────────────────
 
-def _apply_glitch(img: Image.Image, intensity: float) -> Image.Image:
-    """Horizontal slice displacement — anxiety/fear dominant."""
-    w, h = img.size
-    rng = random.Random(int(intensity * 7777))
-    out = img.copy()
-    n_slices = int(4 + intensity * 8)
-    for _ in range(n_slices):
-        sy = rng.randint(0, h - 2)
-        sh = rng.randint(1, max(1, int(h * 0.04 * intensity)))
-        off = rng.randint(-int(w * 0.15 * intensity), int(w * 0.15 * intensity))
-        if off == 0:
-            continue
-        strip = img.crop((0, sy, w, min(h, sy + sh)))
-        shifted = strip.transform(
-            strip.size, Image.AFFINE, (1, 0, -off, 0, 1, 0)
-        )
-        out.paste(shifted, (0, sy))
-    return out
+def fx_invert(image: Image.Image, strength: float, rng: random.Random) -> Image.Image:
+    arr = np.asarray(_as_rgb(image)).astype(np.float32)
+    return Image.fromarray(
+        np.clip(arr * (1 - strength) + (255 - arr) * strength, 0, 255).astype(np.uint8))
 
 
-def _apply_bloom(img: Image.Image, intensity: float) -> Image.Image:
-    """Glow bloom — joy/wonder/achievement."""
-    blurred = img.filter(ImageFilter.GaussianBlur(radius=int(3 + intensity * 5)))
-    return ImageChops.screen(img, blurred)
+def fx_posterize(image: Image.Image, strength: float, rng: random.Random) -> Image.Image:
+    levels = max(2, int(_lerp(12, 3, strength)))
+    arr = np.asarray(_as_rgb(image)).astype(np.float32)
+    step = 255.0 / (levels - 1)
+    return Image.fromarray(np.clip(np.round(arr / step) * step, 0, 255).astype(np.uint8))
 
 
-def _apply_edge_detect(img: Image.Image, intensity: float) -> Image.Image:
-    """Edge outlines — analytical/curiosity dominant."""
-    edges = img.filter(ImageFilter.FIND_EDGES)
-    alpha = int(100 * intensity)
-    r, g, b, a = edges.split()
-    a = a.point(lambda v: min(v, alpha))
-    edges = Image.merge("RGBA", (r, g, b, a))
-    return ImageChops.add(img, edges)
+def fx_bloom(image: Image.Image, strength: float, rng: random.Random) -> Image.Image:
+    src = _as_rgb(image)
+    blurred = src.filter(ImageFilter.GaussianBlur(radius=_lerp(3, 14, strength)))
+    a = np.asarray(src).astype(np.float32)
+    b = np.asarray(blurred).astype(np.float32)
+    return Image.fromarray(
+        np.clip(255.0 - (255.0 - a) * (255.0 - b * strength) / 255.0, 0, 255).astype(np.uint8))
 
 
-# ── 6. Main apply_fx ─────────────────────────────────────────────────────────
+def fx_edge_detect(image: Image.Image, strength: float, rng: random.Random) -> Image.Image:
+    src = _as_rgb(image)
+    edges = src.filter(ImageFilter.FIND_EDGES)
+    a = np.asarray(src).astype(np.float32)
+    e = np.asarray(edges).astype(np.float32)
+    return Image.fromarray(np.clip(a * (1 - strength) + e * strength, 0, 255).astype(np.uint8))
+
+
+def fx_vignette(image: Image.Image, strength: float, rng: random.Random) -> Image.Image:
+    src = _as_rgb(image)
+    w, h = src.size
+    yy, xx = np.mgrid[0:h, 0:w]
+    cx, cy = w / 2, h / 2
+    dist = np.sqrt(((xx - cx) / cx) ** 2 + ((yy - cy) / cy) ** 2)
+    mask = np.clip(1.0 - (dist - 0.5) * _lerp(0.4, 1.2, strength), 0.0, 1.0)[..., None]
+    return Image.fromarray(
+        np.clip(np.asarray(src).astype(np.float32) * mask, 0, 255).astype(np.uint8))
+
+
+def fx_grain(image: Image.Image, strength: float, rng: random.Random) -> Image.Image:
+    arr = np.asarray(_as_rgb(image)).astype(np.float32)
+    h, w = arr.shape[:2]
+    sigma = _lerp(*GRAIN_SIGMA, strength)
+    noise = np.asarray([[rng.gauss(0, sigma) for _ in range(w)] for _ in range(h)],
+                       dtype=np.float32)[..., None]
+    return Image.fromarray(np.clip(arr + noise, 0, 255).astype(np.uint8))
+
+
+# Effects named in the WO's table that map onto an implementation here.
+# Anything unmapped is skipped rather than silently substituted.
+_FX_IMPL = {
+    "blob_tracking": fx_blob_tracking,
+    "datamosh": fx_datamosh,
+    "vcr": fx_vcr,
+    "summagator": fx_summagator,
+    "invert": fx_invert,
+    "posterize": fx_posterize,
+    "bloom": fx_bloom,
+    "edge_detect": fx_edge_detect,
+    "vignette": fx_vignette,
+    "grain": fx_grain,
+    # WO table aliases onto the base pipeline
+    "glitch": fx_datamosh,
+    "trails": fx_summagator,
+    "slitscan_up": lambda img, s, r: fx_summagator(img, s, r, upward=True),
+}
+
+UNIMPLEMENTED_FX = (
+    "night_vision", "chromatic_warp", "hue_cycle", "kaleidoscope", "recolor",
+    "dither", "receipt_paper", "oil_paint", "frame_diff", "depth_overlay",
+)
+
+
+@dataclass
+class FXResult:
+    image: Image.Image
+    applied: list[str] = _field(default_factory=list)
+    skipped: list[str] = _field(default_factory=list)
+    strength: float = 0.0
+
 
 def apply_fx(
-    img: Image.Image,
+    image: Image.Image,
+    *,
+    emotion: str,
     intensity: float,
-    emotion_vector: Mapping[str, float] | None = None,
-) -> Image.Image:
+    seed: int | None = None,
+    include_base: bool = True,
+) -> FXResult:
     """
-    Apply all four CompositionDesigner effects in canonical order:
-    blob_tracking → datamosh → vcr → summagator.
+    Apply the FX pipeline for one dream scene.
 
-    Then apply selective FX based on emotion vector.
-    Intensity 0.0-1.0 scales all effects.
+    emotion   — dominant emotion; selects the FX row.
+    intensity — the scene's dream intensity; scales strength AND how many
+                effects are applied.
+    seed      — reproducibility. Same seed, same image out.
+
+    The four base effects run first, in the WO's order, then the
+    emotion-selected ones. Effects named in the WO but not implemented here
+    are reported in `skipped`, never silently substituted.
     """
-    intensity = max(0.0, min(1.0, float(intensity)))
-    ev = dict(emotion_vector or {})
+    rng = random.Random(seed)
+    strength = max(0.0, min(1.0, float(intensity)))
+    out = _as_rgb(image)
 
-    img = img.convert("RGBA")
+    selected = select_fx(emotion, strength)
+    order: list[str] = []
+    # The four named base effects only run once the scene has left waking
+    # residue; below that a single subtle effect is the whole treatment.
+    if include_base and strength >= 0.25:
+        order.extend(BASE_PIPELINE)
+    for name in selected:
+        if name not in order:
+            order.append(name)
+    # "fxVignette + fxGrain — always present at low levels as base texture."
+    # Always, at every intensity, applied last so they sit over everything.
+    for name in BASE_TEXTURE:
+        if name not in order:
+            order.append(name)
 
-    if intensity > 0.05:
-        img = blob_tracking(img, intensity, dark_source=True, blob_boxes=True, blob_dots=True)
-    if intensity > 0.10:
-        img = datamosh(img, intensity, amount=0.3 + 0.2 * intensity)
-    if intensity > 0.10:
-        img = vcr(img, intensity)
-    if intensity > 0.15:
-        img = summagator(img, intensity)
+    applied: list[str] = []
+    skipped: list[str] = []
+    for name in order:
+        impl = _FX_IMPL.get(name)
+        if impl is None:
+            skipped.append(name)
+            continue
+        try:
+            level = BASE_TEXTURE_STRENGTH if name in BASE_TEXTURE else strength
+            out = impl(out, level, rng)
+            applied.append(name)
+        except Exception:
+            skipped.append(name)
 
-    # Selective FX
-    anxiety = float(ev.get("anxiety", 0.0) or ev.get("fear", 0.0))
-    joy = float(ev.get("joy", 0.0))
-    wonder = float(ev.get("wonder", 0.0))
-    curiosity = float(ev.get("curiosity", 0.0))
+    return FXResult(image=out, applied=applied, skipped=skipped, strength=strength)
 
-    if anxiety > 0.5 and intensity > 0.3:
-        img = _apply_glitch(img, intensity * anxiety)
-    if (joy + wonder) > 0.6 and intensity > 0.2:
-        img = _apply_bloom(img, intensity * (joy + wonder) / 2.0)
-    if curiosity > 0.5 and intensity > 0.2:
-        img = _apply_edge_detect(img, intensity * curiosity * 0.5)
 
-    return img
+def apply_to_file(
+    path: str,
+    out_path: str,
+    *,
+    emotion: str,
+    intensity: float,
+    seed: int | None = None,
+) -> FXResult:
+    """Apply the pipeline to a file on disk and save the result."""
+    with Image.open(path) as img:
+        result = apply_fx(img, emotion=emotion, intensity=intensity, seed=seed)
+    result.image.save(out_path)
+    return result
