@@ -66,10 +66,33 @@ except Exception:                                    # pragma: no cover
 # may only ever be one of these two — never VERIFIED, never HISTORICAL.
 EPISTEMIC_HYPOTHESIS = "HYPOTHESIS"
 EPISTEMIC_SYMBOLIC = "SYMBOLIC"
+# Only reachable at STAGE_KNOWLEDGE, and only with a named corroborating
+# source. SOURCE_ATTRIBUTED != VERIFIED — wkg_faculty enforces that at its
+# own boundary, and a dream may never reach VERIFIED by any path.
+EPISTEMIC_SOURCE_ATTRIBUTED = "SOURCE_ATTRIBUTED"
 
 FORBIDDEN_EPISTEMIC = frozenset({
-    "VERIFIED", "HISTORICAL", "SOURCE_ATTRIBUTED", "CANONICAL",
+    "VERIFIED", "HISTORICAL", "CANONICAL",
 })
+
+# ── The promotion ladder — WO-CAP-EMB-031 §31, verbatim ───────────────────────
+#
+#   DREAM → IDEA → EVALUATION → TEST → KNOWLEDGE
+#   Not:  DREAM → TRUTH
+#
+# Each stage is a separate gate. Significance clears EVALUATION only. Nothing
+# reaches KNOWLEDGE without TEST, and TEST requires corroboration from outside
+# the dream — a dream cannot test itself. There is deliberately no path that
+# takes a dream to KNOWLEDGE in one step.
+STAGE_DREAM = "DREAM"
+STAGE_IDEA = "IDEA"
+STAGE_EVALUATION = "EVALUATION"
+STAGE_TEST = "TEST"
+STAGE_KNOWLEDGE = "KNOWLEDGE"
+
+PROMOTION_LADDER: tuple[str, ...] = (
+    STAGE_DREAM, STAGE_IDEA, STAGE_EVALUATION, STAGE_TEST, STAGE_KNOWLEDGE,
+)
 
 
 def _origin(name: str) -> str:
@@ -139,6 +162,12 @@ class CandidateInsight:
     memory_origin: str = ""
     retained: bool = False
     source_dream: str = ""
+    stage: str = STAGE_IDEA
+    corroboration: list[str] = _field(default_factory=list)
+
+    @property
+    def is_knowledge(self) -> bool:
+        return self.stage == STAGE_KNOWLEDGE
 
     def as_dict(self) -> dict:
         return {
@@ -148,7 +177,37 @@ class CandidateInsight:
             "memory_origin": self.memory_origin,
             "retained": self.retained,
             "source_dream": self.source_dream,
+            "stage": self.stage,
+            "corroboration": list(self.corroboration),
         }
+
+
+def test_insight(insight: CandidateInsight, corroborating_source: str) -> CandidateInsight:
+    """
+    The TEST stage — WO-CAP-EMB-031 §31.
+
+    An idea that survived EVALUATION is still only a hypothesis. It becomes
+    KNOWLEDGE only when something OUTSIDE the dream corroborates it, and the
+    corroborating source must be named. A dream cannot test itself.
+
+    Mutates and returns the insight. Refuses to advance when:
+      - the insight has not cleared EVALUATION (significance gate), or
+      - no corroborating source is named.
+
+    Even at KNOWLEDGE the class is SOURCE_ATTRIBUTED, never VERIFIED. The
+    source says "DREAM → IDEA → EVALUATION → TEST → KNOWLEDGE", not
+    "DREAM → TRUTH".
+    """
+    source = str(corroborating_source or "").strip()
+    if not source:
+        return insight                      # untested — stays where it is
+    if insight.stage not in (STAGE_EVALUATION, STAGE_TEST):
+        return insight                      # cannot skip the significance gate
+
+    insight.corroboration.append(source)
+    insight.stage = STAGE_KNOWLEDGE
+    insight.epistemic_class = EPISTEMIC_SOURCE_ATTRIBUTED
+    return insight
 
 
 @dataclass
@@ -238,6 +297,10 @@ def review(
             memory_origin=origin,
             retained=retained,
             source_dream=dream_id,
+            # Clearing significance advances IDEA -> EVALUATION. It does NOT
+            # reach TEST, and cannot reach KNOWLEDGE — that needs
+            # corroboration from outside the dream. See test_insight().
+            stage=STAGE_EVALUATION if retained else STAGE_IDEA,
         ))
 
     # New associations — candidate WKG additions. SYMBOLIC, never VERIFIED,

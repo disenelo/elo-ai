@@ -201,3 +201,70 @@ def test_review_writes_nothing(tmp_path, monkeypatch):
     monkeypatch.setattr(sw, "patch", lambda *a, **k: calls.append("state"))
     dr.review(_entry(), assessor=lambda e: 0.99)
     assert calls == []
+
+
+# ── WO-CAP-EMB-031 §31 — the promotion ladder ─────────────────────────────────
+#   DREAM -> IDEA -> EVALUATION -> TEST -> KNOWLEDGE
+#   Not:  DREAM -> TRUTH
+
+def test_ladder_matches_the_verbatim_source_order():
+    assert dr.PROMOTION_LADDER == (
+        "DREAM", "IDEA", "EVALUATION", "TEST", "KNOWLEDGE")
+
+
+def test_a_dream_insight_starts_as_an_idea_not_a_truth():
+    insight = dr.review(_entry(), assessor=lambda e: 0.01).candidate_insights[0]
+    assert insight.stage == dr.STAGE_IDEA
+    assert insight.epistemic_class == dr.EPISTEMIC_HYPOTHESIS
+    assert insight.is_knowledge is False
+
+
+def test_significance_clears_evaluation_only():
+    """The gate is EVALUATION. It is not TEST and it is not KNOWLEDGE."""
+    insight = dr.review(_entry(), assessor=lambda e: 0.99).candidate_insights[0]
+    assert insight.stage == dr.STAGE_EVALUATION
+    assert insight.is_knowledge is False
+    assert insight.epistemic_class == dr.EPISTEMIC_HYPOTHESIS
+
+
+def test_knowledge_requires_corroboration_from_outside_the_dream():
+    insight = dr.review(_entry(), assessor=lambda e: 0.99).candidate_insights[0]
+    dr.test_insight(insight, "")
+    assert insight.stage == dr.STAGE_EVALUATION, "advanced with no source named"
+
+    dr.test_insight(insight, "observed on the bench 2026-09-27")
+    assert insight.stage == dr.STAGE_KNOWLEDGE
+    assert insight.corroboration == ["observed on the bench 2026-09-27"]
+
+
+def test_evaluation_cannot_be_skipped():
+    """An unevaluated idea cannot jump straight to KNOWLEDGE."""
+    insight = dr.review(_entry(), assessor=lambda e: 0.01).candidate_insights[0]
+    dr.test_insight(insight, "a real observation")
+    assert insight.stage == dr.STAGE_IDEA
+    assert insight.is_knowledge is False
+
+
+def test_dream_to_truth_is_unreachable_by_any_path():
+    """The source forbids DREAM -> TRUTH. VERIFIED must be unreachable."""
+    insight = dr.review(_entry(), assessor=lambda e: 1.0).candidate_insights[0]
+    for _ in range(5):
+        dr.test_insight(insight, "repeated corroboration")
+    assert insight.epistemic_class == dr.EPISTEMIC_SOURCE_ATTRIBUTED
+    assert insight.epistemic_class != "VERIFIED"
+    assert "VERIFIED" in dr.FORBIDDEN_EPISTEMIC
+
+
+def test_source_attributed_is_not_verified():
+    """wkg_faculty enforces the same distinction at its own boundary."""
+    assert dr.EPISTEMIC_SOURCE_ATTRIBUTED != "VERIFIED"
+    from runtime.wkg_faculty import _EPISTEMIC_CLASSES
+    assert dr.EPISTEMIC_SOURCE_ATTRIBUTED in _EPISTEMIC_CLASSES
+    assert dr.EPISTEMIC_HYPOTHESIS in _EPISTEMIC_CLASSES
+    assert dr.EPISTEMIC_SYMBOLIC in _EPISTEMIC_CLASSES
+
+
+def test_stage_is_carried_into_the_cognitive_channel():
+    channel = dr.review(_entry(), assessor=lambda e: 0.99).cognitive_channel()
+    assert channel["candidate_insights"][0]["stage"] == dr.STAGE_EVALUATION
+    assert channel["candidate_insights"][0]["corroboration"] == []
