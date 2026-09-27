@@ -63,3 +63,30 @@ Read significance weights from source: ROADMAP_EMBODIMENTS UNDERSTAND section / 
 
 - `.env` (thresholds already live — do NOT change)
 - Unity / Design / MT files
+
+---
+
+## BUILDER RESULT
+
+**Status:** DONE  
+**Commit:** `6e7e710` (WO-SP29: wire significance faculty into cognitive spine and executive)  
+**Date:** 2026-09-27  
+**Tests:** 6/6 PASS
+
+| AT | Description | Result |
+|---|---|---|
+| AT-1 | `compute_significance()` called in spine.py per turn; returns float 0.0–1.0 | ✅ PASS |
+| AT-2 | significance < 0.72 → memory_worthy=False | ✅ PASS |
+| AT-3 | significance ≥ 0.90 → self_init_eligible=True, memory_worthy=True | ✅ PASS |
+| AT-4 | SP-31 thresholds (0.72/0.90) unchanged; may_self_initiate interface intact | ✅ PASS |
+| AT-5 | `significance_score` field in CognitiveState (default 0.0) | ✅ PASS |
+| AT-6 | py_compile clean on contracts.py, spine.py, executive.py | ✅ PASS |
+
+**Key implementation:**
+- `runtime/spine/spine.py` line 1039/1422: `from runtime.significance_faculty import compute_significance as _spg_rel_sig_fn` / `_spg_er_sig_fn`
+- Lines 1702/1731: `compute_significance` and `derive_affective_state` called per turn
+- `runtime/contracts.py`: `significance_score: float = 0.0` added to CognitiveState
+- Executive consumes significance_score to gate memory writes at 0.72 threshold
+- SP-31 self-init eligibility gate at 0.90 unchanged
+
+**Board action:** Verify + close WO.

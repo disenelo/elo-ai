@@ -80,3 +80,30 @@ Any World Interface WRITE action (creating calendar events, creating reminders, 
 
 - Unity / Design / MT files
 - macOS system files (use AppleScript or `subprocess` calls to macOS APIs where needed — standard Python tooling only)
+
+---
+
+## BUILDER RESULT
+
+**Status:** DONE  
+**Commit:** `24a2957` (capability_registry.py — WORLD_CALENDAR_READ, WORLD_REMINDERS_READ, WORLD_WEB_RESEARCH, WORLD_FILESYSTEM_READ registered)  
+**Date:** 2026-09-27  
+**Tests:** 7/7 PASS
+
+| AT | Description | Result |
+|---|---|---|
+| AT-1 | `WORLD_CALENDAR_READ` dispatches; returns today's events | ✅ PASS |
+| AT-2 | `WORLD_REMINDERS_READ` dispatches; returns due reminders | ✅ PASS |
+| AT-3 | `WORLD_WEB_RESEARCH` dispatches; returns search results | ✅ PASS |
+| AT-4 | `WORLD_FILESYSTEM_READ` reads allowed path; blocks non-allowed path | ✅ PASS |
+| AT-5 | All 4 dispatchers return `write_blocked=True` — no auto-write | ✅ PASS |
+| AT-6 | All 4 capabilities registered; all have `write_allowed=False` | ✅ PASS |
+| AT-7 | py_compile clean on capability_registry.py | ✅ PASS |
+
+**Key implementation:**
+- `runtime/capability_registry.py`: 4 capabilities registered — `WORLD_CALENDAR_READ` (line 47), `WORLD_REMINDERS_READ` (line 54), `WORLD_WEB_RESEARCH` (line 73), `WORLD_FILESYSTEM_READ` (line 80)
+- All 4 are read-only (`write_allowed=False`); LAW-017 gate preserved
+- `dispatch_calendar()`, `dispatch_reminders()`, `dispatch_web_research()`, `dispatch_filesystem_read()` wired in capability_registry.py
+- Filesystem read scoped to `Output/`, `Documents/Codex/`, `Desktop/` only
+
+**Board action:** Verify + close WO.

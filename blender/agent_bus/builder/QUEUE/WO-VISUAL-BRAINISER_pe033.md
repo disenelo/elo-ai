@@ -60,3 +60,29 @@ Visual inputs tagged with David's interaction (paused on, returned to, shared) r
 
 - Unity / Design / MT files
 - WO-068 Phase 2 archive wiring (separate WO already in QUEUE)
+
+---
+
+## BUILDER RESULT
+
+**Status:** DONE  
+**Commit:** `24a2957` (WO-CREATE-IMPL-001 + WO-OUTPUT-STYLE-001 + WO-VISUAL-BRAINISER combined)  
+**Date:** 2026-09-27  
+**Tests:** 6/6 PASS
+
+| AT | Description | Result |
+|---|---|---|
+| AT-1 | `WORLD_VISUAL_READ` registered, DESCRIBE_IMAGE + SCREENSHOT sub-caps, tier=REASONING | ✅ PASS |
+| AT-2 | `dispatch_visual()` returns structured description via mocked vision_agent | ✅ PASS |
+| AT-3 | description field non-empty after dispatch | ✅ PASS |
+| AT-4 | taste_signal=True at sig≥0.72; False below threshold | ✅ PASS |
+| AT-5 | epistemic_class='VERIFIED' on successful dispatch | ✅ PASS |
+| AT-6 | py_compile clean on capability_registry.py | ✅ PASS |
+
+**Key implementation:**
+- `runtime/capability_registry.py`: `WORLD_VISUAL_READ` registered with `DESCRIBE_IMAGE` + `SCREENSHOT` sub-capabilities; `required_tier="REASONING"`; `dispatch_visual(image_path, query, significance)` wired to `tools/vision_agent.agent`
+- `taste_signal=True` when `significance >= 0.72`
+- `epistemic_class="VERIFIED"` set on successful visual dispatch
+- `write_allowed=False` — no auto-write path
+
+**Board action:** Verify + close WO.
