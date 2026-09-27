@@ -169,6 +169,7 @@ _activity_recent: str = "idle"
 _activity_started_ts: float = 0.0
 _last_physical_state: str = "rested"
 _last_high_intensity_ts: float = 0.0
+_last_cognitive_anim: str = ""      # edge detection for discrete cognitive events
 
 HISTORY_LEN = 20
 
@@ -268,26 +269,57 @@ def tick(
     anim = str(motion.get("animation", "") or "").lower()
     physical = str(motion.get("physical", motion.get("motion_state", "")) or "").lower()
 
-    _tick_cognitive(anim)
+    # Past the hard-idle threshold eLo is RESTING, so the metabolic floor is
+    # not charged on top of the rest bonus. With cadence-correct rates the
+    # idle drain (0.0002/s = 0.012/min) otherwise exceeds the hard-idle
+    # restore (0.005/min) and "resting" would still drain him — a restore
+    # that does not restore.
+    hard_idle = idle_seconds > HARD_IDLE_AFTER_S
+
+    _tick_cognitive(anim, dt_seconds, charge_idle=not hard_idle)
     _tick_physical(physical, dt_seconds)
 
-    if idle_seconds > HARD_IDLE_AFTER_S:
+    if hard_idle:
         restore(RESTORE_HARD_IDLE_PER_MIN * (dt_seconds / 60.0))
 
     consume_game_events()
     return snapshot()
 
 
-def _tick_cognitive(anim: str) -> None:
-    """Motion drain on the cognitive track (WO PART A section 1)."""
+def _tick_cognitive(anim: str, dt_seconds: float = 1.0, *, charge_idle: bool = True) -> None:
+    """
+    Motion drain on the cognitive track (WO PART A section 1).
+
+    Continuous rates are PER SECOND and scaled by real elapsed time, matching
+    _tick_physical(). They were previously applied once per tick regardless of
+    cadence, which made every rate a function of the poll interval:
+
+      observed live 2026-09-27 — ambient loop polls at 0.5s, so idle drained
+      0.0004/s = 1.44/hour and a full battery emptied in 41 minutes of doing
+      nothing. The server had been up 68 minutes and elo_battery read 0.0
+      "critical" — a "base metabolic drain only" floor had flattened it.
+
+    `jump` is a discrete event, so it is charged on the transition INTO the
+    animation, not on every tick spent in it — same rule as the physical
+    track. Held for 2s at 0.5s ticks it previously cost 0.048, not 0.012.
+    """
+    global _last_cognitive_anim
+
+    scale = max(0.0, float(dt_seconds))
+    changed = anim != _last_cognitive_anim
+    _last_cognitive_anim = anim
+
+    if anim == "jump":
+        if changed:
+            drain(DRAIN_JUMP)          # per event
+        return
+
     if anim in ("walk", "roam", "explore"):
-        drain(DRAIN_WALK_TICK)
-    elif anim == "jump":
-        drain(DRAIN_JUMP)
+        drain(DRAIN_WALK_TICK * scale)
     elif anim in ("explore_burst", "fast"):
-        drain(DRAIN_EXPLORE_BURST)
-    else:
-        drain(DRAIN_IDLE_TICK)
+        drain(DRAIN_EXPLORE_BURST * scale)
+    elif charge_idle:
+        drain(DRAIN_IDLE_TICK * scale)
 
 
 def _tick_physical(physical: str, dt_seconds: float) -> None:
@@ -608,7 +640,7 @@ def reset(*, cognitive: float = 1.0, physical: float = 1.0) -> None:
     """Reset all module state. For tests and session start."""
     global _cognitive_battery, _physical_battery, _physical_engaged
     global _activity_recent, _activity_started_ts, _last_physical_state
-    global _last_high_intensity_ts
+    global _last_high_intensity_ts, _last_cognitive_anim
     _cognitive_battery = _clamp(cognitive)
     _physical_battery = _clamp(physical)
     _energy_history.clear()
@@ -617,3 +649,4 @@ def reset(*, cognitive: float = 1.0, physical: float = 1.0) -> None:
     _activity_started_ts = 0.0
     _last_physical_state = "rested"
     _last_high_intensity_ts = 0.0
+    _last_cognitive_anim = ""

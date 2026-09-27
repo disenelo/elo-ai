@@ -366,3 +366,64 @@ def test_activity_vocabulary_covers_rates_and_events():
     for name in ("standing", "walking", "running", "sitting",
                  "lying_down", "sleeping", "jumping", "parkour"):
         assert name in hb.PHYSICAL_ACTIVITIES
+
+
+# ── Cognitive drain must be cadence-independent ───────────────────────────────
+# Live defect 2026-09-27: _tick_cognitive applied the full per-tick constant
+# every tick while _tick_physical scaled by elapsed time. At the ambient
+# loop's 0.5s poll that doubled every cognitive rate, and idle drained
+# 0.0004/s = 1.44/hour — a full battery gone in 41 minutes of doing nothing.
+# Observed live: server up 68 min, elo_battery 0.0 "critical".
+
+def test_idle_drain_is_the_same_per_second_at_any_poll_rate():
+    hb.reset()
+    for _ in range(60):
+        hb.tick({}, dt_seconds=1.0)
+    slow = hb.get_cognitive()
+
+    hb.reset()
+    for _ in range(120):
+        hb.tick({}, dt_seconds=0.5)
+    fast = hb.get_cognitive()
+
+    assert slow == pytest.approx(fast, abs=1e-6), (
+        "idle drain depends on poll cadence"
+    )
+
+
+def test_walk_drain_is_the_same_per_second_at_any_poll_rate():
+    hb.reset()
+    for _ in range(30):
+        hb.tick({"animation": "walk"}, dt_seconds=1.0)
+    slow = hb.get_cognitive()
+
+    hb.reset()
+    for _ in range(60):
+        hb.tick({"animation": "walk"}, dt_seconds=0.5)
+    assert slow == pytest.approx(hb.get_cognitive(), abs=1e-6)
+
+
+def test_idle_metabolic_floor_does_not_flatten_the_battery_in_an_hour():
+    """A 'base metabolic drain only' floor must not empty eLo while idle."""
+    hb.reset()
+    for _ in range(3600):
+        hb.tick({}, dt_seconds=1.0)          # one hour of pure idle
+    assert hb.get_energy() > hb.ENERGY_LOW, (
+        f"one idle hour took the battery to {hb.get_energy()}"
+    )
+
+
+def test_jump_animation_held_across_ticks_charges_once():
+    hb.reset()
+    for _ in range(6):
+        hb.tick({"animation": "jump"}, dt_seconds=0.5)
+    assert round(1.0 - hb.get_cognitive(), 4) == hb.DRAIN_JUMP
+
+
+def test_separate_jumps_each_charge():
+    hb.reset()
+    hb.tick({"animation": "jump"}, dt_seconds=0.5)
+    hb.tick({"animation": "idle"}, dt_seconds=0.5)
+    hb.tick({"animation": "jump"}, dt_seconds=0.5)
+    drained = 1.0 - hb.get_cognitive()
+    assert drained > hb.DRAIN_JUMP * 1.9
