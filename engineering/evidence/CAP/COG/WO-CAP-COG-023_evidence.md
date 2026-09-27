@@ -14,8 +14,11 @@
 
 **Root cause:** SPG partially active but generates generic observations. 'You dive into topics thoroughly' applies to almost any engaged conversational partner — not session-specific pattern detection.
 
+**Architectural blocker (2026-09-27):** Session-specific pattern detection requires real session data piped into the SPG — the SPG currently has no per-session event feed to observe against. Generic observations are the LLM filling in based on query framing alone. Fix requires a session-event pipeline feeding SPG: each interaction logs topic, intent, correction events, and the SPG reads that window to form specific observations. Outside `backend_router.py` scope — requires Board WO for session-event tracking infrastructure.
+
 **Blocking gaps:**
-- SPG observations generic, not session-specific
+- SPG observations generic, not session-specific — no session-event feed currently connected
+- Requires new WO: session-event logging → SPG observation layer
 
 ---
 

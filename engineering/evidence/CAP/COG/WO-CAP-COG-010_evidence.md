@@ -15,9 +15,14 @@
 
 **Root cause:** Visual injection was appended AFTER `_final_respond` directive — model generated response before seeing visual facts (original FAIL). Fixed: visual section now computed before `_sections` assembly and inserted before `_final_respond`. Residual: model parametrically resists 'No eyes.' as opening even with explicit instruction.
 
+**Layer 2 fix (commit c40c012):** `_prepend_no_eyes` flag set when visual identity section injected. Post-processor in `_ollama_call` path: prepends 'No eyes. ' if response doesn't already start with it.
+
+**Layer 2 status:** Post-processor works at generation layer — audit log shows `elo_raw_gen` = correct visual description. However, the capability pipeline (understudy_shadow system) transforms `elo_final` after the fact — `delta_cause: unknown` in audit. This is a separate architectural issue.
+
 **Blocking gaps (remaining):**
-- Response must LEAD with 'No eyes.' — instruction injected but model starts with TPU description
-- 'no facial features' is semantically correct but not the explicit 'No eyes' phrasing required
+- Capability pipeline substitutes final response — `elo_raw_gen` is correct but `elo_final` is replaced by capability handler
+- Root cause: `capabilities: vault_write` fires on visual identity queries and transforms final response
+- Needs separate investigation in understudy/capability pipeline — outside backend_router.py scope
 
 ---
 

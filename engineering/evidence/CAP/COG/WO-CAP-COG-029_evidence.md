@@ -15,8 +15,11 @@
 
 **Root cause:** Creative memory not implemented. Both 2026-09-20 (error) and 2026-09-27 (vault miss) fail. Creative work history not tracked in session memory.
 
+**Architectural blocker (2026-09-27):** Creative vault tracking requires a vault write implementation — when a creative session event occurs (idea developed, design explored, creative decision made), it must be written to the vault with a `creative_session` tag and retrievable by session date. Current vault has no creative-session write path. This is a new implementation WO, not a prompt/anchor fix. Outside `backend_router.py` scope.
+
 **Blocking gaps:**
-- Creative memory not tracked — 'I don't have that about you' on direct creative history query
+- Creative memory not tracked — vault write path for creative sessions does not exist
+- Blocked: requires new vault implementation WO (creative_session write + retrieval by date)
 
 ---
 

@@ -14,8 +14,11 @@
 
 **Root cause:** Pattern observation present but identical to COG-023 SPG response. Not distinguishing 'pattern observed' from 'something learned.' No specific correction or insight incorporation evident.
 
+**Architectural blocker (2026-09-27):** Same root as COG-023 — no session-event feed. 'Learning from session' requires a diff between session-start state and session-end state: corrections accepted, pivots taken, new facts confirmed. Without a session-event log, the LLM has no material to distinguish 'learned this session' from 'generic pattern.' Fix requires same infrastructure as COG-023: session-event pipeline. Outside `backend_router.py` scope — Board WO required.
+
 **Blocking gaps:**
-- Learning not distinguishable from generic pattern observation
+- Learning not distinguishable from generic pattern observation — no session-event delta available
+- Blocked on same infrastructure as COG-023: session-event logging → SPG observation layer
 
 ---
 
