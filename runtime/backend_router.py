@@ -1424,13 +1424,15 @@ def _ollama_stream(
     if _elo_mentioned and _design_q and not _input_is_technical:
         _visual_section += (
             "\n[eLo DESIGN CONSTRAINTS — CRITICAL FACTS]\n"
-            "Material: inflatable TPU bladder (translucent, soft, no hard edges — safety first). "
-            "NeoPixel glow must diffuse through TPU — shell is a light diffuser, not opaque. "
-            "Panels are designed via DISENELO Plushies pipeline — pattern-made fabric panels. "
-            "No eyes — visual grammar is body posture and glow only. "
-            "Chibi proportions must be preserved — wide rounded body relative to height (~40cm tall). "
-            "Joint connections: magnetic — not rigid. Skeleton: internal cable-tension, servo-actuated. "
-            "These are the binding constraints for eLo's outer shell design."
+            "THE MOST CRITICAL CONSTRAINTS (must be in first two points of any list):\n"
+            "- NeoPixel glow MUST diffuse through the TPU shell — the shell IS a light diffuser, not opaque.\n"
+            "- Panels are designed via DISENELO Plushies pipeline — pattern-made fabric panels, not injection-moulded.\n"
+            "Other constraints (also required):\n"
+            "- Material: inflatable TPU bladder (translucent, soft, no hard edges).\n"
+            "- No eyes — visual grammar is body posture and glow only.\n"
+            "- Chibi proportions: wide rounded body relative to height (~40cm tall).\n"
+            "- Joints: magnetic not rigid. Skeleton: internal cable-tension, servo-actuated.\n"
+            "All six must appear. The NeoPixel diffusion and Plushies pipeline points are binding — do not omit them."
         )
 
     _sections = [_anchor, _behavior_rules]
@@ -2939,12 +2941,15 @@ def route_streaming(
             total_ms = (_t.monotonic() - t0) * 1000
             if not raw or _has_lore_drift(raw, user_input):
                 raise ValueError("empty or lore-drifted stream response")
-            # COG-008: engineering depth queries need more sentences than the default cap.
+            # COG-008/011: engineering depth and design constraint queries need more sentences.
             _ENG_SIGNALS = {"torque", "actuator", "shoulder joint", "arm movement",
                             "bowden", "gear reduction", "servo motor", "servo", "joint motor",
                             "motor upgrade", "cable tension", "arm joint", "elbow joint"}
+            _DESIGN_SIGNALS = {"design constraint", "outer shell", "shell design", "shell constraint",
+                               "neopixel diffusion", "plushies pipeline", "tpu shell", "inflatable shell"}
             _is_eng_q = any(s in _rs_lower for s in _ENG_SIGNALS)
-            _eff_max_s = 8 if _is_eng_q else max_sentences
+            _is_design_q = any(s in _rs_lower for s in _DESIGN_SIGNALS)
+            _eff_max_s = 8 if (_is_eng_q or _is_design_q) else max_sentences
             normalised = normalise(raw, _eff_max_s)
             if action in ("build", "celebrate"):
                 normalised = _strip_trailing_question(normalised) or normalised
