@@ -11,6 +11,8 @@ Pipeline, in order:
     dream_input    PHASE 2  13 source types, emotion vector, peaks, gravity
     dream_work     PHASE 3  seeds, condensation/displacement/symbolic, worlds
     prompt_builder PHASE 4  12-field structured image prompts
+    dream_review   PHASE 8  wake transfer gate, two output channels
+    symbol_history PHASE 10 recurring symbol lexicon
 
 Invariant the WO sets, carried by every stage: dream material is never
 silently written as fact. Outputs are tagged DREAM / HYPOTHESIS /
@@ -24,7 +26,10 @@ Import it explicitly where it is needed.
 """
 from __future__ import annotations
 
-from faculties.dream import sleep_cycle, dream_input, dream_work, prompt_builder
+from faculties.dream import (
+    sleep_cycle, dream_input, dream_work, prompt_builder,
+    dream_review, symbol_history,
+)
 
 from faculties.dream.sleep_cycle import (
     TOTAL_CYCLES,
@@ -76,12 +81,31 @@ from faculties.dream.prompt_builder import (
     build_prompts,
     visual_translation,
 )
+from faculties.dream.dream_review import (
+    EPISTEMIC_HYPOTHESIS,
+    EPISTEMIC_SYMBOLIC,
+    FORBIDDEN_EPISTEMIC,
+    CandidateInsight,
+    DreamReview,
+    assess_significance,
+    review,
+)
+from faculties.dream.symbol_history import (
+    RECURRENCE_THRESHOLD,
+    SymbolRecord,
+    current_association,
+    lexicon_summary,
+    most_established,
+    record_dream,
+    recurring,
+)
 
 # Every dream output carries one of these. Never "FACT".
 OUTPUT_TYPES: tuple[str, ...] = ("DREAM", "HYPOTHESIS", "CREATIVE ASSOCIATION")
 
 __all__ = [
     "sleep_cycle", "dream_input", "dream_work", "prompt_builder",
+    "dream_review", "symbol_history",
     "OUTPUT_TYPES",
     # PHASE 1
     "TOTAL_CYCLES", "INTENSITY_SCALE", "CyclePhase", "SleepCycle",
@@ -100,4 +124,10 @@ __all__ = [
     "EMOTION_VISUAL", "FINAL_LINE", "PROMPT_FIELDS", "DreamPrompt",
     "abstraction_band", "bounded_mix", "build_prompt", "build_prompts",
     "visual_translation",
+    # PHASE 8
+    "EPISTEMIC_HYPOTHESIS", "EPISTEMIC_SYMBOLIC", "FORBIDDEN_EPISTEMIC",
+    "CandidateInsight", "DreamReview", "assess_significance", "review",
+    # PHASE 10
+    "RECURRENCE_THRESHOLD", "SymbolRecord", "current_association",
+    "lexicon_summary", "most_established", "record_dream", "recurring",
 ]
