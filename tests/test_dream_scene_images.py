@@ -121,7 +121,13 @@ def test_scene_images_are_named_per_the_wo(monkeypatch):
     assert all(r["ok"] for r in out)
 
 
-def test_highest_intensity_scenes_are_kept_when_capped(monkeypatch):
+def test_the_base_scene_always_survives_the_cap(monkeypatch):
+    """
+    PHASE 6 makes Scene 01 the base layer — "Normal, structural foundation".
+    An unprotected intensity-first cap discarded it as the least intense,
+    leaving the composite building on a transformed frame. Observed
+    end-to-end before the fix: L0 base carried stage=abstraction.
+    """
     prompts: list = []
 
     def fake(prompt, filename=None, preview=True, write_hud=True):
@@ -130,7 +136,40 @@ def test_highest_intensity_scenes_are_kept_when_capped(monkeypatch):
 
     monkeypatch.setattr("tools.image_gen_agent.generate", fake)
     df.generate_scene_images(_CYCLES, "d1", limit=1)
-    assert prompts == ["abstract prompt"], "cap kept the least transformed scene"
+    assert prompts == ["grounded prompt"], "cap dropped the structural base"
+
+
+def test_capped_run_keeps_the_most_transformed_of_the_rest(monkeypatch):
+    kept: list = []
+
+    def fake(prompt, filename=None, preview=True, write_hud=True):
+        kept.append(prompt)
+        return {"ok": True, "path": "/tmp/x.png", "source": "stub"}
+
+    monkeypatch.setattr("tools.image_gen_agent.generate", fake)
+    cycles = [{"cycle": 1,
+               "prompts": ["p_grounded", "p_mid", "p_high"],
+               "scenes": [{"stage": "grounded", "intensity": 0.2},
+                          {"stage": "transformation", "intensity": 0.5},
+                          {"stage": "abstraction", "intensity": 1.0}]}]
+    df.generate_scene_images(cycles, "d1", limit=2)
+    assert kept == ["p_grounded", "p_high"], "budget went to the wrong scenes"
+
+
+def test_scenes_are_numbered_in_narrative_order(monkeypatch):
+    """scene_01 must be the grounded scene, not the most intense one."""
+    names: list = []
+
+    def fake(prompt, filename=None, preview=True, write_hud=True):
+        names.append(filename)
+        return {"ok": True, "path": "/tmp/" + filename, "source": "stub"}
+
+    monkeypatch.setattr("tools.image_gen_agent.generate", fake)
+    out = df.generate_scene_images(_CYCLES, "d1")
+    assert names == ["dream_d1_scene_01.png", "dream_d1_scene_02.png"]
+    assert out[0]["stage"] == "grounded"
+    intensities = [r["intensity"] for r in out]
+    assert intensities == sorted(intensities), "narrative order not preserved"
 
 
 def test_preview_is_off_for_every_scene(monkeypatch):

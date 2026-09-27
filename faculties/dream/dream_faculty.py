@@ -268,10 +268,30 @@ def generate_scene_images(
         for scene, prompt in zip(cycle.get("scenes") or [], prompts):
             scenes.append((scene, {"prompt": prompt, "cycle": cycle.get("cycle")}))
 
-    scenes.sort(key=lambda s: float(s[0].get("intensity", 0.0) or 0.0), reverse=True)
+    # Intensity-first decides WHICH scenes survive the cap — keep the most
+    # transformed, not the first few grounded ones. Then narrative order is
+    # restored, because the WO's scene numbering and the compositor's layer
+    # roles both depend on it: "Scene 01 (early REM): Grounded" is the
+    # structural foundation, and scene_01.png must be that scene.
+    #
+    # Without the restore, the composite built its base layer on the most
+    # ABSTRACT frame — observed end-to-end: L0 base carried stage=abstraction.
+    #
+    # The cap also always keeps the FIRST scene. PHASE 6 makes Scene 01 the
+    # base layer — "Normal — structural foundation" — so dropping it leaves
+    # the composite building on a transformed frame. Observed: an unprotected
+    # cap discarded the grounded scene as the least intense, which is exactly
+    # the one the composite cannot do without. Budget goes: base first, then
+    # the most transformed of the rest.
+    budget = max(0, int(limit))
+    head = scenes[:1] if budget else []
+    rest = sorted(scenes[1:], key=lambda s: float(s[0].get("intensity", 0.0) or 0.0),
+                  reverse=True)[: max(0, budget - 1)]
+    chosen = head + rest
+    kept = [s for s in scenes if s in chosen]
 
     results: list[dict] = []
-    for n, (scene, meta) in enumerate(scenes[: max(0, int(limit))], start=1):
+    for n, (scene, meta) in enumerate(kept, start=1):
         name = f"dream_{dream_id}_scene_{n:02d}.png"
         try:
             out = _img_gen(meta["prompt"], filename=name, preview=False, write_hud=(n == 1))
@@ -292,6 +312,89 @@ def generate_scene_images(
             results.append({"ok": False, "scene": n, "error": reason})
 
     return results
+
+
+def render_dream_artwork(
+    cycle_records: list[dict],
+    dream_id: str,
+    *,
+    emotion: str = "wonder",
+    significance: float = 0.5,
+    out_dir: str | Path | None = None,
+    limit: int = DREAM_MAX_SCENE_IMAGES,
+) -> dict:
+    """
+    The creative channel, end to end — PHASES 5b, 5c and 6 joined.
+
+        scene prompts -> images -> FX treatment -> composited artwork
+
+    Each scene is generated, then treated by tools/dream_fx (emotion selects
+    the effects, the scene's own intensity scales them), then all treated
+    scenes are composited by layer_compositor into one final artwork with a
+    provenance sidecar.
+
+    Returns the journal fields for the creative channel. Every stage is
+    best-effort and reports what it could not do rather than failing the
+    dream — a dream that produced no artwork is still a dream.
+    """
+    fields: dict = {
+        "scene_images": [],
+        "scene_image_failures": [],
+        "fx_applied": {},
+        "final_artwork": None,
+        "artwork_sidecar": None,
+    }
+
+    generated = generate_scene_images(cycle_records, dream_id, limit=limit)
+    fields["scene_image_failures"] = [s for s in generated if not s.get("ok")]
+    ok = [s for s in generated if s.get("ok")]
+    if not ok:
+        return fields
+
+    # PHASE 5c — FX per scene, in place.
+    try:
+        from tools import dream_fx as _fx
+        for scene in ok:
+            try:
+                result = _fx.apply_to_file(
+                    scene["path"], scene["path"],
+                    emotion=emotion,
+                    intensity=float(scene.get("intensity", 0.0) or 0.0),
+                    seed=abs(hash(dream_id)) % (2 ** 31) + int(scene.get("scene", 0)),
+                )
+                fields["fx_applied"][str(scene.get("scene"))] = result.applied
+            except Exception as e:
+                print(f"[dream] fx failed on scene {scene.get('scene')}: {e}")
+    except Exception as e:
+        print(f"[dream] fx pipeline unavailable: {e}")
+
+    fields["scene_images"] = [s["path"] for s in ok]
+
+    # PHASE 6 — composite the treated scenes into one artwork.
+    try:
+        from faculties.dream import layer_compositor as _lc
+        from faculties.dream import symbol_history as _sh
+
+        target = Path(out_dir) if out_dir else Path(ok[0]["path"]).parent
+        motif = ""
+        try:
+            motif = _sh.most_established(_SYMBOL_HISTORY_PATH)
+        except Exception:
+            pass
+
+        composite = _lc.composite_dream(
+            ok, dream_id=dream_id, emotion=emotion,
+            significance=significance, recurring_symbol=motif,
+            out_dir=target,
+        )
+        fields["final_artwork"] = composite.final_path or None
+        fields["artwork_sidecar"] = composite.sidecar_path or None
+        fields["artwork_layers"] = [layer.as_dict() for layer in composite.layers]
+        fields["artwork_motif"] = composite.motif
+    except Exception as e:
+        print(f"[dream] compositing failed: {e}")
+
+    return fields
 
 
 # ── Multi-cycle generative sleep — WO-DREAM-ENGINE-001 PHASES 1-4 ─────────────
@@ -610,11 +713,12 @@ def run_dream(
         # publishing and the lexicon. A test must never spend money.
         if publish_phases and cycle_records:
             try:
-                _scene_images = generate_scene_images(cycle_records, dream_id)
-                entry["scene_images"] = [s["path"] for s in _scene_images if s.get("ok")]
-                entry["scene_image_failures"] = [
-                    s for s in _scene_images if not s.get("ok")
-                ]
+                _art = render_dream_artwork(
+                    cycle_records, dream_id,
+                    emotion=(cycle_records[0].get("dominant_emotion") or "wonder"),
+                    significance=dream_intensity,
+                )
+                entry.update(_art)
             except Exception as e:
                 print(f"[dream] scene image pass failed: {e}")
 
