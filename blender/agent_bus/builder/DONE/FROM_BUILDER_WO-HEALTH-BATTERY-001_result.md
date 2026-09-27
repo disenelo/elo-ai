@@ -44,7 +44,7 @@ fatigue track from Addendum A, and six integration points.
 ## TEST RESULTS
 
 ```
-test_health_battery                     34 passed
+test_health_battery                     49 passed
 test_s4_battery_wiring                   6 passed
 test_s4_should_dream_battery             8 passed
 test_s4_wake_restore                     8 passed
@@ -52,8 +52,15 @@ test_s4_ambient_tick                     9 passed
 test_state_writer_preserves_battery     12 passed
 test_no_live_state_writes                5 passed
                                         -----------
-                                        82 passed
+                                        97 passed
 ```
+
+`state_writer.py` is shared, so every dependent suite was re-run after
+`6d62e96`: `test_wo_mobile_phase2_preserve_keys`, `test_fa_preserve_keys`,
+`test_sp38_target_registry`, `test_lifecycle`, `test_wo_unity_gaze` — 36
+passed; plus `test_wo064_move_words`, `test_wo_pres004b_nav_fail_state_write`,
+`test_canon_xiii_spatial`, `test_canon_xi_motor`,
+`test_wo064_conversing_field` — all PASS.
 
 ## LIVE EVIDENCE
 
@@ -91,6 +98,32 @@ Had it not been caught, the live-evidence run would have captured values this
 suite had partly written and filed them as a live result. Guard added:
 `tests/test_no_live_state_writes.py`.
 
+## THE SECOND ONE THAT WOULD HAVE BITTEN — `e6edd9d`
+
+Found by self-review of my own diff, not by a test.
+
+`_tick_physical()` engaged the physical track on **any** non-empty motion
+string. Unity writing `physical="idle"` — or `"floating"`, `"perched"`, or
+anything added later — engaged it permanently. Those values have no entry in
+`PHYSICAL_TICK_RATES`, so physical sat at 1.0 with nothing to drain it, and
+`elo_battery` became `0.6*cognitive + 0.4*1.0`.
+
+That **floors `elo_battery` at 0.4**. `ENERGY_CRITICAL` is 0.10, so it becomes
+unreachable and the dream trigger dies silently — the exact failure the
+combination-weight decision above was written to prevent. The guard was
+defeated by any unrecognised string.
+
+Not theoretical: live state already carries `motion.mode="idle"` and
+`state.pose="standing"`, so an `"idle"` physical value is a plausible thing
+for Unity to send.
+
+Fix: `PHYSICAL_ACTIVITIES`, derived from
+`PHYSICAL_TICK_RATES | PHYSICAL_EVENT_COSTS` so it cannot drift from the rate
+tables. Anything outside it is ignored. Verified `CRITICAL` reachable again
+(0.0498) with `physical="idle"`.
+
+---
+
 ## DECISIONS NEEDING BOARD CONFIRMATION
 
 1. **Combination weights** were "TBD by Builder". Physical folds into
@@ -109,6 +142,14 @@ suite had partly written and filed them as a live result. Guard added:
 4. **`emotional_intensity` has no source.** `emotional_context` carries
    `energy` and `valence`, no intensity field. `energy` used as the magnitude.
 5. **All Addendum A rates are `[ESTIMATE]`** per the addendum itself.
+
+## KNOWN, NOT FIXED
+
+**`drain()` / `restore()` are not lock-guarded.** The ambient thread ticks the
+battery every 0.5s while a request thread drains it per turn. Both do a
+read-modify-write on a module-level float, so a concurrent pair can lose one
+update. Consequence is a very occasional missed 0.004 drain — harmless, and
+adding a lock was not asked for. Flagging rather than fixing.
 
 ## ⚠ NOTE FOR DESIGNER
 
