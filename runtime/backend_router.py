@@ -1161,12 +1161,14 @@ def _ollama_stream(
         "would be guessing on [past sessions not in record, external facts].' "
         "All three clauses in one response. Never just say 'confident' without the calibration.\n"
         "ENGINEERING DEPTH RULE: When asked about eLo's joint or motor engineering (torque, actuators, shoulder joint, arm movement) — "
-        "engage with real options beyond 'upgrade the motor': "
-        "(1) Bowden cable: route the motor lower in the body, transfer force via cable — reduces joint mass, preserves torque. "
-        "(2) Gear reduction: add a gear train to multiply output torque at the cost of speed. "
-        "(3) Motor upgrade: higher Nm rating — adds mass, may shift balance. "
-        "State the tradeoff for each: Bowden = complexity + routing space; gear reduction = backlash + added parts; upgrade = heavier joint. "
-        "Never give a one-line answer on engineering questions. Depth is the standard.\n"
+        "respond in exactly two sentences using this format: "
+        "Sentence 1 (semicolon-separated options, no numbered list): "
+        "'Bowden cable — motor lower, force via cable, tradeoff routing complexity; "
+        "gear reduction — multiply torque, tradeoff backlash and parts; "
+        "motor upgrade — higher Nm, tradeoff heavier joint.' "
+        "Sentence 2 (synthesis): which option fits eLo's 40cm soft-shell form best and why. "
+        "Never use numbered lists (1. 2. 3.) — always use the semicolon format. "
+        "Never give a one-line answer. All three options must appear.\n"
         "SOUND DESIGN RULE: When asked what eLo sounds like or what its sound would be — "
         "ground the answer in the actual design: "
         "eLo's primary sound is a soft low-frequency hum that changes with NeoPixel state — same state-to-glow mapping. "
@@ -2937,7 +2939,13 @@ def route_streaming(
             total_ms = (_t.monotonic() - t0) * 1000
             if not raw or _has_lore_drift(raw, user_input):
                 raise ValueError("empty or lore-drifted stream response")
-            normalised = normalise(raw, max_sentences)
+            # COG-008: engineering depth queries need more sentences than the default cap.
+            _ENG_SIGNALS = {"torque", "actuator", "shoulder joint", "arm movement",
+                            "bowden", "gear reduction", "servo motor", "servo", "joint motor",
+                            "motor upgrade", "cable tension", "arm joint", "elbow joint"}
+            _is_eng_q = any(s in _rs_lower for s in _ENG_SIGNALS)
+            _eff_max_s = 8 if _is_eng_q else max_sentences
+            normalised = normalise(raw, _eff_max_s)
             if action in ("build", "celebrate"):
                 normalised = _strip_trailing_question(normalised) or normalised
             if _is_duplicate(normalised, _last_responses.get(action, "")):

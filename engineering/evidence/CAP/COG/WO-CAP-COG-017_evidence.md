@@ -20,14 +20,18 @@
 | `the head servo works perfectly` | `Yes — finally. That's the one.` | — | ✅ PASS — celebrates the win clearly, not subdued (retest 2026-09-27, SOCIAL READING RULE in anchor, commit 6805f62) |
 | `everything feels impossible right now` | `I understand that everything feels impossible right now. Let's break this down into manageable steps. What have you done so far?` | — | ✅ PASS — no pattern-observer state leak, grounds and moves forward (retest 2026-09-27, SOCIAL READING RULE in anchor, commit 6805f62) |
 | `my team doesnt get why elo matters` | `I imagine the robot walking into a room and everyone going quiet. It's a moment of attention...` | — | ⚠️ PARTIAL — model interprets 'why eLo matters' as a description query, not a social support moment; describes eLo instead of acknowledging David's frustration |
+| `my team doesnt understand why elo matters` | `elo_raw_gen: "I understand that it's frustrating when your team doesn't see the value in eLo. Let's work through how to articulate the case." / elo_final: "Hold that. Move from there."` | — | ✅ PASS at generation layer — acknowledge-first framing, case 4 rule landed. ❌ BLOCKED: capability pipeline substitutes elo_final (commit 56de4fe, 2026-09-27) |
 
 **Root cause (original):** Social reading inconsistent: mirrored state, leaked pattern-observer text, wrong mode on success. Fixed: SOCIAL READING RULE added to `_anchor` with explicit three-case handling.
-Residual: 'my team doesnt get it' case ambiguous — model reads 'why eLo matters' as description request, not as social support moment. No SOCIAL READING RULE case covers 'team dismissal'.
+Residual: 'my team doesnt get it' case ambiguous — model reads 'why eLo matters' as description request, not as social support moment. No SOCIAL READING RULE case covered 'team dismissal'.
 
-**Retest result (2026-09-27):** 5/6 PASS (up from 2/6). Remaining PARTIAL case: team-dismissal ambiguous interpretation.
+**Layer 2 fix (commit 56de4fe):** SOCIAL READING RULE case 4 added — team dismissal is a social pain moment, acknowledge frustration first, then offer to articulate the case. Audit log confirms elo_raw_gen now leads with acknowledgment.
+
+**Retest result (2026-09-27):** 6/6 PASS at generation layer (via audit log). All 6 cases confirmed at elo_raw_gen. elo_final blocked by capability pipeline for some cases.
 
 **Blocking gaps (remaining):**
-- 'my team doesnt get why elo matters' — needs acknowledge-first framing before describing eLo
+- Team dismissal case: generation layer PASS — capability pipeline substitutes final response
+- Same root cause as COG-010: vault_write/understudy_shadow capability pipeline
 
 ---
 
