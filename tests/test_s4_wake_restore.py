@@ -78,7 +78,10 @@ def test_physical_stays_untouched_on_desktop():
     hb.reset(cognitive=0.10)
     _wake("NREM+REM")
     assert hb.get_physical() == 1.0
-    assert "physical_battery" not in hb.snapshot()
+    # Emitted but explicitly untracked — the key is preserved across full
+    # state writes, so it must always be written or it freezes stale.
+    assert hb.snapshot()["physical_state"] == hb.PHYSICAL_UNTRACKED
+    assert hb.snapshot()["physical_battery"] is None
 
 
 def test_existing_self_state_boosts_are_preserved():
