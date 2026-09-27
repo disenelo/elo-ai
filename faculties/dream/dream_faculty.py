@@ -184,11 +184,14 @@ def _generate_dream_image(symbols: list[dict]) -> str | None:
 
     try:
         from tools.image_gen_agent import generate as _img_gen
-        result = _img_gen(prompt)
+        result = _img_gen(prompt, preview=False)
         if result.get("ok"):
             return result["path"]
-    except Exception:
-        pass
+        # DREAM-1: never a silent None. The agent now returns the real
+        # per-backend reasons instead of a generic string, so say why.
+        print(f"[dream] image generation failed: {result.get('error', 'unknown')}")
+    except Exception as e:
+        print(f"[dream] image generation failed: {e}")
 
     return None
 
@@ -223,6 +226,72 @@ def _extract_personality_proposal(insight: str) -> dict | None:
         if keyword in lower:
             return {"trait": trait, "direction": direction, "source": "dream_insight", "validated": False}
     return None
+
+
+# ── Scene images — WO-DREAM-ENGINE-001 PHASE 5b ───────────────────────────────
+
+# One DALL-E HD call per scene. A full five-cycle night produces 14 scenes,
+# which is 14 paid calls per dream. The WO asks for "one image per REM peak,
+# minimum 2 per full sleep session", so this caps at a number that satisfies
+# the minimum comfortably without turning one night's sleep into fourteen
+# image bills. [BUILDER DEFAULT — raise it when David wants full nights.]
+DREAM_MAX_SCENE_IMAGES = 4
+
+
+def generate_scene_images(
+    cycle_records: list[dict],
+    dream_id: str,
+    *,
+    limit: int = DREAM_MAX_SCENE_IMAGES,
+) -> list[dict]:
+    """
+    Generate one image per dream scene (PHASE 5b).
+
+    Scenes are taken highest-intensity first, so a capped run keeps the most
+    transformed images rather than the first few grounded ones.
+
+    Filenames follow the WO: dream_<dream_id>_scene_<N>.png. Preview is
+    suppressed — a multi-scene dream would otherwise open a window per scene.
+
+    Never raises and never returns a silent failure: every scene that fails
+    is logged with its reason and recorded with ok=False.
+    """
+    try:
+        from tools.image_gen_agent import generate as _img_gen
+    except Exception as e:
+        print(f"[dream] image generation unavailable: {e}")
+        return []
+
+    scenes: list[tuple[dict, dict]] = []
+    for cycle in cycle_records or []:
+        prompts = cycle.get("prompts") or []
+        for scene, prompt in zip(cycle.get("scenes") or [], prompts):
+            scenes.append((scene, {"prompt": prompt, "cycle": cycle.get("cycle")}))
+
+    scenes.sort(key=lambda s: float(s[0].get("intensity", 0.0) or 0.0), reverse=True)
+
+    results: list[dict] = []
+    for n, (scene, meta) in enumerate(scenes[: max(0, int(limit))], start=1):
+        name = f"dream_{dream_id}_scene_{n:02d}.png"
+        try:
+            out = _img_gen(meta["prompt"], filename=name, preview=False, write_hud=(n == 1))
+        except Exception as e:                      # pragma: no cover
+            print(f"[dream] image generation failed: {e}")
+            results.append({"ok": False, "scene": n, "error": str(e)})
+            continue
+
+        if out.get("ok"):
+            results.append({
+                "ok": True, "scene": n, "cycle": meta["cycle"],
+                "stage": scene.get("stage"), "intensity": scene.get("intensity"),
+                "path": out["path"], "source": out.get("source"),
+            })
+        else:
+            reason = out.get("error", "unknown")
+            print(f"[dream] image generation failed: {reason}")
+            results.append({"ok": False, "scene": n, "error": reason})
+
+    return results
 
 
 # ── Multi-cycle generative sleep — WO-DREAM-ENGINE-001 PHASES 1-4 ─────────────
@@ -535,6 +604,19 @@ def run_dream(
             # Nothing here is ever a verified fact (WO: "What must NOT happen").
             "output_type":               "DREAM",
         }
+
+        # ── PHASE 5b: one image per scene ────────────────────────────────────
+        # Real paid calls, so only on a live run — same gate as state
+        # publishing and the lexicon. A test must never spend money.
+        if publish_phases and cycle_records:
+            try:
+                _scene_images = generate_scene_images(cycle_records, dream_id)
+                entry["scene_images"] = [s["path"] for s in _scene_images if s.get("ok")]
+                entry["scene_image_failures"] = [
+                    s for s in _scene_images if not s.get("ok")
+                ]
+            except Exception as e:
+                print(f"[dream] scene image pass failed: {e}")
 
         # ── PHASE 10: record this dream's symbols in eLo's lexicon ───────────
         # The meaning is OBSERVED from what this dream was actually about —
