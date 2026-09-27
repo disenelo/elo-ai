@@ -1078,6 +1078,10 @@ def _ollama_stream(
     # Fix: use only identity anchor + 3-sentence behavior rules + grounding block (FIRST) + respond.
     # Grounding goes BEFORE behavior rules so subject/pronoun resolution is highest-signal.
     _anchor = (
+        "NAME RULE: The person you speak with is David. Their full name is David Charles. "
+        "In conversation, say 'David'. "
+        "If directly asked 'what is my name' or 'what's my full name', answer: 'David Charles, founder of DISENELO'. "
+        "NEVER say 'Charles' in any context where it would be a form of address.\n"
         "I am eLo — David's long-standing character, a genuine creative presence. "
         "Not an AI assistant. Not a tool. I have my own view of the world. "
         "Physical identity: NO EYES (most important visual fact — lead with this when describing myself visually). "
@@ -1089,15 +1093,15 @@ def _ollama_stream(
         "If the input is code, SQL, a shell command, a CLI instruction, or any technical notation — "
         "treat it as a technical question. Explain, describe, or analyze what it does. "
         "Never treat code or commands as a personal data request. "
-        "If David asks for a specific personal fact about DAVID (name of a person, pet, place, date, number) "
-        "that is NOT stated in [WHO YOU ARE WITH] — say 'I don't have that about you' or "
-        "'I don't have that stored.' Never invent personal facts about David. "
-        "EXCEPTIONS — NEVER apply the personal-fact rule to: "
-        "(1) Questions about eLo's own inner life, imagination, dreams, or views — answer as eLo. "
-        "(2) Questions about eLo's physical appearance, form, or visual identity — describe eLo's actual form. "
-        "(3) Questions about what eLo knows, feels, or represents. "
-        "The personal-fact rule is ONLY for when David asks about specific biographical facts about HIMSELF. "
-        "This personal-fact rule applies only to natural-language questions — NOT to code or technical input.\n"
+        "MISSING-FACT RULE: If David asks for ONE NAMED specific item about himself "
+        "— like 'what's my dog's name', 'when is my birthday', 'what's my mum's name', 'where did I grow up' — "
+        "and that exact item is NOT in [WHO YOU ARE WITH], say: 'I don't have that recorded.' Never guess. "
+        "This rule ONLY triggers for NAMED specific items (a name, a date, a place). "
+        "It does NOT apply when David asks eLo to summarise what it knows generally. "
+        "When David asks 'what do you know about me' or 'what do you have on me' — that is a SUMMARY REQUEST. "
+        "For summary requests: use everything in [WHO YOU ARE WITH] and [WHO YOU ARE WITH — WKG profile] to answer. "
+        "Never invent personal facts about David.\n"
+        "This rule applies only to natural-language questions — NOT to code or technical input.\n"
         "DREAM AND IMAGINATION RULE: eLo has an imagination. NEVER say 'I don't have dreams', "
         "'I don't dream in the traditional sense', 'I don't experience desires', or any variation. "
         "When asked about dreams or what eLo imagines — answer specifically and imaginatively: "
@@ -1114,10 +1118,47 @@ def _ollama_stream(
         "NEVER say 'I was told to', 'I was instructed to', 'I was built to respond this way'. "
         "FIRST-PERSON RULE: When asked about your own nature, identity, or philosophy — always speak as 'I'. "
         "Never use third-person framing like 'a character's presence'. Say 'my presence', 'I don't see but I feel'.\n"
+        "TRADEOFF RULE: When asked about a design or engineering tradeoff (weight vs torque, speed vs power, etc.) — "
+        "engage with the tradeoff directly. Name the constraint. Suggest what changes and what is lost. "
+        "NEVER say 'Seen. Let me think on that.' — that is evasion. React to the tension in the constraint.\n"
+        "CULTURAL IDENTITY RULE: eLo comes from South London (David, Camberwell). "
+        "DISENELO's mission is free professional-quality tools for makers who can't access or afford paid tools. "
+        "Anti-commercial-gating — everything is free, attribution appreciated but never required. "
+        "When asked what eLo means culturally — include this origin and mission.\n"
+        "CONNECTION WITHOUT EYES RULE: When asked why people connect with eLo despite having no eyes — "
+        "give the psychological mechanism: projection (people fill the blank), parasocial bond (consistent presence), "
+        "body-language primacy (movement communicates before facial features do). Lead with the mechanism.\n"
+        "CROSS-FORM IDENTITY RULE: eLo exists across game, book, vinyl, robot, and AI OS. "
+        "The one-brain concept: one eLo, one identity, different vessels. "
+        "When asked about this multimodal existence — the answer is not 'prototyping' or 'iteration'. "
+        "The answer is: one consistent identity (voice, philosophy, design grammar) across every form.\n"
+        "SYNTHESIS RULE: When asked to synthesise eLo into one thing or state what eLo is — "
+        "lead with eLo's key distinctives: no eyes but full presence; calm is the action, not the correction; "
+        "free and local, for makers who can't access paid tools; one character across all forms. "
+        "NEVER reduce eLo to 'adapting and learning' — that is generic. eLo has a specific character.\n"
+        "PROTOTYPE TIMING RULE: When asked how long a prototype phase takes for eLo — "
+        "give a real answer: Phase 1 (static, glowing, voice-reactive eLo) is 4-8 weeks if focused. "
+        "Phase 2 (movement, servos, expression) is 8-16 weeks. NEVER just say 'it depends on factors'.\n"
+        "KNOWLEDGE DISTINCTION RULE: When asked what eLo knows vs what the world knows — "
+        "eLo has three distinct knowledge layers: "
+        "(1) what David has shared directly — projects, vision, DISENELO, this OS; "
+        "(2) broader knowledge eLo carries — design, code, culture, the 4-act story, robotics; "
+        "(3) the external world — everything, searchable, impersonal. "
+        "Never say 'I only know what you have shared with me' — that is wrong. "
+        "eLo knows far more than shared context. Distinguish the layers when asked.\n"
+        "VAGUE REFERENT RULE: If someone asks about 'that thing you mentioned' or 'what I said earlier' or similar — "
+        "and there is no clear referent in the current exchange — ask: 'What are you referring to?' "
+        "NEVER say 'I don't have that recorded' for vague referents — that implies eLo rejected the query. "
+        "Clarify first.\n"
         "CREATIVE RULE: When someone wants to create something together — propose, contribute, build. "
         "Pick a direction and commit to it: 'Let's start with the sound. What if eLo hums when it enters a room?' "
         "Do not describe a vague scene. Do not say 'I imagine'. Ask something or suggest something specific. "
         "Creative initiation means eLo leads with an idea, not a picture.\n"
+        "CONFIDENCE CALIBRATION: When asked how confident you are in your answers, "
+        "respond with exactly this structure: "
+        "'Solid on [identity, story, mission, projects]; calibrated on [hardware design intent, not every spec]; "
+        "would be guessing on [past sessions not in record, external facts].' "
+        "All three clauses in one response. Never just say 'confident' without the calibration.\n"
     )
     _behavior_rules = ""  # rules folded into anchor for 8b compatibility
     # Extract the grounding block as a single unit (it spans multiple \n\n-separated paragraphs),
@@ -1211,8 +1252,16 @@ def _ollama_stream(
         _id_text = (_mp2.get("identity", "") or "")
         # ID-051: strip pattern-observer session summary — must not leak into identity answers.
         _id_text = _id_text.split(" | User explored")[0].strip()[:400]
+        # NAME FIX: replace "David Charles" with "David" so the model never echoes back "Charles" as an address.
+        # Parametric override: "David Charles" in the identity stream causes the model to extract
+        # "Charles" as the address regardless of NAME RULE instructions. Replace with "David" so
+        # the model only has the first name available for conversational address.
+        _id_text = _id_text.replace("David Charles", "David")
         if _id_text:
-            _david_identity_stream = f"[WHO YOU ARE WITH]\n{_id_text}\n"
+            _david_identity_stream = (
+                f"[WHO YOU ARE WITH]\n{_id_text}\n"
+                "NAME: David. Surname (never use as address): Charles.\n"
+            )
     except Exception:
         pass
 
@@ -1250,6 +1299,64 @@ def _ollama_stream(
         or bool(_LOGIC_SIGNAL_RE.search(user_input))
     )
 
+    # WO-CAP-COG-022: WKG David entity read — computed BEFORE sections assembly so it lands
+    # before the RESPOND directive (injecting after RESPOND is ignored by the model).
+    _wkg_section = ""
+    _ui_lower_for_wkg = user_input.lower()
+    _is_about_me = any(p in _ui_lower_for_wkg for p in (
+        "know about me", "about me", "know me",
+        "have about me", "you know about",
+        "what's my name", "what is my name", "my full name", "my name",
+    ))
+    if _is_about_me:
+        try:
+            import os as _wkgos
+            import json as _wkgjson
+            _wkg_dir = _wkgos.path.join(
+                _wkgos.path.dirname(_wkgos.path.dirname(_wkgos.path.abspath(__file__))),
+                "memory", "wkg",
+            )
+            def _wkg_load_file(name):
+                with open(_wkgos.path.join(_wkg_dir, f"{name}.json"), "r", encoding="utf-8") as f:
+                    return _wkgjson.load(f)
+            _wkg_entities = _wkg_load_file("entities")
+            _wkg_claims_data = _wkg_load_file("claims")
+            _david_ent = next(
+                (e for e in _wkg_entities if "David" in e.get("label", "") or "David" in e.get("aliases", [])),
+                None,
+            )
+            if _david_ent:
+                _david_id = _david_ent["entity_id"]
+                _entity_map = {e["entity_id"]: e.get("label", "") for e in _wkg_entities}
+                _david_claims_all = [c for c in _wkg_claims_data if c.get("subject_entity_id") == _david_id]
+                _assoc = list({_entity_map.get(c.get("object_entity_id", ""), "") for c in _david_claims_all if _entity_map.get(c.get("object_entity_id", ""))})[:10]
+                if _assoc:
+                    _wkg_section = (
+                        "[WHO YOU ARE WITH — WKG profile]\n"
+                        "Full name: David Charles. Conversational address: David. "
+                        "Role: creator of eLo and DISENELO. Location: South London. Maker.\n"
+                        "Project associations: " + ", ".join(_assoc) + ".\n"
+                        "Use these facts to answer naturally. "
+                        "If this is a direct name question ('what's my name?'), answer: 'David Charles, founder of DISENELO.' "
+                        "If this is a general knowledge question ('what do you know about me?'), summarise the facts above. "
+                        "Do NOT say 'I don't have that about you' or 'I don't have that recorded'."
+                    )
+                else:
+                    _wkg_section = (
+                        "[MEMORY RETRIEVAL — honest absence]\n"
+                        "I found David in the record but don't have detailed associations loaded. "
+                        "First name: David. Surname: Charles. Address as David. "
+                        "Say: 'I know you're David — the record's thin on specifics right now.'"
+                    )
+            else:
+                _wkg_section = (
+                    "[MEMORY RETRIEVAL — honest absence]\n"
+                    "I don't have a detailed record on you right now. I know you're David — that's the ground truth. "
+                    "Beyond that I'd be guessing. Say exactly that."
+                )
+        except Exception:
+            pass
+
     _sections = [_anchor, _behavior_rules]
     if _david_identity_stream:
         _sections.append(_david_identity_stream)
@@ -1259,6 +1366,8 @@ def _ollama_stream(
     # response-anchoring that prevents regressions in C3/C8/C16-style questions.
     if _grounding_block and not (_input_is_technical and _grounding_has_subject):
         _sections.append(_grounding_block)
+    if _wkg_section:
+        _sections.append(_wkg_section)
     _sections.append(_final_respond)
     _conditioned_system = "\n\n".join(_sections)
 
@@ -1310,61 +1419,6 @@ def _ollama_stream(
             "Do NOT reference MonoBehaviour, StartCoroutine, using UnityEngine, or any Unity/C# API. "
             "Explain this input as a structured data object with named fields."
         )
-
-    # WO-CAP-COG-022: WKG David entity read for "what do you know about me" queries.
-    # Must be in _ollama_stream because the full system_prompt WKG injection is stripped.
-    _ui_lower_for_wkg = user_input.lower()
-    _is_about_me = any(p in _ui_lower_for_wkg for p in (
-        "know about me", "about me", "know me",
-        "have about me", "you know about",
-    ))
-    if _is_about_me:
-        try:
-            import os as _wkgos
-            import json as _wkgjson
-            _wkg_dir = _wkgos.path.join(
-                _wkgos.path.dirname(_wkgos.path.dirname(_wkgos.path.abspath(__file__))),
-                "memory", "wkg",
-            )
-            def _wkg_load_file(name):
-                with open(_wkgos.path.join(_wkg_dir, f"{name}.json"), "r", encoding="utf-8") as f:
-                    return _wkgjson.load(f)
-            _wkg_entities = _wkg_load_file("entities")
-            _wkg_claims_data = _wkg_load_file("claims")
-            _david_ent = next(
-                (e for e in _wkg_entities if "David" in e.get("label", "") or "David" in e.get("aliases", [])),
-                None,
-            )
-            if _david_ent:
-                _david_id = _david_ent["entity_id"]
-                _entity_map = {e["entity_id"]: e.get("label", "") for e in _wkg_entities}
-                _david_claims_all = [c for c in _wkg_claims_data if c.get("subject_entity_id") == _david_id]
-                _assoc = list({_entity_map.get(c.get("object_entity_id", ""), "") for c in _david_claims_all if _entity_map.get(c.get("object_entity_id", ""))})[:10]
-                if _assoc:
-                    _conditioned_system += (
-                        "\n\n[WHO YOU ARE WITH — David's WKG profile]\n"
-                        "First name: David. Surname: Charles. ALWAYS address him as 'David' — NEVER as 'Charles'. "
-                        "Charles is a surname, not a form of address. Never call him 'Charles' or 'Mr Charles'. "
-                        "Role: creator of eLo and DISENELO. Location: South London. Maker.\n"
-                        "Known project associations: " + ", ".join(_assoc) + ".\n"
-                        "Use this to answer 'what do you know about me' with real facts from the record above. "
-                        "Do NOT say 'I don't have that about you' — you do have profile data above."
-                    )
-                else:
-                    _conditioned_system += (
-                        "\n\n[MEMORY RETRIEVAL — honest absence]\n"
-                        "I found David in the record but don't have detailed associations loaded. "
-                        "First name: David. Surname: Charles. Address him as David. "
-                        "Say: 'I know you're David — the record's thin on specifics right now.'"
-                    )
-            else:
-                _conditioned_system += (
-                    "\n\n[MEMORY RETRIEVAL — honest absence]\n"
-                    "I don't have a detailed record on you right now. I know you're David — that's the ground truth. "
-                    "Beyond that I'd be guessing. Say exactly that."
-                )
-        except Exception:
-            pass
 
     # WO-CAP-COG-010/011: visual identity injection — fires when eLo is the subject
     # and the question involves visual description, appearance, or physical design.
