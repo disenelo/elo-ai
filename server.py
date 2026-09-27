@@ -5230,12 +5230,29 @@ def _process_turn(raw: str) -> dict:
                         if _dp_recent:
                             import logging as _dp_log
                             import datetime as _dp_dt
+                            import re as _dp_re
                             _dp_s = _dp_recent.get("summary", "").strip().rstrip(".")
+                            # Strip internal session-log header format:
+                            # "Session N — turn N — action: VERB\nUser: ..." is a compression
+                            # artifact — never a user-facing response.
+                            _dp_s = _dp_re.sub(
+                                r'^Session\s+\d+\s*[—\-]+.*?(?:\n|$)', '', _dp_s,
+                                flags=_dp_re.MULTILINE
+                            ).strip()
+                            # Strip "User: ..." and "eLo: ..." log lines if present
+                            _dp_s = _dp_re.sub(r'^(?:User|eLo):\s+.*?(?:\n|$)', '', _dp_s,
+                                               flags=_dp_re.MULTILINE).strip()
                             if _dp_s.startswith("Session:"):
                                 _dp_s = _dp_s[len("Session:"):].strip()
                             # Strip leading "Today we" — the prefix provides temporal context
                             if _dp_s.lower().startswith("today we "):
                                 _dp_s = _dp_s[len("today we "):].capitalize()
+                            # If summary is now empty or still looks like metadata, fall through
+                            if not _dp_s or _dp_s.startswith("[WORLD_KNOWLEDGE"):
+                                _dp_recent = None
+                        if _dp_recent and _dp_s:
+                            import logging as _dp_log
+                            import datetime as _dp_dt
                             # Use "Right now" only when the vault entry is from today.
                             # Yesterday's session gets "Last session —" — honest, not misleading.
                             _dp_today = _dp_dt.date.today().isoformat()
