@@ -1400,7 +1400,9 @@ def _ollama_stream(
         "skeleton", "joint", "magnet", "neopixel", "plushie", "panel",
     ))
     _visual_section = ""
+    _prepend_no_eyes = False
     if _elo_mentioned and _visual_q and not _input_is_technical:
+        _prepend_no_eyes = True
         _visual_section += (
             "[eLo VISUAL IDENTITY — CRITICAL FACTS]\n"
             "YOUR RESPONSE MUST BEGIN WITH THE WORDS: 'No eyes.' — then continue.\n"
@@ -2606,6 +2608,10 @@ def route(
                 raw = _re_vf.sub(r"I created this (AI|system)[^.]*\.", "", raw, flags=_re_vf.IGNORECASE)
                 raw = _re_vf.sub(r"Massive wall of text[^.]*\.", "", raw, flags=_re_vf.IGNORECASE)
                 raw = raw.strip()
+                # COG-010: visual identity responses must lead with "No eyes." — model resists instruction,
+                # post-process guarantees it when the visual identity section was injected.
+                if _prepend_no_eyes and not raw.lower().startswith("no eyes"):
+                    raw = "No eyes. " + raw
                 return normalise(raw, max_sentences), "ollama"
             except Exception as e:
                 _logger.warning("Ollama failed: %s", e)
