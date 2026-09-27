@@ -200,6 +200,12 @@ class CognitivePlan:
     movement_arrived:       bool = False
     movement_what_happened: str  = "none"
 
+    # ── WP-N: Grounding Context — current conversational ground ─────────────
+    # Set by GroundingFaculty in spine.run(), after CCM, before Executive.
+    # Read by server.py to inject [CONVERSATION GROUND] into system prompt.
+    # None = grounding not yet run or faculty failed silently.
+    grounding_context: "object | None" = None
+
     def needs_llm(self) -> bool:
         return not self.direct_response and not self.system_immediate and not self.system_pending
 
