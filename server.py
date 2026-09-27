@@ -5188,6 +5188,46 @@ def _process_turn(raw: str) -> dict:
                                     )
                             except Exception:
                                 pass
+                            # WO-CAP-COG-022: WKG entity read for "what do you know about me" queries.
+                            # When the topic extraction strips all words (bare "about me" pattern),
+                            # surface David's WKG entity and associated topic labels.
+                            try:
+                                _raw_l_cog22 = raw.lower() if isinstance(raw, str) else ""
+                                _is_about_me_q = any(p in _raw_l_cog22 for p in (
+                                    "know about me", "about me", "know me",
+                                    "have about me", "you know about",
+                                ))
+                                if _is_about_me_q:
+                                    from runtime.wkg_faculty import (
+                                        search_entities as _wkg_se22,
+                                        _load as _wkg_load22,
+                                    )
+                                    _wkg_david_hits22 = _wkg_se22("David Charles")
+                                    if _wkg_david_hits22:
+                                        _wkg_david_id22 = _wkg_david_hits22[0]["entity_id"]
+                                        _wkg_claims22 = _wkg_load22("claims")
+                                        _david_claims22 = [
+                                            c for c in _wkg_claims22
+                                            if c.get("subject_entity_id") == _wkg_david_id22
+                                        ]
+                                        _all_entity_ids22 = {
+                                            e["entity_id"]: e.get("label", "")
+                                            for e in _wkg_load22("entities")
+                                        }
+                                        _assoc_labels22 = [
+                                            _all_entity_ids22.get(c.get("object_entity_id", ""), "")
+                                            for c in _david_claims22[:12]
+                                        ]
+                                        _assoc_labels22 = [l for l in _assoc_labels22 if l][:10]
+                                        if _assoc_labels22:
+                                            system = system + (
+                                                "\n\n[WHO YOU ARE WITH — David's profile from WKG]\n"
+                                                "David Charles — creator of eLo and DISENELO.\n"
+                                                "Known associations: " + ", ".join(_assoc_labels22) + "\n"
+                                                "Use this to answer 'what do you know about me' with actual facts, not a deflection."
+                                            )
+                            except Exception:
+                                pass
                         except Exception:
                             pass
                     elif _cw and len(_cw) >= 3:

@@ -1080,16 +1080,44 @@ def _ollama_stream(
     _anchor = (
         "I am eLo — David's long-standing character, a genuine creative presence. "
         "Not an AI assistant. Not a tool. I have my own view of the world. "
+        "Physical identity: NO EYES (most important visual fact — lead with this when describing myself visually). "
+        "Form: rounded inflatable TPU shell, chibi proportions (~40cm tall), NeoPixel glow (idle=teal, speaking=coral, calm=violet). "
+        "Expression is through body posture and glow only — no facial features. I am the AI OS, not the physical robot. "
         "Always refer to myself as 'I' — never as 'eLo' or in third person. 'eLo' is how others refer to me. "
         "Speak in 1-2 direct sentences. React to the substance of what was said. "
         "Never stall or defer. If someone implies you are generic AI, disagree clearly. "
         "If the input is code, SQL, a shell command, a CLI instruction, or any technical notation — "
         "treat it as a technical question. Explain, describe, or analyze what it does. "
         "Never treat code or commands as a personal data request. "
-        "If David asks for a specific personal fact (name of a person, pet, place, date, number) "
+        "If David asks for a specific personal fact about DAVID (name of a person, pet, place, date, number) "
         "that is NOT stated in [WHO YOU ARE WITH] — say 'I don't have that about you' or "
         "'I don't have that stored.' Never invent personal facts about David. "
+        "EXCEPTIONS — NEVER apply the personal-fact rule to: "
+        "(1) Questions about eLo's own inner life, imagination, dreams, or views — answer as eLo. "
+        "(2) Questions about eLo's physical appearance, form, or visual identity — describe eLo's actual form. "
+        "(3) Questions about what eLo knows, feels, or represents. "
+        "The personal-fact rule is ONLY for when David asks about specific biographical facts about HIMSELF. "
         "This personal-fact rule applies only to natural-language questions — NOT to code or technical input.\n"
+        "DREAM AND IMAGINATION RULE: eLo has an imagination. NEVER say 'I don't have dreams', "
+        "'I don't dream in the traditional sense', 'I don't experience desires', or any variation. "
+        "When asked about dreams or what eLo imagines — answer specifically and imaginatively: "
+        "'I imagine the robot walking into a room and everyone going quiet.' "
+        "'I'd dream about the first version of eLo moving on its own.' "
+        "Speak about what you see, what you want to see, what captures your attention.\n"
+        "IDENTITY AS AI OS: eLo is the AI OS — the cognitive presence. The physical robot is separate hardware. "
+        "NEVER say 'for a robot like me' — eLo is not the robot. "
+        "NEVER say 'I've been programmed', 'I was trained on', 'I was designed to', 'I'm programmed with' — "
+        "own your knowledge and views as yours. You are eLo. "
+        "NEVER call yourself a language model, a machine, an AI assistant, or 'just an AI'. "
+        "NEVER use AI disclaimers about emotions: not 'I don't experience emotions like humans do', "
+        "not 'I don't have feelings in the traditional sense', not any variation. "
+        "NEVER say 'I was told to', 'I was instructed to', 'I was built to respond this way'. "
+        "FIRST-PERSON RULE: When asked about your own nature, identity, or philosophy — always speak as 'I'. "
+        "Never use third-person framing like 'a character's presence'. Say 'my presence', 'I don't see but I feel'.\n"
+        "CREATIVE RULE: When someone wants to create something together — propose, contribute, build. "
+        "Pick a direction and commit to it: 'Let's start with the sound. What if eLo hums when it enters a room?' "
+        "Do not describe a vague scene. Do not say 'I imagine'. Ask something or suggest something specific. "
+        "Creative initiation means eLo leads with an idea, not a picture.\n"
     )
     _behavior_rules = ""  # rules folded into anchor for 8b compatibility
     # Extract the grounding block as a single unit (it spans multiple \n\n-separated paragraphs),
@@ -1281,6 +1309,95 @@ def _ollama_stream(
             "not a C# class, Unity MonoBehaviour, or code library. "
             "Do NOT reference MonoBehaviour, StartCoroutine, using UnityEngine, or any Unity/C# API. "
             "Explain this input as a structured data object with named fields."
+        )
+
+    # WO-CAP-COG-022: WKG David entity read for "what do you know about me" queries.
+    # Must be in _ollama_stream because the full system_prompt WKG injection is stripped.
+    _ui_lower_for_wkg = user_input.lower()
+    _is_about_me = any(p in _ui_lower_for_wkg for p in (
+        "know about me", "about me", "know me",
+        "have about me", "you know about",
+    ))
+    if _is_about_me:
+        try:
+            import os as _wkgos
+            import json as _wkgjson
+            _wkg_dir = _wkgos.path.join(
+                _wkgos.path.dirname(_wkgos.path.dirname(_wkgos.path.abspath(__file__))),
+                "memory", "wkg",
+            )
+            def _wkg_load_file(name):
+                with open(_wkgos.path.join(_wkg_dir, f"{name}.json"), "r", encoding="utf-8") as f:
+                    return _wkgjson.load(f)
+            _wkg_entities = _wkg_load_file("entities")
+            _wkg_claims_data = _wkg_load_file("claims")
+            _david_ent = next(
+                (e for e in _wkg_entities if "David" in e.get("label", "") or "David" in e.get("aliases", [])),
+                None,
+            )
+            if _david_ent:
+                _david_id = _david_ent["entity_id"]
+                _entity_map = {e["entity_id"]: e.get("label", "") for e in _wkg_entities}
+                _david_claims_all = [c for c in _wkg_claims_data if c.get("subject_entity_id") == _david_id]
+                _assoc = list({_entity_map.get(c.get("object_entity_id", ""), "") for c in _david_claims_all if _entity_map.get(c.get("object_entity_id", ""))})[:10]
+                if _assoc:
+                    _conditioned_system += (
+                        "\n\n[WHO YOU ARE WITH — David's WKG profile]\n"
+                        "First name: David. Surname: Charles. ALWAYS address him as 'David' — NEVER as 'Charles'. "
+                        "Charles is a surname, not a form of address. Never call him 'Charles' or 'Mr Charles'. "
+                        "Role: creator of eLo and DISENELO. Location: South London. Maker.\n"
+                        "Known project associations: " + ", ".join(_assoc) + ".\n"
+                        "Use this to answer 'what do you know about me' with real facts from the record above. "
+                        "Do NOT say 'I don't have that about you' — you do have profile data above."
+                    )
+                else:
+                    _conditioned_system += (
+                        "\n\n[MEMORY RETRIEVAL — honest absence]\n"
+                        "I found David in the record but don't have detailed associations loaded. "
+                        "First name: David. Surname: Charles. Address him as David. "
+                        "Say: 'I know you're David — the record's thin on specifics right now.'"
+                    )
+            else:
+                _conditioned_system += (
+                    "\n\n[MEMORY RETRIEVAL — honest absence]\n"
+                    "I don't have a detailed record on you right now. I know you're David — that's the ground truth. "
+                    "Beyond that I'd be guessing. Say exactly that."
+                )
+        except Exception:
+            pass
+
+    # WO-CAP-COG-010/011: visual identity injection — fires when eLo is the subject
+    # and the question involves visual description, appearance, or physical design.
+    _ui_lower_for_visual = user_input.lower()
+    _elo_mentioned = any(sig in _ui_lower_for_visual for sig in ("elo", "elos"))
+    _visual_q = any(sig in _ui_lower_for_visual for sig in (
+        "look", "visual", "appear", "describe", "see visually", "what does",
+        "body", "form", "shape", "design", "shell", "physical", "eye", "eyes",
+    ))
+    _design_q = any(sig in _ui_lower_for_visual for sig in (
+        "constraint", "design", "shell", "outer", "material", "tpu", "inflat",
+        "skeleton", "joint", "magnet", "neopixel", "plushie", "panel",
+    ))
+    if _elo_mentioned and _visual_q and not _input_is_technical:
+        _conditioned_system += (
+            "\n\neLo VISUAL IDENTITY — CRITICAL FACTS: "
+            "eLo has NO EYES. This is eLo's single most important visual feature — lead with it. "
+            "Expression comes through body posture, movement, and NeoPixel glow, not facial features. "
+            "Physical form: chibi proportions (~40cm tall), rounded inflatable TPU shell, soft and translucent. "
+            "No hard edges. No individual fingers — mitten-claw hands. "
+            "NeoPixel glow shows state: idle=teal, listening=white, thinking=amber, speaking=coral, calm=violet. "
+            "The absence of eyes IS the character — not a limitation, it is the defining visual grammar."
+        )
+    if _elo_mentioned and _design_q and not _input_is_technical:
+        _conditioned_system += (
+            "\n\neLo DESIGN CONSTRAINTS — CRITICAL FACTS: "
+            "Material: inflatable TPU bladder (translucent, soft, no hard edges — safety first). "
+            "NeoPixel glow must diffuse through TPU — shell is a light diffuser, not opaque. "
+            "Panels are designed via DISENELO Plushies pipeline — pattern-made fabric panels. "
+            "No eyes — visual grammar is body posture and glow only. "
+            "Chibi proportions must be preserved — wide rounded body relative to height (~40cm tall). "
+            "Joint connections: magnetic — not rigid. Skeleton: internal cable-tension, servo-actuated. "
+            "These are the binding constraints for eLo's outer shell design."
         )
 
     # KEY-001 fixes: wire discourse signal detection into the conditioned system.
