@@ -91,3 +91,26 @@ NOT ATTENDING + 0.72 ≤ score < 0.90 → ambient_only
 ---
 
 *Architect Seat → Builder Seat · 2026-08-27*
+
+---
+
+## BUILDER RESULT
+
+**Status:** DONE  
+**Commits:** `aecc67b` (self-initiation module) + `f9eaf2a` (result card — flag active, 13/13 PASS)  
+**Date:** 2026-09-27  
+**Tests:** 13/13 PASS
+
+| AT | Description | Result |
+|---|---|---|
+| 13 ATs | Full self-initiation gate suite | ✅ 13/13 PASS |
+
+**Key implementation (`runtime/self_initiation.py`):**
+- `ATTEND_CONVERSE_SECS=45`, `ATTEND_INTERACT_SECS=20`, `SELF_INIT_THRESHOLD=0.72`, `EXCEPTIONAL_THRESHOLD=0.90`, `SELF_INIT_COOLDOWN=180`
+- `is_enabled()` — fails-quiet when `ELO_SELF_INITIATION` ≠ `"1"` (currently ON per `.env`)
+- `record_conversation_pulse()`, `record_direct_interaction()`, `record_self_init()`, `record_dismiss()`
+- `_compute_attending()`, `_compute_hard_quiet()`, `may_self_initiate()` → `SelfInitResult`
+- Default OFF; David L3 ruling `ELO_SELF_INITIATION=1` in `.env` activates it
+- `executive.py` NOT modified (FREEZE_V1_LOCK respected)
+
+**Board action:** Verify + close WO.

@@ -55,3 +55,27 @@ If a layer fails: identify the broken contract/path, fix it within its existing 
 
 Do not extend scope. Do not add new layers. Do not create a new convergence framework.
 This WO exists only to verify the wired system.
+
+---
+
+## BUILDER RESULT
+
+**Status:** DONE  
+**Commit:** `f84f67b` (WO-CONV-001: explicit conversation authority gate 5/5 PASS)  
+**Date:** 2026-09-27  
+**Tests:** 5/5 PASS
+
+| AT | Description | Result |
+|---|---|---|
+| AT-1 | 7 correction phrases detected correctly (not sending, didn't say, wrong about, etc.) | ✅ PASS |
+| AT-2 | Correction context marks `stale_inference_tier='unknown'`, `authority_level='explicit_current_statement'` | ✅ PASS |
+| AT-3 | 6 non-correction phrases correctly return False; no side effects | ✅ PASS |
+| AT-4 | `CognitivePlan.explicit_correction_detected = False` by default | ✅ PASS |
+| AT-5 | `correction_applied=True` and `explicit_correction_detected=True` in build_correction_context() output | ✅ PASS |
+
+**Key implementation:**
+- `runtime/conv_authority.py`: `detect_explicit_correction(text)` → bool; `build_correction_context(text)` → dict with `correction_applied`, `explicit_correction_detected`, `stale_inference_tier`, `authority_level`
+- `runtime/spine/plan.py`: `explicit_correction_detected: bool = False` in CognitivePlan; `grounding_context: object | None = None` added for GroundingFaculty injection
+- Current statement always outranks stale inference when explicit correction phrase detected
+
+**Board action:** Verify + close WO.
