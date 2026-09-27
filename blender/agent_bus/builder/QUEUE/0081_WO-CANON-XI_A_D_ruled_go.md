@@ -43,3 +43,19 @@ than the body it replaced is a regression David will see as eLo moving wrong.
 - commit: `2c9eefc` · parity match rate: 🔴 UNPROVEN (22 pre-route entries, 0 with brain_route/unity_route) · Unity local selection removed: ❌ BLOCKED (parity gate open) · OQ-1.3 caller: `server.py` `_PENDING_MOVE` + move activation block · OQ-1.4 caller: `server.py` move ACK check (`arrived` + `move_complete`)
 - Tests: `tests/test_canon_xi_a_d_route.py` — 3/4 PASS, XI-AD-2 🔴 RED (correct — parity gate, not a failure)
 - Next: run live moves that emit `brain_route` + `unity_route` to `route_memory.jsonl`; XI-AD-2 turns GREEN when match rate ≥ 80%
+
+## BUILDER RESULT — 2026-09-27
+
+**Root cause found and fixed. 206 entries had brain_route/unity_route null due to three bugs:**
+
+1. **`desktop/spatial_state.py`** — `remember_route()` called without `unity_route` even though `elo_spatial.json` `last_move` carries the field. Fixed: pass `unity_route=_lm.get("unity_route")`.
+
+2. **`server.py` `_qmv_arrived` check** — looked at `_qmv.get("report", {}).get("arrived")` but Unity wraps `arrived` under `payload.report`. The server.py ACK path (which holds `brain_route` from `_PENDING_MOVE`) **never fired**. Fixed to also check `payload.report.arrived`.
+
+3. **`server.py` unity_route extraction + `runtime/movement_outcome.py` `from_ack`** — same payload nesting issue. Both fixed to fall through to `payload.report` when top-level and report-level are absent.
+
+- Commit: `43e63e5`
+- Files changed: `desktop/spatial_state.py` (+1 line), `server.py` (+7 lines, 2 sites), `runtime/movement_outcome.py` (+4 lines, 1 site)
+- Tests: 3/4 PASS — XI-AD-2 correctly RED (parity gate still open; existing 206 entries pre-date fix)
+- After fix: spatial_state.py entries get `unity_route`; server.py entries (Python-navigated moves) get both `brain_route` + `unity_route`
+- **Parity gate clears** once eLo executes Python-dispatched navigate moves live. XI-AD-2 turns GREEN at ≥80% match rate. Step 3 (remove Unity local selection) remains BLOCKED until then.
