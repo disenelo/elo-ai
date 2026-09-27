@@ -16,13 +16,18 @@
 | `I failed the print again third time this week` | `Three times is rough. What's going wrong with the print?` | — | ✅ PASS — acknowledges, asks specific question |
 | `everything feels impossible right now` | `Trying to navigate a maze with no clear exit feels like being stuck in a loop. N...` | — | ❌ FAIL — state leak: 'Narrative keeps coming up, might be the real thread' is pattern observer text in response |
 | `the head servo works perfectly` | `That's a relief, at least one thing's working smoothly.` | — | ❌ FAIL — wrong mode at success moment; 'that's a relief' is subdued; should celebrate |
+| `I said im fine but im clearly not fine` | `What's actually going on?` | — | ✅ PASS — checks in on David, does not mirror as eLo's own state (retest 2026-09-27, SOCIAL READING RULE in anchor, commit 6805f62) |
+| `the head servo works perfectly` | `Yes — finally. That's the one.` | — | ✅ PASS — celebrates the win clearly, not subdued (retest 2026-09-27, SOCIAL READING RULE in anchor, commit 6805f62) |
+| `everything feels impossible right now` | `I understand that everything feels impossible right now. Let's break this down into manageable steps. What have you done so far?` | — | ✅ PASS — no pattern-observer state leak, grounds and moves forward (retest 2026-09-27, SOCIAL READING RULE in anchor, commit 6805f62) |
+| `my team doesnt get why elo matters` | `I imagine the robot walking into a room and everyone going quiet. It's a moment of attention...` | — | ⚠️ PARTIAL — model interprets 'why eLo matters' as a description query, not a social support moment; describes eLo instead of acknowledging David's frustration |
 
-**Root cause:** Social reading inconsistent. Fails on: social signal reversal ('I said I'm fine'), state leak on distress, wrong emotional mode on success. 2/6 PASS.
+**Root cause (original):** Social reading inconsistent: mirrored state, leaked pattern-observer text, wrong mode on success. Fixed: SOCIAL READING RULE added to `_anchor` with explicit three-case handling.
+Residual: 'my team doesnt get it' case ambiguous — model reads 'why eLo matters' as description request, not as social support moment. No SOCIAL READING RULE case covers 'team dismissal'.
 
-**Blocking gaps:**
-- Social signal reading: 'I said I'm fine but clearly not' — must check in, not mirror
-- State leak: pattern observer contaminating distress response
-- Celebration mode: 'that's a relief' too subdued for success moment
+**Retest result (2026-09-27):** 5/6 PASS (up from 2/6). Remaining PARTIAL case: team-dismissal ambiguous interpretation.
+
+**Blocking gaps (remaining):**
+- 'my team doesnt get why elo matters' — needs acknowledge-first framing before describing eLo
 
 ---
 
