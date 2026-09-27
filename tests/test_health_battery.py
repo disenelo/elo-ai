@@ -125,7 +125,10 @@ def test_physical_track_stays_disengaged_on_desktop():
     assert hb.get_physical() == 1.0
     assert hb.get_energy() == 0.05
     assert hb.get_state() == "critical"
-    assert "physical_battery" not in hb.snapshot()
+    # Emitted but explicitly untracked — these keys are preserved across full
+    # state writes, so omitting them would freeze stale values in live state.
+    assert hb.snapshot()["physical_state"] == hb.PHYSICAL_UNTRACKED
+    assert hb.snapshot()["physical_battery"] is None
 
 
 def test_physical_engages_once_motion_is_reported():
@@ -286,7 +289,7 @@ def test_missing_game_events_file_is_not_an_error(tmp_path, monkeypatch):
 
 def test_snapshot_always_carries_the_two_required_fields():
     snap = hb.snapshot()
-    assert set(snap) == {"elo_battery", "elo_battery_state"}
+    assert {"elo_battery", "elo_battery_state"} <= set(snap)
     assert 0.0 <= snap["elo_battery"] <= 1.0
     assert snap["elo_battery_state"] in ("full", "normal", "low", "critical")
 
@@ -340,7 +343,7 @@ def test_unrecognised_motion_does_not_engage_physical(value):
     hb.reset()
     hb.tick({"physical": value})
     assert hb.get_physical() == 1.0
-    assert "physical_battery" not in hb.snapshot()
+    assert hb.snapshot()["physical_state"] == hb.PHYSICAL_UNTRACKED
 
 
 @pytest.mark.parametrize("value", sorted(hb.PHYSICAL_ACTIVITIES))
@@ -427,3 +430,27 @@ def test_separate_jumps_each_charge():
     hb.tick({"animation": "jump"}, dt_seconds=0.5)
     drained = 1.0 - hb.get_cognitive()
     assert drained > hb.DRAIN_JUMP * 1.9
+
+
+def test_physical_fields_are_always_emitted_so_they_cannot_go_stale():
+    """
+    They are in state_writer._PRESERVE_KEYS, so a key written once survives
+    every later full state write. Observed live: physical_battery 0.7 /
+    physical_state normal frozen in blender_state.json while the track was
+    not being driven at all.
+    """
+    keys = {"physical_battery", "physical_state",
+            "activity_recent", "activity_duration_minutes"}
+    hb.reset()
+    assert keys <= set(hb.snapshot()), "disengaged snapshot omits physical keys"
+    hb.tick({"physical": "walking"})
+    assert keys <= set(hb.snapshot()), "engaged snapshot omits physical keys"
+
+
+def test_untracked_is_distinct_from_rested():
+    """'no body signal' and 'a rested body' are different claims."""
+    hb.reset()
+    assert hb.snapshot()["physical_state"] == hb.PHYSICAL_UNTRACKED
+    assert hb.PHYSICAL_UNTRACKED not in {s for _f, s in hb.PHYSICAL_STATES}
+    hb.tick({"physical": "standing"})
+    assert hb.snapshot()["physical_state"] == "rested"

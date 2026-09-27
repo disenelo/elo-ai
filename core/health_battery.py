@@ -604,8 +604,25 @@ def consume_game_events(*, rng: random.Random | None = None) -> list[dict]:
 
 # ── blender_state.json output (WO PART A section 5 + ADDENDUM A) ───────────────
 
+PHYSICAL_UNTRACKED = "untracked"
+
+
 def snapshot() -> dict:
-    """The battery fields Unity reads. Written each tick."""
+    """
+    The battery fields Unity reads. Written each tick.
+
+    The physical fields are ALWAYS emitted, even when the track is
+    disengaged. They are in state_writer._PRESERVE_KEYS, so once written they
+    survive every subsequent full state write — omitting them when disengaged
+    left the last values frozen in blender_state.json as stale truth.
+
+    Observed live 2026-09-27: `physical_battery: 0.7, physical_state: normal`
+    sitting in state while the track was not being driven at all. Designer
+    reading that would see a body eLo does not currently have.
+
+    Disengaged emits physical_state = "untracked" — an explicit "no body
+    signal here", which is different from "rested".
+    """
     fields = {
         "elo_battery": round(get_energy(), 3),
         "elo_battery_state": get_state(),
@@ -616,6 +633,13 @@ def snapshot() -> dict:
             "physical_state": get_physical_state(),
             "activity_recent": _activity_recent,
             "activity_duration_minutes": activity_duration_minutes(),
+        })
+    else:
+        fields.update({
+            "physical_battery": None,
+            "physical_state": PHYSICAL_UNTRACKED,
+            "activity_recent": None,
+            "activity_duration_minutes": 0.0,
         })
     return fields
 
