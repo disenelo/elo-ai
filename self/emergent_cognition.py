@@ -76,6 +76,25 @@ def internal_intents(state: "EloSelfState", idle_seconds: float = 0.0) -> list[d
                 "trigger":  state.focal_thread,
             })
 
+    # Dream insight: a dream that cleared the retention gate has something
+    # worth considering. WO-DREAM-ENGINE-001 PHASE 8 — "Executive decides
+    # what surfaces to waking cognition. Dream Faculty does not speak
+    # directly." So it proposes here, through the sole proposer, at low
+    # priority like every other intent, and the Executive arbitrates.
+    #
+    # The marker is only set by wake_from_dream() when the dream's
+    # significance cleared DREAM_RETENTION_THRESHOLD. An unretained dream
+    # stays in the journal and never reaches this path.
+    if "dream_insight" in list(state.inner_events)[-8:]:
+        insight = (state.session_read or "").strip()
+        if insight.startswith("woke from dream"):
+            intents.append({
+                "kind":     "dream_insight",
+                "priority": "low",
+                "source":   "dream_review",
+                "trigger":  insight,
+            })
+
     # Micro-goal: high curiosity + no recent action → want-to-explore
     if (state.curiosity >= 0.80
             and state.current_action == "idle"

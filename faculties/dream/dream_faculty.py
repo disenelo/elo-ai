@@ -881,6 +881,16 @@ def wake_from_dream(dream_result: DreamResult, elo_self):
     new_mood      = min(1.0, getattr(elo_self, "mood",      0.5) + 0.08)
 
     events = list(getattr(elo_self, "inner_events", [])) + ["connection"]
+
+    # PHASE 8 — only a dream that CLEARED the retention gate leaves a trace
+    # the proposer can see. An unretained dream stays in the journal and
+    # never reaches waking cognition. The Dream Faculty still does not speak:
+    # this marks that there is something to consider, and internal_intents()
+    # proposes it for the Executive to arbitrate (WO-INGRESS-32 keeps
+    # internal_intents the sole proposer — this adds no bypass).
+    if (dream_result.journal_entry or {}).get("retained"):
+        events.append("dream_insight")
+
     events = events[-8:]
 
     insight_fragment = dream_result.insight[:45] if dream_result.insight else ""
