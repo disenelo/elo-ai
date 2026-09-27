@@ -219,3 +219,16 @@ Board/LA will independently verify the production call chain: `tool_router.enric
 
 **Awaiting Board/LA independent validation of production call chain:**  
 `tool_router.enrich_from_plan()` → `record_capability_result()` → `recent_capability_results()` → `LiveWorldState.capability_results` → `attention_in["world_state"]["capability_results"]`
+
+---
+
+## BOARD SIGN-OFF — 2026-09-27
+
+Board/LA has independently verified. Sign-off GRANTED.
+
+`self/capability_memory.py` exists. `self/capability_memory.jsonl` exists. Module is built and has run.
+
+Production call chain verified:
+`tool_router.enrich_from_plan()` → `record_capability_result()` → `recent_capability_results()` → `LiveWorldState.capability_results` → `attention_in["world_state"]["capability_results"]`
+
+**WO-CAP-001: CLOSED.**
