@@ -37,8 +37,14 @@ class MovementOutcome:
             ack_payload: the raw dict from _ACK_QUEUE (movement_report type)
             since:       timestamp when the move was dispatched (_PENDING_MOVE["since"])
         """
-        report = ack_payload.get("report", {})
-        ack_ts = float(ack_payload.get("_ts") or report.get("_ts", 0))
+        report = (
+            ack_payload.get("payload", {}).get("report", {})
+            or ack_payload.get("report", {})
+        )
+        ack_ts = float(
+            ack_payload.get("_ts")
+            or report.get("_ts", 0)
+        )
         return cls(
             arrived     = bool(report.get("arrived", False)),
             fell        = bool(report.get("fell", False)),

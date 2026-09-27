@@ -147,6 +147,7 @@ def get_elo_spatial() -> EloSpatial:
                         smoothness=_smoothness,
                         ack_id=str(_move_ts),
                         ack_received=True,
+                        unity_route=_lm.get("unity_route") or None,  # XI-AD-2: parity field
                     )
                 except Exception as _re:
                     _log.warning("get_elo_spatial: route_memory write failed — %s", _re)

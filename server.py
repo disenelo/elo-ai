@@ -4297,9 +4297,16 @@ def _process_turn(raw: str) -> dict:
                     # Keep legacy arrived/move_complete for backwards compatibility.
                     _qmv_arrived = (
                         _qmv_type == "movement_report"
-                        and bool(_qmv.get("report", {}).get("arrived", False))
+                        and bool(
+                            _qmv.get("report", {}).get("arrived", False)
+                            or _qmv.get("payload", {}).get("report", {}).get("arrived", False)
+                        )
                     ) or _qmv_type in ("arrived", "move_complete")
-                    _qmv_ts = float(_qmv.get("_ts") or _qmv.get("report", {}).get("_ts", 0))
+                    _qmv_ts = float(
+                        _qmv.get("_ts")
+                        or _qmv.get("report", {}).get("_ts", 0)
+                        or _qmv.get("payload", {}).get("report", {}).get("_ts", 0)
+                    )
                     if _qmv_arrived and _qmv_ts > _PENDING_MOVE["since"]:
                         _move_acked = True
                         _mv_ev = _qmv
@@ -4355,6 +4362,7 @@ def _process_turn(raw: str) -> dict:
                         _xi_unity_route = (
                             _mv_ev.get("unity_route")
                             or _mv_ev.get("report", {}).get("unity_route")
+                            or _mv_ev.get("payload", {}).get("report", {}).get("unity_route")
                             or None
                         )
                         _PENDING_MOVE["brain_route"] = None  # XI-AD-2: consumed at ACK
