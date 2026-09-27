@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import json
 import time
+import time as _t_mod
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
@@ -312,6 +313,91 @@ def generate_scene_images(
             results.append({"ok": False, "scene": n, "error": reason})
 
     return results
+
+
+def _complete_journal_entry(entry: dict, *, started_ts: float = 0.0) -> dict:
+    """
+    PHASE 7 — the extended journal schema, plus the PHASE 8 review folded in.
+
+    Two jobs:
+
+    1. **Flatten.** PHASES 1-4 nest everything inside `cycles`. The WO's §7
+       schema wants `seeds`, `prompts`, `emotion_vector`, `dream_world`,
+       `dream_rule`, `transformations` and `wkg_relationships` readable at
+       the top level, so a journal reader does not have to walk the cycles.
+    2. **Review.** Run the PHASE 8 wake transfer gate over the entry and fold
+       its cognitive channel in: significance, retention, candidate insights,
+       new associations, candidate SPG patterns, unresolved questions.
+
+    Strictly ADDITIVE. Every pre-existing key keeps its name and meaning —
+    `phase` stays `phase`, and `sleep_phase` is added alongside it because
+    the §7 schema names it that. Renaming would break existing readers.
+    """
+    cycles = entry.get("cycles") or []
+
+    # -- 1. flatten what the cycles produced --
+    seeds: list[dict] = []
+    prompts: list[str] = []
+    transformations: list[str] = []
+    wkg: list[dict] = []
+    memories_used: list[str] = []
+    for cycle in cycles:
+        prompts.extend(cycle.get("prompts") or [])
+        for name in cycle.get("transformations") or []:
+            if name not in transformations:
+                transformations.append(name)
+        for seed in cycle.get("seeds") or []:
+            seeds.append(seed)
+            source = seed.get("source")
+            if source and source not in memories_used:
+                memories_used.append(source)
+            for subject, objects in (seed.get("wkg") or {}).items():
+                for obj in objects:
+                    pair = {"subject": subject, "object": obj}
+                    if pair not in wkg:
+                        wkg.append(pair)
+
+    first = cycles[0] if cycles else {}
+    world = first.get("dream_world") or {}
+
+    entry.setdefault("date", _t_mod.strftime("%Y-%m-%d", _t_mod.localtime(
+        entry.get("timestamp") or _t_mod.time())))
+    entry.setdefault("duration_s", round(max(0.0, _t_mod.time() - (started_ts or 0.0)), 1))
+    # §7 names it sleep_phase; `phase` is kept untouched for existing readers.
+    entry.setdefault("sleep_phase", entry.get("phase"))
+    entry.setdefault("cycle_number", entry.get("cycle_count", 0))
+    entry.setdefault("seeds", seeds)
+    entry.setdefault("prompts", prompts)
+    entry.setdefault("transformations", transformations)
+    entry.setdefault("memories_used", memories_used)
+    entry.setdefault("wkg_relationships", wkg)
+    entry.setdefault("emotion_vector", first.get("emotion_vector") or {})
+    entry.setdefault("dream_world", world)
+    entry.setdefault("dream_rule", world.get("physical_rule", ""))
+    # Always present, empty when no artwork ran. A journal reader should never
+    # have to test for key existence to know a dream produced no images.
+    entry.setdefault("scene_images", [])
+    entry.setdefault("final_artwork", None)
+
+    # -- 2. PHASE 8 review, folded into the cognitive half of the entry --
+    try:
+        from faculties.dream import dream_review as _dr
+        review = _dr.review(entry)
+        cognitive = review.cognitive_channel()
+        entry["significance"] = review.significance
+        entry["retained"] = review.retained
+        entry["candidate_insights"] = cognitive["candidate_insights"]
+        entry["new_associations"] = cognitive["new_associations"]
+        entry["spg_patterns"] = cognitive["candidate_spg_patterns"]
+        entry["unresolved_questions"] = cognitive["research_questions"]
+        # The Executive routes what surfaces; the faculty never speaks.
+        entry["surfaces_directly"] = False
+    except Exception as e:
+        print(f"[dream] review failed: {e}")
+
+    # Nothing in a dream journal is ever a fact.
+    entry["output_type"] = "DREAM"
+    return entry
 
 
 def render_dream_artwork(
@@ -745,6 +831,14 @@ def run_dream(
                 entry["symbol_lexicon"] = _sh.lexicon_summary(_SYMBOL_HISTORY_PATH)
         except Exception:
             pass
+        # ── PHASE 7: complete the journal schema ─────────────────────────────
+        # Runs last so it can flatten everything the cycles produced and fold
+        # in the PHASE 8 review. Additive — no existing key is renamed.
+        try:
+            _complete_journal_entry(entry, started_ts=_last_dream_ts)
+        except Exception as e:
+            print(f"[dream] journal completion failed: {e}")
+
         try:
             _JOURNAL_PATH.parent.mkdir(parents=True, exist_ok=True)
             with open(_JOURNAL_PATH, "a", encoding="utf-8") as f:
