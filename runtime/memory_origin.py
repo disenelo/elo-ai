@@ -26,6 +26,90 @@ class MemoryOrigin(str, Enum):
     DREAM_INSIGHT    = "dream_insight"     # dream-derived insight that earned significance
     SELF_MODEL       = "self_model"        # eLo's understanding of itself
     SEMANTIC         = "semantic"          # abstract knowledge, not tied to a specific event
+    # WO-CAP-EMB-051 — the embodiment distinction. "This is non-negotiable."
+    SIMULATED_EXPERIENCE = "simulated_experience"  # a body did it — a simulated one
+    PHYSICAL_EXPERIENCE  = "physical_experience"   # the physical body actually did it
+
+
+# ── WO-CAP-EMB-051: simulated vs physical experience ──────────────────────────
+#
+# Verbatim source §51:
+#     SIMULATED EXPERIENCE
+#     PHYSICAL EXPERIENCE
+#     eLo can remember both.
+#     But they must be labelled differently.
+#     Otherwise:
+#     I already know how this works.
+#     could mean:
+#     I tested it in Unity.
+#     when it has never physically done it.
+#
+# REAL_EXPERIENCE above does not carry this distinction — an action in the
+# Unity desktop avatar and an action by the robot were both "real". eLo can
+# remember both, so neither is excluded from storage; the point is that they
+# are LABELLED differently and a simulated memory can never be the basis for
+# a claim of physical capability.
+
+SIMULATED_EMBODIMENTS: frozenset[str] = frozenset({
+    "desktop", "unity", "terminal", "alexa", "phone", "ios", "ipad", "sim",
+})
+PHYSICAL_EMBODIMENTS: frozenset[str] = frozenset({
+    "robot", "pi", "pi5", "raspberry_pi", "animatronic", "body",
+})
+
+
+def current_embodiment(default: str = "desktop") -> str:
+    """
+    Which body eLo is in right now, read from the live state the server
+    writes. Not declared — observed.
+    """
+    import json
+    import os
+
+    path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "blender", "blender_state.json",
+    )
+    try:
+        with open(path, encoding="utf-8") as f:
+            value = json.load(f).get("embodiment")
+        return str(value).strip().lower() if value else default
+    except Exception:
+        return default
+
+
+def origin_for_embodiment(embodiment: str | None = None) -> MemoryOrigin:
+    """
+    The origin an experience in this body should carry.
+
+    An unrecognised embodiment is treated as SIMULATED. Defaulting the other
+    way would let a new body silently claim physical experience it has not
+    had, which is the exact failure §51 forbids.
+    """
+    name = (embodiment or current_embodiment()).strip().lower()
+    if name in PHYSICAL_EMBODIMENTS:
+        return MemoryOrigin.PHYSICAL_EXPERIENCE
+    return MemoryOrigin.SIMULATED_EXPERIENCE
+
+
+def is_physical(origin: MemoryOrigin | str) -> bool:
+    """True only for experience a physical body actually had."""
+    try:
+        return MemoryOrigin(origin) is MemoryOrigin.PHYSICAL_EXPERIENCE
+    except Exception:
+        return False
+
+
+def can_claim_physical_experience(origin: MemoryOrigin | str) -> bool:
+    """
+    May eLo say "I have done this" on the strength of a memory with this
+    origin?
+
+    Only a physical body earns that. Simulated experience, dreams, semantic
+    knowledge and the self-model all answer False — "I tested it in Unity"
+    is not "I have physically done it".
+    """
+    return is_physical(origin)
 
 
 # The canonical significance threshold for promoting DREAM_SIMULATION → DREAM_INSIGHT.
