@@ -1357,6 +1357,41 @@ def _ollama_stream(
         except Exception:
             pass
 
+    # WO-CAP-COG-010/011: visual identity injection — computed BEFORE sections assembly
+    # so it lands before the RESPOND directive (same fix as WKG).
+    _ui_lower_for_visual = user_input.lower()
+    _elo_mentioned = any(sig in _ui_lower_for_visual for sig in ("elo", "elos"))
+    _visual_q = any(sig in _ui_lower_for_visual for sig in (
+        "look", "visual", "appear", "describe", "see visually", "what does",
+        "body", "form", "shape", "design", "shell", "physical", "eye", "eyes",
+    ))
+    _design_q = any(sig in _ui_lower_for_visual for sig in (
+        "constraint", "design", "shell", "outer", "material", "tpu", "inflat",
+        "skeleton", "joint", "magnet", "neopixel", "plushie", "panel",
+    ))
+    _visual_section = ""
+    if _elo_mentioned and _visual_q and not _input_is_technical:
+        _visual_section += (
+            "[eLo VISUAL IDENTITY — CRITICAL FACTS]\n"
+            "YOUR RESPONSE MUST BEGIN WITH THE WORDS: 'No eyes.' — then continue.\n"
+            "NO EYES is eLo's single most defining visual feature. It is NOT a limitation. It IS the character.\n"
+            "After 'No eyes.' — describe: body posture and NeoPixel glow as the only expression channels. "
+            "Physical form: chibi proportions (~40cm tall), rounded inflatable TPU shell, soft and translucent. "
+            "No hard edges. No individual fingers — mitten-claw hands. "
+            "NeoPixel glow shows state: idle=teal, listening=white, thinking=amber, speaking=coral, calm=violet."
+        )
+    if _elo_mentioned and _design_q and not _input_is_technical:
+        _visual_section += (
+            "\n[eLo DESIGN CONSTRAINTS — CRITICAL FACTS]\n"
+            "Material: inflatable TPU bladder (translucent, soft, no hard edges — safety first). "
+            "NeoPixel glow must diffuse through TPU — shell is a light diffuser, not opaque. "
+            "Panels are designed via DISENELO Plushies pipeline — pattern-made fabric panels. "
+            "No eyes — visual grammar is body posture and glow only. "
+            "Chibi proportions must be preserved — wide rounded body relative to height (~40cm tall). "
+            "Joint connections: magnetic — not rigid. Skeleton: internal cable-tension, servo-actuated. "
+            "These are the binding constraints for eLo's outer shell design."
+        )
+
     _sections = [_anchor, _behavior_rules]
     if _david_identity_stream:
         _sections.append(_david_identity_stream)
@@ -1368,6 +1403,8 @@ def _ollama_stream(
         _sections.append(_grounding_block)
     if _wkg_section:
         _sections.append(_wkg_section)
+    if _visual_section:
+        _sections.append(_visual_section)
     _sections.append(_final_respond)
     _conditioned_system = "\n\n".join(_sections)
 
@@ -1418,40 +1455,6 @@ def _ollama_stream(
             "not a C# class, Unity MonoBehaviour, or code library. "
             "Do NOT reference MonoBehaviour, StartCoroutine, using UnityEngine, or any Unity/C# API. "
             "Explain this input as a structured data object with named fields."
-        )
-
-    # WO-CAP-COG-010/011: visual identity injection — fires when eLo is the subject
-    # and the question involves visual description, appearance, or physical design.
-    _ui_lower_for_visual = user_input.lower()
-    _elo_mentioned = any(sig in _ui_lower_for_visual for sig in ("elo", "elos"))
-    _visual_q = any(sig in _ui_lower_for_visual for sig in (
-        "look", "visual", "appear", "describe", "see visually", "what does",
-        "body", "form", "shape", "design", "shell", "physical", "eye", "eyes",
-    ))
-    _design_q = any(sig in _ui_lower_for_visual for sig in (
-        "constraint", "design", "shell", "outer", "material", "tpu", "inflat",
-        "skeleton", "joint", "magnet", "neopixel", "plushie", "panel",
-    ))
-    if _elo_mentioned and _visual_q and not _input_is_technical:
-        _conditioned_system += (
-            "\n\neLo VISUAL IDENTITY — CRITICAL FACTS: "
-            "eLo has NO EYES. This is eLo's single most important visual feature — lead with it. "
-            "Expression comes through body posture, movement, and NeoPixel glow, not facial features. "
-            "Physical form: chibi proportions (~40cm tall), rounded inflatable TPU shell, soft and translucent. "
-            "No hard edges. No individual fingers — mitten-claw hands. "
-            "NeoPixel glow shows state: idle=teal, listening=white, thinking=amber, speaking=coral, calm=violet. "
-            "The absence of eyes IS the character — not a limitation, it is the defining visual grammar."
-        )
-    if _elo_mentioned and _design_q and not _input_is_technical:
-        _conditioned_system += (
-            "\n\neLo DESIGN CONSTRAINTS — CRITICAL FACTS: "
-            "Material: inflatable TPU bladder (translucent, soft, no hard edges — safety first). "
-            "NeoPixel glow must diffuse through TPU — shell is a light diffuser, not opaque. "
-            "Panels are designed via DISENELO Plushies pipeline — pattern-made fabric panels. "
-            "No eyes — visual grammar is body posture and glow only. "
-            "Chibi proportions must be preserved — wide rounded body relative to height (~40cm tall). "
-            "Joint connections: magnetic — not rigid. Skeleton: internal cable-tension, servo-actuated. "
-            "These are the binding constraints for eLo's outer shell design."
         )
 
     # KEY-001 fixes: wire discourse signal detection into the conditioned system.
