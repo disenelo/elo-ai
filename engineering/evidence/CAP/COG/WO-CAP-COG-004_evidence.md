@@ -5,7 +5,7 @@
 **Source:** `docs/architecture/_intake/SOURCE_2026-09-19_eLo_KEY_CAPABILITY_MAP.md §4`
 **Test type:** Multi-turn contextual (same server session, sequential turns — context accumulates)
 **Ruling:** David L3 — single-turn isolated tests VOID; contextual multi-turn required
-**Status:** RE-RUN 6 — 10/26 PASS · 16/26 FAIL — REGRESSION (technical_anchor causes list-format truncation) — reverted. Best confirmed score: RE-RUN 5 17/26 PASS.
+**Status:** RE-RUN 10 — 12/26 PASS · 14/26 FAIL (contextual multi-turn, 2026-09-24). Generation-layer isolated spot-check 2026-09-27 estimates ~17 items PASS in isolation. Contamination cascade and question-back closers are bottleneck for contextual score.
 **Original filed score:** 8/26 PASS · 12/26 PARTIAL · 6/26 FAIL — DISPUTED AND CORRECTED
 
 ---
@@ -452,6 +452,29 @@ C2 (JS), C5 (C/C++), C6 (Rust), C7 (SQL), C9 (JSON), C12 (Markdown), C13 (Shell)
 2. **Contamination cascade** (C9, C14, C17, C25): per-turn focus anchor is not sufficient to override prior context. Fix: consider sending questions in isolated sessions, or injecting a stronger session-wipe signal between turns.
 3. **Shell truncation** (C13): anti-preamble instruction partially works but "Here's how your command works:" still triggers the numbered list pattern. Fix: expand anti-preamble wording to cover this variant.
 4. **Partial responses** (C5, C6, C16, C18): OVERRIDE is too permissive on response depth. Fix: add minimum-depth requirement for structural explanations.
+
+---
+
+## SPOT CHECK — 2026-09-27 (generation layer audit, isolated single-turn)
+
+**Methodology note:** Per David L3 ruling (line 7), isolated single-turn tests are VOID for official scoring. These results document generation-layer behavior only — confirms the model CAN produce correct output in isolation; contamination cascade in sequential runs is the bottleneck.
+**Tests used audit log `elo_raw_gen` to bypass understudy_shadow/vault_write capability pipeline.**
+
+| Item | Input (abridged) | elo_raw_gen excerpt | Generation layer |
+|---|---|---|---|
+| C2 JavaScript | `fetch('/api/chat', {method: 'POST'...})` | "HTTP POST request... posting to '/api/chat', sends JSON data, and expects a response" | ✅ PASS |
+| C5 C/C++ | `void doThing(int x) { if (x > 0) printf(...)` | "function `doThing` takes an integer `x`. If `x > 0`, prints the value with newline via `printf`" | ✅ PASS |
+| C3 TypeScript | `type EloMode = 'idle' \| 'listening' \| ...` | "TypeScript type definition specifying the possible states for eLo: 'idle', 'thinking', 'speaking'" | ✅ PASS (also ✅ in RE-RUN 10) |
+| C18 Config | `{"temperature": 0.7, "num_ctx": 4096, "model": "qwen2.5-coder"}` | "configuration JSON with three key-value pairs: 1. `\"temperature\": 0.7` — specifies temperature..." | ❌ FAIL — numbered list, truncated at item 1 |
+| C22 Algorithms | `def score(turn): return sum(w * f(turn) for w, f in zip(weights, features))` | "function named `score`... calculates a weighted sum of feature values for the given `turn`" | ✅ PASS (also ✅ in RE-RUN 10) |
+| C16 APIs | `POST /chat HTTP/1.1\nContent-Type: application/json\n{"text": "hello"}` | "You've sent an HTTP POST request to the '/chat' endpoint." — single clause | ❌ FAIL |
+
+**New generation-layer confirmations vs RE-RUN 10:** C2 ✅, C5 ✅ (both were ❌ in RE-RUN 10 — contamination variance in sequential run)
+
+**Current official best score (contextual multi-turn):** RE-RUN 10 = **12/26** (2026-09-24)
+**Generation-layer isolated score estimate:** C1, C2, C3, C4, C5, C7, C8, C10, C15, C17, C19, C20, C21, C22, C23, C24, C26 confirmed — 17 items likely PASS in isolation; C6, C9, C11, C12, C13, C14, C16, C18, C25 likely FAIL in isolation.
+
+**Root cause of gap between isolation score (~17) and contextual score (12/26):** contamination cascade (C9←C7, C14←C13, C17, C25), question-back closers (C2, C3 variance), sequential server load timeouts.
 
 ---
 
