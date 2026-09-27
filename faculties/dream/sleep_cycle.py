@@ -261,6 +261,25 @@ class SleepCycle:
 
 # ── blender_state.json publishing ──────────────────────────────────────────────
 
+def awake_fields() -> dict:
+    """
+    The dream fields as they must read when eLo is NOT dreaming.
+
+    These keys are in state_writer._PRESERVE_KEYS, so once written they
+    survive every later state write. They are only set on a phase transition
+    and only cleared on dream exit — so if a dream never exits cleanly, or
+    anything writes them outside a dream, they freeze.
+
+    Observed live 2026-09-27: blender_state carried
+    `dream_cycle: 5, dream_phase: "rem", dream_intensity: 1.0` while
+    `intent: "conversation"` and `state.mode: "idle"` — eLo awake and
+    talking, with Unity told he was in maximum-intensity REM sleep.
+
+    So something must assert the awake case on a cadence, not only on exit.
+    """
+    return {"dream_cycle": 0, "dream_phase": None, "dream_intensity": 0.0}
+
+
 def publish(phase: CyclePhase | None) -> bool:
     """
     Write this phase's dream fields to blender_state.json.

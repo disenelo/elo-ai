@@ -218,6 +218,19 @@ def _battery_tick() -> None:
 
         state = _read_state()
         motion = state.get("motion", {}) or {}
+        fields: dict = {}
+
+        # Dream-state coherence. The dream fields are preserved across state
+        # writes and only cleared on a clean dream exit, so they can freeze —
+        # observed live carrying cycle-5 REM while eLo was awake and talking.
+        # is_dreaming() is the authority; assert the awake case every tick.
+        try:
+            from faculties.dream.dream_faculty import is_dreaming as _is_dreaming
+            from faculties.dream.sleep_cycle import awake_fields as _awake
+            if not _is_dreaming():
+                fields.update(_awake())
+        except Exception:
+            pass
 
         if _is_calm():
             _hb.calm_tick(dt)
@@ -228,7 +241,14 @@ def _battery_tick() -> None:
                 idle_seconds=_user_idle_secs if _user_is_idle else 0.0,
                 dt_seconds=dt,
             )
-        _hb.publish()
+        # One write: battery + dream coherence together, rather than two
+        # read-modify-write passes over the state file every tick.
+        fields.update(_hb.snapshot())
+        try:
+            from blender_bridge.state_writer import patch as _patch
+            _patch(fields)
+        except Exception:
+            pass
     except Exception:
         pass
 

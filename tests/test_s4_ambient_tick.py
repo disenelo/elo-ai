@@ -117,3 +117,65 @@ def test_is_calm_reads_presence_state_not_server(monkeypatch, tmp_path):
     assert ae._is_calm() is False, "IDLE is not calm"
     p.unlink()
     assert ae._is_calm() is False
+
+
+# ── Dream-state coherence ─────────────────────────────────────────────────────
+# The dream fields are in state_writer._PRESERVE_KEYS and are only cleared on
+# a clean dream exit, so they freeze. Observed live 2026-09-27: blender_state
+# carried dream_cycle 5 / dream_phase "rem" / dream_intensity 1.0 while
+# intent was "conversation" and state.mode was "idle" — eLo awake and talking,
+# with Unity told he was in maximum-intensity REM sleep.
+
+def test_awake_fields_clear_the_dream_state():
+    from faculties.dream.sleep_cycle import awake_fields
+    assert awake_fields() == {
+        "dream_cycle": 0, "dream_phase": None, "dream_intensity": 0.0}
+
+
+def test_tick_asserts_the_awake_case_when_not_dreaming(monkeypatch):
+    written: list = []
+    monkeypatch.setattr("blender_bridge.state_writer.patch",
+                        lambda fields: written.append(fields))
+    monkeypatch.setattr(ae, "_read_state", lambda: {"motion": {}})
+    monkeypatch.setattr(ae, "_is_calm", lambda: False)
+    monkeypatch.setattr("faculties.dream.dream_faculty.is_dreaming", lambda: False)
+
+    ae._last_battery_ts = time.time() - 1.0
+    ae._battery_tick()
+
+    assert written, "tick wrote nothing"
+    fields = written[-1]
+    assert fields["dream_phase"] is None
+    assert fields["dream_cycle"] == 0
+    assert fields["dream_intensity"] == 0.0
+
+
+def test_tick_does_not_clear_the_dream_state_mid_dream(monkeypatch):
+    """A running dream owns those fields; the tick must not stamp over it."""
+    written: list = []
+    monkeypatch.setattr("blender_bridge.state_writer.patch",
+                        lambda fields: written.append(fields))
+    monkeypatch.setattr(ae, "_read_state", lambda: {"motion": {}})
+    monkeypatch.setattr(ae, "_is_calm", lambda: False)
+    monkeypatch.setattr("faculties.dream.dream_faculty.is_dreaming", lambda: True)
+
+    ae._last_battery_ts = time.time() - 1.0
+    ae._battery_tick()
+
+    assert "dream_phase" not in written[-1]
+
+
+def test_battery_and_dream_share_one_write(monkeypatch):
+    """Two read-modify-write passes per tick over the live file is wasteful."""
+    written: list = []
+    monkeypatch.setattr("blender_bridge.state_writer.patch",
+                        lambda fields: written.append(fields))
+    monkeypatch.setattr(ae, "_read_state", lambda: {"motion": {}})
+    monkeypatch.setattr(ae, "_is_calm", lambda: False)
+    monkeypatch.setattr("faculties.dream.dream_faculty.is_dreaming", lambda: False)
+
+    ae._last_battery_ts = time.time() - 1.0
+    ae._battery_tick()
+
+    assert len(written) == 1
+    assert "elo_battery" in written[0] and "dream_phase" in written[0]
