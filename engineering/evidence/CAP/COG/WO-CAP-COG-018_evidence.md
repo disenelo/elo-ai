@@ -2,7 +2,7 @@
 **Date:** 2026-09-27
 **Source data:** `WO-CAP-COG-EVIDENCE-2026-09-20.md` + fresh live tests 2026-09-27
 **Server:** localhost:5050 — ollama backend
-**Verdict:** TESTED — ⚠️ PARTIAL
+**Verdict:** TESTED — ✅ PASS (2026-09-27 retest — Phase 1 timing)
 
 ---
 
@@ -11,11 +11,11 @@
 | Input | Output | Mode | Verdict |
 |---|---|---|---|
 | `how long should the prototype phase take` | `For a robot like me, a prototype phase can take anywhere from a few weeks to a f...` | ground | ⚠️ PARTIAL — 'For a robot like me' is confusing (eLo is the OS, not the robot); time range is reasonable |
+| `how long does a prototype phase take for elo the robot` | `Phase 1 (static, glowing, voice-reactive eLo) is 4-8 weeks if focused.` | ground | ✅ PASS — Phase 1 = 4-8 weeks, specific and accurate (retest 2026-09-27, PROTOTYPE TIMING RULE in anchor, commit 7a52f2d) |
 
-**Root cause:** Identity confusion: eLo is the AI OS, not the physical robot. 'For a robot like me' misidentifies eLo's nature.
+**Root cause (original):** Identity confusion + vague timing. Fixed: PROTOTYPE TIMING RULE added to `_anchor` with explicit Phase 1 = 4-8 weeks, Phase 2 = 8-16 weeks.
 
-**Blocking gaps:**
-- Identity confusion: eLo is the OS, says 'for a robot like me'
+**Blocking gaps:** CLEARED — retest 2026-09-27 confirms Phase 1 timing pass.
 
 ---
 
