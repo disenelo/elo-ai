@@ -26,15 +26,15 @@ def ok(n):      global PASS; PASS += 1; print(f"  ✅ {n}")
 def fail(n, r): global FAIL; FAIL += 1; print(f"  ❌ {n}: {r}")
 
 
-# ── AT-1: ccm_enricher returns all 26 dims as keys ────────────────────────────
+# ── AT-1: ccm_enricher returns all 28 dims as keys ────────────────────────────
 try:
     from faculties.ccm.ccm_enricher import enrich as ccm_enrich, CCM_DIMS
 
     # Minimal turn — should still yield all dim keys, most None
     result_min = ccm_enrich("hello", {}, None)
     assert isinstance(result_min, dict), f"enrich() must return dict, got {type(result_min)}"
-    # 27 dims: original 26 + street_language (added WO-CCM-CATEGORY-C-001, David L3 2026-09-05)
-    assert len(result_min) == 27, f"expected 27 dim keys, got {len(result_min)}: {list(result_min.keys())}"
+    # 28 dims: 26 original + street_language (WO-CCM-CATEGORY-C-001) + creator_matrix (WO-CCM-CREATOR-MATRIX-001)
+    assert len(result_min) == 28, f"expected 28 dim keys, got {len(result_min)}: {list(result_min.keys())}"
 
     # A richer turn — many dims should fire
     rich_turn = (
@@ -49,7 +49,7 @@ try:
     assert len(triggered) >= 10, (
         f"AT-1 FAIL: expected ≥10 dims triggered on rich turn, got {len(triggered)}: {triggered}"
     )
-    ok(f"AT-1: enrich() returns 27 dims; {len(triggered)} triggered on rich turn")
+    ok(f"AT-1: enrich() returns 28 dims; {len(triggered)} triggered on rich turn")
 except AssertionError as e:
     fail("AT-1", e)
 except Exception as e:
