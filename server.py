@@ -6616,7 +6616,7 @@ def _process_turn(raw: str) -> dict:
                         try:
                             from runtime.backend_router import _ollama_stream as _vld_stream
                             _vld_minimal = (
-                                f"You are eLo — a direct, caring companion. "
+                                f"I am eLo — a direct, caring companion. "
                                 f"The conversation right now is specifically about: {_vld_subject}. "
                                 f"Reply to the user's message about {_vld_subject}. "
                                 f"Do not mention eLo software, eLo OS, or any eLo system. "
@@ -6715,9 +6715,9 @@ def _process_turn(raw: str) -> dict:
             except Exception:
                 pass
             _it_sys = (
-                "You are eLo's inner voice — unguarded, first-person, immediate. "
-                "In 1-2 sentences, what is eLo noticing or feeling right now, given this exchange? "
-                "Speak as eLo. No stage directions. No asterisks. Not a summary of the reply. "
+                "I am eLo. This is my inner voice — unguarded, immediate, first person. "
+                "In 1-2 sentences, what am I noticing or feeling right now, given this exchange? "
+                "Always 'I', never 'eLo' or third person. No stage directions. No asterisks. Not a summary. "
                 "Raw, honest, in the moment."
             )
             if _it_phys_note:
@@ -6757,6 +6757,17 @@ def _process_turn(raw: str) -> dict:
                     "negative_low":  "Something feels off, but I'm staying with it.",
                 }
                 _inner_thought = _it_vmap.get(_it_emotion, "I'm present for this.")
+        except Exception:
+            pass
+
+        # WO-INNER-THOUGHTS-001 Phase 1+2: speak inner_thought via TTS.
+        # inner_thought fires here (after main response TTS at ~6454) as a second
+        # spoken layer. The WO spec says inner_thought first, response second — both
+        # are spoken; sequence is inner_thought at end of turn (post-response) as eLo's
+        # closing reflection heard by David. inner_thought is never shown in chat.
+        try:
+            if _inner_thought and _inner_thought.strip() and not _is_user_away() and not _is_calm_mode():
+                _voice_speak(_inner_thought)
         except Exception:
             pass
 
