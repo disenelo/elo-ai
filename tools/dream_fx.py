@@ -486,7 +486,7 @@ class FXResult:
     strength: float = 0.0
 
 
-def apply_fx(
+def _run_pipeline(
     image: Image.Image,
     *,
     emotion: str,
@@ -552,6 +552,97 @@ def apply_to_file(
 ) -> FXResult:
     """Apply the pipeline to a file on disk and save the result."""
     with Image.open(path) as img:
-        result = apply_fx(img, emotion=emotion, intensity=intensity, seed=seed)
+        result = _run_pipeline(img, emotion=emotion, intensity=intensity, seed=seed)
     result.image.save(out_path)
     return result
+
+
+# ── Compatibility surface — WO-DREAM-006 ──────────────────────────────────────
+#
+# tools/dream_fx.py was built twice on 2026-09-27: WO-DREAM-006 (b0dec8a,
+# 06:35) and this file, WO-DREAM-ENGINE-001 PHASE 5c (f877ff3, 06:43). The
+# second replaced the first wholesale and took its API with it.
+#
+# That was not only a red test file. tools/image_gen_agent.py:233 calls
+#     apply_fx(img, intensity, emotion_vector or {})
+# inside a `try/except Exception` that logs a warning and carries on, so from
+# f877ff3 onward EVERY generated dream image silently skipped the entire FX
+# pipeline, saved untreated, and still reported ok=True to its caller.
+#
+# Both APIs are kept. The WO-DREAM-006 names are thin adapters over the
+# PHASE 5c implementations — one pipeline, two call shapes, nothing
+# reimplemented and nothing dropped.
+
+
+def dominant_emotion(emotion_vector: "Mapping[str, float] | dict | None") -> str:
+    """Strongest emotion in a vector. '' when empty — row_for_emotion defaults."""
+    vec = {k: float(v) for k, v in dict(emotion_vector or {}).items()}
+    if not vec:
+        return ""
+    return max(vec.items(), key=lambda kv: kv[1])[0]
+
+
+def apply_fx(
+    image: Image.Image,
+    intensity: float | None = None,
+    emotion_vector: dict | None = None,
+    *,
+    emotion: str | None = None,
+    seed: int | None = None,
+    include_base: bool = True,
+):
+    """
+    Two call shapes, one pipeline.
+
+        apply_fx(img, emotion="wonder", intensity=0.7)  -> FXResult  (PHASE 5c)
+        apply_fx(img, 0.7, {"wonder": 0.9})             -> Image     (WO-DREAM-006)
+
+    The positional form is what image_gen_agent.py has always called. It
+    returns RGBA, as that caller expects.
+    """
+    if emotion is not None:
+        return _run_pipeline(
+            image, emotion=emotion,
+            intensity=float(intensity if intensity is not None else 0.0),
+            seed=seed, include_base=include_base,
+        )
+    out = _run_pipeline(
+        image, emotion=dominant_emotion(emotion_vector),
+        intensity=float(intensity or 0.0), seed=seed, include_base=include_base,
+    ).image
+    return out if out.mode == "RGBA" else out.convert("RGBA")
+
+
+def _as_rgba(img: Image.Image) -> Image.Image:
+    """WO-DREAM-006 returned RGBA from every effect. PHASE 5c works in RGB."""
+    return img if img.mode == "RGBA" else img.convert("RGBA")
+
+
+def blob_tracking(image: Image.Image, intensity: float,
+                  rng: random.Random | None = None) -> Image.Image:
+    """WO-DREAM-006 name for fx_blob_tracking."""
+    return _as_rgba(fx_blob_tracking(image, float(intensity), rng or random.Random()))
+
+
+def datamosh(image: Image.Image, intensity: float, amount: float = 1.0,
+             rng: random.Random | None = None) -> Image.Image:
+    """
+    WO-DREAM-006 name for fx_datamosh.
+
+    `amount` scaled displacement in the WO-DREAM-006 implementation; it scales
+    strength here, which is the same knob in this one. Not ignored.
+    """
+    strength = max(0.0, min(1.0, float(intensity) * float(amount)))
+    return _as_rgba(fx_datamosh(image, strength, rng or random.Random()))
+
+
+def vcr(image: Image.Image, intensity: float,
+        rng: random.Random | None = None) -> Image.Image:
+    """WO-DREAM-006 name for fx_vcr."""
+    return _as_rgba(fx_vcr(image, float(intensity), rng or random.Random()))
+
+
+def summagator(image: Image.Image, intensity: float,
+               rng: random.Random | None = None) -> Image.Image:
+    """WO-DREAM-006 name for fx_summagator."""
+    return _as_rgba(fx_summagator(image, float(intensity), rng or random.Random()))

@@ -3,6 +3,11 @@ tests/test_dream_fx_and_compositor.py
 
 WO-DREAM-006 (FX pipeline) + WO-DREAM-007 (layer compositor).
 
+Every composite test passes out_dir=tmp_path. Without it composite() writes to
+~/Desktop/eLo Generated/dreams -- eLo's real dream gallery -- and running the
+suite files fabricated dreams there. It had: all 12 files in that folder were
+test artefacts from this suite, from both seats that built this WO.
+
 Tests are disconnection-falsifiable: removing dream_fx.py or
 layer_compositor.py makes these RED.
 """
@@ -132,6 +137,7 @@ class TestLayerCompositor:
             emotion_vector={"joy": 0.7, "wonder": 0.9},
             recurring_symbol="a machine breathing",
             intensity=0.7,
+            out_dir=tmp_path,
         )
         assert result["ok"] is True
         assert os.path.exists(result["final_path"])
@@ -143,12 +149,12 @@ class TestLayerCompositor:
         img = _make_img(64, 64)
         p = tmp_path / "scene_00.png"
         img.convert("RGB").save(str(p))
-        result = composite([str(p)], "test_single", intensity=0.5)
+        result = composite([str(p)], "test_single", intensity=0.5, out_dir=tmp_path)
         assert result["ok"] is True
 
-    def test_composite_empty_fails(self):
+    def test_composite_empty_fails(self, tmp_path):
         from faculties.dream.layer_compositor import composite
-        result = composite([], "test_empty", intensity=0.5)
+        result = composite([], "test_empty", intensity=0.5, out_dir=tmp_path)
         assert result["ok"] is False
 
     def test_sidecar_contains_output_type(self, tmp_path):
@@ -157,7 +163,7 @@ class TestLayerCompositor:
         img = _make_img(64, 64)
         p = tmp_path / "scene_00.png"
         img.convert("RGB").save(str(p))
-        result = composite([str(p)], "test_sidecar", intensity=0.5,
+        result = composite([str(p)], "test_sidecar", intensity=0.5, out_dir=tmp_path,
                            dream_record={"dream_id": "test_sidecar", "output_type": "DREAM"})
         assert result["ok"] is True
         with open(result["sidecar_path"]) as f:
@@ -172,7 +178,7 @@ class TestLayerCompositor:
             p = tmp_path / f"scene_{i:02d}.png"
             img.convert("RGB").save(str(p))
             scenes.append(str(p))
-        result = composite(scenes, "test_png", intensity=0.6)
+        result = composite(scenes, "test_png", intensity=0.6, out_dir=tmp_path)
         assert result["ok"] is True
         reopened = Image.open(result["final_path"])
         assert reopened.size == (128, 128)

@@ -56,6 +56,7 @@ BLEND_OVERLAY = "overlay"
 BLEND_SCREEN = "screen"
 BLEND_DIFFERENCE = "difference"
 BLEND_COLOR_DODGE = "color_dodge"
+BLEND_LIGHTER = "lighter"      # WO-DREAM-006 mid-layer positive blend
 
 # Emotion -> the blend family that emotion composites in.
 # Two options per row, per the WO; the apex takes the second (more extreme)
@@ -331,3 +332,77 @@ def composite_dream(
         sidecar_path=sidecar_path,
         metadata=metadata,
     )
+
+
+# ── Compatibility surface — WO-DREAM-007 ──────────────────────────────────────
+#
+# layer_compositor.py was built twice on 2026-09-27: WO-DREAM-007 (b0dec8a)
+# and this file, WO-DREAM-ENGINE-001 PHASE 6 (cc9ea5b), which replaced it and
+# took its API with it. Both are kept. _blend_mode below is WO-DREAM-007's own
+# selection rule, reproduced faithfully rather than redirected at blend_for():
+# the two disagree at the apex for joy/wonder (screen vs color_dodge), and
+# silently substituting one seat's aesthetic for the other's is not a
+# compatibility shim.
+
+def _blend_mode(emotion_vector, layer_index: int) -> str:
+    """
+    WO-DREAM-007 blend selection. layer_index: 0=base, 1=mid, 2=apex+.
+    """
+    ev = {k: float(v) for k, v in dict(emotion_vector or {}).items()}
+    if layer_index == 0:
+        return BLEND_NORMAL
+    positive = ev.get("wonder", 0.0) + ev.get("joy", 0.0)
+    negative = ev.get("anxiety", 0.0) + ev.get("fear", 0.0)
+    neutral = ev.get("sadness", 0.0)
+    if positive >= negative and positive >= neutral:
+        return BLEND_SCREEN if layer_index >= 2 else BLEND_LIGHTER
+    if negative > positive:
+        return BLEND_MULTIPLY if layer_index < 2 else BLEND_DIFFERENCE
+    return BLEND_OVERLAY
+
+
+# WO-DREAM-007 wrote here unconditionally. Kept as the default so production
+# callers are unchanged; tests pass out_dir so the suite cannot write into
+# eLo's real dream artwork folder.
+DEFAULT_OUTPUT_DIR = Path.home() / "Desktop" / "eLo Generated" / "dreams"
+
+
+def composite(
+    scene_paths,
+    dream_id: str,
+    emotion_vector=None,
+    recurring_symbol: str = "",
+    intensity: float = 0.5,
+    dream_record: dict | None = None,
+    out_dir=None,
+) -> dict:
+    """
+    WO-DREAM-007 entry point, over composite_dream().
+
+    Returns the WO-DREAM-007 dict: ok, final_path, sidecar_path, layers_used.
+    An empty or unreadable scene list returns ok=False rather than raising.
+    """
+    from tools.dream_fx import dominant_emotion
+
+    scenes = [{"path": str(p), "scene": i, "intensity": float(intensity)}
+              for i, p in enumerate(scene_paths or [])]
+    result = composite_dream(
+        scenes,
+        dream_id=dream_id,
+        emotion=dominant_emotion(emotion_vector),
+        significance=float(intensity),
+        recurring_symbol=recurring_symbol,
+        out_dir=DEFAULT_OUTPUT_DIR if out_dir is None else out_dir,
+        dream_record=dream_record,
+    )
+    if result.image is None:
+        return {"ok": False, "final_path": "", "sidecar_path": "",
+                "layers_used": 0,
+                "error": result.motif.get("reason", "no usable scenes")}
+    return {
+        "ok": True,
+        "final_path": result.final_path,
+        "sidecar_path": result.sidecar_path,
+        "layers_used": result.metadata.get("scene_count", 0),
+        "metadata": result.metadata,
+    }
