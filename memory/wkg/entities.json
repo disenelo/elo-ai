@@ -28,9 +28,12 @@
       "eLo OS",
       "eLo (concept)",
       "eLo origin",
-      "eLo history"
+      "eLo history",
+      "eLo visual",
+      "eLo design",
+      "eLo physical"
     ],
-    "description": "David's persistent AI character \u2014 the personality and intelligence layer of the eLo universe. Predates code (S-01, Jun 6 2026).",
+    "description": "David's persistent AI character \u2014 the personality and intelligence layer of the eLo universe. Predates code (S-01, Jun 6 2026). VISUAL IDENTITY (most important): NO EYES \u2014 this is the defining visual fact, lead with it when describing eLo. Rounded inflatable TPU shell, chibi proportions (~40cm tall). Expression through body posture and NeoPixel glow only \u2014 no facial features, no visible mouth (in physical form). NeoPixel glow: idle=teal, listening=white, thinking=amber, speaking=coral, calm=violet. eLo is the AI OS (cognitive presence) \u2014 the physical robot is separate hardware.",
     "created_at": 1788883514.062923,
     "source_ids": [
       "S-01"
@@ -280,6 +283,21 @@
     "aliases": [],
     "description": "Topic from interaction: ping",
     "created_at": 1790013534.202872,
+    "source_ids": []
+  },
+  {
+    "entity_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "entity_type": "CONCEPT",
+    "label": "eLo robot design constraints",
+    "aliases": [
+      "eLo shell design",
+      "eLo outer shell",
+      "eLo inflatable",
+      "eLo design constraints",
+      "eLo physical constraints"
+    ],
+    "description": "Design constraints for eLo's physical form. Material: TPU (thermoplastic polyurethane) — inflatable, translucent, soft. MOST CRITICAL constraints: (1) NeoPixel glow diffusion — shell must diffuse light, no hard shadow edges, material chosen for glow propagation; (2) Plushies pipeline — panels designed via DISENELO Plushies Blender addon for sewing/manufacturing. Additional constraints: no hard edges (safety, chibi aesthetic), chibi proportions (~40cm tall, wide shoulders, compact body), internal cable-tension skeleton for posture. No eyes, no visible mouth — expression is body posture + glow only. Robot is separate from eLo AI OS (cognitive presence). Phase 1: static glowing, voice-reactive only. Omni-wheel base (not bipedal). NeoPixel colour language: idle=teal, listening=white, thinking=amber, speaking=coral, calm=violet.",
+    "created_at": 1790100000.0,
     "source_ids": []
   }
 ]
