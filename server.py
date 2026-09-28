@@ -1090,8 +1090,22 @@ def ambient_thought() -> None:
             _lock.release()
             return
 
-        # Top intent (all are low-priority; first is the active candidate)
-        _top_intent: dict = dict(_intents[0])
+        # Top intent — highest salience wins, ties broken by list order.
+        #
+        # This used to be `_intents[0]`, which made precedence a side effect of
+        # the order the proposers happen to be written in. Nothing could ever
+        # outrank a proposer defined earlier. A dream needs >= 600s idle, so
+        # `exploration` (fires at >= 300s) was always ahead of it, and a
+        # retained dream insight was proposed and then silently discarded
+        # every single time.
+        #
+        # Salience defaults descend in the previous list order, so this is
+        # behaviour-preserving for the existing intents; it only gives the
+        # dream — the one intent that had to clear a gate to exist — a way to
+        # actually win. It competes; it does not bypass.
+        _top_intent: dict = dict(
+            max(_intents, key=lambda i: float(i.get("salience", 0.0)))
+        )
 
         # ── Assemble ambient context into the intent payload ──────────────────
         # Cultural fact (25% draw)

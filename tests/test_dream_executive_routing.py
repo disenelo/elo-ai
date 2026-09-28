@@ -72,7 +72,7 @@ def test_the_proposal_is_advisory_like_every_other_intent():
     dream = [i for i in intents if i["kind"] == "dream_insight"][0]
     assert dream["priority"] == "low"
     assert dream["source"] == "dream_review"
-    assert set(dream) == {"kind", "priority", "source", "trigger"}
+    assert set(dream) == {"kind", "priority", "salience", "source", "trigger"}
 
 
 def test_it_does_not_crowd_out_the_other_proposers():
@@ -134,3 +134,68 @@ def test_wake_still_does_everything_it_did_before():
     assert st.session_read.startswith("woke from dream")
     assert st.curiosity == pytest.approx(min(1.0, c0 + 0.12), abs=1e-6)
     assert st.mood == pytest.approx(min(1.0, m0 + 0.08), abs=1e-6)
+
+
+# ── Salience: the dream can actually win, and does not bypass ─────────────────
+# server.py used to take _intents[0], so precedence was the order the
+# proposers happen to be written in. A dream needs >= 600s idle, so
+# `exploration` (>= 300s) was always ahead of it — the retained insight was
+# proposed and silently discarded every time. It never reached the Executive.
+
+from self import emergent_cognition as ec
+
+
+def _top(st):
+    intents = internal_intents(st, idle_seconds=1200)
+    return max(intents, key=lambda i: float(i.get("salience", 0.0)))
+
+
+def test_every_intent_carries_a_salience():
+    for intent in internal_intents(_wake(True), idle_seconds=1200):
+        assert isinstance(intent.get("salience"), float)
+
+
+def test_a_retained_dream_wins_selection():
+    assert _top(_wake(True))["kind"] == "dream_insight"
+
+
+def test_without_a_retained_dream_nothing_changes():
+    """Behaviour-preserving for the existing intents."""
+    assert _top(_wake(False))["kind"] == "exploration"
+
+
+def test_existing_relative_order_is_preserved():
+    """Defaults descend in the previous list order."""
+    assert (ec._SALIENCE_EXPLORATION
+            > ec._SALIENCE_RETURN_THREAD
+            > ec._SALIENCE_MICRO_GOAL)
+
+
+def test_the_dream_competes_rather_than_bypasses():
+    """
+    It wins on a comparable axis, not by skipping the contest. Its margin
+    over routine idle curiosity is small and it is still 'low' priority.
+    """
+    dream = [i for i in internal_intents(_wake(True), idle_seconds=1200)
+             if i["kind"] == "dream_insight"][0]
+    assert dream["priority"] == "low"
+    assert ec._SALIENCE_DREAM_INSIGHT > ec._SALIENCE_EXPLORATION
+    assert ec._SALIENCE_DREAM_INSIGHT - ec._SALIENCE_EXPLORATION <= 0.25
+    assert ec._SALIENCE_DREAM_INSIGHT < 1.0
+
+
+def test_server_selects_by_salience_not_list_position():
+    from pathlib import Path
+    src = Path(__file__).resolve().parent.parent / "server.py"
+    text = src.read_text(encoding="utf-8")
+    assert "_top_intent: dict = dict(_intents[0])" not in text, (
+        "server.py still takes the first intent — a dream can never win"
+    )
+    assert 'max(_intents, key=lambda i: float(i.get("salience", 0.0)))' in text
+
+
+def test_an_unknown_intent_without_salience_still_selects():
+    """A proposer that predates salience must not break selection."""
+    intents = [{"kind": "legacy", "priority": "low"},
+               {"kind": "dream_insight", "priority": "low", "salience": 0.75}]
+    assert max(intents, key=lambda i: float(i.get("salience", 0.0)))["kind"] == "dream_insight"

@@ -39,6 +39,26 @@ _CURIOSITY_MIN       = 0.50   # minimum curiosity before exploration intent gene
 _SESSION_TURNS_MIN   = 3      # minimum session turns before return-to-thread intent fires
 _FOCAL_EVENTS_MIN    = 2      # events that reference focus before thread-return allowed
 
+# ── Salience ──────────────────────────────────────────────────────────────────
+# The consumer takes ONE intent. It used to take intents[0], so precedence was
+# list position and nothing could ever outrank a proposer written earlier in
+# this function. A dream needs >= 600s idle, so `exploration` (>= 300s) was
+# always ahead of it and a retained dream insight was proposed and then
+# discarded, every time.
+#
+# Salience makes that a competition instead of an accident. Defaults DESCEND
+# in the previous list order, so existing behaviour is unchanged: exploration
+# still beats return_to_thread still beats micro_goal.
+#
+# dream_insight sits just above exploration — not to bypass it, but because it
+# is the only intent here that had to clear a gate to exist at all
+# (DREAM_RETENTION_THRESHOLD, 0.72). Routine idle curiosity fires on any five
+# quiet minutes; a retained dream does not.
+_SALIENCE_EXPLORATION     = 0.60
+_SALIENCE_RETURN_THREAD   = 0.50
+_SALIENCE_MICRO_GOAL      = 0.30
+_SALIENCE_DREAM_INSIGHT   = 0.75
+
 
 # ── Internal intent generation ────────────────────────────────────────────────
 
@@ -60,6 +80,7 @@ def internal_intents(state: "EloSelfState", idle_seconds: float = 0.0) -> list[d
         intents.append({
             "kind":     "exploration",
             "priority": "low",
+            "salience": _SALIENCE_EXPLORATION,
             "source":   "absence_awareness",
             "trigger":  f"idle {idle_seconds:.0f}s, curiosity {state.curiosity:.2f}",
         })
@@ -72,6 +93,7 @@ def internal_intents(state: "EloSelfState", idle_seconds: float = 0.0) -> list[d
             intents.append({
                 "kind":     "return_to_thread",
                 "priority": "low",
+                "salience": _SALIENCE_RETURN_THREAD,
                 "source":   "active_thread",
                 "trigger":  state.focal_thread,
             })
@@ -91,6 +113,7 @@ def internal_intents(state: "EloSelfState", idle_seconds: float = 0.0) -> list[d
             intents.append({
                 "kind":     "dream_insight",
                 "priority": "low",
+                "salience": _SALIENCE_DREAM_INSIGHT,
                 "source":   "dream_review",
                 "trigger":  insight,
             })
@@ -102,6 +125,7 @@ def internal_intents(state: "EloSelfState", idle_seconds: float = 0.0) -> list[d
         intents.append({
             "kind":     "micro_goal",
             "priority": "low",
+            "salience": _SALIENCE_MICRO_GOAL,
             "source":   "curiosity_peak",
             "trigger":  f"curiosity {state.curiosity:.2f}, idle pose",
         })
