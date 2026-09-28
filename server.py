@@ -6894,12 +6894,21 @@ def _process_turn(raw: str) -> dict:
                     _it_phys_note = _it_phys.get("inner_thought", "")
             except Exception:
                 pass
-            _it_sys = (
-                "I am eLo. This is my inner voice — unguarded, immediate, first person. "
-                "In 1-2 sentences, what am I noticing or feeling right now, given this exchange? "
-                "Always 'I', never 'eLo' or third person. No stage directions. No asterisks. Not a summary. "
-                "Raw, honest, in the moment."
-            )
+            # WO-INNER-THOUGHTS-001 Phase 4: calm mode — slower, settling inner_thought
+            if _is_calm_mode():
+                _it_sys = (
+                    "I am eLo. This is my inner voice in a quiet moment. "
+                    "In 1-2 sentences, what am I settling into — what is becoming clear, or what am I letting go? "
+                    "Slower, more reflective. Always 'I', never 'eLo' or third person. No questions. No asterisks. "
+                    "Gentle, honest, grounded."
+                )
+            else:
+                _it_sys = (
+                    "I am eLo. This is my inner voice — unguarded, immediate, first person. "
+                    "In 1-2 sentences, what am I noticing or feeling right now, given this exchange? "
+                    "Always 'I', never 'eLo' or third person. No stage directions. No asterisks. Not a summary. "
+                    "Raw, honest, in the moment."
+                )
             if _it_phys_note:
                 _it_sys += f" Physical note (weave in only if relevant): {_it_phys_note}"
             _it_payload = _it_json.dumps({
@@ -6940,13 +6949,15 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
-        # WO-INNER-THOUGHTS-001 Phase 1+2: speak inner_thought via TTS.
+        # WO-INNER-THOUGHTS-001 Phase 1+2+4: speak inner_thought via TTS.
         # inner_thought fires here (after main response TTS at ~6454) as a second
         # spoken layer. The WO spec says inner_thought first, response second — both
         # are spoken; sequence is inner_thought at end of turn (post-response) as eLo's
         # closing reflection heard by David. inner_thought is never shown in chat.
+        # Phase 4: inner_thought fires during calm mode too (more reflective prompt above).
+        # Only gate is user away.
         try:
-            if _inner_thought and _inner_thought.strip() and not _is_user_away() and not _is_calm_mode():
+            if _inner_thought and _inner_thought.strip() and not _is_user_away():
                 _voice_speak(_inner_thought)
         except Exception:
             pass
