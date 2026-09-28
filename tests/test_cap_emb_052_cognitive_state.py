@@ -254,3 +254,67 @@ def test_state_is_derived_not_stored():
     assert ins.cognitive_state == CognitiveState.DREAM.value
     ins.stage = STAGE_KNOWLEDGE
     assert ins.cognitive_state == CognitiveState.KNOWLEDGE.value
+
+
+# ── cross-seat: Check 16 in response_gate.py ─────────────────────────────────
+#
+# Builder 1 wired can_claim_occurred() into runtime/response_gate.py as
+# Check 16 on 2026-09-28 (75e3962), hours after this vocabulary landed.
+#
+# It gates on a DENY-list -- _INTERNALLY_GENERATED_STATE_NAMES, five entries --
+# so every state not on it passes, and can_claim_occurred() is only consulted
+# INSIDE the branch where its answer is already known. It never decides.
+# OCCURRED_STATES is the allow-list and has three entries, so five states and
+# every unrecognised string are permitted to claim occurrence.
+#
+# xfail, not a red test: response_gate.py is Builder 1's active lane. These
+# flip to XPASS the moment the gate switches to the allow-list.
+
+_OCCURRENCE_CLAIM = "I remember that happened to me."
+
+
+@pytest.mark.xfail(reason="response_gate check-16 uses a deny-list; Builder 1's lane",
+                   strict=False)
+@pytest.mark.parametrize("state", [
+    CognitiveState.KNOWLEDGE,
+    CognitiveState.INFERENCE,
+    CognitiveState.PATTERN,
+    CognitiveState.INSTINCT_REFLEX,
+    CognitiveState.DECISION,
+])
+def test_check16_should_flag_every_non_occurred_state(state):
+    from runtime.response_gate import _check_cognitive_claim_origin as check16
+    assert can_claim_occurred(state) is False
+    ok, _, _ = check16(_OCCURRENCE_CLAIM, {"state": state.value})
+    assert ok is False, (
+        f"{state.value} may claim occurrence at the response layer although "
+        "can_claim_occurred() is False"
+    )
+
+
+@pytest.mark.xfail(reason="response_gate check-16 uses a deny-list; Builder 1's lane",
+                   strict=False)
+def test_a_promoted_dream_insight_may_not_say_it_happened():
+    """
+    The conflation EMB-052 exists to prevent, at the layer that speaks.
+
+    EMB-031's ladder can promote a dream insight to KNOWLEDGE. KNOWLEDGE is
+    "This is known", not "This happened" -- test_no_rung_of_the_ladder_can_
+    claim_something_happened pins that. Check 16 lets it through anyway.
+    """
+    from runtime.response_gate import _check_cognitive_claim_origin as check16
+    from faculties.dream.dream_review import CandidateInsight, STAGE_KNOWLEDGE
+    insight = CandidateInsight(content="c", significance=1.0, stage=STAGE_KNOWLEDGE)
+    assert can_claim_occurred(insight.cognitive_state) is False
+    ok, _, _ = check16(_OCCURRENCE_CLAIM, {"state": insight.cognitive_state})
+    assert ok is False
+
+
+def test_check16_does_flag_the_five_it_covers():
+    """Not a regression report — what Check 16 gets right today."""
+    from runtime.response_gate import _check_cognitive_claim_origin as check16
+    for state in (CognitiveState.DREAM, CognitiveState.SIMULATION,
+                  CognitiveState.IMAGINATION, CognitiveState.PREDICTION,
+                  CognitiveState.HYPOTHESIS):
+        ok, _, flags = check16(_OCCURRENCE_CLAIM, {"state": state.value})
+        assert ok is False and flags, state
