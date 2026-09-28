@@ -6168,6 +6168,8 @@ def _process_turn(raw: str) -> dict:
         # for technical inputs, 3 for non-technical. RR20 Fix D v2 (bypass entirely) caused
         # 5 regressions (C11/C13/C15/C16/C18) — voice_rewrite was cleaning garbled streaming
         # prefixes ("Py`", "Com`") that RR20 bypass exposed in raw output.
+        _vr_changed = False
+        _pre_vr_response = response
         try:
             from runtime.backend_router import _CODE_SIGNAL_RE as _vr_code_sig
             _vr_is_technical = bool(_vr_code_sig.search(_original_raw))
@@ -6185,6 +6187,7 @@ def _process_turn(raw: str) -> dict:
                 llm_caller=_vr_llm,
                 user_text=_original_raw,
             )
+            _vr_changed = response != _pre_vr_response
         except Exception as _vr_err:
             import logging as _vr_log
             _vr_log.getLogger("voice_rewrite").warning(
@@ -6454,6 +6457,7 @@ def _process_turn(raw: str) -> dict:
                 elo_final=response,
                 backend_used=backend_used,
                 executed_action=_agent or "",
+                delta_cause="voice_rewrite" if _vr_changed else None,
             )
         except Exception:
             pass  # shadow capture failure MUST NOT affect the response

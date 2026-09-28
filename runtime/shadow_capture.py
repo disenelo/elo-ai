@@ -83,7 +83,7 @@ def _ensure_writer() -> None:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-_VALID_DELTA_CAUSES = ("none", "style", "verification", "l3_override", "unknown")
+_VALID_DELTA_CAUSES = ("none", "style", "verification", "l3_override", "voice_rewrite", "unknown")
 
 
 def _derive_delta_cause(raw_gen: str | None, final: str | None,

@@ -238,8 +238,14 @@ def voice_rewrite(
                     # _deterministic_strip now returns "" when entire text is a banned opener.
                     stripped_rewrite = _deterministic_strip(rewritten.strip())
                     if stripped_rewrite:
-                        return stripped_rewrite
-                    # LLM only produced a banned opener — fall through to cleaned
+                        # Content-preservation guard: if the rewrite collapsed a substantial
+                        # factual response to < 25% of its length, the LLM dropped the facts.
+                        # Reject and fall through to the deterministically-cleaned candidate.
+                        if len(cleaned) > 100 and len(stripped_rewrite) < len(cleaned) * 0.25:
+                            pass  # fall through
+                        else:
+                            return stripped_rewrite
+                    # LLM only produced a banned opener or collapsed content — fall through to cleaned
         except Exception:
             pass  # fall back to deterministic strip
 
