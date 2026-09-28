@@ -3925,6 +3925,15 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # WO-CREATIVE-VAULT-001: inject prior creative work so COG-029 has grounded content
+        try:
+            from runtime.creative_vault import get_creative_summary as _cv_summary
+            _cv_ctx = _cv_summary()
+            if _cv_ctx:
+                g_ctx = f"{g_ctx}\n[CREATIVE VAULT] {_cv_ctx}" if g_ctx else f"[CREATIVE VAULT] {_cv_ctx}"
+        except Exception:
+            pass
+
         # Spatial awareness — where eLo is, where windows are
         _elo_pos_snap = None
         _wins_snap    = None
@@ -6849,13 +6858,22 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
-        # COG-029 interim: log creative outputs to session events so
-        # same-session creative memory queries have grounded content.
+        # COG-029 / WO-CREATIVE-VAULT-001: log creative outputs to session events
+        # and persist to creative vault for cross-session retrieval.
         try:
             if _action in ("build", "expand") and response and len(response) > 20:
                 from runtime.session_events import record_event as _se_creative
                 _se_creative("creative_output", action=_action,
                              input=raw[:80] if raw else "", output=response[:120])
+                # Persist to cross-session creative vault (WO-CREATIVE-VAULT-001)
+                try:
+                    from runtime.creative_vault import record_creative as _cv_write
+                    _cv_sig = min(1.0, 0.6 + len(response) / 600.0)
+                    _cv_write(content=response[:300], type="idea",
+                              tags=[_action], significance=_cv_sig,
+                              source="conversation")
+                except Exception:
+                    pass
         except Exception:
             pass
 
