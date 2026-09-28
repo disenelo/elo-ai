@@ -6,7 +6,7 @@
     "aliases": [
       "David"
     ],
-    "description": "Creator of eLo and DISENELO",
+    "description": "Creator of eLo and DISENELO. Born in Fulham, raised in Brixton (South London).",
     "created_at": 1788605204.775095,
     "source_ids": []
   },
@@ -146,5 +146,140 @@
     "source_ids": [
       "S-01"
     ]
+  },
+  {
+    "entity_id": "2320e6ab-0f1f-447b-83c7-b5f709be7304",
+    "entity_type": "CONCEPT",
+    "label": "projects",
+    "aliases": [],
+    "description": "Topic from interaction: what you building these days",
+    "created_at": 1789484109.900146,
+    "source_ids": []
+  },
+  {
+    "entity_id": "ced9c887-8b29-4e8d-b8e5-2489b699a88d",
+    "entity_type": "CONCEPT",
+    "label": "world",
+    "aliases": [],
+    "description": "Topic from interaction: [WORLD_KNOWLEDGE \u2014 from eLo's own world (verified, confidence 1.0 \u2014 answer from ",
+    "created_at": 1789484129.115242,
+    "source_ids": []
+  },
+  {
+    "entity_id": "d68f1cb9-5b53-4601-b9ac-c85453b0b7bd",
+    "entity_type": "CONCEPT",
+    "label": "plans",
+    "aliases": [],
+    "description": "Topic from interaction: what happened to the kickstarter plan",
+    "created_at": 1789484261.8774111,
+    "source_ids": []
+  },
+  {
+    "entity_id": "548cfa5b-c7c3-4e3d-aabf-7938fd45339c",
+    "entity_type": "CONCEPT",
+    "label": "contextual state",
+    "aliases": [],
+    "description": "Topic from interaction: right let's get the warmup thread done",
+    "created_at": 1789486761.6212249,
+    "source_ids": []
+  },
+  {
+    "entity_id": "2e7e2c75-afee-450f-9166-8491bfeed551",
+    "entity_type": "CONCEPT",
+    "label": "user",
+    "aliases": [],
+    "description": "Topic from interaction: talk to me",
+    "created_at": 1789523043.6925042,
+    "source_ids": []
+  },
+  {
+    "entity_id": "05a0fa2d-559c-4985-b474-c9ea10ceef7f",
+    "entity_type": "CONCEPT",
+    "label": "emotional",
+    "aliases": [],
+    "description": "Topic from live turn: how are you feeling?",
+    "created_at": 1789525366.242935,
+    "source_ids": []
+  },
+  {
+    "entity_id": "9e151aab-fa78-49ff-ae4a-784cb7162dbc",
+    "entity_type": "CONCEPT",
+    "label": "creative",
+    "aliases": [],
+    "description": "Topic from live turn: i had a really good idea this morning but i forgot to write it down",
+    "created_at": 1789527266.754265,
+    "source_ids": []
+  },
+  {
+    "entity_id": "9098d92e-06c2-480e-91bd-fe0ebe562f71",
+    "entity_type": "CONCEPT",
+    "label": "commitments",
+    "aliases": [],
+    "description": "Topic from interaction: [WEB_SEARCH: the time should return the time]\n[WEB_SEARCH_RESULTS]\n\u2022 time \u2014 Time",
+    "created_at": 1789561883.271306,
+    "source_ids": []
+  },
+  {
+    "entity_id": "04773a8c-1c1a-4949-8e7e-ff41c139ce14",
+    "entity_type": "CONCEPT",
+    "label": "technical",
+    "aliases": [],
+    "description": "Topic from live turn: Fix my 3D printer.",
+    "created_at": 1789692738.358474,
+    "source_ids": []
+  },
+  {
+    "entity_id": "5d00b90a-2632-4654-b48f-0bc096696423",
+    "entity_type": "CONCEPT",
+    "label": "learning",
+    "aliases": [],
+    "description": "Topic from live turn: I didn't understand the pending message.",
+    "created_at": 1789693002.844128,
+    "source_ids": []
+  },
+  {
+    "entity_id": "73b465f0-dbc6-4122-9873-5f0dcc4cd31e",
+    "entity_type": "CONCEPT",
+    "label": "memory",
+    "aliases": [],
+    "description": "Topic from live turn: what's a good way to test a servo before full assembly",
+    "created_at": 1789700474.0200582,
+    "source_ids": []
+  },
+  {
+    "entity_id": "7ea5e27a-eca3-4440-9eeb-6190f3baa12d",
+    "entity_type": "CONCEPT",
+    "label": "relationship",
+    "aliases": [],
+    "description": "Topic from interaction: you could use a signal tester or just wire it to a microcontroller and sweep it",
+    "created_at": 1789700483.525154,
+    "source_ids": []
+  },
+  {
+    "entity_id": "1581d56d-36c4-4859-a371-5b8fc42f5207",
+    "entity_type": "CONCEPT",
+    "label": "preferences",
+    "aliases": [],
+    "description": "Topic from interaction: you could use a signal tester or just wire it to a microcontroller and sweep it",
+    "created_at": 1789701011.014991,
+    "source_ids": []
+  },
+  {
+    "entity_id": "356c3b2a-c644-4e6b-bb53-a2f186cd6ced",
+    "entity_type": "CONCEPT",
+    "label": "decisions",
+    "aliases": [],
+    "description": "Topic from interaction: How's it going with you?",
+    "created_at": 1789859304.470752,
+    "source_ids": []
+  },
+  {
+    "entity_id": "5491d01b-dc35-47ad-86c7-9c60d8f3a46f",
+    "entity_type": "CONCEPT",
+    "label": "experiences",
+    "aliases": [],
+    "description": "Topic from interaction: ping",
+    "created_at": 1790013534.202872,
+    "source_ids": []
   }
 ]

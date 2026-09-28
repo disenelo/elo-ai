@@ -1,6 +1,9 @@
 {
   "user": {
-    "name": "David",
+    "name": "David Charles",
+    "full_name": "David Charles",
+    "location": "South London — born Fulham, raised Brixton",
+    "role": "Founder of DISENELO",
     "creative_style": "expands ideas rapidly, holds contradictions, myth-making tendency",
     "domain_range": ["art", "AI", "game design", "storytelling", "product design", "animatronics"],
     "preference_notes": [
