@@ -2206,6 +2206,13 @@ def _process_turn(raw: str) -> dict:
     global _state, _runtime_state, _last_inputs, _last_avatar_cmd, _elo_self
     _original_raw = raw  # WO-020: capture before enrichment for routing trace
 
+    # WO-SESSION-EVENT-FEED-001: record turn event for session grounding
+    try:
+        from runtime.session_events import record_event as _se_record_turn
+        _se_record_turn("turn", text=raw[:120])
+    except Exception:
+        pass
+
     with _lock:
         # 0037/WO-ONEBRAIN-015: refresh self-model from disk at the start of every turn.
         # No long-lived in-memory copy. All mutations this turn go through _self_mutate(fn).
@@ -3908,6 +3915,16 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # WO-SESSION-EVENT-FEED-001: inject real session event summary so SPG is grounded
+        try:
+            from runtime.session_events import get_session_summary as _ses_summary
+            _ses_ctx = _ses_summary()
+            if _ses_ctx:
+                _ses_block = f"[SESSION] {_ses_ctx}"
+                g_ctx = f"{g_ctx}\n{_ses_block}" if g_ctx else _ses_block
+        except Exception:
+            pass
+
         # Spatial awareness — where eLo is, where windows are
         _elo_pos_snap = None
         _wins_snap    = None
@@ -5386,6 +5403,14 @@ def _process_turn(raw: str) -> dict:
                         # plan.capabilities = [(agent_name, query)] chosen by spine's capability
                         # faculty. Trust that over re-running keyword matching on the same raw input.
                         _enriched, _agent = _tool_enrich_from_plan(raw, _plan_caps)
+
+                        # WO-SESSION-EVENT-FEED-001: record capability execution
+                        if _agent:
+                            try:
+                                from runtime.session_events import record_event as _se_record_cap
+                                _se_record_cap("capability", name=_agent)
+                            except Exception:
+                                pass
 
                         # Direct-return agents (time, calculator, timer) produce authoritative
                         # factual results that must not be rewritten by the LLM.
@@ -7306,6 +7331,13 @@ if __name__ == "__main__":
 
     _startup_faculty_check()
     _init_session()
+
+    # WO-SESSION-EVENT-FEED-001: emit session_start event so SPG has a real timestamp anchor
+    try:
+        from runtime.session_events import record_event as _se_record_start
+        _se_record_start("session_start")
+    except Exception:
+        pass
 
     # Wire wake continuity — mirrors main.py:122-124; must run after _init_session() sets _state
     try:
