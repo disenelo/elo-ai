@@ -15,11 +15,18 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 from typing import Optional
 
 import logging
 _log = logging.getLogger(__name__)
+
+# Board fix (2026-09-28): 204 ledger entries contain "you Charles" as the
+# "correct" form of address after a scrub layer misgeneralized David's surname.
+# Filter them on read so they never inject as few-shot examples.
+# Guard also applied on write so new poisoned entries are rejected.
+_CHARLES_ADDRESS_RE = re.compile(r"(?<!David )Charles\b")
 
 TIER_AUTO  = "green"
 TIER_DAVID = "red"
@@ -62,6 +69,10 @@ def store_correction(
     if tier == TIER_DAVID and not reviewed:
         return False  # blocked — David must review before this enters memory
 
+    if _CHARLES_ADDRESS_RE.search(corrected_response):
+        _log.warning("store_correction: rejected — 'Charles' used as address form in corrected_response")
+        return False  # reject poisoned address form before it reaches the ledger
+
     entry = {
         "id":                 f"CX-{int(time.time() * 1000) % 10_000_000:07d}",
         "input":              input_text,
@@ -93,6 +104,9 @@ def _load_ledger() -> list[dict]:
                 try:
                     e = json.loads(line)
                     if e.get("reviewed") or e.get("tier") == TIER_AUTO:
+                        cr = e.get("corrected_response", "")
+                        if _CHARLES_ADDRESS_RE.search(cr):
+                            continue  # poisoned — "Charles" used as address form
                         entries.append(e)
                 except Exception:
                     pass
