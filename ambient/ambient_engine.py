@@ -282,7 +282,18 @@ def _battery_tick() -> None:
         # presence_state.json that gates the battery's calm restore, so the
         # animation and the restore can never disagree about whether eLo is
         # resting.
-        fields["calm_mode"] = bool(_is_calm())
+        #
+        # WO-HEALTH-BATTERY-001 Deliverable-2 (David 2026-09-28): a low
+        # battery must also ENTER calm. Until now calm only mirrored whatever
+        # Unity's PresenceEngine already said, so a flat battery changed the
+        # HUD and nothing else.
+        try:
+            fields.update(_calm_on_low_battery(
+                str(fields.get("elo_battery_state", "")),
+                state.get("motion", {}) or {},
+            ))
+        except Exception:
+            fields["calm_mode"] = bool(_is_calm())
 
         if fields:
             try:
@@ -292,6 +303,75 @@ def _battery_tick() -> None:
                 pass
     except Exception:
         pass
+
+
+# ── Low battery → Calm/Meditation ─────────────────────────────────────────────
+#
+# David, 2026-09-28: eLo has two rest states and they are not the same thing.
+#
+#   Calm = Meditation — CONSCIOUS rest. This is the low-battery visual.
+#   Sleep = Dream     — UNCONSCIOUS, and ONE coupled state: the lay-down and
+#                       the zZzZ are the same event. Unity defines Asleep AS
+#                       dream_phase being non-empty.
+#
+# So the flow is: low/critical battery → Calm → and only when the One Brain
+# enters dream_phase → Sleep=Dream.
+#
+# The hard rule this code exists to respect: the battery must NEVER reach
+# sleep. No battery threshold, no idle-time. A separate battery→sleep path
+# would disconnect sleep from dream, which is the one thing David ruled out.
+# Nothing below writes dream_phase or any sleep field; it writes calm only.
+
+_BATTERY_REST_STATES = ("low", "critical")
+_CALM_HOLD_SECONDS = 600.0
+_CALM_LOOP_SPEED = 0.28          # matches Unity's calmLoopSpeed
+
+_brain_calm_asserted = False
+
+
+def _calm_on_low_battery(battery_state: str, motion: dict) -> dict:
+    """
+    Enter Calm while the battery is low; release it when the battery recovers.
+
+    Self-healing rather than edge-only: calm is re-asserted whenever the
+    published motion is not calm, so if something else took the body and
+    finished, rest resumes. It does not rewrite motion on every 0.5s tick,
+    which would restart the animation continuously.
+
+    Yields to a dream in progress, to speech, and to a commanded state —
+    calm is rest, not an interruption.
+    """
+    global _brain_calm_asserted
+
+    presence_calm = _is_calm()
+    if battery_state not in _BATTERY_REST_STATES:
+        if _brain_calm_asserted:
+            # Recovered — release so CalmExit can play.
+            _brain_calm_asserted = False
+            return {"calm_mode": presence_calm,
+                    "motion": {"animation": "idle", "speed": 0.5,
+                               "intensity": 0.5, "duration": 4.0,
+                               "mood": "open", "mode": "idle"}}
+        return {"calm_mode": presence_calm}
+
+    dreaming = False
+    try:
+        from faculties.dream.dream_faculty import is_dreaming as _is_dreaming
+        dreaming = _is_dreaming()
+    except Exception:
+        pass
+
+    # Sleep=Dream owns the body while it runs. Never overwrite it with calm.
+    if dreaming or _is_speaking() or _is_commanded():
+        return {"calm_mode": presence_calm or _brain_calm_asserted}
+
+    _brain_calm_asserted = True
+    if str(motion.get("mode", "")) == "calm":
+        return {"calm_mode": True}          # already resting — do not restart it
+    return {"calm_mode": True,
+            "motion": {"animation": "calm", "speed": _CALM_LOOP_SPEED,
+                       "intensity": 0.5, "duration": _CALM_HOLD_SECONDS,
+                       "mood": "resting", "mode": "calm"}}
 
 
 def _is_speaking() -> bool:
