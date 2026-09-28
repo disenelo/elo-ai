@@ -96,6 +96,77 @@ from typing import Any
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# -1. GROUNDING CONTRACTS (WP-N)
+#     GroundingContext  — what is actually happening in this conversation right now.
+#     GroundingAssessment — produced by anchor_assessor; answers "is a response candidate
+#                           connected to this conversation?"
+#
+#     Architecture position: Grounding Faculty runs AFTER CCM, BEFORE Executive.
+#     It supplies information — it NEVER decides, overrides Executive, or speaks.
+#     One Brain rule: Grounding is a service, not a brain.
+# ─────────────────────────────────────────────────────────────────────────────
+
+@dataclass(frozen=True)
+class GroundingContext:
+    """
+    WO-002: What is happening in the conversation right now.
+
+    Produced by faculties/grounding/grounding_faculty.py every turn.
+    Consumed by: prompt_builder ([CONVERSATION GROUND] block), Executive (read-only).
+
+    Producer: GroundingFaculty
+    Authority: read-only downstream — no faculty modifies this after assembly
+    Lifecycle: per-turn, assembled from current message + recent state
+    Failure behaviour: falls back to empty strings; spine continues without it
+
+    Referent Ladder (priority, highest first):
+        CURRENT_MESSAGE → CURRENT_SUBJECT → CURRENT_THREAD →
+        RECENT_REFERENT → ESTABLISHED_THREAD → MEMORY → NEW_INITIATIVE
+    """
+    current_subject:         str   = ""    # what the message is primarily about
+    current_topic:           str   = ""    # the specific aspect being addressed
+    active_thread:           str   = ""    # conversational thread this continues
+    user_intent:             str   = ""    # asking | telling | updating | requesting | other
+    current_referents:       tuple = field(default_factory=tuple)   # entities named this turn
+    recent_referents:        tuple = field(default_factory=tuple)   # entities named in last 3 turns
+    unresolved_threads:      tuple = field(default_factory=tuple)   # threads opened, not closed
+    recent_conversation_state: str = ""   # brief summary of last 2 turns
+    recent_register:         str   = ""   # tone of last few turns
+    available_connections:   tuple = field(default_factory=tuple)   # cross-signal candidates
+    referent_ladder_level:   str   = "CURRENT_MESSAGE"  # which rung this turn anchors to
+    confidence:              float = 0.0   # 0.0 = no grounding available; 1.0 = fully grounded
+    # WO-002 additions ────────────────────────────────────────────────────────
+    active_entity:           str   = ""    # most specific concrete entity (may be multi-word)
+    pronoun_resolution:      tuple = field(default_factory=tuple)  # ((pronoun, entity), ...)
+    thread_age:              int   = 0     # turns since active_thread was first established
+    stale_subjects:          tuple = field(default_factory=tuple)  # subjects from 4+ turns ago
+    immediate_subject:       str   = ""    # subject from the very last completed turn
+    is_continuation:         bool  = False # True when user sent a bare continuation signal ("keep going" etc.)
+
+
+@dataclass(frozen=True)
+class GroundingAssessment:
+    """
+    WP-N: Is a response candidate connected to this conversation?
+
+    Produced by faculties/grounding/anchor_assessor.py.
+    NOT produced every turn — only when the prompt_builder needs to annotate
+    or the diagnostic layer requests it.
+
+    grounded=True   → response has a clear conversational reason to exist
+    grounded=False  → response is floating (philosophical, arbitrary, unanchored)
+    """
+    grounded:        bool  = False
+    relation:        str   = "UNKNOWN"   # DIRECT | ADJACENT | BRIDGE | NEW_INITIATIVE
+    anchor:          str   = ""          # what the response is anchored to
+    referent:        str   = ""          # which referent it addresses
+    confidence:      float = 0.0
+    bridge_required: bool  = False       # response needs a transition sentence
+    bridge_present:  bool  = False       # transition is present in candidate
+    reason:          str   = ""          # diagnostic: why this assessment
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # 0. AFFECTIVESTATE (WO-AFFECTIVE-STATE-001)
 #    13-dimensional continuous affective state space.
 #    Labels (curious, fearful, calm) are regions in this space — not primitives.
@@ -307,13 +378,16 @@ class CognitiveState:
     wkg_context:          str   = ""           # WKG claims relevant to this turn; epistemic_class VERIFIED
 
     # ── CCM Enrichment (WO-CCM-SPINE) ────────────────────────────────────────
-    ccm_context:          dict  = field(default_factory=dict)   # 26-dim CCM enrichment per turn
+    ccm_context:          dict  = field(default_factory=dict)   # 28-dim CCM enrichment per turn
 
     # ── Affective State (WO-AFFECTIVE-STATE-001) ──────────────────────────────
     affective_state:      object = None        # AffectiveState | None — 13-dim continuous affect
 
     # ── Self Model (WO-SELF-MODEL-001) ────────────────────────────────────────
     self_model:           object = None        # SelfModel | None — assembled by _self_model_faculty
+
+    # ── Grounding Context (WP-N) ─────────────────────────────────────────────
+    grounding_context:    object = None        # GroundingContext | None — current conversational ground
 
     # ── Assembly Confidence ───────────────────────────────────────────────────
     assembly_confidence:  float = 1.0         # 0.0 if faculties partially failed

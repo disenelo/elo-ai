@@ -2,14 +2,14 @@
 faculties/ccm/ccm_enricher.py — WO-CCM-SPINE: Conversation Context Matrix enrichment.
 
 Positioned in the cognitive spine AFTER Language Faculty, BEFORE Memory Faculty.
-Scores all 26 CCM dimensions from the turn text and language faculty output using
+Scores all 28 CCM dimensions from the turn text and language faculty output using
 text-pattern detection.
 
 Pattern data loads from kernel/conversation_context/*.yaml at import time.
 Hardcoded Python dicts are retained as fallback only — if YAML load fails, the
 module continues with the embedded patterns rather than raising.
 
-Returns ccm_context: dict with all 26 dim keys. Values are the detected signal
+Returns ccm_context: dict with all 28 dim keys. Values are the detected signal
 (string/list) or None if the dimension is not triggered this turn.
 
 Source: docs/architecture/06_conversation_context_matrix.md
@@ -83,7 +83,7 @@ _yml_vocabulary         = _load_yaml("vocabulary.yaml")
 _yml_response_rhythm    = _load_yaml("response_rhythm.yaml")
 _yml_challenge          = _load_yaml("challenge.yaml")
 
-# ── Dimension keys (canonical, all 26) ────────────────────────────────────────
+# ── Dimension keys (canonical, all 28) ────────────────────────────────────────
 CCM_DIMS = (
     "intent",
     "relationship",
@@ -96,7 +96,7 @@ CCM_DIMS = (
     "challenge",
     "empathy",
     "street_terminology",
-    "street_language",
+    "street_language",          # WO-CCM-CATEGORY-C-001: float 0.0–1.0 register signal
     "creative_philosophy",
     "cultural_references",
     "conversation_rhythm",
@@ -112,6 +112,7 @@ CCM_DIMS = (
     "directness",
     "gentleness",
     "professionalism",
+    "creator_matrix",           # WO-CCM-CREATOR-MATRIX-001: David's creative principles
 )
 
 # ── Pattern banks ─────────────────────────────────────────────────────────────
@@ -487,7 +488,7 @@ def enrich(turn: str, language_output: dict, cognitive_state=None) -> dict:
         cognitive_state: optional CognitiveState (may be None on first call)
 
     Returns:
-        dict with all 27 CCM_DIMS keys (26 original + street_language float). Values are detected signals or None.
+        dict with all 28 CCM_DIMS keys. Values are detected signals or None.
     """
     tl = _tok(turn)
     lo = language_output or {}
