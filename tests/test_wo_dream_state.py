@@ -12,6 +12,7 @@ Run: python3 tests/test_wo_dream_state.py
 """
 from __future__ import annotations
 import sys, os, json, py_compile, tempfile, shutil
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -22,13 +23,16 @@ def fail(n, r): global FAIL; FAIL += 1; print(f"  ❌ {n}: {r}")
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 import runtime.executive as _exec_mod
+import faculties.dream.dream_faculty as _dream_fac
 
 _ORIG_BLENDER = _exec_mod._BLENDER_STATE_PATH
 _ORIG_DREAM_LOG = _exec_mod._DREAM_LOG_PATH
+_ORIG_JOURNAL = _dream_fac._JOURNAL_PATH
+_ORIG_SYMBOL  = _dream_fac._SYMBOL_HISTORY_PATH
 
 
-def _use_temp_blender(asleep: bool) -> tuple[str, str]:
-    """Write a temp blender_state.json and dream log dir; return (bs_path, log_dir)."""
+def _use_temp_blender(asleep: bool) -> tuple[str, str, str]:
+    """Write a temp blender_state.json and dream log dir; return (bs_path, log_path, tmp_dir)."""
     _tmp = tempfile.mkdtemp(prefix="wo_dream_test_")
     _bs  = os.path.join(_tmp, "blender_state.json")
     with open(_bs, "w") as _f:
@@ -37,9 +41,17 @@ def _use_temp_blender(asleep: bool) -> tuple[str, str]:
     return _bs, _log, _tmp
 
 
+def _patch_dream_paths(tmp: str) -> None:
+    """Redirect all dream faculty live-journal paths to the given tmpdir."""
+    _dream_fac._JOURNAL_PATH       = Path(os.path.join(tmp, "dream_journal.jsonl"))
+    _dream_fac._SYMBOL_HISTORY_PATH = os.path.join(tmp, "dream_symbols.json")
+
+
 def _restore():
-    _exec_mod._BLENDER_STATE_PATH = _ORIG_BLENDER
-    _exec_mod._DREAM_LOG_PATH     = _ORIG_DREAM_LOG
+    _exec_mod._BLENDER_STATE_PATH   = _ORIG_BLENDER
+    _exec_mod._DREAM_LOG_PATH       = _ORIG_DREAM_LOG
+    _dream_fac._JOURNAL_PATH        = _ORIG_JOURNAL
+    _dream_fac._SYMBOL_HISTORY_PATH = _ORIG_SYMBOL
 
 
 # ── AT-1: asleep=true → response=None (no user-facing output) ─────────────────
@@ -47,6 +59,7 @@ try:
     _bs, _log, _tmp = _use_temp_blender(asleep=True)
     _exec_mod._BLENDER_STATE_PATH = _bs
     _exec_mod._DREAM_LOG_PATH     = _log
+    _patch_dream_paths(_tmp)
 
     _result = _exec_mod.run_dream_window(recent_topics=["creativity", "connection"])
     assert _result.get("response") is None, \
@@ -69,6 +82,7 @@ try:
     _bs, _log, _tmp = _use_temp_blender(asleep=True)
     _exec_mod._BLENDER_STATE_PATH = _bs
     _exec_mod._DREAM_LOG_PATH     = _log
+    _patch_dream_paths(_tmp)
 
     _exec_mod.run_dream_window(recent_topics=[])
 
@@ -97,6 +111,7 @@ try:
     _bs, _log, _tmp = _use_temp_blender(asleep=True)
     _exec_mod._BLENDER_STATE_PATH = _bs
     _exec_mod._DREAM_LOG_PATH     = _log
+    _patch_dream_paths(_tmp)
 
     _result3 = _exec_mod.run_dream_window(recent_topics=["elo", "book", "robot"])
     assert _result3.get("ran") is True, \
@@ -128,6 +143,7 @@ try:
     _bs, _log, _tmp = _use_temp_blender(asleep=False)
     _exec_mod._BLENDER_STATE_PATH = _bs
     _exec_mod._DREAM_LOG_PATH     = _log
+    _patch_dream_paths(_tmp)
 
     _result5 = _exec_mod.run_dream_window()
     assert _result5.get("action") == "awake", \
