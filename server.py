@@ -5571,15 +5571,11 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
                 if _bh_degraded and _agent is None:
-                    # WO-LIVE-QUALITY-P0-001: eLo voice, never infrastructure strings.
-                    import random as _bh_rand
-                    response = _bh_rand.choice([
-                        "Give me a sec — I'll be right with you.",
-                        "Hold on a moment. Be right back.",
-                        "On it — just a moment.",
-                        "One second.",
-                        "Bear with me.",
-                    ])
+                    # S1-DEGRADED-HOLDING-LINE: mock is eLo-voiced by design — let it through.
+                    # The stall-string replacement served WO-LIVE-QUALITY-P0-001 (no infra strings)
+                    # but it terminated the turn with a promise that was never kept (25% of turns).
+                    # Mock's actual response is eLo-register content and is a genuine answer.
+                    pass
             except Exception:
                 pass
 
