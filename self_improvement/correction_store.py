@@ -28,6 +28,11 @@ _log = logging.getLogger(__name__)
 # Guard also applied on write so new poisoned entries are rejected.
 _CHARLES_ADDRESS_RE = re.compile(r"(?<!David )Charles\b")
 
+# Location fix (2026-09-28): 73 ledger entries contain "Camberwell" as David's
+# home origin — wrong fact. David was born in Fulham, raised in Brixton.
+# Filter on read and reject on write.
+_CAMBERWELL_LOCATION_RE = re.compile(r"\bCamberwell\b")
+
 TIER_AUTO  = "green"
 TIER_DAVID = "red"
 
@@ -73,6 +78,10 @@ def store_correction(
         _log.warning("store_correction: rejected — 'Charles' used as address form in corrected_response")
         return False  # reject poisoned address form before it reaches the ledger
 
+    if _CAMBERWELL_LOCATION_RE.search(corrected_response):
+        _log.warning("store_correction: rejected — 'Camberwell' is wrong location (born Fulham, raised Brixton)")
+        return False  # reject wrong location fact before it reaches the ledger
+
     entry = {
         "id":                 f"CX-{int(time.time() * 1000) % 10_000_000:07d}",
         "input":              input_text,
@@ -107,6 +116,8 @@ def _load_ledger() -> list[dict]:
                         cr = e.get("corrected_response", "")
                         if _CHARLES_ADDRESS_RE.search(cr):
                             continue  # poisoned — "Charles" used as address form
+                        if _CAMBERWELL_LOCATION_RE.search(cr):
+                            continue  # poisoned — wrong location (Camberwell)
                         entries.append(e)
                 except Exception:
                     pass
