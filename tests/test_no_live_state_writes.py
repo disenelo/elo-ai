@@ -118,3 +118,74 @@ def test_symbol_recording_is_gated_on_the_live_run_flag():
         "lexicon recording is not gated on the live-run flag"
     )
     assert inspect.signature(df.run_dream).parameters["publish_phases"].default is False
+
+
+# ── eLo's dream gallery is live state too ─────────────────────────────────────
+# Third time. layer_compositor.composite() defaults out_dir to
+# ~/Desktop/eLo Generated/dreams — eLo's real dream artwork folder — so any
+# test calling it without out_dir files a fabricated dream there. Every one of
+# the 12 files in that folder was a test artefact, from both seats that built
+# the WO. There were no real dreams in it at all.
+#
+# Same class as blender_state.json above and the symbol lexicon above it:
+# a module that writes to a real, forward-feeding location by default, and a
+# test suite that calls it.
+
+import ast
+
+GALLERY = Path.home() / "Desktop" / "eLo Generated" / "dreams"
+
+
+def test_every_composite_call_in_the_suite_passes_out_dir():
+    """
+    Static guard. composite() without out_dir writes to eLo's real gallery,
+    so no test may call it without one.
+
+    Parsed with ast, not matched with a regex: the first version of this guard
+    flagged its own docstring, because prose mentioning composite() looks
+    exactly like a call to one.
+    """
+    offenders = []
+    for path in sorted(Path(__file__).parent.glob("test_*.py")):
+        src = path.read_text(encoding="utf-8", errors="ignore")
+        if "layer_compositor" not in src:
+            continue
+        try:
+            tree = ast.parse(src)
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            fn = node.func
+            name = fn.attr if isinstance(fn, ast.Attribute) else getattr(fn, "id", "")
+            if name != "composite":          # composite_dream defaults to None — safe
+                continue
+            if not any(kw.arg == "out_dir" for kw in node.keywords):
+                offenders.append(f"{path.name}:{node.lineno}")
+    assert not offenders, (
+        "composite() called without out_dir — writes eLo's real dream "
+        f"gallery: {offenders}"
+    )
+
+
+def test_composite_dream_writes_nothing_without_an_out_dir():
+    """The underlying engine must stay pure. Only composite() has a default."""
+    from faculties.dream import layer_compositor as lc
+
+    before = sorted(p.name for p in GALLERY.iterdir()) if GALLERY.exists() else None
+    result = lc.composite_dream([], dream_id="guard_probe", emotion="wonder")
+    assert result.final_path == "" and result.sidecar_path == ""
+    after = sorted(p.name for p in GALLERY.iterdir()) if GALLERY.exists() else None
+    assert after == before, "composite_dream wrote the gallery with out_dir unset"
+
+
+def test_the_gallery_holds_no_test_artefacts():
+    """
+    eLo's dream gallery must contain dreams, not test output. A name starting
+    dream_test_ is this suite's, not his.
+    """
+    if not GALLERY.exists():
+        pytest.skip("no dream gallery on this machine")
+    stray = [p.name for p in GALLERY.iterdir() if p.name.startswith("dream_test_")]
+    assert not stray, f"test artefacts in eLo's real dream gallery: {stray}"
