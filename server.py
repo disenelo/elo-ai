@@ -5580,6 +5580,15 @@ def _process_turn(raw: str) -> dict:
                 _rt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                         "blender", "routing_trace.json")
                 _rt_tmp  = _rt_path + ".tmp"
+                # 0059 task 0a: merge Ollama prefix-cache metrics so David can see
+                # prompt_eval_count per turn and know whether the cache is working.
+                _rt_ollama: dict = {}
+                if "ollama" in backend_used:
+                    try:
+                        from runtime.backend_router import _last_ollama_metrics as _rt_om
+                        _rt_ollama = dict(_rt_om)
+                    except Exception:
+                        pass
                 _rt_data = {
                     "user_input":          _original_raw,
                     "intent":              attention_model.get("intent", ""),
@@ -5590,6 +5599,11 @@ def _process_turn(raw: str) -> dict:
                     "backend_used":        backend_used,
                     "capability":          _rt_cap or None,
                     "llm_latency_ms":      round(_llm_latency_ms, 1),
+                    "ollama_load_ms":      _rt_ollama.get("load_ms"),
+                    "ollama_prompt_eval_tokens": _rt_ollama.get("prompt_eval_tokens"),
+                    "ollama_prompt_eval_ms":     _rt_ollama.get("prompt_eval_ms"),
+                    "ollama_gen_tokens":   _rt_ollama.get("gen_tokens"),
+                    "ollama_gen_ms":       _rt_ollama.get("gen_ms"),
                     "_ts":                 _rt_time.time(),
                 }
                 with open(_rt_tmp, "w", encoding="utf-8") as _rt_f:
