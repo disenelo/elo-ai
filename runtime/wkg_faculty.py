@@ -15,10 +15,15 @@ WO:  WO-WKG-001 — David L3 AUTHORISED 2026-08-24
 
 import json
 import os
+import threading
 import time
 import uuid
 
 _WKG_DIR = os.path.join(os.path.dirname(__file__), "..", "memory", "wkg")
+
+# Serialises concurrent read-modify-write operations — _save() atomic rename
+# only protects the file write itself; the full RMW cycle needs a lock.
+_wkg_lock = threading.Lock()
 
 _EPISTEMIC_CLASSES = frozenset({
     "VERIFIED",
@@ -59,8 +64,11 @@ def _load(name: str) -> list:
 
 def _save(name: str, data: list) -> None:
     os.makedirs(_WKG_DIR, exist_ok=True)
-    with open(_path(name), "w", encoding="utf-8") as f:
+    target = _path(name)
+    tmp = target + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
+    os.replace(tmp, target)
 
 
 # ── read interface (D-6) ──────────────────────────────────────────────────────
@@ -129,9 +137,10 @@ def create_entity(
         "created_at": time.time(),
         "source_ids": source_ids or [],
     }
-    entities = _load("entities")
-    entities.append(entity)
-    _save("entities", entities)
+    with _wkg_lock:
+        entities = _load("entities")
+        entities.append(entity)
+        _save("entities", entities)
     return entity
 
 
@@ -221,16 +230,18 @@ def record_claim(
         "cognitive_snapshot": cognitive_snapshot or None,
         "context_action":     context_action or None,
     }
-    claims = _load("claims")
-    claims.append(claim)
-    _save("claims", claims)
+    with _wkg_lock:
+        claims = _load("claims")
+        claims.append(claim)
+        _save("claims", claims)
     return claim
 
 
 def mark_contradicted(claim_id: str, contradicting_claim_id: str) -> None:
-    claims = _load("claims")
-    for c in claims:
-        if c["claim_id"] == claim_id:
-            if contradicting_claim_id not in c["contradicted_by"]:
-                c["contradicted_by"].append(contradicting_claim_id)
-    _save("claims", claims)
+    with _wkg_lock:
+        claims = _load("claims")
+        for c in claims:
+            if c["claim_id"] == claim_id:
+                if contradicting_claim_id not in c["contradicted_by"]:
+                    c["contradicted_by"].append(contradicting_claim_id)
+        _save("claims", claims)
