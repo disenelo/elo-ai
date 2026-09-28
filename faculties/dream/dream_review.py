@@ -169,6 +169,19 @@ class CandidateInsight:
     def is_knowledge(self) -> bool:
         return self.stage == STAGE_KNOWLEDGE
 
+    @property
+    def cognitive_state(self) -> str:
+        """
+        WO-CAP-EMB-052 — which of the thirteen states this insight is in.
+
+        Derived from `stage`, never stored alongside it, so the EMB-031 ladder
+        and the EMB-052 vocabulary cannot drift apart. No rung of the ladder
+        reaches MEMORY, OBSERVATION or ACTION: a dream is never evidence that
+        anything happened, however far its insight has climbed.
+        """
+        from runtime.cognitive_state import state_for_ladder_stage
+        return state_for_ladder_stage(self.stage).value
+
     def as_dict(self) -> dict:
         return {
             "content": self.content,
@@ -178,6 +191,7 @@ class CandidateInsight:
             "retained": self.retained,
             "source_dream": self.source_dream,
             "stage": self.stage,
+            "cognitive_state": self.cognitive_state,
             "corroboration": list(self.corroboration),
         }
 

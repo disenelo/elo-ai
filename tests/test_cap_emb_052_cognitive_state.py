@@ -214,3 +214,43 @@ def test_lookups_never_raise():
         assert describe(probe) == ""
         assert can_claim_occurred(probe) is False
         assert may_assert_as(probe, CognitiveState.MEMORY) is False
+
+
+# ── wired: the dream journal carries the state ────────────────────────────────
+
+def test_insight_carries_its_cognitive_state():
+    from faculties.dream.dream_review import (
+        CandidateInsight, STAGE_DREAM, STAGE_IDEA, STAGE_EVALUATION,
+        STAGE_TEST, STAGE_KNOWLEDGE,
+    )
+    expected = {
+        STAGE_DREAM:      CognitiveState.DREAM,
+        STAGE_IDEA:       CognitiveState.IMAGINATION,
+        STAGE_EVALUATION: CognitiveState.HYPOTHESIS,
+        STAGE_TEST:       CognitiveState.SIMULATION,
+        STAGE_KNOWLEDGE:  CognitiveState.KNOWLEDGE,
+    }
+    for stage, state in expected.items():
+        ins = CandidateInsight(content="c", significance=0.8, stage=stage)
+        assert ins.cognitive_state == state.value, stage
+        assert ins.as_dict()["cognitive_state"] == state.value
+
+
+def test_no_rung_of_the_ladder_can_claim_something_happened():
+    """
+    A dream is never evidence that anything occurred, however far its insight
+    has climbed. Not even at KNOWLEDGE.
+    """
+    from faculties.dream.dream_review import CandidateInsight, PROMOTION_LADDER
+    for stage in PROMOTION_LADDER:
+        ins = CandidateInsight(content="c", significance=1.0, stage=stage)
+        assert can_claim_occurred(ins.cognitive_state) is False, stage
+
+
+def test_state_is_derived_not_stored():
+    """It tracks `stage`, so the ladder and the vocabulary cannot disagree."""
+    from faculties.dream.dream_review import CandidateInsight, STAGE_DREAM, STAGE_KNOWLEDGE
+    ins = CandidateInsight(content="c", significance=0.9, stage=STAGE_DREAM)
+    assert ins.cognitive_state == CognitiveState.DREAM.value
+    ins.stage = STAGE_KNOWLEDGE
+    assert ins.cognitive_state == CognitiveState.KNOWLEDGE.value
