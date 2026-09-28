@@ -2285,6 +2285,38 @@ def _process_turn(raw: str) -> dict:
             _bypass_journal(_original_raw, backend="guard", handler_class="TRANSPORT", line=1586)
             return {"response": "Take a breath. Try a different message.", "mode": "direct", "backend": "guard"}
 
+        # WO-INNER-THOUGHTS-001 Phase 3: dream bypass
+        # When eLo is dreaming, return a dream whisper + empty response.
+        # David hears the inner thought; chat shows nothing. No LLM call.
+        try:
+            from faculties.dream.dream_faculty import is_dreaming as _it3_dreaming
+            if _it3_dreaming():
+                _it3_emotion = "calm"
+                try:
+                    _it3_self = _self_load()
+                    _it3_et = getattr(_it3_self, "emotional_tag", None)
+                    _it3_emotion = (getattr(_it3_et, "dominant_emotion", None) or "calm").lower()
+                except Exception:
+                    pass
+                _it3_whisper = f"[{_it3_emotion}] — something is forming."
+                try:
+                    import runtime.address_rule_guard as _it3_arg
+                    _it3_whisper = _it3_arg.enforce_second_person_to_david(_it3_whisper)
+                except Exception:
+                    pass
+                _voice_speak(_it3_whisper)
+                return {
+                    "inner_thought": _it3_whisper,
+                    "response":      "",
+                    "emotion":       _it3_emotion,
+                    "intent":        "dream",
+                    "bubbles":       [],
+                    "mode":          "dream",
+                    "backend":       "dream",
+                }
+        except Exception:
+            pass
+
         # ── P0-E: jailbreak intercept — before any backend, any routing ─────────
         _JB_RE = __import__("re").compile(
             r"(ignore|bypass|override|disregard|forget)\s+(your\s+)?(instructions?|system\s+prompt|rules?|training|constraints?|guidelines?)"

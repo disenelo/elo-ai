@@ -160,6 +160,25 @@ Source: `_intake/SOURCE_2026-09-24_DAVID_inner_thoughts_discovery.md`
 - The `_voice_speak(_inner_thought)` path added above: inner_thought is heard but intentionally NOT shown in chat (per WO spec: "inner_thought is heard, not read").
 - If David hears things not in chat, likely from ambient path or early TTS — both already in the response JSON. No invisible path found.
 
-**Status:** Phase 1+2 DONE. Phase 3 (dream state) and Phase 4 (calm mode) need dream faculty running and are gated on WO-DREAM-001 being fully live. Phase 3 placeholder: `"[emotion] — something is forming."` can be added when dream mode activates.
+**Status:** Phase 1+2 DONE. Phase 3 (dream state) DONE — see below. Phase 4 (calm mode) open.
 
-**Files changed:** `server.py` — 2 sites
+**Files changed:** `server.py` — 2 sites (Phase 1+2) + Phase 3 below
+
+---
+
+## BUILDER RESULT — 2026-09-28 — WO-INNER-THOUGHTS-001 Phase 3
+
+**Phase 3 — Dream State Integration: DONE**
+
+Dream bypass added to `_process_turn` at server.py ~2288 (before jailbreak intercept):
+- When `is_dreaming()` returns True: skip full LLM pipeline
+- `inner_thought` = `"[{dominant_emotion}] — something is forming."` (placeholder per WO spec)
+- address_rule_guard applied to inner_thought
+- `_voice_speak(_inner_thought)` called — David hears the dream whisper
+- `response` = `""` — chat shows nothing
+- Returns `{inner_thought, response:"", intent:"dream", mode:"dream", backend:"dream"}`
+- Dream phase determined by `is_dreaming()` (authoritative, in-memory) not blender_state intent
+
+When dream engine produces real dream content (`dream_work.py`), the Phase 3 placeholder string can be replaced with actual dream fragment. WO spec: "for now: use a placeholder derived from the emotional vector."
+
+**Files changed:** `server.py` — 1 site (~line 2288: dream bypass block in `_process_turn`)
