@@ -50,41 +50,77 @@ def test_tick_is_called_from_the_poll_loop_not_the_coarse_callback():
     assert call < poll, "_battery_tick must run before the loop's early-exit branches"
 
 
-def test_the_ambient_tick_does_not_touch_the_battery(monkeypatch):
+def test_the_ambient_tick_is_the_only_battery_owner(monkeypatch):
     """
-    Single owner. server.py:947 ticks the battery (f7a597e); this loop used
-    to as well (967793f), so one module-level battery had two tickers.
+    The tick briefly moved to server.py's ambient_thought() (ea2d8c5, fixing a
+    real double-tick). That was the wrong half to keep: ambient_thought is the
+    registered CALLBACK and fires every 8-20 minutes. elo_battery is preserved
+    across state writes, so between firings a stale value LOOKS live —
+    observed on a 2.6-minute-old server reading 0.0 "critical", carried over
+    from the previous night and never written once that boot.
+    """
+    from pathlib import Path as _P
+    server = (_P(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+    assert "_hb_tick" not in server, "server.py still ticks the battery — two owners"
 
-    Not merely double drain: server.py reads real idle from last_user_ts and
-    correctly skips the metabolic floor past the hard-idle threshold, while
-    this loop had no session state and passed idle_seconds=0 unless Unity
-    sent a user_idle event — charging the floor while server.py restored.
-    Observed live: 0.999 "full" at 15:19, 0.0 "critical" ten hours later.
-    """
+
+def test_the_tick_drains_the_battery(monkeypatch):
     hb.reset()
-    before = (hb.get_cognitive(), hb.get_physical())
-
     monkeypatch.setattr("blender_bridge.state_writer.patch", lambda f: None)
+    monkeypatch.setattr(ae, "_read_state", lambda: {"motion": {"animation": "idle"}})
     monkeypatch.setattr(ae, "_is_calm", lambda: False)
     monkeypatch.setattr("faculties.dream.dream_faculty.is_dreaming", lambda: False)
-    for _ in range(20):
+    for _ in range(5):
         ae._last_battery_ts = time.time() - 1.0
         ae._battery_tick()
+    assert hb.get_cognitive() < 1.0
 
-    assert (hb.get_cognitive(), hb.get_physical()) == before
 
-
-def test_the_ambient_tick_emits_no_battery_fields(monkeypatch):
+def test_the_tick_always_emits_the_battery_fields(monkeypatch):
+    """A preserved key written only sometimes goes stale and looks live."""
     written: list = []
     monkeypatch.setattr("blender_bridge.state_writer.patch", lambda f: written.append(f))
+    monkeypatch.setattr(ae, "_read_state", lambda: {"motion": {}})
     monkeypatch.setattr(ae, "_is_calm", lambda: False)
     monkeypatch.setattr("faculties.dream.dream_faculty.is_dreaming", lambda: False)
     ae._last_battery_ts = time.time() - 1.0
     ae._battery_tick()
+    for key in ("elo_battery", "elo_battery_state", "physical_state"):
+        assert key in written[-1]
 
-    for key in ("elo_battery", "elo_battery_state", "physical_battery",
-                "physical_state", "activity_recent"):
-        assert key not in written[-1], f"{key} written by two owners"
+
+def test_idle_comes_from_published_last_user_ts(monkeypatch):
+    """
+    The loop has no access to server's session state, so server publishes
+    last_user_ts. Absent means nobody has spoken this boot — idle then grows
+    from loop start, never 0.0 forever.
+    """
+    src = open(ae.__file__.replace(".pyc", ".py"), encoding="utf-8").read()
+    assert 'state.get("last_user_ts")' in src
+    assert "_LOOP_START_TS" in src
+
+    server = open(
+        __file__.replace("tests/test_s4_ambient_tick.py", "server.py"), encoding="utf-8"
+    ).read() if False else None  # server side asserted below
+
+    from pathlib import Path as _P
+    server = (_P(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
+    assert '_lut_patch({"last_user_ts": _state["last_user_ts"]})' in server
+
+
+def test_hard_idle_restores_once_eLo_has_been_alone(monkeypatch):
+    """The overnight flatline: without real idle this never fired."""
+    hb.reset(cognitive=0.50)
+    long_ago = time.time() - 4000.0
+    monkeypatch.setattr("blender_bridge.state_writer.patch", lambda f: None)
+    monkeypatch.setattr(ae, "_read_state",
+                        lambda: {"motion": {}, "last_user_ts": long_ago})
+    monkeypatch.setattr(ae, "_is_calm", lambda: False)
+    monkeypatch.setattr("faculties.dream.dream_faculty.is_dreaming", lambda: False)
+    for _ in range(10):
+        ae._last_battery_ts = time.time() - 60.0
+        ae._battery_tick()
+    assert hb.get_cognitive() > 0.50, "hard idle did not restore"
 
 
 def test_calm_mode_is_published_for_designer(monkeypatch):
@@ -201,3 +237,4 @@ def test_the_tick_makes_exactly_one_state_write(monkeypatch):
 
     assert len(written) == 1
     assert "dream_phase" in written[0] and "calm_mode" in written[0]
+    assert "elo_battery" in written[0]

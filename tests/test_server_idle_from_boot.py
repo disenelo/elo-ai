@@ -44,8 +44,20 @@ def test_no_idle_reader_defaults_to_now(src):
     assert not offenders, f"{len(offenders)} idle reader(s) still default to now"
 
 
-def test_the_battery_idle_reader_uses_boot(src):
-    assert '_hb_idle = _hb_now - (_state or {}).get("last_user_ts", _SERVER_BOOT_TS)' in src
+def test_the_battery_idle_reader_moved_to_the_poll_loop(src):
+    """
+    The battery idle reader no longer lives in server.py. ambient_thought()
+    fires every 8-20 minutes, which cannot carry a rate, so the tick moved to
+    ambient_engine's 0.5s loop and reads the `last_user_ts` server publishes.
+    """
+    assert "_hb_tick" not in src, "server.py still ticks the battery"
+    assert '_lut_patch({"last_user_ts": _state["last_user_ts"]})' in src, (
+        "server.py must publish last_user_ts for the poll loop to read"
+    )
+
+    import ambient.ambient_engine as ae
+    loop = open(ae.__file__.replace(".pyc", ".py"), encoding="utf-8").read()
+    assert 'state.get("last_user_ts") or _LOOP_START_TS' in loop
 
 
 def test_the_dream_trigger_idle_reader_uses_boot(src):

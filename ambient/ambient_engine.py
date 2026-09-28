@@ -172,6 +172,9 @@ _PRESENCE_STATE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)),
 # Battery tick bookkeeping — dt is measured, so the restore/drain rates stay
 # correct regardless of how the poll interval is tuned.
 _last_battery_ts = 0.0
+# When this loop started. Idle falls back to this when nobody has spoken
+# yet, so it grows from boot instead of reading 0.0 forever.
+_LOOP_START_TS = time.time()
 
 
 def _is_calm() -> bool:
@@ -228,6 +231,39 @@ def _battery_tick() -> None:
         dt = max(0.0, min(dt, 60.0))   # clamp after a sleep/suspend gap
 
         fields: dict = {}
+        state = _read_state()
+
+        # ── Health battery — the ONLY ticker ──────────────────────────────
+        # It briefly lived in server.py's ambient_thought() instead (my
+        # ea2d8c5, resolving a genuine double-tick). That was the wrong half
+        # to keep: ambient_thought is the registered ambient CALLBACK and
+        # fires every 8-20 minutes. A rate cannot ride that cadence, and
+        # elo_battery is preserved across state writes, so between firings a
+        # stale value LOOKS live. Observed on a 2.6-minute-old server:
+        # elo_battery 0.0 "critical", static, carried over from the previous
+        # night — never written once that boot.
+        #
+        # Here it runs every 0.5s with measured dt, and reads real idle from
+        # the `last_user_ts` server.py publishes. Absent (nobody has spoken
+        # yet this boot) means idle grows from this loop's own start, not 0.
+        try:
+            from core import health_battery as _hb
+
+            if _is_calm():
+                _hb.calm_tick(dt)
+                _hb.consume_game_events()
+            else:
+                _last_user = state.get("last_user_ts") or _LOOP_START_TS
+                _hb.tick(
+                    state.get("motion", {}) or {},
+                    idle_seconds=max(0.0, now - float(_last_user)),
+                    dt_seconds=dt,
+                )
+            # Always emit — a preserved key that is only sometimes written
+            # goes stale and looks live. That is the same trap twice already.
+            fields.update(_hb.snapshot())
+        except Exception:
+            pass
 
         # Dream-state coherence. The dream fields are preserved across state
         # writes and only cleared on a clean dream exit, so they can freeze —

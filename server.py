@@ -983,47 +983,18 @@ def ambient_thought() -> None:
     # SP-31: world-event check runs first, fail-quiet, non-blocking
     _world_event_thought()
 
-    # ── S4: Health battery ambient tick (fires even in calm / user-away mode) ──
-    try:
-        import time as _hb_time
-        from core.health_battery import (
-            tick as _hb_tick,
-            calm_tick as _hb_calm_tick,
-            should_auto_calm as _hb_auto_calm,
-        )
-        _hb_now = _hb_time.time()
-        _hb_dt  = max(1.0, _hb_now - _batt_tick_ts[0]) if _batt_tick_ts[0] else 120.0
-        _batt_tick_ts[0] = _hb_now
-        if _is_calm_mode():
-            _hb_calm_tick(_hb_dt)
-        else:
-            try:
-                import json as _hb_json
-                with open(_BLENDER_STATE_PATH, encoding="utf-8") as _hbf:
-                    _hb_bs = _hb_json.load(_hbf)
-            except Exception:
-                _hb_bs = {}
-            _hb_idle = _hb_now - (_state or {}).get("last_user_ts", _SERVER_BOOT_TS)
-            _hb_snap = _hb_tick(
-                _hb_bs.get("motion"),
-                idle_seconds=float(_hb_idle),
-                dt_seconds=_hb_dt,
-            )
-            try:
-                from blender_bridge.state_writer import patch as _hb_patch
-                _hb_patch({k: v for k, v in _hb_snap.items() if v is not None})
-            except Exception:
-                pass
-            # Physical exhaustion auto-triggers calm mode (ADDENDUM A)
-            if _hb_auto_calm():
-                try:
-                    from blender_bridge.state_writer import patch as _hb_calm_patch
-                    _hb_calm_patch({"meditation_state": {"phase": "enter",
-                                                         "source": "physical_exhaustion"}})
-                except Exception:
-                    pass
-    except Exception:
-        pass
+    # ── S4: Health battery ────────────────────────────────────────────────
+    # The tick used to live HERE, and that was wrong. ambient_thought() is the
+    # registered ambient CALLBACK — it fires every 8-20 minutes, not per cycle.
+    # A rate cannot be carried on that cadence, and worse: elo_battery is in
+    # _PRESERVE_KEYS, so between firings the last value survives every state
+    # write and LOOKS live. Observed on a fresh server 2.6 minutes old:
+    # elo_battery 0.0 "critical", static, preserved from the previous night's
+    # drain — never written once this boot.
+    #
+    # It now runs on ambient_engine's 0.5s poll loop, which is the only real
+    # per-cycle loop, reading real idle from the published `last_user_ts`.
+    # One owner, correct cadence, real idle.
 
     if _is_user_away() or _is_calm_mode():
         return
@@ -2283,6 +2254,15 @@ def _process_turn(raw: str) -> dict:
         import time as _time_mod
         if _state is not None:
             _state["last_user_ts"] = _time_mod.time()
+            # Publish it so the ambient engine's 0.5s loop can compute real
+            # idle. It runs in a background thread with no access to `_state`,
+            # and the health battery's hard-idle restore depends on knowing
+            # how long eLo has actually been alone.
+            try:
+                from blender_bridge.state_writer import patch as _lut_patch
+                _lut_patch({"last_user_ts": _state["last_user_ts"]})
+            except Exception:
+                pass
         # Lifecycle: mark active turn — transitions to ENGAGED, resets idle clock
         _lifecycle_mgr.on_turn()
         # SP-31/SP-32: A1 signal — every user turn counts as a conversing pulse
