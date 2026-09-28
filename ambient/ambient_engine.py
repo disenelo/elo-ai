@@ -198,26 +198,32 @@ def _read_state() -> dict:
 
 def _battery_tick() -> None:
     """
-    WO-HEALTH-BATTERY-001 PART A.1/B — the per-cycle battery tick.
+    Per-cycle dream-state coherence.
 
-    This 0.5s poll is the only real ambient loop in the system; the registered
-    ambient callback fires every 8-20 minutes and is far too coarse for a rate.
-    Motion drain, idle restore, calm restore and game-event consumption all
-    happen here, then the level is published for Unity.
+    NOTE — this used to tick the health battery too (my 967793f). It must not.
+    server.py:947 already ticks it (`f7a597e`, wired the same day), so the
+    battery had TWO tickers on one module-level state.
 
-    Fail-quiet: the battery must never be able to stop ambient presence.
+    That was not merely double drain. server.py's tick reads real idle from
+    `last_user_ts`, so past the hard-idle threshold it correctly skips the
+    metabolic floor and restores. This one had no access to session state and
+    passed idle_seconds=0 unless Unity happened to send a user_idle event —
+    so it kept charging the floor while server.py restored. Net negative.
+
+    Observed live: elo_battery 0.999 "full" at 15:19, 0.0 "critical" ten
+    hours later. eLo flatlined overnight, every night.
+
+    server.py owns the battery. This owns dream-state coherence only.
+
+    Fail-quiet: nothing here may stop ambient presence.
     """
     global _last_battery_ts
     try:
-        from core import health_battery as _hb
-
         now = time.time()
         dt = (now - _last_battery_ts) if _last_battery_ts else _POLL_INTERVAL
         _last_battery_ts = now
         dt = max(0.0, min(dt, 60.0))   # clamp after a sleep/suspend gap
 
-        state = _read_state()
-        motion = state.get("motion", {}) or {}
         fields: dict = {}
 
         # Dream-state coherence. The dream fields are preserved across state
@@ -232,23 +238,19 @@ def _battery_tick() -> None:
         except Exception:
             pass
 
-        if _is_calm():
-            _hb.calm_tick(dt)
-            _hb.consume_game_events()
-        else:
-            _hb.tick(
-                motion,
-                idle_seconds=_user_idle_secs if _user_is_idle else 0.0,
-                dt_seconds=dt,
-            )
-        # One write: battery + dream coherence together, rather than two
-        # read-modify-write passes over the state file every tick.
-        fields.update(_hb.snapshot())
-        try:
-            from blender_bridge.state_writer import patch as _patch
-            _patch(fields)
-        except Exception:
-            pass
+        # Designer needs a calm signal for the conscious-rest animation
+        # (Board 2026-09-27). Waking calm, NOT sleep — read from the same
+        # presence_state.json that gates the battery's calm restore, so the
+        # animation and the restore can never disagree about whether eLo is
+        # resting.
+        fields["calm_mode"] = bool(_is_calm())
+
+        if fields:
+            try:
+                from blender_bridge.state_writer import patch as _patch
+                _patch(fields)
+            except Exception:
+                pass
     except Exception:
         pass
 

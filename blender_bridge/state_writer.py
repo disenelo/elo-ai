@@ -414,6 +414,9 @@ _PRESERVE_KEYS = {
     # WO-DREAM-ENGINE-001 PHASE 9: sleep schedule signals. Written on each phase
     # transition; a dream outlives many state writes, so they must survive them.
     "dream_cycle", "dream_phase", "dream_intensity",
+    # Designer's conscious-rest animation signal (Board 2026-09-27). Asserted
+    # every ambient tick, so it cannot go stale the way the dream fields did.
+    "calm_mode",
 }
 
 _VISION_DEFAULT = {"active": False, "attention": 0.0, "focus": {"x": 0.5, "y": 0.5}, "app": ""}

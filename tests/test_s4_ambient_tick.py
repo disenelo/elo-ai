@@ -50,46 +50,69 @@ def test_tick_is_called_from_the_poll_loop_not_the_coarse_callback():
     assert call < poll, "_battery_tick must run before the loop's early-exit branches"
 
 
-def test_walking_drains_both_tracks(monkeypatch):
-    _drive({"animation": "walk", "physical": "walking"}, ticks=3, monkeypatch=monkeypatch)
-    assert hb.get_cognitive() < 1.0
-    assert hb.get_physical() < 1.0
-    assert hb.snapshot()["activity_recent"] == "walking"
+def test_the_ambient_tick_does_not_touch_the_battery(monkeypatch):
+    """
+    Single owner. server.py:947 ticks the battery (f7a597e); this loop used
+    to as well (967793f), so one module-level battery had two tickers.
+
+    Not merely double drain: server.py reads real idle from last_user_ts and
+    correctly skips the metabolic floor past the hard-idle threshold, while
+    this loop had no session state and passed idle_seconds=0 unless Unity
+    sent a user_idle event — charging the floor while server.py restored.
+    Observed live: 0.999 "full" at 15:19, 0.0 "critical" ten hours later.
+    """
+    hb.reset()
+    before = (hb.get_cognitive(), hb.get_physical())
+
+    monkeypatch.setattr("blender_bridge.state_writer.patch", lambda f: None)
+    monkeypatch.setattr(ae, "_is_calm", lambda: False)
+    monkeypatch.setattr("faculties.dream.dream_faculty.is_dreaming", lambda: False)
+    for _ in range(20):
+        ae._last_battery_ts = time.time() - 1.0
+        ae._battery_tick()
+
+    assert (hb.get_cognitive(), hb.get_physical()) == before
 
 
-def test_idle_tick_is_metabolic_floor_only(monkeypatch):
-    _drive({"animation": "idle"}, ticks=1, monkeypatch=monkeypatch)
-    assert round(1.0 - hb.get_cognitive(), 5) == hb.DRAIN_IDLE_TICK
+def test_the_ambient_tick_emits_no_battery_fields(monkeypatch):
+    written: list = []
+    monkeypatch.setattr("blender_bridge.state_writer.patch", lambda f: written.append(f))
+    monkeypatch.setattr(ae, "_is_calm", lambda: False)
+    monkeypatch.setattr("faculties.dream.dream_faculty.is_dreaming", lambda: False)
+    ae._last_battery_ts = time.time() - 1.0
+    ae._battery_tick()
+
+    for key in ("elo_battery", "elo_battery_state", "physical_battery",
+                "physical_state", "activity_recent"):
+        assert key not in written[-1], f"{key} written by two owners"
 
 
-def test_calm_restores_instead_of_draining(monkeypatch):
-    hb.reset(cognitive=0.50)
-    _drive({"animation": "idle"}, calm=True, dt=60.0, monkeypatch=monkeypatch)
-    assert hb.get_cognitive() > 0.50, "calm did not restore"
+def test_calm_mode_is_published_for_designer(monkeypatch):
+    """Board 2026-09-27: Designer needs calm_mode for the conscious-rest anim."""
+    written: list = []
+    monkeypatch.setattr("blender_bridge.state_writer.patch", lambda f: written.append(f))
+    monkeypatch.setattr("faculties.dream.dream_faculty.is_dreaming", lambda: False)
+
+    for calm in (True, False):
+        monkeypatch.setattr(ae, "_is_calm", lambda c=calm: c)
+        ae._last_battery_ts = time.time() - 1.0
+        ae._battery_tick()
+        assert written[-1]["calm_mode"] is calm
 
 
-def test_calm_rate_is_measured_not_assumed(monkeypatch):
-    """dt is real elapsed time, so the rate holds at any poll interval."""
-    hb.reset(cognitive=0.50)
-    _drive({}, calm=True, dt=60.0, monkeypatch=monkeypatch)
-    one_minute = hb.get_cognitive()
-    hb.reset(cognitive=0.50)
-    ae._last_battery_ts = 0.0
-    _drive({}, calm=True, dt=30.0, ticks=2, monkeypatch=monkeypatch)
-    assert hb.get_cognitive() == pytest.approx(one_minute, abs=1e-4)
+def test_calm_mode_shares_its_source_with_the_battery_restore():
+    """
+    The animation and the restore must never disagree about whether eLo is
+    resting, so both read presence_state.json via _is_calm().
+    """
+    src = open(ae.__file__.replace(".pyc", ".py"), encoding="utf-8").read()
+    idx = src.index('fields["calm_mode"]')
+    assert "_is_calm()" in src[idx:idx + 120]
 
 
-def test_hard_idle_restores(monkeypatch):
-    hb.reset(cognitive=0.50)
-    _drive({"animation": "idle"}, idle=3600.0, dt=60.0, monkeypatch=monkeypatch)
-    assert hb.get_cognitive() > 0.50 - hb.DRAIN_IDLE_TICK
-
-
-def test_dt_is_clamped_after_a_suspend_gap(monkeypatch):
-    """A laptop sleeping overnight must not restore the battery in one tick."""
-    hb.reset(cognitive=0.20)
-    _drive({}, calm=True, dt=86400.0, monkeypatch=monkeypatch)
-    assert hb.get_cognitive() < 0.23, "unclamped dt let a whole night restore at once"
+def test_calm_mode_survives_a_full_state_write():
+    from blender_bridge import state_writer as sw
+    assert "calm_mode" in sw._PRESERVE_KEYS
 
 
 def test_tick_is_fail_quiet(monkeypatch):
@@ -165,12 +188,11 @@ def test_tick_does_not_clear_the_dream_state_mid_dream(monkeypatch):
     assert "dream_phase" not in written[-1]
 
 
-def test_battery_and_dream_share_one_write(monkeypatch):
-    """Two read-modify-write passes per tick over the live file is wasteful."""
+def test_the_tick_makes_exactly_one_state_write(monkeypatch):
+    """One read-modify-write pass over the live file per tick, not several."""
     written: list = []
     monkeypatch.setattr("blender_bridge.state_writer.patch",
                         lambda fields: written.append(fields))
-    monkeypatch.setattr(ae, "_read_state", lambda: {"motion": {}})
     monkeypatch.setattr(ae, "_is_calm", lambda: False)
     monkeypatch.setattr("faculties.dream.dream_faculty.is_dreaming", lambda: False)
 
@@ -178,4 +200,4 @@ def test_battery_and_dream_share_one_write(monkeypatch):
     ae._battery_tick()
 
     assert len(written) == 1
-    assert "elo_battery" in written[0] and "dream_phase" in written[0]
+    assert "dream_phase" in written[0] and "calm_mode" in written[0]
