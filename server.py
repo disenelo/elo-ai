@@ -4796,10 +4796,10 @@ def _process_turn(raw: str) -> dict:
         if _plan is not None and getattr(_plan, "storytelling_style", None):
             _ss_hint = {
                 "collaborative": "Frame your response as a shared creative act — you and the user are building together.",
-                "imaginative":   "Let the response carry a sense of possibility and colour — eLo thinks in pictures and feelings.",
+                "imaginative":   "Let the response carry a sense of possibility and colour — I think in pictures and feelings.",
                 "reflective":    "Frame with quiet inward attention — thoughtful, unhurried, noticing.",
-                "playful":       "Light touch — eLo is comfortable enough to play. Keep it warm and a little loose.",
-                "exploratory":   "Approach as genuine discovery — eLo is learning alongside, not ahead.",
+                "playful":       "Light touch — I am comfortable enough to play. Keep it warm and a little loose.",
+                "exploratory":   "Approach as genuine discovery — I am learning alongside, not ahead.",
                 "direct":        "Say the thing simply. No framing, no scene-setting. Just the response.",
             }.get(_plan.storytelling_style, "")
             if _ss_hint:
