@@ -1499,6 +1499,24 @@ def _ollama_stream(
             "This is eLo demonstrating technical fluency, not casual conversation."
         )
 
+    # COG-004 C16: HTTP request expansion — fires when the input contains an HTTP method+path or
+    # version string. The TECHNICAL INPUT OVERRIDE fires too, but C16 still collapsed to one sentence.
+    # This named-component mandate tells the model exactly which slots to fill.
+    import re as _c16_re
+    _c16_http = bool(_c16_re.search(r"HTTP/\d\.\d|POST\s+/|GET\s+/|PUT\s+/|DELETE\s+/|PATCH\s+/", user_input, _c16_re.IGNORECASE))
+    if _c16_http:
+        _conditioned_system += (
+            "\n\nHTTP REQUEST RULE: This input is an HTTP request. "
+            "Explain it component-by-component in this order: "
+            "(1) the HTTP METHOD (what it means operationally — read vs write vs delete); "
+            "(2) the PATH (which resource or endpoint is being addressed); "
+            "(3) the PROTOCOL VERSION (what it specifies); "
+            "(4) each HEADER LINE (what it declares or constrains); "
+            "(5) the REQUEST BODY (what data is being sent and in what format, field by field). "
+            "Do NOT summarise in one sentence. Each numbered point must appear in your answer. "
+            "If a component is absent, say so explicitly."
+        )
+
     # C25: if 'eLo' appears in a non-technical input, the model may hallucinate Unity/C# code.
     # RR20 Fix B v2: guard is now NOT _input_is_technical — fires for inputs that contain "eLo"
     # but did NOT match the code-signal regex (e.g. JS-object with single quotes). Technical
@@ -2394,6 +2412,21 @@ def route(
             "Do NOT respond with slang or casual filler. "
             "Give a clear, direct structural explanation of every component. "
             "This is eLo demonstrating technical fluency, not casual conversation."
+        )
+
+    # COG-004 C16: HTTP request expansion — streaming path mirror of the non-streaming fix.
+    _rt_c16_http = bool(re.search(r"HTTP/\d\.\d|POST\s+/|GET\s+/|PUT\s+/|DELETE\s+/|PATCH\s+/", user_input, re.IGNORECASE))
+    if _rt_c16_http:
+        system_prompt += (
+            "\n\nHTTP REQUEST RULE: This input is an HTTP request. "
+            "Explain it component-by-component in this order: "
+            "(1) the HTTP METHOD (what it means operationally — read vs write vs delete); "
+            "(2) the PATH (which resource or endpoint is being addressed); "
+            "(3) the PROTOCOL VERSION (what it specifies); "
+            "(4) each HEADER LINE (what it declares or constrains); "
+            "(5) the REQUEST BODY (what data is being sent and in what format, field by field). "
+            "Do NOT summarise in one sentence. Each numbered point must appear in your answer. "
+            "If a component is absent, say so explicitly."
         )
 
     # C25: identity anchor for streaming path — RR20 Fix B v2: guard is now NOT _rt_input_is_technical.
