@@ -182,3 +182,26 @@ Dream bypass added to `_process_turn` at server.py ~2288 (before jailbreak inter
 When dream engine produces real dream content (`dream_work.py`), the Phase 3 placeholder string can be replaced with actual dream fragment. WO spec: "for now: use a placeholder derived from the emotional vector."
 
 **Files changed:** `server.py` — 1 site (~line 2288: dream bypass block in `_process_turn`)
+
+---
+
+## BUILDER RESULT — 2026-09-28 — WO-INNER-THOUGHTS-001 Phase 4
+
+**Phase 4 — Calm Mode Integration: DONE**
+**Commit:** `1e838c7`
+**Files changed:** `server.py` — 2 sites (line ~6897: _it_sys prompt fork; line ~6949: gate removal)
+
+During calm mode, `inner_thought` now generates with a reflective settling prompt:
+- `_it_sys` forks on `_is_calm_mode()`: calm → "what am I settling into / letting go?" (slower, no questions, gentle); active → existing immediate "noticing/feeling" prompt
+- `_voice_speak(_inner_thought)` guard changed from `not _is_user_away() and not _is_calm_mode()` to `not _is_user_away()` — inner_thought now speaks during calm
+- Response during calm remains shorter/quieter via the existing CALM MODE context anchor at server.py:4188
+
+**WO-INNER-THOUGHTS-001 all phases complete:**
+- Phase 1 (output object structure): DONE (already implemented)
+- Phase 2 (inner thought generation + TTS): commit `eb6ddf5`
+- Phase 3 (dream state): commit `4973411`
+- Phase 4 (calm mode): commit `1e838c7`
+
+**Not LIVE VERIFIED** — requires running server + calm mode trigger. Board verifies.
+
+Builder 1 · 2026-09-28
