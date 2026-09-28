@@ -218,6 +218,33 @@ def _signal_greeting_event(greeting_type: str) -> None:
     except Exception:
         pass
 
+
+def _signal_idea_event() -> None:
+    """Edge-triggered idea_event write — fires Designer's light bulb in Unity.
+    Same pattern as greeting_event. Suppressed during dream/sleep state."""
+    import time as _ie_time
+    try:
+        try:
+            from faculties.dream.dream_faculty import is_dreaming as _ie_dreaming
+            if _ie_dreaming():
+                return
+        except Exception:
+            pass
+        try:
+            with open(_BLENDER_STATE_PATH, encoding="utf-8") as _f:
+                _st = json.load(_f)
+        except Exception:
+            _st = {}
+        if _st.get("dream_phase"):
+            return
+        _st["idea_event"] = {"_ts": _ie_time.time()}
+        _tmp = _BLENDER_STATE_PATH + ".tmp"
+        with open(_tmp, "w", encoding="utf-8") as _f:
+            json.dump(_st, _f, indent=2)
+        os.replace(_tmp, _BLENDER_STATE_PATH)
+    except Exception:
+        pass
+
 import re as _re
 
 # ── Session-level URL cache — persists last found URL so "open it" works ──────
@@ -2160,6 +2187,25 @@ def _init_session():
                                     _wsj.dump(_wsp_write, _wsf)
                             except Exception:
                                 pass
+
+                    # game_mode_toggle: M key in Unity toggles game_mode on/off in blender_state.json
+                    elif _ev_type == "game_mode_toggle":
+                        try:
+                            import json as _gmj
+                            _bsp = _BLENDER_STATE_PATH
+                            try:
+                                with open(_bsp, encoding="utf-8") as _gmf:
+                                    _bs_data = _gmj.load(_gmf)
+                            except Exception:
+                                _bs_data = {}
+                            _cur_mode = _bs_data.get("game_mode", "off")
+                            _bs_data["game_mode"] = "off" if _cur_mode == "on" else "on"
+                            with open(_bsp, "w", encoding="utf-8") as _gmf:
+                                _gmj.dump(_bs_data, _gmf)
+                            _poller_log.info("game_mode_toggle: %s → %s",
+                                             _cur_mode, _bs_data["game_mode"])
+                        except Exception as _gm_err:
+                            _poller_log.warning("game_mode_toggle write error: %s", _gm_err)
 
                     # WO-MOBILE-001 D-SPINE-1/2: mobile foreground/background events
                     # G4: events arrive only through this authenticated window process
@@ -6874,6 +6920,8 @@ def _process_turn(raw: str) -> dict:
                               source="conversation")
                 except Exception:
                     pass
+                # idea_event — fires Designer's light bulb on creative/build moments
+                _signal_idea_event()
         except Exception:
             pass
 
