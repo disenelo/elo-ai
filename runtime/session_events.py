@@ -101,14 +101,25 @@ def get_session_summary(max_events: int = 30) -> str:
         if not events:
             return ""
 
-        elapsed_min = int((time.time() - start) / 60)
-        turns        = [e for e in events if e["type"] == "turn"]
-        caps         = [e for e in events if e["type"] == "capability" and e.get("name")]
+        elapsed_min    = int((time.time() - start) / 60)
+        turns          = [e for e in events if e["type"] == "turn"]
+        caps           = [e for e in events if e["type"] == "capability" and e.get("name")]
+        creative_evts  = [e for e in events if e["type"] == "creative_output"]
 
         parts = [f"Session running {elapsed_min}m, {len(turns)} turn(s)."]
         if caps:
             cap_names = list(dict.fromkeys(c["name"] for c in caps))[:6]
             parts.append(f"Capabilities used: {', '.join(cap_names)}.")
+
+        # COG-029: creative work this session — grounded content for memory recall
+        if creative_evts:
+            creative_items = [
+                f'"{e.get("input", "")}" → "{e.get("output", "")}"'
+                for e in creative_evts[-3:]
+                if e.get("input") or e.get("output")
+            ]
+            if creative_items:
+                parts.append("Creative work this session: " + "; ".join(creative_items) + ".")
 
         # Include last few user inputs for recency context (truncated for token budget)
         recent_turns = [e.get("text", "") for e in turns[-3:] if e.get("text")]

@@ -6849,6 +6849,16 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # COG-029 interim: log creative outputs to session events so
+        # same-session creative memory queries have grounded content.
+        try:
+            if _action in ("build", "expand") and response and len(response) > 20:
+                from runtime.session_events import record_event as _se_creative
+                _se_creative("creative_output", action=_action,
+                             input=raw[:80] if raw else "", output=response[:120])
+        except Exception:
+            pass
+
         print(f"[eLo] backend={backend_used} action={_action}", flush=True)
         return {
             "inner_thought": _inner_thought,
