@@ -123,3 +123,58 @@ $ grep -c 'intent.*=.*"dream"' server.py
 
 **PARTIAL.** Built, wired, unit-tested, evidence filed. Not live verified.
 Not declaring PASS — Board crosschecks.
+
+---
+
+# UPDATE — 2026-09-28: all eleven phases built and wired
+
+The card above filed PHASES 1–4 as built and the rest as not in the slice.
+Since then the whole WO has been built. Appended, not rewritten.
+
+| Phase | Commit | State |
+|---|---|---|
+| 5a/5b image gen | `2266ac0` | WIRED (gated on live-run; cost-capped) |
+| 5c FX pipeline | `f877ff3` | WIRED |
+| 6 layer compositor | `cc9ea5b` | WIRED |
+| 5b→5c→6 joined | `7ed8dc2` | WIRED |
+| 7 journal schema | `39dec98` | 24/24 §7 fields |
+| 8 review gate | `193e68b` | WIRED into journal |
+| 8 Executive routing | `707cb9e`, `e6a48bf` | WIRED |
+| 10 symbol lexicon | `2701c39` | WIRED |
+| S3 `intent="dream"` | `55c7bd7` | WIRED |
+
+## Defects found by running it, not by testing it
+
+1. **Concept extraction put verbs in noun slots** (`5ad7016`) — "A enormous
+   david standing in a stayed". Found by reading generated prompts.
+2. **PHASE 10 could never bootstrap** (`2701c39`) — the recurring symbol was
+   drawn by `rng.choice()`, so recurrence was luck. Symbols stalled at count
+   2 across four dreams and `most_established()` stayed empty forever. Keyed
+   it to the dream's dominant concept instead.
+3. **My test suite wrote 28 fabricated appearances into eLo's real lexicon**
+   (`2701c39`) — and the lexicon feeds *forward*, so a test artifact was
+   becoming his dominant lifelong motif.
+4. **The composite built on the wrong layer** (`7ed8dc2`) — intensity-first
+   capping made the most ABSTRACT frame the structural base, and under a cap
+   dropped the grounded scene entirely. `dream_fx` and `layer_compositor`
+   were each correct in isolation; the defect lived in the seam.
+5. **Stale `dream_phase`** (`23e01b5`) — covered in the CAP-EMB card.
+
+Items 2 and 4 were invisible to every unit test. They needed a real dream to
+run end to end.
+
+## The artefact
+
+`7ed8dc2` produced the engine's first complete output: 5 cycles, 14 scenes
+planned, 4 generated under the cost cap, FX-treated, composited to one
+189,755-byte artwork with a provenance sidecar. Only the paid DALL-E call was
+stubbed; everything downstream was production code.
+
+## Known gaps, unchanged
+
+`openai` now installed (3.19.2). Ten FX the WO names are unimplemented and
+reported in `skipped`, never substituted. No motif image pipeline. The
+Executive's *decision* is not exercised.
+
+**Still not LIVE VERIFIED. No dream has fired on the live server** — see
+`b9f29fe` in the CAP-EMB card for the most likely reason.

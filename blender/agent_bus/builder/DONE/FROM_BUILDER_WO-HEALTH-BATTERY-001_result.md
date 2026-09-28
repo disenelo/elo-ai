@@ -175,3 +175,54 @@ Related: `should_dream()` was deciding whether *eLo* needed sleep by reading
 
 **PARTIAL.** Built, wired, unit-tested, evidence filed. Not live verified.
 Not declaring PASS — Board crosschecks.
+
+---
+
+# UPDATE — 2026-09-28: partially LIVE VERIFIED, and three defects
+
+## LIVE VERIFIED
+
+Confirmed on the running server: `elo_battery` and `elo_battery_state`
+writing every 0.3s, `physical_state` reporting `untracked` rather than a
+frozen stale value, `calm_mode` published for Designer.
+
+That closes tier 5 for the battery fields themselves.
+
+## Three defects the live run exposed
+
+**1. Cadence — `ff98065`.** `_tick_physical` scaled by elapsed time,
+`_tick_cognitive` did not, so every cognitive rate was a function of the poll
+interval. At 0.5s the idle "metabolic floor" ran at 1.44/hour and emptied a
+full battery in 41 minutes. Observed: server up 68 min, `elo_battery` 0.0.
+Rates are now per-second and cadence-independent; `jump` is per event.
+
+**2. Two tickers — `ea2d8c5`.** `server.py:947` and `ambient_engine` both
+ticked the same module-level battery (`f7a597e` and `967793f`, same day,
+neither aware of the other). server.py owns it now.
+
+**3. Idle from "now" — `b9f29fe`.** The one that actually kept eLo at zero.
+`last_user_ts` is absent on a fresh server and every reader defaulted to
+`time.time()`, so idle read 0.0 forever and hard-idle restore never fired.
+Four instances; the fourth was found by my own test being broader than my
+fix.
+
+## Also fixed
+
+**Stale physical fields — `ac994f2`.** Preserved keys that are only
+conditionally emitted freeze. `physical_state` now always emitted, reporting
+`untracked` when no body signal exists — a different claim from "rested".
+
+**Unrecognised motion engaged the physical track — `e6edd9d`.** Any non-empty
+string engaged it, so `physical="idle"` pinned physical at 1.0 and floored
+`elo_battery` at 0.4, making `ENERGY_CRITICAL` unreachable and silently
+killing the dream trigger. `PHYSICAL_ACTIVITIES` is now derived from the rate
+tables so it cannot drift.
+
+## Still open
+
+- **Calibration is yours.** Rates are correct and cadence-independent; the
+  absolute values are all `[ESTIMATE]` per the addendum. Whether eLo should
+  get sleepy after an idle hour is a feel decision.
+- Pi hardware path never run on hardware.
+- Designer: battery indicator + calm animation.
+- Game: nothing writes `game_events.jsonl` yet; the reader is built and tested.
