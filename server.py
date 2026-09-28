@@ -143,6 +143,22 @@ _fallback        = _MockBackend()
 _BLENDER_STATE_PATH  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "blender_state.json")
 _UNITY_EVENTS_PATH   = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "unity_events.json")
 
+# When this process started. `last_user_ts` is set only on a user turn (~:2269)
+# and is not persisted across restarts, so on a fresh server it is ABSENT — and
+# every idle reader defaulted to "now", making idle read 0.0 forever until
+# David happened to speak.
+#
+# Consequences, both observed:
+#   - the health battery never reached the hard-idle threshold, so the
+#     metabolic floor was charged every tick with no restore. elo_battery sat
+#     at 0.0 "critical" indefinitely.
+#   - should_dream() requires idle >= 600s, so on a quiet server a dream could
+#     never fire at all.
+#
+# Defaulting to boot time instead means idle grows from the moment eLo starts,
+# which is what "how long has eLo been alone" actually means.
+_SERVER_BOOT_TS = __import__("time").time()
+
 # WO-ACK-1: Discrete event capture — unity_events.json is single-slot (last write wins).
 # A gaze_target_changed can overwrite sit_complete before the next chat turn reads it.
 # Fix: background thread polls at 0.1s, captures body ACK events into _ACK_QUEUE.
@@ -987,7 +1003,7 @@ def ambient_thought() -> None:
                     _hb_bs = _hb_json.load(_hbf)
             except Exception:
                 _hb_bs = {}
-            _hb_idle = _hb_now - (_state or {}).get("last_user_ts", _hb_now)
+            _hb_idle = _hb_now - (_state or {}).get("last_user_ts", _SERVER_BOOT_TS)
             _hb_snap = _hb_tick(
                 _hb_bs.get("motion"),
                 idle_seconds=float(_hb_idle),
@@ -1033,7 +1049,7 @@ def ambient_thought() -> None:
         # Writes mode="dreaming" for Unity sleep animation before pipeline runs.
         try:
             from faculties.dream.dream_faculty import should_dream, run_dream, wake_from_dream
-            _idle_sec = _time_mod.time() - (_state or {}).get("last_user_ts", _time_mod.time())
+            _idle_sec = _time_mod.time() - (_state or {}).get("last_user_ts", _SERVER_BOOT_TS)
             _energy_hist = (_state or {}).get("energy_history", [])
             # 0037: ambient tick refreshes self-model before use (no long-lived cache).
             _elo_self = _self_load()
@@ -1106,7 +1122,7 @@ def ambient_thought() -> None:
         # Gate: requires real cognitive history. Empty state → silent tick.
         try:
             from self.emergent_cognition import internal_intents as _int_intents
-            _idle_sec_now = _time_mod.time() - (_state or {}).get("last_user_ts", _time_mod.time())
+            _idle_sec_now = _time_mod.time() - (_state or {}).get("last_user_ts", _SERVER_BOOT_TS)
             _elo_self_now = _self_load()
             _intents = _int_intents(_elo_self_now, _idle_sec_now)
         except Exception:
@@ -6129,8 +6145,13 @@ def _process_turn(raw: str) -> dict:
             # BP-1: brain's engagement truth for Designer sit-linger.
             # True when user was active within ~30s (every normal turn qualifies;
             # False only if last_user_ts is stale, e.g. background state writes).
+            # Same absent-key trap as the idle readers: defaulting to now made
+            # `now - now = 0 < 30`, so a fresh server with no conversation at
+            # all reported eLo as CONVERSING — and Designer's sit-linger ran on
+            # a conversation that never happened. Boot time makes the fallback
+            # honest: nobody has spoken, so he is not conversing.
             _bs_conversing = (
-                _time_mod.time() - (_state or {}).get("last_user_ts", _time_mod.time())
+                _time_mod.time() - (_state or {}).get("last_user_ts", _SERVER_BOOT_TS)
             ) < 30.0
             # WO-058: last fetched weather condition for Designer VFX (rain/snow/clear…).
             # Empty string → Designer falls back to mood. Never blocks the turn.
