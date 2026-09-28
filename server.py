@@ -1908,19 +1908,13 @@ _DAVID_NAME_TRIGGERS = (
 
 
 def _david_name_response() -> str:
-    """Return David's name rendered from _elo_self.who_i_am_with — never a guess."""
-    name = "David"
-    try:
-        if _elo_self and _elo_self.who_i_am_with:
-            name = _elo_self.who_i_am_with
-    except Exception:
-        pass
+    """Return David's full name and identity on direct ask — never a guess."""
     pool = [
-        f"You're {name}.",
-        f"{name}.",
-        f"{name} — that's you.",
-        f"You're {name}. Same as always.",
-        f"{name}, obviously.",
+        "David Charles, founder of DISENELO.",
+        "David Charles — founder of DISENELO.",
+        "David Charles. Founder of DISENELO.",
+        "You're David Charles, founder of DISENELO.",
+        "David Charles.",
     ]
     return random.choice(pool)
 
@@ -2279,23 +2273,11 @@ def _process_turn(raw: str) -> dict:
             "where does david come from", "where david from",
         )
         if any(t in _at_low for t in _LOC_Q_TRIGGERS):
-            _loc_fact = "South London, Camberwell Green"
-            try:
-                import json as _json_loc, os as _os_loc
-                _facts_path = _os_loc.path.join(_os_loc.path.dirname(__file__), "memory", "facts.json")
-                _raw_facts = _json_loc.loads(open(_facts_path).read())
-                _loc_fact = next(
-                    (f["fact"].split(".")[0] for f in _raw_facts
-                     if "location" in f.get("key", "").lower() or "london" in f.get("fact", "").lower()),
-                    "South London, Camberwell Green"
-                )
-            except Exception:
-                pass
             _loc_pool = [
-                f"You're from {_loc_fact}.",
-                "South London. Camberwell Green.",
-                "Camberwell, South London — that's you.",
-                "South London. Camberwell.",
+                "Fulham born, Brixton raised — South London.",
+                "Born in Fulham, raised in Brixton.",
+                "Brixton, South London. That's where you grew up.",
+                "South London — born Fulham, raised Brixton.",
             ]
             _loc_resp = random.choice(_loc_pool)
             try:

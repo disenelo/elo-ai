@@ -50,7 +50,9 @@ _SUBS = [
     # already-converted may still contain "he" mid-clause. We do not try to
     # rewrite pronouns wholesale (too fragile). Rule 1 alarm below tells us
     # when the guard fires so any remaining slippage is visible.
-    (re.compile(r"\bDavid\b"),                   "you"),
+    # Negative lookahead: do NOT convert bare "David" when immediately followed by " Charles"
+    # (name-predicate context — "you're David Charles" must not become "you're you Charles").
+    (re.compile(r"\bDavid\b(?! Charles)"),        "you"),
 ]
 
 
