@@ -6800,7 +6800,20 @@ def _process_turn(raw: str) -> dict:
                 "elo", "hi", "hey", "ok", "okay", "yeah", "yes", "no", "not", "with",
             })
             _so_words = [
-                w.lower() for w in (raw or "").split()
+                # `raw` is OVERWRITTEN at :3184 with the [WORLD_KNOWLEDGE ...]
+                # block. Tokenising it fed the prompt's own syntax into eLo's
+                # lifetime threads — the thing he answers "what do you keep
+                # coming back to?" with. Read live from self/elo_self_state.json
+                # on 2026-09-29:
+                #
+                #   ['world', 1009]  ['[world_knowledge', 982]
+                #   ["elo's", 982]   ['(verified', 982]
+                #   ['about', 103]   ['stuck', 38]   ['building', 21]
+                #
+                # The top four are prompt fragments. His real threads sat 50:1
+                # underneath. Those threads also seed his dreams
+                # (dream_faculty.py:517), so the contamination reached those too.
+                w.lower() for w in (_original_raw or raw or "").split()
                 if len(w) >= 4 and w.lower().strip("?!.,;:") not in _so_skip
             ]
             _so_topics = list(dict.fromkeys(w.strip("?!.,;:'\"") for w in _so_words))[:5]
@@ -6808,7 +6821,7 @@ def _process_turn(raw: str) -> dict:
                 "action":     _action,
                 "tone":       exec_decision.get("tone", "CHILDLIKE-WISE") if exec_decision else "CHILDLIKE-WISE",
                 "response":   response,
-                "user_input": raw,
+                "user_input": _original_raw or raw,
                 "topics":     _so_topics,
             }
             # 0037: single-authority mutator — apply_turn + record_behaviour in one atomic

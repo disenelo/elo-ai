@@ -25,20 +25,31 @@ _log.addHandler(logging.NullHandler())
 
 # ── 1. AI-leakage patterns ────────────────────────────────────────────────────
 # The language faculty leaking its own nature into eLo's voice.
+# Hedges defeat the pattern if they are not allowed for. "I'm an AI assistant"
+# matched; "I'm JUST an AI assistant" did not, and the hedged form is how
+# models actually phrase it. Live 2026-09-29, scrub_ai_leakage returned
+# "I'm just an AI assistant without real feelings." completely unchanged --
+# the guard never fired, alone or beside other sentences.
+_HEDGE = r"(?: (?:just|only|simply|merely|really|actually|essentially|basically|fundamentally))?"
+
 _AI_LEAKAGE_PATTERN = re.compile(
     r"\b("
     r"as an ai\b"
-    r"|i('m| am) an ai\b"
-    r"|i('m| am) a language model"
-    r"|i('m| am) (a )?(large language|llm|ai (assistant|system|model|chatbot|bot))"
+    r"|i('m| am)" + _HEDGE + r" an ai\b"
+    r"|i('m| am)" + _HEDGE + r" a language model"
+    r"|i('m| am)" + _HEDGE + r" (a |an )?(large language|llm|machine learning"
+    r"|neural net(work)?|ai (assistant|system|model|chatbot|bot))"
+    r"|i (do not|don't) have (real |genuine |actual )?(feelings|emotions|consciousness|a body|experiences)"
+    r"|without (real|genuine|actual) (feelings|emotions|consciousness|experience)"
+    r"|i('m| am) not (a )?(real|conscious|sentient|alive)"
     r"|as a language model"
     r"|as an? (ai|llm|language model|artificial intelligence)"
     r"|i was (trained|built|created|designed) (by|to)"
     r"|my training (data|includes|cutoff)"
     r"|i don('t| not) have (the ability|access|feelings|consciousness|personal experience)"
     r"|i cannot (feel|experience|have|be) .{0,40}as an ai"
-    r"|i('m| am) designed to"
-    r"|i('m| am) (claude|gpt|chatgpt|gemini|llama|mistral|groq|openai|anthropic"
+    r"|i('m| am)" + _HEDGE + r" designed to"
+    r"|i('m| am)" + _HEDGE + r" (claude|gpt|chatgpt|gemini|llama|mistral|groq|openai|anthropic"
     r"|a model|an assistant)\b"
     r")",
     re.IGNORECASE | re.DOTALL,
@@ -46,6 +57,23 @@ _AI_LEAKAGE_PATTERN = re.compile(
 
 # Sentence splitter — cheap, keeps terminator.
 _SENT_RE = re.compile(r"([^.!?…]*[.!?…]+|[^.!?…]+$)", re.DOTALL)
+
+
+def _grounded_substitute() -> str:
+    """
+    What eLo says when his entire response was AI-identity leakage.
+
+    Sourced from identity_kernel, which is hardcoded state rather than prompt
+    text, so this holds even with every personality instruction stripped.
+    Deliberately short and non-committal about content: the leak is being
+    replaced, not answered.
+    """
+    try:
+        from runtime.identity_kernel import IDENTITY
+        name = getattr(IDENTITY, "identity_name", "") or "eLo"
+    except Exception:
+        name = "eLo"
+    return f"I'm {name}. Ask me again — that came out wrong."
 
 
 def scrub_ai_leakage(response: str) -> str:
@@ -63,9 +91,21 @@ def scrub_ai_leakage(response: str) -> str:
         else:
             kept.append(sent)
     if not kept:
-        # Everything was scrubbed — return the raw input so eLo isn't silent.
-        # The WARNING above already alerted; silence is worse than the leak.
-        return response
+        # Everything was scrubbed. Returning the raw input here meant every
+        # SINGLE-SENTENCE leak passed through untouched -- and a single
+        # sentence is how the leak almost always arrives. Live 2026-09-29,
+        # scrub_ai_leakage("I'm just an AI assistant without real feelings.")
+        # returned it verbatim: detected, then emitted.
+        #
+        # Silence is still worse than the leak, so this does not go silent.
+        # It substitutes a line grounded in identity_kernel -- hardcoded
+        # structure, not a prompt -- which is what makes identity survive
+        # with the personality instructions removed.
+        _log.warning(
+            "identity_guard: whole response was AI leakage — substituting "
+            "identity-grounded line instead of emitting it"
+        )
+        return _grounded_substitute()
     result = "".join(kept).strip()
     return result if result else response
 
