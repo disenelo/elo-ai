@@ -195,16 +195,47 @@ SCENARIOS: dict[str, list] = {
 }
 
 
-def ask(text: str) -> dict:
-    req = urllib.request.Request(
-        ENDPOINT, data=json.dumps({"text": text}).encode("utf-8"),
-        headers={"Content-Type": "application/json"}, method="POST",
-    )
-    t0 = time.time()
-    with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
-        payload = json.loads(r.read().decode("utf-8"))
-    payload["_elapsed"] = round(time.time() - t0, 1)
-    return payload
+def _wait_for_server(max_wait: float = 180.0) -> bool:
+    """
+    Block until the server answers /health.
+
+    The app restarts the server as its own child, so a restart mid-suite
+    otherwise lands as a row of REQUEST FAILED and reads like a code defect.
+    It happened on 2026-09-29 and the first reading of it was wrong.
+    """
+    health = ENDPOINT.rsplit("/", 1)[0] + "/health"
+    deadline = time.time() + max_wait
+    while time.time() < deadline:
+        try:
+            with urllib.request.urlopen(health, timeout=10) as r:
+                if json.loads(r.read().decode("utf-8")).get("ok"):
+                    return True
+        except Exception:
+            pass
+        time.sleep(5)
+    return False
+
+
+def ask(text: str, attempts: int = 3) -> dict:
+    last = None
+    for n in range(attempts):
+        req = urllib.request.Request(
+            ENDPOINT, data=json.dumps({"text": text}).encode("utf-8"),
+            headers={"Content-Type": "application/json"}, method="POST",
+        )
+        t0 = time.time()
+        try:
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+                payload = json.loads(r.read().decode("utf-8"))
+            payload["_elapsed"] = round(time.time() - t0, 1)
+            payload["_attempts"] = n + 1
+            return payload
+        except Exception as e:
+            last = e
+            print(f"      (transport: {e} — waiting for server, attempt {n+1}/{attempts})")
+            if not _wait_for_server():
+                break
+    raise RuntimeError(f"server unreachable after {attempts} attempts: {last}")
 
 
 def run(name: str, turns: list, sink) -> tuple[int, int, list]:
@@ -250,6 +281,9 @@ def run(name: str, turns: list, sink) -> tuple[int, int, list]:
 
 def main() -> int:
     wanted = sys.argv[1:] or list(SCENARIOS)
+    if not _wait_for_server():
+        print('server not answering /health — aborting rather than reporting transport errors as conversation failures')
+        return 3
     os.makedirs(os.path.dirname(EVIDENCE), exist_ok=True)
     total_p = total_f = 0
     all_failures = []

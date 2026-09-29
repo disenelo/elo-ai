@@ -7098,6 +7098,15 @@ class _Handler(BaseHTTPRequestHandler):
                     "unresolved_threads":        list(_ctx.get("unresolved_threads", ())),
                     "recent_subjects":           _last_subjects,
                     "recent_conversation_state": _ctx.get("recent_conversation_state", ""),
+                    # Two independent conversation stores exist and they are not
+                    # interchangeable. turns_in_window above is the grounding
+                    # ConversationTracker. The [SESSION LOG] prompt block reads
+                    # conversation_matrix._SESSION_WINDOW instead, and only that
+                    # one decides whether eLo can answer "what were we just
+                    # talking about". Reading the first as evidence about the
+                    # second produced a wrong root-cause call on 2026-09-29,
+                    # so the diagnostic now reports both by name.
+                    "session_log_window": _session_log_window_size(),
                 })
             except Exception as _ge:
                 self._send_json(500, {"error": str(_ge)})
@@ -7347,6 +7356,18 @@ def _shutdown_cleanly(server: ThreadingHTTPServer) -> None:
     except Exception:
         pass
     server.shutdown()
+
+
+def _session_log_window_size() -> int:
+    """
+    Size of conversation_matrix._SESSION_WINDOW — the store the [SESSION LOG]
+    prompt block reads. -1 when it cannot be read at all.
+    """
+    try:
+        from runtime.router.conversation_matrix import _SESSION_WINDOW
+        return len(_SESSION_WINDOW)
+    except Exception:
+        return -1
 
 
 def _watch_parent(parent_pid: int, server: ThreadingHTTPServer) -> None:
