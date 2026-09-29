@@ -4859,6 +4859,14 @@ def _process_turn(raw: str) -> dict:
             _ec_block = _ec_emergent_block(_elo_self, _ec_idle)
             if _ec_block:
                 system = system + "\n\n" + _ec_block
+            # Temporal state: now vs past vs planned — make temporal distinctions explicit (non-blocking)
+            try:
+                from runtime.temporal_state import temporal_state_prompt_block as _temporal_pb
+                _temporal_block = _temporal_pb()
+                if _temporal_block:
+                    system = system + "\n\n" + _temporal_block
+            except Exception as _temporal_err:
+                _logging.warning("temporal_state block failed (non-fatal): %s", _temporal_err)
             # Identity kernel: immutable identity anchor — injected first (non-blocking)
             try:
                 from runtime.identity_kernel import IDENTITY as _IK
