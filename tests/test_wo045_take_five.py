@@ -1,135 +1,171 @@
 """
-tests/test_wo045_take_five.py — Acceptance tests for WO-045 (Builder lane)
+tests/test_wo045_take_five.py — WO-045 "take five" privacy pop-off (Builder lane)
 
-Spec: "take 5" → leave_command in blender_state.json; "come back" → return_command
-  1. Privacy phrases in _SIGNAL_WORDS → step_out
-  2. Return phrases in _SIGNAL_WORDS → return_elo
-  3. state_writer emits leave_command when intent == "step_out"
-  4. state_writer emits return_command when intent == "return_elo"
-  5. py_compile clean
+Spec: "take 5" → leave_command in blender_state.json; "come back" → return_command.
+Privacy pop-off must be detectable in server.py _SIGNAL_WORDS and state_writer must
+emit the correct command fields when those intents fire.
 
-Run: python3 tests/test_wo045_take_five.py
+AT-1  All privacy phrases present in server.py _SIGNAL_WORDS → step_out
+AT-2  Return phrases (come back / you there) map to return_elo in _SIGNAL_WORDS
+AT-3  state_writer.write(intent='step_out') emits leave_command with _ts field
+AT-4  state_writer.write(intent='return_elo') emits return_command with _ts field
+AT-5  write_with_presence(intent='step_out') also emits leave_command (both paths covered)
+AT-6  py_compile clean on server.py + state_writer.py
 """
-import sys, os, json, tempfile
-sys.path.insert(0, ".")
+import os
+import sys
+import json
+import tempfile
+import py_compile
+import pytest
 
-PASS = 0; FAIL = 0
-def ok(n):      global PASS; PASS += 1; print(f"  ✅ {n}")
-def fail(n, r): global FAIL; FAIL += 1; print(f"  ❌ {n}: {r}")
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+_ROOT          = os.path.join(os.path.dirname(__file__), "..")
+_SERVER_PY     = os.path.join(_ROOT, "server.py")
+_SW_PY         = os.path.join(_ROOT, "blender_bridge", "state_writer.py")
 
-# ── AT-1: privacy phrases map to step_out in _SIGNAL_WORDS ───────────────────
-try:
-    _src = open("server.py", encoding="utf-8").read()
-    required = ["take 5", "take five", "give me a minute", "some privacy",
-                "step away", "leave me to it", "pop off"]
-    missing  = [p for p in required if f'"{p}"' not in _src and f"'{p}'" not in _src]
-    if missing:
-        fail("AT-1", f"missing privacy phrases: {missing}")
-    else:
-        ok(f"AT-1: all privacy phrases present in _SIGNAL_WORDS ({len(required)} checked)")
-except Exception as e:
-    fail("AT-1", e)
-
-
-# ── AT-2: return phrases map to return_elo ───────────────────────────────────
-try:
-    _src = open("server.py", encoding="utf-8").read()
-    if '"return_elo"' in _src and '"come back"' in _src and '"you there"' in _src:
-        ok('AT-2: return phrases (come back / you there) → return_elo in _SIGNAL_WORDS')
-    else:
-        fail("AT-2", "return_elo / come back / you there not all in _SIGNAL_WORDS")
-except Exception as e:
-    fail("AT-2", e)
+_IDLE_MOTION = {
+    "animation": "idle",
+    "speed": 0.5,
+    "intensity": 0.5,
+    "duration": 4.0,
+    "mood": "neutral",
+    "mode": "idle",
+}
 
 
-# ── AT-3: state_writer emits leave_command on step_out intent ────────────────
-try:
+def _sw_module():
     import blender_bridge.state_writer as _sw
-    import blender_bridge.state_writer as _sw_mod
-    # Patch _STATE_PATH to a temp file
-    _orig = _sw_mod._STATE_PATH
-    _tmp  = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
-    _tmp.close()
-    _sw_mod._STATE_PATH = _tmp.name
+    return _sw
 
-    _sw.write(
-        motion={"animation": "idle", "speed": 0.5, "intensity": 0.5, "duration": 4.0, "mood": "neutral", "mode": "idle"},
-        intent="step_out",
+
+# ── AT-1 ──────────────────────────────────────────────────────────────────────
+
+def test_at1_privacy_phrases_in_signal_words():
+    """
+    All "take five" family phrases must be present in server.py _SIGNAL_WORDS
+    mapping to step_out intent. Missing a phrase means David saying it gets no
+    pop-off, leaving eLo listening when privacy was requested.
+    """
+    src = open(_SERVER_PY, encoding="utf-8").read()
+    required = [
+        "take 5", "take five", "give me a minute",
+        "some privacy", "step away", "leave me to it", "pop off",
+    ]
+    missing = [p for p in required if f'"{p}"' not in src and f"'{p}'" not in src]
+    assert not missing, (
+        f"AT-1 FAIL: missing privacy phrases from _SIGNAL_WORDS: {missing}"
     )
-    with open(_tmp.name, encoding="utf-8") as f:
-        result = json.load(f)
-    os.unlink(_tmp.name)
-    _sw_mod._STATE_PATH = _orig
-
-    if "leave_command" in result and "_ts" in result["leave_command"]:
-        ok(f"AT-3: state_writer.write(intent='step_out') emits leave_command._ts")
-    else:
-        fail("AT-3", f"leave_command not in payload: {list(result.keys())}")
-except Exception as e:
-    fail("AT-3", e)
 
 
-# ── AT-4: state_writer emits return_command on return_elo intent ─────────────
-try:
-    _orig = _sw_mod._STATE_PATH
-    _tmp  = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
-    _tmp.close()
-    _sw_mod._STATE_PATH = _tmp.name
+# ── AT-2 ──────────────────────────────────────────────────────────────────────
 
-    _sw.write(
-        motion={"animation": "idle", "speed": 0.5, "intensity": 0.5, "duration": 4.0, "mood": "neutral", "mode": "idle"},
-        intent="return_elo",
+def test_at2_return_phrases_map_to_return_elo():
+    """
+    Return phrases ("come back", "you there") must map to return_elo in
+    server.py _SIGNAL_WORDS so eLo knows to resume from pop-off.
+    """
+    src = open(_SERVER_PY, encoding="utf-8").read()
+    assert '"return_elo"' in src or "'return_elo'" in src, (
+        "AT-2 FAIL: 'return_elo' intent not found in server.py _SIGNAL_WORDS"
     )
-    with open(_tmp.name, encoding="utf-8") as f:
-        result = json.load(f)
-    os.unlink(_tmp.name)
-    _sw_mod._STATE_PATH = _orig
-
-    if "return_command" in result and "_ts" in result["return_command"]:
-        ok(f"AT-4: state_writer.write(intent='return_elo') emits return_command._ts")
-    else:
-        fail("AT-4", f"return_command not in payload: {list(result.keys())}")
-except Exception as e:
-    fail("AT-4", e)
-
-
-# ── AT-5: write_with_presence also emits leave_command ───────────────────────
-try:
-    _orig = _sw_mod._STATE_PATH
-    _tmp  = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
-    _tmp.close()
-    _sw_mod._STATE_PATH = _tmp.name
-
-    _sw.write_with_presence(
-        motion={"animation": "idle", "speed": 0.5, "intensity": 0.5, "duration": 4.0, "mood": "neutral", "mode": "idle"},
-        intent="step_out",
+    assert '"come back"' in src or "'come back'" in src, (
+        "AT-2 FAIL: 'come back' phrase not in server.py _SIGNAL_WORDS"
     )
-    with open(_tmp.name, encoding="utf-8") as f:
-        result = json.load(f)
-    os.unlink(_tmp.name)
-    _sw_mod._STATE_PATH = _orig
-
-    if "leave_command" in result and "_ts" in result["leave_command"]:
-        ok("AT-5: write_with_presence(intent='step_out') also emits leave_command")
-    else:
-        fail("AT-5", f"leave_command not in write_with_presence payload: {list(result.keys())}")
-except Exception as e:
-    fail("AT-5", e)
+    assert '"you there"' in src or "'you there'" in src, (
+        "AT-2 FAIL: 'you there' phrase not in server.py _SIGNAL_WORDS"
+    )
 
 
-# ── AT-6: py_compile clean ────────────────────────────────────────────────────
-try:
-    import py_compile
-    py_compile.compile("server.py", doraise=True)
-    py_compile.compile("blender_bridge/state_writer.py", doraise=True)
-    ok("AT-6: py_compile clean on server.py + state_writer.py")
-except py_compile.PyCompileError as e:
-    fail("AT-6", e)
+# ── AT-3 ──────────────────────────────────────────────────────────────────────
+
+def test_at3_state_writer_write_step_out_emits_leave_command():
+    """
+    state_writer.write(intent='step_out') must produce a payload with a
+    leave_command key containing a _ts timestamp. This is the Unity signal
+    that triggers eLo to step back / reduce presence.
+    """
+    sw = _sw_module()
+    orig_path = sw._STATE_PATH
+    tmp = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
+    tmp.close()
+    sw._STATE_PATH = tmp.name
+    try:
+        sw.write(motion=_IDLE_MOTION, intent="step_out")
+        result = json.loads(open(tmp.name).read())
+        assert "leave_command" in result, (
+            f"AT-3 FAIL: leave_command not in payload keys: {list(result.keys())}"
+        )
+        assert "_ts" in result["leave_command"], (
+            f"AT-3 FAIL: leave_command missing _ts: {result['leave_command']}"
+        )
+    finally:
+        sw._STATE_PATH = orig_path
+        try: os.unlink(tmp.name)
+        except: pass
 
 
-print()
-print("=" * 50)
-print(f"WO-045  {PASS} passed  {FAIL} failed")
-if FAIL:
-    sys.exit(1)
+# ── AT-4 ──────────────────────────────────────────────────────────────────────
+
+def test_at4_state_writer_write_return_elo_emits_return_command():
+    """
+    state_writer.write(intent='return_elo') must produce a payload with a
+    return_command key containing _ts. This signals Unity to resume eLo presence.
+    """
+    sw = _sw_module()
+    orig_path = sw._STATE_PATH
+    tmp = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
+    tmp.close()
+    sw._STATE_PATH = tmp.name
+    try:
+        sw.write(motion=_IDLE_MOTION, intent="return_elo")
+        result = json.loads(open(tmp.name).read())
+        assert "return_command" in result, (
+            f"AT-4 FAIL: return_command not in payload keys: {list(result.keys())}"
+        )
+        assert "_ts" in result["return_command"], (
+            f"AT-4 FAIL: return_command missing _ts: {result['return_command']}"
+        )
+    finally:
+        sw._STATE_PATH = orig_path
+        try: os.unlink(tmp.name)
+        except: pass
+
+
+# ── AT-5 ──────────────────────────────────────────────────────────────────────
+
+def test_at5_write_with_presence_step_out_emits_leave_command():
+    """
+    write_with_presence(intent='step_out') must also emit leave_command — this
+    path is called from the presence-aware server path, not just the direct path.
+    Both server paths must honour the pop-off signal.
+    """
+    sw = _sw_module()
+    orig_path = sw._STATE_PATH
+    tmp = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
+    tmp.close()
+    sw._STATE_PATH = tmp.name
+    try:
+        sw.write_with_presence(motion=_IDLE_MOTION, intent="step_out")
+        result = json.loads(open(tmp.name).read())
+        assert "leave_command" in result, (
+            f"AT-5 FAIL: leave_command not in write_with_presence payload: {list(result.keys())}"
+        )
+        assert "_ts" in result["leave_command"], (
+            f"AT-5 FAIL: leave_command missing _ts in write_with_presence result"
+        )
+    finally:
+        sw._STATE_PATH = orig_path
+        try: os.unlink(tmp.name)
+        except: pass
+
+
+# ── AT-6 ──────────────────────────────────────────────────────────────────────
+
+def test_at6_py_compile_clean():
+    for path in (_SERVER_PY, _SW_PY):
+        try:
+            py_compile.compile(path, doraise=True)
+        except py_compile.PyCompileError as e:
+            pytest.fail(f"AT-6 FAIL: {os.path.basename(path)} does not compile: {e}")

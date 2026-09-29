@@ -1,73 +1,91 @@
 """
-tests/test_wo043_bus_isolation.py — Acceptance tests for WO-043
+tests/test_wo043_bus_isolation.py — WO-043 faculty bus isolation
 
-Spec: WO-043 — Faculty Bus isolation; stop "weave it in" fact injection;
-      tool outputs must not be asserted as personal truths.
+Spec: WO-043 — Faculty bus isolation; stop "weave it in" fact injection;
+      tool outputs must not be asserted as personal truths in the /chat prompt path.
 
-Tests:
-  AT-1: ambient cultural_facts prompt no longer says "use it naturally if the moment feels right"
-  AT-2: ambient injection uses "CURIOUS FACT" framing (not FACT AVAILABLE)
-  AT-3: ANTI-FABRICATION block in /chat path covers weather/area facts
-  AT-4: ANTI-FABRICATION block bans "it's X in your studio" style assertions
-  AT-5: server.py compile clean
-
-Run: python3 tests/test_wo043_bus_isolation.py
+AT-1  Old "use it naturally if the moment feels right" ambient phrase removed from server.py
+AT-2  Ambient injection now uses "CURIOUS FACT" framing (not bare "FACT AVAILABLE")
+AT-3  ANTI-FABRICATION block covers area-level weather/forecast facts
+AT-4  ANTI-FABRICATION block explicitly bans "X in your studio" style assertions
+AT-5  py_compile clean on server.py
 """
-import sys, os
-sys.path.insert(0, ".")
+import os
+import sys
+import py_compile
+import pytest
 
-PASS = 0; FAIL = 0
-def ok(n):      global PASS; PASS += 1; print(f"  ✅ {n}")
-def fail(n, r): global FAIL; FAIL += 1; print(f"  ❌ {n}: {r}")
-
-_src = open("server.py", encoding="utf-8").read()
-
-
-# ── AT-1: old "use it naturally if the moment feels right" removed ────────────
-if "use it naturally in speak if the moment feels right" not in _src:
-    ok("AT-1: old 'use it naturally' ambient injection phrase removed")
-else:
-    fail("AT-1", "'use it naturally in speak if the moment feels right' still present in server.py")
+_ROOT = os.path.join(os.path.dirname(__file__), "..")
+_SERVER_PY = os.path.join(_ROOT, "server.py")
 
 
-# ── AT-2: new ambient injection uses CURIOUS FACT framing ────────────────────
-if "CURIOUS FACT" in _src:
-    ok("AT-2: ambient injection now uses 'CURIOUS FACT' framing")
-else:
-    fail("AT-2", "'CURIOUS FACT' framing not found in server.py")
+def _server_src() -> str:
+    return open(_SERVER_PY, encoding="utf-8").read()
 
 
-# ── AT-3: ANTI-FABRICATION block covers area/weather facts ───────────────────
-if "AREA-LEVEL forecast" in _src or "area-level" in _src.lower():
-    ok("AT-3: ANTI-FABRICATION block covers area-level weather/forecast facts")
-else:
-    fail("AT-3", "weather/area-level anti-fabrication not found in server.py")
+# ── AT-1 ──────────────────────────────────────────────────────────────────────
+
+def test_at1_ambient_inject_old_phrase_removed():
+    """
+    The original bus-contamination phrase "use it naturally in speak if the moment
+    feels right" must be absent — it caused eLo to assert tool outputs as personal truths.
+    """
+    src = _server_src()
+    assert "use it naturally in speak if the moment feels right" not in src, (
+        "AT-1 FAIL: old ambient injection phrase still present in server.py — "
+        "this leaks tool facts into eLo's first-person voice without attribution"
+    )
 
 
-# ── AT-4: ANTI-FABRICATION block bans studio-level weather assertions ─────────
-if "your studio" in _src and "NEVER" in _src:
-    # verify they appear together near each other (within 300 chars)
-    idx = _src.find("your studio")
-    window = _src[max(0, idx-200):idx+100]
-    if "NEVER" in window or "never" in window:
-        ok("AT-4: ANTI-FABRICATION explicitly bans 'X in your studio' assertions")
-    else:
-        fail("AT-4", "'your studio' found but no NEVER guard nearby")
-else:
-    fail("AT-4", "'your studio' anti-fabrication guard not found in server.py")
+# ── AT-2 ──────────────────────────────────────────────────────────────────────
+
+def test_at2_curious_fact_framing_present():
+    """
+    Ambient injection must use "CURIOUS FACT" framing so eLo introduces
+    external data as a fact it encountered, not a personal observation.
+    """
+    src = _server_src()
+    assert "CURIOUS FACT" in src, (
+        "AT-2 FAIL: 'CURIOUS FACT' framing not found in server.py — "
+        "ambient injection may still be presented as first-person truth"
+    )
 
 
-# ── AT-5: server.py compile clean ────────────────────────────────────────────
-try:
-    import py_compile
-    py_compile.compile("server.py", doraise=True)
-    ok("AT-5: server.py compile clean")
-except py_compile.PyCompileError as e:
-    fail("AT-5", e)
+# ── AT-3 ──────────────────────────────────────────────────────────────────────
+
+def test_at3_anti_fabrication_covers_area_level_weather():
+    """
+    ANTI-FABRICATION block must guard against area-level weather/forecast assertions —
+    eLo cannot assert "it's raining in Hackney Wick" from a borough-level reading.
+    """
+    src = _server_src().lower()
+    assert "area-level" in src or "area level" in src, (
+        "AT-3 FAIL: area-level weather anti-fabrication not found in server.py"
+    )
 
 
-print()
-print(f"{'='*50}")
-print(f"WO-043  {PASS} passed  {FAIL} failed")
-if FAIL:
-    sys.exit(1)
+# ── AT-4 ──────────────────────────────────────────────────────────────────────
+
+def test_at4_anti_fabrication_bans_studio_assertions():
+    """
+    ANTI-FABRICATION block must explicitly prohibit 'X in your studio' assertions.
+    The guard must appear within 200 chars of a NEVER/never prohibition.
+    """
+    src = _server_src()
+    idx = src.find("your studio")
+    assert idx != -1, "AT-4 FAIL: 'your studio' anti-fabrication guard not found in server.py"
+
+    window = src[max(0, idx - 200):idx + 100]
+    assert "NEVER" in window or "never" in window, (
+        "AT-4 FAIL: 'your studio' found but no NEVER prohibition within 200 chars"
+    )
+
+
+# ── AT-5 ──────────────────────────────────────────────────────────────────────
+
+def test_at5_server_compiles_cleanly():
+    """server.py must compile cleanly — no syntax errors introduced."""
+    try:
+        py_compile.compile(_SERVER_PY, doraise=True)
+    except py_compile.PyCompileError as e:
+        pytest.fail(f"AT-5 FAIL: server.py does not compile: {e}")
