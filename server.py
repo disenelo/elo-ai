@@ -4875,6 +4875,24 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _int_block
             except Exception as _int_err:
                 _logging.warning("intentions block failed (non-fatal): %s", _int_err)
+            # WO-ELO-IDENTITY-CANONICAL-001 / Self-knowledge: inject capability self-model
+            try:
+                from runtime.self_knowledge import self_knowledge_block as _sk_block
+                _sk = _sk_block(embodiment="terminal")
+                if _sk:
+                    system = system + "\n\n" + _sk
+            except Exception as _sk_err:
+                _logging.warning("self_knowledge block failed (non-fatal): %s", _sk_err)
+            # Novelty detection: flag genuinely rare edge_hints / unseen context_tags
+            try:
+                from memory.novelty_detector import novelty_prompt_block as _nov_pb
+                _edge_hint_now = _plan.edge_hint if _plan and hasattr(_plan, "edge_hint") else ""
+                _ctx_tags_now  = _plan.context_tags if _plan and hasattr(_plan, "context_tags") else []
+                _nov_block = _nov_pb(edge_hint=_edge_hint_now, context_tags=_ctx_tags_now)
+                if _nov_block:
+                    system = system + "\n\n" + _nov_block
+            except Exception as _nov_err:
+                _logging.warning("novelty block failed (non-fatal): %s", _nov_err)
             # WO-099b fix5 / WO-114: if an internal intent fired, mark plan.intent_source="self"
             # and populate plan.internal_intent with full intent (kind, source, trigger, priority)
             _ec_raw = _ec_intents(_elo_self, _ec_idle)
