@@ -4957,6 +4957,13 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _ch_block
             except Exception as _ch_err:
                 _logging.warning("correction_history block failed (non-fatal): %s", _ch_err)
+            try:
+                from runtime.faculty_conflict_detector import faculty_conflict_prompt_block as _fcd_pb
+                _fcd_block = _fcd_pb(system)
+                if _fcd_block:
+                    system = system + "\n\n" + _fcd_block
+            except Exception as _fcd_err:
+                _logging.warning("faculty_conflict_detector block failed (non-fatal): %s", _fcd_err)
             # WO-099b fix5 / WO-114: if an internal intent fired, mark plan.intent_source="self"
             # and populate plan.internal_intent with full intent (kind, source, trigger, priority)
             _ec_raw = _ec_intents(_elo_self, _ec_idle)
