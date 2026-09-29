@@ -4742,6 +4742,16 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # Long-term identity + constraint documents — always on turn path
+        try:
+            from memory.long_term_reader import long_term_prompt_block as _lt_pb
+            _lt_block = _lt_pb()
+            if _lt_block:
+                _lt_prefix = _lt_block + "\n\n"
+            else:
+                _lt_prefix = ""
+        except Exception:
+            _lt_prefix = ""
         # WO-037: prepend durable fact snapshots so eLo always knows them
         try:
             from memory.fact_store import facts_summary as _facts_summary_fn
@@ -4752,7 +4762,7 @@ def _process_turn(raw: str) -> dict:
                 _facts_prefix = ""
         except Exception:
             _facts_prefix = ""
-        _combined_vault = (_facts_prefix + _vault_ctx + "\n\n" + _project_ctx).strip() if _project_ctx else (_facts_prefix + _vault_ctx).strip()
+        _combined_vault = (_lt_prefix + _facts_prefix + _vault_ctx + "\n\n" + _project_ctx).strip() if _project_ctx else (_lt_prefix + _facts_prefix + _vault_ctx).strip()
         # INT-8: inject any pending file-drop results as context so eLo can reference them
         try:
             from desktop.file_drop_handler import pop_pending_drops as _pop_drops
