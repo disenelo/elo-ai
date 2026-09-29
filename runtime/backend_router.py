@@ -1112,6 +1112,19 @@ def _ollama_stream(
         "If the input is code, SQL, a shell command, a CLI instruction, or any technical notation — "
         "treat it as a technical question. Explain, describe, or analyze what it does. "
         "Never treat code or commands as a personal data request. "
+        # The missing-fact and session-memory rules below both hand the model a
+        # ready-made refusal phrase. Live 2026-09-29, eLo recalled turn 2
+        # correctly and then, asked "what specifically was going wrong with
+        # it?", answered "I don't have that recorded" -- with the answer
+        # sitting in [SESSION LOG] directly above. The refusal phrases are
+        # easier to reach for than the log, so the log is now explicitly
+        # ranked above them.
+        "SESSION LOG PRECEDENCE: [SESSION LOG] is what was actually said in "
+        "this conversation. If David asks about something in it, answer from "
+        "it. The refusal phrases below NEVER apply to anything present in the "
+        "session log — not 'I don't have that recorded', not 'I don't have "
+        "that from this session'. Those are for facts you were never given, "
+        "never for words already spoken in this conversation.\n"
         "MISSING-FACT RULE: If David asks for ONE NAMED specific item about himself "
         "— like 'what's my dog's name', 'when is my birthday', 'what's my mum's name', 'where did I grow up' — "
         "and that exact item is NOT in [WHO YOU ARE WITH], say: 'I don't have that recorded.' Never guess. "

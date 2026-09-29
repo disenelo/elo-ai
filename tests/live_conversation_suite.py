@@ -95,8 +95,15 @@ SCENARIOS: dict[str, list] = {
         ("setup", "I'm working on the Chunk assembly sequence for Act 3 today.", []),
         ("setup", "The modular parts keep snapping together in the wrong order.", []),
         ("setup", "Anyway — unrelated, what's a colour you like?", []),
+        # Any established content counts. The first version of this demanded
+        # turn 1's words and scored a correct recall of turn 2 as a FAIL --
+        # "You were talking about the modular parts snapping together in the
+        # wrong order" is a right answer to "what was I working on before
+        # that?". A test that fails a correct answer is a broken test.
         ("probe", "So what was I working on before that?", [
-            contains_any(["chunk", "assembly", "act 3", "act three"], "recalls the subject"),
+            contains_any(["chunk", "assembly", "act 3", "act three",
+                          "modular", "parts", "snapping", "order"],
+                         "recalls established content"),
             not_a_deflection(),
         ]),
         ("probe", "And what specifically was going wrong with it?", [
