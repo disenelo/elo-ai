@@ -3928,6 +3928,37 @@ def _process_turn(raw: str) -> dict:
         except Exception as _wkg_e:
             _logging.warning("WO-WKG-001: wkg ctx items failed (non-fatal): %s", _wkg_e)
 
+        # ── SPG feedback — what keeps coming up ───────────────────────────────
+        # SPG had 214 nodes and a working reader, query_spg_entities(), that
+        # NOTHING called. The spine references SPG 24 times and every one is
+        # capture: a signal logger writing .log(). Patterns went in and never
+        # came back, so eLo could not say "you keep returning to this" about
+        # anything. Write-only memory is not a pattern-former.
+        #
+        # This is the read side. Entities are ranked by the SPG significance of
+        # the claims they appear in, so what surfaces is what has actually
+        # recurred with weight -- not whatever the turn happened to mention.
+        try:
+            from memory.spg_faculty import query_spg_entities as _spg_q
+            from runtime.wkg_faculty import get_entity as _spg_ent
+            _spg_ids = _spg_q(raw, locals().get("_ccm_dims") or None)
+            _spg_labels = []
+            for _eid in _spg_ids[:4]:
+                _e = _spg_ent(_eid) or {}
+                _lab = (_e.get("label") or "").strip()
+                if _lab and _lab not in _spg_labels:
+                    _spg_labels.append(_lab)
+            if _spg_labels:
+                _spg_block = (
+                    "[RECURRING — things that keep coming up, most significant first]\n"
+                    + "\n".join(f"- {l}" for l in _spg_labels)
+                    + "\nThese have recurred across conversations. Mention one only if "
+                      "it genuinely fits what David just said — never force it in."
+                )
+                g_ctx = f"{g_ctx}\n{_spg_block}" if g_ctx else _spg_block
+        except Exception as _spg_e:
+            _logging.warning("SPG feedback failed (non-fatal): %s", _spg_e)
+
         # ── Creator identity — always first so every LLM call knows who David is ──
         try:
             import json as _json
