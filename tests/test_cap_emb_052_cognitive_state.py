@@ -258,23 +258,14 @@ def test_state_is_derived_not_stored():
 
 # ── cross-seat: Check 16 in response_gate.py ─────────────────────────────────
 #
-# Builder 1 wired can_claim_occurred() into runtime/response_gate.py as
-# Check 16 on 2026-09-28 (75e3962), hours after this vocabulary landed.
-#
-# It gates on a DENY-list -- _INTERNALLY_GENERATED_STATE_NAMES, five entries --
-# so every state not on it passes, and can_claim_occurred() is only consulted
-# INSIDE the branch where its answer is already known. It never decides.
-# OCCURRED_STATES is the allow-list and has three entries, so five states and
-# every unrecognised string are permitted to claim occurrence.
-#
-# xfail, not a red test: response_gate.py is Builder 1's active lane. These
-# flip to XPASS the moment the gate switches to the allow-list.
+# WO-CHECK16-FIX (2026-09-29): Builder 1 switched check-16 from deny-list
+# (_INTERNALLY_GENERATED_STATE_NAMES, 5 entries) to allow-list (can_claim_occurred,
+# 3 entries: MEMORY/OBSERVATION/ACTION). All six xfail tests below now PASS.
+# Markers removed — tests are clean green.
 
 _OCCURRENCE_CLAIM = "I remember that happened to me."
 
 
-@pytest.mark.xfail(reason="response_gate check-16 uses a deny-list; Builder 1's lane",
-                   strict=False)
 @pytest.mark.parametrize("state", [
     CognitiveState.KNOWLEDGE,
     CognitiveState.INFERENCE,
@@ -292,15 +283,13 @@ def test_check16_should_flag_every_non_occurred_state(state):
     )
 
 
-@pytest.mark.xfail(reason="response_gate check-16 uses a deny-list; Builder 1's lane",
-                   strict=False)
 def test_a_promoted_dream_insight_may_not_say_it_happened():
     """
     The conflation EMB-052 exists to prevent, at the layer that speaks.
 
     EMB-031's ladder can promote a dream insight to KNOWLEDGE. KNOWLEDGE is
-    "This is known", not "This happened" -- test_no_rung_of_the_ladder_can_
-    claim_something_happened pins that. Check 16 lets it through anyway.
+    "This is known", not "This happened" — check16 now correctly blocks it
+    via can_claim_occurred() allow-list (KNOWLEDGE not in OCCURRED_STATES).
     """
     from runtime.response_gate import _check_cognitive_claim_origin as check16
     from faculties.dream.dream_review import CandidateInsight, STAGE_KNOWLEDGE
@@ -311,7 +300,7 @@ def test_a_promoted_dream_insight_may_not_say_it_happened():
 
 
 def test_check16_does_flag_the_five_it_covers():
-    """Not a regression report — what Check 16 gets right today."""
+    """All five internally-generated states still flagged after allow-list switch."""
     from runtime.response_gate import _check_cognitive_claim_origin as check16
     for state in (CognitiveState.DREAM, CognitiveState.SIMULATION,
                   CognitiveState.IMAGINATION, CognitiveState.PREDICTION,

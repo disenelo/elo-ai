@@ -323,16 +323,17 @@ def _check_cognitive_claim_origin(
             return True, response, []  # no state info → conservative pass
         state_str = "dream"
 
-    if state_str not in _INTERNALLY_GENERATED_STATE_NAMES:
-        return True, response, []  # MEMORY / OBSERVATION / ACTION / KNOWLEDGE — allowed
-
-    # Double-check via can_claim_occurred() in case the enum mapping shifted.
+    # WO-CHECK16-FIX: switch from deny-list (_INTERNALLY_GENERATED_STATE_NAMES, 5 entries)
+    # to allow-list (can_claim_occurred, 3 entries: MEMORY/OBSERVATION/ACTION).
+    # The deny-list only caught 5 internally-generated states but left KNOWLEDGE, INFERENCE,
+    # PATTERN, INSTINCT_REFLEX, DECISION etc. unchecked — all of which can_claim_occurred()
+    # correctly returns False for. Now can_claim_occurred() IS the gate.
     try:
         from runtime.cognitive_state import can_claim_occurred
         if can_claim_occurred(state_str):
-            return True, response, []
+            return True, response, []  # MEMORY / OBSERVATION / ACTION — can claim occurrence
     except Exception:
-        pass
+        return True, response, []  # resolution error → conservative pass
 
     _log.warning(
         "response_gate check-16 (cognitive_claim_origin): occurrence claim %r in state %r — "
