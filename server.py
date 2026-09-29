@@ -4978,6 +4978,13 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _fcd_block
             except Exception as _fcd_err:
                 _logging.warning("faculty_conflict_detector block failed (non-fatal): %s", _fcd_err)
+            try:
+                from runtime.cognitive_authorship import cognitive_authorship_prompt_block as _ca_pb
+                _ca_block = _ca_pb()
+                if _ca_block:
+                    system = system + "\n\n" + _ca_block
+            except Exception as _ca_err:
+                _logging.warning("cognitive_authorship block failed (non-fatal): %s", _ca_err)
             # WO-099b fix5 / WO-114: if an internal intent fired, mark plan.intent_source="self"
             # and populate plan.internal_intent with full intent (kind, source, trigger, priority)
             _ec_raw = _ec_intents(_elo_self, _ec_idle)
