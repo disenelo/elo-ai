@@ -4942,6 +4942,14 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _cap_block
             except Exception as _cap_err:
                 _logging.warning("capability_learning block failed (non-fatal): %s", _cap_err)
+            try:
+                from runtime.silence_faculty import silence_faculty_prompt_block as _silence_pb
+                _silence_edge = _edge_hint if isinstance(_edge_hint, str) else ""
+                _silence_block = _silence_pb(edge_hint=_silence_edge)
+                if _silence_block:
+                    system = system + "\n\n" + _silence_block
+            except Exception as _sil_err:
+                _logging.warning("silence_faculty block failed (non-fatal): %s", _sil_err)
             # WO-099b fix5 / WO-114: if an internal intent fired, mark plan.intent_source="self"
             # and populate plan.internal_intent with full intent (kind, source, trigger, priority)
             _ec_raw = _ec_intents(_elo_self, _ec_idle)
