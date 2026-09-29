@@ -234,6 +234,13 @@ def seed_working_memory(
     Create a fresh WorkingMemory for a new turn, seeded from continuity.
     Called at session start or turn 1.
     """
+    # P0-4: guard against callers passing an EloSelfState or other object
+    if not isinstance(current_task, str):
+        try:
+            current_task = str(getattr(current_task, "current_action", current_task))
+        except Exception:
+            current_task = ""
+
     seed_frame = CognitiveFrame(
         frame_id="seed-0",
         content=continuity_summary or "New session.",

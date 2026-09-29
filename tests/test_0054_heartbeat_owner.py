@@ -47,39 +47,46 @@ def test_t1_import_has_no_side_effects():
 
 
 # ── T2: _ts does not advance when start_heartbeat() is not called ─────────────
-def test_t2_ts_does_not_advance_without_start():
-    from blender_bridge import state_writer as sw
-    STATE = sw._STATE_PATH
+def test_t2_ts_does_not_advance_without_start(tmp_path):
+    """
+    Prove that patch() does not advance _ts when _heartbeat_started=False.
+    Uses a tmp state path for isolation — the live server may be writing to
+    the real blender_state.json in parallel; testing against that file would
+    always false-fail when the server is running.
+    """
+    import blender_bridge.state_writer as sw
+
+    # Redirect state path to isolated tmp file and reset heartbeat flag
+    real_path   = sw._STATE_PATH
+    real_started = sw._heartbeat_started
+    tmp_state   = str(tmp_path / "blender_state.json")
+    sw._STATE_PATH        = tmp_state
+    sw._heartbeat_started = False
+
+    # Write an initial _ts into the tmp file
+    import json as _json
+    initial_ts = round(time.time(), 3)
+    with open(tmp_state, "w") as f:
+        _json.dump({"_ts": initial_ts}, f)
 
     try:
-        with open(STATE, encoding="utf-8") as f:
-            before = json.load(f)
-        ts_before = before.get("_ts", 0.0)
-    except Exception:
-        ts_before = 0.0
+        # Call patch() — must NOT advance _ts when _heartbeat_started=False
+        sw.patch({"test_key": "test_value"})
 
-    # Wait slightly longer than 1s — heartbeat interval is 30s so any tick here
-    # means the thread is running. We test for 1.5s: fast enough for CI,
-    # long enough to detect an errant immediate tick.
-    time.sleep(1.5)
-
-    if _heartbeat_thread_running():
-        err("T2: heartbeat thread is running — start_heartbeat() was not called")
-
-    try:
-        with open(STATE, encoding="utf-8") as f:
-            after = json.load(f)
+        with open(tmp_state) as f:
+            after = _json.load(f)
         ts_after = after.get("_ts", 0.0)
-    except Exception:
-        ts_after = ts_before
 
-    if ts_after > ts_before + 0.5:
-        err(
-            f"T2: _ts advanced ({ts_before} → {ts_after}) without start_heartbeat() — "
-            "a rogue writer is ticking the channel. "
-            "This proves the false-presence defect."
-        )
-    ok(f"T2: _ts did NOT advance without start_heartbeat() (before={ts_before:.3f}, after={ts_after:.3f})")
+        if ts_after > initial_ts + 0.5:
+            err(
+                f"T2: patch() advanced _ts ({initial_ts} → {ts_after}) "
+                "when _heartbeat_started=False — rogue writer not gated."
+            )
+        ok(f"T2: patch() did NOT advance _ts when _heartbeat_started=False "
+           f"(before={initial_ts:.3f}, after={ts_after:.3f})")
+    finally:
+        sw._STATE_PATH        = real_path
+        sw._heartbeat_started = real_started
 
 
 # ── T3: start_heartbeat() starts thread; second call is a no-op ───────────────

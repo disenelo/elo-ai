@@ -403,6 +403,10 @@ def _read_events() -> dict | None:
 def _patch_state(patch: dict) -> None:
     """Deep-merge patch into blender_state.json."""
     try:
+        from blender_bridge.state_writer import _heartbeat_started as _hw_started
+    except Exception:
+        _hw_started = True  # safe default: unknown = assume live
+    try:
         with open(_STATE_PATH, encoding="utf-8") as f:
             state = json.load(f)
         for section, values in patch.items():
@@ -410,7 +414,9 @@ def _patch_state(patch: dict) -> None:
                 state.setdefault(section, {}).update(values)
             else:
                 state[section] = values
-        state["_ts"] = time.time()
+        # Only advance _ts when server heartbeat is live (mirrors state_writer.patch guard).
+        if _hw_started:
+            state["_ts"] = time.time()
         with open(_STATE_PATH, "w", encoding="utf-8") as f:
             json.dump(state, f)
     except Exception:

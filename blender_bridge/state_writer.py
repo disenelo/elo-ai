@@ -467,7 +467,10 @@ def patch(update: dict) -> None:
                     state.setdefault(section, {}).update(values)
                 else:
                     state[section] = values
-            state["_ts"] = round(time.time(), 3)
+            # Only advance _ts when the heartbeat is running (server.py is live).
+            # Gated so tests with ELO_STATE_HEARTBEAT=0 never produce false-presence.
+            if _heartbeat_started:
+                state["_ts"] = round(time.time(), 3)
             tmp = _STATE_PATH + ".tmp"
             with open(tmp, "w", encoding="utf-8") as f:
                 json.dump(state, f)

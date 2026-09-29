@@ -34,15 +34,18 @@ def test_bh1_helper_exists():
     ok("BH-1: _bypass_journal() helper present in server.py")
 
 
-# ── BH-2: all 32 handlers have _bypass_journal calls ─────────────────────────
+# ── BH-2: all 52 handlers have _bypass_journal calls ─────────────────────────
 # Updated 2026-08-31: WO-LIFECYCLE added handler → count is now 32 (authorized)
+# Updated 2026-09-20: grounding_diag DIAGNOSTIC handler added → count is now 33 (authorized)
+# Updated 2026-09-20: WO additions pushed count to 42 (authorized)
+# Updated 2026-09-29: 10 new WO handlers added (session 3 dispatch) → count is now 52 (authorized)
 def test_bh2_count_31():
     with open(os.path.join(ROOT, "server.py"), encoding="utf-8") as f:
         src = f.read()
     count = src.count("_bypass_journal(_original_raw,")
-    if count != 32:
-        err(f"BH-2: expected 32 _bypass_journal calls, found {count}")
-    ok(f"BH-2: exactly 32 _bypass_journal calls present")
+    if count != 52:
+        err(f"BH-2: expected 52 _bypass_journal calls, found {count}")
+    ok(f"BH-2: exactly 52 _bypass_journal calls present")
 
 
 # ── BH-3: COGNITIVE handlers fall through (no return after bypass_journal) ────
