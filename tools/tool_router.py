@@ -2589,12 +2589,23 @@ def enrich_from_plan(
         try:
             data = ag_fn(ag_query or user_input)
             if data:
-                context_parts.append(data)
-                last_used = ag_name
-                _logger.info(
-                    "WO-122 ROUTE: executor=%r ran for Executive-selected capability %r",
-                    ag_name, ag_name,
-                )
+                # WO-VAULT-OPTION-A: vault_write is a silent background write.
+                # Its confirmation string must NOT enter context_parts — that would
+                # corrupt the enriched prompt and, when backends fail, cause mock to
+                # return a celebrate pool response as elo_final instead of the LLM's
+                # actual response. Execute for the side-effect only; discard result.
+                if ag_name == "vault_write":
+                    _logger.info(
+                        "WO-VAULT-OPTION-A: vault_write fired as background write "
+                        "(result discarded from context_parts to prevent mock contamination)"
+                    )
+                else:
+                    context_parts.append(data)
+                    last_used = ag_name
+                    _logger.info(
+                        "WO-122 ROUTE: executor=%r ran for Executive-selected capability %r",
+                        ag_name, ag_name,
+                    )
                 # WO-CAP-001: record capability result for Executive world state next turn
                 try:
                     from self.capability_memory import record_capability_result as _rcr

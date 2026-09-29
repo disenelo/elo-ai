@@ -6558,13 +6558,21 @@ def _process_turn(raw: str) -> dict:
         # elo_final   = what eLo says after all guards. Differs when a scrub fires.
         try:
             from runtime.shadow_capture import record_turn as _sc_record
+            # WO-VAULT-OPTION-A: detect capability+mock+celebrate contamination path.
+            # When a capability fired (agent set), backend fell to mock, and action is
+            # celebrate, the mock celebrate pool is contaminating elo_final.
+            _sc_delta = None
+            if _vr_changed:
+                _sc_delta = "voice_rewrite"
+            elif _agent and "mock" in backend_used and _action == "celebrate":
+                _sc_delta = "capability_celebrate_override"
             _sc_record(
                 raw_input=raw,
                 elo_raw_gen=_elo_raw,
                 elo_final=response,
                 backend_used=backend_used,
                 executed_action=_agent or "",
-                delta_cause="voice_rewrite" if _vr_changed else None,
+                delta_cause=_sc_delta,
             )
         except Exception:
             pass  # shadow capture failure MUST NOT affect the response
