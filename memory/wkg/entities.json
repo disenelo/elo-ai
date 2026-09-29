@@ -6,9 +6,10 @@
     "aliases": [
       "David"
     ],
-    "description": "Creator of eLo and DISENELO. Born in Fulham, raised in Brixton (South London). Given name: David. Surname: Charles. Always address as 'David' — never 'Charles', never by surname.",
+    "description": "Creator of eLo and DISENELO. Born in Fulham (NOT Camberwell), raised in Brixton, South London. Studio: Hackney Wick. Email: dcharles@disenelo.com. Date of birth: 18 January 1986. Role: Founder / CEO / Chief Architect / L3 Authority at DISENELO. Given name: David. Surname: Charles. Always address as 'David' — never 'Charles', never by surname. Active projects: eLo AI OS, eLo-Planet (Unity game), eLo Robot (animatronic), DISENELO Plushies addon, DISENELO Seams addon, eLo Retargeter addon.",
     "created_at": 1788605204.775095,
-    "source_ids": []
+    "updated_at": 1790643400.0,
+    "source_ids": ["profile_enrichment_2026-09-29"]
   },
   {
     "entity_id": "ebbfe451-d02e-44ce-8ae1-48dab7bab9af",

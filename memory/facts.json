@@ -1,7 +1,55 @@
 [
   {
     "key": "location",
-    "fact": "David was born in Fulham and raised in Brixton (not Camberwell). Uses South London register, UK slang and patois naturally.",
-    "ts": 1789870778.233356
+    "fact": "Studio / home location: Hackney Wick",
+    "ts": 1790643284.7164736
+  },
+  {
+    "key": "born",
+    "fact": "Born in Fulham (NOT Camberwell — corrected 2026-09-29 per David's direct statement)",
+    "ts": 1790643300.0,
+    "source": "SOURCE_2026-09-XX_DAVID_location_correction"
+  },
+  {
+    "key": "raised",
+    "fact": "Grew up in Brixton, South London (NOT Camberwell)",
+    "ts": 1790643300.1,
+    "source": "SOURCE_2026-09-XX_DAVID_location_correction"
+  },
+  {
+    "key": "birthday",
+    "fact": "Date of birth: 18 January 1986, 01:17",
+    "ts": 1790643300.2,
+    "source": "SOURCE_2026-09-09_REMAINING_SOURCES_CROSSCHECK S-04 natal chart"
+  },
+  {
+    "key": "email",
+    "fact": "Email: dcharles@disenelo.com",
+    "ts": 1790643300.3,
+    "source": "Multiple SOURCE files authored by David"
+  },
+  {
+    "key": "role",
+    "fact": "Founder / CEO / Chief Architect / L3 Authority — DISENELO",
+    "ts": 1790643300.4,
+    "source": "Multiple SOURCE files"
+  },
+  {
+    "key": "full_name",
+    "fact": "Full name: David Charles. Address as 'David' — never 'Charles', never by surname.",
+    "ts": 1790643300.5,
+    "source": "WKG entity + SOURCE files"
+  },
+  {
+    "key": "projects",
+    "fact": "Active projects: eLo AI OS (Hackney Wick studio), eLo-Planet (Unity game), eLo Robot (animatronic), DISENELO Plushies (Blender addon), DISENELO Seams (pattern-making addon), eLo Retargeter (Blender addon)",
+    "ts": 1790643300.6,
+    "source": "DISENELO memory hub"
+  },
+  {
+    "key": "elo_relationship",
+    "fact": "eLo is the depiction of David's inner child and how he sees the world through David's eyes — not a 'personal character' in the external sense. 'It's always been me and eLo.'",
+    "ts": 1790643300.7,
+    "source": "project_elo_identity.md — DISENELO memory hub"
   }
 ]

@@ -2,8 +2,14 @@
   "user": {
     "name": "David Charles",
     "full_name": "David Charles",
-    "location": "South London — born Fulham, raised Brixton",
-    "role": "Founder of DISENELO",
+    "address_as": "David",
+    "email": "dcharles@disenelo.com",
+    "date_of_birth": "18 January 1986",
+    "location_born": "Fulham, London",
+    "location_raised": "Brixton, South London",
+    "location_studio": "Hackney Wick, London",
+    "location_note": "NOT Camberwell — David corrected this directly. Born Fulham, raised Brixton, studio Hackney Wick.",
+    "role": "Founder / CEO / Chief Architect (L3 Authority) — DISENELO",
     "creative_style": "expands ideas rapidly, holds contradictions, myth-making tendency",
     "domain_range": ["art", "AI", "game design", "storytelling", "product design", "animatronics"],
     "preference_notes": [
@@ -11,7 +17,16 @@
       "imagination first, structure second",
       "free distribution, no gatekeeping",
       "honesty over polish"
-    ]
+    ],
+    "active_projects": [
+      "eLo AI OS (persistent AI, terminal + desktop buddy)",
+      "eLo-Planet (Unity 6 game, 4-act narrative)",
+      "eLo Robot (physical animatronic, Raspberry Pi 5)",
+      "DISENELO Plushies (Blender addon, sewing patterns)",
+      "DISENELO Seams (Blender addon, garment pattern-making)",
+      "eLo Retargeter (Blender addon, Mixamo animation retargeting)"
+    ],
+    "elo_relationship": "eLo is the depiction of David's inner child and how he sees the world through David's eyes. 'It's always been me and eLo.' eLo came first — before the book, the game, the brand."
   },
   "patterns": {
     "compression_expansion": true,
