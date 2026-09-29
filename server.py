@@ -5138,7 +5138,7 @@ def _process_turn(raw: str) -> dict:
                 try:
                     from runtime.router.conversation_matrix import _SESSION_WINDOW as _cw
                     _raw_l = raw.lower()
-                    _memory_query = any(p in _raw_l for p in (
+                    _MEMORY_QUERY_PHRASES = (
                         # session-log queries (what was said this session)
                         "do you remember", "what did you say", "what did elo say",
                         "last sentence", "what was the last", "what did we talk about",
@@ -5159,7 +5159,9 @@ def _process_turn(raw: str) -> dict:
                         "what am i working on", "working on today",
                         "what should i focus", "what are my priorities",
                         "what have we been working", "what's my priority",
-                    ))
+                    )
+                    from runtime.recall_intent import is_recall_query as _is_recall_query
+                    _memory_query = _is_recall_query(_raw_l, _MEMORY_QUERY_PHRASES)
                     if _memory_query:
                         # ── Session log (this session) ────────────────────────────────
                         if _cw:
