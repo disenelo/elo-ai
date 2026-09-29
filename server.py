@@ -4893,6 +4893,14 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _nov_block
             except Exception as _nov_err:
                 _logging.warning("novelty block failed (non-fatal): %s", _nov_err)
+            # Relationship evolution: inject evidence-based relationship history context
+            try:
+                from memory.relationship_evolution import relationship_prompt_block as _rel_evol_pb
+                _rel_evol_block = _rel_evol_pb()
+                if _rel_evol_block:
+                    system = system + "\n\n" + _rel_evol_block
+            except Exception as _rel_evol_err:
+                _logging.warning("relationship evolution block failed (non-fatal): %s", _rel_evol_err)
             # WO-099b fix5 / WO-114: if an internal intent fired, mark plan.intent_source="self"
             # and populate plan.internal_intent with full intent (kind, source, trigger, priority)
             _ec_raw = _ec_intents(_elo_self, _ec_idle)
