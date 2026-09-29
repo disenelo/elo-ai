@@ -977,8 +977,8 @@ def run(
             from self.elo_self_model import load as _w7_load_self
             _w7_self = _w7_load_self()
             _wire7_self_threads = list(_w7_self.open_threads or [])
-        except Exception:
-            pass
+        except Exception as _w7_err:
+            logging.warning("WIRE-7: could not load open_threads from EloSelfState: %s", _w7_err)
         _merged_threads = list(dict.fromkeys(
             _carry.get("open_threads", []) + _wire7_self_threads
         ))

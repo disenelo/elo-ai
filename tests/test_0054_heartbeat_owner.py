@@ -134,11 +134,13 @@ def test_t4_env_opt_out():
 
 # ── runner ───────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
+    import pathlib, tempfile
     print("0054 HEARTBEAT OWNER TEST")
     print("(ELO_STATE_HEARTBEAT=0 — test opt-out active)")
     print()
     test_t1_import_has_no_side_effects()
-    test_t2_ts_does_not_advance_without_start()
+    with tempfile.TemporaryDirectory() as _tmp:
+        test_t2_ts_does_not_advance_without_start(pathlib.Path(_tmp))
     test_t3_start_heartbeat_is_explicit_and_guarded()
     test_t4_env_opt_out()
     print()
