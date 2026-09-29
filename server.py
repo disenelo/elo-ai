@@ -4859,6 +4859,14 @@ def _process_turn(raw: str) -> dict:
             _ec_block = _ec_emergent_block(_elo_self, _ec_idle)
             if _ec_block:
                 system = system + "\n\n" + _ec_block
+            # Identity kernel: immutable identity anchor — injected first (non-blocking)
+            try:
+                from runtime.identity_kernel import IDENTITY as _IK
+                _ik_block = _IK.as_anchor_block()
+                if _ik_block:
+                    system = system + "\n\n" + _ik_block
+            except Exception as _ik_err:
+                _logging.warning("identity_kernel block failed (non-fatal): %s", _ik_err)
             # WO-SPG-PATTERN-001: inject SPG pattern observations (non-blocking)
             try:
                 from memory.spg_observer import spg_prompt_block as _spg_pb
@@ -4901,6 +4909,14 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _rel_evol_block
             except Exception as _rel_evol_err:
                 _logging.warning("relationship evolution block failed (non-fatal): %s", _rel_evol_err)
+            # Capability learning: inject active failure patterns so eLo adjusts behaviour (non-blocking)
+            try:
+                from runtime.capability_learning import capability_learning_prompt_block as _cap_learn_pb
+                _cap_block = _cap_learn_pb()
+                if _cap_block:
+                    system = system + "\n\n" + _cap_block
+            except Exception as _cap_err:
+                _logging.warning("capability_learning block failed (non-fatal): %s", _cap_err)
             # WO-099b fix5 / WO-114: if an internal intent fired, mark plan.intent_source="self"
             # and populate plan.internal_intent with full intent (kind, source, trigger, priority)
             _ec_raw = _ec_intents(_elo_self, _ec_idle)

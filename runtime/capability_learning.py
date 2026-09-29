@@ -13,6 +13,7 @@ API:
     get_candidates()                        — list current rule candidates
     maybe_propose()                         — write a WO proposal if threshold met
     scan_buffer(n)                          — ingest recent buffer entries
+    capability_learning_prompt_block()      — formatted prompt block for injection
 """
 from __future__ import annotations
 
@@ -168,3 +169,30 @@ def scan_buffer(n: int = 50) -> dict:
             record_success(intent)
 
     return {"scanned": len(entries), "new_candidates": new_candidates}
+
+
+# ── Prompt injection ──────────────────────────────────────────────────────────
+
+def capability_learning_prompt_block() -> str:
+    """
+    Build a prompt block summarising active capability failure patterns.
+
+    Calls scan_buffer() to ingest the latest buffer entries, then returns
+    a compact block listing any capabilities with repeated failures.
+    Returns "" when there are no candidates (non-blocking).
+    """
+    try:
+        scan_buffer(n=50)
+        candidates = get_candidates()
+        if not candidates:
+            return ""
+        lines = ["[CAPABILITY FAILURE PATTERNS — learned from interaction]"]
+        for c in candidates[:5]:  # cap at 5 to avoid prompt bloat
+            cap_id = c.get("capability_id", "unknown")
+            streak = c.get("streak", 0)
+            lines.append(f"  • {cap_id}: {streak} consecutive failures — "
+                         "do not announce success before receiving confirmation")
+        lines.append("These are real failure patterns from this session. Adjust accordingly.")
+        return "\n".join(lines)
+    except Exception:
+        return ""
