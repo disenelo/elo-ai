@@ -149,6 +149,29 @@ def _load_json(path: str) -> dict:
 # PUBLIC INTERFACE
 # ─────────────────────────────────────────────────────────────────────────────
 
+def relationship_faculty_prompt_block(raw: str) -> str:
+    """
+    Build a compact prompt block from relationship context.
+
+    Returns "" on any error (non-blocking).
+    """
+    try:
+        ctx = analyse(raw)
+        if not ctx:
+            return ""
+        lines = ["[RELATIONSHIP CONTEXT — who is speaking]"]
+        lines.append(f"  Familiarity: {ctx.familiarity:.2f} / 1.0")
+        lines.append(f"  Trust: {ctx.trust:.2f} / 1.0")
+        lines.append(f"  Expression posture: {ctx.expression_posture}")
+        if ctx.register:
+            lines.append(f"  Register: {ctx.register.replace('_', ' ').lower()}")
+        if ctx.active_projects:
+            lines.append(f"  Active projects mentioned: {', '.join(ctx.active_projects[:3])}")
+        return "\n".join(lines)
+    except Exception:
+        return ""
+
+
 def analyse(raw: str, memory_pack: dict | None = None) -> RelationshipContext:
     """
     Analyse who is speaking and build relationship context.

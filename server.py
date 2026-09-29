@@ -4883,6 +4883,14 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _int_block
             except Exception as _int_err:
                 _logging.warning("intentions block failed (non-fatal): %s", _int_err)
+            # Relationship faculty: who is speaking, expression posture (non-blocking)
+            try:
+                from runtime.spine.relationship_faculty import relationship_faculty_prompt_block as _rel_fac_pb
+                _rel_fac_block = _rel_fac_pb(raw)
+                if _rel_fac_block:
+                    system = system + "\n\n" + _rel_fac_block
+            except Exception as _rel_fac_err:
+                _logging.warning("relationship_faculty block failed (non-fatal): %s", _rel_fac_err)
             # WO-ELO-IDENTITY-CANONICAL-001 / Self-knowledge: inject capability self-model
             try:
                 from runtime.self_knowledge import self_knowledge_block as _sk_block
