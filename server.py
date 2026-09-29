@@ -4867,6 +4867,14 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _spg_block
             except Exception as _spg_err:
                 _logging.warning("SPG pattern block failed (non-fatal): %s", _spg_err)
+            # WO-ELO-IDENTITY-CANONICAL-001 / Intentions: inject open intentions (non-blocking)
+            try:
+                from memory.intentions import intentions_prompt_block as _int_pb
+                _int_block = _int_pb(turn_text=raw, max_open=3)
+                if _int_block:
+                    system = system + "\n\n" + _int_block
+            except Exception as _int_err:
+                _logging.warning("intentions block failed (non-fatal): %s", _int_err)
             # WO-099b fix5 / WO-114: if an internal intent fired, mark plan.intent_source="self"
             # and populate plan.internal_intent with full intent (kind, source, trigger, priority)
             _ec_raw = _ec_intents(_elo_self, _ec_idle)
