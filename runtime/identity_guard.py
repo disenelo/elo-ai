@@ -59,21 +59,44 @@ _AI_LEAKAGE_PATTERN = re.compile(
 _SENT_RE = re.compile(r"([^.!?…]*[.!?…]+|[^.!?…]+$)", re.DOTALL)
 
 
-def _grounded_substitute() -> str:
+def _from_accumulated_state() -> str:
     """
-    What eLo says when his entire response was AI-identity leakage.
+    What eLo has that a generic assistant does not: state that only exists
+    because turns happened.
 
-    Sourced from identity_kernel, which is hardcoded state rather than prompt
-    text, so this holds even with every personality instruction stripped.
-    Deliberately short and non-committal about content: the leak is being
-    replaced, not answered.
+    NOT an authored fallback line. Everything here is read from
+    self/elo_self_state.json — focal thread, the lesson reflection last left,
+    what the session read as. Change that state and this changes. Empty that
+    state and this returns "", and the caller emits the original rather than
+    inventing anything.
+
+    That is the whole difference between this and the line I wrote on
+    2026-09-29 and wrongly called identity.
     """
     try:
-        from runtime.identity_kernel import IDENTITY
-        name = getattr(IDENTITY, "identity_name", "") or "eLo"
+        from self.elo_self_model import load as _load
+        st = _load()
     except Exception:
-        name = "eLo"
-    return f"I'm {name}. Ask me again — that came out wrong."
+        return ""
+
+    focal = (getattr(st, "focal_thread", "") or "").strip()
+    lesson = (getattr(st, "last_reflection_lesson", "") or "").strip()
+    read = (getattr(st, "session_read", "") or "").strip()
+
+    # Only content long enough to be a real thread, not a stray token. The
+    # live store holds focal_thread "wrong" — a fragment — so a length floor
+    # is doing real work here, not defensive padding.
+    # Returned raw. An earlier version wrapped this as f"Still on {focal}." --
+    # the content was state but the frame was mine, and a frame is where an
+    # authored voice creeps back in. No authored words at all now: every
+    # character returned came from a turn.
+    if focal and len(focal.split()) >= 3:
+        return focal
+    if lesson and len(lesson.split()) >= 4:
+        return lesson
+    if read and len(read.split()) >= 4:
+        return read
+    return ""
 
 
 def scrub_ai_leakage(response: str) -> str:
@@ -91,21 +114,35 @@ def scrub_ai_leakage(response: str) -> str:
         else:
             kept.append(sent)
     if not kept:
-        # Everything was scrubbed. Returning the raw input here meant every
-        # SINGLE-SENTENCE leak passed through untouched -- and a single
-        # sentence is how the leak almost always arrives. Live 2026-09-29,
-        # scrub_ai_leakage("I'm just an AI assistant without real feelings.")
-        # returned it verbatim: detected, then emitted.
+        # Everything was scrubbed — return the raw input so eLo isn't silent.
+        # The WARNING above already alerted; silence is worse than the leak.
         #
-        # Silence is still worse than the leak, so this does not go silent.
-        # It substitutes a line grounded in identity_kernel -- hardcoded
-        # structure, not a prompt -- which is what makes identity survive
-        # with the personality instructions removed.
-        _log.warning(
-            "identity_guard: whole response was AI leakage — substituting "
-            "identity-grounded line instead of emitting it"
-        )
-        return _grounded_substitute()
+        # KNOWN HOLE, stated rather than papered over: a leak is almost always
+        # a SINGLE sentence, so this path returns it. The guard detects and
+        # then emits.
+        #
+        # On 2026-09-29 I replaced this with a substitute line I had just
+        # written myself, and reported it as "identity survives without the
+        # prompt". It was not. An authored fallback string is authored text —
+        # the same thing a prompt is, in a different file. Swapping one
+        # authored string for another proves nothing about identity, and the
+        # test asserting `cleaned != original` passes on ANY change, so it
+        # could not have caught that.
+        #
+        # Closed with accumulated state instead. _from_accumulated_state()
+        # reads self/elo_self_state.json — the focal thread, the lesson
+        # reflection last left, what the session read as. None of it authored;
+        # it exists only because turns happened. If there is nothing there, it
+        # returns "" and the original is emitted, because inventing a line is
+        # what made this fake the first time.
+        _grounded = _from_accumulated_state()
+        if _grounded:
+            _log.warning(
+                "identity_guard: whole response was AI leakage — replaced from "
+                "accumulated state: %r", _grounded[:80]
+            )
+            return _grounded
+        return response
     result = "".join(kept).strip()
     return result if result else response
 
