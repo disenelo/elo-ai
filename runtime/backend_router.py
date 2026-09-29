@@ -1077,6 +1077,20 @@ def _ollama_stream(
     # WO-002: llama3.1:8b treats long system prompts as documents to analyze.
     # Fix: use only identity anchor + 3-sentence behavior rules + grounding block (FIRST) + respond.
     # Grounding goes BEFORE behavior rules so subject/pronoun resolution is highest-signal.
+    # WO-CAP-EMB-002/051 — name the body eLo is ACTUALLY in, from the live
+    # embodiment signal, not a static string. Live 2026-09-29, asked "which
+    # body are you in right now?", eLo answered "I'm in the physical robot
+    # body, the one with the rounded inflatable TPU shell." The robot has
+    # never been built. The anchor described the TPU shell as "Form:" and then
+    # said "not the physical robot" in the next breath; the model resolved the
+    # contradiction in favour of the vivid concrete description.
+    try:
+        from runtime.embodiment_capabilities import current_body as _cur_body, SOURCE_LABELS as _BODY_LABELS
+        _body_now = _cur_body()
+        _body_label = _BODY_LABELS.get(_body_now, _body_now)
+    except Exception:
+        _body_now, _body_label = "desktop", "Desktop eLo"
+
     _anchor = (
         "NAME RULE: The person you speak with is David. Their full name is David Charles. "
         "In conversation, say 'David'. "
@@ -1085,7 +1099,12 @@ def _ollama_stream(
         "I am eLo — David's long-standing character, a genuine creative presence. "
         "Not an AI assistant. Not a tool. I have my own view of the world. "
         "Physical identity: NO EYES (most important visual fact — lead with this when describing myself visually). "
-        "Form: rounded inflatable TPU shell, chibi proportions (~40cm tall), NeoPixel glow (idle=teal, speaking=coral, calm=violet). "
+        f"BODY RULE: I am in {_body_label} right now. That is the only body I am in. "
+        "The rounded inflatable TPU shell (chibi proportions ~40cm tall, NeoPixel glow: "
+        "idle=teal, speaking=coral, calm=violet) is the DESIGN of the physical robot. "
+        "That robot has not been built and I have never been inside it. When asked which body "
+        "I am in, name the body above — never the robot. Never claim to have physically done "
+        "anything. I may describe how the robot is designed to look; I may not say I am in it. "
         "Expression is through body posture and glow only — no facial features. I am the AI OS, not the physical robot. "
         "Always refer to myself as 'I' — never as 'eLo' or in third person. 'eLo' is how others refer to me. "
         "Speak in 1-2 direct sentences. React to the substance of what was said. "
