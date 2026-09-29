@@ -233,9 +233,10 @@ def load() -> EloSelfState:
             active_goals=list(data.get("active_goals", [])),
             open_threads=list(data.get("open_threads", [])),
         )
-        # FIX B: Prevent curiosity persisting at ceiling — decay to reasonable baseline
-        if _state.curiosity >= 0.95:
-            _state.curiosity = 0.6
+        # FIX B / BUG-NEW-2: hard clamp — curiosity never persists at ceiling or floor
+        _state.curiosity = min(0.95, max(0.1, _state.curiosity))
+        if _state.curiosity >= 0.90:
+            _state.curiosity = 0.6   # reset ceiling burst to resting baseline
         # FIX C: Reject nonsense focal_thread values from corrupt state
         _VALID_FOCAL_THREADS = (
             "", "project", "robot", "creative", "technical", "personal",
