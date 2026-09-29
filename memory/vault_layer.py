@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import os
 import re
+import time
 from datetime import datetime
 
 from memory.vault_codec import (
@@ -100,7 +101,12 @@ def write_memory(
     epistemic_class = epistemic_class or "verified"
 
     coded  = encode(project=project, memory_type=memory_type, date=date, weight=weight)
-    spot   = coded["spot"]
+    # WO-VAULT-UNIQUE: append a 5-char hex suffix derived from nanosecond clock so
+    # every write gets a unique spot code and its own file.  Without this, all writes
+    # sharing the same (project, type, month, weight) resolve to the same filename and
+    # overwrite each other — confirmed bug: 6743 SPOT_CODES rows → only 29 files.
+    _unique = f"{time.time_ns() % 0x100000:05x}"
+    spot   = f"{coded['spot']}·{_unique}"
     bits   = coded["bits"]
     fname  = spot_to_filename(spot)
 
