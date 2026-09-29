@@ -142,7 +142,22 @@ def scrub_ai_leakage(response: str) -> str:
                 "accumulated state: %r", _grounded[:80]
             )
             return _grounded
-        return response
+
+        # Nothing accumulated to speak from. The leak is still not emitted.
+        #
+        # Returning the original here was the old behaviour and it meant eLo
+        # told David he was an AI assistant whenever the whole response leaked.
+        # Silence is better than that, and it is not a special case: server.py
+        # already handles an empty response at :6918 (silent turn).
+        #
+        # The alternative is inventing a line, which is what made this fake the
+        # first time. Empty is the honest floor: nothing accumulated, nothing
+        # to say, and nothing false said.
+        _log.warning(
+            "identity_guard: whole response was AI leakage and no accumulated "
+            "state to speak from — silent turn rather than emitting the leak"
+        )
+        return ""
     result = "".join(kept).strip()
     return result if result else response
 

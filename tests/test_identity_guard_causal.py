@@ -75,16 +75,31 @@ def test_changing_the_state_changes_the_output(monkeypatch):
 
 
 def test_deleting_the_state_removes_the_influence(monkeypatch):
-    """
-    does deleting the state actually remove the corresponding influence?
-
-    With nothing accumulated there is nothing to say, so the original is
-    emitted. That is worse output and the honest result: the alternative is
-    inventing a line, which is the thing being corrected.
-    """
+    """does deleting the state actually remove the corresponding influence?"""
     _with_state(monkeypatch, _State())
     assert _from_accumulated_state() == ""
-    assert scrub_ai_leakage(WHOLE_LEAK) == WHOLE_LEAK
+
+
+def test_the_leak_is_never_emitted_even_with_no_state(monkeypatch):
+    """
+    The guard is unconditional. Returning the original was the old behaviour
+    and it meant eLo told David he was an AI assistant whenever the whole
+    response leaked. Silence is better; server.py handles an empty response at
+    :6918 as a silent turn.
+    """
+    _with_state(monkeypatch, _State())
+    assert scrub_ai_leakage(WHOLE_LEAK) == ""
+
+
+def test_guard_does_not_depend_on_disk_state_to_fire(monkeypatch):
+    """
+    AT-3 and AT-9 passed alone and failed in a full run, because the fallback
+    read live disk state that another test had emptied. A guard whose firing
+    depends on unrelated state is not a guard.
+    """
+    for st in (_State(), _State(focal="the seam between two seats")):
+        _with_state(monkeypatch, st)
+        assert scrub_ai_leakage(WHOLE_LEAK) != WHOLE_LEAK
 
 
 def test_fallback_is_never_a_hardcoded_sentence():
