@@ -4958,6 +4958,13 @@ def _process_turn(raw: str) -> dict:
             except Exception as _ch_err:
                 _logging.warning("correction_history block failed (non-fatal): %s", _ch_err)
             try:
+                from runtime.habit_tracker import habit_tracker_prompt_block as _habit_pb
+                _habit_block = _habit_pb()
+                if _habit_block:
+                    system = system + "\n\n" + _habit_block
+            except Exception as _habit_err:
+                _logging.warning("habit_tracker block failed (non-fatal): %s", _habit_err)
+            try:
                 from runtime.faculty_conflict_detector import faculty_conflict_prompt_block as _fcd_pb
                 _fcd_block = _fcd_pb(system)
                 if _fcd_block:
