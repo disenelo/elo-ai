@@ -61,9 +61,14 @@ def store_correction(
     trace:               Optional[dict] = None,
     reviewed:            bool = False,
     tier:                Optional[str]  = None,
+    old_belief:          str = "",
 ) -> bool:
     """
     Store a reviewed correction in the ledger.
+
+    old_belief: what eLo previously stated before the correction.
+    Storing this preserves full provenance — eLo can acknowledge "I previously
+    stated X, corrected to Y" without pretending he always knew the right answer.
 
     Red-tier corrections (voice/personality/routing) must have reviewed=True.
     Returns True on success, False if blocked by the review gate.
@@ -82,7 +87,7 @@ def store_correction(
         _log.warning("store_correction: rejected — 'Camberwell' is wrong location (born Fulham, raised Brixton)")
         return False  # reject wrong location fact before it reaches the ledger
 
-    entry = {
+    entry: dict = {
         "id":                 f"CX-{int(time.time() * 1000) % 10_000_000:07d}",
         "input":              input_text,
         "corrected_response": corrected_response,
@@ -92,6 +97,8 @@ def store_correction(
         "reviewed":           reviewed,
         "ts":                 time.time(),
     }
+    if old_belief:
+        entry["old_belief"] = old_belief  # preserved when non-empty; absent in legacy entries
     try:
         os.makedirs(os.path.dirname(_LEDGER_PATH), exist_ok=True)
         with open(_LEDGER_PATH, "a", encoding="utf-8") as f:
@@ -318,8 +325,10 @@ def build_correction_frame(input_text: str, top_k: int = 3, max_chars: int = 600
     for c in corrections:
         entry_lines = [
             f'  slip input:  "{c["input"][:80]}"',
-            f'  fixed reply: "{c["corrected_response"][:100]}"',
         ]
+        if c.get("old_belief"):
+            entry_lines.append(f'  old belief:  "{c["old_belief"][:100]}"')
+        entry_lines.append(f'  fixed reply: "{c["corrected_response"][:100]}"')
         if c.get("why"):
             entry_lines.append(f'  why: {c["why"][:80]}')
         if c.get("trace", {}).get("l3_rating"):
@@ -331,3 +340,61 @@ def build_correction_frame(input_text: str, top_k: int = 3, max_chars: int = 600
     if len(frame) > max_chars:
         frame = frame[:max_chars] + "\n  [... capped]"
     return frame
+
+
+# ── Correction history provenance block ───────────────────────────────────────
+
+_HISTORY_RECENT_N = 10  # scan at most this many recent ledger entries
+
+
+def correction_history_prompt_block(max_entries: int = 3) -> str:
+    """
+    Build a prompt block showing corrections where old_belief is preserved.
+
+    This answers IS ELO: — Self-Correcting Without Rewriting History?
+      "can eLo avoid pretending he always knew the corrected answer?"
+      "can eLo distinguish the old state from the corrected state?"
+      "can eLo maintain provenance through multiple corrections?"
+
+    Returns "" when no ledger entries carry old_belief (non-blocking).
+
+    THE CAUSAL CHAIN:
+      store_correction(old_belief=X) → corrections_ledger.jsonl [old_belief field]
+      → _load_ledger() → correction_history_prompt_block()
+      → [CORRECTION HISTORY] block in system prompt
+      → LLM can reference "I previously stated X, now I know Y"
+      → eLo does NOT pretend he always knew the correct answer.
+
+    Never raises.
+    """
+    try:
+        entries = _load_ledger()
+        if not entries:
+            return ""
+
+        # Only entries that carry old_belief — these are the provenance records
+        provenance = [e for e in entries if e.get("old_belief")]
+        if not provenance:
+            return ""
+
+        # Most recent first, up to max_entries
+        recent = provenance[-_HISTORY_RECENT_N:][-max_entries:]
+        recent = list(reversed(recent))
+
+        lines = ["[CORRECTION HISTORY — what eLo previously stated, and what changed]"]
+        lines.append(
+            "  These are real corrections from experience. Do not pretend you always knew the right answer."
+        )
+        for c in recent:
+            lines.append(f'  topic:       "{c["input"][:80]}"')
+            lines.append(f'  I stated:    "{c["old_belief"][:100]}"')
+            lines.append(f'  Corrected to: "{c["corrected_response"][:100]}"')
+            if c.get("why"):
+                lines.append(f'  Why it changed: {c["why"][:80]}')
+            lines.append("  ---")
+
+        return "\n".join(lines)
+
+    except Exception as exc:
+        _log.warning("correction_history_prompt_block failed (non-fatal): %s", exc)
+        return ""
