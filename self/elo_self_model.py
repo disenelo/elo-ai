@@ -180,6 +180,9 @@ class EloSelfState:
     # Lifecycle: current cognitive lifecycle state (Four-Layer Identity Model, 2026-08-31)
     # Canonical values: awake | engaged | processing | low_load | recharging | consolidating | dreaming | restored
     lifecycle_state: str = "awake"
+    # WIRE-7: WorkingMemory persistence — goals and threads survive session boundary
+    active_goals: list = field(default_factory=list)   # [{goal, tier, since}] — persisted across turns
+    open_threads: list = field(default_factory=list)   # [str] — unresolved topics across sessions
 
 
 # ── Persistence ───────────────────────────────────────────────────────────────
@@ -189,7 +192,7 @@ def load() -> EloSelfState:
     try:
         with open(_STATE_PATH, encoding="utf-8") as f:
             data = json.load(f)
-        return EloSelfState(
+        _state = EloSelfState(
             mood=float(data.get("mood", 0.55)),
             curiosity=float(data.get("curiosity", 0.60)),
             satisfaction=float(data.get("satisfaction", 0.55)),
@@ -227,7 +230,20 @@ def load() -> EloSelfState:
             mobile_lifecycle=str(data.get("mobile_lifecycle", "")),
             embodiment_transitions=list(data.get("embodiment_transitions", [])),
             lifecycle_state=str(data.get("lifecycle_state", "awake")),
+            active_goals=list(data.get("active_goals", [])),
+            open_threads=list(data.get("open_threads", [])),
         )
+        # FIX B: Prevent curiosity persisting at ceiling — decay to reasonable baseline
+        if _state.curiosity >= 0.95:
+            _state.curiosity = 0.6
+        # FIX C: Reject nonsense focal_thread values from corrupt state
+        _VALID_FOCAL_THREADS = (
+            "", "project", "robot", "creative", "technical", "personal",
+            "philosophical", "game", "inner", "social", "world", "learning",
+        )
+        if _state.focal_thread not in _VALID_FOCAL_THREADS:
+            _state.focal_thread = ""
+        return _state
     except (FileNotFoundError, json.JSONDecodeError, Exception):
         return EloSelfState()
 

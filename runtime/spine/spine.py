@@ -104,6 +104,13 @@ def _capability_faculty(meaning: str, intent: str, current_embodiment: str = "de
     _CAP_STOPWORDS = frozenset({
         "what", "is", "are", "how", "do", "you", "it", "the", "a", "an",
         "in", "on", "at", "for", "to", "of", "and", "or", "my",
+        # Repair 4 addendum: pronouns + auxiliary verbs appear in almost every sentence
+        # and must not count as capability-discriminating content words.
+        # "what have i copied" had content=["have","i","copied"]; "i have been feeling
+        # really overwhelmed" matched "have"+"i" → score=2 → false clipboard fire.
+        "i", "have", "has", "had", "been", "was", "were", "be",
+        "did", "does", "will", "would", "could", "should", "can", "may", "might",
+        "me", "we", "us", "he", "she", "they", "them", "him", "her",
     })
 
     def _verb_score(verb: str, lower_input: str) -> int:
@@ -123,6 +130,12 @@ def _capability_faculty(meaning: str, intent: str, current_embodiment: str = "de
     try:
         from runtime.capabilities.registry import ALL_CAPABILITIES
         lower = meaning.lower()
+        # Repair 4 (WO-DEFECT-006): single content-word match fires on conversational prose.
+        # "Are you with me?" → "with" scores 1 on some cap → fires. Wrong.
+        # Short inputs (≤ 3 words) need only 1 match ("remind me", "play song").
+        # Sentence-length inputs (> 3 words) require ≥ 2 distinct content-word matches.
+        _meaning_word_count = len(lower.split())
+        _min_cap_score = 2 if _meaning_word_count > 3 else 1
         for cap in ALL_CAPABILITIES:
             if cap.future or not cap.enabled:
                 continue
@@ -131,7 +144,7 @@ def _capability_faculty(meaning: str, intent: str, current_embodiment: str = "de
             if "any" not in _scope and current_embodiment not in _scope:
                 continue
             score = sum(_verb_score(v, lower) for v in cap.verbs)
-            if score > 0:
+            if score >= _min_cap_score:
                 candidates.append({
                     "id":       cap.id,
                     "category": cap.category,
@@ -958,10 +971,21 @@ def run(
             load_carry as _wm_load_carry,
         )
         _carry = _wm_load_carry()
+        # WIRE-7: merge EloSelfState.open_threads with carry threads for session continuity
+        _wire7_self_threads: list = []
+        try:
+            from self.elo_self_model import load as _w7_load_self
+            _w7_self = _w7_load_self()
+            _wire7_self_threads = list(_w7_self.open_threads or [])
+        except Exception:
+            pass
+        _merged_threads = list(dict.fromkeys(
+            _carry.get("open_threads", []) + _wire7_self_threads
+        ))
         _wm = _wm_seed(
             current_task=_carry.get("current_task", ""),
             continuity_summary=_carry.get("rolling_summary", ""),
-            open_threads=_carry.get("open_threads", []),
+            open_threads=_merged_threads,
         )
         # Build candidates from core/memory_relevance_filter supplier output
         _wm_candidates = []
@@ -1025,8 +1049,8 @@ def run(
             try:
                 from runtime.significance_faculty import compute_significance as _spg_rel_sig_fn
                 _spg_rel_sig = _spg_rel_sig_fn({}, text_input=raw[:500])
-            except Exception:
-                pass
+            except Exception as _spg_rel_sig_e:
+                _log.warning("spine.run [significance/relationship]: %s", _spg_rel_sig_e)
             _spg_rel_get().log(
                 "relationship_shift",
                 relationship=getattr(relationship, "relationship_mode", None)
@@ -1054,6 +1078,31 @@ def run(
     # ── System Faculty ────────────────────────────────────────────────────────
     system_det = _system_faculty(language["meaning"])
 
+    # ── WP-N: Grounding Faculty — after CCM, before assemble_cognitive_state ──
+    # Produces GroundingContext: current_subject, active_thread, referents, etc.
+    # Failure is SILENT — spine continues with empty GroundingContext.
+    # This faculty supplies information only; it does NOT decide or speak.
+    _grounding_context = None
+    try:
+        from faculties.grounding.grounding_faculty import GroundingFaculty as _GroundingFaculty
+        _grounding_session_key = state.get("person_id", "default") if state else "default"
+        _conn_offers: tuple = ()
+        try:
+            from faculties.synthesis.observer import get_last_offers as _get_last_offers
+            _conn_offers = _get_last_offers()
+        except Exception as _conn_offers_err:
+            _log.warning("synthesis get_last_offers unavailable (non-blocking): %s", _conn_offers_err)
+        _grounding_context = _GroundingFaculty().run(
+            user_input=raw,
+            session_id=_grounding_session_key,
+            state_context=state or {},
+            wm_context=_wm.load_carry() if _wm and hasattr(_wm, "load_carry") else {},
+            connection_offers=_conn_offers,
+            ccm_context=_ccm_context,
+        )
+    except Exception as _grounding_err:
+        _log.warning("WP-N GroundingFaculty FAILED (non-blocking): %s", _grounding_err)
+
     # ── WO-CANON-XVI / ADR-Exec-006: Assemble unified cognitive state BEFORE Executive ──
     _cognitive_state = None
     try:
@@ -1061,6 +1110,7 @@ def run(
             language, memory_pack, attention, capabilities, None, state,
             world_state=_world, working_memory=_wm,
             ccm_context=_ccm_context,
+            grounding_context=_grounding_context,
         )
     except Exception as _cs_err:
         _log.warning("assemble_cognitive_state FAILED: %s", _cs_err)
@@ -1130,11 +1180,22 @@ def run(
         )
     except Exception as _mode_err:
         _log.warning("planetary_kernel FAILED: %s", _mode_err)
-    # WO-PLANETARY-KERNEL D-4: ValueFaculty (Venus register stub — future CP-003)
+    # WO-VALUE-FACULTY-001: Venus register — evaluate after planetary mode is set
+    _beauty_directive: str = ""
+    _aesthetic_signal: float = 0.0
     try:
-        from faculties.value_faculty import ValueFaculty as _VF  # noqa: F401
+        from faculties.value_faculty import ValueFaculty as _VF
+        # Pass turn mode so REFINE detection works inside evaluate()
+        if _cognitive_state is not None:
+            object.__setattr__(_cognitive_state, "_turn_mode", _turn_mode) \
+                if hasattr(_cognitive_state, "__dataclass_fields__") else None
+        _vf_result = _VF().evaluate(_cognitive_state)
+        _beauty_directive = _vf_result.get("beauty_directive", "")
+        _aesthetic_signal = float(_vf_result.get("aesthetic_signal", 0.0))
+        if _beauty_directive:
+            _log.debug("[venus] aesthetic_signal=%.3f directive=%r", _aesthetic_signal, _beauty_directive)
     except Exception as _vf_err:
-        _log.warning("value_faculty import FAILED: %s", _vf_err)
+        _log.warning("value_faculty FAILED (non-fatal): %s", _vf_err)
 
     # ── Executive Faculty — ONE DECISION ─────────────────────────────────────
     # WO-106: pass assembled state so the Executive decides from real context
@@ -1179,8 +1240,13 @@ def run(
     plan.active_mode = _turn_mode
     # WO-LIVING-PRESENCE-UPDATE-001: pin planet voice pool for active mode
     plan.planet_voice_pool = _planet_voice_pool
+    # WO-VALUE-FACULTY-001: pin Venus register output — beauty_directive injected by prompt_builder
+    plan.beauty_directive  = _beauty_directive
+    plan.aesthetic_signal  = _aesthetic_signal
     # ── WO-CANON-XVI: Pin pre-assembled cognitive state to plan ──────────────
     plan.cognitive_state = _cognitive_state
+    # ── WP-N: Pin grounding context to plan so server.py can read it ─────────
+    plan.grounding_context = _grounding_context
     # ── WO-CANON-XV/XII: Store frozen world + perception on plan ──────────────
     plan.world = _world
     # ── WO-CANON-VI: Store frozen WorkingMemory on plan ───────────────────────
@@ -1267,6 +1333,17 @@ def run(
     # build_embodiment_state previously ran before _conversation_faculty, publishing
     # empty response_text / display_text / tts_text on every direct-response turn.
     plan = _conversation_faculty(plan)
+
+    # ── WO-ELO-LEARN-001: base_cognition — WKG-first fallback before LLM ──────────────────────────
+    if not getattr(plan, "direct_response", None):
+        try:
+            from faculties.base_cognition import respond as _bc_respond
+            _bc_text = _bc_respond(raw, ccm=getattr(cognitive_state, "ccm_context", None))
+            if _bc_text:
+                plan.direct_response = _bc_text
+                _log.info("base_cognition: WKG sufficient — skipping LLM")
+        except Exception as _bc_err:
+            _log.warning("base_cognition FAILED (non-blocking): %s", _bc_err)
 
     # ── WO-AFFECTIVE-STATE-001: propagate AffectiveState + SelfModel from cognitive_state → plan ──
     try:
@@ -1355,8 +1432,8 @@ def run(
             try:
                 from runtime.significance_faculty import compute_significance as _spg_er_sig_fn
                 _spg_er_sig = _spg_er_sig_fn({}, text_input=raw[:500])
-            except Exception:
-                pass
+            except Exception as _spg_er_sig_e:
+                _log.warning("spine.run [significance/execution_report]: %s", _spg_er_sig_e)
             _spg_er_get().log(
                 "memory_write",
                 edge_hint=plan.execution_report.planned_action,
@@ -1559,6 +1636,7 @@ def assemble_cognitive_state(
     world_state=None,
     working_memory=None,
     ccm_context:    dict | None = None,
+    grounding_context = None,   # WP-N: GroundingContext | None
 ):
     """
     Assemble CognitiveState from all faculty outputs.
@@ -1711,6 +1789,7 @@ def assemble_cognitive_state(
         ccm_context=ccm_context or {},
         affective_state=_affective_state,
         self_model=_self_model,
+        grounding_context=grounding_context,   # WP-N
         active_app=_env.get("active_app", ""),
         active_window=_env.get("active_window", ""),
         desktop_activity=_env.get("desktop_activity", "unknown"),

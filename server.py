@@ -4517,6 +4517,14 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
 
+                # WIRE-9: failed movement → capability_learning failure streak
+                try:
+                    if _mout is not None and (_mout.fell or not _mout.arrived):
+                        from runtime.capability_learning import record_failure as _cl_fail
+                        _cl_fail("MOVE")
+                except Exception:
+                    pass
+
                 # SP-23 (WO-NAV-002 D-2): wire MovementOutcome → ExecutionReport movement fields
                 try:
                     import dataclasses as _dc
