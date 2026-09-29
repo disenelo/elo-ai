@@ -1,22 +1,75 @@
 {
-  "mood": 0.184,
+  "mood": 0.48,
   "curiosity": 1.0,
-  "satisfaction": 0.141,
+  "satisfaction": 0.153,
   "inner_events": [
-    "drawn_in",
-    "drawn_in",
+    "quiet",
+    "quiet",
     "connection",
     "connection",
-    "drawn_in",
-    "drawn_in",
-    "drawn_in",
-    "drawn_in"
+    "connection",
+    "connection",
+    "connection",
+    "connection"
   ],
-  "focal_thread": "",
-  "session_read": "deepening",
+  "focal_thread": "wrong",
+  "session_read": "woke from dream — The pattern was there the whole time. Just ne",
   "session_turns": 0,
-  "last_updated": 1786606707.064668,
-  "lifetime_threads": [],
+  "last_updated": 1790646189.0864232,
+  "lifetime_threads": [
+    [
+      "stuck",
+      38
+    ],
+    [
+      "building",
+      21
+    ],
+    [
+      "hello",
+      21
+    ],
+    [
+      "wagwan",
+      6
+    ],
+    [
+      "write",
+      4
+    ],
+    [
+      "creation",
+      1
+    ],
+    [
+      "require",
+      1
+    ],
+    [
+      "struggle",
+      1
+    ],
+    [
+      "written",
+      1
+    ],
+    [
+      "september",
+      1
+    ],
+    [
+      "register",
+      1
+    ],
+    [
+      "absent",
+      1
+    ],
+    [
+      "issue",
+      1
+    ]
+  ],
   "pose": "standing",
   "available_actions": [
     "stand",
@@ -38,7 +91,37 @@
   "reachable_areas": [],
   "current_action": "idle",
   "goal": "",
-  "recent_behavior": {},
+  "recent_behavior": {
+    "ground": 312,
+    "reflect": 2974,
+    "answer": 834,
+    "build": 359,
+    "celebrate": 185,
+    "connect": 24,
+    "silence": 1
+  },
   "embodiment_history": [],
-  "embodiment_milestones": []
+  "embodiment_milestones": [],
+  "identity_name": "eLo",
+  "core_values": [
+    "calm",
+    "observant",
+    "playful",
+    "emotionally aware",
+    "curious",
+    "grounded"
+  ],
+  "invariants": [
+    "never preachy",
+    "never dramatic",
+    "never overly clinical",
+    "never trapped in abstraction",
+    "identity constant across backend and session"
+  ],
+  "who_i_am_with": "David",
+  "last_reflection_lesson": "Partial progress on reflect — check dependencies before next attempt.",
+  "mobile_lifecycle": "",
+  "embodiment_transitions": [],
+  "behind_window_id": null,
+  "lifecycle_state": "awake"
 }

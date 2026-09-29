@@ -381,7 +381,8 @@ def apply_turn(state: EloSelfState, turn_data: dict) -> EloSelfState:
     # Focal thread — update if topics provided
     focal_thread = state.focal_thread
     if topics:
-        focal_thread = _update_focal_thread(state.focal_thread, topics)
+        focal_thread = _update_focal_thread(state.focal_thread, topics,
+                                            state.lifetime_threads)
 
     # Lifetime threads — append if a topic recurs (same topic 3+ times in events)
     lifetime_threads = list(state.lifetime_threads)
@@ -406,11 +407,36 @@ def _decay_toward(value: float, target: float, rate: float) -> float:
     return round(max(0.0, min(1.0, v)), 4)
 
 
-def _update_focal_thread(current: str, topics: list[str]) -> str:
-    """Very simple focal thread: last meaningful topic. No LLM needed."""
-    _SKIP = {"the", "a", "an", "is", "it", "this", "that", "what", "how", "you", "i", "me"}
+def _update_focal_thread(current: str, topics: list[str],
+                         lifetime: list | None = None) -> str:
+    """
+    What eLo's attention keeps returning to this session.
+
+    Was `meaningful[-1]` — the LAST content word of the turn. That is word
+    order, not attention. Live on 2026-09-29 the focal thread read "wrong",
+    the last word of "the modular parts keep snapping together in the wrong
+    order", while the actual subject was Chunk assembly.
+
+    Now it prefers whichever of this turn's topics eLo has returned to most
+    across his history, so the thread is grounded in what has recurred rather
+    than in where a sentence happened to end. With no history to weigh, the
+    longest topic wins over the last one — still a heuristic, but a content
+    one. An unchanged `current` is kept when this turn offers nothing.
+    """
+    _SKIP = {"the", "a", "an", "is", "it", "this", "that", "what", "how", "you", "i", "me",
+             "about", "these", "those", "there", "wrong", "right", "order", "thing"}
     meaningful = [t for t in topics if t.lower() not in _SKIP and len(t) > 3]
-    return meaningful[-1] if meaningful else current
+    if not meaningful:
+        return current
+
+    counts = {}
+    for entry in (lifetime or []):
+        if isinstance(entry, (list, tuple)) and len(entry) >= 2:
+            counts[str(entry[0]).lower()] = int(entry[1] or 0)
+
+    if any(counts.get(t.lower(), 0) for t in meaningful):
+        return max(meaningful, key=lambda t: counts.get(t.lower(), 0))
+    return max(meaningful, key=len)
 
 
 def _accumulate_lifetime(existing: list, topics: list[str]) -> list:
@@ -447,7 +473,7 @@ def prompt_block(state: EloSelfState) -> str:
     recent = " → ".join(state.inner_events[-4:]) if state.inner_events else "none yet"
 
     lines = [
-        "[ELO INNER STATE — what eLo is experiencing right now, independent of David's state]",
+        "[ELO INNER STATE — what eLo is experiencing right now]",
         f"mood: {mood_label} ({state.mood:.2f})",
         f"curiosity: {curiosity_label} ({state.curiosity:.2f})",
         f"recent inner events: {recent}",
@@ -463,7 +489,7 @@ def prompt_block(state: EloSelfState) -> str:
 
     lines += [
         "",
-        "When David asks about eLo's inner life — use this state as the real answer.",
+        "When asked about eLo's inner life — use this state as the real answer.",
         "This is not a performance. These are actual accumulated signals.",
         "Speak from them simply and honestly. One sentence.",
     ]

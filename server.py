@@ -6802,10 +6802,24 @@ def _process_turn(raw: str) -> dict:
         # ── Self-model update — eLo's own inner state ─────────────────────────
         try:
             # WO-099b fix4 (SELF-OBSERVE): extract real topics from current turn
+            # These become eLo's answer to "what do you keep coming back to?",
+            # so a stopword surviving here reads as a lifelong preoccupation.
+            # Live on 2026-09-29 the top surviving thread was "about" at 103 --
+            # ahead of "stuck" (38) and "building" (21), which are the real
+            # ones. The len >= 4 filter below passes most function words, so
+            # they are enumerated.
             _so_skip = frozenset({
                 "i", "me", "my", "you", "your", "the", "a", "an", "is", "are", "was",
                 "and", "or", "but", "to", "of", "in", "on", "it", "this", "that", "be",
                 "elo", "hi", "hey", "ok", "okay", "yeah", "yes", "no", "not", "with",
+                # 4+ letter function words — no content, high frequency
+                "about", "these", "those", "there", "their", "them", "then", "than",
+                "what", "when", "where", "which", "while", "would", "could", "should",
+                "have", "has", "had", "been", "were", "will", "just", "like", "some",
+                "very", "much", "more", "most", "such", "also", "into", "from", "they",
+                "here", "your", "ours", "quick", "thing", "things", "stuff", "some",
+                "want", "need", "know", "think", "make", "made", "does", "done",
+                "going", "getting", "really", "actually", "still", "again", "back",
             })
             _so_words = [
                 # `raw` is OVERWRITTEN at :3184 with the [WORLD_KNOWLEDGE ...]
