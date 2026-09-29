@@ -5003,6 +5003,46 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _ca_block
             except Exception as _ca_err:
                 _logging.warning("cognitive_authorship block failed (non-fatal): %s", _ca_err)
+            # D8: Knowledge injection — David's facts + profile + vault into system prompt
+            try:
+                import json as _d8_json, os as _d8_os
+                _d8_lines = []
+                _d8_root = _d8_os.path.dirname(_d8_os.path.abspath(__file__))
+                # 1. Facts about David
+                try:
+                    with open(_d8_os.path.join(_d8_root, "memory", "facts.json"), encoding="utf-8") as _d8f:
+                        _d8_facts = _d8_json.load(_d8f)
+                    for _d8_fact in (_d8_facts if isinstance(_d8_facts, list) else []):
+                        if isinstance(_d8_fact, dict) and _d8_fact.get("subject") and _d8_fact.get("value"):
+                            _d8_lines.append(f"KNOWN: {_d8_fact['subject']}: {_d8_fact['value']}")
+                except Exception:
+                    pass
+                # 2. User profile
+                try:
+                    with open(_d8_os.path.join(_d8_root, "memory", "user_profile.json"), encoding="utf-8") as _d8pf:
+                        _d8_profile = _d8_json.load(_d8pf)
+                    if _d8_profile.get("address_as"):
+                        _d8_lines.append(f"KNOWN: David's name is David. Address as '{_d8_profile['address_as']}'.")
+                    if _d8_profile.get("born"):
+                        _d8_lines.append(f"KNOWN: David was born in {_d8_profile['born']}.")
+                    if _d8_profile.get("raised"):
+                        _d8_lines.append(f"KNOWN: David grew up in {_d8_profile['raised']}.")
+                except Exception:
+                    pass
+                # 3. Vault: top 3 relevant entries
+                try:
+                    from memory.vault_layer import lookup as _d8_vault_lookup
+                    _d8_vault = _d8_vault_lookup(raw[:200], max_results=3)
+                    for _d8_entry in (_d8_vault or []):
+                        _summary = (_d8_entry.get("summary") or _d8_entry.get("text") or "")[:200]
+                        if _summary:
+                            _d8_lines.append(f"REMEMBERED: {_summary}")
+                except Exception:
+                    pass
+                if _d8_lines:
+                    system = system + "\n\n[eLo KNOWLEDGE]\n" + "\n".join(_d8_lines)
+            except Exception:
+                pass
             # WO-099b fix5 / WO-114: if an internal intent fired, mark plan.intent_source="self"
             # and populate plan.internal_intent with full intent (kind, source, trigger, priority)
             _ec_raw = _ec_intents(_elo_self, _ec_idle)
