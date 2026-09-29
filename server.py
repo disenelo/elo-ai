@@ -4859,6 +4859,14 @@ def _process_turn(raw: str) -> dict:
             _ec_block = _ec_emergent_block(_elo_self, _ec_idle)
             if _ec_block:
                 system = system + "\n\n" + _ec_block
+            # WO-SPG-PATTERN-001: inject SPG pattern observations (non-blocking)
+            try:
+                from memory.spg_observer import spg_prompt_block as _spg_pb
+                _spg_block = _spg_pb(n=2)
+                if _spg_block:
+                    system = system + "\n\n" + _spg_block
+            except Exception as _spg_err:
+                _logging.warning("SPG pattern block failed (non-fatal): %s", _spg_err)
             # WO-099b fix5 / WO-114: if an internal intent fired, mark plan.intent_source="self"
             # and populate plan.internal_intent with full intent (kind, source, trigger, priority)
             _ec_raw = _ec_intents(_elo_self, _ec_idle)
