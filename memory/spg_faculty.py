@@ -117,13 +117,40 @@ def query_spg_entities(turn_text: str, ccm: dict | None = None) -> list[str]:
                     if eid in entity_sig:
                         entity_sig[eid] = max(entity_sig[eid], sig)
 
-            # rerank: entities with higher max SPG significance first
-            relevant_entity_ids.sort(key=lambda eid: entity_sig.get(eid, 0.0), reverse=True)
-            _log.debug(
-                "SPG rerank: %d entities; top sig=%.2f",
-                len(relevant_entity_ids),
-                max(entity_sig.values()) if entity_sig else 0.0,
-            )
+            # Does any SPG node actually correspond to a claim we hold?
+            #
+            # The comment above this block asserts the node ids share the WKG
+            # claim_id namespace. On the live store that is false: 214 node
+            # ids, 2220 claim ids, ZERO intersection. Every entity_sig stayed
+            # 0.0, so this sort was a no-op and the ranking came from text
+            # order -- while the debug line below reported a successful
+            # rerank. Inverting every significance in the store changed the
+            # retrieved order by nothing, which is how it was found.
+            #
+            # The nodes are orphaned: add_node_for_claim() keys correctly by
+            # claim_id, so claims written from here on link properly, but the
+            # legacy nodes point at claims that were since regenerated, and
+            # content_hash cannot re-link them because claims.json stores no
+            # claim text to hash.
+            #
+            # Silence was the real defect. A dead ranking that logs success is
+            # worse than one that is absent.
+            _linked = sum(1 for v in entity_sig.values() if v > 0.0)
+            if _linked == 0:
+                _log.warning(
+                    "SPG rerank INERT: %d nodes in the store, none linked to any "
+                    "retrieved entity's claims — ordering is text-relevance only, "
+                    "not significance. SPG is contributing nothing to this turn.",
+                    len(spg_sig),
+                )
+            else:
+                relevant_entity_ids.sort(
+                    key=lambda eid: entity_sig.get(eid, 0.0), reverse=True)
+                _log.debug(
+                    "SPG rerank: %d entities, %d linked; top sig=%.2f",
+                    len(relevant_entity_ids), _linked,
+                    max(entity_sig.values()) if entity_sig else 0.0,
+                )
         except Exception as _e:
             _log.debug("SPG rerank failed (non-fatal): %s", _e)
 
