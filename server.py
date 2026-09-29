@@ -7098,6 +7098,46 @@ def _process_turn(raw: str) -> dict:
 
         _it_emotion = (exec_decision.get("valence", "neutral") if exec_decision else "neutral")
 
+        # ── WIRE-2: reflection faculty — integrate_session() post-response ──────
+        try:
+            from runtime.reflection_faculty import integrate_session as _rf_integrate
+            _rf_summary = (response or "")[:400]
+            if _rf_summary:
+                _rf_result = _rf_integrate(
+                    session_summary=_rf_summary,
+                    action=_action or "",
+                    project="conversation",
+                )
+                _rf_lesson = (_rf_result or {}).get("lesson", "")
+                if _rf_lesson and hasattr(_elo_self, "last_reflection_lesson"):
+                    _elo_self.last_reflection_lesson = _rf_lesson
+        except Exception:
+            pass
+
+        # ── WIRE-1: SPG write-path — eLo's own statements feed SPG ──────────────
+        # Before: SPG only learned from world events. eLo's statements never fed SPG.
+        # Now: every response is hashed → added as a claim node (fire and forget).
+        try:
+            from memory.spg_faculty import add_node_for_claim as _spg_add_claim
+            _spg_claim_id = f"turn-{int(time.time() * 1000) % 1_000_000}"
+            _spg_add_claim(
+                claim_id=_spg_claim_id,
+                claim_text=(response or "")[:500],
+                significance=0.4,
+            )
+        except Exception:
+            pass
+
+        # ── WIRE-8: identity drift guard — check core values present in response ─
+        try:
+            from self.elo_self_model import check_identity_drift as _check_drift
+            _drift_missing = _check_drift(_elo_self, response or "")
+            if _drift_missing:
+                import logging as _w8_log
+                _w8_log.warning(f"[IDENTITY DRIFT DETECTED] missing values: {_drift_missing}")
+        except Exception:
+            pass
+
         # ── S2 Phase 2: inner thought generation (second lightweight LLM pass) ─
         _inner_thought = ""
         try:

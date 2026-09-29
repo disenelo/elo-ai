@@ -58,6 +58,18 @@ CAPABILITY_REGISTRY: dict[str, dict] = {
         "confirmation_required": False,
         "write_allowed": False,
     },
+    # WO-REMINDERS-WRITE-001: create reminders in macOS Reminders.app — registered 2026-09-15
+    # Low-stakes write — confirmation_required=False (no destructive side effects).
+    # Controlled by ELO_REMINDERS_WRITE env (1=enabled default, 0=disable writes).
+    # Requires macOS Automation permission for Reminders.app.
+    "WORLD_REMINDERS_WRITE": {
+        "description": "Create a reminder in macOS Reminders.app via AppleScript",
+        "tool": "capabilities.reminders_agent",
+        "write_allowed": True,
+        "confirmation_required": False,
+        "execution_report": True,
+        "law": "LAW-014",   # no write without intent signal from Executive
+    },
     "WORLD_WEB_RESEARCH": {
         "description": "Web research — search and summarise, read-only",
         "required_tier": "REASONING",
@@ -99,6 +111,16 @@ CAPABILITY_REGISTRY: dict[str, dict] = {
         "write_allowed": False,
         "law": "LAW-017",   # Executive must set speech_text; voice output reads it
     },
+    # WO-BA17-ALEXA-001: Alexa voice gateway — registered 2026-09-15
+    # Step A: TTS to local audio (ELO_TTS_BACKEND). Step B: Alexa Proactive Events if creds present.
+    "WORLD_ALEXA_SPEAK": {
+        "description": "Speak a message through the Alexa voice gateway",
+        "tool": "capabilities.alexa_agent",
+        "write_allowed": True,
+        "confirmation_required": False,
+        "execution_report": True,
+        "law": "LAW-017",
+    },
     "WORLD_VOICE_INPUT": {
         "description": "Listen for David's voice — STT (Whisper API primary; local whisper fallback)",
         "required_tier": "CONVERSATIONAL",
@@ -110,6 +132,84 @@ CAPABILITY_REGISTRY: dict[str, dict] = {
         "confirmation_required": False,
         "write_allowed": False,
         "silence_threshold_s": 1.5,   # default from voice/stt.py
+    },
+    # WO-WORLD-INTERFACE-PHASE2-001: Phase 2 software-buildable capabilities — 2026-09-15
+    # David L3 authorized 2026-09-15.
+    "WORLD_WINDOW_OBSERVER": {
+        "description": "Read active window and open apps — macOS System Events, read-only",
+        "tool": "capabilities.window_observer_agent",
+        "confirmation_required": False,
+        "write_allowed": False,
+    },
+    "WORLD_MEDIA_CONTROL": {
+        "description": "Read Now Playing and control playback — Spotify / Music.app via osascript",
+        "tool": "capabilities.media_agent",
+        "confirmation_required": False,
+        "write_allowed": True,   # play/pause/skip are low-stakes
+    },
+    "WORLD_TERMINAL": {
+        "description": "Run whitelisted read-only shell commands (ls, find, cat, head, tail, grep, pwd, echo, date, du, df)",
+        "tool": "capabilities.terminal_agent",
+        "confirmation_required": True,   # any non-whitelist command is blocked at the agent level too
+        "write_allowed": False,
+    },
+    "WORLD_EMAIL_READ": {
+        "description": "Read unread emails from Mail.app inbox via AppleScript — read-only",
+        "tool": "capabilities.email_agent",
+        "confirmation_required": False,
+        "write_allowed": False,
+    },
+    "WORLD_EMAIL_DRAFT": {
+        "description": "Compose a draft email in Mail.app — DRAFT ONLY, never sends without explicit David confirmation",
+        "tool": "capabilities.email_agent",
+        "confirmation_required": True,   # draft is low-stakes but write — require intent confirmation
+        "write_allowed": True,
+        "law": "DRAFT_ONLY",   # Never call send — drafts folder only
+    },
+    "WORLD_CAMERA": {
+        "description": "Capture from FaceTime HD camera and describe via Gemini Flash vision",
+        "tool": "capabilities.camera_agent",
+        "confirmation_required": False,   # eLo may look at David
+        "write_allowed": False,
+    },
+    "WORLD_SLEEP": {
+        "description": "Put David's Mac to sleep via pmset sleepnow — always requires explicit confirmation",
+        "tool": "capabilities.sleep_agent",
+        "confirmation_required": True,   # ALWAYS — sleep is destructive to active work
+        "write_allowed": True,
+    },
+    # WO-BA17-LIGHTS-001: Philips Hue home lights — 2026-09-15
+    "WORLD_LIGHTS_CONTROL": {
+        "description": "Control home lights via Philips Hue local bridge (calm/focus/play/dim/off scenes; brightness; colour)",
+        "tool": "capabilities.lights_agent",
+        "confirmation_required": False,
+        "write_allowed": True,
+    },
+    # WIRE-5: cognitive state capabilities — 2026-09-29
+    "WORLD_DREAM": {
+        "name": "Dream State",
+        "description": "Enter offline dream processing",
+        "semantic_keywords": ["dream", "sleep", "rest", "offline processing"],
+        "requires": ["WORLD_SLEEP"],
+        "executor": "faculties.dream",
+        "confirmation_required": False,
+        "write_allowed": False,
+    },
+    "WORLD_REFLECT": {
+        "name": "Reflect",
+        "description": "Integrate session into learned behaviour",
+        "semantic_keywords": ["reflect", "learn", "review session"],
+        "executor": "runtime.reflection_faculty",
+        "confirmation_required": False,
+        "write_allowed": False,
+    },
+    "WORLD_CURIOUS": {
+        "name": "Curiosity",
+        "description": "Pursue an unanswered question",
+        "semantic_keywords": ["curious", "explore", "investigate", "wonder"],
+        "executor": "runtime.curiosity_faculty",
+        "confirmation_required": False,
+        "write_allowed": False,
     },
 }
 
@@ -124,6 +224,15 @@ def is_registered(capability: str) -> bool:
 def get_capability(capability: str) -> dict | None:
     """Return the capability spec dict, or None if not registered."""
     return CAPABILITY_REGISTRY.get(capability.upper())
+
+
+def dispatch_lights(action: str, params: dict | None = None) -> dict:
+    """
+    WO-BA17-LIGHTS-001: Dispatch to lights_agent.
+    action: "set_scene" | "set_brightness" | "set_colour"
+    """
+    from capabilities.lights_agent import dispatch_lights as _dispatch
+    return _dispatch(action, params)
 
 
 def create_health_check() -> dict:
@@ -353,6 +462,43 @@ def dispatch_reminders(query: str = "due") -> dict:
     return result
 
 
+def dispatch_reminders_write(
+    title: str,
+    notes: str = "",
+    due_date: str | None = None,
+    list_name: str = "Reminders",
+) -> dict:
+    """
+    WO-REMINDERS-WRITE-001: Create a reminder via WORLD_REMINDERS_WRITE capability.
+
+    Args:
+        title:     Reminder title (required).
+        notes:     Optional body text.
+        due_date:  ISO 8601 date string (YYYY-MM-DD or YYYY-MM-DDTHH:MM). None = no due date.
+        list_name: Reminders list (default: "Reminders").
+
+    Returns:
+        {dispatched, created, title, due_date, list_name, error}
+    """
+    result: dict = {
+        "dispatched":  False,
+        "created":     False,
+        "title":       title,
+        "due_date":    due_date,
+        "list_name":   list_name,
+        "error":       None,
+    }
+    try:
+        from capabilities.reminders_agent import create_reminder as _create
+        _r = _create(title, notes=notes, due_date=due_date, list_name=list_name)
+        result.update(_r)
+        result["dispatched"] = True
+    except Exception as _e:
+        _log.error("[dispatch_reminders_write] failed: %s", _e)
+        result["error"] = str(_e)
+    return result
+
+
 def dispatch_web_research(query: str) -> dict:
     """Web research — search and summarise. Read-only output."""
     result: dict = {"dispatched": False, "results": [], "error": None, "write_blocked": True}
@@ -423,6 +569,34 @@ def read_company_state() -> dict:
         "next_governed_item": _next_item,
         "raw_summary": _raw.strip(),
     })
+    return result
+
+
+def dispatch_alexa_speak(text: str, emotion: str = "neutral") -> dict:
+    """
+    WO-BA17-ALEXA-001: Speak text via WORLD_ALEXA_SPEAK capability.
+
+    Step A: TTS to local audio (tts_output.speak, ELO_TTS_BACKEND env).
+    Step B: Alexa Proactive Events notify (silent no-op if creds absent).
+
+    Returns {dispatched, spoken, backend, alexa_notified, error}.
+    Does NOT journal as a user memory turn.
+    """
+    result: dict = {
+        "dispatched": False,
+        "spoken": False,
+        "backend": os.environ.get("ELO_TTS_BACKEND", "print"),
+        "alexa_notified": False,
+        "error": None,
+    }
+    try:
+        from capabilities.alexa_agent import speak as _alexa_speak
+        _r = _alexa_speak(text, emotion=emotion)
+        result.update(_r)
+        result["dispatched"] = True
+    except Exception as _e:
+        _log.error("[dispatch_alexa_speak] failed: %s", _e)
+        result["error"] = str(_e)
     return result
 
 
