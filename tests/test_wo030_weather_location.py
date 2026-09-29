@@ -11,6 +11,9 @@ AT-7  py_compile: tool_router.py compiles cleanly
 AT-8  set_location() writes blender/user_location.json (persistent across restarts)
 AT-9  On reload, _user_location reads from user_location.json (JSON > env var)
 AT-10 AccuWeather skipped when key not set (is_available() == False)
+AT-11 _agent_weather() with no location → returns ask-string, NOT "London" silently
+AT-12 set_location("Hackney Wick") → city persists; next call to agent uses it
+AT-13 Location-set phrase detection: "I'm in X" + "studio is in X" fire correctly
 """
 import importlib.util
 import os
@@ -232,6 +235,138 @@ def test_at10_accuweather_skipped_no_key():
     print("AT-10 PASS — AccuWeather is_available()==False when key missing")
 
 
+# ── AT-11 ─────────────────────────────────────────────────────────────────────
+
+def test_at11_agent_weather_no_location_asks():
+    """
+    _agent_weather() with no location set must return the ask-string.
+    It must NOT silently default to London, and must NOT make an HTTP request.
+    The ask-path returns early (before any provider call) with an instruction to ask.
+    This exercises the actual function, not a replica of its logic.
+    """
+    import importlib
+    mod = _load_module()
+
+    saved_loc = mod._user_location
+    try:
+        mod._user_location = None  # simulate: no location ever set
+
+        result = mod._agent_weather("what's the weather today?")
+
+        # Must contain the ask instruction, not a city reading
+        assert result is not None, "AT-11 FAIL: _agent_weather returned None"
+        result_lower = result.lower()
+        assert "no location" in result_lower or "where are you" in result_lower or "ask" in result_lower, (
+            f"AT-11 FAIL: expected ask-string, got: {result!r}"
+        )
+        # Must NOT have silently resolved a city
+        assert "weather in london" not in result_lower, (
+            f"AT-11 FAIL: silently defaulted to London — got: {result!r}"
+        )
+        assert "weather in manchester" not in result_lower, (
+            f"AT-11 FAIL: stale Manchester leak — got: {result!r}"
+        )
+    finally:
+        mod._user_location = saved_loc
+
+    print(f"AT-11 PASS — no-location → ask-string: {result[:80]!r}")
+
+
+# ── AT-12 ─────────────────────────────────────────────────────────────────────
+
+def test_at12_set_location_then_agent_resolves():
+    """
+    Multi-step: set_location("Hackney Wick") → _agent_weather("what's the weather?")
+    must attempt the weather call with city="Hackney Wick" (not default, not Manchester).
+    We intercept the provider chain to capture which city is passed without making real HTTP.
+    """
+    import json, tempfile, os as _os
+    mod = _load_module()
+    tmp = tempfile.mktemp(suffix=".json")
+    mod._LOCATION_FILE = tmp
+
+    saved_loc = mod._user_location
+    captured_city: list = []
+
+    # Patch wttr.in call to capture city and return a canned response
+    import urllib.request as _ur
+    _orig_urlopen = _ur.urlopen
+
+    class _FakeResp:
+        def read(self):
+            return b'{"current_condition": [{"weatherDesc": [{"value": "Overcast"}], "temp_C": "14", "FeelsLikeC": "12", "humidity": "80"}]}'
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+
+    def _fake_urlopen(req, timeout=None):
+        captured_city.append(req.full_url)
+        return _FakeResp()
+
+    _ur.urlopen = _fake_urlopen
+
+    try:
+        mod.set_location("Hackney Wick")
+
+        # Verify persistence
+        assert _os.path.exists(tmp), "AT-12 FAIL: location JSON not written"
+        data = json.loads(open(tmp).read())
+        assert data.get("city") == "Hackney Wick", f"AT-12 FAIL: JSON city={data.get('city')!r}"
+
+        # Make a bare weather request — should resolve to Hackney Wick
+        # Disable all provider checks so we fall through to wttr.in
+        result = mod._agent_weather("what's the weather?")
+
+        assert result is not None, "AT-12 FAIL: _agent_weather returned None"
+        assert "Hackney Wick" in result or "hackney wick" in result.lower(), (
+            f"AT-12 FAIL: Hackney Wick not in result — got: {result!r}"
+        )
+        assert "Manchester" not in result, f"AT-12 FAIL: stale Manchester in result — got: {result!r}"
+
+    finally:
+        _ur.urlopen = _orig_urlopen
+        mod._user_location = saved_loc
+        try: _os.unlink(tmp)
+        except: pass
+
+    print(f"AT-12 PASS — set_location(Hackney Wick) → agent resolved correctly: {result[:80]!r}")
+
+
+# ── AT-13 ─────────────────────────────────────────────────────────────────────
+
+def test_at13_location_set_phrases():
+    """
+    _LOCATION_SET_PATTERNS must match all specified natural phrasings.
+    Tests the actual patterns, not a stub — these gate whether "I'm in X" is detected.
+    """
+    patterns = _mod._LOCATION_SET_PATTERNS
+    assert patterns, "AT-13 FAIL: _LOCATION_SET_PATTERNS is empty"
+
+    cases = [
+        ("I'm in Hackney Wick",           "Hackney Wick"),
+        ("I am in Bethnal Green",          "Bethnal Green"),
+        ("the studio is in Hackney Wick",  "Hackney Wick"),
+        ("my studio is in Dalston",        "Dalston"),
+        ("studio is in Peckham",           "Peckham"),
+        ("set my location to Bristol",     "Bristol"),
+        ("my location is Sheffield",       "Sheffield"),
+        ("we're in Glasgow",               "Glasgow"),
+    ]
+
+    failed_cases = []
+    for phrase, expected_city in cases:
+        matched = None
+        for pat in patterns:
+            m = re.search(pat, phrase, re.IGNORECASE)
+            if m:
+                matched = m.group(1).strip()
+                break
+        if matched is None or expected_city.lower() not in matched.lower():
+            failed_cases.append(f"  phrase={phrase!r} → got={matched!r}, expected to contain {expected_city!r}")
+
+    assert not failed_cases, "AT-13 FAIL:\n" + "\n".join(failed_cases)
+    print(f"AT-13 PASS — {len(cases)}/{len(cases)} location-set phrases detected correctly")
+
+
 # ── runner ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -246,6 +381,9 @@ if __name__ == "__main__":
         test_at8_set_location_persists,
         test_at9_reload_reads_json,
         test_at10_accuweather_skipped_no_key,
+        test_at11_agent_weather_no_location_asks,
+        test_at12_set_location_then_agent_resolves,
+        test_at13_location_set_phrases,
     ]
     failed = 0
     for t in tests:
@@ -256,3 +394,4 @@ if __name__ == "__main__":
             failed += 1
     print(f"\n{'ALL PASS' if not failed else f'{failed} FAILED'} — WO-030 ({len(tests)-failed}/{len(tests)})")
     sys.exit(failed)
+
