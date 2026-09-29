@@ -4917,6 +4917,15 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _rel_evol_block
             except Exception as _rel_evol_err:
                 _logging.warning("relationship evolution block failed (non-fatal): %s", _rel_evol_err)
+            # Expectation tracker: inject learned priors + flag prediction errors (non-blocking)
+            try:
+                from memory.expectation_tracker import expectation_prompt_block as _exp_pb
+                _edge_hint_exp = _plan.edge_hint if _plan and hasattr(_plan, "edge_hint") else ""
+                _exp_block = _exp_pb(edge_hint=_edge_hint_exp)
+                if _exp_block:
+                    system = system + "\n\n" + _exp_block
+            except Exception as _exp_err:
+                _logging.warning("expectation_tracker block failed (non-fatal): %s", _exp_err)
             # Capability learning: inject active failure patterns so eLo adjusts behaviour (non-blocking)
             try:
                 from runtime.capability_learning import capability_learning_prompt_block as _cap_learn_pb
@@ -5838,13 +5847,29 @@ def _process_turn(raw: str) -> dict:
                 write_interaction as _write_interaction,
             )
             from memory.memory_faculty import MemoryFaculty as _MemFac, MemoryCandidate as _MemCand
+            # `raw` is OVERWRITTEN at :3184 with the [WORLD_KNOWLEDGE ...] block
+            # that gets prepended for the model. Everything below used it, so
+            # eLo's episodic memory recorded his own injected context as what
+            # David said. Observed live in the vault, 2026-09-29:
+            #
+            #   event: [projects,world] [WORLD_KNOWLEDGE — from eLo's own world
+            #          (verified, confidence 1.0 ...)] Chunk: A modular companion...
+            #
+            # David had said "the modular parts keep snapping together in the
+            # wrong order". That sentence is nowhere in the record.
+            #
+            # This is the same defect the F-5 remediation fixed at :6337 on
+            # 2026-08-21 -- it repaired state_manager.update and left this
+            # whole block on `raw`. _original_raw (:2240) is captured before
+            # any enrichment and is what actually reaches memory now.
             _mem_registry    = _load_registry()
-            _mem_project_tag = _resolve_project(raw, _mem_registry)
-            _content = (raw + " " + response)[:1000]
+            _mem_said        = _original_raw or raw
+            _mem_project_tag = _resolve_project(_mem_said, _mem_registry)
+            _content = (_mem_said + " " + response)[:1000]
             # Classify turn for meaningful continuity categories (WO-067-WRITE-PATH)
             _mem_cats = _cat_classify(_content)
             _mem_sig  = 0.55 if _mem_cats else 0.25
-            _mem_summary = raw[:180] + ("…" if len(raw) > 180 else "")
+            _mem_summary = _mem_said[:180] + ("…" if len(_mem_said) > 180 else "")
             if _mem_cats:
                 _mem_summary = f"[{','.join(_mem_cats)}] {_mem_summary}"
             _MemFac().submit(_MemCand(
@@ -5859,7 +5884,7 @@ def _process_turn(raw: str) -> dict:
             ))
             # Write tagged turns to interactions.json for categorised recall (AT-5)
             if _mem_cats:
-                _write_interaction(raw, response, _mem_cats,
+                _write_interaction(_mem_said, response, _mem_cats,
                                    mode=_action, project_tag=_mem_project_tag)
         except Exception:
             pass
