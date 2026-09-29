@@ -5162,24 +5162,40 @@ def _process_turn(raw: str) -> dict:
                     )
                     from runtime.recall_intent import is_recall_query as _is_recall_query
                     _memory_query = _is_recall_query(_raw_l, _MEMORY_QUERY_PHRASES)
-                    if _memory_query:
-                        # ── Session log (this session) ────────────────────────────────
-                        if _cw:
-                            _arc_lines = []
-                            for _t in _cw[-8:]:
-                                if _t.get("user"):
-                                    _arc_lines.append(f"David: {_t['user'][:150]}")
-                                if _t.get("elo"):
-                                    _arc_lines.append(f"eLo:   {_t['elo'][:150]}")
-                            if _arc_lines:
-                                system = system + (
-                                    f"\n\n[SESSION LOG — this session only, oldest first]\n"
-                                    + "\n".join(_arc_lines) +
-                                    "\nThis log is all you have for this session. "
-                                    "If the specific content asked about is not in the log, "
-                                    "say so honestly — do not invent content."
-                                )
+                    # ── Session log — ALWAYS, not on demand ───────────────────────
+                    # A conversation is its history. This block used to sit inside
+                    # `if _memory_query`, so the turns only reached the prompt when
+                    # a phrase detector decided the input was "a memory question".
+                    #
+                    # Live, 2026-09-29, five real turns:
+                    #   1  "I'm working on the Chunk assembly sequence for Act 3."
+                    #   4  "So what was I working on before that?"
+                    #      -> "I don't have that from this session."
+                    # The turns were in _cw the whole time. eLo was not failing to
+                    # remember; he was never shown what he already had. Widening the
+                    # detector only moved the edge of the same hole, so the gate is
+                    # gone: recent turns go in every time, like any conversation.
+                    #
+                    # The vault lookup below stays gated -- that one is a real search
+                    # and does not belong on every turn. This is just what was said.
+                    if _cw:
+                        _arc_lines = []
+                        for _t in _cw[-8:]:
+                            if _t.get("user"):
+                                _arc_lines.append(f"David: {_t['user'][:150]}")
+                            if _t.get("elo"):
+                                _arc_lines.append(f"eLo:   {_t['elo'][:150]}")
+                        if _arc_lines:
+                            system = system + (
+                                f"\n\n[SESSION LOG — this session, oldest first]\n"
+                                + "\n".join(_arc_lines) +
+                                "\nThis is what has actually been said in this session. "
+                                "Use it to understand what David is referring to. "
+                                "If something asked about is not here, say so honestly "
+                                "— do not invent content."
+                            )
 
+                    if _memory_query:
                         # ── Vault recall — always fires on recall intent ───────────────
                         # WO-022: extract topic words; skip pure question/filler words so
                         # the vault query is focused. Fall back to broad lookup if empty.
