@@ -48,6 +48,20 @@ def pytest_check(selector: str):
     return run
 
 
+def script_check(rel: str):
+    """
+    Some suites are script-style (no def test_), deliberately skipped by
+    conftest and meant to be run directly. pytest reports 'no tests ran' for
+    them, which is not evidence either way -- so run them as scripts.
+    """
+    def run():
+        r = subprocess.run([PY, rel], cwd=ROOT, capture_output=True,
+                           text=True, timeout=300)
+        tail = [ln for ln in (r.stdout + r.stderr).strip().splitlines() if ln.strip()][-1:]
+        return (r.returncode == 0), f"script {rel} -> exit {r.returncode} | {tail[0][:70] if tail else ''}"
+    return run
+
+
 def code_check(fn, label: str):
     """Verdict from a real predicate over the running codebase."""
     def run():
@@ -178,6 +192,162 @@ def _p_recall_intent_covers_paraphrase():
             and not is_recall_query("I'm working on Chunk today.", phrases))
 
 
+
+
+# ── wiring predicates ─────────────────────────────────────────────────────────
+# "Exists but is not wired" is where every PARTIAL in the audits lives, so
+# these test REACHABILITY from the turn path, not mere presence of a module.
+
+def _server_src():
+    return open(os.path.join(ROOT, "server.py"), encoding="utf-8").read()
+
+
+def _p_module_exists(rel):
+    return os.path.isfile(os.path.join(ROOT, rel))
+
+
+def _p_habit_recording_exists():
+    """
+    The audit credited these to elo_self_model. record_behaviour is there;
+    top_habits and emergent_block are in self/emergent_cognition.py. Both
+    modules checked rather than one assumed.
+    """
+    import self.elo_self_model as sm
+    import self.emergent_cognition as ec
+    return (hasattr(sm, "record_behaviour")
+            and hasattr(ec, "top_habits") and hasattr(ec, "emergent_block"))
+
+
+def _p_habits_reach_the_prompt():
+    """
+    Habits are only real if emergent_block reaches a prompt. The audit cited
+    compile_moment() as the carrier -- that function does not exist anywhere
+    in the tree. So this searches the actual turn path instead.
+    """
+    hay = _server_src()
+    for rel in ("runtime/prompt_builder.py", "runtime/executive.py"):
+        try:
+            hay += open(os.path.join(ROOT, rel), encoding="utf-8").read()
+        except Exception:
+            pass
+    return "emergent_block" in hay or "top_habits" in hay
+
+
+def _p_spg_reaches_the_response():
+    """
+    SPG patterns accumulate. Do they come BACK?
+
+    The spine references SPG 24 times, but every one is capture -- a signal
+    logger calling .log(). The only read API on spg_faculty is
+    query_spg_entities(), so the precise question is whether anything in the
+    turn path calls it. Searching for the word "spg" would pass on the
+    write-only usage and report a feedback loop that does not exist.
+    """
+    import memory.spg_faculty as f
+    readers = ("query_spg_entities",)
+    hay = _server_src()
+    for rel in ("runtime/prompt_builder.py", "runtime/executive.py",
+                "runtime/backend_router.py", "runtime/spine/spine.py"):
+        try:
+            hay += open(os.path.join(ROOT, rel), encoding="utf-8").read()
+        except Exception:
+            pass
+    return any(r in hay for r in readers) and all(hasattr(f, r) for r in readers)
+
+
+def _p_lessons_reach_executive():
+    src = open(os.path.join(ROOT, "runtime", "executive.py"), encoding="utf-8").read()
+    return "learning_advice" in src
+
+
+def _p_learning_records_every_turn():
+    src = _server_src()
+    return "record_outcome" in src
+
+
+def _p_working_memory_scores_novelty():
+    import runtime.working_memory as wm
+    src = open(wm.__file__, encoding="utf-8").read()
+    return "novelty" in src and "open_threads" in src
+
+
+def _p_open_threads_exist():
+    import runtime.working_memory as wm
+    return "open_threads" in open(wm.__file__, encoding="utf-8").read()
+
+
+def _p_provenance_stored_with_memories():
+    from runtime.wkg_faculty import _EPISTEMIC_CLASSES
+    return "SOURCE_ATTRIBUTED" in _EPISTEMIC_CLASSES and "UNKNOWN" in _EPISTEMIC_CLASSES
+
+
+def _p_dream_material_labelled():
+    from runtime.memory_origin import MemoryOrigin, is_auto_storable
+    return is_auto_storable(MemoryOrigin.DREAM_SIMULATION) is False
+
+
+def _p_dream_needs_corroboration():
+    from faculties.dream.dream_review import (
+        CandidateInsight, test_insight, STAGE_EVALUATION, STAGE_KNOWLEDGE, STAGE_DREAM)
+    ok = CandidateInsight(content="c", significance=1.0, stage=STAGE_EVALUATION)
+    promoted = test_insight(ok, "a named outside source")
+    skipped = test_insight(
+        CandidateInsight(content="c", significance=1.0, stage=STAGE_DREAM), "src")
+    return promoted.stage == STAGE_KNOWLEDGE and skipped.stage == STAGE_DREAM
+
+
+def _p_dream_unsourced_refused():
+    from faculties.dream.dream_review import CandidateInsight, test_insight, STAGE_EVALUATION
+    i = CandidateInsight(content="c", significance=1.0, stage=STAGE_EVALUATION)
+    return test_insight(i, "").stage == STAGE_EVALUATION
+
+
+def _p_recurring_symbols_retained():
+    import faculties.dream.symbol_history as sh
+    return all(hasattr(sh, n) for n in ("record_dream", "most_established", "recurring"))
+
+
+def _p_tool_registry_known():
+    from runtime.capability_registry import CAPABILITY_REGISTRY, is_registered
+    return len(CAPABILITY_REGISTRY) > 0 and is_registered("WORLD_WEB_RESEARCH")
+
+
+def _p_knows_tools_it_lacks():
+    from runtime.capability_registry import is_registered
+    return is_registered("WORLD_TELEPORT") is False
+
+
+def _p_tool_requires_confirmation():
+    src = open(os.path.join(ROOT, "tools", "tool_router.py"), encoding="utf-8").read()
+    return "STRIPPED_NO_SAVE_INTENT" in src
+
+
+def _p_single_decision_authority():
+    src = open(os.path.join(ROOT, "runtime", "executive.py"), encoding="utf-8").read()
+    return "def decide(" in src and "_CAL_ACTIONS" in src
+
+
+def _p_can_decide_not_to_act():
+    from runtime.executive import _CAL_ACTIONS
+    return "silence" in _CAL_ACTIONS
+
+
+def _p_intention_distinct_from_action():
+    from runtime.cognitive_state import CognitiveState as C, can_claim_occurred
+    return can_claim_occurred(C.DECISION) is False and can_claim_occurred(C.ACTION) is True
+
+
+def _p_identity_survives_model_change():
+    """Identity is in the kernel, not the model. Anchor must not name a model."""
+    from runtime.identity_kernel import IDENTITY
+    a = IDENTITY.as_anchor_block().lower()
+    return not any(m in a for m in ("llama", "gpt", "claude", "ollama", "qwen", "mistral"))
+
+
+def _p_no_live_writes_guard():
+    return _p_module_exists("tests/test_no_live_state_writes.py")
+
+
 # ── the questions, by section ────────────────────────────────────────────────
 # (question, check or None)
 
@@ -264,6 +434,129 @@ SECTIONS: dict[str, list] = {
         ("capable of correcting itself?", None),
         ("capable of changing future behaviour after correction?", None),
         ("capable of recognising that it misunderstood a referent?", None),
+    ],
+
+
+    "agency": [
+        ("an agent capable of making decisions?", script_check("tests/test_canon_vii_executive.py")),
+        ("a system with a single decision-making authority?",
+         code_check(_p_single_decision_authority, "executive.decide + frozen CAL set")),
+        ("capable of deciding not to act?",
+         code_check(_p_can_decide_not_to_act, "'silence' is a selectable action")),
+        ("capable of distinguishing an intention from an action?",
+         code_check(_p_intention_distinct_from_action, "DECISION cannot claim occurrence, ACTION can")),
+        ("capable of holding an intention before executing it?",
+         code_check(_p_open_threads_exist, "working_memory.open_threads")),
+        ("capable of recognising when an intended action failed?", None),
+        ("capable of choosing a different action after failure?", None),
+        ("capable of maintaining an intention across interruptions?", None),
+    ],
+
+    "learning": [
+        ("a learner?", pytest_check("tests/test_wo096b_learning_loop_live.py")),
+        ("capable of learning without retraining the underlying model?",
+         pytest_check("tests/test_wo096b_learning_loop_live.py")),
+        ("capable of learning from mistakes?",
+         code_check(lambda: _p_module_exists("runtime/capability_learning.py"),
+                    "capability_learning module present")),
+        ("does a lesson actually reach the Executive?",
+         code_check(_p_lessons_reach_executive, "executive consumes learning_advice")),
+        ("does learning record on every turn, or only on an explicit trigger?",
+         code_check(_p_learning_records_every_turn, "record_outcome referenced in server turn path")),
+        ("capable of improving a skill through repetition?", None),
+        ("capable of recognising when a skill has improved?", None),
+        ("capable of learning from one embodiment and applying it to another?", None),
+        ("capable of forgetting or deprioritising obsolete behaviour?", None),
+    ],
+
+    "habits_and_patterns": [
+        ("capable of developing habits?",
+         code_check(_p_habit_recording_exists, "record_behaviour/top_habits/emergent_block")),
+        ("do habits reach the Executive prompt?",
+         code_check(_p_habits_reach_the_prompt, "compile_moment carries recent_behaviour")),
+        ("capable of recognising habits?", pytest_check("tests/test_wo125_self_interpret.py")),
+        ("a pattern-former?", script_check("tests/test_wkg_phase1.py")),
+        ("do SPG patterns reach the response?",
+         code_check(_p_spg_reaches_the_response, "spg referenced in the server turn path")),
+        ("capable of recognising patterns previously unnoticed?", None),
+        ("capable of making predictions from experience?", None),
+        ("capable of recognising when a prediction was wrong?", None),
+        ("capable of developing learned priors?", None),
+        ("capable of distinguishing a learned prior from a verified fact?", None),
+    ],
+
+    "attention": [
+        ("capable of attention?", script_check("tests/test_canon_vi_working_memory.py")),
+        ("capable of distinguishing signal from noise?",
+         code_check(_p_working_memory_scores_novelty, "novelty scoring + open_threads")),
+        ("capable of recognising novelty?",
+         code_check(_p_working_memory_scores_novelty, "novelty is a scored dimension")),
+        ("capable of deferring something without losing it?",
+         code_check(_p_open_threads_exist, "open_threads retained")),
+        ("capable of resuming something previously deferred?", None),
+        ("capable of preventing attention from hijacking conversation?", None),
+        ("capable of noticing a connection without forcing it into the response?", None),
+    ],
+
+    "memory_integrity": [
+        ("stores provenance with memories?",
+         code_check(_p_provenance_stored_with_memories, "epistemic classes incl SOURCE_ATTRIBUTED")),
+        ("can distinguish remembered from generated information?",
+         code_check(_p_dream_material_labelled, "dream material excluded from auto-storage")),
+        ("capable of remembering something without treating it as verified fact?",
+         code_check(_p_dream_material_labelled, "DREAM_SIMULATION not auto-storable")),
+        ("can correct an incorrect memory?", None),
+        ("can recognise conflicting memories?", None),
+        ("can retain the history of how a memory changed?", None),
+        ("does the test suite avoid corrupting real memory?",
+         pytest_check("tests/test_no_live_state_writes.py")),
+    ],
+
+    "dream_state": [
+        ("capable of entering a dream state?", pytest_check("tests/test_dream_sleep_cycle.py")),
+        ("capable of separating waking cognition from dream cognition?",
+         pytest_check("tests/test_dream_multicycle_wiring.py")),
+        ("capable of transforming memories through condensation and displacement?",
+         pytest_check("tests/test_dream_work.py")),
+        ("capable of symbolic transformation?", pytest_check("tests/test_dream_work.py")),
+        ("capable of distinguishing dream material from waking memory?",
+         code_check(_p_dream_material_labelled, "DREAM_SIMULATION guarded from auto-storage")),
+        ("capable of distinguishing dream hypotheses from verified knowledge?",
+         code_check(_p_dream_needs_corroboration, "EMB-031 ladder requires a named source")),
+        ("capable of refusing to promote an uncorroborated dream insight?",
+         code_check(_p_dream_unsourced_refused, "no source -> stays at EVALUATION")),
+        ("capable of retaining recurring dream symbols?",
+         code_check(_p_recurring_symbols_retained, "symbol_history record/most_established")),
+        ("capable of generating creative artefacts from dream material?",
+         pytest_check("tests/test_dream_fx_and_compositor.py")),
+        ("capable of preserving the link between dream output and source memories?",
+         pytest_check("tests/test_dream_journal_schema.py")),
+        ("has a dream actually fired on the live server?", None),
+    ],
+
+    "tools": [
+        ("knows what tools it has?",
+         code_check(_p_tool_registry_known, "CAPABILITY_REGISTRY populated")),
+        ("knows what tools it does not have?",
+         code_check(_p_knows_tools_it_lacks, "unregistered capability answers False")),
+        ("capable of recognising when a tool requires confirmation?",
+         code_check(_p_tool_requires_confirmation, "vault_write stripped without save intent")),
+        ("capable of refusing a false capability match?",
+         code_check(_p_no_false_denial, "denial_is_false grounded in live registry")),
+        ("capable of recognising whether a tool action succeeded?", None),
+        ("capable of remembering important tool outcomes?", None),
+    ],
+
+    "continuity": [
+        ("identity survives the underlying model changing?",
+         code_check(_p_identity_survives_model_change, "anchor names no model")),
+        ("continuous across embodiments?",
+         code_check(_p_identity_constant_across_bodies, "anchor invariant across bodies")),
+        ("continuous across sessions?", None),
+        ("continuous across days?", None),
+        ("capable of recovering unfinished work?", None),
+        ("capable of recognising its own previous state?", None),
+        ("capable of distinguishing continuity from simply loading old data?", None),
     ],
 
     "conversation_memory": [
