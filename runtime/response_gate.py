@@ -98,6 +98,23 @@ _INTERNALLY_GENERATED_STATE_NAMES = frozenset({
     "dream", "simulation", "imagination", "prediction", "hypothesis",
 })
 
+# ── WO-036: Cross-turn opener diversity — check 17 ───────────────────────────
+# Mirror-frame opener prefixes that become stale/irritating when overused.
+# Tracked across turns so eLo doesn't open every response with the same frame.
+_MIRROR_OPENER_PREFIXES = [
+    "i notice ", "i notice,",
+    "i hear ", "i hear,",
+    "it feels like", "it feels as though",
+    "i can sense", "i sense ",
+    "i can tell ", "i can hear ",
+    "i see that ", "i see you",
+    "i observe ",
+    "i detect ",
+]
+_OPENER_HISTORY: list[str] = []   # mirror-frame opener detected per turn (module-level session state)
+_OPENER_HISTORY_WINDOW = 5        # how many turns back to check
+_OPENER_REPEAT_THRESHOLD = 2      # strip when same frame appears >= this often in window
+
 # ── Street register markers — check 7 (register) ─────────────────────────────
 _STREET_REGISTER_MARKERS = [
     "innit", "blud", "fam", "bruv", "init",
@@ -327,6 +344,60 @@ def _check_cognitive_claim_origin(
     ]
 
 
+def _check_opener_diversity(response: str) -> tuple[bool, str, list]:
+    """Check 17 (WO-036): Cross-turn opener frame diversity.
+
+    Tracks how often each mirror-frame opener (I notice / I hear / It feels /
+    I can sense…) has appeared in the last _OPENER_HISTORY_WINDOW turns.
+    When the same frame recurs >= _OPENER_REPEAT_THRESHOLD times, strips
+    the opener sentence so eLo answers first instead of mirroring again.
+
+    Records the detected opener into _OPENER_HISTORY on every call so the
+    cross-turn count stays accurate across the session.
+    Advisory on sole-sentence; strips on multi-sentence.
+    """
+    import re as _re17
+    rl = _strip_lower(response)
+    matched: str | None = None
+    for prefix in _MIRROR_OPENER_PREFIXES:
+        if rl.startswith(prefix):
+            matched = prefix
+            break
+
+    # Record this turn's opener frame (or "" if none matched) — maintain window
+    _OPENER_HISTORY.append(matched or "")
+    if len(_OPENER_HISTORY) > _OPENER_HISTORY_WINDOW:
+        _OPENER_HISTORY.pop(0)
+
+    if matched is None:
+        return True, response, []
+
+    # Count this prefix in history EXCLUDING the current turn (already appended)
+    recent = _OPENER_HISTORY[:-1]
+    count = sum(1 for h in recent if h == matched)
+    if count < _OPENER_REPEAT_THRESHOLD:
+        return True, response, []
+
+    # Opener is overused — strip the first sentence, keep the rest
+    first_sent = _re17.search(r"[.!?]\s+", response)
+    if first_sent:
+        remainder = response[first_sent.end():].strip()
+        if remainder:
+            output = remainder[0].upper() + remainder[1:]
+            _log.warning(
+                "response_gate check-17 (opener_diversity): %r used %dx in last %d turns — stripped",
+                matched, count + 1, _OPENER_HISTORY_WINDOW,
+            )
+            return False, output, [f"opener_diversity:stripped:{matched.strip()[:30]}:{count+1}x"]
+
+    # Single sentence — cannot strip without losing the whole response; log only
+    _log.warning(
+        "response_gate check-17 (opener_diversity): %r used %dx in last %d turns — sole sentence, log only",
+        matched, count + 1, _OPENER_HISTORY_WINDOW,
+    )
+    return False, response, [f"opener_diversity:sole_sentence:{matched.strip()[:30]}:{count+1}x"]
+
+
 def _check_authority(response: str) -> tuple[bool, str, list]:
     """Check 6: No false capability or memory claims."""
     rl = _strip_lower(response)
@@ -538,7 +609,7 @@ def _write_gate_log(entry: dict) -> None:
 
 class ResponseGate:
     """
-    16-point eLo response quality gate (WO-RESPONSE-GATE-COMPLETE-001).
+    17-point eLo response quality gate (WO-RESPONSE-GATE-COMPLETE-001, WO-036).
 
     WO-RESPONSE-GATE-COMPLETE-002: checks 4, 5, 7 are now live (not stubs).
       Check 4 (relevance): key-term overlap — logs warning, never blocks.
@@ -548,6 +619,9 @@ class ResponseGate:
     12=intent_match, 13=no_unrelated, 14=no_import, 15=elo_voice).
     Check 16 (cognitive_claim_origin): occurrence claims in DREAM/SIMULATION/IMAGINATION/
     PREDICTION/HYPOTHESIS state — advisory flag, no hard block.
+    Check 17 (opener_diversity, WO-036): cross-turn mirror-frame opener diversity —
+    strips repeated "I notice / I hear / It feels" opener when frame recurs >= 2x in
+    last 5 turns. Forces eLo to answer first instead of defaulting to mirroring.
     All other checks are active: flag + revise where possible.
     """
 
@@ -573,6 +647,9 @@ class ResponseGate:
             ("check_6_authority",          lambda r: _check_authority(r)),
             ("check_7_register",           lambda r: _check_register(r, cognitive_state)),
             ("check_8_length",             lambda r: _check_length(r)),
+            # WO-036 CA FIX: must run before check_9 (reflection_default) so it sees the
+            # raw opener before check_9 strips it — history tracking requires the original form.
+            ("check_17_opener_diversity",        lambda r: _check_opener_diversity(r)),
             ("check_9_reflection_default", lambda r: _check_reflection_default(r)),
             ("check_10_rest",              lambda r: _check_rest(r)),
             # WO-RESPONSE-GATE-COMPLETE-001: checks 11-15 (source §3 checks 12,13,14,6,15)
