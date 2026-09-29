@@ -248,11 +248,7 @@ def evaluate(
             scores["reward"] = 0.0
         else:
             scores["reward"] = _clamp(0.70 * outcome_terms + 0.30 * scores["overall"])
-    else:
-        scores["embodiment"] = 0.0
-        scores["efficiency"] = 0.0
-        scores["safety"]     = 0.0
-        scores["reward"]     = 0.0  # ADR-Exec-005 D1: reward only on verified outcomes
+    # When outcome is None: omit outcome dims entirely (back-compat; AT-3/AT-6 contract)
 
     return scores
 

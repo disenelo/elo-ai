@@ -455,8 +455,9 @@ except Exception as e:
 
 
 # ── Summary ───────────────────────────────────────────────────────────────────
-print()
-print("=" * 62)
-print(f"WO-095 learning loop     {_passed} passed   {_failed} failed")
-if _failed:
-    sys.exit(1)
+if __name__ == "__main__":
+    print()
+    print("=" * 62)
+    print(f"WO-095 learning loop     {_passed} passed   {_failed} failed")
+    if _failed:
+        sys.exit(1)
