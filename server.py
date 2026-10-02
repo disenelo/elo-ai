@@ -7326,6 +7326,17 @@ def _process_turn(raw: str) -> dict:
                     )
                 except Exception:
                     pass
+                # WO-DRIFT-GUARD-001: Board Option B — inject a re-grounding suffix.
+                # Appended only when drift detected; drawn from state.core_values.
+                # Proportionate: does not block or regenerate, is traceable.
+                try:
+                    _dg_values = getattr(_elo_self, "core_values", [])
+                    _dg_frag = ", ".join(str(v) for v in _dg_values[:3]) if _dg_values else "curious, calm, grounded"
+                    _dg_suffix = f" — [I'm eLo: {_dg_frag}]"
+                    if response and _dg_suffix not in response:
+                        response = response.rstrip() + _dg_suffix
+                except Exception:
+                    pass
         except Exception:
             pass
 
