@@ -23,13 +23,43 @@ import time
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _LOG_PATH = os.path.join(_ROOT, "logs", "learning_proposals.jsonl")
+# _failure_streaks disk persistence — streaks survive process restarts
+_STREAKS_PATH = os.path.join(_ROOT, "self", "state", "failure_streaks.json")
 
 FAILURE_THRESHOLD  = 3    # consecutive failures → rule candidate
 PROPOSAL_THRESHOLD = 3    # rule candidates → WO proposal
 
-# ── In-memory state (reset on process restart; buffer survives) ───────────────
+# ── In-memory state ───────────────────────────────────────────────────────────
 _failure_streaks: dict[str, int] = {}         # capability_id → consecutive fails
 _rule_candidates: list[dict]     = []         # accumulated candidates this session
+
+
+def _load_streaks() -> None:
+    """Load failure streaks from disk into _failure_streaks on startup."""
+    global _failure_streaks
+    try:
+        with open(_STREAKS_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            _failure_streaks = {k: int(v) for k, v in data.items() if isinstance(v, (int, float))}
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
+    except Exception:
+        pass
+
+
+def _save_streaks() -> None:
+    """Persist _failure_streaks to disk. Fail-quiet."""
+    try:
+        os.makedirs(os.path.dirname(_STREAKS_PATH), exist_ok=True)
+        with open(_STREAKS_PATH, "w", encoding="utf-8") as f:
+            json.dump(_failure_streaks, f)
+    except Exception:
+        pass
+
+
+# Load persisted streaks on module import
+_load_streaks()
 
 
 # ── Core tracking ─────────────────────────────────────────────────────────────
@@ -45,6 +75,7 @@ def record_failure(capability_id: str, context: str = "") -> None:
     """
     _failure_streaks[capability_id] = _failure_streaks.get(capability_id, 0) + 1
     streak = _failure_streaks[capability_id]
+    _save_streaks()
 
     if streak >= FAILURE_THRESHOLD:
         _add_candidate(capability_id, streak, context)
@@ -53,6 +84,7 @@ def record_failure(capability_id: str, context: str = "") -> None:
 def record_success(capability_id: str) -> None:
     """Reset the failure streak for this capability on success."""
     _failure_streaks.pop(capability_id, None)
+    _save_streaks()
 
 
 def get_candidates() -> list[dict]:

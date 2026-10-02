@@ -183,6 +183,9 @@ class EloSelfState:
     # WIRE-7: WorkingMemory persistence — goals and threads survive session boundary
     active_goals: list = field(default_factory=list)   # [{goal, tier, since}] — persisted across turns
     open_threads: list = field(default_factory=list)   # [str] — unresolved topics across sessions
+    # Queue item: locomotion_experience — cumulative record of locomotion events
+    # this session. Enables IS ELO "walking in Unity vs walking physically" question.
+    locomotion_experience: list = field(default_factory=list)  # [{embodiment, action, ts}]
 
 
 # ── Persistence ───────────────────────────────────────────────────────────────
@@ -232,6 +235,7 @@ def load() -> EloSelfState:
             lifecycle_state=str(data.get("lifecycle_state", "awake")),
             active_goals=list(data.get("active_goals", [])),
             open_threads=list(data.get("open_threads", [])),
+            locomotion_experience=list(data.get("locomotion_experience", [])),
         )
         # FIX B / BUG-NEW-2: hard clamp — curiosity never persists at ceiling or floor
         _state.curiosity = min(0.95, max(0.1, _state.curiosity))

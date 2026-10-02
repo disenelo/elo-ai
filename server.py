@@ -4299,6 +4299,13 @@ def _process_turn(raw: str) -> dict:
                     if _sit_surface is not None:
                         s.surface = _sit_surface
                     _rb_sit(s, "sit")
+                    # locomotion_experience: record sit for IS ELO embodiment comparisons
+                    import time as _sit_t
+                    if isinstance(s.locomotion_experience, list):
+                        s.locomotion_experience.append({
+                            "embodiment": s.embodiment, "action": "sit", "ts": _sit_t.time()
+                        })
+                        s.locomotion_experience = s.locomotion_experience[-50:]
                     return s
                 _elo_self = _self_mutate(_apply_sit_ack)
                 # WO-115: autobiography — verified events only (body ACK = confirmed)
@@ -4446,6 +4453,15 @@ def _process_turn(raw: str) -> dict:
                 try:
                     from self.elo_self_model import record_behaviour as _rb_mv
                     _elo_self = _rb_mv(_elo_self, "move")
+                    # locomotion_experience: record move for IS ELO embodiment comparisons
+                    import time as _mv_t
+                    if isinstance(getattr(_elo_self, "locomotion_experience", None), list):
+                        _elo_self.locomotion_experience.append({
+                            "embodiment": getattr(_elo_self, "embodiment", "desktop"),
+                            "action": "move",
+                            "ts": _mv_t.time(),
+                        })
+                        _elo_self.locomotion_experience = _elo_self.locomotion_experience[-50:]
                 except Exception:
                     pass
                 # SP-22/SP-3/SP-4/SP-23: build typed MovementOutcome once; share across consumers
@@ -7219,6 +7235,30 @@ def _process_turn(raw: str) -> dict:
             if _drift_missing:
                 import logging as _w8_log
                 _w8_log.warning(f"[IDENTITY DRIFT DETECTED] missing values: {_drift_missing}")
+                # Corrective action — not warning-only (queue item):
+                # 1. Store a correction so the next turn is informed of the drift.
+                # 2. Inject a drift_detected inner_event so the self-model tracks it.
+                try:
+                    from self_improvement.correction_store import store_correction as _drift_corr
+                    for _dv in _drift_missing[:3]:  # cap at 3 to avoid ledger spam
+                        _drift_corr(
+                            input_text=raw[:120],
+                            corrected_response=(response or "")[:200],
+                            why=f"identity drift: core value '{_dv}' absent from response",
+                            tier="green",
+                            reviewed=False,
+                        )
+                except Exception:
+                    pass
+                try:
+                    _drift_ev = f"identity_drift:{','.join(_drift_missing[:3])}"
+                    _elo_self = _self_mutate(
+                        lambda s: (s.inner_events.append(_drift_ev), s)[-1]  # type: ignore[attr-defined]
+                        if hasattr(s, "inner_events") and isinstance(s.inner_events, list)
+                        else s
+                    )
+                except Exception:
+                    pass
         except Exception:
             pass
 
@@ -7711,6 +7751,17 @@ def _shutdown_cleanly(server: ThreadingHTTPServer) -> None:
                 execution_reports=list(_state.get("execution_reports", []) or []),
                 project="elo-os",
             )
+    except Exception:
+        pass
+    # Queue item: carry_wm() must be called on session close.
+    # Persists open_threads + rolling_summary + current_task to continuity/wm_carry.json
+    # so the next session can resume where this one left off.
+    try:
+        from runtime.working_memory import carry_wm as _carry_wm, seed_working_memory as _seed_wm
+        _carry_wm(_seed_wm(
+            current_task=getattr(_elo_self, "current_action", ""),
+            open_threads=list(getattr(_elo_self, "open_threads", []) or []),
+        ))
     except Exception:
         pass
     server.shutdown()
