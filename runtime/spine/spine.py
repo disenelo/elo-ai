@@ -506,7 +506,12 @@ def _executive_faculty(
     if _recalled_lessons:
         _top = _recalled_lessons[0]
         plan.lesson_id = _top.get("lesson_key", "")
-        if plan.cal_reason == "default — no stronger signal":
+        # WO-W63-CAL-REASON-001: Executive returns several default-branch strings
+        # depending on intent ("default — no stronger signal", "conversation — default
+        # to answer (per _RESPONSE_GOAL)", etc.). Any cal_reason that contains
+        # "default" and doesn't carry an explicit capability or system signal means
+        # the recalled lesson is the authoritative reason — amend it.
+        if "default" in plan.cal_reason.lower():
             plan.cal_reason = f"lesson: {_top.get('statement', '')}"
 
     # ── System action decision ────────────────────────────────────────────────
