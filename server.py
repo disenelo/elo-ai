@@ -7693,7 +7693,7 @@ class _Handler(BaseHTTPRequestHandler):
             # STT turn: record from mic → Whisper → _process_turn → speak
             try:
                 from voice_engine import listen_and_respond as _listen
-                result = _listen(_process_turn_queued)
+                result = _condition_outbound(_listen(_process_turn_queued))
                 _maybe_run_promote_pass()      # WO-096B
                 _maybe_run_reinforce_vault()   # P0-3: integration-window reinforce
                 self._send_json(200, result)
@@ -7759,6 +7759,9 @@ class _Handler(BaseHTTPRequestHandler):
             return
 
         result = _process_turn_queued(text)
+
+        result = _condition_outbound(result)
+
         _maybe_run_promote_pass()      # WO-096B
         _maybe_run_reinforce_vault()   # P0-3: integration-window reinforce
         self._send_json(200, result)
@@ -7844,6 +7847,34 @@ def _session_log_window_size() -> int:
         return len(_SESSION_WINDOW)
     except Exception:
         return -1
+
+
+def _condition_outbound(result):
+    """
+    S2 Phase 0 Bug 1 — apply the address rule to everything leaving a turn.
+
+    enforce_second_person_to_david runs at :6761, in the MAIN path only. 41
+    fast paths return before reaching it, so eLo said "David" to David on each
+    of them. Rather than 41 edits, every route out of a turn passes through
+    here, and voice_engine.speak() does the same for all 42 spoken strings.
+
+    Both /chat and /listen use this. /listen is the voice-input turn, which is
+    precisely where a voice/text split matters most, and it was missed on the
+    first pass because the response boundary is not one place.
+
+    Idempotent: the main path being conditioned twice changes nothing.
+    """
+    try:
+        from runtime.address_rule_guard import enforce_second_person_to_david as _arg_out
+        if isinstance(result, dict):
+            if isinstance(result.get("response"), str):
+                result["response"] = _arg_out(result["response"])
+            if isinstance(result.get("bubbles"), list):
+                result["bubbles"] = [_arg_out(b) if isinstance(b, str) else b
+                                     for b in result["bubbles"]]
+    except Exception:
+        pass
+    return result
 
 
 def _watch_parent(parent_pid: int, server: ThreadingHTTPServer) -> None:

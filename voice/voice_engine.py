@@ -396,6 +396,20 @@ def speak(text: str) -> None:
     """
     global _active_thread, _stop_flag
 
+    # S2 Phase 0 Bug 1 — voice and chat must carry the SAME conditioned string.
+    # server.py applies enforce_second_person_to_david at :6761, but 41 fast
+    # paths return before reaching it, and there are 42 separate _voice_speak
+    # call sites. Conditioning here covers every one of them in a single place
+    # instead of 42 edits, and the guard is idempotent, so the main path being
+    # conditioned twice is harmless.
+    #
+    # Without it eLo says "David" out loud to David on every fast path.
+    try:
+        from runtime.address_rule_guard import enforce_second_person_to_david as _arg
+        text = _arg(text)
+    except Exception:
+        pass
+
     _stop_flag.set()
     if _active_thread and _active_thread.is_alive():
         _active_thread.join(timeout=0.5)

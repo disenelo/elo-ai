@@ -110,8 +110,18 @@ def test_changing_the_state_changes_what_is_retrieved(monkeypatch):
     if len(before) < 2:
         pytest.skip(f"need 2+ retrieved entities to observe ordering, got {before}")
 
-    top, second = before[0], before[1]
+    # Target chosen by LABEL, not by position. The first version took
+    # before[1], and when the WKG writer created a junk entity "Tell" from the
+    # verb in the test's own turn text, before[1] became "Tell" and the test
+    # went red for a reason unrelated to the ranking. A causal test must not
+    # depend on what else happens to be in the store.
     ids = {(get_entity(e) or {}).get("label"): e for e in query_spg_entities(_TURN)}
+    target = next((l for l in ("identity", "persistent presence") if l in before), None)
+    if target is None or before[0] == target:
+        target = next((l for l in before[1:] if l in ids), None)
+    if target is None:
+        pytest.skip(f"no stable target among {before}")
+    second = target
 
     def favour(label):
         target = ids.get(label)
