@@ -4868,6 +4868,24 @@ def _process_turn(raw: str) -> dict:
                               self_block=_self_prompt_block(_elo_self),
                               lessons=_bp_lessons,
                               grounding_block=_grounding_block)
+        # WO-MEMORY-OFFLINE-SIGNAL-001: if vault write failed last turn, warn the model.
+        # Sentinel file expires after 5 minutes — only warns on the turn(s) immediately
+        # after a failure, not indefinitely.
+        try:
+            import json as _vol_j, os as _vol_os, time as _vol_t
+            _vol_path = _vol_os.path.join(
+                _vol_os.path.dirname(_vol_os.path.abspath(__file__)),
+                "data", "vault_offline.json",
+            )
+            if _vol_os.path.exists(_vol_path):
+                _vol_data = _vol_j.loads(open(_vol_path, encoding="utf-8").read())
+                if _vol_t.time() - float(_vol_data.get("ts", 0)) < 300:
+                    system = system + (
+                        "\n\n[SYSTEM] Memory vault is temporarily offline — "
+                        "do NOT promise to remember anything this turn."
+                    )
+        except Exception:
+            pass
         # P0-X: constitutional identity — name / with / core_values / invariants from state
         system = system + "\n\n" + _self_identity_block(_elo_self)
         # WO-052B: narrative identity — eLo's autobiography across embodiments

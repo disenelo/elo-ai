@@ -124,12 +124,31 @@ class MemoryFaculty:
             )
             return {"action": "write", "spot": spot, "reason": "new record written"}
         except Exception as exc:
+            _mark_vault_offline(str(exc))
             return {"action": "drop", "spot": None, "reason": f"vault error: {exc}"}
 
 
 # ── WO-WKG-AUTO-POPULATE-001: automatic WKG growth from live turns ────────────
 
+import os as _os
 import re as _re
+import time as _time
+
+_VAULT_OFFLINE_PATH = _os.path.join(
+    _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))),
+    "data", "vault_offline.json",
+)
+
+
+def _mark_vault_offline(reason: str) -> None:
+    """WO-MEMORY-OFFLINE-SIGNAL-001: write sentinel so next turn's prompt carries a warning."""
+    try:
+        import json as _json
+        _os.makedirs(_os.path.dirname(_VAULT_OFFLINE_PATH), exist_ok=True)
+        with open(_VAULT_OFFLINE_PATH, "w", encoding="utf-8") as _fh:
+            _json.dump({"ts": _time.time(), "reason": reason[:200]}, _fh)
+    except Exception:
+        pass
 
 _WKG_MIN_TOPIC_LEN = 3
 _WKG_MAX_TOPICS    = 20   # cap per turn to avoid hammering the graph
