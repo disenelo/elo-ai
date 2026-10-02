@@ -5966,7 +5966,11 @@ def _process_turn(raw: str) -> dict:
         # before enrichment at line 2240 — which is what David actually said.
         try:
             from memory.journal_router import route as _journal_route
-            _journal_route(_original_raw, response, _action, plan=_plan, state=_state, outcome=_w1_outcome)
+            # WO-VAULT-POOL-FIX-001: vault must record elo_raw_gen (actual LLM bytes,
+            # captured before pool substitution at line 5821), not response (elo_final
+            # which may carry pool-substituted text for short responses < 80 chars).
+            _vault_response = locals().get("_elo_raw") or response
+            _journal_route(_original_raw, _vault_response, _action, plan=_plan, state=_state, outcome=_w1_outcome)
         except Exception:
             pass
 
