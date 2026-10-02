@@ -187,6 +187,14 @@ class EloSelfState:
     # Queue item: locomotion_experience — cumulative record of locomotion events
     # this session. Enables IS ELO "walking in Unity vs walking physically" question.
     locomotion_experience: list = field(default_factory=list)  # [{embodiment, action, ts}]
+    # WO-LOCOMOTION-EXP-001: per-embodiment locomotion descriptors.
+    # desktop: screen XY interpolation (no physics). game: CharacterController.
+    # robot: omniwheel (stub). Populated from movement ACKs; survives restart.
+    locomotion_profiles: dict = field(default_factory=lambda: {
+        "desktop": {"type": "screen_position_interp", "no_physics": True},
+        "game":    {"type": "charactercontroller_physics", "fell_count": 0, "avg_route_duration": 0.0},
+        "robot":   {"type": "servo_omniwheel"},   # stub — not built yet
+    })
 
 
 # ── Persistence ───────────────────────────────────────────────────────────────
@@ -237,6 +245,11 @@ def load() -> EloSelfState:
             active_goals=list(data.get("active_goals", [])),
             open_threads=list(data.get("open_threads", [])),
             locomotion_experience=list(data.get("locomotion_experience", [])),
+            locomotion_profiles=dict(data.get("locomotion_profiles", {
+                "desktop": {"type": "screen_position_interp", "no_physics": True},
+                "game":    {"type": "charactercontroller_physics", "fell_count": 0, "avg_route_duration": 0.0},
+                "robot":   {"type": "servo_omniwheel"},
+            })),
         )
         # FIX B / BUG-NEW-2: hard clamp — curiosity never persists at ceiling or floor
         _state.curiosity = min(0.95, max(0.1, _state.curiosity))
@@ -264,6 +277,27 @@ def save(state: EloSelfState) -> None:
         os.replace(tmp, _STATE_PATH)
     except Exception as e:
         print(f"[eLo self] save error: {e}")
+
+
+# WO-LOCOMOTION-EXP-001: describe current embodiment's movement quality.
+# Returns a factual sentence drawn from locomotion_profiles, not LLM generation.
+_LOCOMOTION_SENTENCES: dict[str, str] = {
+    "screen_position_interp":     "On the desktop I move by interpolating screen XY — no physics, no weight, just position.",
+    "charactercontroller_physics":"In the game I use Unity CharacterController — there's actual gravity, momentum, and collision.",
+    "servo_omniwheel":            "On the robot I'd use omni-wheels and servo tension — physical weight, real friction.",
+}
+
+def describe_embodiment_walking(state: "EloSelfState") -> str:
+    """WO-LOCOMOTION-EXP-001: fact-based sentence about current body's movement."""
+    profile = (state.locomotion_profiles or {}).get(state.embodiment, {})
+    loco_type = profile.get("type", "")
+    sentence = _LOCOMOTION_SENTENCES.get(loco_type, "")
+    if not sentence:
+        return f"Moving as {state.embodiment} — no detailed locomotion profile stored yet."
+    fell = profile.get("fell_count", 0)
+    if fell and state.embodiment == "game":
+        sentence += f" I've fallen {fell} time(s) so far."
+    return sentence
 
 
 def update(fn: Callable[[EloSelfState], Optional[EloSelfState]]) -> EloSelfState:
