@@ -125,3 +125,77 @@ class MemoryFaculty:
             return {"action": "write", "spot": spot, "reason": "new record written"}
         except Exception as exc:
             return {"action": "drop", "spot": None, "reason": f"vault error: {exc}"}
+
+
+# ── WO-WKG-AUTO-POPULATE-001: automatic WKG growth from live turns ────────────
+
+import re as _re
+
+_WKG_MIN_TOPIC_LEN = 3
+_WKG_MAX_TOPICS    = 20   # cap per turn to avoid hammering the graph
+
+
+def _extract_wkg_topics(text: str) -> list[str]:
+    """Cheap noun-phrase heuristic — same family as curiosity_faculty._extract_topics."""
+    candidates: list[str] = []
+    # Multi-word capitalised runs: "Raspberry Pi", "NeoPixel ring"
+    for m in _re.finditer(r"(?:[A-Z][a-z]+)(?:\s+[A-Z][a-z]+)+", text):
+        candidates.append(m.group(0).strip())
+    # Single CamelCase tokens: "TPU", "NLA", "eLo"
+    for m in _re.finditer(r"\b[A-Z][a-zA-Z]{2,}\b", text):
+        candidates.append(m.group(0).strip())
+    # Quoted phrases: "forward kinematics"
+    for m in _re.finditer(r'"([^"]{3,40})"', text):
+        candidates.append(m.group(1).strip())
+    seen: set[str] = set()
+    result: list[str] = []
+    for c in candidates:
+        lc = c.lower()
+        if lc not in seen and len(c) >= _WKG_MIN_TOPIC_LEN:
+            seen.add(lc)
+            result.append(c)
+    return result[:_WKG_MAX_TOPICS]
+
+
+def populate_wkg_from_turn(
+    raw: str,
+    response: str = "",
+    project: str = "general",
+    experience_id: str = "",
+) -> list[str]:
+    """
+    WO-WKG-AUTO-POPULATE-001: grow the WKG from a live conversation turn.
+
+    Extracts candidate entities from user message (raw) and eLo response,
+    creates any that are absent from the WKG as "concept" entities.
+    Does NOT record claims — entity creation is the minimum needed to give
+    curiosity_faculty.detect_gap() something to find on the next turn.
+
+    Returns list of entity_ids created this call. Fails quietly — never
+    raises, never blocks the main response path.
+    """
+    created: list[str] = []
+    try:
+        from runtime.wkg_faculty import search_entities, create_entity
+
+        # Combine user + eLo text; user message is more topically dense
+        combined = (raw or "")[:400] + " " + (response or "")[:200]
+        topics = _extract_wkg_topics(combined)
+
+        for topic in topics:
+            try:
+                hits = search_entities(topic)
+                if hits:
+                    continue  # already known
+                entity = create_entity(
+                    entity_type="CONCEPT",
+                    label=topic,
+                    description=f"Mentioned in conversation (project: {project})",
+                    source_ids=[experience_id] if experience_id else [],
+                )
+                created.append(entity["entity_id"])
+            except Exception:
+                continue  # single entity failure → skip, don't abort loop
+    except Exception:
+        pass
+    return created

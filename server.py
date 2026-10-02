@@ -6021,6 +6021,17 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # ── WO-WKG-AUTO-POPULATE-001: grow WKG from this turn ───────────────────
+        # Extracts named entities from the user message + eLo response and
+        # creates any absent ones in the WKG as "concept" entries. Non-blocking.
+        try:
+            from memory.memory_faculty import populate_wkg_from_turn as _wkg_pop
+            _wkg_proj = getattr(_plan, "project", "general") if _plan else "general"
+            _wkg_xid  = getattr(_plan, "experience_id", "") if _plan else ""
+            _wkg_pop(_original_raw, response, project=_wkg_proj, experience_id=_wkg_xid)
+        except Exception:
+            pass
+
         # ── WO-037 interactions write-back (routed via MemoryFaculty — card 0025) ─
         # WO-067-WRITE-PATH: fixed experience_id bug (MemoryCandidate has no such field
         # → TypeError → silent drop). Now tags meaningful turns with memory_categories
