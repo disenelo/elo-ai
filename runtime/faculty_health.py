@@ -5,11 +5,18 @@ Persistent, session-scoped health state per faculty.
 The Executive routes on this — a DEGRADED/OFFLINE faculty is quarantined and
 retried periodically instead of hammered every turn.
 
-Faculties tracked:
-    reasoning   — LLM backend (OpenAI / Groq / Cerebras)
+Faculties tracked (WO-FACULTY-HEALTH-EXPAND-001: expanded from 4 to 11):
+    reasoning   — LLM backend (OpenAI / Groq / Cerebras / Ollama)
     memory      — vault + interaction store
     tools       — tool agents (weather, calendar, web search, etc.)
     embodiment  — Unity/Presence ACK channel
+    curiosity   — curiosity_faculty gap detection + question formation
+    dream       — dream_faculty + dream_review wake transfer
+    synthesis   — synthesis observer cross-signal connections
+    perception  — perception faculty sensory integration
+    wkg         — working knowledge graph reads + writes
+    reflection  — reflection_faculty vault integration
+    voice       — TTS output + voice register
 
 Status values:
     CONNECTED   — working normally
@@ -33,7 +40,21 @@ CONNECTED = "CONNECTED"
 DEGRADED  = "DEGRADED"
 OFFLINE   = "OFFLINE"
 
-_FACULTIES = ("reasoning", "memory", "tools", "embodiment")
+# WO-FACULTY-HEALTH-EXPAND-001: expanded from 4 to 11 faculties.
+# Original 4 (coarse system buckets) kept unchanged; 7 new ones added.
+_FACULTIES = (
+    "reasoning",   # LLM backend
+    "memory",      # vault + interaction store
+    "tools",       # tool agents
+    "embodiment",  # Unity/Presence ACK
+    "curiosity",   # gap detection + question formation
+    "dream",       # dream_faculty + dream_review wake transfer
+    "synthesis",   # cross-signal synthesis observer
+    "perception",  # sensory integration
+    "wkg",         # working knowledge graph
+    "reflection",  # reflection_faculty vault integration
+    "voice",       # TTS + voice register
+)
 
 _registry: dict[str, dict] = {
     f: {"status": CONNECTED, "error_count": 0, "last_error": "", "last_checked": 0.0}
