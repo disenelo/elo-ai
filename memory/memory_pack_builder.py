@@ -57,9 +57,17 @@ def build(state: dict = None, max_chars: int = 2000) -> dict:
     entity_str   = compress_obsidian(vault_ctx)
     emo_sum      = emotional_summary(state.get("emotional_history", []))
 
-    # identity: session anchor wins, else session compression
-    anchor   = state.get("session_anchor", {})
-    identity = (anchor.get("current_session_summary") or session_sum)[:300]
+    # identity: real David baseline always first, then session context appended
+    _DAVID_BASELINE = (
+        "David Charles — founder of DISENELO. Builder, artist, meaning-maker. "
+        "Building eLo: a 2.5D Unity game (eLo-Planet), a physical AI robot "
+        "(Raspberry Pi, NeoPixels, TPU shell), a creative OS (this system — eLo AI), "
+        "a vinyl toy, and a book. eLo is David's long-standing personal character. "
+        "David built this AI. This is session 1305+."
+    )
+    anchor      = state.get("session_anchor", {})
+    _session    = (anchor.get("current_session_summary") or session_sum or "").strip()
+    identity    = (_DAVID_BASELINE + (" | " + _session if _session else ""))[:400]
 
     # entities: from vault
     entities = [e.strip() for e in entity_str.split(",")] if entity_str else []
@@ -105,15 +113,33 @@ def build(state: dict = None, max_chars: int = 2000) -> dict:
         if ex_text and ex_text != "→":
             high_priority.append(ex_text)
 
+    # P0-NEW-3: correction_patterns — top confirmed corrections summarised for context
+    correction_patterns: list = []
+    try:
+        from self_improvement.correction_store import _load_ledger as _load_corr
+        _all_corr = _load_corr()
+        _confirmed = [
+            c for c in _all_corr
+            if c.get("reviewed") is True or c.get("tier") in ("green", "yellow")
+        ]
+        _confirmed.sort(key=lambda c: c.get("_ts", 0), reverse=True)
+        for _c in _confirmed[:5]:
+            _why = (_c.get("why") or "").strip()[:100]
+            if _why:
+                correction_patterns.append(_why)
+    except Exception:
+        pass
+
     pack = {
-        "generated":        datetime.now().isoformat(),
-        "identity":         identity,
-        "entities":         entities[:10],
-        "projects":         projects,
-        "user_patterns":    user_patterns,
-        "recent_context":   recent,
-        "emotional_summary": emo_sum,
-        "high_priority":    high_priority[:5],   # pre-ranked — used by filter_memory()
+        "generated":          datetime.now().isoformat(),
+        "identity":           identity,
+        "entities":           entities[:10],
+        "projects":           projects,
+        "user_patterns":      user_patterns,
+        "recent_context":     recent,
+        "emotional_summary":  emo_sum,
+        "high_priority":      high_priority[:5],   # pre-ranked — used by filter_memory()
+        "correction_patterns": correction_patterns,  # P0-NEW-3: confirmed correction whys
     }
 
     try:
