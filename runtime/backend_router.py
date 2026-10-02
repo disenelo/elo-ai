@@ -1479,7 +1479,28 @@ def _ollama_stream(
             "All six must appear. The NeoPixel diffusion and Plushies pipeline points are binding — do not omit them."
         )
 
+    # WO-OLLAMA-STATE-001: inject EloSelfState into Ollama path.
+    # _anchor only carries body label and hardcoded rules; mood, curiosity,
+    # focal_thread, inner_events, session_read, invariants are invisible to
+    # the LLM in local mode without this. Load state and insert the two
+    # standard blocks so Ollama gets the same inner-state signal as cloud.
+    _ollama_inner_state_block = ""
+    try:
+        from self.elo_self_model import (
+            load as _osm_load,
+            identity_block as _osm_identity_block,
+            prompt_block as _osm_prompt_block,
+        )
+        _osm_state = _osm_load()
+        _ollama_inner_state_block = (
+            _osm_identity_block(_osm_state) + "\n\n" + _osm_prompt_block(_osm_state)
+        )
+    except Exception:
+        pass
+
     _sections = [_anchor, _behavior_rules]
+    if _ollama_inner_state_block:
+        _sections.append(_ollama_inner_state_block)
     if _david_identity_stream:
         _sections.append(_david_identity_stream)
     # For technical inputs, exclude grounding_block only when a real Subject has accumulated —

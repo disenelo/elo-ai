@@ -5938,9 +5938,14 @@ def _process_turn(raw: str) -> dict:
         # ── Journal Router — significance-driven memory routing ───────────────
         # Scores this turn on 9 dimensions; routes to Runtime/Obsidian/GitHub
         # based on significance thresholds. Non-blocking — never delays response.
+        # VAULT-CONTAMINATION FIX: raw is overwritten at line 3184 with
+        # [WORLD_KNOWLEDGE...] context prepended for the LLM. Using raw here
+        # caused that injected block to appear in vault event fields (observed
+        # live 3/3 recent records, 2026-10-02). Use _original_raw — captured
+        # before enrichment at line 2240 — which is what David actually said.
         try:
             from memory.journal_router import route as _journal_route
-            _journal_route(raw, response, _action, plan=_plan, state=_state, outcome=_w1_outcome)
+            _journal_route(_original_raw, response, _action, plan=_plan, state=_state, outcome=_w1_outcome)
         except Exception:
             pass
 
@@ -7159,6 +7164,16 @@ def _process_turn(raw: str) -> dict:
                 _rf_lesson = (_rf_result or {}).get("lesson", "")
                 if _rf_lesson and hasattr(_elo_self, "last_reflection_lesson"):
                     _elo_self.last_reflection_lesson = _rf_lesson
+                    # WO-REFLECT-SAVE-001: this assignment runs after _apply_end_of_turn's
+                    # _self_mutate at line 6950, so the lesson never reaches disk in the
+                    # same session. Targeted save here ensures it persists immediately.
+                    try:
+                        _lesson_val = _rf_lesson
+                        _elo_self = _self_mutate(
+                            lambda s: setattr(s, "last_reflection_lesson", _lesson_val) or s
+                        )
+                    except Exception:
+                        pass
         except Exception:
             pass
 

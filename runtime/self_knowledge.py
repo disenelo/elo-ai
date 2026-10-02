@@ -28,10 +28,12 @@ _EMBODIMENT_TERMINAL = "terminal"
 _EMBODIMENT_DESKTOP  = "desktop"
 _EMBODIMENT_MOBILE   = "mobile"
 _EMBODIMENT_ROBOT    = "robot"
+_EMBODIMENT_GAME     = "game"    # WO-SELF-KNOW-GAME-001: eLo-Planet Unity embodiment
 
 _KNOWN_EMBODIMENTS = {
     _EMBODIMENT_TERMINAL, _EMBODIMENT_DESKTOP,
     _EMBODIMENT_MOBILE,   _EMBODIMENT_ROBOT,
+    _EMBODIMENT_GAME,     # WO-SELF-KNOW-GAME-001: six canonical embodiments
 }
 
 # The registry uses "desktop" as the canonical identifier for the Mac/terminal

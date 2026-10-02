@@ -35,8 +35,46 @@ def test_t1_heartbeat_thread_starts():
 
 # ── T2: patch({}) advances _ts, leaves other fields untouched ────────────────
 def test_t2_patch_empty_advances_ts():
+    """
+    T2 used sw._STATE_PATH directly — blender/blender_state.json, the LIVE
+    file a running server rewrites every 0.3s and DesktopBuddy renders from
+    every frame. It wrote a sentinel key into it, patched, then wrote again to
+    clean up. Three writes into eLo's running state, and it raced the server:
+    the test passed alone and went SystemExit in a full suite run.
+
+    Same class as 274a980 (live blender_state), 2701c39 (the real symbol
+    lexicon) and the dream gallery. Fourth instance.
+
+    Redirected to a temp file. The logic under test is unchanged — patch({})
+    must advance _ts and leave other fields alone — it just no longer does it
+    to the live state.
+    """
+    import json as _json
+    import tempfile as _tempfile
     from blender_bridge import state_writer as sw
-    STATE = sw._STATE_PATH
+
+    _tmpdir = _tempfile.mkdtemp()
+    STATE = os.path.join(_tmpdir, "blender_state.json")
+    with open(STATE, "w", encoding="utf-8") as _f:
+        _json.dump({"_ts": time.time() - 1.0, "state": {}, "motion": {}}, _f)
+    # patch() only advances _ts when _heartbeat_started is True -- deliberately
+    # gated so tests cannot fake presence. T2 was relying on T1 having set that
+    # flag earlier in the file, and something else in the suite clears it, so
+    # T2 passed alone and failed in a full run with before == after. A test
+    # that depends on global state another test happens to leave behind is not
+    # testing anything reliably. It sets its own precondition now.
+    _real_path = sw._STATE_PATH
+    _real_hb = sw._heartbeat_started
+    sw._STATE_PATH = STATE
+    sw._heartbeat_started = True
+    try:
+        _t2_body(sw, STATE)
+    finally:
+        sw._STATE_PATH = _real_path
+        sw._heartbeat_started = _real_hb
+
+
+def _t2_body(sw, STATE):
 
     # Read current _ts (or create a baseline)
     try:

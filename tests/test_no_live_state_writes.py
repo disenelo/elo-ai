@@ -189,3 +189,61 @@ def test_the_gallery_holds_no_test_artefacts():
         pytest.skip("no dream gallery on this machine")
     stray = [p.name for p in GALLERY.iterdir() if p.name.startswith("dream_test_")]
     assert not stray, f"test artefacts in eLo's real dream gallery: {stray}"
+
+
+# ── tests must not write the live state path ─────────────────────────────────
+# Fourth instance of this class. test_f4_heartbeat wrote blender_state.json
+# three times per run -- sentinel in, patch, sentinel out -- against the file
+# a running server rewrites every 0.3s. It passed alone and went SystemExit in
+# a full run, because it was racing the server.
+#
+# The earlier guards in this file name specific publishers. This one is
+# structural: no test may resolve state_writer._STATE_PATH and then write it.
+
+def test_no_test_writes_the_live_state_path():
+    """
+    A test that takes sw._STATE_PATH and writes to it is writing eLo's running
+    state. Reading it is fine; os.replace onto it is not.
+    """
+    import ast
+
+    offenders = []
+    for path in sorted(Path(__file__).parent.glob("test_*.py")):
+        src = path.read_text(encoding="utf-8", errors="ignore")
+        if "_STATE_PATH" not in src:
+            continue
+        try:
+            tree = ast.parse(src)
+        except SyntaxError:
+            continue
+        # names bound directly from sw._STATE_PATH
+        aliases = {"_STATE_PATH"}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Attribute) \
+                    and node.value.attr == "_STATE_PATH":
+                for t in node.targets:
+                    if isinstance(t, ast.Name):
+                        aliases.add(t.id)
+        # os.replace(tmp, <alias>) — the atomic-write finisher
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "replace"
+                    and len(node.args) == 2
+                    and isinstance(node.args[1], ast.Name)
+                    and node.args[1].id in aliases):
+                # reassigned to a temp path before writing? then it is fine
+                reassigned = any(
+                    isinstance(n, ast.Assign)
+                    and any(isinstance(t, ast.Name) and t.id == node.args[1].id
+                            for t in n.targets)
+                    and not (isinstance(n.value, ast.Attribute)
+                             and n.value.attr == "_STATE_PATH")
+                    for n in ast.walk(tree)
+                )
+                if not reassigned:
+                    offenders.append(f"{path.name}:{node.lineno}")
+    assert not offenders, (
+        "tests writing eLo's live blender_state.json: "
+        f"{offenders} — redirect to a temp path"
+    )

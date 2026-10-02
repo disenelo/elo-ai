@@ -344,26 +344,29 @@ def build_correction_frame(input_text: str, top_k: int = 3, max_chars: int = 600
 
 # ── Correction history provenance block ───────────────────────────────────────
 
-_HISTORY_RECENT_N = 10  # scan at most this many recent ledger entries
+_HISTORY_RECENT_N = 20  # scan at most this many recent ledger entries
 
 
-def correction_history_prompt_block(max_entries: int = 3) -> str:
+def correction_history_prompt_block(max_entries: int = 20) -> str:
     """
-    Build a prompt block showing corrections where old_belief is preserved.
+    Build a prompt block from corrections_ledger.jsonl.
+
+    WO-CORRECTIONS-SCHEMA-001: the previous filter required old_belief, which
+    is only present when store_correction() was called with that optional arg.
+    44,606 entries exist; zero were read back because the actual schema uses
+    corrected_response + why + trace (not old_belief). Fixed: filter on
+    corrected_response (present on all entries); old_belief shown when present.
 
     This answers IS ELO: — Self-Correcting Without Rewriting History?
       "can eLo avoid pretending he always knew the corrected answer?"
       "can eLo distinguish the old state from the corrected state?"
       "can eLo maintain provenance through multiple corrections?"
 
-    Returns "" when no ledger entries carry old_belief (non-blocking).
-
     THE CAUSAL CHAIN:
-      store_correction(old_belief=X) → corrections_ledger.jsonl [old_belief field]
+      store_correction(...) → corrections_ledger.jsonl
       → _load_ledger() → correction_history_prompt_block()
       → [CORRECTION HISTORY] block in system prompt
-      → LLM can reference "I previously stated X, now I know Y"
-      → eLo does NOT pretend he always knew the correct answer.
+      → LLM can reference past corrections honestly.
 
     Never raises.
     """
@@ -372,8 +375,9 @@ def correction_history_prompt_block(max_entries: int = 3) -> str:
         if not entries:
             return ""
 
-        # Only entries that carry old_belief — these are the provenance records
-        provenance = [e for e in entries if e.get("old_belief")]
+        # WO-CORRECTIONS-SCHEMA-001: filter on corrected_response (actual schema field).
+        # old_belief is optional — only present when passed explicitly to store_correction().
+        provenance = [e for e in entries if e.get("corrected_response")]
         if not provenance:
             return ""
 
@@ -381,16 +385,18 @@ def correction_history_prompt_block(max_entries: int = 3) -> str:
         recent = provenance[-_HISTORY_RECENT_N:][-max_entries:]
         recent = list(reversed(recent))
 
-        lines = ["[CORRECTION HISTORY — what eLo previously stated, and what changed]"]
+        lines = ["[CORRECTION HISTORY — what eLo has been corrected on, most recent first]"]
         lines.append(
             "  These are real corrections from experience. Do not pretend you always knew the right answer."
         )
         for c in recent:
-            lines.append(f'  topic:       "{c["input"][:80]}"')
-            lines.append(f'  I stated:    "{c["old_belief"][:100]}"')
-            lines.append(f'  Corrected to: "{c["corrected_response"][:100]}"')
+            if c.get("input"):
+                lines.append(f'  topic:        "{c["input"][:80]}"')
+            if c.get("old_belief"):
+                lines.append(f'  I stated:     "{c["old_belief"][:100]}"')
+            lines.append(f'  corrected to: "{c["corrected_response"][:100]}"')
             if c.get("why"):
-                lines.append(f'  Why it changed: {c["why"][:80]}')
+                lines.append(f'  why:          {c["why"][:80]}')
             lines.append("  ---")
 
         return "\n".join(lines)
