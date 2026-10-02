@@ -3701,7 +3701,12 @@ def _process_turn(raw: str) -> dict:
         _plan = None
         try:
             from runtime.spine.spine import run as _spine_run
-            _plan = _spine_run(raw, state=_state, attention=attention_model,
+            # SPG-RAW-FIX: spine receives _original_raw (bare user message) not
+            # the enriched `raw` (may carry [WORLD_KNOWLEDGE...] injection text).
+            # SPG/WM writes inside spine must record what David said, not the
+            # formatted tool context. build_prompt still receives the enriched raw.
+            _spine_raw = _original_raw if "_original_raw" in dir() else raw
+            _plan = _spine_run(_spine_raw, state=_state, attention=attention_model,
                                memory_pack=_vault_ctx)
         except Exception as _spine_err:
             import sys as _sys; print(f"[spine] FAILED: {_spine_err}", file=_sys.stderr)
