@@ -6547,6 +6547,7 @@ def _process_turn(raw: str) -> dict:
                 ccm=None,
                 llm_caller=_vr_llm,
                 user_text=_original_raw,
+                is_technical=_vr_is_technical,
             )
             _vr_changed = response != _pre_vr_response
         except Exception as _vr_err:

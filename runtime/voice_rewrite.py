@@ -135,6 +135,7 @@ def _build_rewrite_prompt(
     exec_decision: dict | None,
     ccm: dict | None,
     user_text: str = "",
+    is_technical: bool = False,
 ) -> str:
     """Build a focused, minimal rewrite prompt."""
     context_lines = []
@@ -170,12 +171,20 @@ def _build_rewrite_prompt(
             f"Draft:\n{candidate}"
         )
 
+    # COG-004: technical inputs need unlimited sentence cap so every component/clause
+    # is preserved. Non-technical turns stay at 2 sentences to keep eLo concise.
+    sentence_rule = (
+        "- No sentence limit — this is a technical explanation; preserve EVERY component, keyword, and clause"
+        if is_technical else
+        "- Max 2 sentences unless the answer genuinely needs more"
+    )
+
     return (
         f"{task}\n\n"
         f"{_ELO_VOICE_EXAMPLES}\n"
         f"{ctx}\n\n"
         f"Rules:\n"
-        f"- Max 2 sentences unless the answer genuinely needs more\n"
+        f"{sentence_rule}\n"
         f"- First sentence: what I actually noticed or thought — not an acknowledgement\n"
         f"- Do NOT start with: I think / I can / I notice / That's / You've / You're / Let's / It seems / Certainly / Of course\n"
         f"- Preserve all facts and answers from the draft\n"
@@ -194,6 +203,7 @@ def voice_rewrite(
     ccm: dict | None = None,
     llm_caller=None,
     user_text: str = "",
+    is_technical: bool = False,
 ) -> str:
     """
     Apply eLo's voice to a faculty candidate response.
@@ -225,7 +235,7 @@ def voice_rewrite(
         try:
             # Pass cleaned (may be empty if entire candidate was a banned opener).
             # _build_rewrite_prompt uses user_text to generate a fresh eLo response when cleaned is empty.
-            prompt = _build_rewrite_prompt(cleaned, exec_decision, ccm, user_text=user_text)
+            prompt = _build_rewrite_prompt(cleaned, exec_decision, ccm, user_text=user_text, is_technical=is_technical)
             msgs = [
                 {"role": "system", "content": "Speak as eLo. Output only eLo's words. No labels, no preamble, no meta-commentary."},
                 {"role": "user", "content": prompt},
@@ -282,6 +292,9 @@ def _deterministic_strip(text: str) -> str:
         # Prompt-leak: LLM prefixes its output with a label echoing the task instruction
         r"^(draft\s+rewritten\s+in\s+elo'?s\s+voice[^:\n]*:[\s\n]*)",
         r"^(rewrite\s+in\s+elo'?s\s+voice[^:\n]*:[\s\n]*)",
+        # COG-004 C8: model-generated greeting prefix before technical content
+        r"^(hello[,.]?\s*(you[,.]?)?\s*)",
+        r"^(hi[,.]?\s*(there[,.]?)?\s*)",
     ]
     result = text.strip()
     for pat in _OPENER_PATTERNS:
