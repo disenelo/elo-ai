@@ -7,9 +7,12 @@
   "score": { "pass": 18, "fail": 8, "total": 26 },
   "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-004_evidence.md",
   "commit": "081f663",
+  "fix_commits": ["efca083", "9e2064c"],
   "failing": ["C2", "C8", "C10", "C12", "C15", "C20", "C25", "C26"],
-  "last_updated": "2026-09-26",
-  "run": "RE-RUN 21",
+  "targeted_by_fix": ["C2", "C8", "C12", "C15"],
+  "last_updated": "2026-10-02",
+  "run": "RE-RUN 21 (RR22 pending — server restart required)",
   "model": "qwen2.5-coder:14b",
-  "notes": "RR21: Fix D reverted from v2 (bypass entirely) back to RR19 state (cap 12 for technical / 3 for non-technical). Model switched from mistral-nemo:12b to Board-approved qwen2.5-coder:14b (per S1-MODEL-CHECK.md). Score recovered to 18/26, matching RR19 best. Fix D revert recovered 4 of 5 Fix D v2 regressions (C11, C13, C16, C18 recovered; C15 still FAIL). qwen2.5-coder:14b improved C3/C5/C6/C14/C21 vs mistral-nemo:12b but introduced new failures C2/C8/C12/C20/C26. C10 YAML garbling persists (root cause unknown, all runs). C25 no longer hallucinates Unity/C# code but gives meta-response instead — still FAIL. C26 no response captured (timeout/stream failure). Board review required."
+  "rr22_runner": "engineering/evidence/run_cog004_rr22.py",
+  "notes": "RR21: 18/26. Fix commits efca083 (voice_rewrite is_technical param + _build_rewrite_prompt sentence-cap conditional + _deterministic_strip hello/hi prefix + server.py is_technical wire) and 9e2064c (git\\s+\\w added to _CODE_SIGNAL_RE) committed 2026-10-02. Server PID 41374 predates commits — restart required before RR22. RR22 runner at engineering/evidence/run_cog004_rr22.py. Expected: C2/C8/C12/C15 targeted (sentence cap now removed for technical inputs). C10/C20/C25/C26 not targeted. C10 YAML garbling persists (root cause unknown, model-specific). Board review required after RR22."
 }
