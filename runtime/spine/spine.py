@@ -1053,7 +1053,28 @@ def run(
             _spg_rel_sig: dict = {}
             try:
                 from runtime.significance_faculty import compute_significance as _spg_rel_sig_fn
-                _spg_rel_sig = _spg_rel_sig_fn({}, text_input=raw[:500])
+                # WO-SPG-SIGNIFICANCE-LIVE-001: build a real world_delta from _world
+                # instead of {} so SPG scores reflect actual environmental state.
+                _spg_rel_wd: dict = {}
+                try:
+                    from runtime.world_delta import compute_delta as _spg_wd_fn
+                    _spg_prev_w = (state or {}).get("_prev_world_snapshot", {})
+                    _spg_curr_w = {
+                        "platform":      getattr(getattr(_world, "desktop", None), "platform", "")
+                                         if _world else "",
+                        "gaze_win_id":   getattr(getattr(getattr(_world, "gaze", None), None, None), "win_id", 0)
+                                         if _world else 0,
+                        "surfaces_count": 1,
+                    }
+                    _spg_rel_wd = _spg_wd_fn(_spg_prev_w, _spg_curr_w)
+                    # Conversational any_change: a new turn with non-empty input is always a change
+                    if raw and raw.strip():
+                        _spg_rel_wd["any_change"] = True
+                except Exception:
+                    _spg_rel_wd = {"any_change": bool(raw and raw.strip()),
+                                   "gaze_changed": False, "position_changed": False,
+                                   "new_platforms_visible": [], "lost_platforms_visible": []}
+                _spg_rel_sig = _spg_rel_sig_fn(_spg_rel_wd, text_input=raw[:500])
             except Exception as _spg_rel_sig_e:
                 _log.warning("spine.run [significance/relationship]: %s", _spg_rel_sig_e)
             _spg_rel_get().log(
@@ -1436,7 +1457,14 @@ def run(
             _spg_er_sig: dict = {}
             try:
                 from runtime.significance_faculty import compute_significance as _spg_er_sig_fn
-                _spg_er_sig = _spg_er_sig_fn({}, text_input=raw[:500])
+                # WO-SPG-SIGNIFICANCE-LIVE-001: reuse the world delta built for the
+                # relationship_shift callsite (in scope; falls back to any_change=True).
+                _spg_er_wd = locals().get("_spg_rel_wd") or {
+                    "any_change": bool(raw and raw.strip()),
+                    "gaze_changed": False, "position_changed": False,
+                    "new_platforms_visible": [], "lost_platforms_visible": [],
+                }
+                _spg_er_sig = _spg_er_sig_fn(_spg_er_wd, text_input=raw[:500])
             except Exception as _spg_er_sig_e:
                 _log.warning("spine.run [significance/execution_report]: %s", _spg_er_sig_e)
             _spg_er_get().log(
@@ -1718,10 +1746,24 @@ def assemble_cognitive_state(
         from runtime.significance_faculty import compute_significance as _csig_sp29
         _world_delta_sp29: dict = {}
         try:
-            from world.world_delta import compute_delta as _wd_compute_sp29
-            _world_delta_sp29 = _wd_compute_sp29() or {}
+            # WO-SPG-SIGNIFICANCE-LIVE-001: was `world.world_delta` (module doesn't exist —
+            # silently fell through). Fixed to `runtime.world_delta` which does exist.
+            from runtime.world_delta import compute_delta as _wd_compute_sp29
+            _prev_w_sp29 = (state or {}).get("_prev_world_snapshot", {}) if state else {}
+            _curr_w_sp29 = {
+                "platform":      getattr(getattr(world_state, "desktop", None), "platform", "")
+                                 if world_state else "",
+                "gaze_win_id":   0,
+                "surfaces_count": 1,
+            }
+            _world_delta_sp29 = _wd_compute_sp29(_prev_w_sp29, _curr_w_sp29) or {}
+            # Conversational turn is always a change
+            if _raw_input and _raw_input.strip():
+                _world_delta_sp29["any_change"] = True
         except Exception:
-            pass
+            _world_delta_sp29 = {"any_change": bool(_raw_input and _raw_input.strip()),
+                                 "gaze_changed": False, "position_changed": False,
+                                 "new_platforms_visible": [], "lost_platforms_visible": []}
         _sig_result = _csig_sp29(_world_delta_sp29, text_input=_raw_input or "")  # WO-SP29-CONV-SIGNIFICANCE-001
         _significance_score = float(_sig_result.get("overall", 0.0))
     except Exception:
