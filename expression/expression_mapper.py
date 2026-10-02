@@ -147,7 +147,58 @@ def map_emotion(valence: str, action: str) -> dict:
     return {"emotion": "neutral",       "intensity": 0.20}
 
 
-def build_expression(mode: PresenceMode, action: str, intensity: float) -> dict:
+
+# ── S5: the mouth closes while the body is moving ─────────────────────────────
+#
+# eLo has NO EYES — expression is body posture and mouth only. That makes the
+# mouth carry more than it would on a face with eyes, and it makes an open
+# mouth during locomotion read as gormless rather than expressive: a wide-open
+# mouth sprinting across the desktop.
+#
+# The mapper had no motion awareness at all, so MouthOpen.Wide from an
+# emotional blend stayed open through a walk, run or jump.
+#
+# Only the mouth closes. Smile, cheeks and the satisfaction keys are posture-
+# compatible and keep running — eLo can be happy while moving, he just does
+# not gape.
+
+LOCOMOTION_CLIPS: frozenset[str] = frozenset({
+    "walk", "run", "jump",          # KNOWN_CLIPS / ambient _wander_animation
+    "pace", "wander", "hop",        # animation_driver._ALIASES -> walk / jump
+    "parkour", "wall-jump", "walking", "running", "jumping",
+})
+
+# Shape keys that open the mouth. Closed during locomotion.
+MOUTH_OPEN_KEYS: frozenset[str] = frozenset({
+    "MouthOpen.Wide", "MouthOpen", "Ah", "Oooh", "Ee", "Eh", "Ai",
+})
+
+
+def is_locomoting(motion) -> bool:
+    """
+    True when the body is travelling. Accepts the motion dict written to
+    blender_state.json, or a bare clip name.
+    """
+    if isinstance(motion, dict):
+        candidates = (motion.get("animation"), motion.get("mode"))
+    else:
+        candidates = (motion,)
+    return any(str(c or "").strip().lower() in LOCOMOTION_CLIPS for c in candidates)
+
+
+def close_mouth_if_moving(shape_keys: dict, motion) -> dict:
+    """
+    Zero the mouth-open keys while locomoting. Returns a new dict; the keys
+    stay present at 0.0 rather than being dropped, because a key that vanishes
+    leaves Blender holding its last value — the open mouth would simply stick.
+    """
+    if not is_locomoting(motion):
+        return shape_keys
+    return {k: (0.0 if k in MOUTH_OPEN_KEYS else v) for k, v in shape_keys.items()}
+
+
+def build_expression(mode: PresenceMode, action: str, intensity: float,
+                     motion=None) -> dict:
     """
     Build an expression command from presence mode + CAL action.
 
@@ -173,6 +224,8 @@ def build_expression(mode: PresenceMode, action: str, intensity: float) -> dict:
     # scale by intensity — floor at 0.6 so expressions are always visible
     eff = max(intensity, 0.6)
     shape_keys = {k: round(v * eff, 3) for k, v in base.items()}
+    # S5 — mouth closes while travelling, after scaling so the zero sticks.
+    shape_keys = close_mouth_if_moving(shape_keys, motion)
     lean       = round(lean * eff, 4)
 
     return {

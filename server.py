@@ -6154,7 +6154,9 @@ def _process_turn(raw: str) -> dict:
             _cmd      = _avatar_cmd(_pstate)
             _cmd      = _avatar_rules(_cmd, _last_avatar_cmd)
             _last_avatar_cmd = _cmd
-            _expr     = _expr_build(_pstate.mode, _action, _pstate.intensity)
+            # S5 — _cmd carries the animation chosen two lines above, so the
+            # mapper can close the mouth while the body is travelling.
+            _expr     = _expr_build(_pstate.mode, _action, _pstate.intensity, _cmd)
             _valence  = attention_model.get("emotional_context", {}).get("valence", "neutral")
             _emotion  = _expr_map_emotion(_valence, _action)
             # Gaze — derive from presence plan emotional state
