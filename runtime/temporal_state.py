@@ -50,6 +50,23 @@ _SIGNALS = _ROOT / "data" / "spg_signals.jsonl"
 RECENT_SIGNALS_N = 10  # look back this many SPG signals for "recent" context
 
 
+def _human_duration(seconds: float) -> str:
+    """WO-HONEST-DURATION-001: convert elapsed seconds to a human-readable string."""
+    seconds = max(0, int(seconds))
+    if seconds < 60:
+        return f"{seconds}s"
+    minutes = seconds // 60
+    if minutes < 60:
+        return f"{minutes}m"
+    hours = minutes // 60
+    rem_min = minutes % 60
+    if hours < 24:
+        return f"{hours}h {rem_min}m" if rem_min else f"{hours}h"
+    days = hours // 24
+    rem_h = hours % 24
+    return f"{days}d {rem_h}h" if rem_h else f"{days}d"
+
+
 @dataclass
 class TemporalFrame:
     """
@@ -58,14 +75,15 @@ class TemporalFrame:
     Distinguishes: active (now) / deferred (paused) / recently_completed (just done)
     / planned (not yet started) / in_discussion (conversational only, not decided).
     """
-    active_intentions:   list[str] = field(default_factory=list)  # "I am doing"
-    deferred_intentions: list[str] = field(default_factory=list)  # "I had planned but paused"
-    deferred_reasons:    list[str] = field(default_factory=list)  # "I paused because"
-    recent_signal_types: list[str] = field(default_factory=list)  # last N SPG signal types
-    recent_edge_hints:   list[str] = field(default_factory=list)  # last N edge_hints
-    total_signals:       int = 0
-    has_active:          bool = False
-    has_deferred:        bool = False
+    active_intentions:    list[str] = field(default_factory=list)  # "I am doing"
+    active_durations:     list[str] = field(default_factory=list)  # WO-HONEST-DURATION-001
+    deferred_intentions:  list[str] = field(default_factory=list)  # "I had planned but paused"
+    deferred_reasons:     list[str] = field(default_factory=list)  # "I paused because"
+    recent_signal_types:  list[str] = field(default_factory=list)  # last N SPG signal types
+    recent_edge_hints:    list[str] = field(default_factory=list)  # last N edge_hints
+    total_signals:        int = 0
+    has_active:           bool = False
+    has_deferred:         bool = False
 
     @property
     def is_empty(self) -> bool:
@@ -98,26 +116,35 @@ def _read_recent_signals(n: int = RECENT_SIGNALS_N) -> tuple[list[str], list[str
     return signal_types, edge_hints, len(all_signals)
 
 
-def _read_intentions() -> tuple[list[str], list[str], list[str]]:
+def _read_intentions() -> tuple[list[str], list[str], list[str], list[str]]:
     """
     Read open intentions from memory.intentions.
-    Returns (active_texts, deferred_texts, deferred_reasons).
+    Returns (active_texts, deferred_texts, deferred_reasons, active_durations).
     Falls back gracefully if the intentions store is empty.
     """
     try:
+        import time as _t
         from memory.intentions import open_intentions, STATUS_ACTIVE, STATUS_DEFERRED, STATUS_RESUMED
         open_list = open_intentions()
-        active   = [i.text[:80] for i in open_list if i.status in (STATUS_ACTIVE, STATUS_RESUMED)]
-        deferred = [i.text[:80] for i in open_list if i.status == STATUS_DEFERRED]
-        reasons  = []
+        active    = []
+        durations = []
+        deferred  = []
+        reasons   = []
+        now = _t.time()
         for i in open_list:
-            if i.status == STATUS_DEFERRED:
+            if i.status in (STATUS_ACTIVE, STATUS_RESUMED):
+                active.append(i.text[:80])
+                # WO-HONEST-DURATION-001: compute elapsed since intention was created
+                created = getattr(i, "created_at", None) or 0.0
+                durations.append(_human_duration(now - float(created)) if created else "unknown")
+            elif i.status == STATUS_DEFERRED:
+                deferred.append(i.text[:80])
                 r = getattr(i, "deferred_reason", "") or ""
                 reasons.append(r[:60] if r else "no reason recorded")
-        return active, deferred, reasons
+        return active, deferred, reasons, durations
     except Exception as exc:
         _log.debug("temporal_state: intentions unavailable: %s", exc)
-        return [], [], []
+        return [], [], [], []
 
 
 def read_temporal_frame() -> TemporalFrame:
@@ -126,10 +153,11 @@ def read_temporal_frame() -> TemporalFrame:
     Always returns a valid TemporalFrame — never raises.
     """
     try:
-        active, deferred, reasons = _read_intentions()
+        active, deferred, reasons, durations = _read_intentions()
         sig_types, edge_hints, total = _read_recent_signals()
         return TemporalFrame(
             active_intentions   = active,
+            active_durations    = durations,
             deferred_intentions = deferred,
             deferred_reasons    = reasons,
             recent_signal_types = sig_types,
@@ -166,8 +194,12 @@ def temporal_state_prompt_block() -> str:
 
         if frame.active_intentions:
             lines.append("  NOW (ACTIVE — I am holding these threads):")
-            for text in frame.active_intentions[:3]:
-                lines.append(f"    • {text}")
+            # WO-HONEST-DURATION-001: surface how long each active intention has been open.
+            dur_list = frame.active_durations or []
+            for i, text in enumerate(frame.active_intentions[:3]):
+                dur = dur_list[i] if i < len(dur_list) else ""
+                suffix = f" [active for {dur}]" if dur and dur != "unknown" else ""
+                lines.append(f"    • {text}{suffix}")
 
         if frame.deferred_intentions:
             lines.append("  PAUSED (DEFERRED — I planned this but paused):")
