@@ -296,6 +296,23 @@ def review(
     significance = float((assessor or assess_significance)(entry))
     retained = significance >= DREAM_RETENTION_THRESHOLD
 
+    # WO-AUTOBIOGRAPHY-CONV-001: a retained dream hypothesis is a cognitive event
+    # worth recording. Write to autobiography so eLo has a trace of which dreams
+    # surfaced insights above the retention threshold.
+    if retained and dream_id:
+        try:
+            from self.emergent_cognition import append_autobiography as _ab_dream
+            _ab_dream(
+                f"dream-derived hypothesis retained (sig={significance:.2f}): "
+                f"{str(entry.get('insight', ''))[:80]}",
+                kind="cognitive",
+                verified=True,
+                source="dream_derived",
+                episode_ref=f"dream-{dream_id}",
+            )
+        except Exception:
+            pass
+
     # VERIFY: clearing the gate promotes the ORIGIN (eligible for retention).
     # It does NOT promote the epistemic class — a retained dream is still a
     # hypothesis, not a verified fact.

@@ -152,7 +152,15 @@ def top_habits(state: "EloSelfState", n: int = 3) -> list[tuple[str, int]]:
 # ── Autobiography ─────────────────────────────────────────────────────────────
 
 # Provenance gate: only these sources are accepted as body-ACK evidence.
-_VALID_SOURCES = frozenset({"body_ack"})
+# WO-AUTOBIOGRAPHY-CONV-001: cognitive events, self-corrections, and
+# dream-derived hypotheses are real lived experiences — they belong in
+# autobiography alongside physical body ACK events.
+_VALID_SOURCES = frozenset({
+    "body_ack",
+    "cognitive_event",   # significance >= 0.75 on a conversation turn
+    "self_correction",   # correction confirmed and ledger-stored
+    "dream_derived",     # dream hypothesis above DREAM_RETENTION_THRESHOLD
+})
 
 
 def append_autobiography(

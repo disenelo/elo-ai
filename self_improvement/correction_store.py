@@ -103,6 +103,20 @@ def store_correction(
         os.makedirs(os.path.dirname(_LEDGER_PATH), exist_ok=True)
         with open(_LEDGER_PATH, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")
+        # WO-AUTOBIOGRAPHY-CONV-001: a stored correction is a real lived experience.
+        # Write a self_correction autobiography entry so eLo has a cognitive history
+        # of what it has been corrected on, not just physical body events.
+        try:
+            from self.emergent_cognition import append_autobiography as _ab_corr
+            _ab_corr(
+                f"correction stored: {why[:80]}",
+                kind="cognitive",
+                verified=True,
+                source="self_correction",
+                episode_ref=entry["id"],
+            )
+        except Exception:
+            pass
         return True
     except Exception:
         return False

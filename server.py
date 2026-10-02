@@ -6973,6 +6973,24 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # WO-AUTOBIOGRAPHY-CONV-001: cognitive_event autobiography write.
+        # Significance >= 0.75 on a conversation turn is a real lived experience
+        # (insight, creative moment, significant exchange). Write it to autobiography
+        # so eLo can reference cognitive history, not just physical events.
+        try:
+            _ab_sig = float((exec_decision or {}).get("significance_score", 0.0))
+            if _ab_sig >= 0.75 and response and raw:
+                from self.emergent_cognition import append_autobiography as _ab_cog
+                _ab_cog(
+                    f"significant exchange ({_ab_sig:.2f}): {(raw or '')[:80]}",
+                    kind="cognitive",
+                    verified=True,
+                    source="cognitive_event",
+                    episode_ref=f"turn-{int(time.time())}",
+                )
+        except Exception:
+            pass
+
         # ── FIX C — WO-CAP-COG-005: Pong leak guard (M14 — heartbeat in user channel)
         try:
             _PONG_SIGNALS = frozenset({"pong", "pong!", "pong.\n", "pong.", "ok", "alive", "ping"})
