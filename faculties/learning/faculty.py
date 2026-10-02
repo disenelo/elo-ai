@@ -30,7 +30,15 @@ It ADVISES. It does not decide, does not write into the Executive, does not touc
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
+import json
 import logging
+import os
+import time
+
+_CURIOSITY_Q_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "data", "curiosity_questions.jsonl",
+)
 
 _log = logging.getLogger(__name__)
 
@@ -184,4 +192,27 @@ def consult(lessons: list | None,
     if advice.curiosity >= 0.4 or advice.confidence < 0.6:
         advice.wants_to_know = (f"whether '{top[0]}' is right here, or whether this situation "
                                 f"differs from the one the lesson came from")
+
+    # WO-CURIOSITY-QSTORE-001: persist wants_to_know so it survives the turn.
+    _persist_curiosity_question(advice)
     return advice
+
+
+def _persist_curiosity_question(advice: "LearningAdvice") -> None:
+    """WO-CURIOSITY-QSTORE-001: append wants_to_know to data/curiosity_questions.jsonl."""
+    if not advice.wants_to_know:
+        return
+    try:
+        record = {
+            "_ts":          time.time(),
+            "wants_to_know": advice.wants_to_know,
+            "fit":           advice.fit,
+            "confidence":    round(advice.confidence, 3),
+            "curiosity":     round(advice.curiosity, 3),
+            "lesson_ids":    list(advice.lesson_ids),
+        }
+        os.makedirs(os.path.dirname(_CURIOSITY_Q_PATH), exist_ok=True)
+        with open(_CURIOSITY_Q_PATH, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+    except Exception:
+        pass  # fail quietly — never blocks advice delivery
