@@ -3182,7 +3182,7 @@ def _process_turn(raw: str) -> dict:
                 for _gh in _g_entity_hits[:2]:
                     _g_ctx_lines.append(f"{_gh['label']}: {_gh['content']}")
                 raw = f"[WORLD_KNOWLEDGE — from eLo's own world (verified, confidence 1.0 — answer from this, not from web)]\n" \
-                      + "\n".join(_g_ctx_lines) + f"\n\nUser asked: {raw}"
+                      + "\n".join(_g_ctx_lines) + f"\n\nUser asked: {_original_raw}"
                 _world_graph_hit = True
         except Exception as _gy_err:
             import sys as _gy_sys
@@ -3262,7 +3262,7 @@ def _process_turn(raw: str) -> dict:
                     _ws_backup = "\n[SEARCH_NOTE: Google search unavailable — results are from backup search (DuckDuckGo). Mention this briefly if David asks about search quality.]" if _ws_src == "ddg" else ""
                     # Inject as context and let the LLM respond naturally rather than
                     # short-circuiting — web results need synthesis, not raw dump
-                    raw = f"[WEB_SEARCH: {_sq_text}]\n{_ws_ctx}{_ws_backup}\n\nUser asked: {raw}"
+                    raw = f"[WEB_SEARCH: {_sq_text}]\n{_ws_ctx}{_ws_backup}\n\nUser asked: {_original_raw}"
                 # Falls through to LLM with enriched context
         except Exception as _ws_err:
             import sys as _ws_sys
@@ -3357,7 +3357,7 @@ def _process_turn(raw: str) -> dict:
                 else:
                     _todo_reply = "I don't have a to-do list in memory right now."
                 # Falls through to LLM enriched so it can speak naturally
-                raw = f"[TODO_VAULT]\n{_todo_reply}\n\nUser asked: {raw}"
+                raw = f"[TODO_VAULT]\n{_todo_reply}\n\nUser asked: {_original_raw}"
             except Exception as _td_err:
                 import sys as _td_sys
                 print(f"[todo] error: {_td_err}", file=_td_sys.stderr)
@@ -3387,9 +3387,9 @@ def _process_turn(raw: str) -> dict:
                 _sc = _sr_read(force=True)
                 if _sc:
                     # Fall through to LLM with screen content injected so it can speak naturally
-                    raw = f"[SCREEN_CONTENT]\nApp: {_sc.app}\nSummary: {_sc.summary}\nText: {_sc.raw_text[:600]}\n\nUser asked: {raw}"
+                    raw = f"[SCREEN_CONTENT]\nApp: {_sc.app}\nSummary: {_sc.summary}\nText: {_sc.raw_text[:600]}\n\nUser asked: {_original_raw}"
                 else:
-                    raw = f"[SCREEN_READ: I took a screenshot but couldn't read it — vision backend may be unavailable.]\n\nUser asked: {raw}"
+                    raw = f"[SCREEN_READ: I took a screenshot but couldn't read it — vision backend may be unavailable.]\n\nUser asked: {_original_raw}"
             except Exception as _sr_err:
                 import sys as _sr_sys
                 print(f"[screen_reader] error: {_sr_err}", file=_sr_sys.stderr)
@@ -3469,7 +3469,7 @@ def _process_turn(raw: str) -> dict:
                     _xl_reply = "Project links:\n" + "\n".join(_xref_lines)
                 else:
                     _xl_reply = "No bookmark or vault links found for DISENELO projects."
-                raw = f"[PROJECT_LINKS]\n{_xl_reply}\n\nUser asked: {raw}"
+                raw = f"[PROJECT_LINKS]\n{_xl_reply}\n\nUser asked: {_original_raw}"
             except Exception as _xl_err:
                 import sys as _xl_sys
                 print(f"[proj_links] error: {_xl_err}", file=_xl_sys.stderr)

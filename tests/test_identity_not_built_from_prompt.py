@@ -113,3 +113,38 @@ def test_live_state_contamination_is_visible_not_hidden():
     if polluted:
         print(f"\nNOTE: {len(polluted)} lifetime threads are prompt fragments "
               f"from before the fix: {[t[0] for t in polluted]}")
+
+
+# ── injection sites must echo the clean input, never the enriched one ────────
+
+def test_every_injection_echoes_the_original_not_the_enriched_raw():
+    """
+    Each enrichment block ends "User asked: {...}". Thirteen used
+    _original_raw; six used `raw`, which by then may already BE another
+    block. Two firing on one turn nested:
+
+        [WEB_SEARCH: chunk]
+        results...
+
+        User asked: [WORLD_KNOWLEDGE]
+        Chunk: modular companion.
+
+        User asked: what do you know about Chunk
+
+    The model is handed a question wrapped inside a question, and every
+    downstream consumer of `raw` inherits the whole stack.
+    """
+    s = _src()
+    stray = re.findall(r"User asked: \{raw\}", s)
+    assert not stray, (
+        f"{len(stray)} injection site(s) echo the enriched `raw` instead of "
+        "_original_raw — enrichments will nest"
+    )
+
+
+def test_all_injection_sites_accounted_for():
+    """If a new enrichment is added, it must use the clean input too."""
+    s = _src()
+    tails = re.findall(r"User asked: \{([_a-z]+)\}", s)
+    assert tails, "no injection tails found — has the pipeline changed shape?"
+    assert set(tails) == {"_original_raw"}, f"unexpected tail sources: {set(tails)}"
