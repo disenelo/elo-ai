@@ -7857,6 +7857,12 @@ def _shutdown_cleanly(server: ThreadingHTTPServer) -> None:
         ))
     except Exception:
         pass
+    # WO-CONV-PERSIST-001: save conversation context so referents survive restart.
+    try:
+        from faculties.grounding.conversation_tracker import save_continuity as _sv_cont
+        _sv_cont("default")
+    except Exception:
+        pass
     server.shutdown()
 
 
@@ -8173,6 +8179,15 @@ if __name__ == "__main__":
     print(f"[eLo server] POST /listen  (mic → Whisper → eLo)")
     print(f"[eLo server] GET  /ping    →  {{\"ok\": true}}")
     print()
+
+    # WO-CONV-PERSIST-001: prime conversation context from last session (if < 24h old).
+    try:
+        from faculties.grounding.conversation_tracker import load_continuity as _ld_cont
+        _loaded = _ld_cont("default")
+        if _loaded:
+            print("[eLo server] conversation continuity loaded")
+    except Exception:
+        pass
 
     # P0-Z: FIFO turn queue worker — guarantees arrival-order processing
     threading.Thread(target=_turn_worker, daemon=True, name="turn-worker").start()
