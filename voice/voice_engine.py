@@ -20,6 +20,7 @@ Config (.env):
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -387,6 +388,46 @@ def is_speaking() -> bool:
     return _active_thread is not None and _active_thread.is_alive()
 
 
+_SPOKEN_LOG = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "blender", "spoken_log.jsonl",
+)
+_SPOKEN_LOG_MAX = 2000      # lines; trimmed from the front
+
+
+def _log_spoken(text: str, source: str = "tts") -> None:
+    """
+    Append one spoken string to the audit log. Never raises — a logging
+    failure must not stop eLo speaking.
+
+    Appends rather than overwrites, because ambient_speech.json (the existing
+    single-slot file Unity polls) keeps only the most recent line. Two things
+    spoken in quick succession and the first is gone, which is the invisible
+    output this is meant to end.
+    """
+    try:
+        line = json.dumps({
+            "text": (text or "").strip(),
+            "source": source,
+            "ts": time.time(),
+        }, ensure_ascii=False)
+        os.makedirs(os.path.dirname(_SPOKEN_LOG), exist_ok=True)
+        with open(_SPOKEN_LOG, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+        # cheap bounded trim
+        try:
+            with open(_SPOKEN_LOG, encoding="utf-8") as f:
+                lines = f.readlines()
+            if len(lines) > _SPOKEN_LOG_MAX:
+                with open(_SPOKEN_LOG + ".tmp", "w", encoding="utf-8") as f:
+                    f.writelines(lines[-_SPOKEN_LOG_MAX:])
+                os.replace(_SPOKEN_LOG + ".tmp", _SPOKEN_LOG)
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+
 def speak(text: str) -> None:
     """
     Speak eLo's response. Non-blocking — cancels any in-progress speech.
@@ -409,6 +450,23 @@ def speak(text: str) -> None:
         text = _arg(text)
     except Exception:
         pass
+
+    # S2 Phase 0 Bug 2 — "every string eLo speaks must appear in the chat log.
+    # Zero invisible output."
+    #
+    # Six of the 42 _voice_speak sites had no route to chat at all. The worst
+    # was the file-agent result: eLo said what he had done to a file out loud
+    # and it appeared nowhere, so David had no record of an action taken on
+    # his filesystem.
+    #
+    # Logged here for the same reason the address rule is applied here — it is
+    # the one place every spoken string passes through. A per-call-site fix
+    # covers 1 of 42 and the next new site starts invisible again.
+    #
+    # This is an AUDIT log, not the chat bubbles: the main response is already
+    # displayed, and logging is not display. What it guarantees is that
+    # nothing eLo says is unrecorded.
+    _log_spoken(text)
 
     _stop_flag.set()
     if _active_thread and _active_thread.is_alive():
