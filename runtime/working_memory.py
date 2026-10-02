@@ -122,6 +122,31 @@ def _summarise_evicted(frames: list[CognitiveFrame]) -> str:
     return "; ".join(contents[:5]) if contents else ""
 
 
+# ── Attention boost registry (WO-PREDICTION-ERROR-ATTENTION-001) ─────────────
+# External callers (e.g. expectation_tracker) can raise the salience of a
+# context_tag for the next turn's attention competition. Boosts decay 50% each
+# turn and are dropped when they fall below 0.01.
+
+_ATTENTION_BOOSTS: dict[str, float] = {}
+
+
+def boost_attention(context_tag: str, amount: float = 0.2) -> None:
+    """
+    Raise attention salience for context_tag in the next competition.
+    Cumulative: repeated calls for the same tag stack.
+    """
+    if context_tag and amount > 0:
+        _ATTENTION_BOOSTS[context_tag] = _ATTENTION_BOOSTS.get(context_tag, 0.0) + amount
+
+
+def _decay_boosts() -> None:
+    """Halve all boosts after a competition; discard those below 0.01."""
+    for tag in list(_ATTENTION_BOOSTS):
+        _ATTENTION_BOOSTS[tag] *= 0.5
+        if _ATTENTION_BOOSTS[tag] < 0.01:
+            del _ATTENTION_BOOSTS[tag]
+
+
 # ── Core operations ───────────────────────────────────────────────────────────
 
 def run_attention_competition(
@@ -162,12 +187,21 @@ def run_attention_competition(
             mode="deliberative",  # distress forces deliberative
         )
 
-    scored = sorted(candidates, key=lambda c: _score(c, w), reverse=True)
+    # Apply any outstanding attention boosts (WO-PREDICTION-ERROR-ATTENTION-001).
+    # A boost raises a candidate's effective score without changing its stored values.
+    def _boosted_score(c: AttentionCandidate) -> float:
+        base = _score(c, w)
+        boost = _ATTENTION_BOOSTS.get(c.item, 0.0)
+        return min(1.0, base + boost)
+
+    scored = sorted(candidates, key=_boosted_score, reverse=True)
     winner = scored[0].item if scored else ""
     tied = (
         len(scored) >= 2
-        and abs(_score(scored[0], w) - _score(scored[1], w)) < 0.01
+        and abs(_boosted_score(scored[0]) - _boosted_score(scored[1])) < 0.01
     )
+
+    _decay_boosts()
 
     return AttentionState(
         candidates=tuple(candidates),

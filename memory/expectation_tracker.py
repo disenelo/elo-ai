@@ -197,10 +197,24 @@ def score_expectation(
 
     Builds the model lazily on first call. Thread-safe.
     Returns an ExpectationViolation describing the prediction error.
+
+    WO-PREDICTION-ERROR-ATTENTION-001: when prediction_error >= STRONG_THRESHOLD,
+    boosts attention for edge_hint in the next turn's competition.
     """
     path = signals_path or _SIGNALS
     _MODEL.build(path)
-    return _MODEL.predict(edge_hint)
+    violation = _MODEL.predict(edge_hint)
+    if violation.prediction_error >= STRONG_THRESHOLD and edge_hint:
+        try:
+            from runtime.working_memory import boost_attention as _ba
+            _ba(context_tag=edge_hint, amount=0.2)
+            _log.info(
+                "attention boost +0.2 → '%s' (prediction_error=%.2f)",
+                edge_hint, violation.prediction_error,
+            )
+        except Exception:
+            pass
+    return violation
 
 
 def invalidate() -> None:
