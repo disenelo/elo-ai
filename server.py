@@ -1084,8 +1084,46 @@ def ambient_thought() -> None:
                     })
                 except Exception:
                     pass
-                _lock.release()
-                return  # skip normal ambient cycle this tick
+                # WO-DREAM-WAKE-CURIOSITY-001: route retained dream insights to
+                # the ambient Executive instead of always returning silent.
+                # dream_review.for_executive() sets surfaces_directly=True when
+                # the dream clears the retention threshold (significance >= 0.6).
+                # When True, we build a dream_insight internal_intent and fall
+                # through to the ambient cycle; when False, return as before.
+                _dream_surfaces = False
+                try:
+                    from faculties.dream.dream_review import review as _dr_review
+                    _dr_entry = getattr(_dream_result, "journal_entry", None) or {}
+                    if _dr_entry:
+                        _dr = _dr_review(_dr_entry)
+                        _dr_exec = _dr.for_executive()
+                        _dream_surfaces = bool(_dr_exec.get("surfaces_directly"))
+                        if _dream_surfaces:
+                            # Build a dream intent for the ambient cycle to route
+                            _cog = _dr_exec.get("cognitive", {})
+                            _dream_insight_text = (
+                                _dr_entry.get("insight", "") or
+                                _cog.get("top_insight", "")
+                            )
+                            # Inject as internal_intent with high salience so the
+                            # dream wins the salience sort in the ambient cycle.
+                            _dream_intent_for_exec = {
+                                "intent":        "dream_insight",
+                                "salience":      0.92,
+                                "source":        "dream_wake",
+                                "dream_id":      _dr_entry.get("dream_id", ""),
+                                "insight":       _dream_insight_text[:200],
+                                "significance":  _dr.significance,
+                                "research_questions": _dr.research_questions[:3],
+                            }
+                except Exception:
+                    _dream_surfaces = False
+
+                if not _dream_surfaces:
+                    _lock.release()
+                    return  # skip normal ambient cycle — low-significance dream
+                # High-significance dream: fall through with dream_intent_for_exec
+                # so the Executive can decide whether to speak the insight.
         except Exception:
             pass
 
@@ -1098,6 +1136,15 @@ def ambient_thought() -> None:
             _intents = _int_intents(_elo_self_now, _idle_sec_now)
         except Exception:
             _intents = []
+
+        # WO-DREAM-WAKE-CURIOSITY-001: if we fell through from a retained dream,
+        # inject the dream insight as a high-salience intent so the Executive
+        # can route it. NameError guard: only defined on dream-wake ticks.
+        try:
+            if _dream_surfaces and _dream_intent_for_exec:
+                _intents.insert(0, _dream_intent_for_exec)
+        except NameError:
+            pass
 
         if not _intents:
             # No cognitive backing — silent tick, no journal row (absence ≠ decision)

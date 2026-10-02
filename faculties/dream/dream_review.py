@@ -266,11 +266,15 @@ class DreamReview:
 
         This is the ONLY outward path. There is no speak() or emit() here by
         design — the Dream Faculty does not address David directly.
+
+        WO-DREAM-WAKE-CURIOSITY-001: surfaces_directly reflects self.retained
+        so the server.py wake path can distinguish a significant dream (True)
+        from a low-significance one (False) and route accordingly.
         """
         return {
             "cognitive": self.cognitive_channel(),
             "creative": self.creative_channel(),
-            "surfaces_directly": False,
+            "surfaces_directly": self.retained,
         }
 
 
