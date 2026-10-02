@@ -37,7 +37,8 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Callable, Optional
 
-_STATE_PATH = Path(__file__).parent / "elo_self_state.json"
+_STATE_PATH   = Path(__file__).parent / "elo_self_state.json"
+_HISTORY_PATH = Path(__file__).parent / "elo_self_history.jsonl"
 _logger = logging.getLogger(__name__)
 
 # ── Inner event vocabulary ────────────────────────────────────────────────────
@@ -300,6 +301,24 @@ def update(fn: Callable[[EloSelfState], Optional[EloSelfState]]) -> EloSelfState
             sorted(stale),
         )
     save(state)
+
+    # WO-SELF-HISTORY-001: persist before/after diff so state evolution is auditable.
+    # Only write when something actually changed — identical states generate no row.
+    try:
+        changed: dict[str, dict] = {}
+        for k in set(before) | set(after):
+            v_before = before.get(k)
+            v_after  = after.get(k)
+            if v_before != v_after:
+                changed[k] = {"before": v_before, "after": v_after}
+        if changed:
+            record = {"_ts": time.time(), "changed_fields": changed}
+            _HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
+            with open(_HISTORY_PATH, "a", encoding="utf-8") as _hf:
+                _hf.write(json.dumps(record, ensure_ascii=False) + "\n")
+    except Exception:
+        pass  # history is non-critical — never block save
+
     return state
 
 

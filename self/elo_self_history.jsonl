@@ -1,0 +1,6 @@
+{"_ts": 1790912670.8695722, "changed_fields": {"mood": {"before": 0.397, "after": 0.497}}}
+{"_ts": 1790912674.3426728, "changed_fields": {"last_reflection_lesson": {"before": "", "after": "cheerful greetings land as connection when David is calm."}}}
+{"_ts": 1790912674.343192, "changed_fields": {"inner_events": {"before": [], "after": ["curiosity_spike"]}, "recent_behavior": {"before": {}, "after": {"connect": 1}}, "curiosity": {"before": 0.6, "after": 0.676}, "lifetime_threads": {"before": [], "after": [["greet", 1]]}, "last_updated": {"before": 0.0, "after": 1790912674.342881}, "session_turns": {"before": 0, "after": 1}, "satisfaction": {"before": 0.55, "after": 0.592}, "session_read": {"before": "just started", "after": "just getting started"}, "focal_thread": {"before": "", "after": "greet"}, "mood": {"before": 0.55, "after": 0.719}}}
+{"_ts": 1790912674.344349, "changed_fields": {"last_reflection_lesson": {"before": "", "after": "steady turns hold something"}}}
+{"_ts": 1790912674.3447099, "changed_fields": {"available_actions": {"before": ["stand", "run", "jump"], "after": ["stand", "look", "wave", "gesture"]}, "pose": {"before": "standing", "after": "sitting"}}}
+{"_ts": 1790912674.3488598, "changed_fields": {"mood": {"before": 0.55, "after": 0.9}}}
