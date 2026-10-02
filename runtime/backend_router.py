@@ -405,7 +405,7 @@ _CODE_SIGNAL_RE = re.compile(
     r"|##\s"                                               # Markdown heading
     r"|\|\s*-{3,}\s*\||\|\s*:?-+"                        # Markdown table separator
     r"|\$schema\b"                                         # JSON Schema $schema key
-    r"|\bps\s+aux\b|\bgrep\s+\w|\bawk\s+|\bxargs\s+|\bkill\s+-|\bchmod\s+|\bsudo\s+"  # shell signals
+    r"|\bps\s+aux\b|\bgrep\s+\w|\bawk\s+|\bxargs\s+|\bkill\s+-|\bchmod\s+|\bsudo\s+|\bgit\s+\w"  # shell signals
     r"|\|\s*\w+"                                           # pipe to command
     ,
     re.IGNORECASE,
