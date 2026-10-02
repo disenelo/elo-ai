@@ -7450,6 +7450,18 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # WO-CARRY-WM-001: turn-end carry — persist open_threads + current_task to
+        # continuity/wm_carry.json so a kill+restart resumes where this turn left off.
+        # Shutdown-only (line 7826) is insufficient because process kill loses the last turn.
+        try:
+            from runtime.working_memory import carry_wm as _cw_fn, seed_working_memory as _cw_seed
+            _cw_fn(_cw_seed(
+                current_task=getattr(_elo_self, "current_action", ""),
+                open_threads=list(getattr(_elo_self, "open_threads", []) or []),
+            ))
+        except Exception:
+            pass
+
         print(f"[eLo] backend={backend_used} action={_action}", flush=True)
         return {
             "inner_thought": _inner_thought,
