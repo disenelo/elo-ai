@@ -2350,10 +2350,10 @@ def _process_turn(raw: str) -> dict:
                 _voice_speak(_it3_whisper)
                 return {
                     "inner_thought": _it3_whisper,
-                    "response":      "",
+                    "response":      _it3_whisper,  # WO-PRESENCE-UNITY-RESP-001: Unity ParseResponseBubbles reads "response"; mirror whisper so OnReply fires
                     "emotion":       _it3_emotion,
                     "intent":        "dream",
-                    "bubbles":       [],
+                    "bubbles":       [_it3_whisper],
                     "mode":          "dream",
                     "backend":       "dream",
                 }
