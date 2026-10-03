@@ -6522,6 +6522,12 @@ def _process_turn(raw: str) -> dict:
                 import time as _micro_time
                 _micro_patch = {"expression": {"micro": _micro_emotion, "micro_ts": round(_micro_time.time(), 3)}}
 
+            # WO-FACE-EMOTION-001 D-3: write dominant_emotion from emotion faculty into
+            # blender_state.json so Unity (D-2) reads the correct facial-expression signal.
+            # expression_mapper returns "confident"/"worried"/etc which don't match face clip
+            # names; dominant_emotion gives "joy"/"curiosity"/"distress"/"neutral" which do.
+            _bs_et = getattr(_elo_self, "emotional_tag", None)
+            _bs_dominant = (getattr(_bs_et, "dominant_emotion", None) or "neutral").lower()
             _bs_one_brain: dict = {
                 "state": {
                     "memory":            _mem_word,
@@ -6529,6 +6535,7 @@ def _process_turn(raw: str) -> dict:
                     "self_curiosity":    round(_bs_self_cur, 3),
                     "self_satisfaction": round(_bs_self_sat, 3),
                     "pose":              getattr(_elo_self, "pose", "standing"),
+                    "dominant_emotion":  _bs_dominant,
                 },
                 "show_one_brain": True,
                 "intent":         _bs_intent,
