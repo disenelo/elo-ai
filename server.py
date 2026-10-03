@@ -7314,19 +7314,18 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
-        # ── WIRE-1: SPG write-path — eLo's own statements feed SPG ──────────────
-        # Before: SPG only learned from world events. eLo's statements never fed SPG.
-        # Now: every response is hashed → added as a claim node (fire and forget).
-        try:
-            from memory.spg_faculty import add_node_for_claim as _spg_add_claim
-            _spg_claim_id = f"turn-{int(time.time() * 1000) % 1_000_000}"
-            _spg_add_claim(
-                claim_id=_spg_claim_id,
-                claim_text=(response or "")[:500],
-                significance=0.4,
-            )
-        except Exception:
-            pass
+        # WIRE-1 stood here: an SPG node per response, keyed by a minted
+        # `turn-<ms % 1e6>` id. That is not a claim_id, and query_spg_entities
+        # joins node.id to claim["claim_id"], so every node it wrote was
+        # unreachable the moment it was written — eleven of the live store's
+        # 225. The id also wrapped every ~16.7 minutes and collided with
+        # itself.
+        #
+        # Its intent, "eLo's own statements feed SPG", is now actually met:
+        # the turn path above records real claims, and since WO-SPG-LINK-001
+        # record_claim() gives every claim a node under its own claim_id.
+        # A stub that met the intent in name only, replaced by the one that
+        # meets it. Nothing could read what it wrote, so nothing is lost.
 
         # ── WIRE-8: identity drift guard — check core values present in response ─
         try:
