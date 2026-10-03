@@ -136,6 +136,17 @@ class ExecutiveContext:
     # learning_advice channel that executive.py already reads.
     self_state: dict = field(default_factory=dict)
 
+    # ── faculty_conflict (WO-FACULTY-CONFLICT-EXEC-SIGNAL-001) ──────────────────
+    # Source: build_executive_context() structural pre-executive conflict detector.
+    # Keys: detected (bool), severity ("none"|"moderate"|"high"),
+    #       conflicting_faculties (list[str]).
+    # Proxy for Memory-WKG divergence: recall/inquiry intent + strong prediction
+    # surprise → Memory expected an answer it couldn't confirm; WKG diverges.
+    # High severity injects "reflect" at 0.82 via the learning_advice channel so
+    # the frozen executive.decide() pauses rather than committing immediately.
+    # FREEZE_V1_LOCK: executive.py untouched.
+    faculty_conflict: dict = field(default_factory=dict)
+
     # ── WO-SPINE-002: structured objects passed through from spine assembly ──────
     cognitive_state:  Any = None
     embodiment_state: Any = None
@@ -277,6 +288,31 @@ class ExecutiveContext:
                     _parts.append("open threads → reflect")
                 _tm_la["rationale"] = "; ".join(_parts)
             d["learning_advice"] = _tm_la
+
+        # WO-FACULTY-CONFLICT-EXEC-SIGNAL-001: Memory-WKG conflict → prefer "reflect".
+        # High-severity structural conflict (recall/inquiry intent + strong prediction
+        # surprise) means Memory and WKG are diverging — inject "reflect" at 0.82 so
+        # the frozen executive pauses before committing. Moderate severity is logged
+        # only (ec_faculty_conflict key) without overriding action preference.
+        # FREEZE_V1_LOCK: executive.py untouched; channel is learning_advice.
+        d["ec_faculty_conflict"] = self.faculty_conflict
+        _fc_detected = bool(self.faculty_conflict.get("detected", False))
+        _fc_severity = str(self.faculty_conflict.get("severity", "none"))
+        if _fc_detected and _fc_severity == "high":
+            _fc_la    = dict(d.get("learning_advice") or {})
+            _fc_prefs = dict(_fc_la.get("preferences") or {})
+            if _fc_prefs.get("reflect", 0.0) < 0.82:
+                _fc_prefs["reflect"] = 0.82
+            _fc_la["preferences"] = _fc_prefs
+            if "confidence" not in _fc_la or _fc_la["confidence"] < 0.70:
+                _fc_la["confidence"] = 0.70
+            _fc_la["rationale"] = (
+                _fc_la.get("rationale") or
+                "faculty conflict ({}) — reflect before committing".format(
+                    ", ".join(self.faculty_conflict.get("conflicting_faculties", []))
+                )
+            )
+            d["learning_advice"] = _fc_la
 
         return d
 
@@ -511,6 +547,34 @@ def build_executive_context(
     # ── temporal_state (WO-TEMPORAL-EXEC-WIRE-001) ─────────────────────────────
     temporal_state_dict: dict = dict(temporal) if temporal else {}
 
+    # ── faculty_conflict (WO-FACULTY-CONFLICT-EXEC-SIGNAL-001) ──────────────────
+    # Structural pre-executive conflict detector — works from attention model fields
+    # already available here. Text-based detect_conflicts() runs later in server.py
+    # (line 5103, system-prompt level) and cannot reach the executive.
+    # Proxy signal: recall/inquiry intent + strong prediction surprise → Memory was
+    # expected to have an answer but the edge violated its expectations → likely
+    # Memory-WKG divergence requiring reflection rather than immediate commitment.
+    faculty_conflict_dict: dict = {
+        "detected": False, "severity": "none", "conflicting_faculties": []
+    }
+    _recall_intent_fc = intent in ("recall", "inquiry", "clarify")
+    _pe_level_fc      = str(prediction_error_state_dict.get("surprise_level", "none"))
+    _pe_val_fc        = float(prediction_error_state_dict.get("prediction_error", 0.0))
+    _wm_win_fc        = attn_dict.get("wm_winner", "")
+    if _recall_intent_fc and _pe_level_fc == "strong_surprise" and _pe_val_fc >= 0.75:
+        faculty_conflict_dict = {
+            "detected": True,
+            "severity": "high",
+            "conflicting_faculties": ["memory", "wkg"],
+        }
+    elif (_recall_intent_fc and _wm_win_fc == "memory"
+          and _pe_level_fc == "moderate_surprise" and _pe_val_fc >= 0.40):
+        faculty_conflict_dict = {
+            "detected": True,
+            "severity": "moderate",
+            "conflicting_faculties": ["memory", "wkg"],
+        }
+
     return ExecutiveContext(
         intent=intent,
         emotion=emotional_context,
@@ -524,6 +588,7 @@ def build_executive_context(
         self_state=self_state_dict,
         prediction_error_state=prediction_error_state_dict,
         temporal_state=temporal_state_dict,
+        faculty_conflict=faculty_conflict_dict,
         # agency, significance, epistemic_state remain None — NEW ASSUMPTION
         cognitive_state=cognitive_state,
         embodiment_state=embodiment_state,
