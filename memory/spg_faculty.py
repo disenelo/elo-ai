@@ -206,7 +206,20 @@ def query_spg_entities(turn_text: str, ccm: dict | None = None) -> list[str]:
             #
             # Silence was the real defect. A dead ranking that logs success is
             # worse than one that is absent.
+            # Three outcomes, and all three are reported. Linking claims to
+            # nodes (WO-SPG-LINK-001) opened a new way for this to go quietly
+            # wrong: 2212 of the 2226 live claims are SOURCE_ATTRIBUTED at
+            # confidence 0.7, so they all land on the SAME significance.
+            # Backfill nodes for them and _linked jumps from zero to
+            # thousands, the INERT warning stops, and the sort runs — on a key
+            # identical for every entity. The ordering would still be text
+            # relevance and nothing would say so any more.
+            #
+            # An honest "this is doing nothing" replaced by a silent "this is
+            # working" is worse than the original defect, because nobody looks
+            # again. So a rerank that cannot discriminate says so.
             _linked = sum(1 for v in entity_sig.values() if v > 0.0)
+            _distinct = {round(v, 4) for v in entity_sig.values() if v > 0.0}
             if _linked == 0:
                 _log.warning(
                     "SPG rerank INERT: %d nodes in the store, none linked to any "
@@ -214,16 +227,33 @@ def query_spg_entities(turn_text: str, ccm: dict | None = None) -> list[str]:
                     "not significance. SPG is contributing nothing to this turn.",
                     len(spg_sig),
                 )
+            elif len(_distinct) <= 1:
+                _log.warning(
+                    "SPG rerank FLAT: %d entities linked but every one scores "
+                    "%.2f — a sort on an identical key is a no-op, so ordering "
+                    "is still text-relevance. Linked is not the same as ranking.",
+                    _linked, next(iter(_distinct)),
+                )
             else:
                 relevant_entity_ids.sort(
                     key=lambda eid: entity_sig.get(eid, 0.0), reverse=True)
                 _log.debug(
-                    "SPG rerank: %d entities, %d linked; top sig=%.2f",
-                    len(relevant_entity_ids), _linked,
+                    "SPG rerank: %d entities, %d linked, %d distinct scores; "
+                    "top sig=%.2f",
+                    len(relevant_entity_ids), _linked, len(_distinct),
                     max(entity_sig.values()) if entity_sig else 0.0,
                 )
         except Exception as _e:
             _log.debug("SPG rerank failed (non-fatal): %s", _e)
+
+    else:
+        # The quietest state of the three: no nodes at all meant this entire
+        # block was skipped and nothing was logged at any level, so an empty
+        # graph looked exactly like a working one from the outside.
+        _log.warning(
+            "SPG rerank INERT: the graph holds no nodes — ordering is "
+            "text-relevance only. Nothing is feeding SPG."
+        )
 
     # Step 4: CCM dim filter — prioritise entities with relevant relationship types
     if ccm and relevant_entity_ids:
