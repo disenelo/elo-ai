@@ -99,6 +99,53 @@ PHYSICAL_STATES: tuple[tuple[float, str], ...] = (
 
 HIGH_INTENSITY_ACTIVITIES = ("running", "jumping", "parkour")
 
+# ── Animation vocabulary → physical activity vocabulary ───────────────────────
+#
+# tick() reads the activity from motion["physical"]. Nothing in the running
+# system writes that key — a repo-wide search finds exactly one set of callers
+# supplying it, and they are all in tests/test_health_battery.py. Production
+# writes motion["animation"] / motion["mode"] (ambient_engine._wander_animation
+# emits "walk"/"run"; server.py's explore branch emits "walk"), so
+# _tick_physical() has returned on its first line every tick since the track
+# was built. Live blender_state.json, read 2026-10-03: physical_state
+# "untracked", physical_battery null. The drain chain is correct and was never
+# fed — the tests supplied the one input the real system never supplies.
+#
+# This is the missing translator. It ADDS names. The PHYSICAL_ACTIVITIES gate
+# inside _tick_physical() is untouched, so an unrecognised clip is still
+# ignored and the elo_battery floor documented there cannot return.
+#
+# "idle" and "calm" are deliberately absent. Mapping idle → standing charges a
+# metabolic floor for merely existing, which puts eLo in the tired band about
+# nine minutes after every boot, and the gate comment in _tick_physical() rules
+# idle out by name. Tiredness follows activity.
+ANIMATION_TO_PHYSICAL: dict[str, str] = {
+    "walk": "walking", "walking": "walking", "roam": "walking",
+    "pace": "walking", "wander": "walking", "explore": "walking",
+    "run": "running", "running": "running", "fast": "running",
+    "sprint": "running", "explore_burst": "running",
+    "jump": "jumping", "jumping": "jumping", "hop": "jumping",
+    "parkour": "parkour", "wall-jump": "parkour", "wall_jump": "parkour",
+    "sit": "sitting", "sitting": "sitting", "sit_hold": "sitting",
+    "lie_down": "lying_down", "lying_down": "lying_down",
+    "sleep": "sleeping", "sleeping": "sleeping",
+}
+
+
+def infer_physical_activity(motion_state: Mapping[str, Any] | None) -> str:
+    """
+    The physical activity a production motion dict implies, or "" for none.
+
+    Checked in order: the clip actually playing, then the mode. A caller that
+    knows the real body state passes motion["physical"] and never reaches here.
+    """
+    motion = dict(motion_state or {})
+    for key in ("animation", "mode"):
+        name = str(motion.get(key, "") or "").strip().lower()
+        if name in ANIMATION_TO_PHYSICAL:
+            return ANIMATION_TO_PHYSICAL[name]
+    return ""
+
 # The complete recognised activity vocabulary. A motion value outside this set
 # does NOT engage the physical track — see _tick_physical().
 PHYSICAL_ACTIVITIES: frozenset[str] = frozenset(PHYSICAL_TICK_RATES) | frozenset(
@@ -268,6 +315,10 @@ def tick(
     motion = dict(motion_state or {})
     anim = str(motion.get("animation", "") or "").lower()
     physical = str(motion.get("physical", motion.get("motion_state", "")) or "").lower()
+    if not physical:
+        # No explicit body signal — derive it from the clip that is playing.
+        # Without this the physical track never engages in production at all.
+        physical = infer_physical_activity(motion)
 
     # Past the hard-idle threshold eLo is RESTING, so the metabolic floor is
     # not charged on top of the rest bonus. With cadence-correct rates the

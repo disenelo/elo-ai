@@ -97,12 +97,24 @@ def test_idle_tick_is_metabolic_floor_only():
 
 
 def test_walk_and_jump_animation_drain():
+    """
+    Asserts the COGNITIVE track, which is what DRAIN_WALK_TICK/DRAIN_JUMP name.
+
+    It read get_energy() until 2026-10-03, and that only equalled the cognitive
+    drain because _physical_engaged was permanently False — motion["physical"]
+    had no production writer, so _combined() short-circuited to the cognitive
+    value alone. With the animation→activity translator in place a walk engages
+    the physical track too and get_energy() is the documented 0.6/0.4 blend,
+    which is the designed behaviour, not a regression. Asserting the named
+    constant against the track it belongs to says more than the old form did.
+    """
     hb.reset()
     hb.tick({"animation": "walk"})
-    assert round(1.0 - hb.get_energy(), 4) == hb.DRAIN_WALK_TICK
+    assert round(1.0 - hb.get_cognitive(), 4) == hb.DRAIN_WALK_TICK
+    assert hb._physical_engaged, "a walk must reach the physical track"
     hb.reset()
     hb.tick({"animation": "jump"})
-    assert round(1.0 - hb.get_energy(), 4) == hb.DRAIN_JUMP
+    assert round(1.0 - hb.get_cognitive(), 4) == hb.DRAIN_JUMP
 
 
 # ── PART B — calm to sleep ─────────────────────────────────────────────────────
