@@ -118,6 +118,15 @@ class ExecutiveContext:
     # so the frozen executive.decide() steers toward witness instead of answer.
     prediction_error_state: dict = field(default_factory=dict)
 
+    # ── temporal_state (WO-TEMPORAL-EXEC-WIRE-001) ────────────────────────────
+    # Source: faculties.temporal.compute() — computed BEFORE _executive_faculty()
+    # so the Executive sees temporal context when deciding.
+    # Keys: circadian_phase (str), interaction_gap_hours (float),
+    #       has_deferred_threads (bool).
+    # interaction_gap_hours >= 24 → injects "celebrate" preference via learning_advice.
+    # has_deferred_threads → injects "reflect" preference.
+    temporal_state: dict = field(default_factory=dict)
+
     # ── self_state (WO-SELF-MODEL-EXEC-WIRE-001) ──────────────────────────────
     # Source: self.elo_self_model.EloSelfState (loaded live each turn).
     # Keys: curiosity (float), mood (float), lifecycle_state (str).
@@ -243,6 +252,32 @@ class ExecutiveContext:
             )
             d["learning_advice"] = _pe_la
 
+        # WO-TEMPORAL-EXEC-WIRE-001: temporal state → learning_advice channel.
+        # interaction_gap_hours >= 24 → prefer "celebrate" (long reunion).
+        # has_deferred_threads → prefer "reflect" (pick up open threads).
+        # FREEZE_V1_LOCK: executive.py is frozen — channel is learning_advice.
+        d["ec_temporal_state"] = self.temporal_state
+        _gap_h = float(self.temporal_state.get("interaction_gap_hours", 0.0))
+        _deferred = bool(self.temporal_state.get("has_deferred_threads", False))
+        if _gap_h >= 24.0 or _deferred:
+            _tm_la    = dict(d.get("learning_advice") or {})
+            _tm_prefs = dict(_tm_la.get("preferences") or {})
+            if _gap_h >= 24.0 and _tm_prefs.get("celebrate", 0.0) < 0.82:
+                _tm_prefs["celebrate"] = 0.82
+            if _deferred and _tm_prefs.get("reflect", 0.0) < 0.70:
+                _tm_prefs["reflect"] = 0.70
+            _tm_la["preferences"] = _tm_prefs
+            if "confidence" not in _tm_la or _tm_la["confidence"] < 0.60:
+                _tm_la["confidence"] = 0.60
+            if not _tm_la.get("rationale"):
+                _parts = []
+                if _gap_h >= 24.0:
+                    _parts.append(f"long gap ({_gap_h:.0f}h) → celebrate reunion")
+                if _deferred:
+                    _parts.append("open threads → reflect")
+                _tm_la["rationale"] = "; ".join(_parts)
+            d["learning_advice"] = _tm_la
+
         return d
 
 
@@ -285,6 +320,7 @@ def build_executive_context(
     embodiment_state = None,  # WO-SPINE-002: prior-turn EmbodimentState | None
     execution_report = None,  # WO-SPINE-002: prior-turn ExecutionReport | None
     edge_hint: str = "",      # WO-PREDICTION-ERROR-EXEC-WIRE-001: used to score prediction_error
+    temporal: dict | None = None,  # WO-TEMPORAL-EXEC-WIRE-001: {circadian_phase, interaction_gap_hours, has_deferred_threads}
 ) -> ExecutiveContext:
     """
     Assemble ExecutiveContext from the canonical sources available at the
@@ -472,6 +508,9 @@ def build_executive_context(
         except Exception:
             pass
 
+    # ── temporal_state (WO-TEMPORAL-EXEC-WIRE-001) ─────────────────────────────
+    temporal_state_dict: dict = dict(temporal) if temporal else {}
+
     return ExecutiveContext(
         intent=intent,
         emotion=emotional_context,
@@ -484,6 +523,7 @@ def build_executive_context(
         lessons=lessons_out,
         self_state=self_state_dict,
         prediction_error_state=prediction_error_state_dict,
+        temporal_state=temporal_state_dict,
         # agency, significance, epistemic_state remain None — NEW ASSUMPTION
         cognitive_state=cognitive_state,
         embodiment_state=embodiment_state,

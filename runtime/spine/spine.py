@@ -221,6 +221,7 @@ def _executive_faculty(
     embodiment_state = None, # WO-SPINE-002: prior-turn EmbodimentState | None
     execution_report = None, # WO-SPINE-002: prior-turn ExecutionReport | None
     identity         = None, # WO-SOURCE-001: IdentityKernel | None — advisory context
+    temporal         = None, # WO-TEMPORAL-EXEC-WIRE-001: {circadian_phase, interaction_gap_hours, has_deferred_threads}
 ) -> CognitivePlan:
     """
     The Executive is the only entity permitted to make decisions.
@@ -352,6 +353,7 @@ def _executive_faculty(
             affordances=affordances,
             attention=_attention_in,
             lessons=_recalled_lessons,
+            temporal=temporal,  # WO-TEMPORAL-EXEC-WIRE-001
         )
         _attention_in = _ec.as_dict()
     except Exception as _ec_err:
@@ -1223,6 +1225,37 @@ def run(
     except Exception as _vf_err:
         _log.warning("value_faculty FAILED (non-fatal): %s", _vf_err)
 
+    # ── WO-TEMPORAL-EXEC-WIRE-001: Temporal compute BEFORE Executive ──────────
+    # temporal_compute() was previously called AFTER _executive_faculty() (blind spot).
+    # Moved here so the Executive receives temporal context when deciding.
+    _temporal_frame = None
+    _temporal_dict: dict | None = None
+    try:
+        from faculties.temporal import compute as _temporal_compute
+        _last_ts = getattr(_world, "last_interaction_ts", 0.0) if _world else 0.0
+        _idle_s  = getattr(_world, "idle_seconds", 0.0) if _world else 0.0
+        _temporal_frame = _temporal_compute(
+            world_state=_world,
+            last_interaction_ts=_last_ts,
+            idle_seconds=_idle_s,
+        )
+        _ts = _temporal_frame.temporal_state if _temporal_frame else None
+        _gap_s = float(getattr(_ts, "since_last_interaction_s", 0.0)) if _ts else 0.0
+        # open_threads from WM carry — has_deferred_threads
+        _open_threads: list = []
+        try:
+            from self.elo_self_model import load as _load_self_temp
+            _open_threads = list(getattr(_load_self_temp(), "open_threads", None) or [])
+        except Exception as _ot_err:
+            _log.warning("open_threads read FAILED (non-critical, has_deferred_threads=False): %s", _ot_err)
+        _temporal_dict = {
+            "circadian_phase":      getattr(_ts, "circadian_phase", "active") if _ts else "active",
+            "interaction_gap_hours": round(_gap_s / 3600.0, 2),
+            "has_deferred_threads": bool(_open_threads),
+        }
+    except Exception as _tf_err:
+        _log.warning("temporal_faculty FAILED: %s", _tf_err)
+
     # ── Executive Faculty — ONE DECISION ─────────────────────────────────────
     # WO-106: pass assembled state so the Executive decides from real context
     # WO-CONSEQUENCE-REPORT-001: pass prior-turn ExecutionReport so Executive knows what happened
@@ -1234,6 +1267,7 @@ def run(
         working_memory=_wm,
         affordances=getattr(_snapshot, "surface_affordances", None) if _snapshot else None,
         execution_report=_prev_execution_report,
+        temporal=_temporal_dict,  # WO-TEMPORAL-EXEC-WIRE-001
     )
 
     # WO-CONSEQUENCE-REPORT-001: build consequence context from prior turn and store on plan
@@ -1291,19 +1325,8 @@ def run(
     if internal_intent:
         plan.internal_intent  = internal_intent
 
-    # ── WO-CANON-XXV: Temporal Cognition Faculty ─────────────────────────────
-    _temporal_frame = None
-    try:
-        from faculties.temporal import compute as _temporal_compute
-        _last_ts = getattr(_world, "last_interaction_ts", 0.0) if _world else 0.0
-        _idle_s  = getattr(_world, "idle_seconds", 0.0) if _world else 0.0
-        _temporal_frame = _temporal_compute(
-            world_state=_world,
-            last_interaction_ts=_last_ts,
-            idle_seconds=_idle_s,
-        )
-    except Exception as _tf_err:
-        _log.warning("temporal_faculty FAILED: %s", _tf_err)
+    # ── WO-CANON-XXV / WO-TEMPORAL-EXEC-WIRE-001: pin temporal frame to plan ──
+    # _temporal_frame was computed BEFORE _executive_faculty() above (see WO-TEMPORAL-EXEC-WIRE-001).
     plan.temporal_frame = _temporal_frame
     # ── F-7 SELF-INTERPRET: compute in run() scope and pin to plan ───────────────
     # _self_interpretation is defined inside _executive_faculty() (local scope only).
