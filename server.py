@@ -7388,17 +7388,12 @@ def _process_turn(raw: str) -> dict:
                 f"[Last exchange]\n{_it_history}\n\neLo just said: {response}"
                 if _it_history else f"eLo just said: {response}"
             )
-            # ── WO-TIRED-SIT-001 Part B — eLo may choose to sit ──────────
-            # The dispatch names this site: "When the inner_thought pipeline
-            # receives a physical_tired inner_event ... Executive may decide to
-            # issue a sit command." Neither the threshold nor the relay is
-            # here — runtime/rest_decision.py decides, runtime/rest_action.py
-            # gathers and relays. This asks.
-            try:
-                from runtime.rest_action import maybe_sit as _maybe_sit
-                _maybe_sit()
-            except Exception:
-                pass
+            # WO-TIRED-SIT-001 Part B: a second sit emitter stood here
+            # (runtime.rest_action.maybe_sit). Builder 1's block below, at the
+            # end of this turn, is the dispatched one and is now the only
+            # route to a sit. Two emitters in one turn is one too many.
+            # The decision modules stay in the tree, unwired — see
+            # runtime/rest_decision.py. Board rules which gate survives.
 
             # S5 Item 6: physical_conditioning() hook — soft body hint for inner thought
             _it_phys_note = ""

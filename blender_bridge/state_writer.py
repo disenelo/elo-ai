@@ -479,6 +479,29 @@ def patch(update: dict) -> None:
             pass
 
 
+def issue_intent(intent: dict) -> None:
+    """
+    Publish an intent eLo raised himself, with the command Unity reads for it.
+
+    write() and write_with_presence() already derive sit_command from
+    intent["name"] == "sit", but both are full-state writes driven by a turn's
+    emotion/presence payload. A self-initiated sit has none of that to carry —
+    it is one decision, arriving between turns — so it goes through patch(),
+    which merges without overwriting anyone else's section.
+
+    SIT ONLY, deliberately. The move/leave/return branches stay where they
+    are rather than being copied a third time; unifying all three onto one
+    derivation is a real refactor of a shared file and not part of this WO.
+    Flagged for Board rather than done quietly here.
+    """
+    if not isinstance(intent, dict) or intent.get("name") != "sit":
+        return
+    patch({
+        "intent": intent,
+        "sit_command": {"_ts": round(time.time(), 3)},
+    })
+
+
 # ── F4 / 0054: ambient freshness heartbeat ───────────────────────────────────
 # _ts advances only when eLo (server.py) is running — not on any bare import.
 # server.py calls start_heartbeat() once at startup. All other importers get
