@@ -35,6 +35,10 @@ class MemoryCandidate:
     summary:         str   = ""          # one-sentence summary (≤200 chars after compress)
     tags:            tuple = field(default_factory=tuple)   # frozen tag list
     experience_id:   str   = ""          # WO-XDNA-001: per-turn identity minted by spine
+    # WO-VAULT-EPISTEMIC-CLASS-ENFORCE-001: callers must declare epistemic class.
+    # Default "inference" for callers that don't know — never silently "verified".
+    epistemic_class: str   = "inference"  # verified|inferred|generated|canonical|inference|...
+    source_ref:      str   = ""           # non-empty required when epistemic_class="verified"
 
 
 # ── Constants ────────────────────────────────────────────────────────────────
@@ -121,6 +125,8 @@ class MemoryFaculty:
                 weight=max(1, min(9, candidate.proposed_weight)),
                 tags=list(candidate.tags),
                 experience_id=candidate.experience_id,
+                epistemic_class=candidate.epistemic_class,
+                source_ref=candidate.source_ref,
             )
             return {"action": "write", "spot": spot, "reason": "new record written"}
         except Exception as exc:

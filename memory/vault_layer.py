@@ -63,6 +63,12 @@ def _ensure_dirs() -> None:
 
 # ── Write — all three tiers ───────────────────────────────────────────────────
 
+_VALID_EPISTEMIC_CLASSES = frozenset({
+    "verified", "inferred", "generated", "canonical",
+    "dream_simulation", "inference", "hypothesis", "conversation",
+})
+
+
 def write_memory(
     *,
     project: str,
@@ -72,7 +78,8 @@ def write_memory(
     weight: int = 5,
     tags: list[str] | None = None,
     date: datetime | None = None,
-    epistemic_class: str | None = None,
+    epistemic_class: str,
+    source_ref: str = "",
     experience_id: str = "",
 ) -> str:
     """
@@ -88,17 +95,25 @@ def write_memory(
         weight          — 0-9 importance (9=core identity, 7+=important, 4-6=useful)
         tags            — Obsidian tag list e.g. ["architecture", "routing"]
         date            — defaults to datetime.now()
-        epistemic_class — EpistemicClass value string (WO-PROVENANCE): "verified" |
-                          "inferred" | "generated" | "canonical" | etc.
-                          Defaults to "verified" for callers that don't specify.
+        epistemic_class — REQUIRED. EpistemicClass value (WO-VAULT-EPISTEMIC-CLASS-ENFORCE-001):
+                          "verified" | "inferred" | "generated" | "canonical" |
+                          "dream_simulation" | "inference" | "hypothesis" | "conversation".
+                          "verified" requires a non-empty source_ref — raises ValueError otherwise.
+        source_ref      — for "verified" claims: file path, turn_id, or session id that
+                          proves the fact. Required when epistemic_class="verified".
 
     Returns:
         Spot code string e.g. "EO·BL·2607·9"
     """
+    if epistemic_class == "verified" and not source_ref:
+        raise ValueError(
+            "write_memory: epistemic_class='verified' requires a non-empty source_ref "
+            "(file path, turn_id, or session id). Pass source_ref=... or use a less "
+            "certain class like 'inference' or 'conversation'."
+        )
     _ensure_dirs()
     date = date or datetime.now()
     tags = tags or []
-    epistemic_class = epistemic_class or "verified"
 
     coded  = encode(project=project, memory_type=memory_type, date=date, weight=weight)
     # WO-VAULT-UNIQUE: append a 5-char hex suffix derived from nanosecond clock so
@@ -115,9 +130,11 @@ def write_memory(
 
     _append_spot_index(spot, bits, summary_short, date, experience_id=experience_id)
     _write_summary_note(fname, spot, bits, summary_short, date, tags, weight, coded,
-                        epistemic_class=epistemic_class, experience_id=experience_id)
+                        epistemic_class=epistemic_class, source_ref=source_ref,
+                        experience_id=experience_id)
     _write_deep_note(fname, spot, bits, deep_compressed, date, tags, weight,
-                     epistemic_class=epistemic_class, experience_id=experience_id)
+                     epistemic_class=epistemic_class, source_ref=source_ref,
+                     experience_id=experience_id)
 
     # Invalidate cache so next obsidian_loader.load() picks up the new notes
     obsidian_loader.invalidate_cache()
@@ -152,12 +169,14 @@ def _append_spot_index(spot: str, bits: str, summary: str, date: datetime,
 def _write_summary_note(
     fname: str, spot: str, bits: str, summary: str,
     date: datetime, tags: list, weight: int, coded: dict,
-    epistemic_class: str = "verified",
+    epistemic_class: str = "inference",
+    source_ref: str = "",
     experience_id: str = "",
 ) -> None:
     tag_str  = ", ".join(f'"{t}"' for t in tags) if tags else ""
     date_str = date.strftime("%Y-%m-%d")
     xid_line = f"experience_id: {experience_id}\n" if experience_id else ""
+    src_line = f"source_ref: {source_ref}\n" if source_ref else ""
     content  = (
         f"---\n"
         f"type: memory-summary\n"
@@ -169,6 +188,7 @@ def _write_summary_note(
         f"date: {date_str}\n"
         f"weight: {weight}\n"
         f"epistemic_class: {epistemic_class}\n"
+        f"{src_line}"
         f"{xid_line}"
         f"tags: [{tag_str}]\n"
         f"deep: [[deep/{fname}-deep]]\n"
@@ -188,12 +208,14 @@ def _write_summary_note(
 def _write_deep_note(
     fname: str, spot: str, bits: str, deep_text: str,
     date: datetime, tags: list, weight: int,
-    epistemic_class: str = "verified",
+    epistemic_class: str = "inference",
+    source_ref: str = "",
     experience_id: str = "",
 ) -> None:
     tag_str  = ", ".join(f'"{t}"' for t in tags) if tags else ""
     date_str = date.strftime("%Y-%m-%d")
     xid_line = f"experience_id: {experience_id}\n" if experience_id else ""
+    src_line = f"source_ref: {source_ref}\n" if source_ref else ""
     content  = (
         f"---\n"
         f"type: memory-deep\n"
@@ -203,6 +225,7 @@ def _write_deep_note(
         f"date: {date_str}\n"
         f"weight: {weight}\n"
         f"epistemic_class: {epistemic_class}\n"
+        f"{src_line}"
         f"{xid_line}"
         f"tags: [{tag_str}]\n"
         f"summary: [[summary/{fname}]]\n"
@@ -241,6 +264,7 @@ def compress_session(
         deep_text=session_summary,
         weight=weight,
         tags=(tags or []) + ["session"],
+        epistemic_class="conversation",
     )
 
 
@@ -468,6 +492,8 @@ if __name__ == "__main__":
         ),
         weight=8,
         tags=["architecture", "memory", "vault"],
+        epistemic_class="verified",
+        source_ref="build_session_2026-07-06",
     )
     print(f"Written: {spot}")
     print()

@@ -71,10 +71,12 @@ def test_at1_two_writes_produce_unique_spot_codes():
         spot1 = vl.write_memory(
             project="elo-os", memory_type="conversation",
             summary="First write", deep_text="Content A", weight=3,
+            epistemic_class='conversation',
         )
         spot2 = vl.write_memory(
             project="elo-os", memory_type="conversation",
             summary="Second write", deep_text="Content B", weight=3,
+            epistemic_class='conversation',
         )
         assert spot1 != spot2, (
             f"AT-1 FAIL: two writes produced the same spot code {spot1!r} — "
@@ -99,10 +101,12 @@ def test_at2_two_writes_produce_two_distinct_deep_files():
         vl.write_memory(
             project="elo-os", memory_type="conversation",
             summary="Deep A", deep_text="Content A", weight=3,
+            epistemic_class='conversation',
         )
         vl.write_memory(
             project="elo-os", memory_type="conversation",
             summary="Deep B", deep_text="Content B", weight=3,
+            epistemic_class='conversation',
         )
         deep_files = os.listdir(vl._DEEP_DIR)
         assert len(deep_files) == 2, (
@@ -125,10 +129,12 @@ def test_at3_two_writes_produce_two_distinct_summary_files():
         vl.write_memory(
             project="elo-os", memory_type="conversation",
             summary="Summary A", deep_text="Content A", weight=5,
+            epistemic_class='conversation',
         )
         vl.write_memory(
             project="elo-os", memory_type="conversation",
             summary="Summary B", deep_text="Content B", weight=5,
+            epistemic_class='conversation',
         )
         sum_files = os.listdir(vl._SUM_DIR)
         assert len(sum_files) == 2, (
@@ -153,10 +159,12 @@ def test_at4_two_writes_append_two_rows_to_spot_codes():
         spot1 = vl.write_memory(
             project="elo-os", memory_type="conversation",
             summary="Row A", deep_text="Content A", weight=4,
+            epistemic_class='conversation',
         )
         spot2 = vl.write_memory(
             project="elo-os", memory_type="conversation",
             summary="Row B", deep_text="Content B", weight=4,
+            epistemic_class='conversation',
         )
         content = open(vl._SPOT_FILE, encoding="utf-8").read()
         # Both spot codes must appear as distinct rows
