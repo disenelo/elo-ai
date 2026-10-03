@@ -216,3 +216,128 @@ def _persist_curiosity_question(advice: "LearningAdvice") -> None:
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
     except Exception:
         pass  # fail quietly — never blocks advice delivery
+
+
+# ── WO-CURIOSITY-QSTORE-READ-001: read path ──────────────────────────────────
+
+def _load_curiosity_questions() -> list[dict]:
+    """Read all records from curiosity_questions.jsonl. Missing file = empty list."""
+    rows: list[dict] = []
+    if not os.path.exists(_CURIOSITY_Q_PATH):
+        return rows
+    try:
+        with open(_CURIOSITY_Q_PATH, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rows.append(json.loads(line))
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return rows
+
+
+def _open_curiosity_questions(rows: list[dict]) -> list[dict]:
+    """
+    Return only "open" questions.
+
+    A question is closed when a later record with `resolved_wants_to_know` matching
+    its `wants_to_know` text exists. Records without a `wants_to_know` key are
+    resolution tombstones — skip them for the question list.
+    """
+    resolved: set[str] = set()
+    for r in rows:
+        wtk = r.get("resolved_wants_to_know", "")
+        if wtk:
+            resolved.add(wtk.strip().lower())
+
+    open_qs: list[dict] = []
+    for r in rows:
+        wtk = r.get("wants_to_know", "")
+        if not wtk:
+            continue
+        if wtk.strip().lower() in resolved:
+            continue
+        open_qs.append(r)
+    return open_qs
+
+
+def _match_curiosity_question(question: dict, turn_text: str) -> bool:
+    """
+    True if the question is relevant to turn_text.
+
+    Tokenises both the `wants_to_know` text and `turn_text` to lower-case words,
+    then checks for at least 2 overlapping meaningful tokens (len >= 4, ignoring
+    stopwords).  An empty turn_text always returns False.
+    """
+    if not turn_text:
+        return False
+    _STOP = frozenset({
+        "about", "after", "also", "been", "from", "have", "here", "into",
+        "just", "like", "make", "more", "over", "some", "that", "their",
+        "them", "then", "there", "they", "this", "what", "when", "where",
+        "whether", "which", "with", "would", "your", "the", "and", "for",
+        "are", "but", "not", "all", "was", "were", "will", "does",
+    })
+    def _tokens(text: str) -> set[str]:
+        return {
+            w for w in text.lower().split()
+            if len(w) >= 4 and w not in _STOP
+        }
+
+    q_tokens = _tokens(question.get("wants_to_know", ""))
+    t_tokens  = _tokens(turn_text)
+    return len(q_tokens & t_tokens) >= 2
+
+
+def curiosity_questions_prompt_block(turn_text: str) -> str:
+    """
+    WO-CURIOSITY-QSTORE-READ-001: surface unanswered curiosity questions relevant
+    to the current turn as a prompt block.
+
+    Returns a string like:
+      [CURIOSITY: You have an unanswered question about X. This turn may be relevant.]
+      [CURIOSITY: You wondered whether Y...]
+
+    Returns "" when no relevant open questions exist or on any error.
+    """
+    try:
+        rows = _load_curiosity_questions()
+        open_qs = _open_curiosity_questions(rows)
+        # Sort oldest first; surface oldest 1–2 that match this turn.
+        open_qs.sort(key=lambda r: float(r.get("_ts", 0)))
+        matching = [q for q in open_qs if _match_curiosity_question(q, turn_text)][:2]
+        if not matching:
+            return ""
+        lines = [
+            f"[CURIOSITY: You have an unanswered question: {q['wants_to_know'].rstrip('.')}."
+            f" This turn may be relevant.]"
+            for q in matching
+        ]
+        return "\n".join(lines)
+    except Exception:
+        return ""
+
+
+def resolve_curiosity_question(wants_to_know: str) -> None:
+    """
+    WO-CURIOSITY-QSTORE-READ-001: mark a curiosity question as answered by
+    appending a resolution tombstone to the jsonl.
+
+    Does nothing if the question isn't found or on any error.
+    """
+    if not wants_to_know:
+        return
+    try:
+        tombstone = {
+            "_ts":                   time.time(),
+            "resolved_wants_to_know": wants_to_know.strip(),
+        }
+        os.makedirs(os.path.dirname(_CURIOSITY_Q_PATH), exist_ok=True)
+        with open(_CURIOSITY_Q_PATH, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(tombstone, ensure_ascii=False) + "\n")
+    except Exception:
+        pass

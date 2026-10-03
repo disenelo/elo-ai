@@ -5038,6 +5038,14 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _exp_block
             except Exception as _exp_err:
                 _logging.warning("expectation_tracker block failed (non-fatal): %s", _exp_err)
+            # WO-CURIOSITY-QSTORE-READ-001: surface open curiosity questions relevant to this turn
+            try:
+                from faculties.learning.faculty import curiosity_questions_prompt_block as _cq_pb
+                _cq_block = _cq_pb(raw or "")
+                if _cq_block:
+                    system = system + "\n\n" + _cq_block
+            except Exception as _cq_err:
+                _logging.warning("curiosity_questions block failed (non-fatal): %s", _cq_err)
             # Capability learning: inject active failure patterns so eLo adjusts behaviour (non-blocking)
             try:
                 from runtime.capability_learning import capability_learning_prompt_block as _cap_learn_pb
