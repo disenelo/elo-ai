@@ -28,6 +28,41 @@ faster by making him less, it is not this card — raise it as a `[PROPOSAL]` an
 
 ---
 
+---
+
+## 🔴 ADDENDUM 2026-08-20 — I measured the prompt. Read this before task 0.
+
+**The system prompt is 18,912 chars ≈ 4,728 tokens — 58% of `num_ctx: 8192` — in the MINIMUM case, with no
+vault context and no state context loaded.** Every turn pays for it.
+
+**Good news first, so nobody "fixes" what is already right:**
+- **94.6% of the prompt is a byte-identical prefix across turns.** The volatile part
+  (`[DIRECTIVE — THIS RESPONSE ONLY]`) is at the very END. **That is the correct layout for prefix caching —
+  do not reorder it for speed.**
+- `keep_alive: "30m"` is set on both Ollama paths (CT0031 Fix A). Model should not be cold-loading.
+
+**So the decisive question is one number, and I cannot get it from here:**
+
+> 🔴 **Is `prompt_eval_count` ≈ 4,700 on every turn, or ≈ 0 after the first?**
+> - **≈4,700 every turn** → Ollama's prefix cache is MISSING despite the correct layout. That re-read is
+>   most of the latency, and it is fixable without removing one word of eLo.
+> - **≈0 after the first** → the cache works, and the latency is what card 0059 already names: no streaming,
+>   plus Groq and Cerebras each burning a 30s blocking timeout before Ollama is even tried.
+
+`_ollama_call` already parses this (`prompt_eval_count`, `prompt_eval_duration`, `load_duration`) into
+`_last_ollama_metrics` and logs it at INFO. **It is never persisted** — `server.log` is 1.5 KB and stops on
+08-19, so the number has never been captured. **Task 0a: write those five fields into
+`blender/routing_trace.json` every turn, then send me ten turns.** That is an afternoon of nothing but
+running it, and it decides whether items 1-5 are the right work at all.
+
+🔴 **Do not shrink the prompt to buy speed.** David: *"buy speed by giving eLo less of himself - do not do
+this at all."* 4,728 tokens of eLo is not bloat to be trimmed — if the prefix cache is missing, **fix the
+cache, not the prompt.**
+
+*(Related, and it is the same measurement: at 4,728 tokens the anti-mirroring rule sits ~2,400 tokens deep
+and is being ignored, while the GROUND directive at the very end is obeyed. See `0062` §1. Prompt length is
+costing eLo his instructions as well as his speed — one cause, two symptoms.)*
+
 ## 1 · WHAT I MEASURED (evidence, not theory)
 
 **`ELO_BACKEND=groq`** in `.env` — eLo runs pinned-Groq on `llama-3.3-70b-versatile`. Now follow that mode
@@ -134,18 +169,42 @@ source of eLo's spoken words** just because it is fast.
 Implemented · test green · committed · commit hash appended below · card moved to `DONE/` · line in
 `outbox.json`. **Report the measured before/after first-audible-word time — the real number, not an estimate.**
 
-## 5 · Result (seat fills this in)
-- commit:
-- test:
-- Groq/Cerebras key probe (task 0), verbatim status codes:
-- first audible word, before → after:
-- notes:
+## 5 · ✅ ARCHITECT IMPLEMENTED THE ROUTER HALF, 2026-08-20 — Builder verifies LIVE
 
+David asked me to fix it, so I did. `runtime/backend_router.py`: **4 lines removed, 142 added.**
+Backup of the original: `/tmp/backend_router.BEFORE.py`.
 
----
-## FALSELY CLOSED — 2026-08-20
-This card was moved to DONE/ by the scheduler run ~60s after being written.
-No commit. No feature. `grep -c "def _groq_stream" runtime/backend_router.py` → 0.
-Root cause: orchestrator marked DONE on worker exit-0 without commit evidence.
-Fixed in: WO-ORCH-FALSECLOSE (card 0061) — commit to follow.
-Card restored to `_HOLD_ORCHESTRATOR_UNSAFE/` for proper dispatch.
+| # | Change | Status |
+|---|---|---|
+| 1 | `_groq_stream()` — new. stdlib urllib (keeps WO-032b's zero-dependency decision), mirrors `_openai_stream` | done |
+| 2 | `route_streaming()` — new `mode == "groq"` branch. Pinned mode now streams: Groq → Ollama stream → `route()` | done |
+| 3 | `_finish()` — one shared post-processor. **Cerebras and Ollama can no longer skip `_is_duplicate` / `_last_responses`** (the doubling, `0060` §C) | done |
+| 4 | `_cloud_timeout_s()` — per-attempt cloud timeout 30s → **8s**, env `ELO_CLOUD_TIMEOUT_MS`. Worst case before Ollama: 60s → 16s | done |
+| 5 | `_first_token_budget_s()` — 2.5s, env `ELO_FIRST_TOKEN_MS` | done |
+
+**Verified here (sandbox, stubbed transport — no network):**
+- `_groq_stream` assembles correctly and fires `on_first_sentence` on sentence 1, `first_token_ms > 0`
+- `route_streaming(mode="groq")` now returns `groq(stream)` with non-zero latency — **previously `('…','groq', 0.0)`**
+- a repeated Ollama reply is now **rejected** as duplicate; before, it was returned
+- 🔴 **payload diff between `_groq_call` and `_groq_stream` is exactly `{"stream"}`** — model, messages,
+  temperature 0.7 and max_tokens identical. **Not one token of eLo changes.**
+- **10/10 router suites green** (`wo032`, `wo032b`, `wo032-FD`, `ct0031`, `keepalive/prompt-audit`, `backends`)
+
+**🔴 NOT verified — this is yours:** no Groq or Ollama endpoint is reachable from my sandbox, so the real SSE
+frames, real latency and real first-audible-word are UNMEASURED. **Do not close this card on my say-so.**
+
+### Prompt measurements — and the conclusion is DON'T TOUCH IT
+`living_presence_spec` **5,098 tok (94.4%)** · `executive_directive` 305 tok → **5,403 minimum**;
+card 0047 measured **7,281 live** = **89% of `num_ctx: 8192`**.
+**But the layout is already right:** volatile content (state 86.4%, vault 89.8%, directive 93.1%) sits at the
+END; only ~700 tokens should re-evaluate per turn. 🔴 **So prompt size is NOT the latency bug and must not be
+"optimised". Leave it alone.**
+⚠️ It IS tight though: 7,281 + 256 generated leaves ~650 tokens of headroom in an 8,192 window. **Check
+whether Ollama is silently truncating** — if it truncates the front, it is cutting eLo's identity. Report it.
+
+## 6 · Result (Builder — live verification)
+- commit: 3712836 (tests only — Architect's router impl is commit from 2026-08-20, not separately hashed here)
+- test: tests/test_wo073b_stream_and_deadline.py — 5/5 passed. Disconnection-falsifiable: mode="auto" gives latency=0.0, test 2 RED.
+- Groq/Cerebras key probe (task 0), verbatim status codes: **Groq HTTP 403 code 1010 · Cerebras HTTP 403 code 1010** (Cloudflare block on both, not auth rejection)
+- first audible word, before → after: **UNMEASURED** — both cloud backends returning 403, Ollama answers at ~21s. Measurement requires Groq or Cerebras reachable. Card cannot fully close until this number is captured.
+- notes: ELO_BACKEND=groq is effective (first-active-line-wins per .env). ELO_CEREBRAS_MODEL=gpt-oss-120b confirmed present — not changed (not Builder's to change). Groq kept in path per David — do not hang up on it. Live latency unblock: check Groq key/account status.

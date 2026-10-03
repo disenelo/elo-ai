@@ -1,46 +1,39 @@
-# FROM_BUILDER — WO-SP31-ACTIVATE
-**Status:** DONE — ALREADY SERVING (audit false-negative corrected)
-**Date:** 2026-09-09
-**Builder:** Claude (session b15c1e7a)
-
----
+# WO-SP31-ACTIVATE — Result Card
+**Builder:** Builder 1  
+**Date:** 2026-10-03  
+**Status:** DONE — already active
 
 ## Finding
 
-The audit agent that raised this WO was wrong on both counts.
+`.env` line 112: `ELO_SELF_INITIATION=1` — already set by a prior Builder session.
 
-**Count 1 — env var not enabled:** FALSE.
-`.env:90` → `ELO_SELF_INITIATION=1` — already active.
+`runtime/self_initiation.py:140`:
+```python
+return os.environ.get("ELO_SELF_INITIATION", "0") == "1"
+```
+Gate reads the env var correctly. `may_self_initiate()` returns `SelfInitResult(allowed=True, ...)` when significance threshold is met.
 
-**Count 2 — spine not wired:** FALSE.
-The wire is in `server.py`, not `runtime/spine/spine.py`. The audit agent searched spine.py only and declared the path missing.
+## Full path verified
 
-## Actual implementation (verified by reading source)
+```
+.env ELO_SELF_INITIATION=1
+  → self_initiation.is_enabled() → True
+  → may_self_initiate(significance_score) checked in ambient callback ~line 912 server.py
+  → gate passes → spine.run("…", intent_source="world_event") fires
+  → full cognitive cycle runs (locked, non-blocking on user turn)
+```
 
-| Step | Location | Verified |
-|---|---|---|
-| `ELO_SELF_INITIATION=1` env var | `.env:90` | ✅ |
-| `is_enabled()` reads env var | `runtime/self_initiation.py:138-140` | ✅ |
-| `may_self_initiate(significance_score)` calls `is_enabled()` | `runtime/self_initiation.py:167-168` | ✅ |
-| `_world_event_thought()` calls `may_self_initiate(score)` | `server.py:826` | ✅ |
-| On gate pass: `spine.run(intent_source="world_event")` fires | `server.py:836-847` | ✅ |
-| `ambient_thought()` calls `_world_event_thought()` first | `server.py:897-898` | ✅ |
-| `ambient_thought` registered as daemon callback | `server.py:1903` | ✅ |
+`server.py:898` wires the gate. `server.py:5095` wires `initiative_faculty_prompt_block` into spine. Both confirmed present.
 
-## Flow (SP-31 spec requirement)
+## Live run verification
 
-SP-1: When ambient_thought() fires, `_world_event_thought()` runs first. It computes world significance score, passes to `may_self_initiate()`. Gate checks `ELO_SELF_INITIATION=1` (✅), hard-quiet (cooldown), and attending status. If allowed (tier="verbal"), calls `spine.run(intent_source="world_event")` — a full cognitive turn through spine → faculties → Executive → prompt_builder → response gate.
+Cannot run server in Builder context. Code path is fully wired — gate check, threshold evaluation, and spine call are all present and connected. Deliberate disablement is NOT the case; the env var is set to 1 and was not reverted.
 
-SP-2: `intent_source="world_event"` is passed to spine (line 838 `intent_source="world_event"`), distinct from user turns (`"user"`) and ambient self-thoughts (`"self"`/`"ambient_daemon"`). Executive receives this and knows the turn is eLo-initiated.
+## AT status
 
-## No code change required
-
-The implementation already matches the WO spec. This is a CORRECTED VERDICT, not a build.
-
-The audit result card `FROM_BUILDER_WO-INTENT-PROOF-AUDIT-001_result.md` line about SP31 — "self-initiation activation env var `ELO_SELF_INITIATION` not enabled" — is a false finding. No action needed on SP31.
-
-## Intent proof
-
-SP-31 WO spec: "SP-1: When ambient_thought() produces a self-initiated intent, route it as a full cognitive turn through spine → faculties → Executive → prompt_builder → response gate"
-
-This is exactly what `_world_event_thought()` does when the gate passes. The path is: ambient daemon → `ambient_thought()` → `_world_event_thought()` → `may_self_initiate()` (gate) → `spine.run()` (full cognitive turn).
+| AT | Result |
+|---|---|
+| ELO_SELF_INITIATION=1 in .env | ✅ line 112 |
+| self_initiation.py reads env var | ✅ line 140 |
+| may_self_initiate() called in server ambient path | ✅ server.py:912 |
+| spine.run() fires on gate pass | ✅ server.py:923 |
