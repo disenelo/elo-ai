@@ -44,6 +44,25 @@ _EL_VOICE2 = os.environ.get("ELEVENLABS_VOICE_ID_2", "")
 _EL_MIX    = float(os.environ.get("ELEVENLABS_VOICE_MIX", "1.0"))  # weight of primary (0–1)
 _EL_MODEL  = os.environ.get("ELEVENLABS_MODEL", "eleven_turbo_v2_5")
 
+
+def _el_voice_settings() -> dict:
+    """
+    WO-ELEVENLABS-SETTINGS-WIRE-001: read live ElevenLabs voice params from os.environ.
+
+    Called at TTS time (not at module import) so that values updated by the
+    /voice_settings endpoint in server.py take effect immediately on the next
+    speech turn without a server restart.
+
+    Defaults mirror the original hardcoded values for backward compatibility.
+    """
+    return {
+        "stability":       float(os.environ.get("ELEVENLABS_STABILITY",  "0.35")),
+        "similarity_boost": float(os.environ.get("ELEVENLABS_SIMILARITY", "0.70")),
+        "style":           float(os.environ.get("ELEVENLABS_STYLE",       "0.35")),
+        "use_speaker_boost": True,
+        "speed":           float(os.environ.get("ELEVENLABS_SPEED",       "1.09")),
+    }
+
 _SAY_VOICE    = os.environ.get("ELO_VOICE", "").strip()  # empty = use macOS system voice
 
 # ── TTS text cleaner ──────────────────────────────────────────────────────────
@@ -242,12 +261,7 @@ def _fetch_elevenlabs_audio(text: str) -> bytes | None:
             json={
                 "text": text,
                 "model_id": _EL_MODEL,
-                "voice_settings": {
-                    "stability": 0.35,
-                    "similarity_boost": 0.70,
-                    "style": 0.35,
-                    "use_speaker_boost": True,
-                },
+                "voice_settings": _el_voice_settings(),
             },
             timeout=15.0,
         )
@@ -272,12 +286,7 @@ def _fetch_elevenlabs_audio_2(text: str) -> bytes | None:
             json={
                 "text": text,
                 "model_id": _EL_MODEL,
-                "voice_settings": {
-                    "stability": 0.55,
-                    "similarity_boost": 0.75,
-                    "style": 0.15,
-                    "use_speaker_boost": True,
-                },
+                "voice_settings": _el_voice_settings(),
             },
             timeout=15.0,
         )
