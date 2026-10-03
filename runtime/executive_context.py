@@ -136,6 +136,15 @@ class ExecutiveContext:
     # learning_advice channel that executive.py already reads.
     self_state: dict = field(default_factory=dict)
 
+    # ── correction_alert (WO-CORRECTION-EXEC-WIRE-001) ───────────────────────────
+    # Source: self_improvement.correction_store.search_corrections(raw_input).
+    # Keys: category (str — why-prefix derived), frequency (int — count of
+    #       matching corrections for this input), top_correction (dict | None).
+    # frequency >= 5 → injects "reflect" at 0.80 via learning_advice.
+    # frequency >= 3 → injects "reflect" at 0.65 (advisory, does not force).
+    # FREEZE_V1_LOCK: executive.py untouched; channel is learning_advice.
+    correction_alert: dict = field(default_factory=dict)
+
     # ── faculty_conflict (WO-FACULTY-CONFLICT-EXEC-SIGNAL-001) ──────────────────
     # Source: build_executive_context() structural pre-executive conflict detector.
     # Keys: detected (bool), severity ("none"|"moderate"|"high"),
@@ -289,6 +298,29 @@ class ExecutiveContext:
                 _tm_la["rationale"] = "; ".join(_parts)
             d["learning_advice"] = _tm_la
 
+        # WO-CORRECTION-EXEC-WIRE-001: correction history → lower confidence / reflect.
+        # frequency >= 5: inject "reflect" at 0.80 (recurring error pattern — pause).
+        # frequency >= 3: inject "reflect" at 0.65 (advisory — note concern without
+        #   forcing; other stronger signals can still override).
+        # FREEZE_V1_LOCK: executive.py untouched; channel is learning_advice.
+        d["ec_correction_alert"] = self.correction_alert
+        _ca_freq = int(self.correction_alert.get("frequency", 0))
+        _ca_cat  = str(self.correction_alert.get("category", ""))
+        if _ca_freq >= 3:
+            _ca_la    = dict(d.get("learning_advice") or {})
+            _ca_prefs = dict(_ca_la.get("preferences") or {})
+            _ca_weight = 0.80 if _ca_freq >= 5 else 0.65
+            if _ca_prefs.get("reflect", 0.0) < _ca_weight:
+                _ca_prefs["reflect"] = _ca_weight
+            _ca_la["preferences"] = _ca_prefs
+            if "confidence" not in _ca_la or _ca_la["confidence"] < 0.60:
+                _ca_la["confidence"] = 0.60
+            _ca_la["rationale"] = (
+                _ca_la.get("rationale") or
+                f"correction pattern ({_ca_cat!r}, ×{_ca_freq}) — reflect before repeating error"
+            )
+            d["learning_advice"] = _ca_la
+
         # WO-FACULTY-CONFLICT-EXEC-SIGNAL-001: Memory-WKG conflict → prefer "reflect".
         # High-severity structural conflict (recall/inquiry intent + strong prediction
         # surprise) means Memory and WKG are diverging — inject "reflect" at 0.82 so
@@ -357,6 +389,7 @@ def build_executive_context(
     execution_report = None,  # WO-SPINE-002: prior-turn ExecutionReport | None
     edge_hint: str = "",      # WO-PREDICTION-ERROR-EXEC-WIRE-001: used to score prediction_error
     temporal: dict | None = None,  # WO-TEMPORAL-EXEC-WIRE-001: {circadian_phase, interaction_gap_hours, has_deferred_threads}
+    raw_input: str = "",     # WO-CORRECTION-EXEC-WIRE-001: raw user input for correction search
 ) -> ExecutiveContext:
     """
     Assemble ExecutiveContext from the canonical sources available at the
@@ -547,6 +580,27 @@ def build_executive_context(
     # ── temporal_state (WO-TEMPORAL-EXEC-WIRE-001) ─────────────────────────────
     temporal_state_dict: dict = dict(temporal) if temporal else {}
 
+    # ── correction_alert (WO-CORRECTION-EXEC-WIRE-001) ───────────────────────────
+    # Search corrections for the raw input. If >= 3 corrections match, alert.
+    # Category is derived from the why-field prefix of the top match.
+    # Degrades gracefully — empty dict when store unreachable or no matches.
+    correction_alert_dict: dict = {}
+    if raw_input and raw_input.strip():
+        try:
+            from self_improvement.correction_store import search_corrections as _srch_corr
+            _matches = _srch_corr(raw_input, top_k=6)
+            if len(_matches) >= 3:
+                # Derive category from the why field of the top match
+                _top_why = str((_matches[0] or {}).get("why", "")) if _matches else ""
+                _cat = _top_why.split(":")[0].strip() if ":" in _top_why else _top_why[:40].strip()
+                correction_alert_dict = {
+                    "category":       _cat or "unknown",
+                    "frequency":      len(_matches),
+                    "top_correction": _matches[0] if _matches else None,
+                }
+        except Exception:
+            pass
+
     # ── faculty_conflict (WO-FACULTY-CONFLICT-EXEC-SIGNAL-001) ──────────────────
     # Structural pre-executive conflict detector — works from attention model fields
     # already available here. Text-based detect_conflicts() runs later in server.py
@@ -588,6 +642,7 @@ def build_executive_context(
         self_state=self_state_dict,
         prediction_error_state=prediction_error_state_dict,
         temporal_state=temporal_state_dict,
+        correction_alert=correction_alert_dict,
         faculty_conflict=faculty_conflict_dict,
         # agency, significance, epistemic_state remain None — NEW ASSUMPTION
         cognitive_state=cognitive_state,

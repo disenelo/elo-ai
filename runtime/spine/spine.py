@@ -354,6 +354,7 @@ def _executive_faculty(
             attention=_attention_in,
             lessons=_recalled_lessons,
             temporal=temporal,  # WO-TEMPORAL-EXEC-WIRE-001
+            raw_input=raw,      # WO-CORRECTION-EXEC-WIRE-001
         )
         _attention_in = _ec.as_dict()
     except Exception as _ec_err:
