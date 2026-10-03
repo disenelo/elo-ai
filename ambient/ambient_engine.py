@@ -262,6 +262,12 @@ def _battery_tick() -> None:
             # Always emit — a preserved key that is only sometimes written
             # goes stale and looks live. That is the same trap twice already.
             fields.update(_hb.snapshot())
+            # WO-TIRED-SIT-001 Part A — tiredness has to be heard, not just
+            # written. A SIGNAL only; the decision to sit is not made here.
+            _emit_tired_signal(
+                str(fields.get("physical_state", "")),
+                state.get("motion", {}) or {},
+            )
         except Exception:
             pass
 
@@ -301,6 +307,69 @@ def _battery_tick() -> None:
                 _patch(fields)
             except Exception:
                 pass
+    except Exception:
+        pass
+
+
+# ── WO-TIRED-SIT-001 Part A — physical tiredness becomes an inner event ───────
+#
+# physical_state reaches "tired" and lands in blender_state.json, and until now
+# nothing downstream heard it. Zero matches for physical_tired anywhere.
+#
+# The dispatch's pseudo-code names _queue_inner_event(), a "blender_state
+# inner_events queue" and gesture_event. Read against the source: none of the
+# three exist. The live inner-events store is EloSelfState.inner_events, a
+# list[str] read by the dream symbol engine, dream_faculty,
+# emotional_processing_faculty and window_event_faculty, and rendered into the
+# prompt by elo_self_model.prompt_block(). The signal goes there, where it is
+# already consumed. A new blender_state key with no reader would be write-only
+# output — the defect this stack keeps finding, not a fix for it.
+#
+# This emits a signal and nothing else. "eLo decides whether to sit, not the
+# health battery" — so no motion is written from here, at any band, and a test
+# asserts that on what the tick publishes.
+
+_TIRED_BANDS = ("tired", "fatigued", "exhausted")
+_TIRED_SIGNAL_COOLDOWN_S = 60.0
+
+# Resting already — a body at rest has nothing to report about being tired.
+_RESTING_MODES = ("calm", "sit", "sitting", "sleep", "sleeping", "dream",
+                  "lie_down", "lying_down")
+
+# band → last emit. Per band, so sliding from tired to fatigued is a new thing
+# to say rather than the same thing re-said.
+_tired_signal_ts: dict[str, float] = {}
+
+
+def _emit_tired_signal(physical_state: str, motion: dict) -> None:
+    """Append physical_tired:<band> to EloSelfState.inner_events, rate-limited."""
+    if physical_state not in _TIRED_BANDS:
+        return
+
+    mode = str(motion.get("mode", "") or motion.get("animation", "") or "").lower()
+    if mode in _RESTING_MODES:
+        return
+
+    try:
+        from faculties.dream.dream_faculty import is_dreaming as _is_dreaming
+        if _is_dreaming():
+            return
+    except Exception:
+        pass
+
+    now = time.time()
+    if now - _tired_signal_ts.get(physical_state, 0.0) < _TIRED_SIGNAL_COOLDOWN_S:
+        return
+    _tired_signal_ts[physical_state] = now
+
+    event = f"physical_tired:{physical_state}"
+    try:
+        from self.elo_self_model import update as _self_update
+        _self_update(
+            lambda st: (st.inner_events.append(event), st)[-1]
+            if hasattr(st, "inner_events") and isinstance(st.inner_events, list)
+            else st
+        )
     except Exception:
         pass
 
