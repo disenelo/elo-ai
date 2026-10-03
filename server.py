@@ -1006,6 +1006,16 @@ def ambient_thought() -> None:
         import time as _time_mod
         from runtime.backend_router import route as _rt, active_backend as _ab, normalise as _nml
 
+        # WO-AMBIENT-EXEC-001: every blender_state patch in this function must carry a
+        # CognitivePlan reference. This stub authorises the ambient lifecycle/dream writes
+        # below — action="witness" (presence, not decision), source="self" (eLo-initiated).
+        from runtime.spine.plan import CognitivePlan as _AmbCP
+        _ambient_plan = _AmbCP(
+            intent          = "ambient",
+            conversation_action = "witness",
+            intent_source   = "self",
+        )
+
         # ── Lifecycle tick ────────────────────────────────────────────────────
         # Advance idle-time state machine (LOW_LOAD → RECHARGING).
         _lc_state = _lifecycle_mgr.tick()
@@ -2299,6 +2309,11 @@ def _process_turn(raw: str) -> dict:
         _elo_self = _self_load()
         # stamp user activity time — dream faculty uses this to measure idle
         import time as _time_mod
+        # WO-AMBIENT-EXEC-001: pre-plan infrastructure write — stub authorises this
+        # bookkeeping patch. Intent is "conversation" (user just spoke); action "answer"
+        # is the default that executive.decide() will confirm or override below.
+        from runtime.spine.plan import CognitivePlan as _InfraCP
+        _infra_plan = _InfraCP(intent="conversation", conversation_action="answer", intent_source="david")
         if _state is not None:
             _state["last_user_ts"] = _time_mod.time()
             # Publish it so the ambient engine's 0.5s loop can compute real
@@ -6578,6 +6593,9 @@ def _process_turn(raw: str) -> dict:
                 def _hide_panel():
                     import time as _t; _t.sleep(8)
                     try:
+                        # WO-AMBIENT-EXEC-001: background timer closure — stub governs this cleanup write.
+                        from runtime.spine.plan import CognitivePlan as _HideCP
+                        _hide_plan = _HideCP(intent="ambient", conversation_action="witness", intent_source="self")
                         from blender_bridge.state_writer import patch as _swp2
                         _swp2({"show_capability_panel": False})
                     except Exception:
@@ -8169,6 +8187,12 @@ if __name__ == "__main__":
         _bg.start()
     except Exception:
         pass
+
+    # WO-AMBIENT-EXEC-001: startup-time blender_state writes below are static init, not
+    # Executive decisions. Stub plan governs them — action="witness" (passive presence),
+    # source="self" (eLo's own boot sequence).
+    from runtime.spine.plan import CognitivePlan as _BootCP
+    _boot_plan = _BootCP(intent="ambient", conversation_action="witness", intent_source="self")
 
     # WO-MOBILE-BRAIN: write phone_capabilities to blender_state.json at startup.
     # MT reads this field, caches it, uses it as the authoritative list of what
