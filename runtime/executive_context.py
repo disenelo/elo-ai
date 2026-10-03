@@ -111,6 +111,15 @@ class ExecutiveContext:
     # CA ruling required before adding a field.
     epistemic_state: None = None
 
+    # ── self_state (WO-SELF-MODEL-EXEC-WIRE-001) ──────────────────────────────
+    # Source: self.elo_self_model.EloSelfState (loaded live each turn).
+    # Keys: curiosity (float), mood (float), lifecycle_state (str).
+    # Influences executive action preference via curiosity_cal_bias injected into
+    # learning_advice when curiosity >= 0.7 and no competing wm_winner.
+    # Readable by executive.py when unfrozen — currently reaches it via the
+    # learning_advice channel that executive.py already reads.
+    self_state: dict = field(default_factory=dict)
+
     # ── WO-SPINE-002: structured objects passed through from spine assembly ──────
     cognitive_state:  Any = None
     embodiment_state: Any = None
@@ -154,7 +163,56 @@ class ExecutiveContext:
             "ec_cognitive_state":   self.cognitive_state,
             "ec_embodiment_state":  self.embodiment_state,
             "ec_execution_report":  self.execution_report,
+            # WO-SELF-MODEL-EXEC-WIRE-001: self_state for transparency + unfreeze readiness
+            "ec_self_state":   self.self_state,
         }
+
+        # WO-SELF-MODEL-EXEC-WIRE-001: forward learning_advice from attention dict.
+        # Bug fix: spine injects learning_advice into _attention_in BEFORE as_dict() is
+        # called; as_dict() was dropping it. Preserve it so executive.decide() sees it.
+        _la = self.attention.get("learning_advice")
+        if _la is not None:
+            d["learning_advice"] = _la
+
+        # WO-SELF-MODEL-EXEC-WIRE-001: curiosity CAL bias.
+        # If curiosity >= 0.7 and no competing wm_winner, blend a bias toward
+        # "challenge" and "connect" into learning_advice so the frozen executive
+        # experiences self-state influence via the channel it already reads.
+        # Bias weight 0.72 — intentionally below the default "answer" confidence (0.8)
+        # so curiosity tips the scale on ambiguous turns rather than always overriding.
+        _curiosity = float(self.self_state.get("curiosity", 0.0))
+        _mood      = str(self.self_state.get("mood_label", self.self_state.get("mood", "")))
+        _wm_winner = self.attention.get("wm_winner", "")
+        if _curiosity >= 0.7 and _wm_winner not in ("creation", "build"):
+            _existing_la: dict = d.get("learning_advice") or {}
+            _existing_prefs: dict = dict(_existing_la.get("preferences") or {})
+            # Only boost if the existing lesson advice doesn't already prefer these actions
+            # at a higher weight (lesson evidence takes precedence over self-state bias).
+            _BIAS_W = round(0.62 + (_curiosity - 0.7) * 0.33, 3)  # 0.62 at 0.7, 0.72 at 1.0
+            for _act in ("challenge", "connect"):
+                if _existing_prefs.get(_act, 0.0) < _BIAS_W:
+                    _existing_prefs[_act] = _BIAS_W
+            _bias_la = dict(_existing_la)
+            _bias_la["preferences"] = _existing_prefs
+            if "confidence" not in _bias_la or _bias_la["confidence"] < 0.55:
+                _bias_la["confidence"] = 0.55
+            if not _bias_la.get("rationale"):
+                _bias_la["rationale"] = (
+                    f"eLo's curiosity ({_curiosity:.2f}) leans toward challenge and connect"
+                )
+            d["learning_advice"] = _bias_la
+
+        # Downweight "create" and "connect" when mood is depleted (mood_val < 0.35).
+        _mood_val = float(self.self_state.get("mood", 0.55))
+        if _mood_val < 0.35 and "learning_advice" in d:
+            _la_low = dict(d["learning_advice"])
+            _prefs_low = dict(_la_low.get("preferences") or {})
+            for _act in ("create", "connect"):
+                if _prefs_low.get(_act, 0.0) > 0.0:
+                    _prefs_low[_act] = max(0.0, _prefs_low[_act] - 0.25)
+            _la_low["preferences"] = _prefs_low
+            d["learning_advice"] = _la_low
+
         return d
 
 
@@ -353,6 +411,20 @@ def build_executive_context(
     lessons_in: list = list(lessons) if lessons else []
     lessons_out: list = [r for r in lessons_in if _filter_lesson_for_executive(r)]
 
+    # ── self_state (WO-SELF-MODEL-EXEC-WIRE-001) ──────────────────────────────
+    # Load EloSelfState live. Read-only — never write here (CT4V-03 compliant).
+    self_state_dict: dict = {}
+    try:
+        from self.elo_self_model import load as _load_self_state_wire
+        _ess = _load_self_state_wire()
+        self_state_dict = {
+            "curiosity":       round(float(getattr(_ess, "curiosity",       0.60)), 3),
+            "mood":            round(float(getattr(_ess, "mood",            0.55)), 3),
+            "lifecycle_state": str(getattr(_ess, "lifecycle_state", "awake")),
+        }
+    except Exception:
+        pass
+
     return ExecutiveContext(
         intent=intent,
         emotion=emotional_context,
@@ -363,6 +435,7 @@ def build_executive_context(
         memory=mem_dict,
         identity=identity_dict,
         lessons=lessons_out,
+        self_state=self_state_dict,
         # agency, significance, epistemic_state remain None — NEW ASSUMPTION
         cognitive_state=cognitive_state,
         embodiment_state=embodiment_state,
