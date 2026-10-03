@@ -7393,6 +7393,11 @@ def _process_turn(raw: str) -> dict:
         # ── S2 Phase 2: inner thought generation (second lightweight LLM pass) ─
         _inner_thought = ""
         try:
+            # TEXT-REPLY-BUG fix: never generate inner_thought when response is empty.
+            # On repetition-suppressed turns response="" but the fallback rule always
+            # produces a non-empty _inner_thought → TTS fires, Unity shows no text.
+            if not response or not response.strip():
+                raise ValueError("silent/suppressed turn — skip inner thought")
             import time as _it_time, urllib.request as _it_req, json as _it_json
             _it_t0 = _it_time.time()
             _it_host  = os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
