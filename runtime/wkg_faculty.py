@@ -234,7 +234,74 @@ def record_claim(
         claims = _load("claims")
         claims.append(claim)
         _save("claims", claims)
+
+    # Outside the lock deliberately: SPG does its own file I/O, and holding
+    # the WKG lock across it would serialise every claim write behind a graph
+    # save for no benefit. The claim is already durable by this point.
+    _link_claim_to_spg(claim)
     return claim
+
+
+def all_claims() -> list:
+    """
+    Every claim. The accessor memory/spg_faculty.py needs.
+
+    It was reopening memory/wkg/claims.json by a path of its own, which meant
+    two modules holding independent ideas of where the claims live — and the
+    reader silently missing anything the writer put somewhere else. One
+    accessor, one answer.
+    """
+    return _load("claims")
+
+
+def _link_claim_to_spg(claim: dict) -> None:
+    """
+    Give every claim an SPG node under its OWN claim_id.
+
+    spg_faculty.query_spg_entities() ranks entities by the SPG significance of
+    their claims, joining node.id to claim["claim_id"]. On the live store that
+    join returned ZERO for 225 nodes against 2226 claims, so the sort was a
+    no-op and retrieval ordering was text relevance pretending to be
+    significance.
+
+    Nothing had ever created a node under a real claim_id. record_claim() —
+    the sole claim writer — never touched SPG; update_spg_from_claims() was
+    built for this and has no callers; and the one producer that did run mints
+    `turn-<ms>` ids that are not claim_ids and never could be.
+
+    So the hook goes HERE, at the single point every claim passes through.
+    Per-call-site wiring would cover one writer and leave the next one
+    orphaning nodes again.
+
+    Significance comes from significance_score when the caller scored the
+    claim, otherwise from confidence — VERIFIED defaults to 1.0 and
+    SOURCE_ATTRIBUTED to 0.5, which is a real ordering. Defaulting to 0.0
+    would make an unscored claim indistinguishable from an unranked one.
+
+    The content hash is built from the triple because claims.json stores no
+    claim text — which is exactly why the 214 orphaned legacy nodes can never
+    be re-linked by hash, only abandoned.
+
+    Fire and forget: a broken graph must never cost a memory.
+    """
+    try:
+        from memory.spg_faculty import add_node_for_claim
+
+        significance = claim.get("significance_score")
+        if significance is None:
+            significance = claim.get("confidence")
+        triple = " ".join((
+            str(claim.get("subject_entity_id") or ""),
+            str(claim.get("relationship_type") or ""),
+            str(claim.get("object_entity_id") or ""),
+        ))
+        add_node_for_claim(
+            claim_id=claim["claim_id"],
+            claim_text=triple,
+            significance=float(significance if significance is not None else 0.5),
+        )
+    except Exception:
+        pass
 
 
 def mark_contradicted(claim_id: str, contradicting_claim_id: str) -> None:

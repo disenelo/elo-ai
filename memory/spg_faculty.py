@@ -107,14 +107,13 @@ def query_spg_entities(turn_text: str, ccm: dict | None = None) -> list[str]:
 
     # Step 3: If SPG has nodes, rank entities by max significance of their associated claims.
     if spg_sig:
-        import json as _json
-        import os as _os
         try:
-            _wkg_claims_path = _os.path.join(
-                _os.path.dirname(__file__), "wkg", "claims.json"
-            )
-            with open(_wkg_claims_path, encoding="utf-8") as _f:
-                _all_claims = _json.load(_f)
+            # Through the owning module, not a path of our own. This reopened
+            # memory/wkg/claims.json directly, so two modules held independent
+            # ideas of where claims live and the reader could silently miss
+            # whatever the writer had put elsewhere.
+            from runtime.wkg_faculty import all_claims as _wkg_all_claims
+            _all_claims = _wkg_all_claims()
 
             # entity_id → max SPG significance across all claims where it appears
             entity_sig: dict[str, float] = {eid: 0.0 for eid in relevant_entity_ids}
