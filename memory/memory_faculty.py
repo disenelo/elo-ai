@@ -154,15 +154,76 @@ _WKG_MIN_TOPIC_LEN = 3
 _WKG_MAX_TOPICS    = 20   # cap per turn to avoid hammering the graph
 
 
+# Function words. Capitalised at the start of a sentence, they are
+# indistinguishable from a proper noun by SHAPE alone — which is exactly how
+# "What" and "Tell" became CONCEPT entities in the live store, and how a
+# question like "what is the weather in Lisbon tomorrow" started matching an
+# entity during SPG retrieval.
+_WKG_STOP: frozenset[str] = frozenset({
+    "the", "this", "that", "these", "those", "there", "their", "then", "than",
+    "what", "when", "where", "which", "while", "who", "whom", "whose", "why",
+    "how", "can", "could", "should", "would", "will", "shall", "may", "might",
+    "must", "did", "does", "doing", "done", "has", "have", "had", "was",
+    "were", "are", "and", "but", "for", "from", "with", "without", "into",
+    "onto", "over", "under", "about", "any", "all", "some", "each", "every",
+    "its", "his", "her", "our", "your", "my", "you", "him", "she", "they",
+    "them", "tell", "show", "give", "make", "let", "please", "thanks",
+    "thank", "okay", "yes", "not", "just", "also", "only", "very", "really",
+    "maybe", "sure", "well", "now", "one", "two", "three", "good", "great",
+    "nice", "hey", "hello", "need", "want", "like", "get", "got", "put",
+})
+
+
+def _trim_stopwords(phrase: str) -> list[str]:
+    """Drop leading and trailing function words from a capitalised run."""
+    words = phrase.split()
+    while words and words[0].lower() in _WKG_STOP:
+        words.pop(0)
+    while words and words[-1].lower() in _WKG_STOP:
+        words.pop()
+    return words
+
+
 def _extract_wkg_topics(text: str) -> list[str]:
-    """Cheap noun-phrase heuristic — same family as curiosity_faculty._extract_topics."""
+    """
+    Cheap noun-phrase heuristic — same family as curiosity_faculty._extract_topics.
+
+    Two defects fixed here on 2026-10-03, both visible in the live store:
+
+      1. The single-token rule matched ANY capitalised word, so the first word
+         of a sentence became an entity. "What is eLo?" created What; "Tell me
+         about Chunk" created Tell.
+      2. A word already inside a captured multi-word run was captured AGAIN on
+         its own, so "Raspberry Pi" created both "Raspberry Pi" and
+         "Raspberry" — a fragment competing with the thing it came from.
+
+    Fixed at the writer. Filtering these out at retrieval instead would leave
+    the store growing junk forever and hide it from whoever reads next.
+    """
     candidates: list[str] = []
-    # Multi-word capitalised runs: "Raspberry Pi", "NeoPixel ring"
-    for m in _re.finditer(r"(?:[A-Z][a-z]+)(?:\s+[A-Z][a-z]+)+", text):
-        candidates.append(m.group(0).strip())
+    # Words already carried by a multi-word phrase — not entities in their own
+    # right. "Raspberry" is a fruit; "Raspberry Pi" is the thing being named.
+    covered: set[str] = set()
+
+    # Multi-word capitalised runs: "Raspberry Pi", "DISENELO Seams".
+    # [A-Z][a-zA-Z]+ rather than [A-Z][a-z]+ so an all-caps brand token is
+    # part of its own phrase — the old pattern dropped "DISENELO Seams".
+    for m in _re.finditer(r"(?:[A-Z][a-zA-Z]+)(?:\s+[A-Z][a-zA-Z]+)+", text):
+        words = _trim_stopwords(m.group(0).strip())
+        if len(words) >= 2:
+            candidates.append(" ".join(words))
+            covered.update(w.lower() for w in words)
+        # One survivor is left to the single-token rule below, and is
+        # deliberately NOT marked covered, or it would vanish entirely.
+
     # Single CamelCase tokens: "TPU", "NLA", "eLo"
     for m in _re.finditer(r"\b[A-Z][a-zA-Z]{2,}\b", text):
-        candidates.append(m.group(0).strip())
+        word = m.group(0).strip()
+        low = word.lower()
+        if low in _WKG_STOP or low in covered:
+            continue
+        candidates.append(word)
+
     # Quoted phrases: "forward kinematics"
     for m in _re.finditer(r'"([^"]{3,40})"', text):
         candidates.append(m.group(1).strip())

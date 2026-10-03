@@ -64,10 +64,21 @@ def query_spg_entities(turn_text: str, ccm: dict | None = None) -> list[str]:
     # 'is elo'] -- none of which match -- while the unigram 'elo' hits. eLo,
     # identity, Chunk, K-7: all single-label entities, none ever retrieved.
     # The len >= 3 filter below already drops "is"/"a" noise.
+    # Function words are excluded from the UNIGRAM pass. Adding unigrams was
+    # mine (0372243) and it was half a change: "what is the weather in Lisbon
+    # tomorrow" started matching an entity called What, because the WKG writer
+    # had created one from a sentence opener. The writer is fixed, but
+    # searching the store for "what" was never right on its own terms — a
+    # function word identifies no entity, whatever the store happens to hold.
+    # Bigrams and the full text are left alone; "the shell" is a real phrase.
+    try:
+        from memory.memory_faculty import _WKG_STOP as _stop
+    except Exception:
+        _stop = frozenset()
     search_terms = (
         [turn_text]
         + [" ".join(words[i:i + 2]) for i in range(max(0, len(words) - 1))]
-        + words
+        + [w for w in words if w.strip(".,!?;:'\"").lower() not in _stop]
     )
     for term in search_terms:
         if len(term) < 3:
