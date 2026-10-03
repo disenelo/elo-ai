@@ -21,15 +21,76 @@ def _get_graph():
     return SPGGraph.load()
 
 
-# CCM dim → WKG relationship types that are relevant in that context
+# CCM dim → WKG relationship types that are relevant in that context.
+#
+# Every name here must exist in memory/wkg/relationship_types.json. Until
+# 2026-10-03 almost none did: the map named FEELS, WORKING_ON, STATED,
+# DECIDED, FACT, OBSERVATION, BELIEF and RELATIONSHIP, and not one of the
+# eight is in the 19-type vocabulary. Eleven of twelve entries could never
+# match a claim, so get_claims_by_type() returned [] for every dim on every
+# turn and this filter selected nothing, ever. ASSOCIATED_WITH was the only
+# real name in the map.
+#
+# It survived because an unknown relationship name costs nothing — the lookup
+# just comes back empty. _unknown_relationship_types() below makes it loud,
+# which matters more than the remap: without the guard the next edit
+# reintroduces exactly this.
+#
+# HONEST LIMIT, not papered over: 2212 of the 2226 live claims are
+# ASSOCIATED_WITH. A dim that includes it passes nearly everything; a dim that
+# does not selects nearly nothing. The filter is no longer DEAD, but on the
+# current data it is close to a no-op either way, and it only becomes useful
+# as the writers start using the rest of the vocabulary. That is a data
+# problem and it is David's and Board's to weigh, not something to hide
+# behind a greener test.
 _CCM_DIM_RELEVANT_RELS: dict[str, list[str]] = {
-    "emotional_tone":     ["FEELS", "RELATIONSHIP"],
-    "creative_mode":      ["WORKING_ON", "DECIDED", "STATED"],
-    "learning_interest":  ["STATED", "DECIDED", "FACT"],
-    "street_language":    ["STATED", "FEELS"],
-    "project_focus":      ["WORKING_ON", "ASSOCIATED_WITH"],
-    "memory_depth":       ["STATED", "OBSERVATION", "BELIEF"],
+    "emotional_tone":     ["INFLUENCES", "INTERPRETED_AS", "SYMBOLISES"],
+    "creative_mode":      ["PROPOSED_BY", "DERIVED_FROM", "ANALOGOUS_TO",
+                           "REPRESENTS"],
+    "learning_interest":  ["IS", "OBSERVED_AS", "SUPPORTS", "CAUSES"],
+    "street_language":    ["REPRESENTS", "SYMBOLISES", "CORRESPONDS_TO"],
+    "project_focus":      ["PART_OF", "ASSOCIATED_WITH", "CORRESPONDS_TO"],
+    "memory_depth":       ["DERIVED_FROM", "TEMPORALLY_PRECEDES",
+                           "OBSERVED_AS", "HYPOTHESISED_AS"],
 }
+
+
+def _relationship_vocabulary() -> set[str]:
+    """The relationship types a claim is actually allowed to carry."""
+    try:
+        from runtime.wkg_faculty import _load
+        return set(_load("relationship_types"))
+    except Exception:
+        return set()
+
+
+def _unknown_relationship_types(mapping: dict | None = None) -> dict[str, list[str]]:
+    """
+    Names in the CCM map that cannot exist on a claim. Warns and returns them.
+
+    An empty vocabulary means the file is missing or unreadable, which is not
+    evidence that every name is wrong — returns {} rather than condemning the
+    whole map on a failed read.
+    """
+    vocab = _relationship_vocabulary()
+    if not vocab:
+        return {}
+    bad = {
+        dim: [r for r in rels if r not in vocab]
+        for dim, rels in (mapping or _CCM_DIM_RELEVANT_RELS).items()
+    }
+    bad = {dim: rels for dim, rels in bad.items() if rels}
+    if bad:
+        _log.warning(
+            "SPG CCM filter: relationship types that cannot exist on a claim "
+            "— these dims can never select anything: %s", bad,
+        )
+    return bad
+
+
+# Checked once at import. The whole reason the old map lived so long is that
+# nothing ever said it was wrong.
+_unknown_relationship_types()
 
 
 def query_spg_entities(turn_text: str, ccm: dict | None = None) -> list[str]:
