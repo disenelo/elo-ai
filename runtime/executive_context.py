@@ -111,6 +111,13 @@ class ExecutiveContext:
     # CA ruling required before adding a field.
     epistemic_state: None = None
 
+    # ── prediction_error_state (WO-PREDICTION-ERROR-EXEC-WIRE-001) ───────────
+    # Source: memory.expectation_tracker.score_expectation(edge_hint).
+    # Keys: prediction_error (float 0–1), surprise_level (str).
+    # surprise_level "strong" injects a "witness" preference into learning_advice
+    # so the frozen executive.decide() steers toward witness instead of answer.
+    prediction_error_state: dict = field(default_factory=dict)
+
     # ── self_state (WO-SELF-MODEL-EXEC-WIRE-001) ──────────────────────────────
     # Source: self.elo_self_model.EloSelfState (loaded live each turn).
     # Keys: curiosity (float), mood (float), lifecycle_state (str).
@@ -213,6 +220,29 @@ class ExecutiveContext:
             _la_low["preferences"] = _prefs_low
             d["learning_advice"] = _la_low
 
+        # WO-PREDICTION-ERROR-EXEC-WIRE-001: strong surprise → prefer "witness".
+        # A strong prediction_error (>= 0.75) means this turn was genuinely unexpected.
+        # Inject "witness" at weight 0.90 into learning_advice so the frozen executive
+        # chooses to hold and observe rather than immediately answering or building.
+        # "build" downgrade: weight 0.80 only overrides build at 0.65 (momentum case),
+        # not 0.90 (explicit build phrase) — avoids silencing genuine creative intent.
+        d["ec_prediction_error"] = self.prediction_error_state
+        _pe_level = str(self.prediction_error_state.get("surprise_level", "none"))
+        _pe_val   = float(self.prediction_error_state.get("prediction_error", 0.0))
+        if _pe_level == "strong_surprise" and _pe_val >= 0.75:
+            _pe_la   = dict(d.get("learning_advice") or {})
+            _pe_prefs = dict(_pe_la.get("preferences") or {})
+            if _pe_prefs.get("witness", 0.0) < 0.90:
+                _pe_prefs["witness"] = 0.90
+            _pe_la["preferences"] = _pe_prefs
+            if "confidence" not in _pe_la or _pe_la["confidence"] < 0.75:
+                _pe_la["confidence"] = 0.75
+            _pe_la["rationale"] = (
+                _pe_la.get("rationale") or
+                f"strong prediction error ({_pe_val:.2f}) — witness before committing"
+            )
+            d["learning_advice"] = _pe_la
+
         return d
 
 
@@ -254,6 +284,7 @@ def build_executive_context(
     lessons:        list | None = None,  # Card 0075 D3 · Option A: filtered lessons
     embodiment_state = None,  # WO-SPINE-002: prior-turn EmbodimentState | None
     execution_report = None,  # WO-SPINE-002: prior-turn ExecutionReport | None
+    edge_hint: str = "",      # WO-PREDICTION-ERROR-EXEC-WIRE-001: used to score prediction_error
 ) -> ExecutiveContext:
     """
     Assemble ExecutiveContext from the canonical sources available at the
@@ -425,6 +456,22 @@ def build_executive_context(
     except Exception:
         pass
 
+    # ── prediction_error_state (WO-PREDICTION-ERROR-EXEC-WIRE-001) ───────────
+    # Score the incoming edge_hint (or intent as proxy) against learned expectations.
+    # Degrades gracefully — empty dict means no violation data available.
+    prediction_error_state_dict: dict = {}
+    _pe_hint = edge_hint or intent or ""
+    if _pe_hint:
+        try:
+            from memory.expectation_tracker import score_expectation as _score_exp
+            _viol = _score_exp(_pe_hint)
+            prediction_error_state_dict = {
+                "prediction_error": round(float(_viol.prediction_error), 4),
+                "surprise_level":   str(_viol.level),
+            }
+        except Exception:
+            pass
+
     return ExecutiveContext(
         intent=intent,
         emotion=emotional_context,
@@ -436,6 +483,7 @@ def build_executive_context(
         identity=identity_dict,
         lessons=lessons_out,
         self_state=self_state_dict,
+        prediction_error_state=prediction_error_state_dict,
         # agency, significance, epistemic_state remain None — NEW ASSUMPTION
         cognitive_state=cognitive_state,
         embodiment_state=embodiment_state,
