@@ -7388,6 +7388,18 @@ def _process_turn(raw: str) -> dict:
                 f"[Last exchange]\n{_it_history}\n\neLo just said: {response}"
                 if _it_history else f"eLo just said: {response}"
             )
+            # ── WO-TIRED-SIT-001 Part B — eLo may choose to sit ──────────
+            # The dispatch names this site: "When the inner_thought pipeline
+            # receives a physical_tired inner_event ... Executive may decide to
+            # issue a sit command." Neither the threshold nor the relay is
+            # here — runtime/rest_decision.py decides, runtime/rest_action.py
+            # gathers and relays. This asks.
+            try:
+                from runtime.rest_action import maybe_sit as _maybe_sit
+                _maybe_sit()
+            except Exception:
+                pass
+
             # S5 Item 6: physical_conditioning() hook — soft body hint for inner thought
             _it_phys_note = ""
             try:
@@ -7449,6 +7461,36 @@ def _process_turn(raw: str) -> dict:
                     "negative_low":  "Something feels off, but I'm staying with it.",
                 }
                 _inner_thought = _it_vmap.get(_it_emotion, "I'm present for this.")
+        except Exception:
+            pass
+
+        # WO-TIRED-SIT-001 Part B — physical tiredness → sit decision
+        # physical_tired:<band> in inner_events (Part A) is the gate, not a
+        # direct ambient-tick write. "eLo decides whether to sit, not the health
+        # battery" — the inner_thought pipeline is the decision surface. When
+        # physical_tired is live AND inner_thought implies sitting, eLo issues
+        # Sit_hold. Never issues sit from here if already in-flight.
+        try:
+            _pt_events = [
+                e for e in (getattr(_elo_self, "inner_events", []) or [])
+                if isinstance(e, str) and e.startswith("physical_tired:")
+            ]
+            if _pt_events and _inner_thought and not _PENDING_SIT.get("active"):
+                import re as _pt_re
+                _pt_sit_re = _pt_re.compile(
+                    r"\b(sit|sitting|legs?|rest\b|settle|settle down|sit down)\b"
+                )
+                if _pt_sit_re.search(_inner_thought.lower()):
+                    from blender_bridge.state_writer import patch as _pt_patch
+                    import logging as _pt_log
+                    _pt_band = _pt_events[-1].split(":")[-1]
+                    _pt_patch({"motion": {"animation": "Sit_hold", "mode": "sit"}})
+                    _PENDING_SIT["active"] = True
+                    _PENDING_SIT["since"]  = time.time()
+                    _PENDING_SIT["queued"] = None
+                    _pt_log.getLogger("elo.tired_sit").info(
+                        "WO-TIRED-SIT-001 B: sit issued (band=%s)", _pt_band
+                    )
         except Exception:
             pass
 
