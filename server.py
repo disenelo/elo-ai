@@ -7112,9 +7112,14 @@ def _process_turn(raw: str) -> dict:
                                     "blender", "voice_trace.json")
             _vt_tmp  = _vt_path + ".tmp"
             _vt_sents = len([s for s in _re.split(r"(?<=[.!?])\s+", _tts_text.strip()) if s.strip()])
+            # S2-BUG1: record response_full alongside tts_text so both sides of the
+            # conditioning split are visible in one trace. Both fields derive from
+            # the same LLM output (response); tts_text is response joined+capped.
             _vt_data = {
                 "conversation_action": _action,
+                "response_full":       response,
                 "tts_text":            _tts_text,
+                "tts_truncated":       len(response) > len(_tts_text),
                 "sentence_count":      _vt_sents,
                 "backend_used":        backend_used,
                 "tts_max_chars":       _tts_max,
@@ -7709,6 +7714,16 @@ def _process_turn(raw: str) -> dict:
                         try:
                             if _it_result and _it_result.strip() and not _away_fn():
                                 _voice_speak(_it_result)
+                        except Exception:
+                            pass
+
+                        # S2-BUG2: write inner_thought_text to blender_state.json so
+                        # Unity (EloOSAvatarReceiver.cs) can surface it in chat/log.
+                        # inner_thought is spoken only; this makes it readable too.
+                        try:
+                            if _it_result and _it_result.strip():
+                                from blender_bridge.state_writer import patch as _it_patch
+                                _it_patch({"inner_thought_text": _it_result.strip()})
                         except Exception:
                             pass
 
