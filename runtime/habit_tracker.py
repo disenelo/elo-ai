@@ -87,6 +87,10 @@ class HabitState:
     habits:        List[HabitEntry] = field(default_factory=list)
     total_signals: int = 0
     unique_edges:  int = 0
+    # A crash and "no habits yet" produced the IDENTICAL HabitState(), so a
+    # caller could not tell them apart — which is how 7070 observations of
+    # one habit read as zero for as long as they did.
+    read_failed:   bool = False
 
     @property
     def has_habits(self) -> bool:
@@ -126,11 +130,19 @@ def read_habit_state(signals_path: Optional[Path] = None) -> HabitState:
                         continue
                     try:
                         row = json.loads(line)
-                        edge = row.get("edge_hint", "").strip()
+                        # str(... or "") rather than .get(key, ""): the
+                        # default only applies when the key is ABSENT, and
+                        # 43 live rows carry edge_hint: null, where .get
+                        # returns None and .strip() raises.
+                        edge = str(row.get("edge_hint") or "").strip()
                         if edge:
                             counts[edge] = counts.get(edge, 0) + 1
                             total += 1
-                    except json.JSONDecodeError:
+                    except Exception:
+                        # One unreadable row skips that row. It used to
+                        # escape to the outer handler, which abandoned the
+                        # entire file — 0.3% of the data disabling 100% of
+                        # the faculty.
                         continue
 
         habits: List[HabitEntry] = []
@@ -150,7 +162,7 @@ def read_habit_state(signals_path: Optional[Path] = None) -> HabitState:
 
     except Exception as exc:
         _log.warning("habit_tracker.read_habit_state failed (non-fatal): %s", exc)
-        return HabitState()
+        return HabitState(read_failed=True)
 
 
 def habit_tracker_prompt_block(signals_path: Optional[Path] = None) -> str:
