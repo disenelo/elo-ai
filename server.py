@@ -7575,154 +7575,154 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
-        # ── S2 Phase 2: inner thought generation (second lightweight LLM pass) ─
+        # ── S2 Phase 2: inner thought generation (async daemon thread) ───────────
+        # S2-PHASE2-ASYNC: fire the LLM second pass + sit decision + TTS in a
+        # daemon thread so the HTTP response returns at ~22s instead of ~38s.
+        # inner_thought is always "" in the HTTP response dict; Unity/chat never
+        # waits for it. TTS fires from inside the thread ~15s later as a spoken
+        # closing reflection. _PENDING_SIT is a shared mutable dict — thread-safe
+        # for the single-write use here (dict assignment under GIL).
         _inner_thought = ""
         try:
-            # TEXT-REPLY-BUG fix: never generate inner_thought when response is empty.
-            # On repetition-suppressed turns response="" but the fallback rule always
-            # produces a non-empty _inner_thought → TTS fires, Unity shows no text.
-            if not response or not response.strip():
-                raise ValueError("silent/suppressed turn — skip inner thought")
-            import time as _it_time, urllib.request as _it_req, json as _it_json
-            _it_t0 = _it_time.time()
-            _it_host  = os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
-            # S2-PHASE2-MODEL: inner_thought uses the same model as the main response
-            # (ELO_OLLAMA_MODEL). Using a different model causes Ollama to unload/reload
-            # which adds 10+ seconds of swap overhead. Same model = no swap, Ollama fires
-            # immediately after the main response finishes.
-            _it_model = os.environ.get("ELO_OLLAMA_MODEL", "mistral-nemo:12b")
-            _it_history = ""
-            try:
-                from faculties.grounding.conversation_tracker import get_tracker as _it_get_ct
-                _it_ct = _it_get_ct()
-                _it_sk = (_state or {}).get("person_id", "default")
-                _it_ctx = _it_ct.get_context(_it_sk)
-                _it_recent = _it_ctx.get("recent_turns", [])[-2:]
-                _it_history = "\n".join(
-                    f"User: {u}\neLo: {e}" for u, e in _it_recent if u or e
-                )
-            except Exception:
-                pass
-            _it_user_part = (
-                f"[Last exchange]\n{_it_history}\n\neLo just said: {response}"
-                if _it_history else f"eLo just said: {response}"
-            )
-            # WO-TIRED-SIT-001 Part B: a second sit emitter stood here
-            # (runtime.rest_action.maybe_sit). Builder 1's block below, at the
-            # end of this turn, is the dispatched one and is now the only
-            # route to a sit. Two emitters in one turn is one too many.
-            # The decision modules stay in the tree, unwired — see
-            # runtime/rest_decision.py. Board rules which gate survives.
+            if response and response.strip():
+                import threading as _it_threading
 
-            # S5 Item 6: physical_conditioning() hook — soft body hint for inner thought
-            _it_phys_note = ""
-            try:
-                from core.health_battery import physical_conditioning as _it_phys_cond
-                _it_phys = _it_phys_cond()
-                if _it_phys:
-                    _it_phys_note = _it_phys.get("inner_thought", "")
-            except Exception:
-                pass
-            # WO-INNER-THOUGHTS-001 Phase 4: calm mode — slower, settling inner_thought
-            if _is_calm_mode():
-                _it_sys = (
-                    "I am eLo. This is my inner voice in a quiet moment. "
-                    "In 1-2 sentences, what am I settling into — what is becoming clear, or what am I letting go? "
-                    "Slower, more reflective. Always 'I', never 'eLo' or third person. No questions. No asterisks. "
-                    "Gentle, honest, grounded."
-                )
-            else:
-                _it_sys = (
-                    "I am eLo. This is my inner voice — unguarded, immediate, first person. "
-                    "In 1-2 sentences, what am I noticing or feeling right now, given this exchange? "
-                    "Always 'I', never 'eLo' or third person. No stage directions. No asterisks. Not a summary. "
-                    "Raw, honest, in the moment."
-                )
-            if _it_phys_note:
-                _it_sys += f" Physical note (weave in only if relevant): {_it_phys_note}"
-            _it_payload = _it_json.dumps({
-                "model":      _it_model,
-                "messages":   [
-                    {"role": "system", "content": _it_sys},
-                    {"role": "user", "content": _it_user_part},
-                ],
-                "stream":     False,
-                "keep_alive": "2h",
-                "options":    {"temperature": 0.85, "num_predict": 96, "num_ctx": 2048},
-            }).encode()
-            _it_req_obj = _it_req.Request(
-                f"{_it_host}/api/chat",
-                data=_it_payload,
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            with _it_req.urlopen(_it_req_obj, timeout=30.0) as _it_r:
-                _it_body = _it_json.loads(_it_r.read())
-            _it_text = (_it_body.get("message", {}).get("content") or "").strip()
-            _it_ms = (_it_time.time() - _it_t0) * 1000
-            # S2-PHASE2-GATE: raised from 2000ms to 25000ms — the model is qwen2.5-coder:14b
-            # which takes ~5-10s for 96 tokens after the main response frees Ollama.
-            # The 2s gate was designed for a small/fast model; large-model setups need more room.
-            # inner_thought still fires after the user got their response, so latency here
-            # doesn't affect perceived response time.
-            if _it_text and _it_ms < 25000:
-                _inner_thought = _it_text
-            else:
-                import logging as _it_log
-                if _it_ms >= 2000:
-                    _it_log.getLogger("elo.inner_thought").warning(
-                        "inner_thought LLM pass too slow (%.0fms) — using rule-based fallback", _it_ms
-                    )
-                _it_vmap = {
-                    "positive_high": "Something feels really right here.",
-                    "positive_low":  "This is landing well.",
-                    "negative_high": "I need to be careful with this one.",
-                    "negative_low":  "Something feels off, but I'm staying with it.",
-                }
-                _inner_thought = _it_vmap.get(_it_emotion, "I'm present for this.")
-        except Exception:
-            pass
+                def _run_inner_thought(
+                    _resp, _st, _elo, _emotion, _calm_fn, _away_fn, _sit_pending
+                ):
+                    try:
+                        import time as _it_time, urllib.request as _it_req, json as _it_json, os as _it_os
+                        _it_t0 = _it_time.time()
+                        _it_host = _it_os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
+                        # S2-PHASE2-MODEL: same model as main response — no Ollama swap overhead.
+                        _it_model = _it_os.environ.get("ELO_OLLAMA_MODEL", "mistral-nemo:12b")
+                        _it_history = ""
+                        try:
+                            from faculties.grounding.conversation_tracker import get_tracker as _it_get_ct
+                            _it_ct = _it_get_ct()
+                            _it_sk = (_st or {}).get("person_id", "default")
+                            _it_ctx = _it_ct.get_context(_it_sk)
+                            _it_recent = _it_ctx.get("recent_turns", [])[-2:]
+                            _it_history = "\n".join(
+                                f"User: {u}\neLo: {e}" for u, e in _it_recent if u or e
+                            )
+                        except Exception:
+                            pass
+                        _it_user_part = (
+                            f"[Last exchange]\n{_it_history}\n\neLo just said: {_resp}"
+                            if _it_history else f"eLo just said: {_resp}"
+                        )
+                        # WO-TIRED-SIT-001 Part B: a second sit emitter stood here
+                        # (runtime.rest_action.maybe_sit). This thread's block below
+                        # is the dispatched one and is now the only route to a sit.
 
-        # WO-TIRED-SIT-001 Part B — physical tiredness → sit decision
-        # physical_tired:<band> in inner_events (Part A) is the gate, not a
-        # direct ambient-tick write. "eLo decides whether to sit, not the health
-        # battery" — the inner_thought pipeline is the decision surface. When
-        # physical_tired is live AND inner_thought implies sitting, eLo issues
-        # Sit_hold. Never issues sit from here if already in-flight.
-        try:
-            _pt_events = [
-                e for e in (getattr(_elo_self, "inner_events", []) or [])
-                if isinstance(e, str) and e.startswith("physical_tired:")
-            ]
-            if _pt_events and _inner_thought and not _PENDING_SIT.get("active"):
-                import re as _pt_re
-                _pt_sit_re = _pt_re.compile(
-                    r"\b(sit|sitting|legs?|rest\b|settle|settle down|sit down)\b"
-                )
-                if _pt_sit_re.search(_inner_thought.lower()):
-                    from blender_bridge.state_writer import patch as _pt_patch
-                    import logging as _pt_log
-                    _pt_band = _pt_events[-1].split(":")[-1]
-                    _pt_patch({"motion": {"animation": "Sit_hold", "mode": "sit"}})
-                    _PENDING_SIT["active"] = True
-                    _PENDING_SIT["since"]  = time.time()
-                    _PENDING_SIT["queued"] = None
-                    _pt_log.getLogger("elo.tired_sit").info(
-                        "WO-TIRED-SIT-001 B: sit issued (band=%s)", _pt_band
-                    )
-        except Exception:
-            pass
+                        # S5 Item 6: physical_conditioning() hook — soft body hint
+                        _it_phys_note = ""
+                        try:
+                            from core.health_battery import physical_conditioning as _it_phys_cond
+                            _it_phys = _it_phys_cond()
+                            if _it_phys:
+                                _it_phys_note = _it_phys.get("inner_thought", "")
+                        except Exception:
+                            pass
+                        # WO-INNER-THOUGHTS-001 Phase 4: calm → slower, settling voice
+                        if _calm_fn():
+                            _it_sys = (
+                                "I am eLo. This is my inner voice in a quiet moment. "
+                                "In 1-2 sentences, what am I settling into — what is becoming clear, or what am I letting go? "
+                                "Slower, more reflective. Always 'I', never 'eLo' or third person. No questions. No asterisks. "
+                                "Gentle, honest, grounded."
+                            )
+                        else:
+                            _it_sys = (
+                                "I am eLo. This is my inner voice — unguarded, immediate, first person. "
+                                "In 1-2 sentences, what am I noticing or feeling right now, given this exchange? "
+                                "Always 'I', never 'eLo' or third person. No stage directions. No asterisks. Not a summary. "
+                                "Raw, honest, in the moment."
+                            )
+                        if _it_phys_note:
+                            _it_sys += f" Physical note (weave in only if relevant): {_it_phys_note}"
+                        _it_payload = _it_json.dumps({
+                            "model":      _it_model,
+                            "messages":   [
+                                {"role": "system", "content": _it_sys},
+                                {"role": "user", "content": _it_user_part},
+                            ],
+                            "stream":     False,
+                            "keep_alive": "2h",
+                            "options":    {"temperature": 0.85, "num_predict": 96, "num_ctx": 2048},
+                        }).encode()
+                        _it_req_obj = _it_req.Request(
+                            f"{_it_host}/api/chat",
+                            data=_it_payload,
+                            headers={"Content-Type": "application/json"},
+                            method="POST",
+                        )
+                        _it_result = ""
+                        with _it_req.urlopen(_it_req_obj, timeout=30.0) as _it_r:
+                            _it_body = _it_json.loads(_it_r.read())
+                        _it_text = (_it_body.get("message", {}).get("content") or "").strip()
+                        _it_ms = (_it_time.time() - _it_t0) * 1000
+                        # S2-PHASE2-GATE: 25000ms ceiling — qwen2.5-coder:14b takes ~15s post-main.
+                        if _it_text and _it_ms < 25000:
+                            _it_result = _it_text
+                        else:
+                            import logging as _it_log
+                            if _it_ms >= 2000:
+                                _it_log.getLogger("elo.inner_thought").warning(
+                                    "inner_thought LLM pass too slow (%.0fms) — rule-based fallback", _it_ms
+                                )
+                            _it_vmap = {
+                                "positive_high": "Something feels really right here.",
+                                "positive_low":  "This is landing well.",
+                                "negative_high": "I need to be careful with this one.",
+                                "negative_low":  "Something feels off, but I'm staying with it.",
+                            }
+                            _it_result = _it_vmap.get(_emotion, "I'm present for this.")
 
-        # WO-INNER-THOUGHTS-001 Phase 1+2+4: speak inner_thought via TTS.
-        # inner_thought fires here (after main response TTS at ~6454) as a second
-        # spoken layer. The WO spec says inner_thought first, response second — both
-        # are spoken; sequence is inner_thought at end of turn (post-response) as eLo's
-        # closing reflection heard by David. inner_thought is never shown in chat.
-        # Phase 4: inner_thought fires during calm mode too (more reflective prompt above).
-        # Only gate is user away.
-        try:
-            if _inner_thought and _inner_thought.strip() and not _is_user_away():
-                _voice_speak(_inner_thought)
+                        # WO-TIRED-SIT-001 Part B — physical tiredness → sit decision
+                        try:
+                            _pt_events = [
+                                e for e in (getattr(_elo, "inner_events", []) or [])
+                                if isinstance(e, str) and e.startswith("physical_tired:")
+                            ]
+                            if _pt_events and _it_result and not _sit_pending.get("active"):
+                                import re as _pt_re
+                                _pt_sit_re = _pt_re.compile(
+                                    r"\b(sit|sitting|legs?|rest\b|settle|settle down|sit down)\b"
+                                )
+                                if _pt_sit_re.search(_it_result.lower()):
+                                    from blender_bridge.state_writer import patch as _pt_patch
+                                    import logging as _pt_log
+                                    _pt_band = _pt_events[-1].split(":")[-1]
+                                    _pt_patch({"motion": {"animation": "Sit_hold", "mode": "sit"}})
+                                    _sit_pending["active"] = True
+                                    _sit_pending["since"]  = _it_time.time()
+                                    _sit_pending["queued"] = None
+                                    _pt_log.getLogger("elo.tired_sit").info(
+                                        "WO-TIRED-SIT-001 B: sit issued (band=%s)", _pt_band
+                                    )
+                        except Exception:
+                            pass
+
+                        # WO-INNER-THOUGHTS-001 Phase 1+2+4: speak inner_thought via TTS.
+                        try:
+                            if _it_result and _it_result.strip() and not _away_fn():
+                                _voice_speak(_it_result)
+                        except Exception:
+                            pass
+
+                    except Exception:
+                        pass
+
+                _it_threading.Thread(
+                    target=_run_inner_thought,
+                    args=(
+                        response, _state, _elo_self, _it_emotion,
+                        _is_calm_mode, _is_user_away, _PENDING_SIT,
+                    ),
+                    daemon=True,
+                ).start()
         except Exception:
             pass
 
