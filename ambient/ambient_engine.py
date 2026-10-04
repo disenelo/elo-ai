@@ -301,6 +301,18 @@ def _battery_tick() -> None:
         except Exception:
             fields["calm_mode"] = bool(_is_calm())
 
+        # HEALTH-CHAIN-003 Missing A: low battery + calm → dream intent signal.
+        # Only emitted as a signal; Executive (Builder 2 Missing B) executes.
+        try:
+            _dream_fields = _maybe_emit_dream_intent(
+                dict(fields),
+                dict(state),
+            )
+            if _dream_fields:
+                fields.update(_dream_fields)
+        except Exception:
+            pass
+
         if fields:
             try:
                 from blender_bridge.state_writer import patch as _patch
@@ -372,6 +384,52 @@ def _emit_tired_signal(physical_state: str, motion: dict) -> None:
         )
     except Exception:
         pass
+
+
+# ── HEALTH-CHAIN-003 Missing A — Dream intent trigger ─────────────────────────
+#
+# When elo_battery drops to ENERGY_LOW or below in calm conditions, emit
+# intent="dream" into blender_state.json as a SIGNAL. Executive decides
+# (via run_dream_window()) whether to sleep. This function does not write
+# dream_phase or asleep — that is the One Brain's job (Missing B, Builder 2).
+# Rate-limited: at most one signal per 5 minutes.
+
+_DREAM_TRIGGER_COOLDOWN_S = 300.0  # 5 minutes between dream intent signals
+_dream_trigger_ts: float = 0.0
+
+
+def _maybe_emit_dream_intent(battery_snapshot: dict, blender_state: dict) -> dict:
+    """
+    Return {"intent": "dream"} when conditions are right, else {}.
+
+    Conditions: elo_battery <= ENERGY_LOW AND calm AND not already dreaming/sleeping.
+    Rate-limited to _DREAM_TRIGGER_COOLDOWN_S seconds between fires.
+    """
+    global _dream_trigger_ts
+    try:
+        from core.health_battery import ENERGY_LOW as _ENERGY_LOW
+        elo_battery = float(battery_snapshot.get("elo_battery", 1.0))
+        if elo_battery > _ENERGY_LOW:
+            return {}
+        is_calm = bool(blender_state.get("is_calm", False))
+        if not is_calm:
+            return {}
+        already_dreaming = bool(blender_state.get("dream_phase", ""))
+        already_sleeping = bool(blender_state.get("asleep", False))
+        if already_dreaming or already_sleeping:
+            return {}
+        now = time.time()
+        if now - _dream_trigger_ts < _DREAM_TRIGGER_COOLDOWN_S:
+            return {}
+        _dream_trigger_ts = now
+        import logging as _dt_log
+        _dt_log.getLogger("elo.health").info(
+            "CHAIN-3: elo_battery=%.3f <= %.3f in calm — emitting intent=dream",
+            elo_battery, _ENERGY_LOW,
+        )
+        return {"intent": "dream"}
+    except Exception:
+        return {}
 
 
 # ── Low battery → Calm/Meditation ─────────────────────────────────────────────
