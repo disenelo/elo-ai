@@ -1,0 +1,28 @@
+{
+  "saved_at": 1790951590.484999,
+  "session_id": "default",
+  "active_thread": "",
+  "open_threads": [],
+  "turns": [
+    {
+      "subject": "robot arm",
+      "referents": [
+        "robot arm",
+        "tell",
+        "robot"
+      ],
+      "user": "tell me about the robot arm",
+      "elo": "The robot arm uses servo tension",
+      "ts_wall": 1790951590.484997
+    },
+    {
+      "subject": "magnetic joints",
+      "referents": [
+        "connect"
+      ],
+      "user": "how does it connect?",
+      "elo": "Via magnetic joints at the shoulder",
+      "ts_wall": 1790951590.484999
+    }
+  ]
+}

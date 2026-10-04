@@ -5061,6 +5061,24 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _cq_block
             except Exception as _cq_err:
                 _logging.warning("curiosity_questions block failed (non-fatal): %s", _cq_err)
+            # WO-CURIOSITY-ROUTE-001: inject top question from curiosity_faculty when topic-relevant
+            try:
+                from faculties.curiosity.curiosity_faculty import (
+                    curiosity_prompt_block as _cfac_pb,
+                    mark_surfaced as _cfac_mark,
+                    top_question as _cfac_top,
+                )
+                _cfac_q = _cfac_top()
+                if _cfac_q:
+                    _cfac_topic_tokens = set(_cfac_q.get("topic", "").lower().split())
+                    _cfac_input_tokens = set((raw or "").lower().split())
+                    if _cfac_topic_tokens & _cfac_input_tokens:
+                        _cfac_block = _cfac_pb()
+                        if _cfac_block:
+                            system = system + "\n\n" + _cfac_block
+                            _cfac_mark(_cfac_q.get("text", ""))
+            except Exception as _cfac_err:
+                _logging.warning("curiosity_faculty block failed (non-fatal): %s", _cfac_err)
             # Capability learning: inject active failure patterns so eLo adjusts behaviour (non-blocking)
             try:
                 from runtime.capability_learning import capability_learning_prompt_block as _cap_learn_pb

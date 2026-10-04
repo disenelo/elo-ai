@@ -221,6 +221,22 @@ def top_question() -> dict | None:
         return None
 
 
+def mark_surfaced(q_text: str) -> None:
+    """Mark the question matching q_text as surfaced so it doesn't repeat every turn."""
+    try:
+        questions = _load_questions()
+        changed = False
+        for q in questions:
+            if q.get("text", "") == q_text and not q.get("surfaced", False):
+                q["surfaced"] = True
+                changed = True
+                break
+        if changed:
+            _save_questions(questions)
+    except Exception:
+        pass
+
+
 def _load_questions() -> list[dict]:
     try:
         with open(_QUESTIONS_PATH, encoding="utf-8") as f:

@@ -1,0 +1,28 @@
+{
+  "nodes": [
+    {
+      "id": "1d5c36bd-81a5-443c-b2b2-3952deb22865",
+      "content_hash": "24d3e0e618286bb9",
+      "significance": 0.7,
+      "embodiment": "desktop",
+      "ts": 1791131963.207114
+    },
+    {
+      "id": "b00b4f52-b22f-4113-ac4c-7a19ce5dd846",
+      "content_hash": "e3ca8faab5327104",
+      "significance": 0.55,
+      "embodiment": "desktop",
+      "ts": 1791132885.865762
+    },
+    {
+      "id": "bb43222a-48d9-4a77-a517-572cd5a3ef9b",
+      "content_hash": "fb3be6b1d8594ad3",
+      "significance": 0.7,
+      "embodiment": "desktop",
+      "ts": 1791132934.1020842
+    }
+  ],
+  "edges": [],
+  "node_count": 3,
+  "edge_count": 0
+}
