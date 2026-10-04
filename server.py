@@ -7775,6 +7775,16 @@ def _turn_worker() -> None:
         text, result_holder, done_event = _turn_queue.get()
         try:
             result = _process_turn(text)
+            # S2 Phase 1 — one shape for every turn. 41 of _process_turn's 43
+            # turn-shaped returns carry only {response, mode, backend}; every
+            # fast path drops inner_thought, emotion and intent. Normalised
+            # here, at the single call site, rather than at 41 return
+            # statements — the next exit added is covered too.
+            try:
+                from runtime.turn_result import normalise as _tr_norm
+                result = _tr_norm(result)
+            except Exception:
+                pass
             result_holder.append(result)
         except Exception as _tw_exc:
             _logging.warning("turn worker error: %s", _tw_exc)
