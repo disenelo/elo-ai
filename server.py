@@ -5315,6 +5315,17 @@ def _process_turn(raw: str) -> dict:
         # ── Multilingual "how are you" (WO-069 — before greeting check) ─────────
         _ml_hau    = _detect_multilingual_how_are_you(_raw_lower)
         _lang_query = _detect_language_query(_raw_lower)
+
+        # COG-004 C12: suppress direct_response when input is technical (code/markup/data format).
+        # direct_response bypasses backend_router's TECHNICAL INPUT OVERRIDE, producing emotional
+        # filler instead of a structural analysis. Compute once before the elif chain.
+        _direct_blocked_for_technical = False
+        try:
+            from runtime.backend_router import _CODE_SIGNAL_RE as _brt_code_re
+            _direct_blocked_for_technical = bool(_brt_code_re.search(_original_raw or raw))
+        except Exception:
+            pass
+
         if _tk_routed:
             pass  # already handled above
 
@@ -5331,7 +5342,7 @@ def _process_turn(raw: str) -> dict:
             _signal_greeting_event("multilingual")
 
         # ── Spine produced a direct response ──────────────────────────────────
-        elif _plan and _plan.direct_response:
+        elif _plan and _plan.direct_response and not _direct_blocked_for_technical:
             response     = _plan.direct_response
             backend_used = _plan.direct_backend
             # WO-110: write the_moment.json on direct turns too — "never skip" rule.
