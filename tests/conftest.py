@@ -92,3 +92,28 @@ def first_sid(tmp_journal):
     yield sid
     # Restore journal path after the W2-DJ module completes so other tests are unaffected.
     dj._JOURNAL = orig
+
+
+# ── The SPG graph is eLo's memory, not scratch space ────────────────────────
+#
+# Measured 2026-10-04: a full `pytest tests/` run added 8 nodes to the live
+# data/spg_graph.json — 340 before, 348 after — and across the day's runs
+# roughly 112 of that store's growth was created by testing.
+#
+# The leak is structural, not one careless test.
+# tests/test_wo_wkg_001_phase1_schema.py isolates itself correctly by
+# patching _WKG_DIR, and then WO-SPG-LINK-001 gave record_claim() an SPG
+# write that the WKG isolation does not cover. Any test that records a claim
+# leaks, whether or not its author knows SPG exists.
+#
+# Redirected for EVERY test, so the next function to acquire a store-writing
+# side effect cannot quietly start writing eLo's memory either. A test that
+# genuinely needs the live store reads it by its own path, which this does
+# not touch.
+
+@pytest.fixture(autouse=True)
+def _isolate_spg_graph(tmp_path_factory, monkeypatch):
+    import memory.spg_graph as _spg_graph
+    target = tmp_path_factory.mktemp("spg") / "spg_graph.json"
+    monkeypatch.setattr(_spg_graph, "_GRAPH_PATH", target)
+    yield
