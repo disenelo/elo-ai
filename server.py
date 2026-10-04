@@ -6643,6 +6643,34 @@ def _process_turn(raw: str) -> dict:
             _rg_cs = {}
             if exec_decision:
                 _rg_cs["relationship_mode"] = exec_decision.get("relationship_mode", "")
+            # ── IS ELO: Capable of Ownership? — feed check-16 ────────────────
+            # check-16 gates occurrence claims ("I remember", "it happened to
+            # me") behind can_claim_occurred(). It resolves the state from
+            # THIS dict, trying "state" / "cognitive_mode" / "cognitive_state"
+            # / "current_state" — and this dict carried only
+            # relationship_mode, so every turn hit its "no state info →
+            # conservative pass" branch and the gate returned True before
+            # looking at the response. Correct gate, allow-list, tests, WO
+            # behind it, never fed.
+            try:
+                from runtime.turn_cognitive_state import state_for_turn as _tcs
+                _rg_dreaming = False
+                try:
+                    from faculties.dream.dream_faculty import is_dreaming as _rg_dream
+                    _rg_dreaming = bool(_rg_dream())
+                except Exception:
+                    pass
+                _rg_plan = locals().get("_plan", None)
+                _rg_cs["state"] = _tcs(
+                    dreaming=_rg_dreaming,
+                    used_memory=bool(locals().get("_memory_query", False)),
+                    performed_action=bool(
+                        getattr(_rg_plan, "system_immediate", False)
+                        and getattr(_rg_plan, "system_action", "")
+                    ),
+                )
+            except Exception:
+                pass
             response = _elo_rg(
                 response,
                 current_turn_input=_original_raw,
