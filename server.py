@@ -7586,7 +7586,11 @@ def _process_turn(raw: str) -> dict:
             import time as _it_time, urllib.request as _it_req, json as _it_json
             _it_t0 = _it_time.time()
             _it_host  = os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
-            _it_model = os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
+            # S2-PHASE2-MODEL: inner_thought uses the same model as the main response
+            # (ELO_OLLAMA_MODEL). Using a different model causes Ollama to unload/reload
+            # which adds 10+ seconds of swap overhead. Same model = no swap, Ollama fires
+            # immediately after the main response finishes.
+            _it_model = os.environ.get("ELO_OLLAMA_MODEL", "mistral-nemo:12b")
             _it_history = ""
             try:
                 from faculties.grounding.conversation_tracker import get_tracker as _it_get_ct
@@ -7652,11 +7656,16 @@ def _process_turn(raw: str) -> dict:
                 headers={"Content-Type": "application/json"},
                 method="POST",
             )
-            with _it_req.urlopen(_it_req_obj, timeout=3.0) as _it_r:
+            with _it_req.urlopen(_it_req_obj, timeout=30.0) as _it_r:
                 _it_body = _it_json.loads(_it_r.read())
             _it_text = (_it_body.get("message", {}).get("content") or "").strip()
             _it_ms = (_it_time.time() - _it_t0) * 1000
-            if _it_text and _it_ms < 2000:
+            # S2-PHASE2-GATE: raised from 2000ms to 25000ms — the model is qwen2.5-coder:14b
+            # which takes ~5-10s for 96 tokens after the main response frees Ollama.
+            # The 2s gate was designed for a small/fast model; large-model setups need more room.
+            # inner_thought still fires after the user got their response, so latency here
+            # doesn't affect perceived response time.
+            if _it_text and _it_ms < 25000:
                 _inner_thought = _it_text
             else:
                 import logging as _it_log
