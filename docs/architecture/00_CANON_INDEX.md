@@ -30,7 +30,12 @@ meets the **Definition of Done** (see §Definition of Done) and the Audit can ma
 COMPLETE. Volume V is the reference template for that bar.
 
 > **Read first:** `ARCHITECTURAL_PRINCIPLES.md` — the one-page constitution (enduring principles +
-> the 6 Runtime Invariants that should almost never change). Everything below evolves around it.
+> the 7 Runtime Invariants that should almost never change). Everything below evolves around it.
+> *(Count was **6** here — superseded 2026-10-04: the constitution lists seven and closes "Everything
+> else evolves around these seven"; `FOUNDATION_VOLUMES_STATUS_2026-08-10.md` also says seven. The
+> seventh, **Memory Ownership**, was added to the constitution after this line was written and the
+> index was never updated. Nothing removed — the count was corrected upward to include an invariant
+> that already existed. Pinned by `tests/test_canon_invariant_count.py` so the two cannot drift again.)*
 
 Status legend: ✅ Live · ⚠️ Partial · 🔴 Future/Not started · 📝 Spec drafted (canon written, implementation pending)
 
