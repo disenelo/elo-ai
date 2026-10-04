@@ -7178,9 +7178,30 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     _was_dedup = False
                 if _was_dedup:
-                    _sil.info("D-6: repetition suppressed — silent turn (no fallback)")
-                    # Do not send fallback; leave response empty so nothing is spoken
-                    _bubbles = []
+                    # TEXT-REPLY-BUG fix: early streaming TTS fires BEFORE elo_response_gate
+                    # runs the repetition check. If early TTS spoke the first sentence of a
+                    # repetition-suppressed response, Unity still receives response="" and shows
+                    # no text — TTS and chat are out of sync. Recover by using the early sentence
+                    # as the text response so whatever was spoken also appears in the chat log.
+                    try:
+                        _et_spoken = (
+                            "_early_tts_sentence" in dir()
+                            and _early_tts_sentence[0]
+                            and _early_tts_sentence[0].strip()
+                        )
+                    except Exception:
+                        _et_spoken = False
+                    if _et_spoken:
+                        response = _early_tts_sentence[0].strip()
+                        _bubbles = [response]
+                        _sil.info(
+                            "D-6: repetition suppressed but early TTS already fired — "
+                            "recovering early sentence as text: %r", response[:60]
+                        )
+                    else:
+                        _sil.info("D-6: repetition suppressed — silent turn (no fallback)")
+                        # Do not send fallback; leave response empty so nothing is spoken
+                        _bubbles = []
                 else:
                     _sil.warning(
                         "D-6 silent-turn alarm: empty response for raw=%r "
