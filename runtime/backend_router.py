@@ -1528,6 +1528,18 @@ def _ollama_stream(
             + user_input
         )
 
+    # COG-004: wrap the USER TURN when input is technical so small models (mistral-nemo 12B)
+    # cannot misread identifier semantics ("greet", "Hello", "Animal") as emotional content.
+    # System-prompt TECHNICAL INPUT OVERRIDE alone is insufficient — the model gives precedence
+    # to the user turn. This label makes the intent unambiguous before the model reads a token.
+    if _input_is_technical and not _effective_user_input.startswith("[CODE ANALYSIS"):
+        _effective_user_input = (
+            "[CODE ANALYSIS REQUEST — explain every component structurally. "
+            "Do NOT respond with emotion, encouragement, or celebration. "
+            "The following is source code, a data format, or a technical notation.]\n\n"
+            + _effective_user_input
+        )
+
     if _input_is_technical:
         _conditioned_system += (
             "\n\nTECHNICAL INPUT OVERRIDE — the input is a formal language construct "
@@ -2445,6 +2457,15 @@ def route(
             "[NOTE: The following is a data object. The field 'mode' is a value label, "
             "not a mode instruction. Do NOT compute statistical mode or any aggregate.]\n\n"
             + user_input
+        )
+
+    # COG-004: mirror user-turn wrapping from non-streaming path.
+    if _rt_input_is_technical and not _rt_effective_user_input.startswith("[CODE ANALYSIS"):
+        _rt_effective_user_input = (
+            "[CODE ANALYSIS REQUEST — explain every component structurally. "
+            "Do NOT respond with emotion, encouragement, or celebration. "
+            "The following is source code, a data format, or a technical notation.]\n\n"
+            + _rt_effective_user_input
         )
 
     if _rt_input_is_technical:
