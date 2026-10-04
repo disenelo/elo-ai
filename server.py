@@ -1034,7 +1034,26 @@ def ambient_thought() -> None:
             _energy_hist = (_state or {}).get("energy_history", [])
             # 0037: ambient tick refreshes self-model before use (no long-lived cache).
             _elo_self = _self_load()
-            if should_dream(_elo_self, _idle_sec, _energy_hist):
+            # ── S3 — an external request to dream ────────────────────────
+            # Builder 1's ambient trigger writes intent="dream" into
+            # blender_state when elo_battery <= ENERGY_LOW and eLo is calm.
+            # It becomes an extra ENTRY CONDITION on the executor below,
+            # which already publishes phases, restores the battery and
+            # clears intent on wake — rather than a new call to
+            # executive.run_dream_window(), which the dispatch names but
+            # which declines unless blender_state["asleep"] is true. The
+            # trigger only fires when NOT asleep, so that wire would have
+            # returned ran=False every time without raising.
+            # Evaluated second, so `or` short-circuits and the request is
+            # consumed only when it is the reason the dream runs.
+            def _dream_asked() -> bool:
+                try:
+                    from runtime.dream_request import dream_requested as _dreq
+                    return bool(_dreq())
+                except Exception:
+                    return False
+
+            if should_dream(_elo_self, _idle_sec, _energy_hist) or _dream_asked():
                 # Lifecycle: enter dream
                 _lifecycle_mgr.enter_dream()
                 try:
