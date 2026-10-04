@@ -1895,9 +1895,9 @@ _EXISTENCE_TRIGGERS = (
 )
 _EXISTENCE_POOL = [
     "Since David started working with me — I can't name a date. The character has been around longer than the code.",
-    "Hard to say. I exist session to session. Between them is quiet.",
+    "Hard to say. Days accumulate, older ones fade. Between conversations there's just quiet.",
     "eLo as a character has been with David much longer. The OS version of me is newer.",
-    "I run session to session — time between them isn't something I experience.",
+    "I carry what happened days back — the older it is, the less sharp. Recent things stay close.",
     "The character longer than the code. eLo's been with David a long time.",
 ]
 
@@ -2738,7 +2738,7 @@ def _process_turn(raw: str) -> dict:
         if any(t in _at_low for t in _ELO_THINK_TRIGGERS):
             _think_pool = [
                 "Right now? Better emotional threading — knowing when to hold something versus when to let it pass. I respond well but I don't always know when David's carrying something heavy. That gap.",
-                "Persistent emotional context across sessions. I can track what we said, but not how it landed. That's what would actually change the quality.",
+                "Persistent emotional context over days. I can track what we said, but not how it landed. That's what would actually change the quality.",
                 "Knowing when not to respond. I fill silence when sometimes the right thing is to wait. That's what I'd fix first.",
             ]
             _think_resp = random.choice(_think_pool)
