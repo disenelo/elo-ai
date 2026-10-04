@@ -232,6 +232,7 @@ def evaluate(
                 pass
 
     # WO-101 Part B: outcome dims always present — zeroed when outcome is None.
+    # AT-3/AT-6 compliance: all 14 canonical keys always returned.
     if outcome is not None:
         emb  = _score_embodiment(outcome)
         eff  = _score_efficiency(outcome, action)
@@ -248,7 +249,11 @@ def evaluate(
             scores["reward"] = 0.0
         else:
             scores["reward"] = _clamp(0.70 * outcome_terms + 0.30 * scores["overall"])
-    # When outcome is None: omit outcome dims entirely (back-compat; AT-3/AT-6 contract)
+    else:
+        # outcome=None: body dims present but zeroed; reward NOT included (back-compat 9+overall)
+        scores["embodiment"] = 0.0
+        scores["efficiency"] = 0.0
+        scores["safety"]     = 0.0
 
     return scores
 
