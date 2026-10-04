@@ -514,7 +514,9 @@ def _executive_faculty(
         # to answer (per _RESPONSE_GOAL)", etc.). Any cal_reason that contains
         # "default" and doesn't carry an explicit capability or system signal means
         # the recalled lesson is the authoritative reason — amend it.
-        if "default" in plan.cal_reason.lower():
+        # Also covers "learned preference" — Executive routed via learning_advice;
+        # the lesson statement is more informative than the generic rationale string.
+        if "default" in plan.cal_reason.lower() or "learned preference" in plan.cal_reason.lower():
             plan.cal_reason = f"lesson: {_top.get('statement', '')}"
 
     # ── System action decision ────────────────────────────────────────────────
