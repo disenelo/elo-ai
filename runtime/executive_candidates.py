@@ -20,7 +20,7 @@ Candidate schema:
     "confidence": 0.81
 }
 
-Every decision path journals to self/journals/action_reliability.json.
+Every decision path journals to self/journals/action_candidates.json.
 """
 from __future__ import annotations
 
@@ -29,7 +29,14 @@ import time
 from pathlib import Path
 from typing import Any, Sequence
 
-_RELIABILITY_LOG = Path(__file__).parent.parent / "self" / "journals" / "action_reliability.json"
+# Its OWN file. This pointed at self/journals/action_reliability.json, which
+# self/decision_journal.py also owns — as a DICT of action -> score, while
+# this module writes a LIST of decision events. The list on disk made
+# decision_journal.get_reliability() raise AttributeError, taking out
+# explain_last() ("why did you do that?"), and decision_journal's dict write
+# would silently have destroyed every entry appended here. Two owners, one
+# file, incompatible shapes, both directions lossy.
+_RELIABILITY_LOG = Path(__file__).parent.parent / "self" / "journals" / "action_candidates.json"
 
 
 # ── Journal helpers ────────────────────────────────────────────────────────────

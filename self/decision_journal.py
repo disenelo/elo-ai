@@ -28,11 +28,38 @@ _SESSION_ID: str = SESSION_ID
 # ── Reliability persistence ───────────────────────────────────────────────────
 
 def _load_reliability() -> dict:
+    """
+    action -> reliability score. ALWAYS a dict.
+
+    runtime/executive_candidates.py wrote a LIST of decision events to this
+    same path, and a list is valid JSON, so the try/except below never fired:
+    json.load succeeded, the list was returned, and get_reliability() did
+    .get(action, 1.0) on it —
+
+        AttributeError: 'list' object has no attribute 'get'
+
+    — with no guard anywhere above it. get_reliability() is called from
+    explain_last(), which is how eLo answers "why did you do that?"
+    (server.py:3697). That answer was raising instead of returning.
+
+    The shared file is separated in the same commit, but the type check stays:
+    a loader that trusts a file's shape is one bad writer away from taking
+    down the explainer again, and the warning means the next collision is
+    visible instead of fatal.
+    """
     try:
         with open(_RELIABILITY, encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
     except Exception:
         return {}
+    if not isinstance(data, dict):
+        _log.warning(
+            "action_reliability.json is %s, not a dict — another writer owns "
+            "this file in a different shape. Treating reliability as unknown.",
+            type(data).__name__,
+        )
+        return {}
+    return data
 
 
 def _save_reliability(rel: dict) -> None:
