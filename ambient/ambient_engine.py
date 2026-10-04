@@ -490,6 +490,66 @@ def _speak(text: str) -> None:
         pass
 
 
+# ── IS ELO: One Brain? — ambient speech must come from a decision ────────────
+#
+# "can an ambient process speak as eLo without a cognitive plan?"
+# "can a legacy path bypass Executive?"
+#
+# server.py registers a correct One Brain ambient path as _ambient_cb: the
+# Executive decides, a chosen silence stops the turn, the decision is
+# journalled, and the line is built through prompt_builder. Three call sites
+# in this file spoke around it — the idle "utterance" behaviour and both
+# startup greetings — emitting a developer-written line from _AMBIENT_LINES
+# or _STARTUP_LINES on a timer, in eLo's voice, with no decision behind it.
+#
+# Those pools are NOT deleted. With no brain registered the alternative is
+# muteness, and the greeting fires before the server may be ready. What
+# changes is that speech eLo did not decide to make is DECLARED rather than
+# passing as his cognition.
+
+def _speak_unplanned(text: str, reason: str) -> None:
+    """
+    Say something eLo did not decide to say, and put that on the record.
+
+    The warning IS the fix. No new blender_state key: a field nothing reads
+    would be write-only output, which is the defect this is correcting, not a
+    way to correct it.
+    """
+    _log.warning(
+        "ambient: speaking WITHOUT a cognitive plan (%s) — this line was not "
+        "eLo's decision: %r", reason, (text or "")[:60],
+    )
+    _speak(text)
+
+
+def _ambient_utterance() -> None:
+    """
+    The single route for idle ambient speech. Executive first.
+
+    A quirk-bank line is declared separately from an authored one: a line
+    drawn from eLo's own accumulated material is not the same thing as a line
+    someone typed for him, even though neither went through the Executive.
+    """
+    if _ambient_cb is not None:
+        threading.Thread(target=_ambient_cb, daemon=True).start()
+        return
+
+    line = None
+    if random.random() < 0.30:
+        try:
+            from memory.quirk_bank import draw as _quirk_draw
+            drawn = _quirk_draw(1)
+            if drawn:
+                line = drawn[0]
+        except Exception:
+            pass
+
+    if line:
+        _speak_unplanned(line, "no_brain_quirk_bank")
+    else:
+        _speak_unplanned(random.choice(_AMBIENT_LINES), "no_brain_authored_pool")
+
+
 def _read_events() -> dict | None:
     if not os.path.exists(_EVENTS_PATH):
         return None
@@ -775,7 +835,7 @@ def _decide_idle_behaviour(idle_secs: float) -> None:
     behaviour = _rand.choice(pool)
 
     if behaviour == "utterance" and not _is_speaking():
-        _speak(_rand.choice(_AMBIENT_LINES))
+        _ambient_utterance()
     elif behaviour == "glance":
         threading.Thread(target=_idle_glance, daemon=True).start()
     elif behaviour == "look_around":
@@ -847,7 +907,7 @@ def _run(unity_present: bool) -> None:
         time.sleep(_STARTUP_DELAY)
         if not _stop_ev.is_set() and not _greeted:
             _greeted = True
-            _speak(random.choice(_STARTUP_LINES))
+            _speak_unplanned(random.choice(_STARTUP_LINES), "startup")
         _last_ambient = time.time()
 
     while not _stop_ev.is_set():
@@ -868,7 +928,7 @@ def _run(unity_present: bool) -> None:
                     _greeted = True
                     time.sleep(2.8)  # let Unity finish the head-look sequence
                     if not _stop_ev.is_set():
-                        _speak(random.choice(_STARTUP_LINES))
+                        _speak_unplanned(random.choice(_STARTUP_LINES), "startup")
                     _last_ambient = time.time() + 60  # hold off ambient for 1 min after greeting
 
                 elif event == "listening":
@@ -917,21 +977,12 @@ def _run(unity_present: bool) -> None:
                         # quiet hours — skip this tick, retard timer slightly to reduce re-checks
                         _last_ambient = now - _AMBIENT_MAX + 60
                     else:
-                        # WO-066: prefer brain-backed callback; fall back to static pool.
-                        if _ambient_cb is not None:
-                            threading.Thread(target=_ambient_cb, daemon=True).start()
-                        else:
-                            # 30% chance: draw from quirk bank if it has content
-                            line = None
-                            if random.random() < 0.30:
-                                try:
-                                    from memory.quirk_bank import draw as _quirk_draw
-                                    drawn = _quirk_draw(1)
-                                    if drawn:
-                                        line = drawn[0]
-                                except Exception:
-                                    pass
-                            _speak(line or random.choice(_AMBIENT_LINES))
+                        # WO-066: prefer brain-backed callback; fall back to
+                        # the static pool. This site already asked the brain
+                        # first and was the model for _ambient_utterance();
+                        # folded into it so there is one route, not two that
+                        # can drift apart.
+                        _ambient_utterance()
                         _last_ambient = now
             elif _greeted:
                 _last_ambient = now
