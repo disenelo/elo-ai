@@ -7162,6 +7162,35 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # ── IS ELO: Capable of Silence? — a chosen silence must be silent ────
+        # "silence" is one of the frozen nine and the Executive can choose it,
+        # but its only consumer in this path was the movement intent at :704,
+        # which returns step_out. A body decision. eLo went on talking.
+        #
+        # Suppressed at the OUTPUT boundary, so the backend has already
+        # generated the text being discarded. Observably he says nothing,
+        # which is what is asked; architecturally it is suppression rather
+        # than abstention. Deciding before generation — and before the early
+        # streaming TTS, which fires ahead of this — needs a seam earlier in
+        # the turn, and that is a larger change in a handler two seats are
+        # editing. Stated, not quietly called done.
+        try:
+            from runtime.silence_gate import (
+                is_deliberate_silence as _sg_is, mark_silence as _sg_mark)
+            if _sg_is(_action):
+                _sg_mark(True)
+                if response and response.strip():
+                    import logging as _sg_log
+                    _sg_log.getLogger("elo.silence").info(
+                        "Executive chose silence — discarding %d generated "
+                        "characters, nothing spoken", len(response))
+                response = ""
+                _bubbles = []
+            else:
+                _sg_mark(False)
+        except Exception:
+            pass
+
         # ── D-6 (card 0020): silent turn = loud log + honest fallback ─────────
         # WO-097's response/display/tts publish could go empty on direct turns
         # ("What is your name?" / "Can you wave?"). Rule 1 alarm: a silent turn
@@ -7203,13 +7232,31 @@ def _process_turn(raw: str) -> dict:
                         # Do not send fallback; leave response empty so nothing is spoken
                         _bubbles = []
                 else:
-                    _sil.warning(
-                        "D-6 silent-turn alarm: empty response for raw=%r "
-                        "action=%s backend=%s bubbles=%d",
-                        (raw or "")[:120], _action, backend_used, len(_bubbles),
-                    )
-                    response  = "One sec — that came back empty. Ask me again?"
-                    _bubbles  = [response]
+                    # D-6 already separates DELIBERATE emptiness (repetition
+                    # suppression) from accidental emptiness. A chosen silence
+                    # is the second legitimate reason, and without this it
+                    # would be answered with a sentence apologising for having
+                    # nothing to say.
+                    try:
+                        from runtime.silence_gate import (
+                            fallback_for_empty_response as _sg_fb)
+                        _fallback = _sg_fb(_action, was_repetition_suppression=False)
+                    except Exception:
+                        _fallback = "One sec — that came back empty. Ask me again?"
+                    if _fallback is None:
+                        _sil.info(
+                            "D-6: Executive chose silence for raw=%r — no fallback, "
+                            "nothing spoken", (raw or "")[:60],
+                        )
+                        _bubbles = []
+                    else:
+                        _sil.warning(
+                            "D-6 silent-turn alarm: empty response for raw=%r "
+                            "action=%s backend=%s bubbles=%d",
+                            (raw or "")[:120], _action, backend_used, len(_bubbles),
+                        )
+                        response  = _fallback
+                        _bubbles  = [response]
         except Exception:
             pass
 
