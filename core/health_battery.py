@@ -495,8 +495,41 @@ def on_conversation_turn(emotional_intensity: float = 0.0) -> None:
 
 
 def calm_tick(dt_seconds: float = 1.0) -> None:
-    """Calm mode restore — +0.008 per minute active (WO PART B item 1)."""
-    restore(RESTORE_CALM_PER_MIN * (max(0.0, float(dt_seconds)) / 60.0))
+    """
+    Calm mode restore — +0.008 per minute active (WO PART B item 1).
+
+    Restores the PHYSICAL track too. Calm is Meditation: conscious rest, and
+    rest rests the body. on_wake_from_dream() already works this way in this
+    file — "lying down rests the body, not just the mind" — and calm had no
+    reason to differ except that nobody had looked.
+
+    It was harmless while the physical track never engaged. It stops being
+    harmless the moment exhaustion can enter calm, because the ambient loop
+    calls calm_tick() INSTEAD of tick() while calm is held, so _tick_physical
+    never runs:
+
+        exhausted → calm → no physical restore → still exhausted → still calm
+
+    eLo would sit down once and never get up.
+
+    Guarded on _physical_engaged, exactly as the dream restore is. Engaging
+    the track here would put physical at 1.0 into elo_battery and floor it at
+    WEIGHT_PHYSICAL (0.4), making ENERGY_CRITICAL (0.10) unreachable and
+    killing the dream trigger — the failure the PHYSICAL_ACTIVITIES gate
+    exists to prevent. Rest must not be a back door into it.
+
+    Uses RESTORE_CALM_PER_MIN for both tracks, matching on_wake_from_dream(),
+    which applies one amount to both. [FLAG for David/Board: this is 60x
+    slower than PHYSICAL_TICK_RATES["sitting"], which is written +0.008 "per
+    tick" and applied per SECOND. The two rest postures disagree by a factor
+    of sixty and the sitting value is almost certainly the wrong one — same
+    [ESTIMATE] question as the drain rates. Not silently retuned inside a
+    wiring fix.]
+    """
+    amount = RESTORE_CALM_PER_MIN * (max(0.0, float(dt_seconds)) / 60.0)
+    restore(amount)
+    if _physical_engaged:
+        restore_physical(amount)
 
 
 def on_wake_from_dream(phase: str) -> float:
