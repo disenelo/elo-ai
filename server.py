@@ -5079,6 +5079,20 @@ def _process_turn(raw: str) -> dict:
                             _cfac_mark(_cfac_q.get("text", ""))
             except Exception as _cfac_err:
                 _logging.warning("curiosity_faculty block failed (non-fatal): %s", _cfac_err)
+            # WO-PATTERN-OBSERVER-WIRE-001 (Part A): log current turn before observe() so this turn
+            # is included in the pattern window for the *next* call.
+            try:
+                _obs_log(raw, attention_model)
+            except Exception:
+                pass
+            # WO-PATTERN-OBSERVER-WIRE-001 (Part B): observe patterns from prior turns and inject
+            # as an internal signal block into this turn's system prompt.
+            try:
+                _pat_obs = _obs_observe(current_action=exec_decision.get("action", ""), current_input=raw)
+                if _pat_obs:
+                    system = system + "\n\n[PATTERN SIGNAL — internal, not to be spoken aloud]\n" + _pat_obs
+            except Exception:
+                pass
             # Capability learning: inject active failure patterns so eLo adjusts behaviour (non-blocking)
             try:
                 from runtime.capability_learning import capability_learning_prompt_block as _cap_learn_pb
@@ -6268,10 +6282,8 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
-        _obs_log(raw, attention_model)
-        _observation = _obs_observe(current_action=_action, current_input=raw)
-        # FIX 1 (P0-B): observer output is internal state — never append to user-facing response.
-        # _observation may be used for internal routing/logging only.
+        # WO-PATTERN-OBSERVER-WIRE-001: _obs_log and _obs_observe relocated to pre-response
+        # path (faculty block section above). Do not re-add calls here.
 
         # avatar
         _presence = {}
