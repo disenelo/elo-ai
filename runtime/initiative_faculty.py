@@ -74,30 +74,44 @@ class InitiativeRead:
 
 
 def _read_intentions_safe() -> tuple[List[str], List[str]]:
-    """Read active and deferred intentions without crashing."""
+    """
+    Active and deferred intentions, read through the module that owns them.
+
+    This read its own file — self/intentions.jsonl, parsed as JSONL — while
+    memory/intentions.py owns data/intentions.json, a JSON array. Three
+    mismatches, not one:
+
+      path     self/intentions.jsonl  vs  data/intentions.json
+      format   one object per line    vs  a JSON array
+      status   it tested for "PAUSED", which is not one of the five
+               statuses, and never tested RESUMED — so an intention eLo
+               had deliberately picked back up counted as nothing
+
+    Neither file existed, so both sides read nothing and the disagreement
+    never surfaced. It would have, the moment anything wrote one.
+
+    Going through open_intentions() fixes all three at once, because the
+    owner handles path, format and vocabulary. Same move as routing
+    spg_faculty's claims read through wkg_faculty.all_claims().
+
+    Never raises.
+    """
     try:
-        intentions_path = _ROOT / "self" / "intentions.jsonl"
+        from memory.intentions import (
+            open_intentions, STATUS_ACTIVE, STATUS_DEFERRED, STATUS_RESUMED,
+        )
         active:   List[str] = []
         deferred: List[str] = []
-        if intentions_path.exists():
-            with open(intentions_path, encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        rec = json.loads(line)
-                        status = rec.get("status", "ACTIVE")
-                        text   = rec.get("text", "").strip()
-                        if not text:
-                            continue
-                        if status == "ACTIVE":
-                            active.append(text)
-                        elif status in ("DEFERRED", "PAUSED"):
-                            deferred.append(text)
-                    except json.JSONDecodeError:
-                        continue
+        for i in open_intentions():
+            text = str(getattr(i, "content", "") or "").strip()
+            if not text:
+                continue
+            if i.status in (STATUS_ACTIVE, STATUS_RESUMED):
+                active.append(text)
+            elif i.status == STATUS_DEFERRED:
+                deferred.append(text)
         return active, deferred
+
     except Exception:
         return [], []
 
