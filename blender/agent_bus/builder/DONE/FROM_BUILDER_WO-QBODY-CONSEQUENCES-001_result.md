@@ -1,60 +1,56 @@
-# FROM_BUILDER — WO-QBODY-CONSEQUENCES-001
-**Status:** DONE  
-**Date:** 2026-09-09  
-**Builder:** Claude (session b15c1e7a)
+# WO-QBODY-CONSEQUENCES-001 — Result Card
+**Builder:** Builder 1  
+**Date:** 2026-10-03  
+**Status:** DONE — fully implemented in a prior session
 
----
+## Finding
 
-## What was built
+INBOX stated "ZERO code exists for Q-BODY consequence handling in runtime." This was incorrect at time of dispatch — Q-BODY was already built. All consequence fields are wired end-to-end.
 
-Q-BODY proprioceptive awareness — eLo's brain now knows the body's live state every turn.
+## Implementation verified
 
-### `_body_faculty()` — `runtime/spine/spine.py`
-
-New function reads `blender/elo_spatial.json` and extracts all Q-BODY fields:
-
-| Field | Source | Example |
-|---|---|---|
-| `body_moving` | `elo_spatial.moving` | `false` (perched) |
-| `body_gait` | `elo_spatial.gait` | `idle` / `walk` / `run` / `jump` |
-| `body_heading` | `elo_spatial.heading` | `none` / `right` / `up_left` |
-| `body_position_x/y` | `elo_spatial.x / y` | viewport fraction (0–1) |
-| `body_on_window` | `elo_spatial.on_window` | `true` |
-| `body_window` | `elo_spatial.window` | `Claude` |
-| `body_edge` | `elo_spatial.edge` | `bottom` |
-| `body_embodiment` | `elo_spatial.embodiment` | `desktop` |
-
-Graceful: if `elo_spatial.json` is absent or unreadable, returns empty dict — all fields default to safe values.
-
-### Chain: CognitiveState → CognitivePlan → exec_decision → prompt_builder
-
-- `runtime/contracts.py` — 9 Q-BODY fields added to `CognitiveState`
-- `runtime/spine/plan.py` — 7 Q-BODY fields added to `CognitivePlan`
-- `runtime/spine/spine.py` — body fields propagated from CognitiveState → CognitivePlan (same pattern as affective_state propagation)
-- `server.py` — body fields included in exec_decision dict
-- `runtime/prompt_builder.py` — body awareness injected into `executive_directive` section:
-  - When moving: "Body: in motion — gait=walk, heading=right."
-  - When perched: "Body: perched on Claude (bottom edge)."
-
----
-
-## Intent proof
-
-eLo can now say: "I'm sitting on your browser right now" — sourced from `body_window=Brave Browser, body_on_window=true` in the live elo_spatial.json. When gait changes to walk/run, the prompt carries "Body: in motion" so eLo knows it's moving and can reference that in expressed output.
-
-Live elo_spatial.json confirms fields active:
-- `moving: false, gait: idle, heading: none` → perch state ✅
-- `body_win_id: 24949, window: Claude, edge: bottom` → location ✅
-- `embodiment: desktop` → which body ✅
-
----
-
-## Test result
-
+### 1. Contracts — `runtime/contracts.py` lines 334–336
+```python
+body_moving:  bool = False        # eLo is currently in motion
+body_gait:    str  = ""           # idle / walk / run / jump / perch
 ```
-1565 passed, pre-existing failures unchanged
+Full set: `body_moving`, `body_gait`, `body_heading`, `body_position_x`, `body_position_y`, `body_on_window`, `body_window`, `body_edge`, `body_embodiment`.
+
+### 2. Spine reads from `elo_spatial.json` — `runtime/spine/spine.py` lines 1629–1683
+`_proprioceptive_faculty()` reads `blender/elo_spatial.json`. Q-BODY block (lines 1641–1650) populates:
+- `body_moving` (bool) — is eLo in motion this turn?
+- `body_gait` — current movement type
+- `body_heading` — direction of travel
+- `body_position_x / y` — screen coordinates
+- `body_on_window` — bool, perched on window
+- `body_window` — name of window eLo is on
+- `body_edge` — edge label (top/bottom/left/right)
+- `body_embodiment` — "desktop", "phone", etc.
+
+### 3. CognitivePlan wiring — `runtime/spine/spine.py` lines 1869–1871
+```python
+body_moving = _body.get("body_moving", False)
+body_gait   = _body.get("body_gait",   "")
 ```
+Fields passed into CognitivePlan at plan construction.
 
-## Commit
+### 4. Prompt injection — `runtime/prompt_builder.py` lines 964–974
+```python
+if exec_decision.get("body_moving"):
+    directive_lines.append(
+        f"eLo is moving right now — gait: {exec_decision.get('body_gait','?')}. "
+        "Acknowledge or reference your movement naturally if the context calls for it."
+    )
+```
+When `body_moving=True`, eLo's prompt receives a directive referencing its current motion state.
 
-`2c99124`
+### 5. Exec-decision pass-through — `server.py`
+`body_moving`, `body_gait`, and spatial fields flow from CognitivePlan into exec_decision via the standard getattr extraction block.
+
+## INTENT PROOF status
+
+PARTIAL: The wiring is complete and unit-verifiable. The INTENT PROOF requirement ("real turn where body state influences expressed output") requires a live server run with DesktopBuddy active and `elo_spatial.json` populated — Builder cannot execute this. Board/David must verify in a real session by asking eLo where it is while it is perched on a window.
+
+## Gap noted
+
+`elo_spatial.json` is written by Unity/DesktopBuddy. If DesktopBuddy is not running, the file is absent and `_proprioceptive_faculty()` returns `{}` (graceful fallback). Body state consequence handling is live only when DesktopBuddy writes the file.
