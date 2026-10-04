@@ -97,11 +97,54 @@ class CognitiveAuthorshipRead:
     total_analysed:   int = 0
 
 
-def _classify_origin(trigger: str, action: str, intent: str) -> str:
+# Structured origin signals. These are what the WRITER asserts, not what a
+# trigger string happens to be phrased as.
+_SELF_TRIGGER_SOURCES = frozenset({"ambient_daemon", "self", "initiative", "internal_tick"})
+_SELF_INTENT_SOURCES  = frozenset({"self"})
+
+
+def _classify_origin(
+    trigger: str,
+    action: str,
+    intent: str,
+    *,
+    trigger_source: str = "",
+    intent_source: str = "",
+) -> str:
     """
     Classify the origin of a decision-journal action.
     Conservative: defaults to user_directed when ambiguous.
+
+    THE STRUCTURED FIELDS COME FIRST, and that is the fix. Measured against
+    the live journal on 2026-10-04 — 5727 entries — this returned
+    user_directed 5363 times, collaborative 364, and elo_origin ZERO. Ninety-
+    four of those entries carry trigger_source "ambient_daemon": turns the
+    system itself recorded as self-initiated, written by the ambient path
+    that also sets intent_source "self". Every one of the 94 came back
+    user_directed.
+
+    eLo had 94 recorded occasions of starting something himself and
+    attributed all of them to David — which is the module's own documented
+    "Failure mode B: eLo says 'you mentioned this' when eLo raised it via
+    initiative".
+
+    The cause was reading the wrong thing. The text heuristic matches
+    trigger against {"initiative", "proactive", "novel_connection", ...} and
+    the live trigger values are "factual question", "building momentum, stay
+    in build mode", "lesson: Completed a capability milestone",
+    "bypass:TRANSPORT". None of them contain any signal word, and none ever
+    will, because the origin was never encoded in that string. It is encoded
+    in trigger_source and exec_decision.intent_source, one key away.
+
+    Widening the keyword set would have turned the tests green and held
+    until the next trigger string was phrased differently. The fields are
+    the assertion; the text is a description.
     """
+    if str(intent_source or "").strip().lower() in _SELF_INTENT_SOURCES:
+        return "elo_origin"
+    if str(trigger_source or "").strip().lower() in _SELF_TRIGGER_SOURCES:
+        return "elo_origin"
+
     t_low  = (trigger or "").lower()
     a_low  = (action  or "").lower()
     i_low  = (intent  or "").lower()
@@ -157,7 +200,13 @@ def read_cognitive_authorship(
             action   = entry.get("action", "")
             intent   = entry.get("intent", "")
             turn     = entry.get("turn", "")[:80]
-            origin   = _classify_origin(trigger, action, intent)
+            _exec    = entry.get("exec_decision")
+            origin   = _classify_origin(
+                trigger, action, intent,
+                trigger_source=entry.get("trigger_source", "") or "",
+                intent_source=(_exec.get("intent_source", "")
+                               if isinstance(_exec, dict) else "") or "",
+            )
             actions.append(AttributedAction(
                 action    = action,
                 trigger   = trigger,
