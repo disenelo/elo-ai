@@ -398,6 +398,37 @@ _CALM_LOOP_SPEED = 0.28          # matches Unity's calmLoopSpeed
 _brain_calm_asserted = False
 
 
+def _body_is_spent() -> bool:
+    """
+    ADDENDUM A: "Exhausted triggers calm mode automatically."
+
+    health_battery.should_auto_calm() had existed since the physical track was
+    built with ZERO production callers — only a test ever called it. It was
+    also unreachable: it reads `_physical_engaged and physical_state ==
+    "exhausted"`, and _physical_engaged was permanently False because nothing
+    fed the track. Unwired and unable to fire, which is why neither was
+    noticed.
+    """
+    try:
+        from core.health_battery import should_auto_calm
+        return bool(should_auto_calm())
+    except Exception:
+        return False
+
+
+def _rest_is_needed(battery_state: str) -> bool:
+    """
+    Two independent reasons to rest, one decision.
+
+    A flat battery is the mind; an exhausted physical_state is the body, and
+    nothing in the cognitive battery can express legs that are done. Both
+    route through _calm_on_low_battery rather than getting a calm path each,
+    because two paths into the same state can disagree about leaving it — and
+    one of them holds the rule that the battery must never reach sleep.
+    """
+    return battery_state in _BATTERY_REST_STATES or _body_is_spent()
+
+
 def _calm_on_low_battery(battery_state: str, motion: dict) -> dict:
     """
     Enter Calm while the battery is low; release it when the battery recovers.
@@ -413,7 +444,7 @@ def _calm_on_low_battery(battery_state: str, motion: dict) -> dict:
     global _brain_calm_asserted
 
     presence_calm = _is_calm()
-    if battery_state not in _BATTERY_REST_STATES:
+    if not _rest_is_needed(battery_state):
         if _brain_calm_asserted:
             # Recovered — release so CalmExit can play.
             _brain_calm_asserted = False
