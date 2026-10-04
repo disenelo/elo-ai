@@ -6192,6 +6192,32 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # MEMORY-PREF-EXTRACT: detect preference statements in raw user input and
+        # save them to facts.json so they survive server restart and appear in
+        # [DURABLE FACTS] block on next session. Covers: "my favourite X is Y",
+        # "I love/like/prefer X", "I hate X", "my X is Y" — simple pattern pass.
+        try:
+            _pref_text = (_original_raw or "").strip()
+            if _pref_text and len(_pref_text) < 300:
+                import re as _pref_re
+                _PREF_RE = _pref_re.compile(
+                    r"\b(?:my\s+(?:favou?rite|preferred?|go-to)\s+\w[\w\s]{0,30}?\s+is\b"
+                    r"|i\s+(?:love|like|prefer|hate|enjoy|use)\s+\w[\w\s]{0,30}?\b"
+                    r"|my\s+\w[\w\s]{0,20}?\s+(?:of\s+choice|preference)\s+is\b)",
+                    _pref_re.I,
+                )
+                _pref_is_question = _pref_text.endswith("?") or _pref_re.match(
+                    r"^(what|how|do|can|could|would|did|is|are|was|were|who|where|when|why)\b",
+                    _pref_text, _pref_re.I,
+                )
+                if _PREF_RE.search(_pref_text) and not _pref_is_question:
+                    from memory.fact_store import save_fact as _sf
+                    # key = first 5 words of the statement (stable slot)
+                    _pref_key = "_".join(_pref_text.lower().split()[:5]).replace("'", "")
+                    _sf(_pref_key, f"David said: {_pref_text}")
+        except Exception:
+            pass
+
         # WKG write path: record a SOURCE_ATTRIBUTED claim from significant turns.
         # Category-tagged turns (mem_cats non-empty) carry enough signal to propose.
         # David entity is created/reused; topic concept is derived from the first category.

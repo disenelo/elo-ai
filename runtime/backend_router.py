@@ -652,7 +652,19 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
         "Do NOT say 'Seen.' — it's not your word. Use 'Yeah man.' (excitement/agreement), 'Yeah aight cool.' (settled/closure), or 'Cool.' instead.\n"
         "Do NOT mention the Orb, energy state, or any internal system metaphors.\n\n"
     )
-    system_prompt = _FORMAT_HEADER + _david_identity + system_prompt
+    # MEM-FACTS-SURVIVE-TRIM: inject DURABLE FACTS at the prepend position so they
+    # survive the SP_MAX truncation (12K). The full prompt is ~22K — facts injected
+    # only via vault_context appear at char ~20K and are always cut. Prepending here
+    # ensures personal facts (preferences, corrections) are ALWAYS in the context.
+    _durable_facts_block = ""
+    try:
+        from memory.fact_store import facts_summary as _fs_sum_rt
+        _dfs = _fs_sum_rt()
+        if _dfs:
+            _durable_facts_block = f"[DURABLE FACTS — always true, survive restart]\n{_dfs}\n\n"
+    except Exception:
+        pass
+    system_prompt = _FORMAT_HEADER + _david_identity + _durable_facts_block + system_prompt
     _timeout = float(os.environ.get("ELO_OLLAMA_TIMEOUT_S", "60"))
     payload = _json.dumps({
         "model":      model,
@@ -1129,11 +1141,14 @@ def _ollama_stream(
         "never for words already spoken in this conversation.\n"
         "MISSING-FACT RULE: If David asks for ONE NAMED specific item about himself "
         "— like 'what's my dog's name', 'when is my birthday', 'what's my mum's name', 'where did I grow up' — "
-        "and that exact item is NOT in [WHO YOU ARE WITH], say: 'I don't have that recorded.' Never guess. "
+        "and that exact item is NOT in [WHO YOU ARE WITH] AND NOT in [DURABLE FACTS], say: 'I don't have that recorded.' Never guess. "
+        "IMPORTANT: Before saying 'I don't have that recorded', ALWAYS check [DURABLE FACTS] first — "
+        "if the answer appears in [DURABLE FACTS], use it and do NOT say that phrase. "
         "This rule ONLY triggers for NAMED specific items (a name, a date, a place). "
+        "Preferences ('favourite X', 'material I like', 'what I use') are stored in [DURABLE FACTS] — check there first. "
         "It does NOT apply when David asks eLo to summarise what it knows generally. "
         "When David asks 'what do you know about me' or 'what do you have on me' — that is a SUMMARY REQUEST. "
-        "For summary requests: use everything in [WHO YOU ARE WITH] and [WHO YOU ARE WITH — WKG profile] to answer. "
+        "For summary requests: use everything in [WHO YOU ARE WITH], [WHO YOU ARE WITH — WKG profile], and [DURABLE FACTS] to answer. "
         "Never invent personal facts about David.\n"
         "This rule applies only to natural-language questions — NOT to code or technical input.\n"
         "SESSION-MEMORY RULE: When David asks 'what did we talk about', 'what do you remember about X', "
@@ -1505,6 +1520,21 @@ def _ollama_stream(
         _sections.append(_ollama_inner_state_block)
     if _david_identity_stream:
         _sections.append(_david_identity_stream)
+    # MEM-FACTS-SURVIVE-TRIM-STREAM: inject DURABLE FACTS into _ollama_stream sections so
+    # personal facts (preferences, corrections) stored in facts.json are always in context.
+    # The full build_prompt() system prompt is ~22K chars, truncated to 12K by Ollama SP_MAX —
+    # facts at char ~20K are always cut. This section is compact and injected at section-list
+    # level, so it survives regardless of the full prompt size.
+    _durable_facts_section = ""
+    try:
+        from memory.fact_store import facts_summary as _fs_sum_stream
+        _dfs_stream = _fs_sum_stream()
+        if _dfs_stream:
+            _durable_facts_section = f"[DURABLE FACTS — always true, survive restart]\n{_dfs_stream}"
+    except Exception:
+        pass
+    if _durable_facts_section:
+        _sections.append(_durable_facts_section)
     # For technical inputs, exclude grounding_block only when a real Subject has accumulated —
     # that's the contamination risk (e.g. C23 island context bleeding into C24 Java).
     # Fresh sessions with an empty/header-only grounding block are safe to keep — they provide

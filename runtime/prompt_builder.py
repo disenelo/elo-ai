@@ -631,7 +631,10 @@ def build(
                 and not _re_pb.match(r'^(We were just|User asked:|User said:|eLo said:|eLo:)\b', line.strip())
             )
             if _vc_filtered.strip():
-                _push("world_knowledge", f"[WORLD KNOWLEDGE]\n{_vc_filtered[:1000]}")
+                # MEM-TRUNC-FIX: raised from 1000→2000 — DURABLE FACTS section
+                # was being cut mid-list, preventing recall of late-added facts
+                # (e.g. personal preferences stated by David after identity facts).
+                _push("world_knowledge", f"[WORLD KNOWLEDGE]\n{_vc_filtered[:2000]}")
 
         # relationship graph context — entities, connections, viewpoint
         if graph_context.strip():
@@ -649,7 +652,7 @@ def build(
                 and not _re_pb2.match(r'^(We were just|User asked:|User said:|eLo said:|eLo:)\b', line.strip())
             )
             if _vc_filtered2.strip():
-                _push("world_memory", f"[WORLD MEMORY]\n{_vc_filtered2[:1200]}")
+                _push("world_memory", f"[WORLD MEMORY]\n{_vc_filtered2[:2000]}")
 
     # WO-SOURCE-004/005: DISENELO visual-world language block
     # Injected when the user's input references eLo's world, brand colours, or art
