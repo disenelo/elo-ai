@@ -424,7 +424,10 @@
     "created_at": 1791132753.57293,
     "source_ids": [
       "ELO-fRMY-q6P4"
-    ]
+    ],
+    "deprecated": true,
+    "deprecated_reason": "code fragment \u2014 rejected by _looks_like_code, WO-WKG-JUNK-002",
+    "deprecated_at": 1791138797.07059
   },
   {
     "entity_id": "9d9efd39-b024-4a63-b032-a7626fd55c62",
@@ -468,7 +471,10 @@
     "created_at": 1791132885.8059468,
     "source_ids": [
       "ELO-ygIN-Saza"
-    ]
+    ],
+    "deprecated": true,
+    "deprecated_reason": "half of the dotted identifier Console.WriteLine, captured as two entities \u2014 WO-WKG-JUNK-002. Reversible: if Console is ever meant as a games console, undo it.",
+    "deprecated_at": 1791138797.07455
   },
   {
     "entity_id": "0755ca62-41ff-41f9-8c1b-3b4ab4ff6661",
@@ -479,7 +485,10 @@
     "created_at": 1791132885.806693,
     "source_ids": [
       "ELO-ygIN-Saza"
-    ]
+    ],
+    "deprecated": true,
+    "deprecated_reason": "half of the dotted identifier Console.WriteLine, captured as two entities \u2014 WO-WKG-JUNK-002. Reversible: if Console is ever meant as a games console, undo it.",
+    "deprecated_at": 1791138797.0754461
   },
   {
     "entity_id": "dbc54555-96d6-41c4-9c7d-3ba002f9269b",
@@ -490,7 +499,10 @@
     "created_at": 1791132885.80741,
     "source_ids": [
       "ELO-ygIN-Saza"
-    ]
+    ],
+    "deprecated": true,
+    "deprecated_reason": "code fragment \u2014 rejected by _looks_like_code, WO-WKG-JUNK-002",
+    "deprecated_at": 1791138797.072505
   },
   {
     "entity_id": "27afa261-d4ba-4a73-8c77-68595d3b6182",
@@ -501,7 +513,10 @@
     "created_at": 1791132933.938621,
     "source_ids": [
       "ELO-VIIC-uWGX"
-    ]
+    ],
+    "deprecated": true,
+    "deprecated_reason": "code fragment \u2014 rejected by _looks_like_code, WO-WKG-JUNK-002",
+    "deprecated_at": 1791138797.073629
   },
   {
     "entity_id": "732f88fb-44e3-4ad7-bf6f-40f35bb2f3ed",
