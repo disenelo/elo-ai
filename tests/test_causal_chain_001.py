@@ -345,6 +345,7 @@ def test_at11_temporal_state_distinguishes_states():
                    ["Build expectation tracker"],  # ACTIVE
                    ["Write temporal state tests"], # DEFERRED
                    ["paused for higher priority"],
+                   [],                             # durations
                )):
         block = temporal_state_prompt_block()
 

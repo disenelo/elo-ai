@@ -102,7 +102,7 @@ def test_at4_active_intentions_populated():
 
         return [MockInt(text=t, status="ACTIVE") for t in mock_active]
 
-    with patch("runtime.temporal_state._read_intentions", return_value=(mock_active, [], [])):
+    with patch("runtime.temporal_state._read_intentions", return_value=(mock_active, [], [], [])):
         frame = read_temporal_frame()
 
     assert frame.has_active, "AT-4: has_active should be True when intentions are ACTIVE"
@@ -119,7 +119,7 @@ def test_at5_deferred_intentions_populated():
     deferred_reasons = ["paused to handle higher-priority task"]
 
     with patch("runtime.temporal_state._read_intentions",
-               return_value=([], deferred_texts, deferred_reasons)):
+               return_value=([], deferred_texts, deferred_reasons, [])):
         frame = read_temporal_frame()
 
     assert frame.has_deferred, "AT-5: has_deferred should be True"
@@ -133,7 +133,7 @@ def test_at6_deferred_reasons_match():
     deferred_reasons = ["waiting for requirements to stabilise"]
 
     with patch("runtime.temporal_state._read_intentions",
-               return_value=([], deferred_texts, deferred_reasons)):
+               return_value=([], deferred_texts, deferred_reasons, [])):
         frame = read_temporal_frame()
 
     assert "waiting for requirements" in frame.deferred_reasons[0], (
@@ -177,7 +177,7 @@ def test_at10_block_makes_temporal_distinctions(tmp_path):
     path = tmp_path / "spg.jsonl"
     _write_signals(path, [_signal("close", ts=1700000000.0 + i) for i in range(10)])
     with patch("runtime.temporal_state._read_intentions",
-               return_value=(["Active task A"], ["Deferred task B"], ["reason X"])):
+               return_value=(["Active task A"], ["Deferred task B"], ["reason X"], [])):
         with patch.object(ts_mod, "_SIGNALS", path):
             block = temporal_state_prompt_block()
     assert "NOW" in block or "ACTIVE" in block, "AT-10: block must mention NOW/ACTIVE"
