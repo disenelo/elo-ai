@@ -407,6 +407,8 @@ _CODE_SIGNAL_RE = re.compile(
     r"|\$schema\b"                                         # JSON Schema $schema key
     r"|\bps\s+aux\b|\bgrep\s+\w|\bawk\s+|\bxargs\s+|\bkill\s+-|\bchmod\s+|\bsudo\s+|\bgit\s+\w"  # shell signals
     r"|\|\s*\w+"                                           # pipe to command
+    r"|\n\s{2,}\w[\w_-]*:\s+\S"                           # YAML indented key: value (C10 fix)
+    r"|\n\w[\w_-]*:\s*\n\s+\w"                            # YAML block header with indented children
     ,
     re.IGNORECASE,
 )
@@ -1547,7 +1549,9 @@ def _ollama_stream(
             "Do NOT begin with 'does the following:', 'Here is how', 'Here's how', or a numbered list. "
             "Answer in direct prose sentences. "
             "Do NOT deflect. Do NOT end with 'yeah?', 'innit?', 'right?', or any colloquial question or tag. "
-            "Do NOT respond with slang or casual filler. "
+            "Do NOT respond with only a voice marker like 'Yeah man.' or 'Yeah aight cool.' — "
+            "the technical explanation is mandatory and must be complete before any register phrase. "
+            "Do NOT respond with slang or casual filler alone. "
             "Give a clear, direct structural explanation of every component. "
             "This is eLo demonstrating technical fluency, not casual conversation."
         )
@@ -2314,6 +2318,8 @@ def route(
         r"|##\s"            # Markdown heading
         r"|\|\s*-{3,}\s*\||\|\s*:?-+"  # Markdown table separator
         r"|\$schema\b"      # JSON Schema key
+        r"|\n\s{2,}\w[\w_-]*:\s+\S"     # YAML indented key: value (C10 fix)
+        r"|\n\w[\w_-]*:\s*\n\s+\w"      # YAML block header with indented children
         ,
         re.IGNORECASE,
     )
@@ -2462,7 +2468,9 @@ def route(
             "Do NOT begin with 'does the following:', 'Here is how', 'Here's how', or a numbered list. "
             "Answer in direct prose sentences. "
             "Do NOT deflect. Do NOT end with 'yeah?', 'innit?', 'right?', or any colloquial question or tag. "
-            "Do NOT respond with slang or casual filler. "
+            "Do NOT respond with only a voice marker like 'Yeah man.' or 'Yeah aight cool.' — "
+            "the technical explanation is mandatory and must be complete before any register phrase. "
+            "Do NOT respond with slang or casual filler alone. "
             "Give a clear, direct structural explanation of every component. "
             "This is eLo demonstrating technical fluency, not casual conversation."
         )

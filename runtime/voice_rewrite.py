@@ -174,7 +174,10 @@ def _build_rewrite_prompt(
     # COG-004: technical inputs need unlimited sentence cap so every component/clause
     # is preserved. Non-technical turns stay at 2 sentences to keep eLo concise.
     sentence_rule = (
-        "- No sentence limit — this is a technical explanation; preserve EVERY component, keyword, and clause"
+        "- No sentence limit — this is a technical explanation; preserve EVERY component, keyword, flag, and clause\n"
+        "- CRITICAL: Do NOT collapse the explanation to only a voice marker (e.g. 'Yeah man.' alone is WRONG)\n"
+        "- Every technical term, option, flag, keyword, and value from the draft MUST appear in your rewrite\n"
+        "- A voice marker may appear at the end AFTER the full technical content — never instead of it"
         if is_technical else
         "- Max 2 sentences unless the answer genuinely needs more"
     )
