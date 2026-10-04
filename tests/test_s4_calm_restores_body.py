@@ -93,6 +93,31 @@ def test_calm_does_not_engage_an_unengaged_track():
         "an unengaged physical track must stay out of elo_battery")
 
 
+def test_restore_physical_does_not_engage_the_track():
+    """
+    The property the calm guard depends on, pinned.
+
+    I claimed the `if _physical_engaged:` guard is what stops calm engaging
+    the track. It is not — restore_physical() never sets _physical_engaged,
+    only drain_physical() does, so calm could not have engaged it either way.
+    The wire-cut that removed the guard went GREEN, which is how I found out.
+
+    The guard is sufficient only because of the behaviour below. If
+    restore_physical() ever gains the engaging behaviour its sibling has,
+    calm becomes a back door into flooring elo_battery at WEIGHT_PHYSICAL and
+    killing the dream trigger — so the behaviour is asserted rather than
+    assumed.
+    """
+    hb.reset()
+    hb.restore_physical(0.5)
+    assert hb.snapshot()["physical_state"] == hb.PHYSICAL_UNTRACKED
+    assert not hb._physical_engaged
+
+    hb.reset()
+    hb.drain_physical(0.5)
+    assert hb._physical_engaged, "drain engages; restore must not"
+
+
 def test_calm_never_overfills_the_body():
     _walk_until_exhausted()
     for _ in range(10_000):

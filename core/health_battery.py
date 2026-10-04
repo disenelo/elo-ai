@@ -512,11 +512,22 @@ def calm_tick(dt_seconds: float = 1.0) -> None:
 
     eLo would sit down once and never get up.
 
-    Guarded on _physical_engaged, exactly as the dream restore is. Engaging
-    the track here would put physical at 1.0 into elo_battery and floor it at
-    WEIGHT_PHYSICAL (0.4), making ENERGY_CRITICAL (0.10) unreachable and
-    killing the dream trigger — the failure the PHYSICAL_ACTIVITIES gate
-    exists to prevent. Rest must not be a back door into it.
+    Guarded on _physical_engaged, exactly as the dream restore is.
+
+    Stated accurately, because the first version of this comment was not:
+    the guard is NOT what stops calm engaging the track. restore_physical()
+    does not set _physical_engaged at all — only drain_physical() does — so
+    calm could never have engaged it, guard or no guard. A wire-cut that
+    removed the guard went green, which is how that was found.
+
+    What the guard does is keep rest from touching a battery that is not
+    being tracked, and keep this function consistent with
+    on_wake_from_dream(). It is sufficient only BECAUSE restore_physical()
+    does not engage, and that property is now pinned by a test — if someone
+    gives restore_physical() the engaging behaviour its sibling has, calm
+    becomes a back door into flooring elo_battery at WEIGHT_PHYSICAL (0.4),
+    putting ENERGY_CRITICAL (0.10) out of reach and killing the dream
+    trigger.
 
     Uses RESTORE_CALM_PER_MIN for both tracks, matching on_wake_from_dream(),
     which applies one amount to both. [FLAG for David/Board: this is 60x
