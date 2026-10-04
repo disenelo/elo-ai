@@ -137,34 +137,44 @@ def test_changing_the_state_changes_what_is_retrieved(monkeypatch):
     )
 
 
-def test_the_live_store_is_inert_and_says_so(caplog):
+def test_the_rerank_reports_whichever_state_it_is_in(caplog):
     """
-    The finding. 214 SPG nodes, 2220 WKG claims, ZERO shared ids, so every
-    significance is 0.0 and the sort is a no-op -- while the old debug line
-    reported a successful rerank.
+    Was test_the_live_store_is_inert_and_says_so, which asserted the store IS
+    inert. That was the finding at the time — 214 nodes, 2220 claims, zero
+    shared ids — and it is no longer true: record_claim() now gives every
+    claim a node under its own claim_id (WO-SPG-LINK-001).
 
-    Inverting every significance in the live store changed the retrieved order
-    by nothing. That is what "decorative" means, and the system must now say
-    so out loud rather than logging success.
+    Asserting a fixed verdict about a live store means the test goes stale the
+    moment the store changes. What must hold permanently is that the code
+    SAYS which state it is in, so the property is asserted instead of the
+    state: exactly one of INERT, FLAT or a ranking, never silence.
     """
     import logging
-    with caplog.at_level(logging.WARNING, logger="memory.spg_faculty"):
+    with caplog.at_level(logging.DEBUG, logger="memory.spg_faculty"):
         _labels()
-    assert any("SPG rerank INERT" in r.message for r in caplog.records), (
-        "the live store contributes no significance and the code does not say so"
+    said = [r.message for r in caplog.records]
+    assert any(("INERT" in m) or ("FLAT" in m) or ("SPG rerank:" in m) for m in said), (
+        f"the rerank ran and reported nothing about whether it could rank: {said}"
     )
 
 
-def test_live_store_really_has_no_overlap_with_claims():
-    """Pins the specific fact, so a future re-link is detected as a change."""
+def test_the_live_store_links_to_claims_now():
+    """
+    The inverse of what this pinned before, and deliberately still pinned.
+
+    Reads the live files directly rather than the conftest-redirected graph,
+    because the claim being made is about eLo's real memory. Zero overlap
+    would mean the link has regressed and every significance is back to 0.0.
+    """
     import json as _json
     nodes = {n["id"] for n in _json.load(open(_STORE, encoding="utf-8"))["nodes"]}
     claims = {c.get("claim_id", "") for c in _json.load(
         open(os.path.join(_ROOT, "memory", "wkg", "claims.json"), encoding="utf-8"))}
-    assert nodes and claims
-    assert not (nodes & claims), (
-        "SPG nodes now overlap WKG claims — the ranking may be live again; "
-        "re-check test_the_live_store_is_inert_and_says_so"
+    assert claims, "no claims at all — something larger is wrong"
+    assert nodes, "the SPG store is empty"
+    assert nodes & claims, (
+        "no SPG node matches any claim — record_claim has stopped linking and "
+        "the significance rerank is inert again"
     )
 
 
