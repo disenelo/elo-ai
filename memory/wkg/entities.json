@@ -6,10 +6,12 @@
     "aliases": [
       "David"
     ],
-    "description": "Creator of eLo and DISENELO. Born in Fulham (NOT Camberwell), raised in Brixton, South London. Studio: Hackney Wick. Email: dcharles@disenelo.com. Date of birth: 18 January 1986. Role: Founder / CEO / Chief Architect / L3 Authority at DISENELO. Given name: David. Surname: Charles. Always address as 'David' — never 'Charles', never by surname. Active projects: eLo AI OS, eLo-Planet (Unity game), eLo Robot (animatronic), DISENELO Plushies addon, DISENELO Seams addon, eLo Retargeter addon.",
+    "description": "Creator of eLo and DISENELO. Born in Fulham (NOT Camberwell), raised in Brixton, South London. Studio: Hackney Wick. Email: dcharles@disenelo.com. Date of birth: 18 January 1986. Role: Founder / CEO / Chief Architect / L3 Authority at DISENELO. Given name: David. Surname: Charles. Always address as 'David' \u2014 never 'Charles', never by surname. Active projects: eLo AI OS, eLo-Planet (Unity game), eLo Robot (animatronic), DISENELO Plushies addon, DISENELO Seams addon, eLo Retargeter addon.",
     "created_at": 1788605204.775095,
     "updated_at": 1790643400.0,
-    "source_ids": ["profile_enrichment_2026-09-29"]
+    "source_ids": [
+      "profile_enrichment_2026-09-29"
+    ]
   },
   {
     "entity_id": "ebbfe451-d02e-44ce-8ae1-48dab7bab9af",
@@ -297,8 +299,230 @@
       "eLo design constraints",
       "eLo physical constraints"
     ],
-    "description": "Design constraints for eLo's physical form. Material: TPU (thermoplastic polyurethane) — inflatable, translucent, soft. MOST CRITICAL constraints: (1) NeoPixel glow diffusion — shell must diffuse light, no hard shadow edges, material chosen for glow propagation; (2) Plushies pipeline — panels designed via DISENELO Plushies Blender addon for sewing/manufacturing. Additional constraints: no hard edges (safety, chibi aesthetic), chibi proportions (~40cm tall, wide shoulders, compact body), internal cable-tension skeleton for posture. No eyes, no visible mouth — expression is body posture + glow only. Robot is separate from eLo AI OS (cognitive presence). Phase 1: static glowing, voice-reactive only. Omni-wheel base (not bipedal). NeoPixel colour language: idle=teal, listening=white, thinking=amber, speaking=coral, calm=violet.",
+    "description": "Design constraints for eLo's physical form. Material: TPU (thermoplastic polyurethane) \u2014 inflatable, translucent, soft. MOST CRITICAL constraints: (1) NeoPixel glow diffusion \u2014 shell must diffuse light, no hard shadow edges, material chosen for glow propagation; (2) Plushies pipeline \u2014 panels designed via DISENELO Plushies Blender addon for sewing/manufacturing. Additional constraints: no hard edges (safety, chibi aesthetic), chibi proportions (~40cm tall, wide shoulders, compact body), internal cable-tension skeleton for posture. No eyes, no visible mouth \u2014 expression is body posture + glow only. Robot is separate from eLo AI OS (cognitive presence). Phase 1: static glowing, voice-reactive only. Omni-wheel base (not bipedal). NeoPixel colour language: idle=teal, listening=white, thinking=amber, speaking=coral, calm=violet.",
     "created_at": 1790100000.0,
     "source_ids": []
+  },
+  {
+    "entity_id": "034676d7-38fa-4b0b-8fac-91a554fb0dc7",
+    "entity_type": "CONCEPT",
+    "label": "Raspberry Pi",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: elo-robot)",
+    "created_at": 1790912563.233728,
+    "source_ids": [
+      "test-xid-001"
+    ]
+  },
+  {
+    "entity_id": "bf746e10-68ff-4946-bf78-696e8f5f7aa3",
+    "entity_type": "CONCEPT",
+    "label": "Tell",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: elo-robot)",
+    "created_at": 1790912563.234379,
+    "source_ids": [
+      "test-xid-001"
+    ],
+    "deprecated": true,
+    "deprecated_reason": "sentence opener captured as a capitalised word \u2014 extractor defect, WO-WKG-JUNK-001",
+    "deprecated_at": 1791138561.099586
+  },
+  {
+    "entity_id": "813e0bb1-17af-40cd-a819-640b701dcc23",
+    "entity_type": "CONCEPT",
+    "label": "Raspberry",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: elo-robot)",
+    "created_at": 1790912563.2349818,
+    "source_ids": [
+      "test-xid-001"
+    ],
+    "deprecated": true,
+    "deprecated_reason": "fragment of \"Raspberry Pi\" captured standalone \u2014 extractor defect, WO-WKG-JUNK-001",
+    "deprecated_at": 1791138561.102023,
+    "superseded_by": "034676d7-38fa-4b0b-8fac-91a554fb0dc7"
+  },
+  {
+    "entity_id": "1d8f7b8b-3a0e-4de7-8d61-a25499ca5d0c",
+    "entity_type": "CONCEPT",
+    "label": "NeoPixel",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: elo-robot)",
+    "created_at": 1790912563.23559,
+    "source_ids": [
+      "test-xid-001"
+    ]
+  },
+  {
+    "entity_id": "89df45e2-30a7-4620-887c-a81e3b3b6e2c",
+    "entity_type": "CONCEPT",
+    "label": "What",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791032759.2961862,
+    "source_ids": [
+      "ELO-uJX1-vxak"
+    ],
+    "deprecated": true,
+    "deprecated_reason": "sentence opener captured as a capitalised word \u2014 extractor defect, WO-WKG-JUNK-001",
+    "deprecated_at": 1791138561.100429
+  },
+  {
+    "entity_id": "747294a9-9c51-4b9c-a0f5-0a1236682fb8",
+    "entity_type": "CONCEPT",
+    "label": "You",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791032759.297333,
+    "source_ids": [
+      "ELO-uJX1-vxak"
+    ],
+    "deprecated": true,
+    "deprecated_reason": "function word captured as a capitalised word \u2014 extractor defect, WO-WKG-JUNK-001",
+    "deprecated_at": 1791138561.101145
+  },
+  {
+    "entity_id": "e2a268f7-bcc0-451d-bebc-3a34db738401",
+    "entity_type": "CONCEPT",
+    "label": "Sausage",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791032827.4342232,
+    "source_ids": [
+      "ELO-8gWB-5hDU"
+    ]
+  },
+  {
+    "entity_id": "ca22e0ea-1d6e-41a9-bc19-5a7e3b5cb1c2",
+    "entity_type": "CONCEPT",
+    "label": "Desktop",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791071224.835202,
+    "source_ids": [
+      "ELO-brKN-29cb"
+    ]
+  },
+  {
+    "entity_id": "0d36fc53-76cf-4ac1-880f-ccd29f4d02a3",
+    "entity_type": "CONCEPT",
+    "label": "Python",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791132064.39749,
+    "source_ids": [
+      "ELO-kEGE-9245"
+    ]
+  },
+  {
+    "entity_id": "fb380beb-9ef8-4f10-bfcd-c5a366a5ca89",
+    "entity_type": "CONCEPT",
+    "label": "Hello, {name}!",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791132753.57293,
+    "source_ids": [
+      "ELO-fRMY-q6P4"
+    ]
+  },
+  {
+    "entity_id": "9d9efd39-b024-4a63-b032-a7626fd55c62",
+    "entity_type": "CONCEPT",
+    "label": "JavaScript",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791132801.6687639,
+    "source_ids": [
+      "ELO-XGRE-VTtm"
+    ]
+  },
+  {
+    "entity_id": "73b27821-772b-45c7-b642-14eedff9a008",
+    "entity_type": "CONCEPT",
+    "label": "Animal",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791132885.804375,
+    "source_ids": [
+      "ELO-ygIN-Saza"
+    ]
+  },
+  {
+    "entity_id": "dac6f5ce-9459-4a99-bd0e-57640ce18d3a",
+    "entity_type": "CONCEPT",
+    "label": "Speak",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791132885.8053272,
+    "source_ids": [
+      "ELO-ygIN-Saza"
+    ]
+  },
+  {
+    "entity_id": "cb401b80-97f5-4042-8e34-f7c9a6d06e11",
+    "entity_type": "CONCEPT",
+    "label": "Console",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791132885.8059468,
+    "source_ids": [
+      "ELO-ygIN-Saza"
+    ]
+  },
+  {
+    "entity_id": "0755ca62-41ff-41f9-8c1b-3b4ab4ff6661",
+    "entity_type": "CONCEPT",
+    "label": "WriteLine",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791132885.806693,
+    "source_ids": [
+      "ELO-ygIN-Saza"
+    ]
+  },
+  {
+    "entity_id": "dbc54555-96d6-41c4-9c7d-3ba002f9269b",
+    "entity_type": "CONCEPT",
+    "label": "...",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791132885.80741,
+    "source_ids": [
+      "ELO-ygIN-Saza"
+    ]
+  },
+  {
+    "entity_id": "27afa261-d4ba-4a73-8c77-68595d3b6182",
+    "entity_type": "CONCEPT",
+    "label": "Hello, World!\\n",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791132933.938621,
+    "source_ids": [
+      "ELO-VIIC-uWGX"
+    ]
+  },
+  {
+    "entity_id": "732f88fb-44e3-4ad7-bf6f-40f35bb2f3ed",
+    "entity_type": "CONCEPT",
+    "label": "Rust",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791132991.584304,
+    "source_ids": [
+      "ELO-kI9S-ONiL"
+    ]
+  },
+  {
+    "entity_id": "5f2219ff-7dee-4584-b1fb-6e7670bc8f37",
+    "entity_type": "CONCEPT",
+    "label": "Fibonacci",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791132991.585495,
+    "source_ids": [
+      "ELO-kI9S-ONiL"
+    ]
   }
 ]

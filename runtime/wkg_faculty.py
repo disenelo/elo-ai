@@ -94,13 +94,69 @@ def get_claims_by_type(entity_id: str, relationship_type: str) -> list:
     ]
 
 
-def search_entities(label: str) -> list:
+def search_entities(label: str, *, include_deprecated: bool = False) -> list:
+    """
+    Entities matching `label`, by label or alias.
+
+    Deprecated entities are skipped. Retirement affects DISCOVERY only —
+    get_entity() and get_claims_about() still resolve them, because a claim
+    recorded against an entity really was recorded and dropping it would be
+    rewriting history to tidy the index.
+    """
     target = label.lower()
     return [
         e for e in _load("entities")
-        if e["label"].lower() == target
-        or target in [a.lower() for a in e.get("aliases", [])]
+        if (include_deprecated or not e.get("deprecated"))
+        and (e["label"].lower() == target
+             or target in [a.lower() for a in e.get("aliases", [])])
     ]
+
+
+def deprecate_entity(
+    entity_id: str,
+    reason: str,
+    *,
+    superseded_by: str | None = None,
+    undo: bool = False,
+) -> bool:
+    """
+    Retire an entity WITHOUT deleting it. Returns True if a row changed.
+
+    Four entities in the live store are artefacts of the extractor defect
+    fixed in WO-WKG-JUNK-001 — "Tell", "What", "You" (sentence openers
+    matched as capitalised words) and "Raspberry" (a fragment of "Raspberry
+    Pi" captured again on its own). They are not knowledge; "What" matched
+    the question "what is the weather in Lisbon tomorrow" during SPG
+    retrieval, which is how they were found.
+
+    The writer no longer produces them, and deleting rows from eLo's memory
+    is not how this project corrects things — information is superseded, not
+    removed. The row stays, with a reason, a timestamp, and for a fragment
+    the id of the entity that supersedes it.
+
+    Reversible: a wrong call must not be a one-way door.
+    """
+    changed = False
+    with _wkg_lock:
+        entities = _load("entities")
+        for e in entities:
+            if e.get("entity_id") != entity_id:
+                continue
+            if undo:
+                for k in ("deprecated", "deprecated_reason", "deprecated_at",
+                          "superseded_by"):
+                    e.pop(k, None)
+            else:
+                e["deprecated"] = True
+                e["deprecated_reason"] = reason
+                e["deprecated_at"] = time.time()
+                if superseded_by:
+                    e["superseded_by"] = superseded_by
+            changed = True
+            break
+        if changed:
+            _save("entities", entities)
+    return changed
 
 
 def get_epistemic_class(claim_id: str) -> str | None:
