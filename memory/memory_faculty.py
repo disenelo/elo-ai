@@ -180,6 +180,26 @@ _WKG_STOP: frozenset[str] = frozenset({
 })
 
 
+# Characters that mean "this is code, not a concept". Found 2026-10-04 by
+# auditing entities the running server created after the sentence-opener fix:
+# 'Hello, {name}!', 'Hello, World!\n', '...', 'x = y;'. The quoted-phrase
+# rule takes whatever sits between quotes, and a code sample is mostly
+# quotes.
+_CODE_CHARS = set("{}[]()<>;=\\|`$")
+
+
+def _looks_like_code(text: str) -> bool:
+    """True for a candidate that is a code fragment rather than a concept."""
+    t = (text or "").strip()
+    if not any(ch.isalpha() for ch in t):
+        return True                       # '...' and friends — no letters at all
+    if _CODE_CHARS & set(t):
+        return True
+    if "\\n" in t or "\\t" in t:      # escape sequences as literal characters
+        return True
+    return False
+
+
 def _trim_stopwords(phrase: str) -> list[str]:
     """Drop leading and trailing function words from a capitalised run."""
     words = phrase.split()
@@ -228,11 +248,23 @@ def _extract_wkg_topics(text: str) -> list[str]:
         low = word.lower()
         if low in _WKG_STOP or low in covered:
             continue
+        # Console.WriteLine is one identifier, not two concepts. A dot with
+        # no space beside it joins them; "Blender. Then Unity" has a space
+        # and is two sentences, so both still get through.
+        before = text[m.start() - 1] if m.start() > 0 else ""
+        after  = text[m.end()] if m.end() < len(text) else ""
+        if before == "." or after == ".":
+            nxt = text[m.end() + 1: m.end() + 2]
+            if before == "." or (after == "." and nxt and not nxt.isspace()):
+                continue
         candidates.append(word)
 
-    # Quoted phrases: "forward kinematics"
+    # Quoted phrases: "forward kinematics" — but a code sample is mostly
+    # quotes, so a code-shaped quote is not a concept.
     for m in _re.finditer(r'"([^"]{3,40})"', text):
-        candidates.append(m.group(1).strip())
+        phrase = m.group(1).strip()
+        if not _looks_like_code(phrase):
+            candidates.append(phrase)
     seen: set[str] = set()
     result: list[str] = []
     for c in candidates:

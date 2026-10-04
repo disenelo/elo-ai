@@ -133,3 +133,57 @@ def test_retrieval_does_not_search_the_store_for_function_words():
     assert "the" not in unigrams, unigrams
     assert "lisbon" in unigrams, "a real unigram must still be searched"
     assert any(" " in t for t in searched), "bigrams must survive the filter"
+
+
+# ── Second junk class: code tokens and string literals ──────────────────────
+#
+# Found 2026-10-04 by auditing entities the running server created AFTER the
+# sentence-opener fix. The function-word class is gone; this one is not:
+#
+#   'Hello, {name}!'    a template string
+#   'Hello, World!\n'   a string literal, escape sequence and all
+#   '...'               punctuation, no letters at all
+#   'Console'           half of Console.WriteLine
+#   'WriteLine'         the other half
+#
+# Different cause, same result. The quoted-phrase rule takes anything
+# between quotes, and the capitalised-token rule takes both halves of a
+# dotted identifier.
+#
+# NOT ATTEMPTED: rejecting CamelCase identifiers generally. "WriteLine" is
+# the same shape as "NeoPixel" and "DISENELO", and no rule tells them apart
+# without knowing the text is code. Only the unambiguous cases are rejected
+# here; a CamelCase word that is not part of a dotted path still gets in,
+# and that is the honest limit of a shape-based extractor.
+
+@pytest.mark.parametrize("text,junk", [
+    ('print("Hello, {name}!")',      "Hello, {name}!"),
+    (r'print("Hello, World!\n")',    "Hello, World!\\n"),
+    ('he said "..." and stopped',    "..."),
+    ('use "x = y;" there',           "x = y;"),
+    ('try "foo()" instead',          "foo()"),
+])
+def test_a_code_string_is_not_a_concept(text, junk):
+    assert junk not in _labels(text), f"{text!r} -> {_labels(text)}"
+
+
+def test_a_dotted_identifier_is_not_two_concepts():
+    out = _labels("call Console.WriteLine to print it")
+    assert "Console" not in out, out
+    assert "WriteLine" not in out, out
+
+
+def test_a_sentence_boundary_is_not_a_dotted_identifier():
+    """"Blender. Then Unity." must still yield both — the dot has a space."""
+    out = _labels("I opened Blender. Then Unity loaded.")
+    assert "Blender" in out and "Unity" in out, out
+
+
+def test_a_real_quoted_phrase_still_survives():
+    assert "forward kinematics" in _labels('explain "forward kinematics" to me')
+
+
+def test_camelcase_product_names_still_survive():
+    """The limit, asserted so it is a decision and not an accident."""
+    out = _labels("the NeoPixel ring on the DISENELO build")
+    assert "NeoPixel" in out or "NeoPixel ring" in out, out
