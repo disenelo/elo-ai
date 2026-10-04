@@ -79,6 +79,18 @@ def store_correction(
     if tier == TIER_DAVID and not reviewed:
         return False  # blocked — David must review before this enters memory
 
+    # A correction that cannot say what was corrected is a gap, and tens of
+    # thousands of entries accumulated carrying none while nothing said so.
+    # Silence is how it reached that number. Stored either way — the entry is
+    # still evidence — but it will not reach the history block, because a
+    # correction with no "before" lets eLo pretend he always knew.
+    if not (old_belief or "").strip():
+        _log.warning(
+            "store_correction: no old_belief — this entry records a correction "
+            "with no record of what was corrected, and will not appear in the "
+            "correction history. why=%r", (why or "")[:80],
+        )
+
     if _CHARLES_ADDRESS_RE.search(corrected_response):
         _log.warning("store_correction: rejected — 'Charles' used as address form in corrected_response")
         return False  # reject poisoned address form before it reaches the ledger
@@ -278,6 +290,12 @@ def ingest_from_shadow_log(path: Optional[str] = None, limit: int = 50) -> int:
             ok = store_correction(
                 input_text=r["raw_input"],
                 corrected_response=r["elo_final"],
+                # The prior belief, and it was being discarded. elo_raw_gen IS
+                # what eLo said before the verify layer caught it; elo_final is
+                # the correction. Both sit in this same record. Without it the
+                # ledger holds a correction with no "before", which is the one
+                # thing the correction history exists to preserve.
+                old_belief=r["elo_raw_gen"],
                 why="scrub: raw generation differed from final output (verify layer caught a slip)",
                 trace={"trace_id": tid, "backend": r.get("backend_used", "")},
                 reviewed=True,
@@ -389,9 +407,24 @@ def correction_history_prompt_block(max_entries: int = 20) -> str:
         if not entries:
             return ""
 
-        # WO-CORRECTIONS-SCHEMA-001: filter on corrected_response (actual schema field).
-        # old_belief is optional — only present when passed explicitly to store_correction().
-        provenance = [e for e in entries if e.get("corrected_response")]
+        # Requires BOTH halves. WO-CORRECTIONS-SCHEMA-001 loosened this to
+        # corrected_response alone, for a real reason — tens of thousands of
+        # entries existed and none carried old_belief, so the block was always
+        # empty. But the loosened filter renders "corrected to: X" with no
+        # record of what eLo previously thought, which is correction with the
+        # history removed: exactly what this block exists to prevent, and what
+        # AT-4 and AT-12 of WO-ELO-CORRECTION-HISTORY-001 forbid.
+        #
+        # AT-12 is the causal test in David's own form — delete the old_belief
+        # state and the influence must vanish. Under the loosened filter it did
+        # not, so the block was uncaused by the thing it claimed to report.
+        #
+        # Neither filter was the fix. The DATA was: ingest_from_shadow_log was
+        # discarding elo_raw_gen, the prior belief, at the one site where it
+        # demonstrably exists. That is now captured, so this filter has real
+        # entries to find instead of being loosened until it finds something.
+        provenance = [e for e in entries
+                      if e.get("corrected_response") and (e.get("old_belief") or "").strip()]
         if not provenance:
             return ""
 
