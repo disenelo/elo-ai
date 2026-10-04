@@ -2114,6 +2114,39 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
         except Exception as _we:
             _logger.debug("weather direct intercept failed: %s", _we)
 
+    # §8 Lights — wire dispatch_lights() into the active runtime (BUILD_STATUS gap)
+    _LIGHTS_SCENE_MAP = {
+        "calm": ["calm", "relax", "chill", "meditat", "leaf on water", "reflective"],
+        "focus": ["focus", "work", "build", "code", "concentration", "productive"],
+        "play": ["play", "party", "colour", "color", "fun", "creative"],
+        "dim": ["dim", "low", "ambient", "soft", "gentle"],
+        "off": ["off", "turn off", "lights off", "shut off"],
+    }
+    _LIGHTS_ACTION_PATS = [
+        r"\b(?:turn|switch|set|put|change|make)\s+(?:the\s+)?lights?\s+(?:to\s+)?(\w[\w\s]*)",
+        r"\blights?\s+(?:to\s+|on\s+)?(\w[\w\s]*)(?:\s+mode)?\b",
+        r"\bset\s+(?:scene|light\s+scene)\s+(?:to\s+)?(\w+)\b",
+        r"\b(calm|focus|play|dim)\s+(?:mode|lights?|scene)\b",
+    ]
+    _LIGHTS_SIMPLE_PATS = [
+        (r"\b(?:turn\s+(?:the\s+)?)?lights?\s+off\b", "off"),
+        (r"\b(?:dim|dimm?er?)\s+(?:the\s+)?lights?\b", "dim"),
+        (r"\bfocus\s+(?:mode|lights?)\b", "focus"),
+        (r"\bcalm\s+(?:mode|lights?|scene)\b", "calm"),
+    ]
+    # Simple scene patterns
+    for _lp, _ls in _LIGHTS_SIMPLE_PATS:
+        if re.search(_lp, _lower):
+            try:
+                from capabilities.lights_agent import dispatch_lights as _dl
+                _lr = _dl("set_scene", {"scene": _ls})
+                if _lr.get("success"):
+                    return f"[LIGHTS: Scene '{_ls}' applied successfully.]\n\n{user_input}", "lights"
+                elif "not set" in (_lr.get("error") or ""):
+                    return f"[LIGHTS: Scene '{_ls}' requested — Hue bridge not configured (HUE_BRIDGE_IP/HUE_API_KEY).]\n\n{user_input}", "lights"
+            except Exception as _le:
+                _logger.debug("lights simple intercept failed: %s", _le)
+
     return None
 
 
