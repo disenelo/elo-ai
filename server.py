@@ -5333,7 +5333,10 @@ def _process_turn(raw: str) -> dict:
                     _gate_log.getLogger("server.system").error(
                         "system_action failed (suppressed from voice): %s", _sys_err
                     )
-                    response = None  # let turn fall through to LLM naturally
+                    # TEXT-REPLY-BUG fix: this elif branch already matched direct_response;
+                    # setting response=None here cannot fall through to the LLM else: branch —
+                    # that branch is already skipped. Keep direct_response so Unity receives text.
+                    # response = None  ← REMOVED (was causing null in JSON → missing chat text)
                     # WO-082: record failure so reliability drops and "why" readback is honest.
                     try:
                         from self.decision_journal import record_failure as _dj_fail
@@ -7692,6 +7695,10 @@ def _process_turn(raw: str) -> dict:
             pass
 
         print(f"[eLo] backend={backend_used} action={_action}", flush=True)
+        # TEXT-REPLY-BUG guard: response must always be a string before HTTP reply.
+        # None or non-str response becomes null in JSON → Unity ParseResponseBubbles sees nothing.
+        if not isinstance(response, str):
+            response = str(response) if response is not None else ""
         return {
             "inner_thought": _inner_thought,
             "response":      response,
