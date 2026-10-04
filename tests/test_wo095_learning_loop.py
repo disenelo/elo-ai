@@ -178,15 +178,17 @@ try:
     )
     assert scores_no["embodiment"] == 0.0, "timeout completion must give embodiment=0.0"
 
-    # Back-compat: no outcome → no reward key, same 9+overall keys
+    # WO-101 Architect ruling F: reward canonical (always present, 0.0 when no outcome)
     scores_base = _sig_eval(raw, resp, "ground")
     base_keys = set(scores_base.keys())
-    assert "reward" not in base_keys, "no-outcome call must not return 'reward' key"
+    assert "reward" in base_keys, "no-outcome call must return 'reward' key (zeroed, WO-101)"
+    assert scores_base["reward"] == 0.0, "no-outcome call must return reward=0.0"
     required_keys = {"presence","learning","logic","humour","relationship","creation",
-                     "system_change","novelty","continuity","overall"}
+                     "system_change","novelty","continuity","overall",
+                     "embodiment","efficiency","safety","reward"}
     assert required_keys.issubset(base_keys), f"missing keys: {required_keys - base_keys}"
 
-    ok("AT-3: verified ACK → reward>0; unverified → reward=0; no outcome → back-compat keys")
+    ok("AT-3: verified ACK → reward>0; unverified → reward=0; no outcome → reward=0 (WO-101)")
 except AssertionError as e:
     fail("AT-3", e)
 except Exception as e:
@@ -287,18 +289,19 @@ except Exception as e:
     fail("AT-5", e)
 
 
-# ── AT-6: significance_engine back-compat (no outcome) ────────────────────────
+# ── AT-6: significance_engine canonical shape (no outcome) ────────────────────
 try:
     from memory.significance_engine import evaluate as _sig_bc
 
     scores = _sig_bc("what should I do", "Here's what I think.", "reflect")
     required = {"presence","learning","logic","humour","relationship","creation",
-                "system_change","novelty","continuity","overall"}
+                "system_change","novelty","continuity","overall",
+                "embodiment","efficiency","safety","reward"}
     assert required.issubset(scores.keys()), f"missing keys: {required - scores.keys()}"
-    assert "reward" not in scores, "no-outcome call must not return 'reward'"
+    assert scores["reward"] == 0.0, "no-outcome call must return reward=0.0 (WO-101 ruling F)"
     assert all(0.0 <= v <= 1.0 for v in scores.values()), "all scores must be 0–1"
 
-    ok("AT-6: significance_engine.evaluate() back-compat — no outcome → same keys, same range")
+    ok("AT-6: significance_engine.evaluate() canonical shape — no outcome → 14 keys, reward=0.0")
 except AssertionError as e:
     fail("AT-6", e)
 except Exception as e:

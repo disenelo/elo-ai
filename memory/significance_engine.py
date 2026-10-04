@@ -250,10 +250,11 @@ def evaluate(
         else:
             scores["reward"] = _clamp(0.70 * outcome_terms + 0.30 * scores["overall"])
     else:
-        # outcome=None: body dims present but zeroed; reward NOT included (back-compat 9+overall)
+        # outcome=None: body dims + reward zeroed (WO-101 Architect ruling F — 14-key canonical shape)
         scores["embodiment"] = 0.0
         scores["efficiency"] = 0.0
         scores["safety"]     = 0.0
+        scores["reward"]     = 0.0
 
     return scores
 
