@@ -175,6 +175,52 @@ def get_source(source_id: str) -> dict | None:
 
 # ── entity creation (needed by MemoryFaculty to establish subjects/objects) ───
 
+# A label short enough to be a NAME rather than a description. "Raspberry
+# Pi" is a name and "Raspberry" is its head; "David as creator of eLo" is a
+# sentence that happens to contain an entity.
+_NAME_MAX_WORDS = 3
+
+
+def _fragment_of(label: str, entities: list) -> dict | None:
+    """
+    The existing entity that `label` is a bare fragment of, or None.
+
+    WO-WKG-JUNK-ENTITY-FILTER-001. "Raspberry" must not become an entity
+    beside "Raspberry Pi", and eLo MUST survive — and eLo is a whole-word
+    substring of two existing labels, "David as creator of eLo" and "eLo
+    robot design constraints". A plain substring check deletes the central
+    entity of the project. I nearly did that earlier today with a fragment
+    heuristic that flagged eLo, and caught it only because the output
+    looked wrong.
+
+    Two conditions, either of which saves eLo on its own:
+
+      - the candidate must be a word-PREFIX of the longer label. eLo is a
+        SUFFIX of "David as creator of eLo".
+      - the longer label must be short enough to be a name (<= 3 words).
+        "eLo robot design constraints" is four, so eLo is safe there too.
+
+    And a candidate that already exists as an entity in its own right is
+    never a fragment of anything.
+    """
+    cand = (label or "").strip()
+    if not cand:
+        return None
+    low = cand.lower()
+    if any((e.get("label") or "").strip().lower() == low for e in entities):
+        return None                      # already known in its own right
+
+    cand_words = low.split()
+    for e in entities:
+        other = (e.get("label") or "").strip()
+        words = other.lower().split()
+        if len(words) > _NAME_MAX_WORDS or len(words) <= len(cand_words):
+            continue
+        if words[:len(cand_words)] == cand_words:
+            return e
+    return None
+
+
 def create_entity(
     entity_type: str,
     label: str,
@@ -184,6 +230,23 @@ def create_entity(
 ) -> dict:
     if entity_type not in _ENTITY_TYPES:
         raise ValueError(f"Unknown entity_type: {entity_type!r}")
+
+    # Refuse a duplicate or a bare fragment of a name already held. Returns
+    # the rejection rather than raising: entity creation runs inside
+    # populate_wkg_from_turn()'s fire-and-forget loop, and a raise there
+    # would be swallowed and look like success.
+    _existing = _load("entities")
+    _dup = next((e for e in _existing
+                 if (e.get("label") or "").strip().lower() == (label or "").strip().lower()), None)
+    if _dup is not None:
+        return {**_dup, "rejected": True, "reason": "duplicate label"}
+    _frag = _fragment_of(label, _existing)
+    if _frag is not None:
+        import logging as _ce_log
+        _ce_log.getLogger("wkg_faculty").info(
+            "entity %r rejected: bare fragment of %r", label, _frag.get("label"))
+        return {"rejected": True, "reason": "fragment",
+                "label": label, "superseded_by": _frag.get("entity_id")}
     entity = {
         "entity_id": str(uuid.uuid4()),
         "entity_type": entity_type,

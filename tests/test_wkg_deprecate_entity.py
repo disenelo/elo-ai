@@ -65,8 +65,13 @@ def test_the_reason_and_time_are_recorded(_store):
 
 
 def test_a_fragment_points_at_what_supersedes_it(_store):
-    pi = wkg.create_entity(entity_type="CONCEPT", label="Raspberry Pi", description="")
+    # Fragment FIRST, full name second — which is how the live store got
+    # this way, and the only order that still works now that
+    # WO-WKG-JUNK-ENTITY-FILTER-001 refuses a fragment of a name already
+    # held. Deprecation is for rows that already exist; the filter stops
+    # new ones.
     frag = wkg.create_entity(entity_type="CONCEPT", label="Raspberry", description="")
+    pi = wkg.create_entity(entity_type="CONCEPT", label="Raspberry Pi", description="")
     wkg.deprecate_entity(frag["entity_id"], reason="fragment",
                          superseded_by=pi["entity_id"])
     rows = {r["entity_id"]: r for r in
@@ -103,8 +108,8 @@ def test_claims_about_a_deprecated_entity_still_resolve(_store):
     History is not rewritten to tidy the index. A claim recorded against
     "Raspberry" really was recorded.
     """
-    pi = wkg.create_entity(entity_type="CONCEPT", label="Raspberry Pi", description="")
     frag = wkg.create_entity(entity_type="CONCEPT", label="Raspberry", description="")
+    pi = wkg.create_entity(entity_type="CONCEPT", label="Raspberry Pi", description="")
     claim = wkg.record_claim(frag["entity_id"], "PART_OF", pi["entity_id"],
                              "VERIFIED", source_id="t")
     wkg.deprecate_entity(frag["entity_id"], reason="fragment",
