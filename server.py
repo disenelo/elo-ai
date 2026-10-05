@@ -5968,6 +5968,14 @@ def _process_turn(raw: str) -> dict:
                     if os.environ.get("ELO_STREAM", "1") != "0":
                         def _early_tts(sentence: str) -> None:
                             try:
+                                # TEXT-REPLY-BUG race-condition guard: if Executive chose
+                                # silence, the silence gate at ~line 7359 will zero
+                                # response + _bubbles AFTER this callback fires. Speaking
+                                # early would cause David to hear audio but see no text.
+                                # _action is already known (set at line ~4012) so check
+                                # before streaming fires the callback.
+                                if str(_action or "").strip().lower() == "silence":
+                                    return
                                 # S2 Phase 0 Bug 1 — apply Rule G (second-person address) to the
                                 # early sentence BEFORE speaking, so TTS and chat share the same
                                 # conditioned string. Store the conditioned form so the skip-check
