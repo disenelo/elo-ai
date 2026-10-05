@@ -3362,6 +3362,19 @@ def _process_turn(raw: str) -> dict:
             _g_hits = _g_retrieve(raw)
             _g_entity_hits = [h for h in _g_hits if h.get("confidence", 0.0) >= 1.0
                               and h.get("kind") not in ("relationship",)]
+            # B3-SEARCH-001: graph_loader matches keywords as substrings, so "ai" hits
+            # inside "brain" → "eLo AI" at 1.0 and the web tool is blocked. Only a
+            # whole-word keyword match counts as eLo's own world here.
+            if _g_entity_hits:
+                from knowledge import graph_loader as _g_mod
+                _g_kw = {e.get("name", e.get("id", "")): e.get("keywords", [])
+                         for e in _g_mod._graph.get("entities", [])}
+                _g_low = _original_raw.lower()
+                _g_entity_hits = [
+                    h for h in _g_entity_hits
+                    if any(_re.search(r"\b" + _re.escape(k) + r"\b", _g_low)
+                           for k in _g_kw.get(h["label"], []))
+                ]
             if _g_entity_hits:
                 _g_ctx_lines = []
                 for _gh in _g_entity_hits[:2]:
@@ -3378,7 +3391,15 @@ def _process_turn(raw: str) -> dict:
         # eLo's own knowledge). Card 0021: proper-noun who-is questions that miss
         # the graph must resolve to "I don't know who that is — tell me?" — never
         # a web search presented as knowledge of his own world.
-        if not _world_graph_hit:
+        # B3-SEARCH-001: an explicit "look it up" is not a who-is question — eLo
+        # searches openly, so nothing is laundered as his own knowledge.
+        try:
+            from tools.web_search import is_search_command as _is_ws_cmd
+            _ws_command = (not _world_graph_hit) and _is_ws_cmd(_original_raw)
+        except Exception:
+            _ws_command = False
+        _ws_direct = None
+        if not _world_graph_hit and not _ws_command:
             # Inline (?i:...) makes "who/what/is/are" case-insensitive; the captured
             # proper-noun keeps its case so we only fire for capitalised nouns.
             _PN_ASK = _re.compile(
@@ -3404,6 +3425,42 @@ def _process_turn(raw: str) -> dict:
                         pass
                     return {"response": _pn_reply, "mode": "direct",
                             "backend": "proper_noun_gate"}
+            # P0-REFERENCE: "It's a X reference" / "That's a X reference" pattern.
+            # When David names a reference eLo doesn't recognise, acknowledge honestly
+            # and attempt an immediate search — never pass to LLM for generic filler.
+            _REF_PAT = _re.compile(
+                r"\b(?i:it'?s|that'?s|this\s+is)\s+a(?:n)?\s+(.+?)\s+reference\b",
+                _re.IGNORECASE,
+            )
+            _ref_m = _REF_PAT.search(_original_raw)
+            if _ref_m:
+                _ref_entity = _ref_m.group(1).strip()
+                if len(_ref_entity) > 2:
+                    _logging.info("P0-REFERENCE: reference pattern hit %r — attempting search", _ref_entity)
+                    _bypass_journal(_original_raw, backend="reference_gate",
+                                    handler_class="COGNITIVE", line=2141)
+                    try:
+                        from tools.web_search import search as _ref_search, format_for_context as _ref_fmt
+                        _ref_results = _ref_search(_ref_entity, max_results=4)
+                        if _ref_results:
+                            _ref_ctx = _ref_fmt(_ref_results)
+                            raw = f"[WEB_SEARCH: {_ref_entity}]\n{_ref_ctx}\n\nUser asked: {_original_raw}"
+                            # Falls through to LLM with search context; LLM will acknowledge
+                            # the reference now that it has web results to synthesise.
+                        else:
+                            _ref_reply = f"I don't know that one — {_ref_entity}? Fill me in."
+                            try:
+                                if not _is_user_away():
+                                    _voice_speak(_ref_reply)
+                            except Exception:
+                                pass
+                            return {"response": _ref_reply, "mode": "direct",
+                                    "backend": "reference_gate"}
+                    except Exception as _ref_err:
+                        _logging.warning("P0-REFERENCE: search failed %s", _ref_err)
+                        _ref_reply = f"I don't know that one — {_ref_entity}? Fill me in."
+                        return {"response": _ref_reply, "mode": "direct",
+                                "backend": "reference_gate"}
 
         # ── Web search ───────────────────────────────────────────────────────
         try:
@@ -3424,8 +3481,47 @@ def _process_turn(raw: str) -> dict:
                 "studio", "background", "nationality", "country", "london",
                 "camberwell", "south london",
             })
-            if not _world_graph_hit and is_search_intent(raw):
+            if _ws_command:
+                # B3-SEARCH-001: SEARCH_INTENT. Topic from the command, else from
+                # David's recent turns ("read up about it" → the thing he just named).
+                from tools.web_search import resolve_search_topic as _ws_resolve, \
+                    search_topic as _ws_search_topic, compose_found as _ws_compose
+                from faculties.grounding.conversation_tracker import get_tracker as _ws_ct
+                _ws_recent = [u for u, _e in _ws_ct().get_context(
+                    (_state or {}).get("person_id", "default")).get("recent_turns", [])]
+                _sq_text = _ws_resolve(_original_raw, _ws_recent)
+                _sq_words = set(_sq_text.lower().replace("'", " ").split())
+                if "david" in _sq_words and _sq_words & _DAVID_PERSONAL_TERMS:
+                    raise ValueError("id-035-guard: personal David query blocked from web search")
+                if not _sq_text:
+                    _ws_direct = "What do you want me to look up?"
+                else:
+                    _ws_name, _ws_results = _ws_search_topic(_sq_text, max_results=5)
+                    import sys as _ws_sys
+                    print(f"[web_search] command q={_sq_text!r} name={_ws_name!r} "
+                          f"source={getattr(_ws_mod, 'last_source', '')} relevant={len(_ws_results)}",
+                          file=_ws_sys.stderr)
+                    _ws_direct = _ws_compose(_ws_name, _ws_results) or \
+                        f"Searched {_ws_name} — nothing solid came back."
+                    if _ws_results and _ws_results[0].url:
+                        _LAST_FOUND["url"]   = _ws_results[0].url
+                        _LAST_FOUND["title"] = _ws_results[0].title
+                    raw = f"[WEB_SEARCH: {_ws_name}]\n{_wfmt(_ws_results)}\n\nUser asked: {_original_raw}"
+            elif not _world_graph_hit and is_search_intent(raw):
                 _sq_text = _sq(raw)
+                # P0-WEBSEARCH: vague query enrichment — "read up about it" / "get a summary from
+                # somewhere" produce extracted queries that are pronoun-only. Pull topic from the
+                # most recent prior input that isn't itself a meta-search instruction.
+                _VAGUE_PRONOUNS = frozenset({"it", "that", "this", "one", "those", "them", "there", "here", "something"})
+                _SEARCH_META_SIGNALS = frozenset({"websearch", "web search", "search", "summary", "look up", "look it", "read up"})
+                _sq_meaningful = [w for w in _sq_text.lower().split() if w not in _VAGUE_PRONOUNS and len(w) > 2]
+                if len(_sq_meaningful) <= 1 and len(_last_inputs) >= 2:
+                    for _prior_in in reversed(_last_inputs[:-1]):
+                        _prior_lower_ws = _prior_in.lower()
+                        if not any(s in _prior_lower_ws for s in _SEARCH_META_SIGNALS):
+                            _sq_text = _prior_in
+                            _logging.info("P0-WEBSEARCH: vague query enriched from prior input: %r", _sq_text)
+                            break
                 _sq_lower = _sq_text.strip().lower()
                 if _sq_lower in _WS_AMBIGUOUS:
                     raise ValueError("seam-b-guard: ambiguous bare word, skipping web search")
@@ -3435,6 +3531,9 @@ def _process_turn(raw: str) -> dict:
                 if "david" in _sq_words and _sq_words & _DAVID_PERSONAL_TERMS:
                     raise ValueError("id-035-guard: personal David query blocked from web search")
                 _ws_results = _wsearch(_sq_text, max_results=4)
+                import sys as _ws_sys
+                print(f"[web_search] fired q={_sq_text!r} source={getattr(_ws_mod, 'last_source', '')} "
+                      f"n={len(_ws_results)}", file=_ws_sys.stderr)
                 if _ws_results:
                     _ws_ctx = _wfmt(_ws_results)
                     # Cache top result so "open it" / "open that" can resolve it next turn
@@ -6102,6 +6201,15 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
 
+                # B3-SEARCH-001: David told eLo to look it up — what he found IS the
+                # answer. Handed back directly so the missing-fact rule can't turn
+                # it into "I don't have that recorded".
+                if not _direct and _ws_direct:
+                    response = _ws_direct
+                    backend_used = "direct:web_search"
+                    _llm_latency_ms = 0.0
+                    _direct = response
+
                 if not _direct:
                     _llm_latency_ms = 0.0
                     _early_tts_sentence = [None]  # tracks first sentence spoken early
@@ -7055,6 +7163,11 @@ def _process_turn(raw: str) -> dict:
         _vr_changed = False
         _pre_vr_response = response
         try:
+            # B3-SEARCH-001: what eLo found is lifted from the source — a rewrite
+            # can only lose it. Live 2026-10-05 the rewrite fell to mock and
+            # replaced the Pinky and the Brain answer with filler / a lesson dict.
+            if backend_used == "direct:web_search":
+                raise StopIteration("found-text is authoritative")
             from runtime.backend_router import _CODE_SIGNAL_RE as _vr_code_sig
             _vr_is_technical = bool(_vr_code_sig.search(_original_raw))
             _vr_max = 12 if _vr_is_technical else 3

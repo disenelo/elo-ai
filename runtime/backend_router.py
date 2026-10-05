@@ -1335,7 +1335,7 @@ def _ollama_stream(
     _is_frustrated_typos = (
         not _input_has_code
         and len(_words_stripped) >= 4
-        and (_n_elongated >= 1 or _n_garbled >= 2)
+        and (_n_elongated >= 1 or _n_garbled >= 3)  # P0-GARBLE: raised from 2→3; 3-consonant clusters are common English ("try","world")
     )
     # Extract grounding has_subject (Subject: line present, not just the block header)
     _grounding_has_subject = any(
@@ -2381,7 +2381,7 @@ def route(
     _rt_is_frustrated_typos = (
         not _rt_input_has_code
         and len(_rt_words) >= 4
-        and (_rt_elongated >= 1 or _rt_garbled >= 2)
+        and (_rt_elongated >= 1 or _rt_garbled >= 3)  # P0-GARBLE: raised from 2→3; mirrors non-streaming path fix
     )
     # Sarcasm / irony: positive words + negative context in the same input
     _rt_SARCASM_POS_RE = re.compile(

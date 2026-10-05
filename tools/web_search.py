@@ -25,6 +25,11 @@ _SERPAPI_KEY = lambda: os.environ.get("SERPAPI_KEY", "")
 # WO-051: track which provider last served results so callers can surface fallback.
 last_source: str = ""  # "serpapi" | "ddg" | ""
 
+# B3-SEARCH-001: Google's own reading of the last query — knowledge-graph card
+# ({"title", "description"}) and spelling fix ("Pinkie" → "Pinky and the Brain").
+last_kg: dict = {}
+last_spelling_fix: str = ""
+
 
 @dataclass
 class SearchResult:
@@ -78,7 +83,8 @@ def search(query: str, max_results: int = 5, engine: str = "") -> list[SearchRes
     Falls back to DuckDuckGo if no key or SerpAPI fails.
     Sets last_source to "serpapi" or "ddg" so callers can surface the fallback.
     """
-    global last_source
+    global last_source, last_kg, last_spelling_fix
+    last_kg, last_spelling_fix = {}, ""
     key = _SERPAPI_KEY()
     if key:
         chosen = engine or _detect_engine(query)
@@ -111,6 +117,12 @@ def _serp_search(query: str, key: str, max_results: int, engine: str = "google")
         resp = httpx.get("https://serpapi.com/search.json", params=params, timeout=10.0)
         resp.raise_for_status()
         data = resp.json()
+
+        global last_kg, last_spelling_fix
+        _kg = data.get("knowledge_graph") or {}
+        last_kg = {"title": _kg.get("title", ""), "description": _kg.get("description", "")} if _kg else {}
+        _si = data.get("search_information") or {}
+        last_spelling_fix = (_si.get("spelling_fix") or _si.get("showing_results_for") or "").strip('"')
 
         # Each engine returns results under a different key
         items = (
@@ -225,6 +237,24 @@ _SEARCH_TRIGGERS = (
     "where to buy",
     "how much is",
     "where is ",
+    # P0-WEBSEARCH: explicit search instructions David uses that were missing
+    "websearch",
+    "web search",
+    "do a search",
+    "do a websearch",
+    "read up about",
+    "get a summary",
+    "look it up",
+    "search it up",
+    "search that up",
+    "look that up about",
+    "find out more about",
+    "find out more",
+    "summarise that",
+    "summarize that",
+    "get info on",
+    "look into that",
+    "look into ",
 )
 
 
@@ -243,3 +273,182 @@ def extract_query(text: str) -> str:
             if q:
                 return q
     return t
+
+
+# ── B3-SEARCH-001: SEARCH_INTENT — David tells eLo to look something up ─────────
+#
+# Source: docs/architecture/_intake/SOURCE_2026-10-05_DAVID_pinkie_brain_chat_log.md
+# "You'd have to do a websearch to read up about it" matched none of the
+# _SEARCH_TRIGGERS above, and "it" pointed at the previous turn. An explicit
+# instruction is a command, not a question: eLo searches, then says what he
+# found — built from the source text, so every detail is the source's.
+
+_SEARCH_COMMAND_RE = re.compile(
+    r"\b(?:"
+    r"do\s+(?:a|an)\s+(?:quick\s+)?(?:web\s*|internet\s+|online\s+|google\s+)?search"
+    r"|web\s*search(?:ed|ing)?"
+    r"|search\s+(?:the\s+web|online|the\s+internet|for|it|that|this)"
+    r"|look\s+(?:it|that|this|them|him|her)\s+up"
+    r"|look\s+up"
+    r"|google\s+(?:it|that|this)"
+    r"|read\s+up\s+(?:on|about)"
+    r"|find\s+out\s+(?:about|what)"
+    r"|get\s+(?:a|me\s+a)\s+summary"
+    r"|check\s+online"
+    r")\b",
+    re.IGNORECASE,
+)
+
+# Words that never name a topic on their own — "read up about it", "a summary
+# from somewhere to understand it more".
+_VAGUE_WORDS = frozenset("""
+it that this them him her there these those somewhere something anything
+more about on for up of from to the a an and or understand learn know read
+summary info information bit little maybe please me quick quickly some
+what is was online web internet google search it's
+""".split())
+
+_LEADING_FILLER_RE = re.compile(r"^(?:(?:on|about|for|of|up|from|into)\s+)+", re.IGNORECASE)
+_TRAILING_FILLER_RE = re.compile(
+    r"\s+(?:for\s+me|please|from\s+somewhere|online|on\s+the\s+web|to\s+understand.*|so\s+.*)$",
+    re.IGNORECASE,
+)
+_REFERENCE_RE = re.compile(
+    r"\b(?:it'?s|that'?s|this\s+is|was)\s+(?:a|an|the)\s+(.+?)\s+(?:reference|joke|bit|quote|line)\b",
+    re.IGNORECASE,
+)
+_CONNECTORS = r"(?:and|the|of|&|de|la|von|van|in|on)"
+_PROPER_SPAN_RE = re.compile(
+    r"\b([A-Z][\w'\-]*(?:\s+(?:" + _CONNECTORS + r"\s+)*[A-Z][\w'\-]*)*)"
+)
+_NOT_PROPER = frozenset({"i", "i'm", "i'd", "i'll", "eLo".lower(), "you", "you'd", "maybe", "same",
+                         "it's", "it", "that", "this", "ok", "okay", "yeah", "yo", "so", "and"})
+
+
+def is_search_command(text: str) -> bool:
+    """True when David explicitly tells eLo to search / look something up."""
+    return bool(_SEARCH_COMMAND_RE.search(text or ""))
+
+
+def _is_vague(topic: str) -> bool:
+    words = re.findall(r"[a-zA-Z0-9']+", topic.lower())
+    return not any(w not in _VAGUE_WORDS for w in words)
+
+
+def _topic_from_command(text: str) -> str:
+    """Topic named in the command itself — text after the last trigger."""
+    last = None
+    for m in _SEARCH_COMMAND_RE.finditer(text):
+        last = m
+    if not last:
+        return ""
+    tail = text[last.end():]
+    tail = re.split(r"[.?!\n]", tail, maxsplit=1)[0]
+    tail = _LEADING_FILLER_RE.sub("", tail.strip())
+    tail = _TRAILING_FILLER_RE.sub("", tail).strip(" ,;:'\"")
+    return "" if _is_vague(tail) else tail
+
+
+def _topic_from_text(text: str) -> str:
+    """Best named topic in one utterance: "It's a X reference" first, then the
+    longest capitalised span (sentence-initial single words don't count)."""
+    m = _REFERENCE_RE.search(text)
+    if m and not _is_vague(m.group(1)):
+        return m.group(1).strip()
+    best = ""
+    for sm in _PROPER_SPAN_RE.finditer(text):
+        span = sm.group(1).strip()
+        words = span.split()
+        if len(words) == 1:
+            if span.lower() in _NOT_PROPER:
+                continue
+            before = text[:sm.start()].rstrip()
+            if not before or before[-1] in ".?!\n":
+                continue  # sentence-initial capital, not a name
+        if len(span) > len(best):
+            best = span
+    return best
+
+
+def resolve_search_topic(text: str, recent_user_turns: list[str] | None = None) -> str:
+    """What David wants looked up. The command's own object if it names one;
+    otherwise the topic of this message's other sentences, then of his recent
+    turns (most recent first). "" when nothing names a topic."""
+    topic = _topic_from_command(text)
+    if topic:
+        return topic
+    for sentence in re.split(r"(?<=[.?!])\s+|\n+", text):
+        if not is_search_command(sentence):
+            t = _topic_from_text(sentence)
+            if t:
+                return t
+    for turn in reversed(recent_user_turns or []):
+        t = _topic_from_text(turn or "")
+        if t:
+            return t
+    return ""
+
+
+_STOP = frozenset("the a an and of in on for to is are was what who how".split())
+
+
+def _content_words(q: str) -> list[str]:
+    return [w for w in re.findall(r"[a-z0-9]+", q.lower()) if w not in _STOP and len(w) > 2]
+
+
+def _relevant(r: SearchResult, words: list[str]) -> bool:
+    if not words:
+        return True
+    hay = f"{r.title} {r.snippet}".lower()
+    need = max(1, -(-len(words) * 2 // 3))
+    return sum(1 for w in words if w in hay) >= need
+
+
+def search_topic(topic: str, max_results: int = 5) -> tuple[str, list[SearchResult]]:
+    """Search for a topic and return (canonical_name, relevant_results).
+    Google's spelling fix names the topic; when no result is about it,
+    retry once with the phrase quoted (gl=gb on an unquoted show title has
+    returned brain-science pages — 2026-10-05)."""
+    results = search(topic, max_results=max_results, engine="google")
+    name = last_kg.get("title") or last_spelling_fix or topic
+    words = _content_words(name)
+    rel = [r for r in results if _relevant(r, words)]
+    if not rel and not last_kg:
+        results = search(f'"{name}"', max_results=max_results, engine="google")
+        name = last_kg.get("title") or name
+        words = _content_words(name)
+        rel = [r for r in results if _relevant(r, words)]
+    return name, rel
+
+
+def _first_sentence(snippet: str) -> str:
+    s = re.sub(r"\s+", " ", snippet or "").strip()
+    s = re.sub(r"^[A-Z][a-z]{2} \d{1,2}, \d{4}\s*[—–-]\s*", "", s)  # "Oct 5, 2026 — "
+    m = re.match(r"(.+?[.!?])(?:\s|$)", s)
+    if not m or m.group(1).endswith("..."):
+        return ""
+    return m.group(1)
+
+
+def compose_found(name: str, results: list[SearchResult]) -> str:
+    """eLo's spoken report of what he found. Every clause is lifted from the
+    source text; only the lead-in is his."""
+    if not results and not last_kg.get("description"):
+        return ""
+    words = _content_words(name)
+    lead = ""
+    for r in results:
+        s = _first_sentence(r.snippet)
+        if s and all(w in s.lower() for w in words[:2]):
+            lead = s
+            break
+    if not lead:
+        for r in results:
+            lead = _first_sentence(r.snippet)
+            if lead:
+                break
+    kg = (last_kg.get("description") or "").strip()
+    parts = ["Looked it up —", lead] if lead else ["Looked it up —", f"{name}."]
+    if kg and kg.lower()[:40] not in (lead or "").lower():
+        parts.append(kg if kg.endswith((".", "!", "?")) else kg + ".")
+    return " ".join(p for p in parts if p)
