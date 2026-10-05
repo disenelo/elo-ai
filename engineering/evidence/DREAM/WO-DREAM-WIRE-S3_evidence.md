@@ -4,45 +4,58 @@
 
 ## Result in one line
 
-The detect-and-consume half is **live verified**. The dream itself **did not run**, and I have not yet diagnosed why.
+The wire is built and unit-proven. The live injection **did not establish**
+that it fired — my first reading of it was wrong, and is corrected below.
+
+## CORRECTION (same session)
+
+The first version of this file claimed "the detect-and-consume half is live
+verified" because the injected `intent:"dream"` changed to `"idle"` 165s later.
+
+**That proves nothing.** The main turn path also writes `intent` — live state
+was observed holding `intent: "conversation"` earlier the same night. A normal
+turn between 03:39 and 03:42 would overwrite the injected value identically.
+The watcher logged "intent consumed" and I read a log line I had written myself
+as evidence of the behaviour it was watching for. It is not attributable.
+
+What would actually establish it: a dream journal entry, a non-empty
+`dream_phase`, or the INFO line `dream_requested()` emits on accept. None was
+observed.
 
 ## Method
 
-Manual `intent:"dream"` injection, as the dispatch instructs. Server confirmed to
-contain the wire: `ecfca38` committed 2026-10-04 20:59:24, process started
-2026-10-05 02:54:53.
+Manual `intent:"dream"` injection on the running server (pid 8074, started
+02:54:53; wire committed `ecfca38` at 2026-10-04 20:59:24, so the process does
+contain it).
 
 ```
-BEFORE (03:39)                 intent=idle  asleep=False  dream_phase=None
-                               elo_battery=0.808  calm_mode=False
-                               self: mood=0.0 curiosity=0.763 satisfaction=0.002
-                               dream_log lines=1   dream_journal entries=166
-
-INJECT  (03:39)                state_writer.patch({"intent": "dream"})
-                               dream_requested() -> True
-
-OBSERVED (03:42:24, +165s)     intent consumed -> "idle"
+BEFORE (03:39)   intent=idle  asleep=False  dream_phase=None
+                 elo_battery=0.808  dream_journal entries=166
+INJECT (03:39)   dream_requested() -> True
+03:42:24         intent -> "idle"            <- NOT attributable (see above)
+AFTER            dream_journal 166, unchanged (last write 2026-09-30)
+                 dream_phase never non-empty
 ```
 
-The gate is `if should_dream(...) or _dream_asked():` and `or` short-circuits, so
-`_dream_asked()` only runs when `should_dream` has already declined. The intent
-being consumed therefore proves the ambient callback fired, the request was
-detected, and the branch body was entered. That is the piece this WO asked for.
+## What the diagnosis DID establish
 
-## What did not happen
+Running the pipeline in-process, isolated from live state:
 
-```
-self/dream_journal.jsonl   166 entries, unchanged (last write 2026-09-30)
-data/dream_log.jsonl       1 line, unchanged
-dream_phase                never observed non-empty (15s poll)
-asleep                     never True
-```
+- `run_dream(..., publish_phases=True)` **works** and writes a journal entry.
+  The dream faculty is not the problem.
+- The server's llm closure `_dream_llm` **raises**:
+  `AttributeError: 'list' object has no attribute 'lower'`. It called
+  `route(_ab(), msgs)` — backend name as the system prompt, a message list
+  where a string is expected, and the `(text, backend)` tuple returned where
+  `llm_fn` is documented to return a string.
+- `run_dream` catches that and falls back, so **every dream has been the
+  deterministic stub** — "eLo drifts through something that feels like moon" —
+  and never the LLM. That is fixed.
+- The same broken call shape sat in the ambient brain-utterance path.
 
-So the branch ran and produced no dream. Most likely the pipeline inside it
-raised and was swallowed by its surrounding `except` — the same silent-failure
-shape found four times elsewhere today — but **that is a hypothesis, not a
-finding**. The server writes to a terminal, not a log file, so there is no
-stderr to read. Not claimed as diagnosed.
+So the remaining unknown is narrow: why the server's branch produced no
+journal entry when `run_dream` demonstrably writes one. Not yet answered, and
+not guessed at.
 
 ## Status
 

@@ -1074,7 +1074,21 @@ def ambient_thought() -> None:
                 _dream_topics = [t[0] for t in getattr(_elo_self, "lifetime_threads", [])[:6]]
 
                 def _dream_llm(msgs):
-                    return _rt(_ab(), msgs)
+                    # route(system_prompt, user_input) -> (text, backend).
+                    # This was _rt(_ab(), msgs): the BACKEND NAME passed as the
+                    # system prompt, a message LIST passed where a string is
+                    # expected, and the tuple returned where dream_faculty
+                    # documents llm_fn as "callable(messages) -> str".
+                    # Measured: it raises AttributeError 'list' object has no
+                    # attribute 'lower' inside _detect_model_override, and
+                    # run_dream's except swallows it — so EVERY dream has been
+                    # the deterministic stub, never the LLM.
+                    _d_sys = next((m.get("content", "") for m in msgs
+                                   if m.get("role") == "system"), "")
+                    _d_usr = next((m.get("content", "") for m in msgs
+                                   if m.get("role") == "user"), "")
+                    _d_txt, _ = _rt(_d_sys, _d_usr)
+                    return _d_txt
 
                 # publish_phases=True: this is the real dream path, so the
                 # sleep schedule writes dream_cycle / dream_phase /
@@ -1394,10 +1408,10 @@ def ambient_thought() -> None:
         ]
         _amb_system = _amb_system + "\n".join(_amb_addons)
 
-        _raw_llm = _rt(_ab(), [
-            {"role": "system", "content": _amb_system},
-            {"role": "user",   "content": "[ambient tick]"},
-        ])
+        # Same defect as the dream closure above: the backend name was being
+        # passed as the system prompt and a message list as the user input,
+        # and the (text, backend) tuple was handed to normalise(text: str).
+        _raw_llm, _ = _rt(_amb_system, "[ambient tick]")
         _text = _sanitise(_nml(_raw_llm))
 
         try:
