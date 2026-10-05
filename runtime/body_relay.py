@@ -55,8 +55,21 @@ def relay_body_event(event_kind: str, payload: dict, *, is_reflex: bool = False)
         _log.debug("body_relay.relay_body_event failed (non-critical): %s", e)
 
 
-def recent_relay_events(n: int = 10) -> list:
-    """Return the last n body relay events (oldest first)."""
+# How recently a relay event must have been emitted to count as evidence
+# about the body RIGHT NOW. A sit is commanded and ACKed within seconds;
+# two minutes is generous for that and still far short of treating last
+# week as live.
+RELAY_FRESH_S: float = 120.0
+
+
+def recent_relay_events(n: int = 10, *, max_age_s: float | None = None) -> list:
+    """
+    Return the last n body relay events (oldest first).
+
+    max_age_s drops events older than that many seconds. Default None keeps
+    the unbounded behaviour for callers that want the raw tail; the audit
+    passes a bound, because an old event is not evidence about now.
+    """
     try:
         with open(_RELAY_LOG, encoding="utf-8") as f:
             lines = f.readlines()
@@ -71,6 +84,10 @@ def recent_relay_events(n: int = 10) -> list:
             results.append(json.loads(line))
         except Exception:
             pass
+    if max_age_s is not None:
+        _cutoff = time.time() - float(max_age_s)
+        results = [e for e in results
+                   if isinstance(e, dict) and float(e.get("ts") or 0.0) >= _cutoff]
     return results
 
 
@@ -102,7 +119,14 @@ def audit_body_relay(body, recent_journal: list) -> dict:
             for e in recent_journal
         )
         # Look for a relay event
-        relay_events = recent_relay_events(20)
+        # Unbounded, this read could never fail. Measured 2026-10-05: the
+        # last 20 events in the live journal were all "sit_commanded",
+        # aged 0.0 to 37.5 DAYS, every one written by the test suite. So
+        # sit_relayed was permanently True, and both branches below — the
+        # VIOLATION and the pending_unacked — were unreachable. The audit
+        # returned ok=True for the exact case it exists to catch: a body
+        # sitting with nothing having commanded it.
+        relay_events = recent_relay_events(20, max_age_s=RELAY_FRESH_S)
         sit_relayed = any(
             e.get("event_kind") in ("sit_commanded", "sit_acked")
             for e in relay_events
