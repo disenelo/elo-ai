@@ -134,8 +134,10 @@ def test_walking_to_exhaustion_lands_in_calm_through_the_real_tick(monkeypatch):
     monkeypatch.setattr("self.elo_self_model.update", lambda fn: None)
 
     import time
+    # Rates are per-minute (Board ruling 2026-10-04). Use 30s simulated dt per
+    # tick so 2400 ticks = 1200 min — enough to drain to exhausted at 0.003/min.
     for _ in range(2400):
-        ae._last_battery_ts = time.time() - 0.5
+        ae._last_battery_ts = time.time() - 30.0
         ae._battery_tick()
         if published and (published[-1].get("motion") or {}).get("mode") == "calm":
             break

@@ -86,6 +86,9 @@ PHYSICAL_TICK_RATES: dict[str, float] = {
 PHYSICAL_EVENT_COSTS: dict[str, float] = {
     "jumping": 0.015,
     "parkour": 0.020,
+    # David L3 ruling 2026-10-05: teleporting drains more than any other move.
+    # Hierarchy: walk < hop < parkour < teleport.
+    "teleporting": 0.035,
 }
 
 # physical_state bands (ADDENDUM A)
@@ -126,6 +129,7 @@ ANIMATION_TO_PHYSICAL: dict[str, str] = {
     "sprint": "running", "explore_burst": "running",
     "jump": "jumping", "jumping": "jumping", "hop": "jumping",
     "parkour": "parkour", "wall-jump": "parkour", "wall_jump": "parkour",
+    "teleport": "teleporting", "teleporting": "teleporting", "warp": "teleporting",
     "sit": "sitting", "sitting": "sitting", "sit_hold": "sitting",
     "lie_down": "lying_down", "lying_down": "lying_down",
     "sleep": "sleeping", "sleeping": "sleeping",
@@ -409,7 +413,9 @@ def _tick_physical(physical: str, dt_seconds: float) -> None:
 
     rate = PHYSICAL_TICK_RATES.get(physical)
     if rate is not None:
-        scale = max(0.0, float(dt_seconds))
+        # Board ruling 2026-10-04: PHYSICAL_TICK_RATES are per-minute values.
+        # Divide by 60 so they are consistent with RESTORE_CALM_PER_MIN.
+        scale = max(0.0, float(dt_seconds)) / 60.0
         if rate < 0:
             drain_physical(-rate * scale)
         else:

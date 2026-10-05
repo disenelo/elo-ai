@@ -73,15 +73,17 @@ def test_production_walk_motion_engages_physical_track(monkeypatch):
     walk = next(m for m in _captured_wander_motions(monkeypatch)
                 if m.get("animation") in ("walk", "run"))
     before = hb.get_physical()
-    hb.tick(walk, dt_seconds=1.0)
+    # Rates are per-minute; use dt_seconds=60 so drain is detectable after 4-decimal rounding.
+    hb.tick(walk, dt_seconds=60.0)
     assert hb.snapshot()["physical_state"] != hb.PHYSICAL_UNTRACKED
     assert hb.get_physical() < before, "walking did not drain the physical track"
 
 
 def test_server_explore_walk_dict_engages_physical_track():
     """server.py:1424 — the movement='explore' branch, verbatim."""
+    # Rates are per-minute; use dt_seconds=60 so one-minute drain is detectable.
     hb.tick({"animation": "walk", "speed": 0.5, "intensity": 0.6,
-             "duration": 8.0, "mood": "exploring", "mode": "walk"}, dt_seconds=1.0)
+             "duration": 8.0, "mood": "exploring", "mode": "walk"}, dt_seconds=60.0)
     assert hb.get_physical() < 1.0
 
 
@@ -102,8 +104,9 @@ def test_sustained_walking_reaches_the_tired_band():
     """
     walk = {"animation": "walk", "speed": 0.5, "intensity": 0.6,
             "duration": 8.0, "mood": "exploring", "mode": "walk"}
-    for _ in range(600):              # 600 x 0.5s = five minutes of walking
-        hb.tick(walk, dt_seconds=0.5)
+    # Rates are per-minute (Board ruling 2026-10-04). 600 x 27s = 270 min to reach tired.
+    for _ in range(600):
+        hb.tick(walk, dt_seconds=27.0)
     assert hb.snapshot()["physical_state"] in ("tired", "fatigued", "exhausted")
     assert hb.physical_conditioning() is not None, (
         "tired but the inner_thought pipeline was handed nothing to say")

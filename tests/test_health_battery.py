@@ -154,9 +154,11 @@ def test_physical_engages_once_motion_is_reported():
 
 
 def test_physical_tick_rates_match_the_addendum():
+    # PHYSICAL_TICK_RATES are per-minute (Board ruling 2026-10-04: units fix).
+    # Use dt_seconds=60 so scale=1.0 and delta == rate directly.
     for activity, rate in hb.PHYSICAL_TICK_RATES.items():
         hb.reset(physical=0.50)
-        hb.tick({"physical": activity})
+        hb.tick({"physical": activity}, dt_seconds=60.0)
         delta = hb.get_physical() - 0.50
         assert delta == pytest.approx(rate, abs=1e-6), activity
 
@@ -187,11 +189,12 @@ def test_explicit_jump_and_parkour_helpers_drain_both_tracks():
 
 
 def test_sitting_and_lying_down_restore_physical():
+    # Rates are per-minute; use dt_seconds=60 to match the addendum values directly.
     hb.reset(physical=0.30)
-    hb.tick({"physical": "sitting"})
+    hb.tick({"physical": "sitting"}, dt_seconds=60.0)
     assert hb.get_physical() > 0.30
     hb.reset(physical=0.30)
-    hb.tick({"physical": "lying_down"})
+    hb.tick({"physical": "lying_down"}, dt_seconds=60.0)
     assert hb.get_physical() == pytest.approx(0.315, abs=1e-6)
 
 

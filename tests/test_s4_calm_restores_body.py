@@ -35,9 +35,11 @@ def _clean():
 
 
 def _walk_until_exhausted():
+    # Rates are per-minute (Board ruling 2026-10-04). Use dt_seconds=10 so
+    # 2000 ticks simulates ~333 minutes, enough to drain to exhausted (<0.10).
     walk = {"animation": "walk", "mode": "walk"}
     for _ in range(2000):
-        hb.tick(walk, dt_seconds=0.5)
+        hb.tick(walk, dt_seconds=10.0)
         if hb.snapshot()["physical_state"] == "exhausted":
             return
     raise AssertionError("never reached exhausted")
