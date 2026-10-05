@@ -128,6 +128,10 @@ class MemoryFaculty:
                 epistemic_class=candidate.epistemic_class,
                 source_ref=candidate.source_ref,
             )
+            # WO-WKG-AUTO-POPULATE-001: after successful vault write, grow the WKG
+            # if this candidate meets the epistemic gate (VERIFIED or SOURCE_ATTRIBUTED,
+            # significance ≥ 0.6, recognisable semantic type).
+            _maybe_write_wkg_claim(candidate, source_ref=spot)
             return {"action": "write", "spot": spot, "reason": "new record written"}
         except Exception as exc:
             _mark_vault_offline(str(exc))
@@ -338,3 +342,68 @@ def populate_wkg_from_turn(
     except Exception:
         pass
     return created
+
+
+# ── WO-WKG-AUTO-POPULATE-001: vault→WKG claim writer ─────────────────────────
+
+_WKG_SESSION_WRITES = 0
+_WKG_MAX_SESSION_WRITES = 3
+_WKG_GATE_EPISTEMIC = frozenset({"VERIFIED", "SOURCE_ATTRIBUTED"})
+_WKG_GATE_SIGNIFICANCE = 0.6
+_WKG_GATE_TYPES = frozenset({"semantic", "episodic", "emotional", "procedural"})
+
+_DAVID_ENTITY_ID = "6de402af-8b5a-4238-950f-79bb1a00ab58"
+
+
+def _maybe_write_wkg_claim(candidate: "MemoryCandidate", source_ref: str = "") -> None:
+    """
+    After a successful vault write, optionally write a WKG claim.
+    Rate-limited to _WKG_MAX_SESSION_WRITES per session to avoid noise.
+    Fails silently — never raises, never blocks.
+    """
+    global _WKG_SESSION_WRITES
+    if _WKG_SESSION_WRITES >= _WKG_MAX_SESSION_WRITES:
+        return
+    if candidate.epistemic_class not in _WKG_GATE_EPISTEMIC:
+        return
+    if candidate.significance < _WKG_GATE_SIGNIFICANCE:
+        return
+    if candidate.proposed_type not in _WKG_GATE_TYPES:
+        return
+    try:
+        import logging as _wkg_log
+        from runtime.wkg_faculty import search_entities, create_entity, record_claim
+        label = (candidate.summary or candidate.content[:80]).strip()
+        if not label:
+            return
+        hits = search_entities(label[:60])
+        if hits:
+            obj_id = hits[0]["entity_id"]
+        else:
+            obj_entity = create_entity(
+                entity_type="CONCEPT",
+                label=label[:80],
+                description=(
+                    f"Auto-populated from vault write ({candidate.proposed_type}). "
+                    f"Project: {candidate.project}."
+                ),
+                source_ids=[source_ref] if source_ref else [],
+            )
+            obj_id = obj_entity["entity_id"]
+        record_claim(
+            subject_entity_id=_DAVID_ENTITY_ID,
+            relationship_type="ASSOCIATED_WITH",
+            object_entity_id=obj_id,
+            epistemic_class=candidate.epistemic_class,
+            source_id=source_ref or candidate.source_faculty or "memory_faculty",
+            experience_id=candidate.experience_id or None,
+            confidence=min(1.0, candidate.significance + 0.1),
+        )
+        _WKG_SESSION_WRITES += 1
+        _wkg_log.getLogger("wkg_auto").info(
+            "WKG-AUTO-POPULATE: wrote claim (%d/%d) label=%r sig=%.2f",
+            _WKG_SESSION_WRITES, _WKG_MAX_SESSION_WRITES,
+            label[:50], candidate.significance,
+        )
+    except Exception:
+        pass  # silent — never block vault write path

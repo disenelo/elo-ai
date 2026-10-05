@@ -1,0 +1,17 @@
+{
+  "_comment": "WO-WKG-GRAPH-001: WKG domain registry. 12 domains initialised — may be empty. Entities reference domains via 'domain' field.",
+  "domains": [
+    {"id": "Self",                    "label": "Self",                    "description": "eLo's own identity, state, and inner model"},
+    {"id": "People",                  "label": "People",                  "description": "Humans eLo knows — David, collaborators, characters"},
+    {"id": "Objects",                 "label": "Objects",                 "description": "Physical and digital objects, tools, devices"},
+    {"id": "Places",                  "label": "Places",                  "description": "Locations — Hackney Wick, Brixton, digital spaces"},
+    {"id": "Concepts",                "label": "Concepts",                "description": "Abstract ideas, themes, values"},
+    {"id": "Processes",               "label": "Processes",               "description": "Workflows, methodologies, recurring operations"},
+    {"id": "Embodiment-Affordances",  "label": "Embodiment-Affordances",  "description": "Physical form, robot body, NeoPixel signals, spatial affordances"},
+    {"id": "Humanities",              "label": "Humanities",              "description": "Literature, history, philosophy, culture"},
+    {"id": "Systems",                 "label": "Systems",                 "description": "Technical architectures, software systems, eLo OS components"},
+    {"id": "Art-Design",              "label": "Art-Design",              "description": "Visual art, design work, brand, DISENELO aesthetic"},
+    {"id": "Music",                   "label": "Music",                   "description": "Music knowledge, genres, artists, David's listening"},
+    {"id": "Narrative",               "label": "Narrative",               "description": "Story, eLo-Planet lore, 4-act structure, character arcs"}
+  ]
+}
