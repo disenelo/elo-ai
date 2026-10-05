@@ -695,6 +695,28 @@ def _movement_intent(
 
     # SP-18 (WO-NAV-013): Executive navigate decision → movement intent
     if action == "navigate":
+        # WO-ROUTE-CONFIDENCE-INTENT-001: consult route_confidence before issuing a hop.
+        # If the target win_id has < 40% arrival success in recent attempts, downgrade
+        # exec_decision confidence so the journal records the hesitation and the Executive
+        # can surface it on the next turn.
+        try:
+            _rc_win_id = exec_decision.get("goal_win_id") or exec_decision.get("navigate_goal_win_id")
+            if _rc_win_id is not None:
+                from self.route_memory import route_confidence_by_win_id as _rc_fn, recent_routes as _rc_recent
+                _rc_history = _rc_recent(n=20)
+                _rc_val = _rc_fn(int(_rc_win_id), _rc_history)
+                exec_decision["route_confidence_consulted"] = True
+                exec_decision["route_confidence_value"] = _rc_val
+                if _rc_val < 0.40:
+                    _orig_conf = exec_decision.get("confidence") or 0.75
+                    exec_decision["confidence"] = round(_orig_conf * _rc_val, 3)
+                    exec_decision["route_confidence_low"] = True
+                    logging.getLogger(__name__).info(
+                        "ROUTE-CONF: win_id=%s confidence=%.3f < 0.40 — nav intent downgraded (exec confidence → %.3f)",
+                        _rc_win_id, _rc_val, exec_decision["confidence"],
+                    )
+        except Exception:
+            pass
         try:
             from runtime.backend_router import handle_navigate as _hnd_nav
             _nav_intent = _hnd_nav(exec_decision)
