@@ -5045,12 +5045,29 @@ def _process_turn(raw: str) -> dict:
                     system = system + "\n\n" + _sk
             except Exception as _sk_err:
                 _logging.warning("self_knowledge block failed (non-fatal): %s", _sk_err)
+            # The interaction type for this turn. ONE derivation, shared by
+            # the three faculties below that key off it.
+            #
+            # novelty and expectation read `_plan.edge_hint`, and
+            # CognitivePlan has no such field — the hasattr guard turned that
+            # into "" on every turn, so novelty scored an empty hint, never
+            # cleared its threshold, and returned "" for the life of the
+            # process. silence read a bare `_edge_hint` that appeared exactly
+            # once in this file, on the line reading it, never assigned:
+            # NameError, swallowed by its except, block never injected.
+            #
+            # conversation_action is the right source, not a guess. spine.py
+            # writes edge_hint into the signals from
+            # plan.execution_report.planned_action and from relationship
+            # posture, which is why the live store's values are the nine CAL
+            # actions plus "close".
+            _edge_hint = str(getattr(_plan, "conversation_action", "") or "") if _plan else ""
+
             # Novelty detection: flag genuinely rare edge_hints / unseen context_tags
             try:
                 from memory.novelty_detector import novelty_prompt_block as _nov_pb
-                _edge_hint_now = _plan.edge_hint if _plan and hasattr(_plan, "edge_hint") else ""
                 _ctx_tags_now  = _plan.context_tags if _plan and hasattr(_plan, "context_tags") else []
-                _nov_block = _nov_pb(edge_hint=_edge_hint_now, context_tags=_ctx_tags_now)
+                _nov_block = _nov_pb(edge_hint=_edge_hint, context_tags=_ctx_tags_now)
                 if _nov_block:
                     system = system + "\n\n" + _nov_block
             except Exception as _nov_err:
@@ -5066,8 +5083,7 @@ def _process_turn(raw: str) -> dict:
             # Expectation tracker: inject learned priors + flag prediction errors (non-blocking)
             try:
                 from memory.expectation_tracker import expectation_prompt_block as _exp_pb
-                _edge_hint_exp = _plan.edge_hint if _plan and hasattr(_plan, "edge_hint") else ""
-                _exp_block = _exp_pb(edge_hint=_edge_hint_exp)
+                _exp_block = _exp_pb(edge_hint=_edge_hint)
                 if _exp_block:
                     system = system + "\n\n" + _exp_block
             except Exception as _exp_err:
@@ -5122,8 +5138,7 @@ def _process_turn(raw: str) -> dict:
                 _logging.warning("capability_learning block failed (non-fatal): %s", _cap_err)
             try:
                 from runtime.silence_faculty import silence_faculty_prompt_block as _silence_pb
-                _silence_edge = _edge_hint if isinstance(_edge_hint, str) else ""
-                _silence_block = _silence_pb(edge_hint=_silence_edge)
+                _silence_block = _silence_pb(edge_hint=_edge_hint)
                 if _silence_block:
                     system = system + "\n\n" + _silence_block
             except Exception as _sil_err:
