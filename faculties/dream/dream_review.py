@@ -129,7 +129,29 @@ def assess_significance(entry: dict) -> float:
         for seed in cycle.get("seeds") or []:
             if seed.get("unresolved"):
                 unresolved = 1.0
-            emotional = max(emotional, float(seed.get("emotional_weight_max", 0.0) or 0.0))
+            # Was seed.get("emotional_weight_max"). That key appears
+            # exactly once in the whole codebase — here, on the read. No
+            # writer has ever produced it, so this term was a constant
+            # 0.0 for all 166 dreams and 856 seeds.
+            #
+            # The seeds do carry emotion: `emotional_weight` is a dict,
+            # e.g. {"wonder": 0.333}, populated on 74 of those seeds. Read
+            # the same way the cycle vector is read four lines above, so
+            # the two sources of emotion are treated identically.
+            # Values are coerced one at a time and non-numbers skipped. The
+            # read this replaced had `or 0.0` around a single float; iterating
+            # a dict without the same care turned a malformed emotion into a
+            # ValueError out of assess_significance, which runs inside the
+            # dream path. Caught by its own test, not in production.
+            _seed_emotion = seed.get("emotional_weight") or {}
+            if isinstance(_seed_emotion, (int, float)):
+                _seed_emotion = {"_": _seed_emotion}
+            if isinstance(_seed_emotion, dict):
+                for _v in _seed_emotion.values():
+                    try:
+                        emotional = max(emotional, float(_v))
+                    except (TypeError, ValueError):
+                        continue
 
     # A symbol eLo has seen before matters more than a one-off image.
     recurrence = 0.0
