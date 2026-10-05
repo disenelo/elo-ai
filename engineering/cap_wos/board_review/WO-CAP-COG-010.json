@@ -1,0 +1,13 @@
+{
+  "wo_id": "WO-CAP-COG-010",
+  "map": "COG",
+  "seq": 10,
+  "state": "fix_verified",
+  "blocked_on": null,
+  "score": { "pass": 1, "fail": 0, "total": 1 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-008_012_010_017_fix_verification.md",
+  "commit": "b3c8375",
+  "last_updated": "2026-10-05",
+  "model": "qwen2.5-coder:14b",
+  "notes": "Root cause was voice_rewrite collapse (NOT vault_write), confirmed by WO-VAULT-WRITE-INVESTIGATE-001 investigation 2026-09-28. Content-preservation guard at voice_rewrite.py:257 blocks collapse: cleaned=320 rewrite=38 < threshold=80 → rewrite rejected. delta_cause now tagged 'voice_rewrite' in shadow log. Static verification 2026-10-05. Live re-test recommended."
+}

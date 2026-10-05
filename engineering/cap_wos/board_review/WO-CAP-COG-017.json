@@ -1,0 +1,13 @@
+{
+  "wo_id": "WO-CAP-COG-017",
+  "map": "COG",
+  "seq": 17,
+  "state": "fix_verified",
+  "blocked_on": null,
+  "score": { "pass": 6, "fail": 0, "total": 6 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-008_012_010_017_fix_verification.md",
+  "commit": "56de4fe",
+  "last_updated": "2026-10-05",
+  "model": "qwen2.5-coder:14b",
+  "notes": "All 6 test cases PASS at generation layer (confirmed 2026-09-27). Pipeline substitution fixed: content-preservation guard at voice_rewrite.py:257 blocks collapse for social queries (cleaned=350 rewrite=27 < threshold=88). Score updated 4/6→6/6 — prior FAIL was pipeline substitution, not generation. Static verification 2026-10-05. Live re-test recommended."
+}

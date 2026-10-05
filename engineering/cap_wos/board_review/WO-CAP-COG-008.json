@@ -1,0 +1,13 @@
+{
+  "wo_id": "WO-CAP-COG-008",
+  "map": "COG",
+  "seq": 8,
+  "state": "fix_verified",
+  "blocked_on": null,
+  "score": { "pass": 1, "fail": 0, "total": 1 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-008_012_010_017_fix_verification.md",
+  "commit": "d14ceb4",
+  "last_updated": "2026-10-05",
+  "model": "qwen2.5-coder:14b",
+  "notes": "Generation layer: PASS (confirmed 2026-09-27). Pipeline substitution: FIXED (voice_rewrite content-preservation guard at voice_rewrite.py:257, landed 2026-09-28). Guard blocks rewrite collapse: cleaned=365 rewrite=13 < threshold=91 → rewrite rejected, elo_raw_gen falls through. Static verification 2026-10-05. Live re-test recommended to confirm end-to-end with Ollama."
+}

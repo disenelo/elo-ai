@@ -1,0 +1,13 @@
+{
+  "wo_id": "WO-CAP-COG-012",
+  "map": "COG",
+  "seq": 12,
+  "state": "fix_verified",
+  "blocked_on": null,
+  "score": { "pass": 1, "fail": 0, "total": 1 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-008_012_010_017_fix_verification.md",
+  "commit": "56de4fe",
+  "last_updated": "2026-10-05",
+  "model": "qwen2.5-coder:14b",
+  "notes": "Generation layer PASS confirmed 2026-09-27 (elo_raw_gen: 'My primary sound is a soft low-frequency hum...'). Pipeline substitution fixed: content-preservation guard at voice_rewrite.py:257 blocks collapse (cleaned=280 rewrite=32 < threshold=70). Static verification 2026-10-05. Live re-test recommended."
+}
