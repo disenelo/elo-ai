@@ -6987,6 +6987,16 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # ── NAME RULE scrub — P0 routing fix 2026-10-05 ──────────────────────
+        # The anchor in _ollama_stream prohibits "the user" / "a user" / "the
+        # human" as self-referential terms, but model pressure occasionally
+        # slips through. Scrub deterministically post-generation so David
+        # never sees these terms in elo_final.
+        _NR_PAT = _re.compile(r'\b(the user|a user|the human)\b', _re.IGNORECASE)
+        if _NR_PAT.search(response):
+            _logging.warning("NAME_RULE_SCRUB: prohibited self-reference found — replacing with 'David'")
+            response = _NR_PAT.sub("David", response)
+
         # ── WO-GUARD-001: Response Authority Guards (D-1 / D-2 / D-3) ──────────
         # D-1: current-user-reality override — suppress contradictions of in-session statements
         # D-2: tool provenance — correct tool-action claims masquerading as eLo personal actions

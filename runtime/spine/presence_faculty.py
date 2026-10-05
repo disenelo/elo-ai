@@ -187,6 +187,26 @@ _SIGNAL_WORDS: dict[str, object] = {
     "looping":           "idle",
     "circling":          "idle",
     "stuck in a loop":   "idle",
+    # ── P0 routing fix 2026-10-05: movement capability verbs that were
+    # reaching the LLM unclassified (peek/climb/walljump/etc.). These must
+    # be caught here BEFORE the LLM sees them. Bare "climb" is intentionally
+    # placed AFTER the height-targeted "climb to the middle" entries above so
+    # the more specific phrase wins when both are substrings of the input.
+    "peek":              "explore",
+    "can you peek":      "explore",
+    "can you climb":     "explore",
+    "climb":             "explore",
+    "walljump":          "explore",
+    "wall jump":         "explore",
+    "wall-jump":         "explore",
+    "can you wall jump": "explore",
+    "exit run":          "explore",
+    "hop":               "explore",
+    "jump":              "explore",
+    "land":              "idle",
+    "warp":              "explore",
+    "teleport":          "explore",
+    "disappear":         "step_out",
 }
 
 # ── Layer 2: Emotional state → movement directive ─────────────────────────────
