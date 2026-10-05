@@ -166,6 +166,21 @@ def get_epistemic_class(claim_id: str) -> str | None:
     return None
 
 
+
+def get_memory_origin(claim_id: str) -> str | None:
+    """
+    Where this claim came from, or None if it predates origin recording.
+
+    The answer to "was that from a dream?" — compare against
+    MemoryOrigin.DREAM_SIMULATION / DREAM_INSIGHT. Mirrors
+    get_epistemic_class above; the two answer different questions and both
+    are needed.
+    """
+    for c in _load("claims"):
+        if c.get("claim_id") == claim_id:
+            return c.get("memory_origin")
+    return None
+
 def get_source(source_id: str) -> dict | None:
     for s in _load("sources"):
         if s["source_id"] == source_id:
@@ -344,6 +359,21 @@ def record_claim(
         "significance_score": significance_score,
         "experience_id": experience_id,
         "contradicted_by": contradicted_by or [],
+        # WO-DREAM-EPISTEMIC-TAG-001: the origin was ACCEPTED, used as the
+        # dream write-gate above, and then dropped — it was never a key on the
+        # claim. So every claim passed an origin check whose answer nothing
+        # kept, and "was that from a dream?" had no mechanism behind it.
+        #
+        # Stored rather than added to epistemic_class as new DREAM_* variants,
+        # because MemoryOrigin already IS the origin vocabulary
+        # (DREAM_SIMULATION / DREAM_INSIGHT, Four-Layer Identity Model
+        # 2026-08-31). epistemic_class says how much to trust a claim; origin
+        # says where it came from. Two orthogonal facts, and folding one into
+        # the other needs a DREAM_ twin for every class forever.
+        #
+        # None on legacy claims, which is honest — their origin was not
+        # recorded and cannot be reconstructed.
+        "memory_origin": memory_origin or None,
         # WO-MEMORY-TRACE-001: multidimensional episodic trace fields (optional, backward-compatible)
         "affective_snapshot": affective_snapshot or None,
         "cognitive_snapshot": cognitive_snapshot or None,
