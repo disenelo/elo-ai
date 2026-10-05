@@ -469,16 +469,24 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "feel at home":        "explore",
     "your playground":     "explore",
     "explore":             "explore",
+    # P0-MVVERB: look-around / teleport verbs that were reaching LLM unclassified
+    "peek":                "explore",
+    "warp":                "explore",
+    "teleport":            "explore",
     # Free-form move sub-types (Designer: fire_jump | wall_jump | step_back_run_fire | drop)
     "fire jump":            {"name": "move", "sub_type": "fire_jump"},
     "do a fire jump":       {"name": "move", "sub_type": "fire_jump"},
     "wall jump":            {"name": "move", "sub_type": "wall_jump"},
     "do a wall jump":       {"name": "move", "sub_type": "wall_jump"},
+    "walljump":             {"name": "move", "sub_type": "wall_jump"},   # P0-MVVERB: no-space variant
+    "wall-jump":            {"name": "move", "sub_type": "wall_jump"},   # P0-MVVERB: hyphen variant
     "climb that":           {"name": "move", "sub_type": "wall_jump"},
     "climb it":             {"name": "move", "sub_type": "wall_jump"},
+    "climb":                {"name": "move", "sub_type": "wall_jump"},   # P0-MVVERB: bare "climb"
     "back up and run":      {"name": "move", "sub_type": "step_back_run_fire"},
     "run at it":            {"name": "move", "sub_type": "step_back_run_fire"},
     "step back and run":    {"name": "move", "sub_type": "step_back_run_fire"},
+    "exit run":             {"name": "move", "sub_type": "step_back_run_fire"},  # P0-MVVERB
     "drop down":            {"name": "move", "sub_type": "drop"},
     "drop off":             {"name": "move", "sub_type": "drop"},
     # Directional movement — emits move_command (IO contract: DOWN channel blender_state.json)
@@ -590,6 +598,8 @@ _SIGNAL_WORDS: "dict[str, str | dict]" = {
     "looping":           "idle",
     "circling":          "idle",
     "stuck in a loop":   "idle",
+    # P0-MVVERB: step-away verb that was reaching LLM unclassified
+    "disappear":         "step_out",
 }
 
 # David ruling 2026-08-24 (FROM_DESIGN card 12 §1): step_out phrases split by mode.
@@ -7201,6 +7211,22 @@ def _process_turn(raw: str) -> dict:
             response = _ig_scrub(response)
         except Exception:
             pass
+
+        # ── P0-MVVERB: movement-verb echo scrub ────────────────────────────────
+        # Catches the "Climb?" / "Walljump?" echo pattern: when routing misses a
+        # bare movement verb, the LLM echoes it back as a one-word question.
+        # Primary fix is _SIGNAL_WORDS expansion above; this scrub is the safety net.
+        _MVVERB_ECHO_WORDS = frozenset({
+            "peek", "climb", "walljump", "wall jump", "wall-jump", "exit run",
+            "warp", "teleport", "parkour", "hop", "land", "disappear",
+        })
+        _echo_m = _re.match(r'^([a-z ][a-z -]{0,20})\s*\?\s*$', response.strip(), _re.IGNORECASE)
+        if _echo_m and _echo_m.group(1).strip().lower() in _MVVERB_ECHO_WORDS:
+            _logging.warning(
+                "MVVERB_ECHO_SCRUB: echo pattern '%s' caught — replacing with character response",
+                response.strip(),
+            )
+            response = "On it."
 
         # ── NAME RULE scrub — P0 routing fix 2026-10-05 ──────────────────────
         # The anchor in _ollama_stream prohibits "the user" / "a user" / "the

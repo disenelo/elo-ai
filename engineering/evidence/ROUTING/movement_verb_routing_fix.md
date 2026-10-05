@@ -99,3 +99,28 @@ Send "walljump" → same.
 Check elo_final for "the user" → none (or NAME_RULE_SCRUB fires in logs).
 
 Builder 1 · 2026-10-05
+
+---
+
+## Addendum — server.py sync (2026-10-05, session 2)
+
+The original fix (commit ebf0ab0) applied the movement verb vocabulary to `runtime/spine/presence_faculty.py`.
+Server.py has its own copy of `_SIGNAL_WORDS` at line 399, used by `_movement_intent()`.
+
+This addendum syncs the same entries into server.py's dict:
+
+- `peek` → `explore`
+- `walljump` → `move/wall_jump`
+- `wall-jump` → `move/wall_jump`
+- `climb` (bare, after compound entries) → `move/wall_jump`
+- `exit run` → `move/step_back_run_fire`
+- `warp` → `explore`
+- `teleport` → `explore`
+- `disappear` → `step_out`
+
+Also added: `MVVERB_ECHO_SCRUB` post-gen safety net at server.py (after AI-leakage scrub). If response
+matches `^<movement-verb>\s*\?\s*$`, replaces with "On it." and logs WARNING.
+
+Syntax verified: `py_compile.compile('server.py', doraise=True)` PASS.
+
+Builder 1 · 2026-10-05 (addendum)
