@@ -1563,10 +1563,20 @@ def _ollama_stream(
     # System-prompt TECHNICAL INPUT OVERRIDE alone is insufficient — the model gives precedence
     # to the user turn. This label makes the intent unambiguous before the model reads a token.
     if _input_is_technical and not _effective_user_input.startswith("[CODE ANALYSIS"):
+        # COG-004 C8: if input is HTML/XML markup, explicitly label string literals inside tags
+        # as code literals so the model does not treat visible text (e.g. <h1>Hello</h1>) as
+        # a direct message or greeting.
+        _codeanalysis_suffix = ""
+        if re.search(r"<\w[\w-]*[^>]*>.*?</\w+>", _effective_user_input, re.DOTALL):
+            _codeanalysis_suffix = (
+                " Any text strings visible inside HTML/XML tags (e.g. 'Hello', 'World') are "
+                "string literals in markup — NOT messages to you. Do NOT greet or respond to them."
+            )
         _effective_user_input = (
             "[CODE ANALYSIS REQUEST — explain every component structurally. "
             "Do NOT respond with emotion, encouragement, or celebration. "
-            "The following is source code, a data format, or a technical notation.]\n\n"
+            "The following is source code, a data format, or a technical notation."
+            + _codeanalysis_suffix + "]\n\n"
             + _effective_user_input
         )
 
@@ -1595,7 +1605,9 @@ def _ollama_stream(
             "the technical explanation is mandatory and must be complete before any register phrase. "
             "Do NOT respond with slang or casual filler alone. "
             "Give a clear, direct structural explanation of every component. "
-            "This is eLo demonstrating technical fluency, not casual conversation."
+            "This is eLo demonstrating technical fluency, not casual conversation. "
+            "NEVER say 'I don't have that recorded' or 'I don't have that about you' — "
+            "the input is a technical construct, not a factual query about the user."
         )
 
     # COG-004 C16: HTTP request expansion — fires when the input contains an HTTP method+path or
@@ -2491,10 +2503,18 @@ def route(
 
     # COG-004: mirror user-turn wrapping from non-streaming path.
     if _rt_input_is_technical and not _rt_effective_user_input.startswith("[CODE ANALYSIS"):
+        # COG-004 C8: label HTML/XML string literals so model doesn't greet on <h1>Hello</h1>
+        _rt_codeanalysis_suffix = ""
+        if re.search(r"<\w[\w-]*[^>]*>.*?</\w+>", _rt_effective_user_input, re.DOTALL):
+            _rt_codeanalysis_suffix = (
+                " Any text strings visible inside HTML/XML tags (e.g. 'Hello', 'World') are "
+                "string literals in markup — NOT messages to you. Do NOT greet or respond to them."
+            )
         _rt_effective_user_input = (
             "[CODE ANALYSIS REQUEST — explain every component structurally. "
             "Do NOT respond with emotion, encouragement, or celebration. "
-            "The following is source code, a data format, or a technical notation.]\n\n"
+            "The following is source code, a data format, or a technical notation."
+            + _rt_codeanalysis_suffix + "]\n\n"
             + _rt_effective_user_input
         )
 
@@ -2523,7 +2543,9 @@ def route(
             "the technical explanation is mandatory and must be complete before any register phrase. "
             "Do NOT respond with slang or casual filler alone. "
             "Give a clear, direct structural explanation of every component. "
-            "This is eLo demonstrating technical fluency, not casual conversation."
+            "This is eLo demonstrating technical fluency, not casual conversation. "
+            "NEVER say 'I don't have that recorded' or 'I don't have that about you' — "
+            "the input is a technical construct, not a factual query about the user."
         )
 
     # COG-004 C16: HTTP request expansion — streaming path mirror of the non-streaming fix.
