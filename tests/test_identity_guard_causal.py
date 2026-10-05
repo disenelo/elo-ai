@@ -131,9 +131,28 @@ def test_fragments_are_rejected(monkeypatch):
     assert _from_accumulated_state() == ""
 
 
-def test_lesson_is_used_when_no_focal_thread(monkeypatch):
+def test_a_lesson_is_NOT_used_when_there_is_no_focal_thread(monkeypatch):
+    """
+    Was test_lesson_is_used_when_no_focal_thread, asserting the opposite.
+
+    That substitution WAS the P0 leak (851e3ae). David's live log 2026-10-05:
+
+        eLo  Partial progress on reflect — check dependencies before next
+             attempt.
+
+    A lesson statement is machine-written ABOUT eLo —
+    reflection_faculty._derive_statement builds every one from an f-string
+    template — so it is not his to say, however real the state behind it.
+    focal_thread and session_read are fragments of what actually passed
+    between them and still substitute.
+
+    Inverted rather than deleted, so the history of the decision stays
+    readable here.
+    """
     _with_state(monkeypatch, _State(lesson="Check dependencies before the next attempt."))
-    assert scrub_ai_leakage(WHOLE_LEAK) == "Check dependencies before the next attempt."
+    out = scrub_ai_leakage(WHOLE_LEAK)
+    assert "Check dependencies" not in out
+    assert out == "", "nothing accumulated to speak from — the silent-turn floor"
 
 
 # ── WO-CAP-COG-026 — one synonym cost the whole dream capability ─────────────
