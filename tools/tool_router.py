@@ -2114,6 +2114,64 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
         except Exception as _we:
             _logger.debug("weather direct intercept failed: %s", _we)
 
+    # WO-GAME-001: game mode trigger — voice/text activation of platformer mode.
+    # "game mode" (and natural variants) → intent: "game_mode" + game_mode: "on"
+    # Sleep gate: suppress if dream_phase is active in blender_state.json.
+    # Exit phrases → intent: "idle" + game_mode: "off"
+    _GAME_MODE_ENTER = [
+        r"\bgame\s+mode\b",
+        r"\bstart\s+(?:the\s+)?game\b",
+        r"\bactivate\s+game\b",
+        r"\bplay\s+(?:the\s+)?game\b",
+        r"\blaunch\s+(?:the\s+)?(?:platform(?:er)?|game)\b",
+        r"\bopen\s+(?:the\s+)?(?:platform(?:er)?|game)\b",
+    ]
+    _GAME_MODE_EXIT = [
+        r"\b(?:exit|quit|leave|stop|end)\s+game(?:\s+mode)?\b",
+        r"\bgame\s+(?:mode\s+)?off\b",
+        r"\bclose\s+(?:the\s+)?game\b",
+    ]
+    _is_game_enter = any(re.search(p, _lower) for p in _GAME_MODE_ENTER)
+    _is_game_exit  = any(re.search(p, _lower) for p in _GAME_MODE_EXIT)
+    if _is_game_enter or _is_game_exit:
+        try:
+            from blender_bridge.state_writer import patch as _gm_patch
+            import json as _gm_json, os as _gm_os
+            # Sleep gate: check dream_phase before entering
+            _bs_path = _gm_os.path.join(
+                _gm_os.path.dirname(_gm_os.path.dirname(_gm_os.path.abspath(__file__))),
+                "blender", "blender_state.json",
+            )
+            _dream_active = False
+            try:
+                with open(_bs_path, encoding="utf-8") as _bsf:
+                    _dream_active = bool(_gm_json.load(_bsf).get("dream_phase"))
+            except Exception:
+                pass
+            if _is_game_enter and not _dream_active:
+                _gm_patch({"intent": "game_mode", "game_mode": "on"})
+                return (
+                    "[GAME MODE: platformer activated — intent: game_mode written. "
+                    "eLo is aware the game is now active. "
+                    "Acknowledge naturally — no scripted lines.]\n\n"
+                    + user_input
+                ), "game_mode"
+            elif _is_game_enter and _dream_active:
+                return (
+                    "[GAME MODE: trigger suppressed — eLo is currently in dream phase. "
+                    "Acknowledge gently that you're in a dream and can't switch to game mode right now.]\n\n"
+                    + user_input
+                ), "game_mode"
+            elif _is_game_exit:
+                _gm_patch({"intent": "idle", "game_mode": "off"})
+                return (
+                    "[GAME MODE: deactivated — intent: idle written, game_mode: off. "
+                    "Acknowledge the exit naturally.]\n\n"
+                    + user_input
+                ), "game_mode"
+        except Exception as _gm_err:
+            _logger.debug("game_mode intercept failed: %s", _gm_err)
+
     # §8 Lights — wire dispatch_lights() into the active runtime (BUILD_STATUS gap)
     _LIGHTS_SCENE_MAP = {
         "calm": ["calm", "relax", "chill", "meditat", "leaf on water", "reflective"],
