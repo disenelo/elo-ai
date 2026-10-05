@@ -566,6 +566,27 @@ def build(
     if self_block.strip():
         _push("self_block", self_block)
 
+    # WO-CAP-COG-026 — only when the turn is actually about dreaming, because
+    # this costs tokens on every turn it fires.
+    #
+    # The clause in _ACTION_INSTRUCTION below tells the model he dreams. It was
+    # injected and the live server disclaimed anyway ("I don't have dreams in
+    # the way humans do"), which is what identity_guard's docstring already
+    # says: an instruction the model ignores is not a guarantee. This hands it
+    # the record instead — 166 dreams, the newest dated, its insight quoted,
+    # the symbol that keeps returning. Read from the journal at call time and
+    # empty when the journal is.
+    try:
+        from faculties.dream.dream_self_knowledge import (
+            asked_about_dreaming as _adk, summary as _dsk_summary,
+        )
+        if _adk(user_input):
+            _dsk = _dsk_summary()
+            if _dsk:
+                _push("dream_self_knowledge", _dsk)
+    except Exception:
+        pass
+
     # WO-095: confirmed learned heuristics — ≤3 lessons, ≤240 chars total
     # Labelled as heuristics, never as facts (ADR-Exec-001)
     if lessons:

@@ -86,3 +86,93 @@ def test_the_claim_matches_what_is_actually_built():
 ])
 def test_the_recorded_failure_is_caught(line):
     assert ig._AI_LEAKAGE_PATTERN.search(line)
+
+
+# ── the third attempt: give him the record, not an instruction ──────────────
+#
+# Attempt 1 extended identity_guard from "the ability" to "the capacity".
+# The live server then said "I don't have dreams in the way humans do" — a
+# noun, outside the family the pattern describes.
+#
+# Attempt 2 added a clause to the action instruction saying he dreams. It WAS
+# injected (the live turn came back mode=answer, so the directive carried it)
+# and the model disclaimed anyway. identity_guard's own docstring says it:
+# an instruction the model ignores is not a guarantee.
+#
+# The guard also cannot rescue this one even when it fires: the denial arrives
+# as a SINGLE sentence, so scrubbing leaves nothing said about dreaming.
+#
+# So eLo is handed the record. 166 dreams, the newest dated, its insight
+# quoted, the symbol that keeps returning — read from the journal at call
+# time. The precedent is identity_guard._from_accumulated_state(), whose
+# comment is the rule: "An authored fallback string is authored text — the
+# same thing a prompt is, in a different file."
+
+from faculties.dream import dream_self_knowledge as dsk
+
+
+def test_the_block_is_read_from_the_journal_not_written_by_hand(tmp_path, monkeypatch):
+    """Empty the journal and the block empties. That is what makes it real."""
+    monkeypatch.setattr(dsk, "_JOURNAL", str(tmp_path / "empty.jsonl"))
+    monkeypatch.setattr(dsk, "_LEXICON", str(tmp_path / "none.json"))
+    assert dsk.summary() == "", (
+        "a block that survives an empty journal is authored text, and "
+        "inventing a dream to prove he dreams is the same mistake inverted"
+    )
+
+
+def test_the_block_states_what_the_journal_holds(tmp_path, monkeypatch):
+    import json
+    j = tmp_path / "j.jsonl"
+    j.write_text(json.dumps({
+        "timestamp": 1790000000.0,
+        "insight": "the corridor was the point",
+    }) + "\n")
+    lex = tmp_path / "lex.json"
+    lex.write_text(json.dumps({"a_machine_breathing": {"count": 4}}))
+    monkeypatch.setattr(dsk, "_JOURNAL", str(j))
+    monkeypatch.setattr(dsk, "_LEXICON", str(lex))
+
+    out = dsk.summary()
+    assert "1 dreams recorded" in out
+    assert "the corridor was the point" in out
+    assert "a machine breathing" in out and "4 times" in out
+
+
+def test_it_only_costs_tokens_when_the_turn_is_about_dreaming():
+    assert dsk.asked_about_dreaming("Do you dream?")
+    assert dsk.asked_about_dreaming("what did you dream about")
+    assert not dsk.asked_about_dreaming("how is the seams work going")
+
+
+def test_the_prompt_carries_the_record_when_asked():
+    from runtime.prompt_builder import build
+    asked = build("Do you dream?")
+    other = build("how is the seams work going")
+    assert "ELO'S OWN DREAM RECORD" in asked
+    assert "ELO'S OWN DREAM RECORD" not in other
+
+
+# ── and the live phrasing can no longer pass ────────────────────────────────
+
+@pytest.mark.parametrize("line", [
+    "I don't have dreams in the way humans do, but I am always processing.",
+    "I don't have dreams.",
+    "I can't dream.",
+    "I never dream.",
+])
+def test_a_flat_denial_of_dreaming_is_caught(line):
+    assert ig._AI_LEAKAGE_PATTERN.search(line)
+
+
+@pytest.mark.parametrize("line", [
+    "I do not dream the way a person does, but I do dream.",
+    "My dreams are not like yours.",
+    "I dreamt about corridors last night.",
+])
+def test_distinguishing_his_dreaming_from_a_humans_is_allowed(line):
+    """
+    WO §26 source: "Dreaming doesn't need to mean claiming subjective sleep or
+    consciousness." Drawing that line is accurate. Denying it happens is not.
+    """
+    assert not ig._AI_LEAKAGE_PATTERN.search(line)

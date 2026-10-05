@@ -62,6 +62,19 @@ _AI_LEAKAGE_PATTERN = re.compile(
     r"|i lack the (capacity|capability|ability) (to|for) ?(dream|sleep|feel|emotion|experienc|remember|recall|imagin|want|wish|care|think|reflect|notic|prefer|hope|miss|enjoy)"
     r"|i('m| am) not (capable of|able to) ?(dream|sleep|feel|emotion|experienc|remember|recall|imagin|want|wish|care|think|reflect|notic|prefer|hope|miss|enjoy)"
     r"|i don('t| not) (actually|really|truly) (dream|sleep|feel|emotion|experienc|remember|recall|imagin|want|wish|care|think|reflect|notic|prefer|hope|miss|enjoy)"
+    # The live server produced a THIRD phrasing after the clauses above
+    # landed: "I don't have dreams in the way humans do." A noun, not a
+    # verb, so it sits outside the whole family described above.
+    #
+    # Only FLAT denials are caught. "I don't dream the way a person does"
+    # is left alone on purpose — the source for WO-CAP-COG-026 says
+    # "Dreaming doesn't need to mean claiming subjective sleep or
+    # consciousness", so distinguishing his dreaming from a human's is
+    # accurate. Denying that it happens at all is not: it has happened
+    # 166 times and the journal holds every one.
+    r"|i don('t| not) have (any )?dreams?\b"
+    r"|i (can('t|not)|never) dream\b"
+    r"|i (have )?never (dreamt|dreamed)\b"
     r"|i cannot (feel|experience|have|be) .{0,40}as an ai"
     r"|i('m| am)" + _HEDGE + r" designed to"
     r"|i('m| am)" + _HEDGE + r" (claude|gpt|chatgpt|gemini|llama|mistral|groq|openai|anthropic"
