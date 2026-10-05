@@ -72,23 +72,59 @@ def _write_hud(path: Path) -> None:
         pass
 
 
+# ── OpenAI image call ─────────────────────────────────────────────────────────
+#
+# eLo has dreamt 166 times and produced zero pictures. Three dreams reached the
+# image stage; every scene failed, and the live journal records why:
+#
+#   DALL-E 3: Error code: 400 - {'error': {'message': "Unknown parameter:
+#   'response_format'.", 'type': 'invalid_request_error', ...}}       x6
+#   DALL-E 3: No module named 'openai'                                 x4
+#
+# The second is fixed — openai 3.19.2 is installed. The first is live: newer
+# image endpoints reject response_format outright, and the parameter was sent
+# unconditionally, so both DALL-E paths 400'd and the chain fell through to a
+# local Stable Diffusion that is not running (connection refused). Every route
+# failed for a different reason and the dream recorded no art.
+#
+# Sent first, because older SDKs need it, then dropped and retried when the API
+# says it does not know it. Without response_format the response carries a URL
+# instead of base64, so both shapes are read.
+
+def _openai_image_bytes(client, model: str, prompt: str, **extra) -> bytes:
+    """Generate one image and return its PNG bytes. Raises on failure."""
+    kwargs = dict(model=model, prompt=prompt, n=1, size="1024x1024", **extra)
+    try:
+        resp = client.images.generate(response_format="b64_json", **kwargs)
+    except Exception as e:
+        if "response_format" not in str(e):
+            raise
+        resp = client.images.generate(**kwargs)
+
+    item = resp.data[0]
+
+    b64 = getattr(item, "b64_json", None)
+    if b64:
+        return base64.b64decode(b64)
+
+    url = getattr(item, "url", None)
+    if not url:
+        raise RuntimeError("image response carried neither b64_json nor url")
+    import urllib.request
+    with urllib.request.urlopen(url, timeout=60) as r:
+        return r.read()
+
+
 # ── DALL-E 3 ──────────────────────────────────────────────────────────────────
 
 def _dalle3(prompt: str, filename: str | None = None) -> Optional[Path]:
     try:
         import openai
         client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        resp = client.images.generate(
-            model="dall-e-3",
-            prompt=prompt,
-            n=1,
-            size="1024x1024",
-            quality="hd",
-            response_format="b64_json",
+        out = _output_path(filename)
+        out.write_bytes(
+            _openai_image_bytes(client, "dall-e-3", prompt, quality="hd")
         )
-        data = resp.data[0].b64_json
-        out  = _output_path(filename)
-        out.write_bytes(base64.b64decode(data))
         return out
     except Exception as e:
         print(f"[image_gen] DALL-E 3 failed: {e}")
@@ -102,16 +138,8 @@ def _dalle2(prompt: str, filename: str | None = None) -> Optional[Path]:
     try:
         import openai
         client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        resp = client.images.generate(
-            model="dall-e-2",
-            prompt=prompt,
-            n=1,
-            size="1024x1024",
-            response_format="b64_json",
-        )
-        data = resp.data[0].b64_json
-        out  = _output_path(filename)
-        out.write_bytes(base64.b64decode(data))
+        out = _output_path(filename)
+        out.write_bytes(_openai_image_bytes(client, "dall-e-2", prompt))
         return out
     except Exception as e:
         print(f"[image_gen] DALL-E 2 failed: {e}")
