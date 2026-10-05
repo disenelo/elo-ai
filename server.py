@@ -6571,6 +6571,42 @@ def _process_turn(raw: str) -> dict:
                         })
                     except Exception as _sp_err:
                         _logging.debug("CANON-XIII §C: shadow log failed (non-fatal): %s", _sp_err)
+                    # CANON-XIII §D: inject Python-issued route into move_command.
+                    # route_for_direction() converts direction → nearest Surface pair →
+                    # plan_route() → Route serialised into _mv_intent["route"] /
+                    # _mv_intent["issued_by"]. Additive — Unity still receives the
+                    # direction field; it can follow the route if present.
+                    try:
+                        from faculties.spatial.spatial_faculty import (
+                            route_for_direction as _rfd,
+                            route_to_list as _rtl,
+                            BodySchema as _BodySchema,
+                        )
+                        from desktop.spatial_state import get_elo_spatial as _get_elo, get_windows as _get_wins
+                        from faculties.spatial.spatial_faculty import build_map as _build_wm
+                        _d_elo   = _get_elo()
+                        _d_wins  = _get_wins()
+                        _d_wmap  = _build_wm(_d_wins)
+                        _d_dir   = _mv_intent.get("direction", "") or ""
+                        if _d_dir and not _mv_intent.get("route"):
+                            _d_route = _rfd(
+                                elo_x=_d_elo.pixel_x,
+                                elo_y=_d_elo.pixel_y,
+                                direction=_d_dir,
+                                world_map=_d_wmap,
+                                body=_BodySchema(),
+                            )
+                            from faculties.spatial.spatial_faculty import Route as _Route
+                            if isinstance(_d_route, _Route) and _d_route.legs:
+                                _mv_intent = dict(_mv_intent)
+                                _mv_intent["route"] = _rtl(_d_route)
+                                _mv_intent["issued_by"] = "SpatialFaculty"
+                                _logging.info(
+                                    "CANON-XIII §D: Python route issued (%d legs) for direction=%r",
+                                    len(_d_route.legs), _d_dir,
+                                )
+                    except Exception as _d_err:
+                        _logging.debug("CANON-XIII §D: route injection failed (non-fatal): %s", _d_err)
                 elif _mv_intent == "step_out":
                     # Exit intent — activate pending tracker; gate "stepping away" on exit_complete
                     _PENDING_EXIT["active"] = True

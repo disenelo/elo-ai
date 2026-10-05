@@ -396,6 +396,8 @@ def _play_say(text: str, stop: threading.Event) -> None:
 
 _INNER_OPENAI_SPEED = float(os.environ.get("ELO_INNER_TTS_SPEED", "0.9"))
 _INNER_SAY_RATE     = int(os.environ.get("ELO_INNER_RATE", "130"))
+# afplay -v (0.0–1.0); inner thoughts are quieter than the main response
+_INNER_AFPLAY_VOL   = float(os.environ.get("ELO_INNER_AFPLAY_VOL", "0.5"))
 
 
 def _fetch_openai_audio_inner(text: str) -> bytes | None:
@@ -432,7 +434,7 @@ def _play_openai_inner(text: str, stop: threading.Event) -> bool:
         tmp_path = f.name
     try:
         proc = subprocess.Popen(
-            ["afplay", tmp_path],
+            ["afplay", "-v", str(_INNER_AFPLAY_VOL), tmp_path],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
         _pulse_lipsync(phonemes, stop, text=text)
@@ -500,7 +502,7 @@ def _speak_thread_inner(text: str, stop: threading.Event) -> None:
             try:
                 phonemes = _text_to_phoneme_sequence(text)
                 proc = subprocess.Popen(
-                    ["afplay", tmp_path],
+                    ["afplay", "-v", str(_INNER_AFPLAY_VOL), tmp_path],
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 )
                 _pulse_lipsync(phonemes, stop, text=text)

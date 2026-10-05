@@ -553,3 +553,99 @@ def context_block(live_state=None, world_map: "DesktopWorldMap | None" = None) -
     except Exception as _e:
         _log.debug("SpatialFaculty.context_block: %s", _e)
         return ""
+
+
+# ── §D: route serialisation + direction→surface resolution ────────────────────
+
+def leg_to_dict(leg: RouteLeg) -> dict:
+    """Serialise one RouteLeg to a JSON-safe dict for blender_state move_command."""
+    return {
+        "verb": leg.verb,
+        "to": leg.to,
+        "precondition": list(leg.precondition),
+        "expected_ms": leg.expected_ms,
+    }
+
+
+def route_to_list(route: Route) -> list:
+    """Serialise all legs of a Route to a JSON-safe list."""
+    return [leg_to_dict(leg) for leg in route.legs]
+
+
+def _nearest_surface_in_direction(
+    elo_x: int,
+    elo_y: int,
+    direction: str,
+    world_map: DesktopWorldMap,
+) -> "Surface | None":
+    """
+    Find the nearest walkable surface in the given cardinal direction.
+
+    direction: "left" | "right" | "up" | "down"
+    Returns the closest Surface whose rect is in the requested direction,
+    or None if nothing is reachable.
+    """
+    candidates: list[tuple[float, Surface]] = []
+    for surf in world_map.surfaces:
+        if not surf.available:
+            continue
+        x, y, w, h = surf.rect
+        cx = x + w // 2
+        cy = y + h // 2
+        if direction == "right" and cx > elo_x:
+            candidates.append((cx - elo_x, surf))
+        elif direction == "left" and cx < elo_x:
+            candidates.append((elo_x - cx, surf))
+        elif direction == "up" and cy < elo_y:
+            candidates.append((elo_y - cy, surf))
+        elif direction == "down" and cy > elo_y:
+            candidates.append((cy - elo_y, surf))
+    if not candidates:
+        return None
+    return min(candidates, key=lambda t: t[0])[1]
+
+
+def route_for_direction(
+    elo_x: int,
+    elo_y: int,
+    direction: str,
+    world_map: DesktopWorldMap,
+    body: "BodySchema | None" = None,
+    presence: str = PRESENCE_ACTIVE,
+) -> "Route | NoRoute":
+    """
+    §D entry-point: plan a Python-issued route for a directional move intent.
+
+    Maps a cardinal direction to the nearest target surface, then calls
+    plan_route(). Returns NoRoute when no suitable target exists or the
+    movement is blocked by presence gate.
+
+    Callers attach the result to the move_command via leg_to_dict / route_to_list.
+    """
+    if body is None:
+        body = BodySchema()
+
+    # Derive from_surface: eLo's current floor or nearest surface under them
+    from_surface: Surface | None = None
+    for surf in sorted(world_map.surfaces, key=lambda s: s.z, reverse=True):
+        x, y, w, h = surf.rect
+        if x <= elo_x <= x + w:
+            from_surface = surf
+            break
+    if from_surface is None:
+        # Fallback: desktop floor
+        for surf in world_map.surfaces:
+            if surf.surface_type == SURF_DESKTOP_FLOOR:
+                from_surface = surf
+                break
+    if from_surface is None:
+        return NoRoute(reason="no_from_surface")
+
+    to_surface = _nearest_surface_in_direction(elo_x, elo_y, direction, world_map)
+    if to_surface is None:
+        return NoRoute(reason=f"no_target_in_direction:{direction}")
+
+    if to_surface.surface_id == from_surface.surface_id:
+        return NoRoute(reason="already_at_target")
+
+    return plan_route(from_surface, to_surface, body, presence=presence)
