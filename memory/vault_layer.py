@@ -287,7 +287,12 @@ _PROPOSED_TO_TCODE: dict[str, str] = {
 }
 
 
-def lookup(query: str, max_results: int = 5, type_filter: str | None = None) -> list[dict]:
+def lookup(
+    query: str,
+    max_results: int = 5,
+    type_filter: str | None = None,
+    epistemic_filter: list[str] | None = None,
+) -> list[dict]:
     """
     Search memory for records matching the query.
 
@@ -295,6 +300,18 @@ def lookup(query: str, max_results: int = 5, type_filter: str | None = None) -> 
         Accepts: episodic | semantic | procedural | emotional
                  conversation | learn | build | connect | fix | decision | design
         When set, only records whose spot t_code matches are returned.
+
+    epistemic_filter — WO-DREAM-EPISTEMIC-TAG-001. When set, only records
+        whose epistemic_class is in the list are returned, so factual
+        recall can exclude dream-derived material. Matching is
+        case-insensitive: the vault writes lower case ("conversation",
+        "verified") while WKG and dream_review use upper ("VERIFIED",
+        "HYPOTHESIS"), and a filter that silently matched nothing because
+        of case would be worse than no filter.
+
+        A record with NO recorded class is excluded when a filter is set —
+        18 of 682 deep records predate the field. Unknown provenance is
+        not a pass; the caller asked for specific classes.
 
     Searches two sources:
         1. Summary .md files (structured, weighted)
@@ -417,12 +434,56 @@ def lookup(query: str, max_results: int = 5, type_filter: str | None = None) -> 
                 and r["spot"].split("·")[1] == _want_tcode
             ]
 
+    # WO-DREAM-EPISTEMIC-TAG-001: exclude dream-derived material from
+    # factual recall. The class is written to the DEEP record's
+    # frontmatter (664 of 682 carry it) and lookup never read it back, so
+    # a dream entry and a conversation entry were indistinguishable here.
+    # Resolved per candidate rather than up front — the read only happens
+    # for rows that already matched the query.
+    if epistemic_filter:
+        _want = {str(c).strip().lower() for c in epistemic_filter}
+        results = [r for r in results
+                   if _epistemic_class_of(r).lower() in _want]
+
     _truncated = results[:max_results]
     # P0-3 fix: reinforce() removed from lookup() — library must not do durable writes.
     # Vol VIII §4.70 / §4.03: "retrieval runs in the response path … reading only; durable
     # writes never happen in the hot loop." Reinforce fires in the integration window
     # (server.py, post-response daemon thread) keyed on vault hits that were actually used.
     return _truncated
+
+
+def _epistemic_class_of(record: dict) -> str:
+    """
+    The epistemic class on a lookup row, read from its deep record.
+
+    Returns "" when the record has none — 18 of 682 deep files predate the
+    field. Callers treat "" as excluded rather than as a pass: unknown
+    provenance is not evidence of good provenance.
+    """
+    cached = record.get("epistemic_class")
+    if cached:
+        return str(cached)
+
+    # Built from _DEEP_DIR, like every other path in this module. The first
+    # version joined _VAULT with the deep_link, which LOOKS equivalent — but
+    # _MEM_DIR/_DEEP_DIR are derived from _VAULT at import, so anything that
+    # repoints the vault leaves the two reading different directories. The
+    # resolver then found nothing, returned "", and every row failed the
+    # filter: a filter that quietly excludes everything.
+    spot = str(record.get("spot", "") or "")
+    if not spot:
+        return ""
+    try:
+        path = os.path.join(_DEEP_DIR, f"{spot.replace(chr(183), '-')}-deep.md")
+        if not os.path.exists(path):
+            return ""
+        with open(path, encoding="utf-8", errors="replace") as _f:
+            klass = str(_parse_fm(_f.read()).get("epistemic_class", "") or "")
+    except Exception:
+        return ""
+    record["epistemic_class"] = klass        # surfaced for the caller too
+    return klass
 
 
 def recall_context(query: str, max_results: int = 5) -> dict:
