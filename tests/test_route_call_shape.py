@@ -144,3 +144,85 @@ def test_the_dream_swallows_llm_failure_by_design():
             guarded = True
             break
     assert guarded, "llm_fn is no longer wrapped — a dead backend would now break the dream"
+
+
+# ── Repo-wide: no module may call route with the backend name ─────────────
+
+# Known and NOT fixed: runtime/executive.py's run_dream_window closure has the
+# identical defect. Its own comment says it uses the real router so the dream
+# produces "genuine narrative and insight, not an empty stub that degrades to
+# the minimal fallback" — and the call guarantees that stub.
+#
+# executive.py is frozen at the TEST layer: test_d3_lesson_reaches_executive
+# hashes it and the last SHA bump is annotated "David-authorized via Board".
+# Editing it is a governance decision, not a plumbing one. Recorded here so it
+# is visible and so a FOURTH copy cannot appear quietly.
+KNOWN_UNFIXED = {"runtime/executive.py"}
+
+
+def _route_aliases(tree: ast.AST) -> set[str]:
+    """
+    Names that `route` was imported under in this file.
+
+    Matching on identifiers containing "route" is not enough — these are
+    aliased imports (`route as _rt`, `route as _rt_b`), which is exactly the
+    blind spot that let the executive.py copy through the first version of
+    this test and made a wire-cut on it pass.
+    """
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and "backend_router" in (node.module or ""):
+            for a in node.names:
+                if a.name == "route":
+                    names.add(a.asname or a.name)
+    return names
+
+
+def _offenders() -> list[str]:
+    root = pathlib.Path(__file__).resolve().parent.parent
+    out = []
+    for path in root.rglob("*.py"):
+        sp = str(path)
+        if "/tests/" in sp or "__pycache__" in sp or "/.git/" in sp:
+            continue
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        aliases = _route_aliases(tree)
+        if not aliases:
+            continue
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Call) and node.args):
+                continue
+            fn = node.func
+            if not (isinstance(fn, ast.Name) and fn.id in aliases):
+                continue
+            first = node.args[0]
+            if isinstance(first, ast.Call):
+                inner = first.func
+                iname = inner.id if isinstance(inner, ast.Name) else getattr(inner, "attr", "")
+                if "active_backend" in iname or iname.startswith("_ab"):
+                    out.append(str(path.relative_to(root)))
+    return out
+
+
+def test_no_new_module_passes_the_backend_name_as_the_prompt():
+    """
+    A ratchet. server.py had two of these and runtime/executive.py has a
+    third; the shape is copy-pasted between dream closures, so a fourth would
+    fail exactly as silently as the first three did.
+    """
+    found = set(_offenders())
+    assert found <= KNOWN_UNFIXED, f"new call site(s) passing the backend name: {sorted(found - KNOWN_UNFIXED)}"
+
+
+def test_the_known_unfixed_one_is_still_really_broken():
+    """
+    The register must describe reality. If executive.py gets fixed or the
+    closure moves, this fails and KNOWN_UNFIXED needs correcting — a stale
+    exemption is how a defect becomes invisible again.
+    """
+    assert set(_offenders()) == KNOWN_UNFIXED, (
+        f"KNOWN_UNFIXED is out of date: actually {sorted(_offenders())}"
+    )
