@@ -386,6 +386,148 @@ def _play_say(text: str, stop: threading.Event) -> None:
         proc.kill()
 
 
+# ── Inner-thought TTS (lower voice) ──────────────────────────────────────────
+
+# David L3 2026-10-05: inner_thought must be audibly lower/quieter than response.
+# These functions mirror their normal counterparts but use inner-thought parameters:
+#   OpenAI:     speed=0.9  (vs _TTS_SPEED, normally 1.0) — slower, more internal
+#   macOS say:  rate=130   (vs _SAY_RATE=160) — noticeably slower
+#   ElevenLabs: speed=0.9  (vs 1.09) — lower speaking rate
+
+_INNER_OPENAI_SPEED = float(os.environ.get("ELO_INNER_TTS_SPEED", "0.9"))
+_INNER_SAY_RATE     = int(os.environ.get("ELO_INNER_RATE", "130"))
+
+
+def _fetch_openai_audio_inner(text: str) -> bytes | None:
+    """OpenAI TTS fetch with inner-thought speed (lower than normal)."""
+    try:
+        import httpx
+        resp = httpx.post(
+            _TTS_URL,
+            headers={"Authorization": f"Bearer {_OPENAI_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": "tts-1-hd",
+                "input": text,
+                "voice": _TTS_VOICE,
+                "speed": _INNER_OPENAI_SPEED,
+                "response_format": "mp3",
+            },
+            timeout=15.0,
+        )
+        return resp.content if resp.status_code == 200 else None
+    except Exception:
+        return None
+
+
+def _play_openai_inner(text: str, stop: threading.Event) -> bool:
+    """Play OpenAI TTS at inner-thought speed. Returns True on success."""
+    if stop.is_set():
+        return False
+    audio = _fetch_openai_audio_inner(text)
+    if not audio or stop.is_set():
+        return False
+    phonemes = _text_to_phoneme_sequence(text)
+    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
+        f.write(audio)
+        tmp_path = f.name
+    try:
+        proc = subprocess.Popen(
+            ["afplay", tmp_path],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        _pulse_lipsync(phonemes, stop, text=text)
+        if stop.is_set():
+            proc.kill()
+        else:
+            try:
+                proc.wait(timeout=60.0)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+    return True
+
+
+def _play_say_inner(text: str, stop: threading.Event) -> None:
+    """macOS say at inner-thought rate (slower than normal)."""
+    phonemes = _text_to_phoneme_sequence(text)
+    try:
+        cmd = ["say", "-r", str(_INNER_SAY_RATE)]
+        if _SAY_VOICE:
+            cmd += ["-v", _SAY_VOICE]
+        cmd.append(text)
+        proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except FileNotFoundError:
+        return
+    _pulse_lipsync(phonemes, stop, text=text)
+    try:
+        proc.wait(timeout=30.0)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+
+
+def _fetch_elevenlabs_audio_inner(text: str) -> bytes | None:
+    """ElevenLabs fetch with inner-thought voice settings (lower speed)."""
+    if not _EL_KEY or not _EL_VOICE:
+        return None
+    try:
+        import httpx
+        settings = _el_voice_settings()
+        settings["speed"] = float(os.environ.get("ELO_INNER_EL_SPEED", "0.9"))
+        resp = httpx.post(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{_EL_VOICE}",
+            headers={"xi-api-key": _EL_KEY, "Content-Type": "application/json"},
+            json={"text": text, "model_id": _EL_MODEL, "voice_settings": settings},
+            timeout=15.0,
+        )
+        return resp.content if resp.status_code == 200 else None
+    except Exception:
+        return None
+
+
+def _speak_thread_inner(text: str, stop: threading.Event) -> None:
+    """Like _speak_thread but uses inner-thought voice parameters throughout."""
+    success = False
+    if _EL_KEY and _EL_VOICE and not stop.is_set():
+        audio = _fetch_elevenlabs_audio_inner(text)
+        if audio:
+            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
+                f.write(audio)
+                tmp_path = f.name
+            try:
+                phonemes = _text_to_phoneme_sequence(text)
+                proc = subprocess.Popen(
+                    ["afplay", tmp_path],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                )
+                _pulse_lipsync(phonemes, stop, text=text)
+                if stop.is_set():
+                    proc.kill()
+                else:
+                    try:
+                        proc.wait(timeout=60.0)
+                    except subprocess.TimeoutExpired:
+                        proc.kill()
+            finally:
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
+            success = True
+    if not success and _OPENAI_KEY and len(text) <= _OPENAI_TTS_MAX_CHARS and not stop.is_set():
+        success = _play_openai_inner(text, stop)
+    if not success:
+        sentences = _split_sentences(text)
+        for sentence in sentences:
+            if stop.is_set():
+                break
+            _play_say_inner(sentence, stop)
+    clear_lipsync()
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 _active_thread: Optional[threading.Thread] = None
@@ -484,6 +626,37 @@ def speak(text: str) -> None:
     _stop_flag = threading.Event()
     _active_thread = threading.Thread(
         target=_speak_thread,
+        args=(_clean_for_tts(text), _stop_flag),
+        daemon=True,
+    )
+    _active_thread.start()
+
+
+def speak_inner(text: str) -> None:
+    """
+    Speak an inner_thought at a lower, quieter register than normal speech.
+
+    David L3 2026-10-05: inner thoughts must be audibly different from the
+    main response — slower, more internal. Uses _speak_thread_inner, which
+    applies inner-thought TTS parameters throughout the full engine cascade
+    (ElevenLabs → OpenAI speed=0.9 → macOS say rate=130).
+
+    Same address rule + audit log as speak(), so every inner thought is
+    recorded even if the chat path doesn't surface it.
+    """
+    global _active_thread, _stop_flag
+    try:
+        from runtime.address_rule_guard import enforce_second_person_to_david as _arg
+        text = _arg(text)
+    except Exception:
+        pass
+    _log_spoken(text)
+    _stop_flag.set()
+    if _active_thread and _active_thread.is_alive():
+        _active_thread.join(timeout=0.5)
+    _stop_flag = threading.Event()
+    _active_thread = threading.Thread(
+        target=_speak_thread_inner,
         args=(_clean_for_tts(text), _stop_flag),
         daemon=True,
     )
