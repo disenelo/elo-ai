@@ -114,7 +114,16 @@ def _action_patterns(signals: list[dict]) -> list[SPGObservation]:
     """
     buckets: dict[str, list[dict]] = defaultdict(list)
     for s in signals:
-        hint = s.get("edge_hint", "").strip()
+        # str(... or "") rather than .get(key, ""): the default only applies
+        # when the key is ABSENT, and 43 of the 14707 live signal rows carry
+        # edge_hint: null, where .get returns None and .strip() raises.
+        # The identical line took habit_tracker out entirely — it read the
+        # whole file, the AttributeError escaped a JSONDecodeError-only
+        # handler, and 7070 observations reported as zero. This survives only
+        # because the live caller reads a recent window and every null sits
+        # 11556+ rows from the end. Latent, not live — until one lands in the
+        # window.
+        hint = str(s.get("edge_hint") or "").strip()
         if hint:
             buckets[hint].append(s)
 
