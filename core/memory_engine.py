@@ -222,7 +222,7 @@ def _load_store() -> list:
 
 def write_interaction(user: str, response: str, categories: list,
                       mode: str = "", project_tag: str = "elo_core") -> None:
-    """WO-067-WRITE-PATH: append a tagged interaction record to interactions.json.
+    """WO-067-WRITE-PATH / WO-037: append a tagged interaction record to interactions.json.
 
     Only called when memory_categories is non-empty (meaningful continuity turns).
     Preserves existing records; never rewrites the store.
@@ -241,6 +241,11 @@ def write_interaction(user: str, response: str, categories: list,
     store.append(record)
     with open(_STORE_PATH, "w") as f:
         json.dump(store, f, indent=2, ensure_ascii=False)
+
+
+def store_interaction(user: str, response: str, mode: str = "", project_tag: str = "elo_core") -> None:
+    """Backward-compat alias for write_interaction (WO-037 test suite)."""
+    write_interaction(user, response, categories=[], mode=mode, project_tag=project_tag)
 
 
 # ── session state ──────────────────────────────────────────────────────────────

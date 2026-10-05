@@ -2336,6 +2336,17 @@ def _process_turn(raw: str) -> dict:
     except Exception:
         pass
 
+    # WO-INTENT-ALIGN-001: intent alignment gate — fires non-blocking, logs digest to debug
+    try:
+        from engineering.hooks.intent_align_gate import load_index as _iag_idx, match_topics as _iag_match, format_digest as _iag_fmt
+        _iag_index  = _iag_idx()
+        _iag_matched = _iag_match(raw, _iag_index)
+        if _iag_matched:
+            _iag_digest = _iag_fmt(raw, _iag_matched, _iag_index)
+            _logging.debug("WO-INTENT-ALIGN-001: %s", _iag_digest)
+    except Exception as _iag_err:
+        _logging.debug("WO-INTENT-ALIGN-001: gate skipped (%s)", _iag_err)
+
     with _lock:
         # 0037/WO-ONEBRAIN-015: refresh self-model from disk at the start of every turn.
         # No long-lived in-memory copy. All mutations this turn go through _self_mutate(fn).

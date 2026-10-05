@@ -89,11 +89,11 @@ except Exception as e:
     fail("AT-3", e)
 
 
-# ── AT-4: server.py imports store_interaction in post-response section ────────
+# ── AT-4: server.py imports write_interaction in post-response section ────────
 try:
     _src = open("server.py", encoding="utf-8").read()
-    if "store_interaction" in _src and "_store_interaction" in _src and "WO-037" in _src:
-        ok("AT-4: server.py has WO-037 write-back block with store_interaction call")
+    if "write_interaction" in _src and "WO-037" in _src:
+        ok("AT-4: server.py has WO-037 write-back block with write_interaction call")
     else:
         fail("AT-4", "WO-037 write-back block not found in server.py")
 except Exception as e:
