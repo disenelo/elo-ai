@@ -335,6 +335,15 @@ def _conversation_action(
     if momentum == "building" and valence not in ("negative_low", "negative_high"):
         return {"action": "build", "confidence": 0.65, "reason": "building momentum, stay in build mode", "candidates": _cands}
 
+    # conversation intent → answer is the correct default per _RESPONSE_GOAL
+    if intent == "conversation":
+        return {
+            "action": "answer",
+            "confidence": 0.85,
+            "reason": "conversation — default to answer (per _RESPONSE_GOAL)",
+            "candidates": _cands,
+        }
+
     # default
     return {"action": "reflect", "confidence": 0.5, "reason": "default — no stronger signal",
             "candidates": _score_candidates(user_input, intent, valence, momentum)}
@@ -636,14 +645,22 @@ def run_dream_window(recent_topics: list | None = None) -> dict:
         _elo_self = _load_self()
         _topics   = list(recent_topics or [])
 
-        def _stub_llm(messages):
-            return ""
+        # Use the real backend router so the dream produces genuine narrative
+        # and insight, not an empty stub that degrades to the minimal fallback.
+        try:
+            from runtime.backend_router import route as _rt_b, active_backend as _ab_b
+            def _dream_llm(messages):
+                return _rt_b(_ab_b(), messages)
+        except Exception:
+            def _dream_llm(messages):  # type: ignore[misc]
+                return ""
 
         _dream_result = _run_dream(
             _elo_self,
             _topics,
-            _stub_llm,
+            _dream_llm,
             idle_seconds=3600.0,
+            publish_phases=True,
         )
 
         try:
