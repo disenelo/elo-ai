@@ -13,6 +13,7 @@ import json
 import os
 import sys
 
+import os as _os
 import pytest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -117,3 +118,38 @@ def _isolate_spg_graph(tmp_path_factory, monkeypatch):
     target = tmp_path_factory.mktemp("spg") / "spg_graph.json"
     monkeypatch.setattr(_spg_graph, "_GRAPH_PATH", target)
     yield
+
+
+# ── self/journals/body_relay.jsonl — the same leak, second instance ──────────
+#
+# The SPG note above ends: "the next function to acquire a store-writing side
+# effect cannot quietly start writing eLo's memory either." This is that
+# function, and it did not need to acquire the side effect — it shipped with
+# it.
+#
+# runtime/body_relay.relay_body_event() appends to the LIVE journal, and the
+# only callers it has ever had are tests. Measured 2026-10-05: 154 entries,
+# every one of them event_kind="sit_commanded", and the newest carries the
+# payload {"target": "cursor"} written verbatim by
+# tests/test_canon_vii_executive.py:393. eLo's record of his own body is
+# entirely a record of the test suite running.
+#
+# Redirected for EVERY test, like the SPG store, so this cannot be rebuilt by
+# the next test that emits a body event.
+
+# An autouse fixture CANNOT fix this, and that was the first attempt:
+# tests/test_canon_vii_executive.py is a script, not a set of test
+# functions — its relay_body_event() calls run at IMPORT, during
+# collection, before any fixture exists. Measured: the live journal still
+# grew 154 -> 156 on a run that reported "no tests ran".
+#
+# conftest is imported before any test module, so the redirect is done
+# here at import time and covers collection as well as tests.
+
+import tempfile as _tempfile
+import runtime.body_relay as _body_relay
+
+_RELAY_TMP = _os.path.join(
+    _tempfile.mkdtemp(prefix="elo-relay-"), "body_relay.jsonl"
+)
+_body_relay._RELAY_LOG = _RELAY_TMP
