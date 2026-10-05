@@ -247,3 +247,40 @@ def test_no_test_writes_the_live_state_path():
         "tests writing eLo's live blender_state.json: "
         f"{offenders} — redirect to a temp path"
     )
+
+
+# ── eLo's body journal is live state too ─────────────────────────────────────
+# Found the hard way, a third time. runtime/body_relay.relay_body_event()
+# appends to self/journals/body_relay.jsonl, and the ONLY callers it had were
+# tests. 154 entries on 2026-10-05, every one event_kind="sit_commanded",
+# newest carrying the payload {"target": "cursor"} written verbatim by
+# tests/test_canon_vii_executive.py:393.
+#
+# Like the lexicon, this one feeds FORWARD: audit_body_relay() reads the last
+# 20 events to decide whether a sit had a cause, so test writes were answering
+# a question about the live body. The audit returned ok=True on events up to
+# 37.5 days old.
+#
+# The redirect lives in conftest at IMPORT time, not in a fixture — the file
+# above is a script whose emitter calls run during collection, before any
+# fixture exists.
+
+LIVE_RELAY = ROOT / "self" / "journals" / "body_relay.jsonl"
+
+
+def test_the_body_journal_is_redirected_away_from_the_live_one():
+    import runtime.body_relay as br
+    assert Path(br._RELAY_LOG).resolve() != LIVE_RELAY.resolve(), (
+        "body_relay is pointed at eLo's real body journal during tests — "
+        "every emitted event becomes part of his record of his own body"
+    )
+
+
+def test_emitting_a_body_event_does_not_touch_the_live_journal():
+    import runtime.body_relay as br
+
+    before = LIVE_RELAY.read_bytes() if LIVE_RELAY.exists() else None
+    br.relay_body_event("sit_commanded", {"target": "cursor"})
+    after = LIVE_RELAY.read_bytes() if LIVE_RELAY.exists() else None
+
+    assert after == before, "a test just wrote to eLo's live body journal"

@@ -4423,6 +4423,7 @@ def _process_turn(raw: str) -> dict:
         # The file is single-slot; gaze events can overwrite sit_complete before the next
         # chat turn. The queue captures every body ACK as it appears, so delivery is provable.
         import time as _wo41_time
+        from runtime.motor_contract import ack_is_fresh as _mc_ack_is_fresh
         if _PENDING_SIT["active"]:
             _sit_age = _wo41_time.time() - _PENDING_SIT["since"]
             _sit_acked = False
@@ -4432,7 +4433,13 @@ def _process_turn(raw: str) -> dict:
                     _qts = float(_qev.get("_ts", 0))
                     if (
                         _qev.get("type") == "sit_complete"
-                        and _qts > _PENDING_SIT["since"]
+                        # Was `_qts > _PENDING_SIT["since"]` inline. Same rule,
+                        # second copy: motor_contract.ack_is_fresh() is the
+                        # Vol XI §1.5 / WO-041 guard "expressed as a testable
+                        # function" and had no caller, so the tested copy and
+                        # the running copy were different code. Behaviour is
+                        # identical; there is now one rule.
+                        and _mc_ack_is_fresh(_qts, _PENDING_SIT["since"])
                     ):
                         _sit_acked = True
                         _sit_ack_event = _qev
