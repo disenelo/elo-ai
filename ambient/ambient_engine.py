@@ -268,6 +268,19 @@ def _battery_tick() -> None:
                 str(fields.get("physical_state", "")),
                 state.get("motion", {}) or {},
             )
+            # Dream requests arrive in blender_state's `intent`, and EVERY
+            # turn overwrites that field. The gate that reads it only runs in
+            # the 8-20 minute ambient callback, so a request survives only if
+            # eLo stays idle that whole time. Measured 2026-10-05: a request
+            # was erased by the next turn, 25 turns before the callback ran.
+            # This loop sees every tick, so it latches the request somewhere a
+            # turn cannot reach.
+            try:
+                if str(state.get("intent", "")) == "dream":
+                    from runtime.dream_latch import latch as _dl_latch
+                    _dl_latch("intent")
+            except Exception:
+                pass
         except Exception:
             pass
 

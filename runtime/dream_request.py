@@ -89,7 +89,18 @@ def dream_requested(state: dict | None = None, *, consume: bool = True) -> bool:
     st = _read_state() if state is None else state
     if already_dreaming(st):
         return False
-    if str(st.get("intent", "")) != DREAM_INTENT:
+
+    # A request latched by the 0.5s poll loop counts, even though `intent` has
+    # since been overwritten by a turn. Without this the request only survives
+    # total idleness for up to twenty minutes.
+    _latched = False
+    try:
+        from runtime.dream_latch import take as _dl_take
+        _latched = _dl_take()
+    except Exception:
+        _latched = False
+
+    if not _latched and str(st.get("intent", "")) != DREAM_INTENT:
         return False
 
     if consume:
