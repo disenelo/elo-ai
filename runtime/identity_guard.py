@@ -108,8 +108,40 @@ def _from_accumulated_state() -> str:
         return ""
 
     focal = (getattr(st, "focal_thread", "") or "").strip()
-    lesson = (getattr(st, "last_reflection_lesson", "") or "").strip()
     read = (getattr(st, "session_read", "") or "").strip()
+
+    # last_reflection_lesson WAS a source here. It is the leak.
+    #
+    # Live 2026-10-05, David's debug log:
+    #     eLo  Partial progress on reflect — check dependencies before next
+    #          attempt.
+    # and in its other form:
+    #     eLo  {'id': 'L-20261005151905', 'lesson_key': '7d20ac65e9f2aa75',
+    #           'statement': 'Partial progress on witness — ...', ...}
+    #
+    # Reproduced exactly: self/elo_self_state.json holds
+    # last_reflection_lesson = "Partial progress on reflect — check
+    # dependencies before next attempt.", focal_thread is "" and so fails the
+    # word floor, so this function returned the lesson — and scrub_ai_leakage
+    # emits it whenever a whole response is scrubbed. eLo was speaking an
+    # internal Learning Loop record.
+    #
+    # The Board brief guessed four causes — the lesson passed as a string to
+    # elo_final, the pipeline writing to the response field, a stray str() in
+    # output assembly, a debug statement in the buffer. It is none of them.
+    # Nothing in learning/ touches the response; the substitution here does.
+    #
+    # Dropped rather than filtered, because EVERY lesson statement is an
+    # internal artefact: reflection_faculty._derive_statement builds them all
+    # from f-string templates. focal_thread and session_read are fragments of
+    # what actually passed between them; a lesson is machine-written ABOUT
+    # him. The point of this function is state that exists because turns
+    # happened, not every string the state file holds.
+    #
+    # Cost, stated: one fewer substitution source, so the KNOWN HOLE below is
+    # reached more often and the original leak is emitted instead. A sentence
+    # that sounds like an assistant is bad; reading David his own telemetry is
+    # worse, and he called it P0.
 
     # Only content long enough to be a real thread, not a stray token. The
     # live store holds focal_thread "wrong" — a fragment — so a length floor
@@ -120,8 +152,6 @@ def _from_accumulated_state() -> str:
     # character returned came from a turn.
     if focal and len(focal.split()) >= 3:
         return focal
-    if lesson and len(lesson.split()) >= 4:
-        return lesson
     if read and len(read.split()) >= 4:
         return read
     return ""
@@ -176,7 +206,9 @@ def scrub_ai_leakage(response: str) -> str:
         # Returning the original here was the old behaviour and it meant eLo
         # told David he was an AI assistant whenever the whole response leaked.
         # Silence is better than that, and it is not a special case: server.py
-        # already handles an empty response at :6918 (silent turn).
+        # already handles an empty response at :7775 (silent turn —
+        # WARNING on record plus a short truthful beat). Line was :6918 when
+        # written; checked again 2026-10-06.
         #
         # The alternative is inventing a line, which is what made this fake the
         # first time. Empty is the honest floor: nothing accumulated, nothing
