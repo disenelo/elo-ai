@@ -131,11 +131,27 @@ def test_exactly_one_sit_emitter_in_the_turn_path():
     assert emitters == 1, f"{emitters} sit emitters in server.py"
 
 
-def test_the_decision_modules_are_present_but_unwired():
+def test_the_decision_module_is_wired_and_the_action_module_is_not():
     """
-    They are tested and they work; nothing calls them. Stated here so the
-    state is a recorded decision rather than something to rediscover.
+    Was test_the_decision_modules_are_present_but_unwired, recording that both
+    modules worked and nothing called them. Half of that debt is paid.
+
+    rest_decision is now the decider in server.py's Part B block (3673dbc).
+    Before that the sit was chosen by a regex over the inner thought, so the
+    "tired" band sat eLo down using its own wording — 'Been at this a while.
+    Legs know it.' matched \blegs?\b — and an exhausted eLo stayed standing
+    whenever he phrased it without one of six words.
+
+    rest_action stays unwired on purpose: it was the SECOND sit emitter, and
+    one behaviour with two emitters is the mistake this WO already made once.
+    The test above pins the emitter count at 1.
     """
-    assert "from runtime.rest_action import" not in _SERVER
-    assert "from runtime.rest_decision import" not in _SERVER
+    assert "from runtime.rest_decision import" in _SERVER, (
+        "rest_decision is the decider — unwiring it returns the sit to a "
+        "keyword match on free text"
+    )
+    assert "from runtime.rest_action import" not in _SERVER, (
+        "rest_action is the second emitter; wiring it gives one behaviour "
+        "two commanders"
+    )
     assert ra.maybe_sit is not None
