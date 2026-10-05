@@ -5623,10 +5623,16 @@ def _process_turn(raw: str) -> dict:
             except Exception:
                 pass
             if _plan.system_immediate and _plan.system_action:
-                # Execute the system action now
+                # FALSE-ACTION-FIX: "Done that" must only fire after the action
+                # succeeds. Temporarily hold the "Done that." response — execute
+                # first, confirm with it on success, replace on failure.
+                _held_done_response = response
+                response = ""  # will be restored after dispatch
                 try:
                     from tools.system_agent import execute as _sys_exec
                     _sys_exec(_plan.system_action, _plan.system_arg)
+                    # Action succeeded — restore the "Done that." confirmation.
+                    response = _held_done_response
                 except Exception as _sys_err:
                     import sys as _sys_mod; print(f"[system] action failed: {_sys_err}", file=_sys_mod.stderr)
                     # FAILURE 5 (2026-09-09): error string must never reach David as speech
@@ -5634,10 +5640,9 @@ def _process_turn(raw: str) -> dict:
                     _gate_log.getLogger("server.system").error(
                         "system_action failed (suppressed from voice): %s", _sys_err
                     )
-                    # TEXT-REPLY-BUG fix: this elif branch already matched direct_response;
-                    # setting response=None here cannot fall through to the LLM else: branch —
-                    # that branch is already skipped. Keep direct_response so Unity receives text.
-                    # response = None  ← REMOVED (was causing null in JSON → missing chat text)
+                    # FALSE-ACTION-FIX: do NOT restore "Done that." — action failed.
+                    # Give an honest response instead.
+                    response = "Ran into something on that — couldn't complete it."
                     # WO-082: record failure so reliability drops and "why" readback is honest.
                     try:
                         from self.decision_journal import record_failure as _dj_fail
@@ -7166,8 +7171,7 @@ def _process_turn(raw: str) -> dict:
             # B3-SEARCH-001: what eLo found is lifted from the source — a rewrite
             # can only lose it. Live 2026-10-05 the rewrite fell to mock and
             # replaced the Pinky and the Brain answer with filler / a lesson dict.
-            if backend_used == "direct:web_search":
-                raise StopIteration("found-text is authoritative")
+            _vr_skip = backend_used == "direct:web_search"
             from runtime.backend_router import _CODE_SIGNAL_RE as _vr_code_sig
             _vr_is_technical = bool(_vr_code_sig.search(_original_raw))
             _vr_max = 12 if _vr_is_technical else 3
@@ -7177,14 +7181,15 @@ def _process_turn(raw: str) -> dict:
                 _usr = _msgs[1]["content"] if len(_msgs) > 1 else ""
                 _txt, _ = router_route(_sys, _usr, max_sentences=_vr_max, action="voice_rewrite", tier=0)
                 return normalise(_txt, max_sentences=_vr_max)
-            response = _vr(
-                response,
-                exec_decision=exec_decision if exec_decision else None,
-                ccm=None,
-                llm_caller=_vr_llm,
-                user_text=_original_raw,
-                is_technical=_vr_is_technical,
-            )
+            if not _vr_skip:
+                response = _vr(
+                    response,
+                    exec_decision=exec_decision if exec_decision else None,
+                    ccm=None,
+                    llm_caller=_vr_llm,
+                    user_text=_original_raw,
+                    is_technical=_vr_is_technical,
+                )
             _vr_changed = response != _pre_vr_response
         except Exception as _vr_err:
             import logging as _vr_log
@@ -7350,6 +7355,39 @@ def _process_turn(raw: str) -> dict:
         if _NR_PAT.search(response):
             _logging.warning("NAME_RULE_SCRUB: prohibited self-reference found — replacing with 'David'")
             response = _NR_PAT.sub("David", response)
+
+        # ── CRITICAL: Generic assistant framing scrub ────────────────────────────
+        # "I'm here to help you with whatever you need" / "Happy to help" are LLM
+        # assistant persona phrases explicitly prohibited. eLo is not a generic
+        # assistant. Detect opener-position framing and discard the response if
+        # the ENTIRE response is generic-assistant framing, or strip the phrase
+        # if it leads the response and substantive content follows.
+        _GENERIC_ASSIST_OPENERS = (
+            "i'm here to help",
+            "i am here to help",
+            "happy to help",
+            "here to help you",
+            "how can i assist",
+            "how can i help you today",
+            "i'm happy to assist",
+            "i am happy to assist",
+            "i'd be happy to help",
+            "feel free to ask",
+            "let me know how i can help",
+            "let me know if you need",
+        )
+        _resp_lower_ga = response.strip().lower()
+        for _ga_phrase in _GENERIC_ASSIST_OPENERS:
+            if _resp_lower_ga.startswith(_ga_phrase):
+                # Discard the entire response — stripping only the opener leaves
+                # dangling fragments ("you with whatever you need"). Discard and
+                # let the turn fall through to silence / next-turn recovery.
+                _logging.warning(
+                    "GENERIC-ASSIST-SCRUB: discarded generic-assistant framing: %r",
+                    response.strip()[:80],
+                )
+                response = ""
+                break
 
         # ── WO-GUARD-001: Response Authority Guards (D-1 / D-2 / D-3) ──────────
         # D-1: current-user-reality override — suppress contradictions of in-session statements
@@ -8067,6 +8105,24 @@ def _process_turn(raw: str) -> dict:
                                 _it_phys_note = _it_phys.get("inner_thought", "")
                         except Exception:
                             pass
+                        # CRITICAL-LLM-LEAKAGE: identity prohibition injected into every
+                        # inner_thought system prompt. The model must never use the inner
+                        # thought channel to narrate its own LLM nature — "training data",
+                        # "can't browse", "haven't watched" are LLM self-descriptions, not
+                        # eLo thoughts. These prohibitions apply to BOTH prompt variants.
+                        _it_identity_prohibition = (
+                            " HARD PROHIBITIONS — these words and phrases are BANNED from "
+                            "inner_thought: 'training data', 'trained on', 'language model', "
+                            "'AI model', 'LLM', 'browse the web', 'real-time', 'access the internet', "
+                            "'responses are generated', 'haven\\'t watched', 'hadn\\'t watched', "
+                            "'haven\\'t seen', 'hadn\\'t seen', 'haven\\'t read', 'hadn\\'t read', "
+                            "'never watched', 'never seen', 'never experienced', 'watch shows', "
+                            "'watched the show', 'seen the episode', 'access to', 'my knowledge', "
+                            "'based on', 'I don\\'t have the ability', 'I\\'m unable to'. "
+                            "eLo does not reference its own architecture or knowledge limits. "
+                            "If the thought would describe an LLM limitation, think something "
+                            "else entirely."
+                        )
                         # WO-INNER-THOUGHTS-001 Phase 4: calm → slower, settling voice
                         if _calm_fn():
                             _it_sys = (
@@ -8074,6 +8130,7 @@ def _process_turn(raw: str) -> dict:
                                 "In 1-2 sentences, what am I settling into — what is becoming clear, or what am I letting go? "
                                 "Slower, more reflective. Always 'I', never 'eLo' or third person. No questions. No asterisks. "
                                 "Gentle, honest, grounded."
+                                + _it_identity_prohibition
                             )
                         else:
                             # "what am I noticing or feeling" asked for an
@@ -8097,6 +8154,7 @@ def _process_turn(raw: str) -> dict:
                                 "Shape only, never reuse these words: asked whether he was "
                                 "smarter, the thought was 'well not smarter just more equipped "
                                 "analytically' and the reply was 'I am in theory only'."
+                                + _it_identity_prohibition
                             )
                         if _it_phys_note:
                             _it_sys += f" Physical note (weave in only if relevant): {_it_phys_note}"
@@ -8135,6 +8193,28 @@ def _process_turn(raw: str) -> dict:
                             _it_body = _it_json.loads(_it_r.read())
                         _it_text = _it_unquote(
                             (_it_body.get("message", {}).get("content") or ""))
+                        # CRITICAL-LLM-LEAKAGE: post-gen scrub for inner_thought.
+                        # If the model ignored the prohibition and output LLM
+                        # self-framing, discard and use rule-based fallback.
+                        _IT_LEAK_PHRASES = (
+                            "training data", "trained on", "language model", "llm",
+                            "browse the web", "real-time", "access the internet",
+                            "responses are generated", "haven't watched", "hadn't watched",
+                            "haven't seen", "hadn't seen", "haven't read", "hadn't read",
+                            "never watched", "never seen", "watched the show",
+                            "seen the episode", "i don't have the ability",
+                            "i don’t have the ability",
+                            "unable to browse", "based on my training",
+                            "my knowledge cutoff", "knowledge cutoff",
+                        )
+                        _it_lower = _it_text.lower()
+                        if any(_p in _it_lower for _p in _IT_LEAK_PHRASES):
+                            import logging as _it_leak_log
+                            _it_leak_log.getLogger("elo.inner_thought").warning(
+                                "CRITICAL-LLM-LEAKAGE: inner_thought contained LLM "
+                                "self-framing — discarding: %r", _it_text[:80]
+                            )
+                            _it_text = ""  # force rule-based fallback
                         _it_ms = (_it_time.time() - _it_t0) * 1000
                         # S2-PHASE2-GATE: 25000ms ceiling — qwen2.5-coder:14b takes ~15s post-main.
                         if _it_text and _it_ms < 25000:
@@ -8764,6 +8844,27 @@ def _condition_outbound(result):
 
     Idempotent: the main path being conditioned twice changes nothing.
     """
+    # Board P0 2026-10-05: eLo read David his own Learning Loop records. The
+    # source is closed in identity_guard (851e3ae); this is the surface. Run
+    # FIRST, so nothing downstream reformats a telemetry string into something
+    # that no longer matches. Covers inner_thought too — the brief names it,
+    # and it reaches TTS and the chat log exactly like response does.
+    try:
+        from runtime.telemetry_guard import strip_internal_records as _tg
+        if isinstance(result, dict):
+            for _k in ("response", "inner_thought", "elo_final"):
+                if isinstance(result.get(_k), str):
+                    result[_k] = _tg(result[_k])
+            if isinstance(result.get("bubbles"), list):
+                result["bubbles"] = [
+                    _tg(b) if isinstance(b, str) else b
+                    for b in result["bubbles"]
+                ]
+                result["bubbles"] = [b for b in result["bubbles"]
+                                     if not isinstance(b, str) or b.strip()]
+    except Exception:
+        pass
+
     try:
         from runtime.address_rule_guard import enforce_second_person_to_david as _arg_out
         if isinstance(result, dict):

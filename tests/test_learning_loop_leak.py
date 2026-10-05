@@ -104,3 +104,92 @@ def test_nothing_accumulated_means_silence_not_invention(state):
     """
     state(_State(focal="", lesson=LESSON, read=""))
     assert ig._from_accumulated_state() == ""
+
+
+# ── the surface guard ───────────────────────────────────────────────────────
+#
+# 851e3ae closed the source. This is the brief's second ask: a guard at the
+# output boundary, so the next internal structure that reaches a response
+# field does not reach David either.
+
+from runtime.telemetry_guard import strip_internal_records as tg
+
+LIVE_DICT = (
+    "{'id': 'L-20261005151905', 'lesson_key': '7d20ac65e9f2aa75', "
+    "'statement': 'Partial progress on witness — check dependencies before "
+    "next attempt.', 'evidence': [], 'scope': 'behaviour'}"
+)
+
+
+def test_the_live_dict_is_suppressed_entirely():
+    assert tg(LIVE_DICT) == ""
+
+
+def test_no_scrap_of_the_record_survives():
+    """
+    Splitting on "." cuts a dict mid-structure and leaves fragments like "'}"
+    that match nothing. The first version of this guard spoke that scrap.
+    """
+    out = tg(LIVE_DICT)
+    for scrap in ("'}", "lesson_key", "L-2026", "behaviour"):
+        assert scrap not in out
+
+
+def test_a_record_embedded_in_speech_loses_only_itself():
+    out = tg("I looked into it. Partial progress on reflect — check "
+             "dependencies before next attempt. Anyway, it is fine.")
+    assert out == "I looked into it. Anyway, it is fine."
+
+
+# ── what must NOT be eaten ──────────────────────────────────────────────────
+#
+# eLo talks about code and JSON with David constantly. A guard that eats a
+# snippet he was asked for is worse than the leak it prevents.
+
+@pytest.mark.parametrize("line", [
+    "I made partial progress on the seams today.",
+    "Your lesson_key idea makes sense — store it next to the claim.",
+    "That went well. Completed a big milestone today.",
+    "When David meets an obstacle he usually sleeps on it.",
+])
+def test_ordinary_speech_survives(line):
+    assert tg(line) == line
+
+
+def test_a_fenced_code_block_is_never_touched():
+    """Fenced code is eLo showing David something on purpose."""
+    text = 'Here is the shape:\n```json\n{"lesson_key": "abc"}\n```\nthat is it.'
+    assert tg(text) == text
+
+
+# ── drift ratchet ───────────────────────────────────────────────────────────
+
+def test_every_lesson_template_is_caught():
+    """
+    Generated from reflection_faculty._derive_statement itself, so changing
+    the wording there fails HERE rather than silently reopening the leak.
+    """
+    from runtime.reflection_faculty import _derive_statement
+
+    produced = [
+        _derive_statement("summary", "reflect", "partial", "behaviour"),
+        _derive_statement("summary", "build", "failed", "behaviour"),
+        _derive_statement("a build summary", "build", "done", "behaviour"),
+    ]
+    produced = [p for p in produced if p]
+    assert produced, "_derive_statement produced nothing — templates moved"
+
+    for statement in produced:
+        assert tg(statement) == "", (
+            f"lesson template not caught by telemetry_guard: {statement!r}"
+        )
+
+
+def test_the_outbound_conditioner_runs_the_guard():
+    import pathlib
+    src = (pathlib.Path(__file__).resolve().parent.parent / "server.py").read_text()
+    i = src.index("def _condition_outbound")
+    window = src[i:i + 2200]
+    assert "from runtime.telemetry_guard import" in window
+    for field in ('"response"', '"inner_thought"', '"bubbles"'):
+        assert field in window, f"{field} not guarded"
