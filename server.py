@@ -4408,6 +4408,20 @@ def _process_turn(raw: str) -> dict:
             if _sit_acked:
                 # ACK received — body confirms sit. Update Situated Self.
                 _PENDING_SIT["active"] = False
+                # The ACK is the half that matters and the half that was
+                # missing: of 154 events in the live journal, 154 were
+                # "sit_commanded" and none were "sit_acked", because every
+                # one had been written by a test. Without this line the
+                # journal can only ever record what eLo was ASKED to do,
+                # never what his body confirms he DID.
+                try:
+                    from runtime.body_relay import relay_body_event as _relay_ack
+                    _relay_ack("sit_acked", {
+                        "at":     _sit_ack_event.get("at"),
+                        "waited": round(_sit_age, 2),
+                    })
+                except Exception:
+                    pass
                 _sit_surface: str | None = None
                 try:
                     with open(_BLENDER_STATE_PATH, encoding="utf-8") as _bsf2:
@@ -6471,7 +6485,20 @@ def _process_turn(raw: str) -> dict:
                         _PENDING_SIT["active"] = True
                         _PENDING_SIT["since"]  = _now_sp
                         _PENDING_SIT["queued"] = None
-                        pass
+                        # Vol VII Ch.5 §5.7 L1: every body perception relays UP.
+                        # The emitter has existed since WO-CANON-VII and had no
+                        # production caller until now — the dangling `pass` this
+                        # replaces was the hole it was meant to fill. Silent on
+                        # failure; a journal write must never cost a turn.
+                        try:
+                            from runtime.body_relay import relay_body_event as _relay
+                            _relay("sit_commanded", {
+                                "path":   "spine",
+                                "intent": _sp_intent,
+                                "since":  _now_sp,
+                            })
+                        except Exception:
+                            pass
                 elif _PENDING_SIT["active"]:
                     if _now_sp - _PENDING_SIT["since"] > 300.0:
                         _PENDING_SIT["active"] = False
@@ -6556,7 +6583,21 @@ def _process_turn(raw: str) -> dict:
                         _PENDING_SIT["active"] = True
                         _PENDING_SIT["since"]  = _now54
                         _PENDING_SIT["queued"] = None
-                        pass
+                        # Vol VII Ch.5 §5.7 L1: every body perception relays UP.
+                        # The emitter has existed since WO-CANON-VII and had no
+                        # production caller until now — the dangling `pass` this
+                        # replaces was the hole it was meant to fill. Silent on
+                        # failure; a journal write must never cost a turn.
+                        try:
+                            from runtime.body_relay import relay_body_event as _relay
+                            _relay("sit_commanded", {
+                                "path":       "legacy",
+                                "intent":     _mv_intent,
+                                "since":      _now54,
+                                "locomotion": _sit_self_loco,
+                            })
+                        except Exception:
+                            pass
                 elif isinstance(_mv_intent, dict) and _mv_intent.get("name") == "move":
                     # Directional or sub-type move intent — activate pending tracker (IO contract)
                     _PENDING_MOVE["active"]    = True

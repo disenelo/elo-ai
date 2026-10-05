@@ -100,3 +100,41 @@ def test_an_event_with_no_timestamp_is_not_treated_as_fresh():
         f.write(json.dumps({"event_kind": "sit_commanded"}) + "\n")
 
     assert br.recent_relay_events(20, max_age_s=br.RELAY_FRESH_S) == []
+
+
+# ── the wire ────────────────────────────────────────────────────────────────
+#
+# relay_body_event() shipped with WO-CANON-VII and had ZERO production callers
+# until 2026-10-05. The canon rule it implements — Vol VII Ch.5 §5.7 L1, every
+# body perception relays UP — was therefore satisfied by nothing. These guard
+# the wire the same way test_dream_latch.py guards its own.
+
+def _server_source() -> str:
+    import pathlib
+    return (pathlib.Path(__file__).resolve().parent.parent / "server.py").read_text()
+
+
+def test_a_commanded_sit_relays_up():
+    code = _server_source()
+    assert code.count('_relay("sit_commanded"') == 2, (
+        "both sit command paths — Spine and Legacy — must relay; a body "
+        "perception that only one path reports is the §1.7 audit hole"
+    )
+
+
+def test_an_acked_sit_relays_up():
+    """
+    The half that matters. 154 of 154 events in the live journal were
+    "sit_commanded" and none were "sit_acked", so the journal could only ever
+    record what eLo was ASKED to do, never what his body confirmed he DID.
+    """
+    assert '_relay_ack("sit_acked"' in _server_source()
+
+
+def test_the_relay_cannot_cost_a_turn():
+    """Every call site is guarded; a journal write must never break a reply."""
+    code = _server_source()
+    for marker in ('_relay("sit_commanded"', '_relay_ack("sit_acked"'):
+        for idx in [i for i in range(len(code)) if code.startswith(marker, i)]:
+            before = code[max(0, idx - 400):idx]
+            assert "try:" in before, f"unguarded relay call near offset {idx}"
