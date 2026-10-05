@@ -54,6 +54,7 @@ _FACULTIES = (
     "wkg",         # working knowledge graph
     "reflection",  # reflection_faculty vault integration
     "voice",       # TTS + voice register
+    "spg",         # signal pattern graph (WO-FACULTY-HEALTH-SPG-SIGNAL-001)
 )
 
 _registry: dict[str, dict] = {

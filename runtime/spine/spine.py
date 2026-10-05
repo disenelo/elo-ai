@@ -1089,8 +1089,20 @@ def run(
                 edge_hint=getattr(relationship, "expression_posture", None),
                 significance=_spg_rel_sig,
             )
+            # WO-FACULTY-HEALTH-SPG-SIGNAL-001: successful tap → recover SPG faculty
+            try:
+                from runtime.faculty_health import mark_recovered as _spg_recover
+                _spg_recover("spg")
+            except Exception:
+                pass
         except Exception as _spg_rel_err:
             _log.warning("SPG relationship tap failed (non-blocking): %s", _spg_rel_err)
+            # WO-FACULTY-HEALTH-SPG-SIGNAL-001: tap failure → degrade SPG faculty
+            try:
+                from runtime.faculty_health import mark_degraded as _spg_mark_deg
+                _spg_mark_deg("spg", f"relationship tap: {_spg_rel_err}")
+            except Exception:
+                pass
     except Exception as e:
         _log.warning("relationship_faculty FAILED: %s", e)
 
@@ -1498,8 +1510,20 @@ def run(
                 edge_hint=plan.execution_report.planned_action,
                 significance=_spg_er_sig,
             )
+            # WO-FACULTY-HEALTH-SPG-SIGNAL-001: successful tap → recover SPG faculty
+            try:
+                from runtime.faculty_health import mark_recovered as _spg_er_recover
+                _spg_er_recover("spg")
+            except Exception:
+                pass
         except Exception as _spg_er_err:
             _log.warning("SPG execution_report tap failed (non-blocking): %s", _spg_er_err)
+            # WO-FACULTY-HEALTH-SPG-SIGNAL-001: tap failure → degrade SPG faculty
+            try:
+                from runtime.faculty_health import mark_degraded as _spg_er_deg
+                _spg_er_deg("spg", f"execution_report tap: {_spg_er_err}")
+            except Exception:
+                pass
     except Exception as _er_err:
         _log.warning("build_execution_report FAILED: %s", _er_err)
 

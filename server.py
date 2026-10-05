@@ -4998,6 +4998,18 @@ def _process_turn(raw: str) -> dict:
                     _combined_vault = (_combined_vault + "\n\n" + _geb_lines).strip()
         except Exception:
             pass
+        # WO-FACULTY-HEALTH-SPG-SIGNAL-001: inject [SPG STATUS: offline] when
+        # SPG has failed 3+ consecutive turns (pattern-recognition is impaired).
+        try:
+            from runtime.faculty_health import get_status as _fh_spg_st, _registry as _fh_reg
+            if _fh_spg_st("spg") == "DEGRADED" and _fh_reg.get("spg", {}).get("error_count", 0) >= 3:
+                _spg_offline_block = (
+                    "[SPG STATUS: offline — pattern-recognition faculty is impaired. "
+                    "Avoid referencing recurring patterns or themes this turn.]"
+                )
+                _combined_vault = (_combined_vault + "\n\n" + _spg_offline_block).strip()
+        except Exception:
+            pass
         _bp_lessons = (_plan.snapshot.lessons if _plan and _plan.snapshot else ())
         # ── WP-N: build grounding block from plan ────────────────────────────
         _grounding_block = ""
