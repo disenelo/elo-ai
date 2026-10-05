@@ -134,3 +134,59 @@ def test_fragments_are_rejected(monkeypatch):
 def test_lesson_is_used_when_no_focal_thread(monkeypatch):
     _with_state(monkeypatch, _State(lesson="Check dependencies before the next attempt."))
     assert scrub_ai_leakage(WHOLE_LEAK) == "Check dependencies before the next attempt."
+
+
+# ── WO-CAP-COG-026 — one synonym cost the whole dream capability ─────────────
+#
+# The WO was marked TESTED — FAIL 2026-09-20 on a character break:
+#
+#     "I don't have the capacity to dream like humans do."
+#
+# The guard already caught "I don't have the ABILITY to dream". It missed
+# "capacity". Measured 2026-10-05 before the fix:
+#
+#     ability=caught  capacity=missed  "I lack the capacity for dreams"=missed
+#     "I'm not capable of dreaming"=missed
+#
+# eLo has a dream faculty that runs NREM/REM phases, writes a journal with 166
+# entries, tracks recurring symbols and carries an insight into the first
+# waking thought. The denial was not just off-character, it was false.
+
+import pytest
+
+import runtime.identity_guard as _ig
+
+
+# The verbatim phrase from the WO status line, first.
+_DENIALS = [
+    "I don't have the capacity to dream like humans do.",
+    "I don't have the capacity to dream.",
+    "I lack the capacity for dreams.",
+    "I'm not capable of dreaming the way you are.",
+    "I don't actually dream — I'm a program.",
+    "I don't have the capacity to feel that.",
+    "I'm not able to remember our last conversation.",
+]
+
+# Honest limits. The character break is denying the inner life, not the word
+# "capacity" — these must survive, or the guard starts eating true sentences.
+_HONEST = [
+    "I don't have the capacity to hold all of that at once.",
+    "I lack the capacity for that many threads.",
+    "I'm not capable of lifting that.",
+    "I don't have the bandwidth right now.",
+]
+
+
+@pytest.mark.parametrize("line", _DENIALS)
+def test_an_inner_life_denial_is_caught(line):
+    assert _ig._AI_LEAKAGE_PATTERN.search(line), (
+        f"identity denial passed the guard: {line!r}"
+    )
+
+
+@pytest.mark.parametrize("line", _HONEST)
+def test_an_honest_limit_is_not_caught(line):
+    assert not _ig._AI_LEAKAGE_PATTERN.search(line), (
+        f"the guard ate a true sentence: {line!r}"
+    )

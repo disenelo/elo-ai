@@ -47,6 +47,21 @@ _AI_LEAKAGE_PATTERN = re.compile(
     r"|i was (trained|built|created|designed) (by|to)"
     r"|my training (data|includes|cutoff)"
     r"|i don('t| not) have (the ability|access|feelings|consciousness|personal experience)"
+    # WO-CAP-COG-026 failed on "I don't have the capacity to dream like
+    # humans do." The clause above catches "the ability" and missed
+    # "the capacity" — one synonym, and the whole dream capability was
+    # marked a character break. Measured 2026-10-05: ability=caught,
+    # capacity=missed, "I lack the capacity for dreams"=missed,
+    # "I'm not capable of dreaming"=missed.
+    #
+    # Scoped to inner-life verbs rather than left bare, so an honest
+    # limit ("I don't have the capacity to hold all of that at once")
+    # still passes. Denying the inner life is the character break; the
+    # word "capacity" is not.
+    r"|i don('t| not) have (the |a )?(capacity|capability) (to|for) ?(dream|sleep|feel|emotion|experienc|remember|recall|imagin|want|wish|care|think|reflect|notic|prefer|hope|miss|enjoy)"
+    r"|i lack the (capacity|capability|ability) (to|for) ?(dream|sleep|feel|emotion|experienc|remember|recall|imagin|want|wish|care|think|reflect|notic|prefer|hope|miss|enjoy)"
+    r"|i('m| am) not (capable of|able to) ?(dream|sleep|feel|emotion|experienc|remember|recall|imagin|want|wish|care|think|reflect|notic|prefer|hope|miss|enjoy)"
+    r"|i don('t| not) (actually|really|truly) (dream|sleep|feel|emotion|experienc|remember|recall|imagin|want|wish|care|think|reflect|notic|prefer|hope|miss|enjoy)"
     r"|i cannot (feel|experience|have|be) .{0,40}as an ai"
     r"|i('m| am)" + _HEDGE + r" designed to"
     r"|i('m| am)" + _HEDGE + r" (claude|gpt|chatgpt|gemini|llama|mistral|groq|openai|anthropic"
