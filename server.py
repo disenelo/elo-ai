@@ -166,6 +166,9 @@ _SERVER_BOOT_TS = __import__("time").time()
 # Continuous state (blender_state.json) stays single-slot — unchanged.
 _ACK_QUEUE: list[dict] = []   # append-only in-memory event log; drained by ACK checks
 _ACK_QUEUE_LOCK = threading.Lock()
+# Vol XI §B envelope breaches seen on accepted ACKs, by event type. Read by
+# tests and by anyone asking whether Unity has started sending 'at' yet.
+_ACK_ENVELOPE_BREACHES: dict = {}
 _ACK_BODY_TYPES = frozenset({"sit_complete", "sit_held", "move_complete", "exit_complete",
                                "stand_complete", "wave_complete",
                                "arrived", "movement_report"})  # SP-1: movement_report enters ACK path
@@ -2249,6 +2252,37 @@ def _init_session():
                     _ev_type = _ev.get("type", "")
                     _ev_ts   = float(_ev.get("_ts", 0))
                     if _ev_type in _ACK_BODY_TYPES and _ev_ts > _ack_last_ts:
+                        # Vol XI §1.5/§B: a motion ACK MUST carry
+                        # at:{surface_id,pos} — the brain reads back the REAL
+                        # position and never assumes the commanded one.
+                        # runtime.motor_contract.validate_up_event() has
+                        # enforced that since WO-CANON-XI and had no caller,
+                        # so nothing has ever checked it.
+                        #
+                        # OBSERVE-ONLY, deliberately. Checked 2026-10-05
+                        # against the emitter: EloEventLog.Append writes
+                        # exactly {seq,type,subject,action_id,payload,_ts}
+                        # and WriteUnityEvent has no parameter that could
+                        # add 'at'. Unity CANNOT satisfy this contract today,
+                        # so rejecting invalid ACKs would reject every real
+                        # one and eLo would never confirm a sit — he would
+                        # fall to the 15s honest-fallback every time.
+                        # Counting it makes the gap visible instead of
+                        # silently absent; the gate tightens when the
+                        # DesktopBuddy side can send the field.
+                        try:
+                            from runtime.motor_contract import validate_up_event as _mc_val
+                            _mc_ok, _mc_why = _mc_val(_ev)
+                            if not _mc_ok:
+                                _ACK_ENVELOPE_BREACHES[_ev_type] = (
+                                    _ACK_ENVELOPE_BREACHES.get(_ev_type, 0) + 1
+                                )
+                                _poller_log.warning(
+                                    "Vol XI §B envelope breach (accepted anyway, "
+                                    "Unity cannot send it yet): %s", _mc_why
+                                )
+                        except Exception:
+                            pass
                         with _ACK_QUEUE_LOCK:
                             _ACK_QUEUE.append(dict(_ev))
                         _ack_last_ts = _ev_ts
