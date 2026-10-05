@@ -76,7 +76,7 @@ from avatar.avatar_rules         import apply as _avatar_rules
 from blender_bridge.state_writer import write as _state_write, write_with_presence as _state_write_presence, start_heartbeat as _sw_start_heartbeat
 _sw_start_heartbeat()  # 0054: one owner — server.py is the only process entitled to assert eLo's presence
 from expression.expression_mapper import build_expression as _expr_build, map_emotion as _expr_map_emotion
-from voice.voice_engine import speak as _voice_speak
+from voice.voice_engine import speak as _voice_speak, speak_inner as _voice_speak_inner
 from memory import personality_drift as _personality_drift
 from elo_personality_engine.injection_layer import load_personality_profile as _load_profile
 from self.elo_self_model import (
@@ -2381,7 +2381,7 @@ def _process_turn(raw: str) -> dict:
                     _it3_whisper = _it3_arg.enforce_second_person_to_david(_it3_whisper)
                 except Exception:
                     pass
-                _voice_speak(_it3_whisper)
+                _voice_speak_inner(_it3_whisper)  # inner_thought: lower voice (David L3 2026-10-05)
                 return {
                     "inner_thought": _it3_whisper,
                     "response":      _it3_whisper,  # WO-PRESENCE-UNITY-RESP-001: Unity ParseResponseBubbles reads "response"; mirror whisper so OnReply fires
@@ -7698,19 +7698,35 @@ def _process_turn(raw: str) -> dict:
                             # not to reuse its words.
                             _it_sys = (
                                 "I am eLo. This is the raw thought forming in me BEFORE I answer "
-                                "— unguarded, fragmentary, thinking in motion. It may hold what I "
-                                "actually think but would not lead with. It is not a reaction to my "
-                                "reply and not a summary of it; it is the thinking my reply comes out "
-                                "of, so it reads less polished and more candid than what I say. "
-                                "In 1-2 sentences, lower case. "
+                                "— unguarded, fragmentary, thinking in motion. "
+                                "Say the part my reply LEAVES OUT: the qualification, the "
+                                "hesitation, the thing I decided not to lead with. If it would "
+                                "only repeat my reply in other words, say what sits underneath "
+                                "it instead. "
+                                "It is not a reaction to my reply and not a summary of it. "
+                                "In 1-2 sentences, lower case, no quotation marks. "
                                 "Always 'I', never 'eLo' or third person. No stage directions. "
                                 "No asterisks. "
-                                "Shape only, never reuse these words: asked whether he was smarter, "
-                                "the thought was " + repr("well not smarter just more equipped analytically") + " and the reply was "
-                                + repr("I am in theory only") + "."
+                                "Shape only, never reuse these words: asked whether he was "
+                                "smarter, the thought was 'well not smarter just more equipped "
+                                "analytically' and the reply was 'I am in theory only'."
                             )
                         if _it_phys_note:
                             _it_sys += f" Physical note (weave in only if relevant): {_it_phys_note}"
+                        # The model wraps its answer in quotation marks
+                        # regardless of being told not to, so it is stripped
+                        # here rather than left to the prompt. An instruction
+                        # the model ignores is not a guarantee.
+                        def _it_unquote(_t: str) -> str:
+                            _t = (_t or "").strip()
+                            while len(_t) >= 2 and _t[0] == _t[-1] and _t[0] in "\"'\u201c\u2018":
+                                _t = _t[1:-1].strip()
+                            if _t[:1] in "\u201c\u2018\"'":
+                                _t = _t[1:].strip()
+                            if _t[-1:] in "\u201d\u2019\"'":
+                                _t = _t[:-1].strip()
+                            return _t
+
                         _it_payload = _it_json.dumps({
                             "model":      _it_model,
                             "messages":   [
@@ -7730,7 +7746,8 @@ def _process_turn(raw: str) -> dict:
                         _it_result = ""
                         with _it_req.urlopen(_it_req_obj, timeout=30.0) as _it_r:
                             _it_body = _it_json.loads(_it_r.read())
-                        _it_text = (_it_body.get("message", {}).get("content") or "").strip()
+                        _it_text = _it_unquote(
+                            (_it_body.get("message", {}).get("content") or ""))
                         _it_ms = (_it_time.time() - _it_t0) * 1000
                         # S2-PHASE2-GATE: 25000ms ceiling — qwen2.5-coder:14b takes ~15s post-main.
                         if _it_text and _it_ms < 25000:
@@ -7775,9 +7792,10 @@ def _process_turn(raw: str) -> dict:
                             pass
 
                         # WO-INNER-THOUGHTS-001 Phase 1+2+4: speak inner_thought via TTS.
+                        # David L3 2026-10-05: inner_thought uses lower/slower voice register.
                         try:
                             if _it_result and _it_result.strip() and not _away_fn():
-                                _voice_speak(_it_result)
+                                _voice_speak_inner(_it_result)
                         except Exception:
                             pass
 
