@@ -152,3 +152,64 @@ def test_animation_name_is_Sit_hold_exactly():
     assert result[0]["motion"]["animation"] == "Sit_hold", (
         "Unity expects the exact clip name 'Sit_hold', not 'sit_hold' or 'sit'"
     )
+
+
+# ── the real block, not the mirror above ─────────────────────────────────────
+#
+# Everything above exercises a REIMPLEMENTATION of the server block, so it
+# passes whatever server.py actually does. These read server.py itself.
+#
+# Part B originally decided by regex over the inner thought:
+#     \b(sit|sitting|legs?|rest\b|settle|settle down|sit down)\b
+# so eLo sat because a WORD appeared. Measured against the canned expressions
+# that same pipeline feeds him:
+#
+#     tired      act=False  regex=True   MISMATCH
+#                'Been at this a while. Legs know it.'
+#     fatigued   act=True   regex=True
+#     exhausted  act=True   regex=True
+#
+# "tired" is the band rest_decision names notice-do-not-act, and its own
+# wording contains "Legs" — so the first flicker of tiredness sat him down.
+# The reverse failed too: "i could use a break" and "my body is done for
+# today" match nothing, so an exhausted eLo stayed standing on a phrasing
+# accident.
+
+import pathlib
+
+
+def _server_source() -> str:
+    return (pathlib.Path(__file__).resolve().parent.parent / "server.py").read_text()
+
+
+def test_part_b_decides_with_rest_decision_not_a_regex():
+    code = _server_source()
+    assert "from runtime.rest_decision import" in code, (
+        "the dispatch says the inner event is a signal and Executive decides "
+        "the action — that decision belongs in rest_decision"
+    )
+    assert "settle down|sit down" not in code, "the sit regex is back"
+
+
+def test_part_b_reads_the_band_live_not_from_the_event_string():
+    """
+    inner_events is append-only and dream_faculty reads it too, so entries are
+    never consumed. A physical_tired from an hour ago stays in the list and
+    `if _pt_events` is true from the first one onward. The event says "look";
+    the live snapshot says what is true now.
+    """
+    code = _server_source()
+    i = code.index("_pt_events = [")
+    window = code[i:i + 4000]
+
+    assert "from core.health_battery import snapshot" in window
+    assert '_pt_events[-1].split(":")[-1]' not in window, (
+        "band taken from the stale event string instead of the live snapshot"
+    )
+
+
+def test_a_refusal_to_sit_is_always_explainable():
+    """'Why didn't eLo sit' must have an answer, not a shrug."""
+    code = _server_source()
+    i = code.index("_pt_events = [")
+    assert "explain as _pt_why" in code[i:i + 4000]

@@ -4978,6 +4978,26 @@ def _process_turn(raw: str) -> dict:
                 _combined_vault = (_combined_vault + "\n\n" + _drop_block).strip()
         except Exception:
             pass
+
+        # WO-GAME-005 / WO-GAME-006: inject pending game events when game_mode is active.
+        # Polls the game event bus and prepends events as context lines so eLo reacts
+        # to what's happening in the game rather than responding generically.
+        try:
+            import json as _geb_json, os as _geb_os
+            _geb_bs_path = _geb_os.path.join(
+                _geb_os.path.dirname(_geb_os.path.abspath(__file__)),
+                "blender", "blender_state.json",
+            )
+            with open(_geb_bs_path, encoding="utf-8") as _geb_f:
+                _geb_bs = _geb_json.load(_geb_f)
+            if _geb_bs.get("game_mode") == "on" or _geb_bs.get("intent") == "game_mode":
+                from runtime.game_event_bus import poll_events as _geb_poll, ingest_event as _geb_ingest
+                _geb_events = _geb_poll(mark_consumed=True)
+                if _geb_events:
+                    _geb_lines = "\n".join(_geb_ingest(e) for e in _geb_events)
+                    _combined_vault = (_combined_vault + "\n\n" + _geb_lines).strip()
+        except Exception:
+            pass
         _bp_lessons = (_plan.snapshot.lessons if _plan and _plan.snapshot else ())
         # ── WP-N: build grounding block from plan ────────────────────────────
         _grounding_block = ""
@@ -7964,21 +7984,79 @@ def _process_turn(raw: str) -> dict:
                                 e for e in (getattr(_elo, "inner_events", []) or [])
                                 if isinstance(e, str) and e.startswith("physical_tired:")
                             ]
-                            if _pt_events and _it_result and not _sit_pending.get("active"):
-                                import re as _pt_re
-                                _pt_sit_re = _pt_re.compile(
-                                    r"\b(sit|sitting|legs?|rest\b|settle|settle down|sit down)\b"
+                            if _pt_events and not _sit_pending.get("active"):
+                                import logging as _pt_log
+                                from core.health_battery import snapshot as _pt_snap
+                                from runtime.rest_decision import (
+                                    decide_rest as _pt_decide, explain as _pt_why,
                                 )
-                                if _pt_sit_re.search(_it_result.lower()):
+
+                                # The band is read LIVE, not from the event
+                                # string. inner_events is an append-only list
+                                # that dream_faculty also reads, so entries are
+                                # never consumed — a physical_tired from an hour
+                                # ago stays in it forever and `if _pt_events`
+                                # is true from the first one onward. The event
+                                # says "look"; the snapshot says what is true.
+                                _pt_band = str(_pt_snap().get("physical_state", ""))
+
+                                _pt_dreaming = False
+                                try:
+                                    from faculties.dream.dream_faculty import (
+                                        is_dreaming as _pt_is_dreaming,
+                                    )
+                                    _pt_dreaming = bool(_pt_is_dreaming())
+                                except Exception:
+                                    pass
+
+                                # Decided by runtime/rest_decision, which is what
+                                # the dispatch meant by "the inner event is a
+                                # signal, Executive decides the action".
+                                #
+                                # This was a regex over the inner thought:
+                                #   \b(sit|sitting|legs?|rest\b|settle|...)\b
+                                # so eLo sat because a WORD appeared. Measured
+                                # against the canned expressions it reads:
+                                #
+                                #   tired     act=False regex=True  MISMATCH
+                                #             'Been at this a while. Legs know it.'
+                                #   fatigued  act=True  regex=True
+                                #   exhausted act=True  regex=True
+                                #
+                                # "tired" is the band rest_decision names
+                                # notice-do-not-act, and its own phrasing
+                                # contains "Legs" — so the first flicker of
+                                # tiredness sat him down, and a body that sits
+                                # at the first flicker never walks anywhere.
+                                # The reverse failed too: "i could use a break"
+                                # and "my body is done for today" matched
+                                # nothing, so an exhausted eLo stayed standing
+                                # on a phrasing accident.
+                                _pt_intent = _pt_decide(
+                                    _pt_band,
+                                    motion=(_st or {}).get("motion", {}),
+                                    speaking=False,
+                                    commanded=bool(_sit_pending.get("queued")),
+                                    dreaming=_pt_dreaming,
+                                )
+                                if _pt_intent:
                                     from blender_bridge.state_writer import patch as _pt_patch
-                                    import logging as _pt_log
-                                    _pt_band = _pt_events[-1].split(":")[-1]
                                     _pt_patch({"motion": {"animation": "Sit_hold", "mode": "sit"}})
                                     _sit_pending["active"] = True
                                     _sit_pending["since"]  = _it_time.time()
                                     _sit_pending["queued"] = None
                                     _pt_log.getLogger("elo.tired_sit").info(
-                                        "WO-TIRED-SIT-001 B: sit issued (band=%s)", _pt_band
+                                        "WO-TIRED-SIT-001 B: sit issued (band=%s, by=%s)",
+                                        _pt_band, _pt_intent.get("issued_by"),
+                                    )
+                                else:
+                                    # Every refusal names itself, so "why didn't
+                                    # eLo sit" is answerable instead of a shrug.
+                                    _pt_log.getLogger("elo.tired_sit").debug(
+                                        "no sit (band=%s): %s", _pt_band,
+                                        _pt_why(_pt_band,
+                                                motion=(_st or {}).get("motion", {}),
+                                                dreaming=_pt_dreaming),
                                     )
                         except Exception:
                             pass
