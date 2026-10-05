@@ -463,12 +463,20 @@ def retrieve_wkg(user_input: str, top_k: int = 3) -> list[dict]:
         if confidence is None:
             confidence = vol_xxiv["confidence"]
 
+        # COG-011: for runtime-wkg claims, include entity descriptions in content
+        # so the full constraint text reaches the model, not just the bare relation.
+        _base_content = (
+            claim.get("interpretation")
+            or f"{claim.get('subject')} {claim.get('predicate')} {claim.get('object')}"
+        )
+        _notes = (claim.get("notes") or "").strip()
+        _content = (
+            f"{_base_content}\n{_notes}" if _notes and claim.get("source") == "runtime-wkg"
+            else _base_content
+        )
         results.append({
             "label":               claim.get("id", ""),
-            "content":             (
-                claim.get("interpretation")
-                or f"{claim.get('subject')} {claim.get('predicate')} {claim.get('object')}"
-            ),
+            "content":             _content,
             "confidence":          float(confidence) if confidence is not None else 0.5,
             "kind":                vol_xxiv["kind"],
             "evidence":            list(claim.get("evidence") or []),
