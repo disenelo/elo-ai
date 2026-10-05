@@ -1103,6 +1103,19 @@ def ambient_thought() -> None:
                 )
                 # Integrate insight into self-state — 0037: through single-authority mutator
                 _elo_self = _self_mutate(lambda s: wake_from_dream(_dream_result, s))
+                # S2 Phase 3 — the first thought after a dream is the dream's.
+                # wake_from_dream already folds the insight into mood,
+                # curiosity and satisfaction; it never let the dream be the
+                # thing eLo is THINKING when he next speaks. Held for one
+                # turn and consumed on read.
+                try:
+                    from runtime.wake_thought import hold as _wt_hold
+                    _wt_insight = getattr(_dream_result, "insight", "") or ""
+                    if str(_wt_insight).strip():
+                        _wt_hold(str(_wt_insight),
+                                 dream_id=str((getattr(_dream_result, "journal_entry", {}) or {}).get("dream_id", "")))
+                except Exception:
+                    pass
                 # S4: restore health battery on dream wake (NREM+REM vs NREM-only)
                 try:
                     from core.health_battery import on_wake_from_dream as _hb_wake
@@ -7711,6 +7724,15 @@ def _process_turn(raw: str) -> dict:
                     try:
                         import time as _it_time, urllib.request as _it_req, json as _it_json, os as _it_os
                         _it_t0 = _it_time.time()
+                        # S2 Phase 3 — a dream's insight becomes the next
+                        # turn's inner thought. Taken here, applied after
+                        # the generation block below.
+                        try:
+                            from runtime.wake_thought import take as _wt_take
+                            _wt_thought = _wt_take()
+                        except Exception:
+                            _wt_thought = ""
+
                         _it_host = _it_os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
                         # S2-PHASE2-MODEL: same model as main response — no Ollama swap overhead.
                         _it_model = _it_os.environ.get("ELO_OLLAMA_MODEL", "mistral-nemo:12b")
@@ -7844,6 +7866,15 @@ def _process_turn(raw: str) -> dict:
                                 "negative_low":  "Something feels off, but I'm staying with it.",
                             }
                             _it_result = _it_vmap.get(_emotion, "I'm present for this.")
+
+                        # S2 Phase 3 — the dream wins. Applied after the
+                        # generation block rather than short-circuiting it,
+                        # which would mean re-indenting forty lines inside a
+                        # file two seats are editing. The cost is one
+                        # redundant LLM call on a wake turn, and dreams are
+                        # rare; the risk of a bad re-indent here is not.
+                        if _wt_thought:
+                            _it_result = _wt_thought
 
                         # WO-TIRED-SIT-001 Part B — physical tiredness → sit decision
                         try:
