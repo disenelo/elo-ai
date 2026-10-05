@@ -283,8 +283,15 @@ def _match_curiosity_question(question: dict, turn_text: str) -> bool:
         "are", "but", "not", "all", "was", "were", "will", "does",
     })
     def _tokens(text: str) -> set[str]:
+        # Punctuation is stripped from the edges of each word. Without this,
+        # a stored question reading "whether 'challenge' is right here," had
+        # the tokens "'challenge'" and "here," — so a turn saying challenge
+        # could not match the question ABOUT challenge. Quoting is exactly
+        # what a writer does to the term a question is about, which made the
+        # most distinctive token the systematically unmatchable one.
+        import string as _str
         return {
-            w for w in text.lower().split()
+            w for w in (t.strip(_str.punctuation) for t in text.lower().split())
             if len(w) >= 4 and w not in _STOP
         }
 
@@ -309,7 +316,22 @@ def curiosity_questions_prompt_block(turn_text: str) -> str:
         open_qs = _open_curiosity_questions(rows)
         # Sort oldest first; surface oldest 1–2 that match this turn.
         open_qs.sort(key=lambda r: float(r.get("_ts", 0)))
-        matching = [q for q in open_qs if _match_curiosity_question(q, turn_text)][:2]
+        # De-duplicated by text before slicing. The live store holds 50 rows
+        # and 2 distinct questions, so an oldest-first [:2] could fill both
+        # slots with the SAME text — eLo asking himself one thing twice in a
+        # single prompt.
+        matching = []
+        _seen_q: set[str] = set()
+        for q in open_qs:
+            text = str(q.get("wants_to_know", "") or "").strip()
+            key = text.lower()
+            if not text or key in _seen_q:
+                continue
+            if _match_curiosity_question(q, turn_text):
+                _seen_q.add(key)
+                matching.append(q)
+            if len(matching) == 2:
+                break
         if not matching:
             return ""
         lines = [
