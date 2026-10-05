@@ -116,9 +116,14 @@ def _server_source() -> str:
 
 def test_a_commanded_sit_relays_up():
     code = _server_source()
-    assert code.count('_relay("sit_commanded"') == 2, (
-        "both sit command paths — Spine and Legacy — must relay; a body "
-        "perception that only one path reports is the §1.7 audit hole"
+    # Three, not two. The first version of this test said two and was wrong:
+    # the tired-sit path is a sit command as much as the other two, and it is
+    # the only one eLo issues HIMSELF rather than carrying out a movement
+    # intent. Leaving it out meant the one sit that is genuinely his was the
+    # one his body journal did not record.
+    assert code.count('_relay("sit_commanded"') == 3, (
+        "every sit command path — Spine, Legacy and tired — must relay; a "
+        "body perception that only some paths report is the §1.7 audit hole"
     )
 
 

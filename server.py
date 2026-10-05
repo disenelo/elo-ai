@@ -8049,6 +8049,25 @@ def _process_turn(raw: str) -> dict:
                                         "WO-TIRED-SIT-001 B: sit issued (band=%s, by=%s)",
                                         _pt_band, _pt_intent.get("issued_by"),
                                     )
+                                    # Vol VII §5.7 L1 — this is a third sit
+                                    # command path. The earlier commit wired
+                                    # the Spine and Legacy ones and asserted
+                                    # there were two; this one is eLo's OWN
+                                    # sit, the only one he issues himself, so
+                                    # leaving it unrelayed meant the one sit
+                                    # that is genuinely his went unrecorded.
+                                    try:
+                                        from runtime.body_relay import (
+                                            relay_body_event as _pt_relay,
+                                        )
+                                        _pt_relay("sit_commanded", {
+                                            "path":      "tired",
+                                            "band":      _pt_band,
+                                            "issued_by": _pt_intent.get("issued_by"),
+                                            "reason":    _pt_intent.get("reason"),
+                                        })
+                                    except Exception:
+                                        pass
                                 else:
                                     # Every refusal names itself, so "why didn't
                                     # eLo sit" is answerable instead of a shrug.
