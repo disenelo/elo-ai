@@ -203,6 +203,30 @@ def _persist_curiosity_question(advice: "LearningAdvice") -> None:
     if not advice.wants_to_know:
         return
     try:
+        # A repeat of a question already OPEN appends a compact re-ask
+        # marker instead of a second full record. The live store holds 50
+        # rows carrying 2 distinct questions — 48 byte-identical repeats.
+        #
+        # Dedupe does NOT mean discard: eLo asking himself the same thing
+        # 49 times is the strongest evidence it matters, the same way claim
+        # recurrence turned out to be the only discriminating input for SPG
+        # significance. The count is kept and surfaced; only the duplicated
+        # payload goes.
+        _text = advice.wants_to_know.strip()
+        try:
+            _already_open = any(
+                str(q.get("wants_to_know", "")).strip().lower() == _text.lower()
+                for q in _open_curiosity_questions(_load_curiosity_questions())
+            )
+        except Exception:
+            _already_open = False
+        if _already_open:
+            os.makedirs(os.path.dirname(_CURIOSITY_Q_PATH), exist_ok=True)
+            with open(_CURIOSITY_Q_PATH, "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(
+                    {"_ts": time.time(), "reasked_wants_to_know": _text},
+                    ensure_ascii=False) + "\n")
+            return
         record = {
             "_ts":          time.time(),
             "wants_to_know": advice.wants_to_know,
@@ -248,20 +272,47 @@ def _open_curiosity_questions(rows: list[dict]) -> list[dict]:
     its `wants_to_know` text exists. Records without a `wants_to_know` key are
     resolution tombstones — skip them for the question list.
     """
-    resolved: set[str] = set()
+    # Order-aware. The previous version collected every tombstone into a set
+    # and excluded any matching question regardless of WHEN each happened, so
+    # a question asked again after being resolved could never come back — eLo
+    # could not re-open a thread he had closed.
+    #
+    # times_asked counts the asks since the last resolution. A re-ask marker
+    # (reasked_wants_to_know) is a repeat of a question already open; the full
+    # record is written once. Rows predating this carry no marker and count 1,
+    # which is correct for them.
+    last_resolved: dict[str, float] = {}
+    asks:          dict[str, list[float]] = {}
+    record_for:    dict[str, dict] = {}
+
     for r in rows:
-        wtk = r.get("resolved_wants_to_know", "")
-        if wtk:
-            resolved.add(wtk.strip().lower())
+        ts = float(r.get("_ts", 0) or 0)
+        res = str(r.get("resolved_wants_to_know", "") or "").strip()
+        if res:
+            key = res.lower()
+            last_resolved[key] = max(last_resolved.get(key, 0.0), ts)
+            continue
+        text = str(r.get("wants_to_know", "") or "").strip()
+        if text:
+            key = text.lower()
+            asks.setdefault(key, []).append(ts)
+            record_for[key] = r
+            continue
+        re_ask = str(r.get("reasked_wants_to_know", "") or "").strip()
+        if re_ask:
+            asks.setdefault(re_ask.lower(), []).append(ts)
 
     open_qs: list[dict] = []
-    for r in rows:
-        wtk = r.get("wants_to_know", "")
-        if not wtk:
-            continue
-        if wtk.strip().lower() in resolved:
-            continue
-        open_qs.append(r)
+    for key, stamps in asks.items():
+        rec = record_for.get(key)
+        if rec is None:
+            continue                      # re-asks with no full record
+        since = [t for t in stamps if t > last_resolved.get(key, 0.0)]
+        if not since:
+            continue                      # resolved after the last ask
+        q = dict(rec)
+        q["times_asked"] = len(since)
+        open_qs.append(q)
     return open_qs
 
 
@@ -334,11 +385,18 @@ def curiosity_questions_prompt_block(turn_text: str) -> str:
                 break
         if not matching:
             return ""
-        lines = [
-            f"[CURIOSITY: You have an unanswered question: {q['wants_to_know'].rstrip('.')}."
-            f" This turn may be relevant.]"
-            for q in matching
-        ]
+        # The count is surfaced, not just stored. A number nothing reads is
+        # write-only data, which is the defect this stack keeps finding —
+        # and "you have asked this four times" is the signal, not the row.
+        lines = []
+        for q in matching:
+            _asked = int(q.get("times_asked", 1) or 1)
+            _times = f" You have asked this {_asked} times." if _asked > 1 else ""
+            lines.append(
+                f"[CURIOSITY: You have an unanswered question: "
+                f"{q['wants_to_know'].rstrip('.')}.{_times}"
+                f" This turn may be relevant.]"
+            )
         return "\n".join(lines)
     except Exception:
         return ""
