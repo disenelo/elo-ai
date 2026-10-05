@@ -134,6 +134,27 @@ class MemoryFaculty:
             return {"action": "drop", "spot": None, "reason": f"vault error: {exc}"}
 
 
+# ── WO-MEMORY-QUERY-TYPE-001: typed retrieval ────────────────────────────────
+
+def retrieve(
+    query: str,
+    type_filter: str | None = None,
+    max_results: int = 5,
+) -> list[dict]:
+    """
+    Query the vault, optionally restricted to one memory type.
+
+    type_filter — one of:
+        episodic | semantic | procedural | emotional   (proposed_type names)
+        conversation | learn | build | connect | ...   (internal memory_type names)
+    When None, all types are returned (backwards-compatible with vault_layer.lookup).
+
+    Returns a list of vault result dicts ordered by weight desc.
+    """
+    from memory.vault_layer import lookup
+    return lookup(query, max_results=max_results, type_filter=type_filter)
+
+
 # ── WO-WKG-AUTO-POPULATE-001: automatic WKG growth from live turns ────────────
 
 import os as _os

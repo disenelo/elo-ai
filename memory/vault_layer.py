@@ -270,9 +270,31 @@ def compress_session(
 
 # ── Lookup ────────────────────────────────────────────────────────────────────
 
-def lookup(query: str, max_results: int = 5) -> list[dict]:
+_PROPOSED_TO_TCODE: dict[str, str] = {
+    # proposed_type names (as used by MemoryCandidate)
+    "episodic":   "CV",
+    "semantic":   "LN",
+    "procedural": "BL",
+    "emotional":  "CN",
+    # memory_type names (as stored by vault_layer.write_memory)
+    "conversation": "CV",
+    "learn":        "LN",
+    "build":        "BL",
+    "connect":      "CN",
+    "fix":          "FX",
+    "decision":     "DC",
+    "design":       "DS",
+}
+
+
+def lookup(query: str, max_results: int = 5, type_filter: str | None = None) -> list[dict]:
     """
     Search memory for records matching the query.
+
+    type_filter — optional proposed_type or memory_type name to restrict results.
+        Accepts: episodic | semantic | procedural | emotional
+                 conversation | learn | build | connect | fix | decision | design
+        When set, only records whose spot t_code matches are returned.
 
     Searches two sources:
         1. Summary .md files (structured, weighted)
@@ -384,6 +406,17 @@ def lookup(query: str, max_results: int = 5) -> list[dict]:
             pass
 
     results.sort(key=lambda x: x["weight"], reverse=True)
+
+    # WO-MEMORY-QUERY-TYPE-001: filter by type if requested
+    if type_filter:
+        _want_tcode = _PROPOSED_TO_TCODE.get(type_filter.lower())
+        if _want_tcode:
+            results = [
+                r for r in results
+                if len(r.get("spot", "").split("·")) > 1
+                and r["spot"].split("·")[1] == _want_tcode
+            ]
+
     _truncated = results[:max_results]
     # P0-3 fix: reinforce() removed from lookup() — library must not do durable writes.
     # Vol VIII §4.70 / §4.03: "retrieval runs in the response path … reading only; durable
