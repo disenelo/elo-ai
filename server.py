@@ -6375,6 +6375,7 @@ def _process_turn(raw: str) -> dict:
                     search_entities as _wkg_search, create_entity as _wkg_create,
                     record_claim as _wkg_record_claim, _load as _wkg_load,
                 )
+                from runtime.memory_origin import MemoryOrigin as _MemoryOrigin
                 # David (PERSON) — find or create once
                 _wkg_david_hits = _wkg_search("David Charles")
                 if _wkg_david_hits:
@@ -6403,6 +6404,14 @@ def _process_turn(raw: str) -> dict:
                         epistemic_class="SOURCE_ATTRIBUTED",
                         source_id=f"interaction:{_action}",
                         confidence=0.7,
+                        # WO-DREAM-EPISTEMIC-TAG-001: this turn happened.
+                        # Without an origin every live claim recorded None,
+                        # so "was that from a dream?" answered unknown for
+                        # all of them and dream-derived content would have
+                        # been indistinguishable the moment any path wrote
+                        # it. REAL_EXPERIENCE is the enum's own definition:
+                        # "from actual conversation / events".
+                        memory_origin=_MemoryOrigin.REAL_EXPERIENCE.value,
                     )
         except Exception:
             pass
@@ -6427,6 +6436,7 @@ def _process_turn(raw: str) -> dict:
                         search_entities as _wkg_lw_search, create_entity as _wkg_lw_create,
                         record_claim as _wkg_lw_record,
                     )
+                    from runtime.memory_origin import MemoryOrigin as _MemoryOrigin
                     _wkg_lw_david = _wkg_lw_search("David Charles")
                     _wkg_lw_david_id = (
                         _wkg_lw_david[0]["entity_id"] if _wkg_lw_david
@@ -6450,6 +6460,7 @@ def _process_turn(raw: str) -> dict:
                         confidence=0.55,
                         memory_type="episodic",
                         context_action=_action,
+                        memory_origin=_MemoryOrigin.REAL_EXPERIENCE.value,
                     )
         except Exception:
             pass

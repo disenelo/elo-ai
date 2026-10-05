@@ -117,3 +117,50 @@ def test_the_dream_write_gate_still_blocks_unearned_dream_content():
             epistemic_class="HYPOTHESIS", source_id="dream:raw",
             memory_origin=MemoryOrigin.DREAM_SIMULATION.value,
         )
+
+
+# ── the production chain ────────────────────────────────────────────────────
+#
+# Storing the origin only helps if the writers pass one. There is exactly ONE
+# production path into record_claim — server.py's two live-turn claim writers —
+# and neither passed memory_origin, so every live claim recorded None and
+# "was that from a dream?" answered unknown for all of them.
+#
+# Both are conversation-derived, which is the enum's own definition of
+# REAL_EXPERIENCE: "from actual conversation / events".
+
+import pathlib
+
+
+def _server_source() -> str:
+    return (pathlib.Path(__file__).resolve().parent.parent / "server.py").read_text()
+
+
+def test_every_live_claim_records_where_it_came_from():
+    code = _server_source()
+    assert code.count("memory_origin=_MemoryOrigin.REAL_EXPERIENCE.value") == 2, (
+        "both live-turn claim writers must record an origin — a claim with "
+        "origin None cannot be told apart from a dream-derived one"
+    )
+
+
+def test_the_origin_the_server_passes_is_a_real_enum_member():
+    """A typo'd origin string raises inside record_claim's MemoryOrigin(...)."""
+    assert MemoryOrigin.REAL_EXPERIENCE.value == "real_experience"
+
+
+def test_a_conversation_claim_is_not_mistaken_for_a_dream():
+    """The end of the chain, with the value the server actually sends."""
+    subj, obj = _entities()
+    claim = wkg.record_claim(
+        subj, "ASSOCIATED_WITH", obj,
+        epistemic_class="SOURCE_ATTRIBUTED",
+        source_id="interaction:answer",
+        confidence=0.7,
+        memory_origin=MemoryOrigin.REAL_EXPERIENCE.value,
+    )
+    origin = wkg.get_memory_origin(claim["claim_id"])
+
+    assert origin == "real_experience"
+    assert origin not in {MemoryOrigin.DREAM_SIMULATION.value,
+                          MemoryOrigin.DREAM_INSIGHT.value}
