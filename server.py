@@ -7186,7 +7186,9 @@ def _process_turn(raw: str) -> dict:
             # B3-SEARCH-001: what eLo found is lifted from the source — a rewrite
             # can only lose it. Live 2026-10-05 the rewrite fell to mock and
             # replaced the Pinky and the Brain answer with filler / a lesson dict.
-            _vr_skip = backend_used == "direct:web_search"
+            # B3-BOARD-RULINGS Issue 4 2026-10-06: extend exemption to ALL direct:
+            # prefixed backends (time, calculator, vault-daily, web_search, etc.).
+            _vr_skip = (backend_used or "").startswith("direct:")
             from runtime.backend_router import _CODE_SIGNAL_RE as _vr_code_sig
             _vr_is_technical = bool(_vr_code_sig.search(_original_raw))
             _vr_max = 12 if _vr_is_technical else 3
@@ -7194,7 +7196,12 @@ def _process_turn(raw: str) -> dict:
             def _vr_llm(_msgs):
                 _sys = _msgs[0]["content"] if _msgs else ""
                 _usr = _msgs[1]["content"] if len(_msgs) > 1 else ""
-                _txt, _ = router_route(_sys, _usr, max_sentences=_vr_max, action="voice_rewrite", tier=0)
+                _txt, _vr_backend = router_route(_sys, _usr, max_sentences=_vr_max, action="voice_rewrite", tier=0)
+                # B3-BOARD-RULINGS Issue 4: mock backend must never handle voice_rewrite.
+                # If all live backends failed and mock fired, return input unchanged —
+                # the original response is always better than a canned mock rewrite.
+                if _vr_backend == "mock":
+                    return _msgs[1]["content"] if len(_msgs) > 1 else ""
                 return normalise(_txt, max_sentences=_vr_max)
             if not _vr_skip:
                 response = _vr(
@@ -8030,17 +8037,10 @@ def _process_turn(raw: str) -> dict:
                     )
                 except Exception:
                     pass
-                # WO-DRIFT-GUARD-001: Board Option B — inject a re-grounding suffix.
-                # Appended only when drift detected; drawn from state.core_values.
-                # Proportionate: does not block or regenerate, is traceable.
-                try:
-                    _dg_values = getattr(_elo_self, "core_values", [])
-                    _dg_frag = ", ".join(str(v) for v in _dg_values[:3]) if _dg_values else "curious, calm, grounded"
-                    _dg_suffix = f" — [I'm eLo: {_dg_frag}]"
-                    if response and _dg_suffix not in response:
-                        response = response.rstrip() + _dg_suffix
-                except Exception:
-                    pass
+                # WO-DRIFT-GUARD-001 v2: drift is a silent internal diagnostic.
+                # The suffix "— [I'm eLo: ...]" must NEVER reach David (Board ruling
+                # 2026-10-06, B3-BOARD-RULINGS Issue 5). Correction store + inner_event
+                # above are the corrective action. Nothing is appended to response.
         except Exception:
             pass
 

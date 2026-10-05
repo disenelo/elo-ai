@@ -1142,6 +1142,8 @@ def _ollama_stream(
         "MISSING-FACT RULE: If David asks for ONE NAMED specific item about himself "
         "— like 'what's my dog's name', 'when is my birthday', 'what's my mum's name', 'where did I grow up' — "
         "and that exact item is NOT in [WHO YOU ARE WITH] AND NOT in [DURABLE FACTS], say: 'I don't have that recorded.' Never guess. "
+        "EXCEPTION: If the user message contains [WEB_SEARCH:, [WORLD_, [CAPABILITY_RESULT:, or [POP_CULTURE_CONTEXT:, "
+        "that means real information was injected — the MISSING-FACT RULE does NOT apply. Use the injected content to answer. "
         "IMPORTANT: Before saying 'I don't have that recorded', ALWAYS check [DURABLE FACTS] first — "
         "if the answer appears in [DURABLE FACTS], use it and do NOT say that phrase. "
         "This rule ONLY triggers for NAMED specific items (a name, a date, a place). "

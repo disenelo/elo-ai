@@ -174,13 +174,20 @@ def _load_all():
 
 # ── entity matching ────────────────────────────────────────────────────────────
 
+def _kw_match(keyword: str, text_lower: str) -> bool:
+    """True if keyword appears as a whole word in text (not as a substring of another word).
+    B3-BOARD-RULINGS Issue 3 2026-10-06: bare 'k in t' matched 'ai' inside 'brain'/'again'/'said'.
+    """
+    return bool(re.search(r"\b" + re.escape(keyword) + r"\b", text_lower))
+
+
 def _find_entities(text: str) -> list[dict]:
     """Return entities whose keywords appear in the lowercased input, with match count."""
     _load_all()
     t = text.lower()
     matched = []
     for e in _graph.get("entities", []):
-        score = sum(1 for k in e.get("keywords", []) if k in t)
+        score = sum(1 for k in e.get("keywords", []) if _kw_match(k, t))
         if score > 0:
             matched.append((score, e))
     matched.sort(key=lambda x: x[0], reverse=True)
@@ -252,7 +259,7 @@ def retrieve(user_input: str, top_k: int = 3) -> list[dict]:
     for e in entities:
         if e.get("status") in _EXCLUDED_STATUSES:
             continue
-        kw_score = sum(1 for k in e.get("keywords", []) if k in text)
+        kw_score = sum(1 for k in e.get("keywords", []) if _kw_match(k, text.lower()))
         # §D: epistemic_kind is distinct from ontology type.
         # Authored entities default to "fact"; promoted nodes carry their own kind.
         epistemic_kind = e.get("epistemic_kind") or e.get("status") or "fact"
