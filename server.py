@@ -3462,6 +3462,21 @@ def _process_turn(raw: str) -> dict:
                         return {"response": _ref_reply, "mode": "direct",
                                 "backend": "reference_gate"}
 
+            # POP-CULTURE-PROBE: proactive corpus match — David L3 directive 2026-10-06.
+            # Fires when P0-REFERENCE did not already inject web context (i.e. raw is
+            # unchanged from _original_raw or was enriched by P0-REF — either way,
+            # only inject once). Prepends a lightweight context block so the LLM knows
+            # the reference without requiring David to label it.
+            if raw == _original_raw:  # P0-REFERENCE already augments raw if it fires
+                try:
+                    from faculties.cultural_facts.pop_culture import match_pop_culture as _pc_match, context_block as _pc_ctx
+                    _pc_hit = _pc_match(_original_raw)
+                    if _pc_hit:
+                        _logging.info("POP-CULTURE-PROBE: matched %r — injecting context", _pc_hit["name"])
+                        raw = f"{_pc_ctx(_pc_hit)}\n\n{_original_raw}"
+                except Exception as _pc_err:
+                    _logging.debug("POP-CULTURE-PROBE: import/match error — %s", _pc_err)
+
         # ── Web search ───────────────────────────────────────────────────────
         try:
             import tools.web_search as _ws_mod
