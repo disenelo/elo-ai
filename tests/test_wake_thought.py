@@ -95,3 +95,39 @@ def test_the_override_lands_after_the_generated_fallback():
     fallback = code.index('_it_result = _it_vmap.get(')
     override = code.index("if _wt_thought:")
     assert fallback < override, (fallback, override)
+
+
+# ── The whole chain, offline ───────────────────────────────────────────────
+
+def test_a_real_dream_insight_becomes_the_next_thought(tmp_path, monkeypatch):
+    """
+    The halves were tested separately. This runs a real dream and walks the
+    two server steps — hold at wake, take at the next inner thought — so the
+    composition is proven and not inferred.
+
+    Offline on purpose: the LLM is forced to raise, because until today every
+    dream was the deterministic stub and the demo must not rest on a backend
+    being up.
+    """
+    import copy
+    import blender_bridge.state_writer as sw
+    import faculties.dream.dream_faculty as df
+    from self.elo_self_model import load
+
+    monkeypatch.setattr(df, "_JOURNAL_PATH", tmp_path / "j.jsonl")
+    monkeypatch.setattr(sw, "patch", lambda f: None)
+
+    def _offline(_m):
+        raise RuntimeError("backend down")
+
+    elo = load()
+    res = df.run_dream(elo, ["seams"], _offline, idle_seconds=1800.0,
+                       publish_phases=False)
+    insight = str(getattr(res, "insight", "") or "").strip()
+    assert insight, "the dream produced no insight to carry back"
+
+    wt.hold(insight, dream_id="t")                 # server's wake block
+    df.wake_from_dream(res, copy.deepcopy(elo))
+
+    assert wt.take() == insight                    # server's inner-thought path
+    assert wt.take() == "", "a dream must colour one turn, not every turn"
