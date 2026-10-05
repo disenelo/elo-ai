@@ -40,6 +40,51 @@ _WEIGHTS = {
 
 _DIMENSIONS = list(_WEIGHTS.keys())
 
+# ── WO-SPG-SIGNIFICANCE-LIVE-001: the spike tap has never fired ───────────────
+#
+# compute_significance() taps SPG when overall > 0.6. Measured across the live
+# log and its backup, 29,104 signal records, 2026-10-05:
+#
+#     relationship_shift  14517
+#     memory_write        14503
+#     continuity_link        84
+#     significance_spike      0      <-- never, not once
+#
+#     highest `overall` ever recorded : 0.3   (the old backfill constant)
+#     highest COMPUTED value          : 0.042
+#     threshold                       : 0.6
+#
+# It is unreachable by construction, not by luck. Each dimension score already
+# has its _WEIGHTS entry applied (see the boost loop below), and `overall` is
+# then the MEAN of those weighted values — so with uniform 0.1 weights the
+# ceiling is ~0.1 even if every dimension maxed out. 0.6 was written for an
+# unweighted mean.
+#
+# The threshold is NOT changed here. It is an [ESTIMATE] and this file states
+# those are D-gated to David L3 (SP-29), and picking a new number is exactly
+# the ruling that gate exists for. What changes is that the dead tap now says
+# so on import instead of reporting health by silence — the same lesson as
+# audit_body_relay, which could not fail and therefore always passed.
+#
+# For the ruling: live values cluster at 0.031 (10,955 of 15,213) with a tail
+# to 0.042. A threshold near 0.040 would fire on roughly the top 1%.
+SPIKE_THRESHOLD: float = 0.6
+
+# Ceiling on `overall` given the current weights: every dimension at its own
+# weight, averaged. Computed, not asserted, so a weight ruling moves it.
+MAX_REACHABLE_OVERALL: float = round(
+    sum(min(1.0, w) for w in _WEIGHTS.values()) / (len(_WEIGHTS) + 1), 4
+)
+
+if SPIKE_THRESHOLD > MAX_REACHABLE_OVERALL:          # pragma: no cover
+    import logging as _sf_log
+    _sf_log.getLogger("significance_faculty").warning(
+        "SPG significance-spike tap is UNREACHABLE: threshold %.3f > max "
+        "achievable overall %.4f under current _WEIGHTS. No spike has ever "
+        "been logged. Awaiting SP-29 D-gate (David L3).",
+        SPIKE_THRESHOLD, MAX_REACHABLE_OVERALL,
+    )
+
 
 # ── WO-SP29-CONV-SIGNIFICANCE-001: conversational signal patterns ─────────────
 # [ESTIMATE] — pattern → (dimension, boost). Boosts are additive to world_delta scores.
@@ -154,7 +199,7 @@ def compute_significance(
 
     # WO-SPG-HOOKS-001: tap significance spikes for SPG signal logger
     try:
-        if scores["overall"] > 0.6:
+        if scores["overall"] > SPIKE_THRESHOLD:
             from memory.spg_capture import get_capture as _spg_get
             _top_dim = max(
                 ((k, v) for k, v in scores.items() if k != "overall"),
