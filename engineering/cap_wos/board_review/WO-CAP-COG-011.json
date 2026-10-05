@@ -1,0 +1,15 @@
+{
+  "wo_id": "WO-CAP-COG-011",
+  "map": "COG",
+  "seq": 11,
+  "state": "fix_applied",
+  "blocked_on": null,
+  "score": { "pass": 0, "fail": 1, "total": 1 },
+  "evidence": "engineering/evidence/CAP/COG/WO-CAP-COG-011_evidence.md",
+  "commit": "8ec2a58",
+  "fix_commits": ["4aa4703"],
+  "last_updated": "2026-10-05",
+  "run": "static-fix — live re-test required (needs server + Ollama)",
+  "model": "qwen2.5-coder:14b",
+  "notes": "Root cause: WKG entity for eLo robot design constraints (a1b2c3d4) had zero claims — retrieve_wkg never surfaced it. Even if surfaced, entity descriptions were excluded from ContextItem content (only bare 'subject PREDICATE object' reached the model). Fix (commit 4aa4703): (1) Added 3 VERIFIED claims in memory/wkg/claims.json referencing the robot entity, wiring it into keyword retrieval. (2) Modified knowledge/graph_loader.py:retrieve_wkg() to append entity descriptions (subject + object descriptions) to the content field for runtime-wkg claims. Verified: retrieve_wkg_context_items('what constraints matter when designing elos outer shell') now returns full design constraints text (TPU, NeoPixel diffusion, Plushies pipeline) as top result. Live re-test needed to confirm model picks up the context and stops substituting parametric engineering knowledge."
+}

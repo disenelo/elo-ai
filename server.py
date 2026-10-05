@@ -6531,6 +6531,24 @@ def _process_turn(raw: str) -> dict:
                         if isinstance(leg, dict)
                         if (leg.get("win_id") or leg.get("from_win_id") or leg.get("goal_win_id")) is not None
                     ] or None
+                    # CANON-XIII §C parity wire: log Python's route selection as the shadow record.
+                    # shadow_plan() requires a live LiveWorldState + windows from Unity desktop state —
+                    # not available at emit time. Instead we log the executive's chosen brain_route here
+                    # as the Python shadow selection. The full shadow_plan() comparison runs at ACK-time
+                    # when Unity's executed unity_route arrives (see route_memory.remember_route
+                    # brain_route / unity_route fields). This gives the parity log for §C comparison.
+                    try:
+                        from faculties.spatial.spatial_faculty import _shadow_log as _sp_log
+                        _sp_goal = _mv_intent.get("sub_type") or _mv_intent.get("direction") or ""
+                        _sp_log({
+                            "shadow_ts": _now54,
+                            "source": "canon_xiii_c_emit",
+                            "goal": _sp_goal,
+                            "python_brain_route": _PENDING_MOVE["brain_route"],
+                            "result_type": "brain_route_logged",
+                        })
+                    except Exception as _sp_err:
+                        _logging.debug("CANON-XIII §C: shadow log failed (non-fatal): %s", _sp_err)
                 elif _mv_intent == "step_out":
                     # Exit intent — activate pending tracker; gate "stepping away" on exit_complete
                     _PENDING_EXIT["active"] = True
@@ -7608,7 +7626,8 @@ def _process_turn(raw: str) -> dict:
                 import threading as _it_threading
 
                 def _run_inner_thought(
-                    _resp, _st, _elo, _emotion, _calm_fn, _away_fn, _sit_pending
+                    _resp, _st, _elo, _emotion, _calm_fn, _away_fn, _sit_pending,
+                    _asked_raw
                 ):
                     try:
                         import time as _it_time, urllib.request as _it_req, json as _it_json, os as _it_os
@@ -7628,10 +7647,26 @@ def _process_turn(raw: str) -> dict:
                             )
                         except Exception:
                             pass
-                        _it_user_part = (
-                            f"[Last exchange]\n{_it_history}\n\neLo just said: {_resp}"
-                            if _it_history else f"eLo just said: {_resp}"
-                        )
+                        # David L3 2026-10-05: "The inner_thought should feel
+                        # like it PRECEDES the response logically."
+                        #
+                        # This was `eLo just said: {_resp}` and nothing else, so
+                        # the thought was generated FROM the reply, after the
+                        # fact. It could only ever be a reflection ON it. His
+                        # example cannot be produced that way: "well not smarter
+                        # just more equipped analytically" carries the comparison
+                        # that "I am in theory only" compresses away, and no pass
+                        # over the reply recovers what the reply left out.
+                        #
+                        # The thread was not even given the user's turn. It now
+                        # leads with what was ASKED, and frames the reply as what
+                        # I am about to say — one context, thought ahead of words.
+                        _it_asked = str(_asked_raw or "").strip()
+                        _it_user_part = "\n\n".join(_p for _p in (
+                            ("[Last exchange]\n" + _it_history) if _it_history else "",
+                            ("David just said: " + _it_asked) if _it_asked else "",
+                            "I am about to say: " + str(_resp),
+                        ) if _p)
                         # WO-TIRED-SIT-001 Part B: a second sit emitter stood here
                         # (runtime.rest_action.maybe_sit). This thread's block below
                         # is the dispatched one and is now the only route to a sit.
@@ -7654,11 +7689,25 @@ def _process_turn(raw: str) -> dict:
                                 "Gentle, honest, grounded."
                             )
                         else:
+                            # "what am I noticing or feeling" asked for an
+                            # emotional reaction. The standard is REASONING in
+                            # motion: "well not smarter just more equipped
+                            # analytically" is a thought, not a feeling.
+                            # David's example is included as calibration for
+                            # shape and candour, with an explicit instruction
+                            # not to reuse its words.
                             _it_sys = (
-                                "I am eLo. This is my inner voice — unguarded, immediate, first person. "
-                                "In 1-2 sentences, what am I noticing or feeling right now, given this exchange? "
-                                "Always 'I', never 'eLo' or third person. No stage directions. No asterisks. Not a summary. "
-                                "Raw, honest, in the moment."
+                                "I am eLo. This is the raw thought forming in me BEFORE I answer "
+                                "— unguarded, fragmentary, thinking in motion. It may hold what I "
+                                "actually think but would not lead with. It is not a reaction to my "
+                                "reply and not a summary of it; it is the thinking my reply comes out "
+                                "of, so it reads less polished and more candid than what I say. "
+                                "In 1-2 sentences, lower case. "
+                                "Always 'I', never 'eLo' or third person. No stage directions. "
+                                "No asterisks. "
+                                "Shape only, never reuse these words: asked whether he was smarter, "
+                                "the thought was " + repr("well not smarter just more equipped analytically") + " and the reply was "
+                                + repr("I am in theory only") + "."
                             )
                         if _it_phys_note:
                             _it_sys += f" Physical note (weave in only if relevant): {_it_phys_note}"
@@ -7750,6 +7799,7 @@ def _process_turn(raw: str) -> dict:
                     args=(
                         response, _state, _elo_self, _it_emotion,
                         _is_calm_mode, _is_user_away, _PENDING_SIT,
+                        _original_raw,
                     ),
                     daemon=True,
                 ).start()
