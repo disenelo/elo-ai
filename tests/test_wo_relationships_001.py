@@ -63,18 +63,29 @@ def test_rel5_new_fact_appears_immediately():
         unique,
         description=f'Stated: "this is a test fact {unique}"',
     )
-    record_claim(
-        subject_entity_id=DAVID_ID,
-        relationship_type="HAS_PROPERTY",
-        object_entity_id=ent["entity_id"],
-        epistemic_class="SOURCE_ATTRIBUTED",
-        source_id="test_rel5",
-        confidence=0.72,
-        memory_type="semantic",
-        memory_origin="real_experience",
-    )
-    profile_after = get_relationship_profile(DAVID_ID, max_facts=20)
-    assert unique in profile_after, f"New fact not found in profile:\n{profile_after}"
-
-    # Clean up: deprecate the test entity so it doesn't pollute the live WKG
-    deprecate_entity(ent["entity_id"], reason="test artifact — WO-RELATIONSHIPS-001 test_rel5")
+    # The cleanup below sat AFTER the assert, so a failing run never reached
+    # it. Measured 2026-10-06: 22 test_label_ artifacts in the live WKG store
+    # and 5 of them never deprecated — live, searchable junk in eLo's
+    # knowledge graph, left by the runs where this test failed.
+    #
+    # It also writes the LIVE store on every pass, which is why
+    # test_spg_feedback_loop::test_unrelated_turn_retrieves_nothing fails in
+    # the suite and passes alone.
+    try:
+        record_claim(
+            subject_entity_id=DAVID_ID,
+            relationship_type="HAS_PROPERTY",
+            object_entity_id=ent["entity_id"],
+            epistemic_class="SOURCE_ATTRIBUTED",
+            source_id="test_rel5",
+            confidence=0.72,
+            memory_type="semantic",
+            memory_origin="real_experience",
+        )
+        profile_after = get_relationship_profile(DAVID_ID, max_facts=20)
+        assert unique in profile_after, f"New fact not found in profile:\n{profile_after}"
+    finally:
+        deprecate_entity(
+            ent["entity_id"],
+            reason="test artifact — WO-RELATIONSHIPS-001 test_rel5",
+        )
