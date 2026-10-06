@@ -56,7 +56,7 @@ def test_retrieve_wkg_epistemic_class_is_known():
 def test_retrieve_wkg_empty_for_unrelated_input():
     """AT-5: Completely unrelated input returns empty list (no spurious injection)."""
     from knowledge.graph_loader import retrieve_wkg
-    result = retrieve_wkg("xyzzz flibbertigibbet nonsense input zzzqq")
+    result = retrieve_wkg("xyzzy qwerty asdfg zxcvb plmkn jklop wrtyu")  # keyboard mash — no real WKG words
     assert result == [], (
         f"AT-5: expected [] for unrelated input; got {len(result)} results"
     )

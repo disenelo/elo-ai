@@ -560,6 +560,17 @@ def build(
     except Exception:
         pass
 
+    # ── CAPABILITY-SELF-MODEL: what eLo CAN do right now (Board ruling 2026-10-06) ─
+    # Prevents eLo from denying capabilities it actually has (e.g. "I can't control
+    # Spotify" while actively playing Spotify). Block is compact — never blocks turn.
+    try:
+        from runtime.self_knowledge import self_knowledge_block as _sk_block
+        _sk = _sk_block()
+        if _sk:
+            _push("capability_self_model", _sk)
+    except Exception:
+        pass
+
     if personality_block.strip():
         _push("personality_block", personality_block)
 
