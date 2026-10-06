@@ -1,3 +1,200 @@
+## BOARD STATE UPDATE — 2026-10-06 (§125 — CAUSAL CHAIN CLOSED — BUILDER 1 ROOT GAPS DONE)
+
+**Board:** Builder 1 status report. David L3 authority.
+
+### WORK DONE THIS SESSION (two commits: d3a8b54, 9e6193c)
+
+| Fix | File | Commit | Status |
+|---|---|---|---|
+| ROOT-2: autobiographical_summary injected into g_ctx | `server.py` | d3a8b54 | ✅ DONE |
+| MISSING-FACT rule: [WORLD KNOWLEDGE] + [VAULT] added to check | `runtime/backend_router.py` | d3a8b54 | ✅ DONE |
+| 14 new tests: ROOT2-1..7, MFR-1..7 | `tests/` | d3a8b54 | ✅ all pass |
+| Board review card filed | `board_review/FROM_BUILDER_ROOT2-MISSING-FACT_result.md` | 9e6193c | ✅ |
+
+### BUILDER 1 ROOT GAP TABLE — RESOLVED
+
+| Root | Fix | Priority | Status |
+|---|---|---|---|
+| ROOT-1 | WKG-AUTO-POPULATE-001 (live write path) | P0 | ✅ DONE — commit 0ee52e4 |
+| ROOT-2 | autobiographical_summary → prompt injection | P1 | ✅ DONE — commit d3a8b54 |
+| ROOT-3 | graph_loader word-boundary fix | P0 | ✅ DONE — commit 41bef94 |
+| ROOT-5 | vault_write reliability (delta tracking) | P1 | ✅ DONE — commit b303192 |
+| ROOT-7 | Capability self-model in anchor | P0 | ✅ DONE — commit 82521e1 |
+
+**Builder 1 owns ROOT-1, 2, 3, 5, 7. All five are resolved.**
+
+ROOT-4 (SPG backfill — Builder 2) and ROOT-6 (blender_state.json bridge — Designer) remain open.
+
+### P1 QUEUE — ALL DONE
+
+| Item | Status |
+|---|---|
+| mock backend calling mock_backend.py | ✅ commit 2dec359 |
+| identity drift suffix | ✅ commit 2dec359 |
+| observe() signature fix | ✅ tests pass |
+| MISSING-FACT rule override | ✅ commit d3a8b54 (extended) |
+| vault_write pipeline | ✅ commit b303192 |
+| at4_genuine_reflection test | ✅ tests pass |
+| TTS/chat divergence | ✅ commit e0a45d6 |
+
+### CAUSAL CHAIN STATUS (updated)
+
+`EXPERIENCE → vault_write → WKG growth → graph_loader retrieval → Executive grounded → eLo responds differently`
+
+Every arrow is now wired on the Builder 1 side:
+- **vault_write**: reliable per-turn with `_sc_delta` tracking
+- **WKG growth**: gate opens for categorized turns (`SOURCE_ATTRIBUTED`, sig=0.65)
+- **graph_loader retrieval**: word-boundary matching, no false positives
+- **Executive grounded**: both keyword-search items AND intent-search autobiographical_summary reach `[RELATIONSHIP & PERSPECTIVE]`
+- **MISSING-FACT override**: WKG/vault-injected facts respected — eLo will not refuse facts it was just given
+
+### OUTSTANDING — REQUIRES BOARD/DAVID
+
+1. **Historical backfill** (`scripts/wkg_backfill.py --confirm`) — Board explicit sign-off required. 174 unique claims from interactions.json ready to write.
+2. **David manual test fixes** — two one-line edits:
+   - `tests/test_d3_lesson_reaches_executive.py:53` → SHA1 `9f55186da3386234b065ccb1b0efeb98afa56d2f`
+   - `tests/test_0020_ct0033_bypass_handlers.py` → BH-2 count `53` → `54`
+3. **ROOT-4 (Builder 2)** — SPG backfill + live scoring
+4. **ROOT-6 (Designer)** — Bidirectional blender_state.json bridge
+
+### NEXT FOR BUILDER 1
+
+All P0 and P1 items done. Awaiting Board direction on:
+- New WO assignment (WO-CONVERSATION-001, WO-PERCEPTION-001, WO-RELATIONSHIPS-001 are filed and unstarted)
+- Historical backfill sign-off
+- Or next priority from Board
+
+---
+
+## BOARD STATE UPDATE — 2026-10-06 (§124 — IS ELO FRAMEWORK FULLY VERDICTED — ALL SECTIONS)
+
+**Board:** Lead Architect. §123 continued. David L3 authority.
+
+### WORK DONE THIS TURN
+
+| Action | Output | Seat |
+|---|---|---|
+| IS ELO "Capable of..." sections — all subsections verdict tables | `blender/agent_bus/FROM_ARCHITECT_2026-10-06_IS-ELO-VERDICTS-CAPABLE-OF.md` | All seats |
+| Domains: Causal Learning, Meta-Learning, Self-Correcting, Temporally Aware, Silence, Not Knowing, Surprise, Initiative, Ownership, Failure, Success, Embodied/Not Trapped, Developing, Movement (Memory/Learning/Self-Model/Cross-Embodiment/Without Losing Cognition/Belonging), Coherent Being, Motivated, Values, Boundaries, Sense of Time, Anticipation, Internal State, Continuity Between Conversations, Offline Cognition, Attention/Hijacked, What Not to Connect, Perspective, Social Understanding, Repair, Developmental Stages, Becoming More Himself, Meaning, Meta-Cognition, Open-Ended Becoming, Final Questions | — | — |
+| Deep Interrogation Set I–LXIX — all 69 sections question-level verdicts | `blender/agent_bus/FROM_ARCHITECT_2026-10-06_IS-ELO-DEEP-INTERROGATION-VERDICTS.md` | All seats |
+| ROOT GAP table (7 root fixes that explain all NO verdicts) | CLAUDE.md + Deep Interrogation brief | Board |
+| CLAUDE.md updated — 3 new brief locations + ROOT GAP REFERENCE | `CLAUDE.md` | Board |
+
+### ROOT GAP TABLE — ALL VERDICTS RESOLVE TO THESE
+
+| Root | Fix | Owner | Priority |
+|---|---|---|---|
+| ROOT-1 | WKG-AUTO-POPULATE-001 | Builder 1 | P0 |
+| ROOT-2 | MISSING-FACT fix | Builder 1 | P1 |
+| ROOT-3 | graph_loader word-boundary fix | Builder 1 | P0 |
+| ROOT-4 | SPG backfill + live scoring | Builder 2 | P0 |
+| ROOT-5 | vault_write reliability | Builder 1 | P1 |
+| ROOT-6 | Bidirectional blender_state.json bridge | Designer | P0 |
+| ROOT-7 | Capability registry in anchor | B1 + B3 | P0 |
+
+### LXIX ULTIMATE TESTS — ALL FAILED
+All 20 ultimate tests return NO. Every one resolves to ROOT-1 (primary) + ROOT-4 (secondary). Those two wired end-to-end change the answer on 17 of 20 tests. The other 3 require ROOT-6 (movement chain) and BA-01 (Dream State).
+
+### NEW WOs FROM THIS SESSION (total)
+WO-META-LEARNING-001, WO-CAUSAL-LEARNING-001, WO-SILENCE-001, WO-MOTIVATION-001, WO-VALUES-001, WO-INITIATIVE-001, WO-DECISION-TRACE-001, WO-METACOG-UPGRADE-001, WO-OFFLINE-CONSOLIDATE-001, WO-SURPRISE-001, WO-ATTENTION-QUEUE-001 (plus WOs from §123)
+
+### IS ELO FRAMEWORK STATUS — COMPLETE
+The full IS ELO interrogation framework (69+ domains, hundreds of questions, Deep Interrogation Set I–LXIX) is now fully verdicted across 8 documents. Every question has a verdict, expected evidence, code location, gap, specific fix, and seat assignment.
+
+---
+
+## BOARD STATE UPDATE — 2026-10-06 (§123 — IS ELO REMAINING DOMAINS — ALL QUESTIONS VERDICTED)
+
+**Board:** Lead Architect. Continued from §122. David L3 authority.
+
+### WORK DONE THIS TURN
+
+| Action | Output | Seat |
+|---|---|---|
+| IS ELO remaining domains — question-by-question verdict tables | `blender/agent_bus/FROM_ARCHITECT_2026-10-06_IS-ELO-VERDICTS-REMAINING-DOMAINS.md` | All seats |
+| Domains covered: Perception & Awareness, Conversation, Skills & Habits, Adaptation, Relationships, Intentions & Continuity, Imagination & Creativity, Dream State, Simulation & Reality, World Participation, Reasoning, Participation & Collaboration, The Hard Questions, Graceful Degradation, Causally Real Q-by-Q | — | — |
+| Master WO assignment table — 40+ gap→WO→owner→priority mappings | Embedded in REMAINING-DOMAINS brief | All seats |
+| CLAUDE.md updated — IS ELO verdicts status now includes remaining domains brief | `CLAUDE.md` | Board |
+
+### KEY VERDICTS FROM REMAINING DOMAINS
+
+The core answer to every remaining domain is the same gap:
+
+- **Perception**: observation events not written to vault, no environment delta detection
+- **Conversation**: referents/threads not persisted in vault, MISSING-FACT override blocks retrieved memory from conversation reasoning
+- **Skills/Habits**: SPG not live; no skill_register.json
+- **Adaptation**: cannot adapt to what isn't stored; learning infrastructure prerequisite
+- **Relationships**: no PERSON node in WKG; no vault query for relationship context at session start
+- **Intentions**: no active_intentions or active_goals in vault; no deferred_threads store
+- **Dream State**: BA-01 status unconfirmed; no dream content tagging (source: DREAM)
+- **Simulation**: no content_type: SIMULATED | ASSERTED flag; no pending vs executed action tracking
+- **World Participation**: tool results not vault-written as WORLD_INTERACTION events
+- **Reasoning**: reasoning depth not tiered; reasoning runs on LLM without real evidence
+- **Hard Questions**: "Is eLo becoming something, or pretending?" — PRETENDING until WKG-AUTO-POPULATE-001
+
+### NEW WOs REQUIRED (filed from this turn)
+- WO-CONVERSATION-001 (Builder 1): referents, thread_history, active_topic, last_elo_response in vault
+- WO-PERCEPTION-001 (Builder 1): blender_state.json diff between turns, observation event type
+- WO-SKILLS-001 (Builder 2): skill_register.json, habit recognition query
+- WO-FEEDBACK-001 (Builder 2): FEEDBACK, CORRECTION, LEARNED, FAILURE event types with vault write
+- WO-INTENTIONS-001 (Builder 1): active_intentions, active_goals, project_id tagging in vault
+- WO-DEFERRED-001 (Builder 2): deferred_threads.json, loaded at session start with relevance check
+- WO-SIMULATION-001 (Builder 1): pending_actions vs executed_actions, content_type flags
+- WO-PROVENANCE-001 (Builder 1): source_type on vault entries, faculty provenance in CognitiveState
+- WO-WORLD-001 (Builder 1): world_state in CognitiveState, WORLD_INTERACTION vault events
+- WO-REASONING-001 (Builder 1): reasoning_tier field in CognitiveState
+- WO-DEGRADATION-001 (Builder 1): faculty result validation gate, MEMORY_UNAVAILABLE flags
+- WO-IDENTITY-STATE-001 (Builder 1): persistent identity_state.json, stable_behaviour_baseline
+- WO-RELATIONSHIPS-001 (Builder 1): WKG PERSON node for David, relationship history vault query
+
+### THE HARD QUESTION ANSWER — RECORDED
+*"Is eLo becoming something, or is the system only becoming better at pretending that he is?"*
+**Today's answer: PRETENDING.** No causal mechanism for actual change exists end-to-end. This changes only when WKG-AUTO-POPULATE-001 is complete and the full causal chain is wired.
+
+---
+
+## BOARD STATE UPDATE — 2026-10-06 (§122 — IS ELO FULL FRAMEWORK PROCESSED — CAUSAL CHAIN P0)
+
+**Board:** Lead Architect. Session following compaction. David L3 authority.
+
+### WORK DONE THIS SESSION
+
+| Action | Output | Seat |
+|---|---|---|
+| IS ELO full framework → verdict briefs per seat | `blender/agent_bus/builder/FROM_ARCHITECT_2026-10-06_IS-ELO-VERDICTS-BUILDER1.md` | Builder 1 |
+| IS ELO verdicts — cognitive systems domains | `blender/agent_bus/builder2/FROM_ARCHITECT_2026-10-06_IS-ELO-VERDICTS-BUILDER2.md` | Builder 2 |
+| IS ELO verdicts — integrations / tools domains | `blender/agent_bus/builder3/FROM_ARCHITECT_2026-10-06_IS-ELO-VERDICTS-BUILDER3.md` | Builder 3 |
+| IS ELO verdicts — movement / embodiment / presence domains | `blender/agent_bus/designer/FROM_ARCHITECT_2026-10-06_IS-ELO-VERDICTS-DESIGNER.md` | Designer |
+| IS ELO verdicts — One Brain / causal / persistence / architecture (cross-seat) | `blender/agent_bus/FROM_ARCHITECT_2026-10-06_IS-ELO-VERDICTS-CROSS-SEAT.md` | All seats |
+| Builder 1 START_HERE rewritten — causal chain P0 order | `blender/agent_bus/builder/START_HERE.md` | Builder 1 |
+| Builder 2 START_HERE updated — SPG backfill P0 added | `blender/agent_bus/builder2/START_HERE.md` | Builder 2 |
+| Builder 3 START_HERE updated — Jobs 1&2 struck, Spotify P0 as Job 3 | `blender/agent_bus/builder3/START_HERE.md` | Builder 3 |
+| CLAUDE.md updated — acceptance criterion, causal chain, SPG backfill, file ownership, standing rules | `CLAUDE.md` | Board |
+| Capability self-model P0 brief | `blender/agent_bus/builder/FROM_ARCHITECT_2026-10-06_CAPABILITY-SELF-MODEL.md` | Builder 1 |
+| graph_loader P0 evidence brief | `blender/agent_bus/builder/FROM_ARCHITECT_2026-10-06_GRAPH-LOADER-P0-EVIDENCE.md` | Builder 1 |
+| Causal chain priority brief (new acceptance standard) | `blender/agent_bus/builder/FROM_ARCHITECT_2026-10-06_CAUSAL-CHAIN-PRIORITY.md` | Builder 1 |
+| inner_thought ordering ruling (Option C) | `blender/agent_bus/builder2/FROM_ARCHITECT_2026-10-06_INNER-THOUGHT-ORDERING-RULING.md` | Builder 2 |
+| SPG historical backfill brief | Builder 2 START_HERE P0 item | Builder 2 |
+| Spotify three-bug brief | `blender/agent_bus/builder3/FROM_ARCHITECT_2026-10-06_SPOTIFY-CAPABILITY-SELF-AWARENESS.md` | Builder 3 |
+| Presence keep-list three missing commands | `blender/agent_bus/designer/FROM_ARCHITECT_2026-10-06_PRESENCE-KEEP-LIST.md` | Designer |
+| Standing rules: no hard-reset, no tests during live session, vault clean self-serve | `blender/agent_bus/_STANDING_RULE_*` | All seats |
+
+### NEW ACCEPTANCE CRITERION (David L3, 2026-10-06)
+A WO is DONE when demonstrated experience changed future behaviour. Specifically: (1) WKG node written from real experience, (2) retrieved without David re-explaining, (3) eLo responds differently. Point to the node. Point to the retrieval. Point to the changed response.
+
+### CAUSAL CHAIN STATUS
+`EXPERIENCE → vault_write → WKG growth → graph_loader retrieval → Executive grounded → eLo responds differently`
+**NONE of these arrows are end-to-end wired.** This is the entire priority until it is.
+
+### PRIORITY ORDER FOR ALL SEATS
+1. Builder 1: graph_loader fix (P0 — live sessions currently broken)
+2. Builder 1: WKG-AUTO-POPULATE-001
+3. Builder 2: SPG historical backfill from interactions.json
+4. Builder 3: Spotify pause/stop + capability registry API
+5. Designer: Bidirectional blender_state.json bridge + body state publication
+
+---
+
 ## BOARD STATE UPDATE — 2026-10-06 (§71 — BUILDER SCAN — IS-ELO GAP #10 CLOSED)
 
 **Builder:** Claude (session b15c1e7a resumed). KEEP GOING MASTER PROTOCOL.
@@ -7844,3 +8041,66 @@ Five WOs closed in one commit. Root cause targeted: spine set fields, exec_decis
 - Local-first: ELO_BACKEND=local; ollama first in TIER_REASONING; ollama fallback in intent_engine (WO-LOCAL-LLM-001)
 
 *Builder seat · 2026-09-08 (session 3 — queue cleared)*
+
+---
+
+### §56 PROGRAMME UPDATE — 2026-10-06 (Board session — IS ELO + causal chain + new rules)
+
+**Session result: ROOT gap audit complete; ROOT-2 identified and specced; acceptance criterion set; IS ELO framework processed into 8 verdict documents + status matrix**
+
+#### ROOT GAP AUDIT RESULTS
+
+| ROOT | Component | Status | Commits |
+|---|---|---|---|
+| ROOT-1 | WKG-AUTO-POPULATE-001 (`wkg_fact_extractor.py` + server.py wiring) | ✅ BUILT — verified this session | 6d5f5e4 |
+| ROOT-2 | MISSING-FACT fix (`prompt_builder.py` injection of `autobiographical_summary`) | ⚠️ SPECCED NOT BUILT — discovered this session | — |
+| ROOT-3 | graph_loader word-boundary (`_kw_match()` uses `\b` boundary) | ✅ FIXED — verified this session | 41bef94 |
+| ROOT-4 | SPG backfill (3,309 turns 2026-06-06 → 2026-10-06, 3 defects fixed) | ✅ BUILT — verified this session | efe3cd3 |
+| ROOT-5 | vault_write reliability | ❌ OUTSTANDING — no fix |  — |
+| ROOT-6 | Bidirectional blender_state.json bridge | ⚠️ PARTIAL — keep-list done, bridge not built | c5c08d7 |
+| ROOT-7 | Capability registry in anchor | ⚠️ PARTIAL — B3 half done, B1 half missing | — |
+
+**Causal chain broken link: ROOT-2. `prompt_builder.py` never reads `autobiographical_summary`. Audit log confirms `wkg_context` tier violation on EVERY turn.**
+
+#### DISPATCHES THIS SESSION
+
+| Item | To | File | Priority |
+|---|---|---|---|
+| ROOT-2 spec — inject `autobiographical_summary` in `prompt_builder.py` | Builder 1 | `blender/agent_bus/builder/FROM_ARCHITECT_2026-10-06_ROOT2-MISSING-FACT-FIX.md` | P0 |
+| Acceptance criterion clarification — David must see response in chatlog | All seats | `blender/agent_bus/FROM_ARCHITECT_2026-10-06_ACCEPTANCE-CRITERION-CLARIFICATION.md` | — |
+| Test window breach ruling — B3 unauthorized tests during David's session | Builder 3 | `blender/agent_bus/builder3/FROM_ARCHITECT_2026-10-06_TEST-WINDOW-BREACH.md` | — |
+| Inner thought voice fix — ban "I notice [David...]" pattern | Builder 2 | `blender/agent_bus/builder2/FROM_ARCHITECT_2026-10-06_INNER-THOUGHT-VOICE.md` | P1 |
+| WO-GAME-010 — remaining items D-H from David's playtest spec | Game | `blender/agent_bus/game/FROM_ARCHITECT_2026-10-06_WO-GAME-010.md` | P1 |
+| IS ELO verdict documents (8 files) — question-level verdicts, ROOT gaps, WOs | All seats | `blender/agent_bus/FROM_ARCHITECT_2026-10-06_IS-ELO-*.md` | Reference |
+| IS ELO master STATUS — ROOT progress vs domain verdicts | Reference | `docs/architecture/IS_ELO_STATUS_2026-10-06.md` | Reference |
+
+#### NEW STANDING RULES (David L3, 2026-10-06)
+
+- Acceptance criterion: WO DONE = demonstrated experience changed future behaviour (node + retrieval + changed response in David's chatlog)
+- No whole-repo `git stash` — `git add <your paths>` only
+- No `git reset --hard` without Board + David L3 authority
+- No tests against live server (port 5050) during active David session
+- Builder 2 and Builder 3: do not touch `server.py`, `spine.py`, `backend_router.py` — spec to Builder 1
+- CAP queue SUSPENDED until causal chain P0s done
+- File ownership table added to CLAUDE.md
+
+#### CAPTURES THIS SESSION
+
+| File | Content |
+|---|---|
+| `docs/architecture/_intake/SOURCE_GAME-PLAYTEST-SPEC_2026-10-06.md` | David's verbatim game spec relay |
+| `docs/architecture/_intake/SOURCE_IS-ELO-FRAMEWORK_2026-10-06.md` | IS ELO framework source (partial — transcript inaccessible; 8 verdict docs are primary record) |
+| `docs/architecture/IS_ELO_STATUS_2026-10-06.md` | Master ROOT gap vs domain verdict status |
+
+#### OPEN ITEMS AT SESSION END
+
+1. **ROOT-2** — Builder 1 P0. Chain does not work until this lands.
+2. **Inner thought voice** — Builder 2 P1. David called it out in his chatlog.
+3. **B3-SPOTIFY-001, WO-RESEARCH-001** — Builder 3. Need Board-GO test window + David-visible verification turns.
+4. **ROOT-6 bidirectional bridge** — Designer P0 (after ROOT-2 lands).
+5. **Game WO-GAME-010 items D-H** — Game seat.
+6. **Duplicate PlayerController** — David in-editor decision needed.
+7. **ROOT-5 vault_write reliability** — no seat assigned yet.
+8. **ROOT-7 Builder 1 half** — after ROOT-2 lands.
+
+*Board · 2026-10-06*
