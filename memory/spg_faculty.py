@@ -188,6 +188,45 @@ def query_spg_entities(turn_text: str, ccm: dict | None = None) -> list[str]:
                     if eid in entity_sig:
                         entity_sig[eid] = max(entity_sig[eid], sig)
 
+            # ROOT-4 join. Two node populations live in one graph and this
+            # ranker could only ever see one of them:
+            #
+            #   claim-keyed   add_node_for_claim(), one per claim
+            #   turn-keyed    the backfill, "bf-00788-2026-08-13T02:49:33",
+            #                 3,321 of them covering four months
+            #
+            # So filling the graph with everything David has ever said changed
+            # retrieval by nothing, because none of it was keyed the way this
+            # lookup reads.
+            #
+            # It also fixes the FLAT case the comment below describes: 2,212
+            # of 2,226 claims are SOURCE_ATTRIBUTED at confidence 0.7, so
+            # every claim-derived score is identical and sorting on them is a
+            # no-op even when they link. Topic significance varies — 1,241
+            # distinct values across the backfill — so it can actually order
+            # things.
+            #
+            # An entity is scored by the strongest signal available to it:
+            # its claims, or what David keeps returning to. "robot" appears in
+            # 239 of his turns; "quantum chromodynamics" in none and scores
+            # 0.0, which is the test that this reads HIM and not generic
+            # salience.
+            try:
+                from memory.spg_topic_index import score_label, topic_significance
+                from runtime.wkg_faculty import get_entity as _get_entity
+
+                _topic_idx = topic_significance()
+                if _topic_idx:
+                    for eid in list(entity_sig):
+                        ent = _get_entity(eid) or {}
+                        label = str(ent.get("label", "") or "")
+                        if label:
+                            entity_sig[eid] = max(
+                                entity_sig[eid], score_label(label, _topic_idx)
+                            )
+            except Exception as _tp_e:
+                _log.debug("SPG topic ranking unavailable (non-fatal): %s", _tp_e)
+
             # Does any SPG node actually correspond to a claim we hold?
             #
             # The comment above this block asserts the node ids share the WKG
@@ -221,11 +260,26 @@ def query_spg_entities(turn_text: str, ccm: dict | None = None) -> list[str]:
             _linked = sum(1 for v in entity_sig.values() if v > 0.0)
             _distinct = {round(v, 4) for v in entity_sig.values() if v > 0.0}
             if _linked == 0:
+                # Two signals feed entity_sig now, so "nothing scored" has
+                # two possible causes and conflating them sends the next
+                # reader to the wrong place. Measured on the live store:
+                # 83 of 249 entity labels DO score through the topic index,
+                # 46 distinct values — so an INERT turn usually means these
+                # particular entities are not things David returns to, not
+                # that the index is dead.
+                try:
+                    from memory.spg_topic_index import topic_significance as _tsig
+                    _n_topics = len(_tsig())
+                except Exception:
+                    _n_topics = 0
                 _log.warning(
-                    "SPG rerank INERT: %d nodes in the store, none linked to any "
-                    "retrieved entity's claims — ordering is text-relevance only, "
-                    "not significance. SPG is contributing nothing to this turn.",
-                    len(spg_sig),
+                    "SPG rerank INERT: %d nodes, %d recurring topics, and none "
+                    "of the %d retrieved entities matched either — ordering is "
+                    "text-relevance only for this turn. %s",
+                    len(spg_sig), _n_topics, len(relevant_entity_ids),
+                    "The topic index is empty — run scripts/spg_backfill_run.py."
+                    if _n_topics == 0 else
+                    "The index is live; these entities simply are not recurring.",
                 )
             elif len(_distinct) <= 1:
                 _log.warning(
@@ -377,3 +431,29 @@ def update_spg_from_claims(claims: list, significance_score: float = 0.5) -> dic
                 edges_added += 1
 
     return {"nodes_added": nodes_added, "edges_added": edges_added}
+
+
+def write_world_causal_edge(
+    action_spot: str,
+    consequence_spot: str,
+    agent_name: str = "",
+) -> bool:
+    """
+    WO-WORLD-001 P3: write a causal SPG edge from an action vault spot to a
+    consequence vault spot.  Called after WORLD_INTERACTION vault write when
+    the turn also produced a memory write (consequence).
+
+    link_type "causal" extends the standard set for world-interaction provenance.
+    """
+    try:
+        evidence = f"world_interaction:{agent_name}" if agent_name else "world_interaction"
+        return add_edge_between_claims(
+            from_claim_id=action_spot,
+            to_claim_id=consequence_spot,
+            link_type="causal",
+            weight=0.65,
+            evidence=evidence,
+        )
+    except Exception as _e:
+        _log.debug("write_world_causal_edge: failed: %s", _e)
+        return False
