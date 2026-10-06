@@ -228,9 +228,127 @@ def list_playlists(choose: bool) -> str:
     return f"A few of yours: {names}. Going with {pick['name']}."
 
 
+# ── playback controls ─────────────────────────────────────────────────────────
+# Live 2026-10-06 David: "Can you pause Spotify" → eLo: "I can't control Spotify
+# directly". Controls now act through the Web API and eLo reports the player
+# state Spotify gives back — never a claim the player doesn't confirm.
+
+_MUSIC_WORDS = r"(?:spotify|music|song|track|tune|playlist|playing|playback|it|that|this)"
+_CONTROL_RES = [
+    # A request, not a mention: imperative at the start, or "can you stop/pause"
+    # with the music named ("I can't stop thinking about that song" is not one).
+    ("pause", re.compile(
+        r"^(?:please\s+)?(?:pause|stop|kill|turn\s+off|shut\s+off|mute)\b.{0,30}\b" + _MUSIC_WORDS + r"\b"
+        r"|\b(?:can|could|will|would)\s+you\s+(?:please\s+)?(?:pause|stop|turn\s+off|mute)\b"
+        r"(?=.*\b(?:spotify|music|song|track|playing|playback)\b)"
+        r"|(?=.*\b(?:spotify|music|song|track|playing|playback)\b).*\b(?:can|could|will|would)\s+you\s+(?:please\s+)?(?:pause|stop)\b"
+        r"|\bstop\s+playing\b|\bpause\s+(?:spotify|the\s+music|music)\b"
+        r"|^(?:pause|stop|stop\s+it|pause\s+it)$", re.I)),
+    ("resume", re.compile(
+        r"\b(?:resume|unpause|un-pause|carry\s+on\s+playing|keep\s+playing)\b"
+        r"|\bplay\s+(?:it|the\s+music|music|spotify)\s+again\b"
+        r"|\b(?:start|turn)\s+(?:the\s+)?(?:music|spotify)\s+(?:back\s+)?(?:on|up|again)\b", re.I)),
+    ("next", re.compile(r"\b(?:skip|next)\s+(?:this\s+|the\s+)?(?:song|track|one|tune)\b|^(?:skip|next)(?:\s+it)?$", re.I)),
+    ("previous", re.compile(
+        r"\b(?:previous|last)\s+(?:song|track|one)\b|\bgo\s+back\s+a\s+(?:song|track)\b"
+        r"|\bplay\s+(?:the\s+)?(?:previous|last)\s+(?:song|track|one)\b", re.I)),
+]
+
+
+def control_for(text: str) -> str | None:
+    t = re.sub(r"[?!.]+$", "", (text or "").strip().lower())
+    t = _HEAD_RE.sub("", t)
+    for name, rx in _CONTROL_RES:
+        if rx.search(t):
+            return name
+    return None
+
+
+def _player() -> dict:
+    r = sw._get(f"{sw._API}/me/player", headers=sw._h(), timeout=8.0)
+    if r.status_code == 204:
+        return {}
+    r.raise_for_status()
+    return r.json() or {}
+
+
+def _now(state: dict) -> str:
+    it = state.get("item") or {}
+    if not it:
+        return ""
+    who = ", ".join(a["name"] for a in it.get("artists", []))
+    return f"{it.get('name', '')} by {who}" if who else it.get("name", "")
+
+
+def control(action: str) -> str:
+    before = _player()
+    playing = bool(before.get("is_playing"))
+    if action == "pause":
+        if not before or not playing:
+            return "Spotify isn't playing anything — nothing to pause."
+        sw.pause()
+    elif action == "resume":
+        if playing:
+            return f"It's already playing — {_now(before)}." if _now(before) else "It's already playing."
+        if not before:
+            return "There's nothing loaded in Spotify to resume."
+        sw.resume()
+    elif action == "next":
+        if not before:
+            return "Spotify isn't playing anything to skip."
+        sw.skip()
+    elif action == "previous":
+        if not before:
+            return "Spotify isn't playing anything to go back on."
+        sw.previous()
+    time.sleep(1.0)
+    after = _player()
+    now = _now(after)
+    if action == "pause":
+        return "Paused." if not after.get("is_playing") else "I tried to pause it, but Spotify's still playing."
+    if action == "resume":
+        return (f"Back on — {now}." if now else "Back on.") if after.get("is_playing") \
+            else "I tried to resume it, but Spotify's still paused."
+    if now and now != _now(before):
+        return f"Skipped — now {now}." if action == "next" else f"Went back — {now}."
+    return "Spotify didn't move to another track."
+
+
+# ── awareness ─────────────────────────────────────────────────────────────────
+# A Spotify mention that isn't a command still reaches the LLM, whose prompt
+# lists no capabilities — so it guessed "I can't control Spotify". Handed this
+# fact (prefix recognised by backend_router's missing-fact exception).
+
+_MENTION_RE = re.compile(r"\b(?:spotify|playlists?|the\s+music|music\s+playing|what'?s\s+playing|song|track)\b", re.I)
+
+
+def awareness_context(text: str) -> str | None:
+    if not _MENTION_RE.search(text or ""):
+        return None
+    try:
+        state = _player()
+        now = _now(state)
+        status = (f"playing {now}" if state.get("is_playing") else f"paused on {now}") if now else "nothing loaded"
+    except Exception:
+        status = "status unavailable right now"
+    return ("[CAPABILITY_RESULT: Spotify — eLo controls Spotify on David's Mac himself: "
+            "launch the app, start any playlist / artist / track by name, list David's playlists, "
+            f"pause, resume, skip, go back. Right now Spotify is {status}. "
+            "Never say you can't control Spotify.]")
+
+
 def handle(text: str) -> str | None:
     """eLo's line for a Spotify request, after doing it. None when not one."""
     global _last_spotify_ts
+    act = control_for(text)
+    if act:
+        _last_spotify_ts = time.time()
+        try:
+            return control(act)
+        except Exception as e:
+            import sys
+            print(f"[spotify_play] {act} failed: {e}", file=sys.stderr)
+            return f"I couldn't {act} Spotify — it gave me an error."
     req = parse(text)
     if not req:
         return None

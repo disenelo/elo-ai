@@ -6320,6 +6320,18 @@ def _process_turn(raw: str) -> dict:
                     pass
 
 
+                # B3-SPOTIFY-001: Spotify came up but wasn't a command — tell the LLM
+                # what eLo can do and what's playing. Live 2026-10-06 it denied
+                # controlling Spotify while a playlist it started was playing.
+                if not _direct:
+                    try:
+                        from tools.spotify_play import awareness_context as _spot_aware
+                        _spot_ctx = _spot_aware(_original_raw)
+                        if _spot_ctx:
+                            _enriched = f"{_spot_ctx}\n\n{_enriched}"
+                    except Exception as _spa_err:
+                        print(f"[spotify_play] awareness error: {_spa_err}", flush=True)
+
                 if not _direct:
                     _llm_latency_ms = 0.0
                     _early_tts_sentence = [None]  # tracks first sentence spoken early
