@@ -211,7 +211,8 @@ def _find_concept(text: str) -> dict | None:
     _load_all()
     t = text.lower()
     for concept in _concepts.get("concepts", []):
-        if any(k in t for k in concept.get("related", []) + [concept.get("id", ""), concept.get("name", "").lower()]):
+        keys = concept.get("related", []) + [concept.get("id", ""), concept.get("name", "").lower()]
+        if any(_kw_match(k, t) for k in keys if k):
             return concept
     return None
 
@@ -223,7 +224,7 @@ def _find_viewpoint(text: str) -> dict | None:
     _load_all()
     t = text.lower()
     for vp in _viewpoints.get("viewpoints", []):
-        if any(k in t for k in vp.get("keywords", [])):
+        if any(_kw_match(k, t) for k in vp.get("keywords", []) if k):
             return vp
     return None
 
@@ -450,6 +451,27 @@ def retrieve_wkg(user_input: str, top_k: int = 3) -> list[dict]:
     text = user_input.strip().lower()
     results: list[dict] = []
 
+    # GRAPH-LOADER-P0: stopwords that score on every claim (fired on "Pinkie and the Brain").
+    # Only content words (≥4 chars, not stopwords) count toward WKG match score.
+    _WKG_STOPWORDS = frozenset({
+        "what", "that", "this", "with", "from", "have", "been", "will", "would",
+        "could", "should", "does", "were", "they", "them", "their", "then",
+        "than", "when", "where", "which", "while", "also", "about", "into",
+        "over", "more", "some", "your", "just", "very", "much",
+        "and", "the", "for", "are", "but", "not", "you", "all", "can",
+        "her", "was", "one", "our", "out", "how", "its", "him", "his",
+        "she", "had", "has", "may", "let",
+        "it", "is", "in", "a", "an", "at", "be", "by", "do", "go",
+        "if", "me", "my", "no", "of", "on", "or", "so", "to", "up", "us", "we",
+    })
+
+    def _wkg_word_scores(word: str, searchable: str) -> bool:
+        """Content-word whole-boundary match: word must be ≥4 chars, not a stopword,
+        and appear as a whole word in the searchable claim text."""
+        if len(word) < 4 or word in _WKG_STOPWORDS:
+            return False
+        return bool(re.search(r"\b" + re.escape(word) + r"\b", searchable))
+
     for claim in claims:
         searchable = " ".join(str(v) for v in [
             claim.get("subject",        ""),
@@ -459,7 +481,7 @@ def retrieve_wkg(user_input: str, top_k: int = 3) -> list[dict]:
             claim.get("interpretation", "") or "",
         ]).lower()
 
-        score = sum(1 for word in text.split() if word and word in searchable)
+        score = sum(1 for word in text.split() if _wkg_word_scores(word, searchable))
         if score == 0:
             continue
 
