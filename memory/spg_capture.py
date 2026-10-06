@@ -33,6 +33,11 @@ _VALID_SIGNAL_TYPES = frozenset({
     "continuity_link",
     "embodiment_transition",
     "creation_event",
+    # ROOT-4 item 6. A correction had no signal type, so 47,006 of them have
+    # never entered SPG and "changing strategy after repeated failure" had
+    # nothing to read. memory/spg_failure.py scores them; this is how they get
+    # logged.
+    "failure_event",
 })
 
 
