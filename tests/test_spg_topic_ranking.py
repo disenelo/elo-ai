@@ -76,12 +76,32 @@ def test_something_never_discussed_scores_zero(monkeypatch):
     )
 
 
-def test_an_entity_is_scored_on_its_strongest_word(monkeypatch):
+def test_a_label_mostly_made_of_his_vocabulary_outranks_one_that_brushes_it(monkeypatch):
+    """
+    WAS: scored on its strongest word alone.
+
+    That let one shared common noun carry a whole entity — on the live store
+    "Arabic Language" and "Modernist Design" outranked "eLo robot design
+    constraints", because they each touched one mid-frequency topic while the
+    robot entity touches three. Strength AND coverage now.
+    """
+    _install(monkeypatch, _graph([("robot", 0.9), ("design", 0.9),
+                                  ("constraints", 0.9)]))
+    idx = sti.topic_significance(force=True)
+
+    his = sti.score_label("robot design constraints", idx)
+    brushing = sti.score_label("Modernist Design Of Victorian Railways", idx)
+
+    assert his > brushing, (
+        "an entity that happens to contain one of his words is not one of his "
+        "threads"
+    )
+
+
+def test_a_label_with_no_recurring_words_scores_zero(monkeypatch):
     _install(monkeypatch, _graph([("robot", 0.9)]))
     idx = sti.topic_significance(force=True)
-    assert sti.score_label("eLo robot design constraints", idx) == pytest.approx(0.9), (
-        "a multi-word label must not be punished for carrying incidental words"
-    )
+    assert sti.score_label("Akan Culture", idx) == 0.0
 
 
 def test_an_empty_graph_yields_an_empty_index(monkeypatch):

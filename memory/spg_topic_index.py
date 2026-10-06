@@ -63,6 +63,7 @@ def _build() -> dict[str, float]:
         return {}
 
     out: dict[str, float] = {}
+    freq: dict[str, int] = {}
     for e in edges:
         m = _TOPIC_RE.match(str(getattr(e, "evidence", "") or ""))
         if not m:
@@ -70,6 +71,7 @@ def _build() -> dict[str, float]:
         topic = m.group(1).strip().lower()
         if not topic:
             continue
+        freq[topic] = freq.get(topic, 0) + 1
         for nid in (getattr(e, "from_node", ""), getattr(e, "to_node", "")):
             n = nodes.get(nid)
             if n is None:
@@ -77,6 +79,28 @@ def _build() -> dict[str, float]:
             sig = float(getattr(n, "significance", 0.0) or 0.0)
             if sig > out.get(topic, 0.0):
                 out[topic] = sig
+
+    # Significance alone is too blunt, and the live store shows it plainly:
+    # "world" recurs in over a thousand turns, so every entity carrying that
+    # word inherited the top score — World Literature Diversity and
+    # "Hello, World!" ranked level with eLo robot design constraints. The word
+    # recurs; those entities do not.
+    #
+    # A topic in 50 turns identifies something; a topic in 1,100 identifies
+    # almost nothing. So significance is discounted by how indiscriminate the
+    # topic is — the same reason IDF exists. Rare-and-significant wins;
+    # common-and-significant is still worth something, but not the top.
+    # Relative to the RAREST topic, not to the absolute maximum. Against the
+    # maximum, a graph where every topic recurs equally discounted all of them
+    # by 75% for no reason — caught by the unit tests, where one edge per
+    # topic made share 1.0 across the board. If nothing is more
+    # indiscriminate than anything else, nothing should be penalised.
+    if freq:
+        _lo, _hi = min(freq.values()), max(freq.values())
+        _span = (_hi - _lo) or 1
+        for topic, sig in list(out.items()):
+            share = (freq[topic] - _lo) / _span
+            out[topic] = round(sig * (1.0 - 0.75 * share), 4)
 
     _log.info("spg_topic_index: %d recurring topics from %d edges",
               len(out), len(edges))
@@ -107,7 +131,33 @@ def score_label(label: str, index: dict[str, float] | None = None) -> float:
     words = re.findall(r"[a-z][a-z'-]{2,}", str(label or "").lower())
     if not words:
         return 0.0
-    return max((idx.get(w, 0.0) for w in words), default=0.0)
+
+    hits = [idx.get(w, 0.0) for w in words if idx.get(w, 0.0) > 0.0]
+    if not hits:
+        return 0.0
+
+    # Strength AND coverage. Taking the max alone meant one shared common noun
+    # carried a whole entity: "Arabic Language" and "Modernist Design" ranked
+    # above "eLo robot design constraints" because they each touched one
+    # mid-frequency topic, while the robot entity touches three.
+    #
+    # An entity whose words are MOSTLY things David returns to is about one of
+    # his threads. An entity that happens to contain "design" is not.
+    # Mean, not max. Max let one shared common noun carry a whole entity.
+    # Coverage then asks how much of the label is his vocabulary at all.
+    #
+    # TUNED BY LOOKING AT OUTPUT, three times, and that is worth admitting:
+    # max alone put "Hello, World!" level with the robot; max x coverage put
+    # "Arabic Language" above it; this puts his own domain on top. The
+    # ORDERING is a judgement — [BUILDER CHOICE], same standing as
+    # significance_faculty._WEIGHTS.
+    #
+    # What is NOT a judgement, and is the claim worth making: the separation
+    # between zero and non-zero. 83 of 249 entities score at all; Ada
+    # Lovelace, the African Continent and Akan Culture score 0.0 while eLo's
+    # robot, projects and Unity do not. That gap is measured, not tuned.
+    coverage = len(hits) / len(words)
+    return round((sum(hits) / len(hits)) * (coverage ** 0.5), 4)
 
 
 def top_topics(n: int = 15) -> list[tuple[str, float]]:
