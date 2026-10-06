@@ -63,6 +63,23 @@ RELATIONSHIP_WEIGHT: dict[str, float] = {
     "TEMPORALLY_PRECEDES":         0.40,
     "HYPOTHESISED_AS":             0.30,
     "ASSOCIATED_WITH":             0.20,
+
+    # Added to memory/wkg/relationship_types.json by WO-WKG-GRAPH-001
+    # (28f9a76), another seat, after this map was written. The vocabulary went
+    # 19 -> 26 and these seven had no weight, so every claim using one scored
+    # as unknown. test_every_vocabulary_type_has_a_weight caught it, which is
+    # the whole reason that test asserts over the live file rather than a
+    # copy.
+    #
+    # Placed against the existing scale rather than given fresh numbers, so
+    # the ordering stays one judgement and not two:
+    "IS_A":                        0.88,   # taxonomic, just under IS (0.90)
+    "CREATED_BY":                  0.75,   # provenance — who made it is structural
+    "BELONGS_TO":                  0.70,   # membership, weaker than PART_OF (0.85)
+    "AFFORDS":                     0.65,   # what a thing permits — embodiment-bearing
+    "HAS_PROPERTY":                0.60,   # attribution, factual but mild
+    "PRECEDES":                    0.40,   # same family as TEMPORALLY_PRECEDES (0.40)
+    "CONNECTED_TO":                0.25,   # barely more committed than ASSOCIATED_WITH
 }
 
 # An unknown relationship scores as the weakest known one rather than zero.
