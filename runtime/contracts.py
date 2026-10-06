@@ -392,6 +392,9 @@ class CognitiveState:
     # ── Assembly Confidence ───────────────────────────────────────────────────
     assembly_confidence:  float = 1.0         # 0.0 if faculties partially failed
 
+    # ── Faculty Provenance (WO-PROVENANCE-001) ────────────────────────────────
+    faculty_provenance:   dict  = field(default_factory=dict)  # {faculty_name: summary_string}
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. COGNITIVEPLAN

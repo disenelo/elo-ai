@@ -68,6 +68,17 @@ _VALID_EPISTEMIC_CLASSES = frozenset({
     "dream_simulation", "inference", "hypothesis", "conversation",
 })
 
+# WO-PROVENANCE-001: source_type values — where did this vault entry originate?
+_VALID_SOURCE_TYPES = frozenset({
+    "CONVERSATION",      # direct user-eLo exchange
+    "TOOL_RESULT",       # tool execution result (Spotify, web search, etc.)
+    "WORLD_INTERACTION", # Unity game event or world-state change
+    "PERCEPTION",        # blender_state / environment observation
+    "INTERNAL",          # eLo's own internal processing (dream, ambient thought)
+    "WKG",               # WKG retrieval result
+    "UNKNOWN",           # provenance not specified (fallback)
+})
+
 
 def write_memory(
     *,
@@ -81,6 +92,7 @@ def write_memory(
     epistemic_class: str,
     source_ref: str = "",
     experience_id: str = "",
+    source_type: str = "CONVERSATION",
 ) -> str:
     """
     Write a complete tiered memory record.
@@ -101,6 +113,10 @@ def write_memory(
                           "verified" requires a non-empty source_ref — raises ValueError otherwise.
         source_ref      — for "verified" claims: file path, turn_id, or session id that
                           proves the fact. Required when epistemic_class="verified".
+        source_type     — WO-PROVENANCE-001: origin of this vault entry. One of
+                          "CONVERSATION" | "TOOL_RESULT" | "WORLD_INTERACTION" |
+                          "PERCEPTION" | "INTERNAL" | "WKG" | "UNKNOWN".
+                          Defaults to "CONVERSATION". Unknown values are stored as-is.
 
     Returns:
         Spot code string e.g. "EO·BL·2607·9"
@@ -131,10 +147,10 @@ def write_memory(
     _append_spot_index(spot, bits, summary_short, date, experience_id=experience_id)
     _write_summary_note(fname, spot, bits, summary_short, date, tags, weight, coded,
                         epistemic_class=epistemic_class, source_ref=source_ref,
-                        experience_id=experience_id)
+                        experience_id=experience_id, source_type=source_type)
     _write_deep_note(fname, spot, bits, deep_compressed, date, tags, weight,
                      epistemic_class=epistemic_class, source_ref=source_ref,
-                     experience_id=experience_id)
+                     experience_id=experience_id, source_type=source_type)
 
     # Invalidate cache so next obsidian_loader.load() picks up the new notes
     obsidian_loader.invalidate_cache()
@@ -172,6 +188,7 @@ def _write_summary_note(
     epistemic_class: str = "inference",
     source_ref: str = "",
     experience_id: str = "",
+    source_type: str = "CONVERSATION",
 ) -> None:
     tag_str  = ", ".join(f'"{t}"' for t in tags) if tags else ""
     date_str = date.strftime("%Y-%m-%d")
@@ -188,6 +205,7 @@ def _write_summary_note(
         f"date: {date_str}\n"
         f"weight: {weight}\n"
         f"epistemic_class: {epistemic_class}\n"
+        f"source_type: {source_type}\n"
         f"{src_line}"
         f"{xid_line}"
         f"tags: [{tag_str}]\n"
@@ -211,6 +229,7 @@ def _write_deep_note(
     epistemic_class: str = "inference",
     source_ref: str = "",
     experience_id: str = "",
+    source_type: str = "CONVERSATION",
 ) -> None:
     tag_str  = ", ".join(f'"{t}"' for t in tags) if tags else ""
     date_str = date.strftime("%Y-%m-%d")
@@ -225,6 +244,7 @@ def _write_deep_note(
         f"date: {date_str}\n"
         f"weight: {weight}\n"
         f"epistemic_class: {epistemic_class}\n"
+        f"source_type: {source_type}\n"
         f"{src_line}"
         f"{xid_line}"
         f"tags: [{tag_str}]\n"
