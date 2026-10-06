@@ -79,6 +79,13 @@ def record_failure(capability_id: str, context: str = "") -> None:
 
     if streak >= FAILURE_THRESHOLD:
         _add_candidate(capability_id, streak, context)
+        # WO-UNLEARN-001: flag obsolete lessons when accumulated failures
+        # overwhelm prior successes on this capability
+        try:
+            from self_improvement.unlearn import check_and_flag as _unlearn_check
+            _unlearn_check(capability_id)
+        except Exception:
+            pass
 
 
 def record_success(capability_id: str) -> None:
