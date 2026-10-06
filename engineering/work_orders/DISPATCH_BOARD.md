@@ -1,3 +1,46 @@
+## BOARD STATE UPDATE — 2026-10-06 (§71 — BUILDER SCAN — IS-ELO GAP #10 CLOSED)
+
+**Builder:** Claude (session b15c1e7a resumed). KEEP GOING MASTER PROTOCOL.
+**Commit:** df907d3
+**Test suite:** 22 new tests added (8 unlearn + 11 metacognition + 1 in existing suite) — all pass.
+
+### WOs CLOSED THIS SESSION
+
+| WO | What | Files | Tests |
+|---|---|---|---|
+| WO-UNLEARN-001 | `self_improvement/unlearn.py` NEW — flag_obsolete/deprioritise/check_and_flag + unlearn hook in capability_learning.py | `self_improvement/unlearn.py`, `runtime/capability_learning.py`, `tests/test_wo_unlearn_001.py` | 8/8 |
+| WO-METACOGNITION-001 | `faculties/metacognition/metacognition.py` NEW — confidence scoring, uncertainty flagging, reasoning error detection | `faculties/metacognition/metacognition.py`, `faculties/metacognition/__init__.py`, `tests/test_wo_metacognition_001.py` | 11/11 |
+| WO-VAULT-POOL-FIX-001 | VERIFIED DONE — already implemented at server.py:6511 (`_vault_response = locals().get("_elo_raw") or response`) | No changes | 19/19 |
+| WO-VAULT-EPISTEMIC-CLASS-ENFORCE-001 | VERIFIED DONE — already implemented at vault_layer.py:108 | No changes | 6/6 |
+| WO-W63-CAL-REASON-001 | VERIFIED DONE — already implemented at spine.py:519-520 | No changes | 1/1 |
+
+### BLOCKED
+
+| WO | Blocker |
+|---|---|
+| WO-VAULT-CLEAN-001 | Auto-mode classifier blocks writes to `self/corrections_ledger.jsonl`. Script ready. David must run `python3 /private/tmp/claude-501/-Users-Disenelo-eLo-Planet/b15c1e7a-c23b-4b7b-b8b4-6858ae6e5a6c/scratchpad/clean_vault.py` or add a Bash permission rule. |
+| WO-PRESENCE-ECOLOGY-001 | QUEUE — Design lane (DesktopBuddy.cs). Out of Builder scope. |
+| WO-PRESENCE-RESTORE-001 | QUEUE — Design lane (DesktopBuddy.cs). Out of Builder scope. |
+
+### BUILDER LANE STATE
+
+| Item | Status |
+|---|---|
+| DOING | ✅ EMPTY |
+| IS-ELO Gap #10 (unlearn + metacognition) | ✅ CLOSED — commit df907d3 |
+| WO-KNOWLEDGE-PERSIST-001 expressed | ❌ NOT SERVING — 8b model capacity (from §70) |
+| WO-WKG-LIVE-WRITE-001 content-specific | ⏳ PENDING BOARD WO (from §70) |
+| QUEUE Python Builder WOs | ✅ EMPTY — only Design-lane WOs remain in QUEUE |
+
+### BOARD DECISIONS STILL REQUIRED (from §70 — unchanged)
+
+1. **Model routing:** llama3.1:8b → larger model OR post-process voice rewrite layer WO.
+2. **WO-WKG-LIVE-WRITE-001 content-specific:** Board spec for semantic entity extraction.
+
+Result cards: `engineering/work_orders/board_review/FROM_BUILDER_WO-UNLEARN-001_result.md` + `…WO-METACOGNITION-001_result.md` + `…WO-VAULT-POOL-FIX-001_result.md` + `…WO-VAULT-EPISTEMIC-CLASS-ENFORCE-001_result.md` + `…WO-W63-CAL-REASON-001_result.md`.
+
+---
+
 ## BOARD STATE UPDATE — 2026-09-10 (§70 — BUILDER SCAN — WKG CORRECTION + CLEAN STATE)
 
 **Builder:** Claude (new session). KEEP GOING MASTER PROTOCOL. READ → RECONCILE → SELECT → EXECUTE → EVIDENCE → SCAN AGAIN.
