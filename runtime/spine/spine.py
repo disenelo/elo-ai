@@ -1093,16 +1093,16 @@ def run(
             try:
                 from runtime.faculty_health import mark_recovered as _spg_recover
                 _spg_recover("spg")
-            except Exception:
-                pass
+            except Exception as _spg_rec_e:
+                _log.warning("SPG mark_recovered import failed (non-blocking): %s", _spg_rec_e)
         except Exception as _spg_rel_err:
             _log.warning("SPG relationship tap failed (non-blocking): %s", _spg_rel_err)
             # WO-FACULTY-HEALTH-SPG-SIGNAL-001: tap failure → degrade SPG faculty
             try:
                 from runtime.faculty_health import mark_degraded as _spg_mark_deg
                 _spg_mark_deg("spg", f"relationship tap: {_spg_rel_err}")
-            except Exception:
-                pass
+            except Exception as _spg_deg_e:
+                _log.warning("SPG mark_degraded import failed (non-blocking): %s", _spg_deg_e)
     except Exception as e:
         _log.warning("relationship_faculty FAILED: %s", e)
 
@@ -1270,6 +1270,42 @@ def run(
         }
     except Exception as _tf_err:
         _log.warning("temporal_faculty FAILED: %s", _tf_err)
+
+    # ── Knowledge Faculty — domain context injection (psychology + social) ───────
+    _knowledge_ctx: str = ""
+    try:
+        from faculties.knowledge import (
+            is_psychology_trigger as _is_psych,
+            psychology_context_block as _psych_block,
+            is_social_dynamics_trigger as _is_social,
+            social_dynamics_context_block as _social_block,
+        )
+        _kn_parts: list[str] = []
+        if _is_psych(raw):
+            _kn_block = _psych_block(raw)
+            if _kn_block:
+                _kn_parts.append(_kn_block)
+        if _is_social(raw):
+            _kn_block = _social_block(raw)
+            if _kn_block:
+                _kn_parts.append(_kn_block)
+        _knowledge_ctx = "\n".join(_kn_parts)
+    except Exception as _kn_err:
+        _log.warning("knowledge_faculty FAILED (non-blocking): %s", _kn_err)
+
+    # ── Imagination Faculty — wired for Executive hypothesis injection ────────
+    _imagination_ctx: str = ""
+    try:
+        from faculties.imagination.imagination_faculty import simulate as _imagine_simulate, context_block as _imagine_ctx
+        # Imagination triggers on "what if", "imagine", "could" patterns — Executive
+        # decides whether to use simulations. Only call when curiosity is elevated.
+        _curiosity_score = getattr(_cognitive_state, "curiosity_score", 0.0) if _cognitive_state else 0.0
+        if _curiosity_score > 0.5 or any(kw in raw.lower() for kw in ("what if", "imagine", "suppose", "hypothetical")):
+            _sim_results = _imagine_simulate(raw, max_simulations=2)
+            if _sim_results:
+                _imagination_ctx = _imagine_ctx(_sim_results)
+    except Exception as _imag_err:
+        _log.warning("imagination_faculty FAILED (non-blocking): %s", _imag_err)
 
     # ── Executive Faculty — ONE DECISION ─────────────────────────────────────
     # WO-106: pass assembled state so the Executive decides from real context
@@ -1514,16 +1550,16 @@ def run(
             try:
                 from runtime.faculty_health import mark_recovered as _spg_er_recover
                 _spg_er_recover("spg")
-            except Exception:
-                pass
+            except Exception as _spg_er_rec_e:
+                _log.warning("SPG mark_recovered (er) import failed (non-blocking): %s", _spg_er_rec_e)
         except Exception as _spg_er_err:
             _log.warning("SPG execution_report tap failed (non-blocking): %s", _spg_er_err)
             # WO-FACULTY-HEALTH-SPG-SIGNAL-001: tap failure → degrade SPG faculty
             try:
                 from runtime.faculty_health import mark_degraded as _spg_er_deg
                 _spg_er_deg("spg", f"execution_report tap: {_spg_er_err}")
-            except Exception:
-                pass
+            except Exception as _spg_er_deg_e:
+                _log.warning("SPG mark_degraded (er) import failed (non-blocking): %s", _spg_er_deg_e)
     except Exception as _er_err:
         _log.warning("build_execution_report FAILED: %s", _er_err)
 

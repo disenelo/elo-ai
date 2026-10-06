@@ -356,6 +356,22 @@ def query_spg_entities(turn_text: str, ccm: dict | None = None) -> list[str]:
             if filtered:
                 return filtered
 
+    # Entity quality gate: drop entities with no attached claims.
+    # A ghost entity (no claims) has no retrievable knowledge — returning it
+    # fills the prompt with noise. This also catches test-only or stale entities
+    # that were created but never populated.
+    try:
+        from runtime.wkg_faculty import all_claims as _gate_all_claims
+        _gate_all = _gate_all_claims()
+        _claim_owners: set[str] = set()
+        for _c in _gate_all:
+            _claim_owners.add(_c.get("subject_entity_id", ""))
+            _claim_owners.add(_c.get("object_entity_id", ""))
+        _claim_owners.discard("")
+        relevant_entity_ids = [eid for eid in relevant_entity_ids if eid in _claim_owners]
+    except Exception as _cg_err:
+        _log.debug("claim-gate failed (non-fatal): %s", _cg_err)
+
     return relevant_entity_ids[:10]  # cap to prevent over-retrieval
 
 

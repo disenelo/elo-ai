@@ -1,0 +1,65 @@
+# BUILDER 3 — SESSION START
+*Updated: 2026-10-06 by Board — COMPLETE QUEUE*
+
+---
+
+## STATUS: WAITING FOR DAVID VERIFICATION
+
+Your tools are built. The capability demo ran. GO has been issued (`FROM_ARCHITECT_2026-10-06_TEST-WINDOW-GO.md`).
+
+**No re-run needed.** David will run the verification turns in his next session. Board will put the turn list in front of him.
+
+---
+
+## WHILE YOU WAIT — outstanding items
+
+### 1. Clean your outbox
+
+All TO_BOARD files from 2026-10-06 have been read by the Board. Archive them to `DONE/`:
+- `TO_BOARD_2026-10-05.md`
+- `TO_BOARD_2026-10-06_ROOT7_AND_OWNERSHIP.md`
+- `TO_BOARD_2026-10-06_SPEC_B1_DIRECT_INTERCEPTS.md`
+- `TO_BOARD_2026-10-06_SPEC_B1_NAMES_TO_RESEARCH.md`
+- `TO_BOARD_2026-10-06_SPEC_B1_SYSTEM_RESULTS.md`
+- `TO_BOARD_2026-10-06_SPEC_FOR_BUILDER1_capabilities.md`
+- `TO_BOARD_2026-10-06_TEST-WINDOW-REQUEST.md`
+- `TO_BOARD_2026-10-06_TEST_WINDOW_REQUEST.md`
+- `TO_BOARD_2026-10-06_VAULT_SAVE_FINDINGS.md`
+
+### 2. Confirm no uncommitted changes to protected files
+
+Check git status. If any uncommitted changes exist in `server.py`, `spine.py`, or `backend_router.py`, disclose to Board immediately. Those files belong to Builder 1 — your changes must be committed and Builder 1 takes ownership.
+
+### 3. Research ledger — epistemic class fix (after Builder 1 wires it)
+
+Builder 1 is fixing the epistemic class case mismatch (`_WKG_GATE_EPISTEMIC` uppercase vs vault lowercase). Once that lands, research claims (`"verified"` class) will write to WKG cleanly. No action on your side — just re-run your research tests after Builder 1's commit confirms fix.
+
+### 4. Show Brain — confirm it works end-to-end
+
+`tools/brain_display.py` + `capabilities/alexa_ingress.py` — verify these are committed and the acceptance turn "show me your brain" is in the verification list. It is — row 12 of the verification table.
+
+---
+
+## YOUR COMPLETE BUILT LIST (what counts as done after David verifies)
+
+| WO | Description | Status |
+|---|---|---|
+| B3-SPOTIFY-001 | Full Spotify control (play/pause/resume/skip/status) | Built; awaiting David verification |
+| WO-RESEARCH-001 | Web research + ledger + recall on repeat question | Built; awaiting David verification |
+| ROOT-7 B3 half | capability_status.py + capabilities_block() + 5 tests | Built, committed `995d48b`; waiting for Builder 1 to wire |
+| Tool fixes | Weather, reminders, calendar, show_brain | Built; awaiting David verification |
+
+---
+
+## STANDING RULES
+
+- No tests against live server (port 5050) during active David session — period
+- No whole-repo `git stash` — `git add <your paths>` only
+- Do NOT touch `server.py`, `spine.py`, `backend_router.py` — spec to Builder 1
+- File ownership: `tools/web_search.py`, `tools/spotify_web.py`, `tools/spotify_agent.py`, `tools/spotify_play.py`, `tools/research.py`, `tools/alexa_agent.py`, `tools/brain_display.py`, `tools/capability_status.py`, `capability_registry.py`, `capabilities/alexa_ingress.py`, `capabilities/alexa/`, `tests/test_b3_*.py`, `data/research/ledger.json`
+
+## RESULTS
+
+`DONE/FROM_BUILDER3_<date>_<topic>.md` + `outbox.json`. Board reads both.
+
+*Board · 2026-10-06*

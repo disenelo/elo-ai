@@ -452,7 +452,16 @@ def get_relationship_profile(entity_id: str, *, max_facts: int = 12) -> str:
         and c.get("confidence", 0) >= _RELATIONSHIP_MIN_CONFIDENCE
         and not c.get("contradicted_by")
     ]
-    subject_claims.sort(key=lambda c: (-c.get("confidence", 0), -c.get("recorded_at", 0)))
+    # Sort: highest confidence first; within same confidence, newest recorded_at
+    # first. Claims with no recorded_at (None) sort LAST — `-None→0` would
+    # incorrectly rank them before any real timestamp (~1.7e9), so map None to
+    # -inf so the negation becomes +inf and they fall to the end.
+    subject_claims.sort(
+        key=lambda c: (
+            -c.get("confidence", 0),
+            -(c.get("recorded_at") if c.get("recorded_at") is not None else float("-inf")),
+        )
+    )
 
     if not subject_claims:
         return ""
@@ -483,6 +492,9 @@ def get_relationship_profile(entity_id: str, *, max_facts: int = 12) -> str:
         obj_ent = entities_index.get(obj_id, {})
         obj_label = (obj_ent.get("label") or "").strip()
         obj_desc = (obj_ent.get("description") or "").strip()
+        # Skip deprecated entities (retired test artefacts, superseded entries)
+        if obj_ent.get("deprecated"):
+            continue
         # Skip UUID-only labels (entity not resolved)
         if not obj_label or _UUID_RE.match(obj_label):
             continue
