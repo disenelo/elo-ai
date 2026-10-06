@@ -2148,6 +2148,16 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
             "location_set",
         )
 
+    # ── Not built (registry future) → honest no — B3 2026-10-06
+    try:
+        from tools.capability_status import not_built_answer as _nba
+        _nb = _nba(user_input)
+        if _nb:
+            _last_direct_result = _nb
+            return _nb, "not_built"
+    except Exception as _nbe:
+        _logger.debug("not-built intercept failed: %s", _nbe)
+
     # ── Messages — B3 2026-10-06: the demo's message request got mock filler, and
     # send_message said "Sent" whatever happened. Registry: confirm before sending.
     try:

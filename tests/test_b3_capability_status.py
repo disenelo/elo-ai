@@ -50,3 +50,17 @@ def test_results_are_recorded_newest_last():
     last = cs.last_results()[-2:]
     assert [r["tool"] for r in last] == ["spotify", "web_search"]
     assert last[0]["success"] is False and last[0]["error"] == "nothing playing"
+
+
+@pytest.mark.parametrize("t", ["can you open a scene in Blender and render it", "can you connect to your robot body",
+                               "what does the robot camera see", "can you start the heat press",
+                               "can you run a shell command for me"])
+def test_not_built_is_an_honest_no(t, monkeypatch):
+    import runtime.capabilities.registry  # noqa: F401  (real registry: these are future)
+    line = cs.not_built_answer(t)
+    assert line and ("Not yet" in line or "Can't do that one yet" in line)
+
+
+@pytest.mark.parametrize("t", ["I love Blender", "my robot vacuum is broken", "what's the weather like"])
+def test_mentions_are_not_refused(t):
+    assert cs.not_built_answer(t) is None

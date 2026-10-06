@@ -21,6 +21,7 @@ API (read by Builder 1 — this module never touches the prompt):
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import threading
 import time
@@ -208,3 +209,43 @@ def capabilities_block(max_chars: int = 1600) -> str:
             "Not right now: " + "; ".join(off) + "\n"
             "Never say you can't do something you CAN.")
     return text if len(text) <= max_chars else text[:max_chars - 1] + "…"
+
+
+# ── honest no for what isn't built ────────────────────────────────────────────
+# Capability demo 2026-10-06: "can you open a scene in Blender and render it" →
+# "Shall I…?"; "what does the robot camera see" → an invented description; "can you
+# start the heat press" → filler. Registry marks these future (not built).
+_NOT_BUILT_NOUNS = {
+    "blender": r"\bblender\b", "unity": r"\bunity\b", "substance": r"\bsubstance\b",
+    "robot_camera": r"\brobot(?:'s)?\s+camera\b", "robot_motion": r"\brobot\b.{0,30}\b(?:wave|walk|move)\b",
+    "robot_runtime": r"\brobot\s+body\b|\byour\s+robot\b|\bphysical\s+(?:elo|body)\b",
+    "3d_printer": r"\b3d\s*print", "plotter": r"\bplotter\b", "heat_press": r"\bheat\s*press\b",
+    "laser": r"\blaser(?:\s*cutter)?\b", "email": r"\b(?:e-?mails?|inbox)\b",
+    "terminal": r"\b(?:terminal|shell\s+command)\b", "camera": r"\b(?:the|your)\s+camera\b",
+    "sleep": r"\b(?:put|send)\s+(?:the\s+)?mac\s+to\s+sleep\b|\bsleep\s+the\s+mac\b",
+}
+_ASK_RE = re.compile(r"\b(?:can|could|will|would)\s+you\b|\bare\s+you\s+able\b|^(?:please\s+)?(?:open|start|run|connect|"
+                     r"render|print|check|send|make|take|put|cut|plot|engrave)\b|\bwhat\s+does\b.{0,30}\bsee\b|"
+                     r"\bconnect\s+to\b", re.I)
+_no_i = -1
+
+
+def not_built_answer(text: str) -> str | None:
+    """'Not yet — …' when the request clearly targets a capability the registry
+    marks as not built; None otherwise (built tools and chat untouched)."""
+    global _no_i
+    t = (text or "").strip()
+    if not _ASK_RE.search(t):
+        return None
+    caps = get_active_capabilities()
+    for cid, pat in _NOT_BUILT_NOUNS.items():
+        c = caps.get(cid)
+        if c and c["status"] != "ACTIVE" and re.search(pat, t, re.I):
+            _no_i = (_no_i + 1) % 2
+            lead = ("Not yet — " if _no_i == 0 else "Can't do that one yet — ")
+            spoken = {"robot_runtime": "my robot body", "robot_motion": "my robot body",
+                      "robot_camera": "the robot's camera", "sleep": "sleeping the Mac",
+                      "camera": "a camera", "terminal": "the terminal"}.get(cid, c["name"])
+            return f"{lead}{spoken[0].upper() + spoken[1:]} isn't connected to me" + (
+                f" ({c['reason']})." if c.get("reason") and c["reason"] != "not built yet" else ".")
+    return None
