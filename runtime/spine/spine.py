@@ -1890,6 +1890,34 @@ def assemble_cognitive_state(
     except Exception as _sim_err:
         _log.warning("simulation_tracker unavailable (non-fatal): %s", _sim_err)
 
+    # WO-DEGRADATION-001: faculty result validation gate
+    # Detect which critical faculties produced None/empty results this turn
+    # and set degradation flags on CognitiveState.
+    _failed_faculties: list[str] = []
+    _mem_unavailable  = False
+    _wkg_unavailable  = False
+    # high_priority_memories comes from attention; define locally for gate + reasoning_tier
+    _high_priority_memories = (attention or {}).get("high_priority_memory", [])
+    try:
+        # Memory unavailable: working_memory is None AND high_priority_memories is empty/None
+        _deg_wm = working_memory is None
+        _deg_hp = not bool(_high_priority_memories)
+        if _deg_wm and _deg_hp:
+            _mem_unavailable = True
+            _failed_faculties.append("memory")
+        # WKG unavailable: wkg_context is None or empty
+        if not _wkg_context:
+            _wkg_unavailable = True
+            _failed_faculties.append("wkg")
+        # Self-model unavailable
+        if _self_model is None:
+            _failed_faculties.append("self_model")
+        # Attention unavailable: no attention state assembled
+        if _attn_state is None and not attention:
+            _failed_faculties.append("attention")
+    except Exception as _deg_err:
+        _log.warning("WO-DEGRADATION-001: validation gate error (non-fatal): %s", _deg_err)
+
     # D1 ruling (Card 0035): intent_signal is the COGNITIVE intent that the
     # Executive decides on — sourced from core/memory_relevance_filter (attention_model["intent"]).
     # The intent_engine's router hint travels as `capability_hint`, elsewhere.
@@ -1936,7 +1964,7 @@ def assemble_cognitive_state(
         # WO-REASONING-001: tag the depth of evidence-based reasoning available this turn
         reasoning_tier=(
             "retrieval_only" if _wkg_context else
-            "single_step" if high_priority_memories else
+            "single_step" if _high_priority_memories else
             "generative"
         ),
         # WO-CONVERSATION-001: last eLo response from the previous turn
@@ -1949,6 +1977,10 @@ def assemble_cognitive_state(
         perception_changed=_perception_result.get("perception_changed", False),
         # WO-SIMULATION-001: pending vs executed actions from simulation_tracker
         **_sim_fields,
+        # WO-DEGRADATION-001: faculty result validation flags
+        memory_unavailable=_mem_unavailable,
+        wkg_unavailable=_wkg_unavailable,
+        failed_faculties=tuple(_failed_faculties),
     )
 
 

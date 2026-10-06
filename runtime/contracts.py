@@ -417,6 +417,12 @@ class CognitiveState:
     pending_actions:      tuple = field(default_factory=tuple)   # intended but not yet run
     executed_actions:     tuple = field(default_factory=tuple)   # completed this session
 
+    # ── Degradation Flags (WO-DEGRADATION-001) ────────────────────────────────
+    # Set by spine.py when a critical faculty fails; read by Executive and prompt builder.
+    memory_unavailable:   bool  = False  # True if vault/memory faculty returned None or raised
+    wkg_unavailable:      bool  = False  # True if WKG graph was unreachable or empty this turn
+    failed_faculties:     tuple = field(default_factory=tuple)  # names of faculties that failed
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. COGNITIVEPLAN

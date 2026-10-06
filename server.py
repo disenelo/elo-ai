@@ -5352,6 +5352,23 @@ def _process_turn(raw: str) -> dict:
                     )
         except Exception:
             pass
+        # WO-DEGRADATION-001: inject degradation flags from CognitiveState into system prompt
+        try:
+            _deg_mem = getattr(_cs, "memory_unavailable", False)
+            _deg_wkg = getattr(_cs, "wkg_unavailable", False)
+            _deg_fac = getattr(_cs, "failed_faculties", ())
+            if _deg_mem:
+                system = system + (
+                    "\n\n[SYSTEM — MEMORY_UNAVAILABLE] Memory retrieval returned nothing this turn. "
+                    "Do NOT claim to remember or recall. Say what you think but don't invent past conversations."
+                )
+            if _deg_wkg:
+                system = system + (
+                    "\n\n[SYSTEM — WKG_UNAVAILABLE] World knowledge graph was empty or unreachable. "
+                    "Respond from your current context only; do not cite prior knowledge about David."
+                )
+        except Exception:
+            pass
         # P0-X: constitutional identity — name / with / core_values / invariants from state
         system = system + "\n\n" + _self_identity_block(_elo_self)
         # WO-052B: narrative identity — eLo's autobiography across embodiments
