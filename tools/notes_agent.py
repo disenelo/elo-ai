@@ -28,14 +28,26 @@ def _run(script: str) -> str:
 
 # ── actions ───────────────────────────────────────────────────────────────────
 
+def _esc(text: str) -> str:
+    """AppleScript string escape — backslashes first, then quotes (the other
+    order turned every \" into \\" and broke titles with quotes)."""
+    return text.replace("\\", "\\\\").replace('"', '\\"')
+
+
 def create_note(title: str, body: str = "") -> str:
-    t = title.replace('"', '\\"').replace("\\", "\\\\")
-    b = body.replace('"', '\\"').replace("\\", "\\\\")
+    """Make the note, then check Notes has it. B3 2026-10-06: this used to say
+    'Note created' whatever AppleScript did."""
+    t, b = _esc(title), _esc(body or title)
+    count = f'tell application "Notes" to return count of (notes of default account whose name is "{t}")'
+    before = _run(count)
     _run(f'''
         tell application "Notes"
             make new note at default account with properties {{name:"{t}", body:"{b}"}}
         end tell
     ''')
+    after = _run(count)
+    if not (after.isdigit() and before.isdigit() and int(after) > int(before)):
+        raise RuntimeError("Notes didn't make it")
     return f"Note created: '{title}'"
 
 
@@ -119,7 +131,7 @@ def agent(query: str) -> str:
     # create
     if re.search(r'\b(?:make|create|add|write|new)\b', q):
         m = re.search(
-            r'(?:make|create|add|write|new)\s+(?:a\s+)?note\s+(?:called|named|titled|about|saying|:)?\s*(.+)',
+            r'(?:make|create|add|write|new)\s+(?:a\s+)?note\s*(?:called|named|titled|about|saying|that|:)?\s*(.+)',
             query, re.IGNORECASE,
         )
         title = m.group(1).strip().strip('"\'') if m else query.strip()

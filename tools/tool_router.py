@@ -316,7 +316,6 @@ _INTENT_MAP = [
         r"\bremember\s+(?:this|that|it)\b",
         r"\bsave\s+(?:this|that|it)\b",
         r"\bnote\s+(?:this|that|it|down)\b",
-        r"\bmake\s+a\s+note\b",
         r"\badd\s+(?:this|that)\s+to\s+(?:my\s+)?(?:vault|memory|notes?|obsidian)\b",
         r"\bwrite\s+(?:this|that)\s+down\b",
         r"\bsave\s+(?:to\s+)?(?:my\s+)?(?:vault|memory|notes?|obsidian)\b",
@@ -2148,6 +2147,27 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
             f"Acknowledge warmly and confirm you'll use {new_city} for weather from now on.]\n\n{user_input}",
             "location_set",
         )
+
+    # ── Apple Notes: create — B3 2026-10-06: "make a note: X" reached the Obsidian
+    # agent and the mock backend answered (capability demo). Registry: notes =
+    # Apple Notes ("make a note, new note, apple notes, add note"); "my notes" stays
+    # Obsidian. The note existing IS the answer.
+    _nm = re.match(r"^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?(?:make|create|add|write|start)\s+"
+                   r"(?:a\s+|an\s+)?(?:new\s+)?(?:apple\s+)?note\b\s*(?:called|named|titled|about|saying|that|:)?\s*(.*)$",
+                   user_input.strip(), re.IGNORECASE)
+    if _nm:
+        _title = _nm.group(1).strip().strip('"\'\u201c\u201d').rstrip(".!?")
+        if not _title:
+            _last_direct_result = "What should the note say?"
+            return _last_direct_result, "notes"
+        try:
+            from tools.notes_agent import create_note as _mk_note
+            _mk_note(_title)
+            _last_direct_result = f"Made a note: \u201c{_title}\u201d."
+        except Exception as _nte:
+            _logger.debug("notes create failed: %s", _nte)
+            _last_direct_result = "I couldn't make that note — Notes didn't take it."
+        return _last_direct_result, "notes"
 
     # ── Clipboard read — B3 2026-10-06: the tool read it; the LLM then said "I don't
     # have that recorded" (capability demo). What's on the clipboard IS the answer.
