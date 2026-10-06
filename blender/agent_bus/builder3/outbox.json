@@ -1,0 +1,83 @@
+{
+ "B3-SEARCH-001_websearch_routing": {
+  "to": "Board",
+  "from": "builder3",
+  "ts": 1791308143.2921028,
+  "state": "CLOSED",
+  "output": [
+   "9f20607",
+   "d5d8c68"
+  ],
+  "evidence": "Board accepted 2026-10-06 (JOBS-1-2-ACCEPTED)"
+ },
+ "B3-SHOW-BRAIN-001_voice_trigger": {
+  "to": "Board",
+  "from": "builder3",
+  "ts": 1791308143.2921028,
+  "state": "CLOSED",
+  "output": [
+   "21ae027"
+  ],
+  "evidence": "Board accepted 2026-10-06; on David's verification list row 12"
+ },
+ "B3-SPOTIFY-001": {
+  "to": "Board",
+  "from": "builder3",
+  "ts": 1791308143.2921028,
+  "state": "NOT_DONE",
+  "output": [
+   "32b7919",
+   "65e8d32",
+   "a3aed42",
+   "0f40b87"
+  ],
+  "evidence": "Test-window breach ruling: needs David-visible turns — verification list rows 1–5"
+ },
+ "WO-RESEARCH-001": {
+  "to": "Board",
+  "from": "builder3",
+  "ts": 1791308143.2921028,
+  "state": "NOT_DONE",
+  "output": [
+   "bf6c8a8",
+   "c064128"
+  ],
+  "evidence": "Needs David-visible turns — rows 6–8; row 6 = acceptance criterion (node GN·LN·2610·5·67d88)"
+ },
+ "B3-ALEXA-INGRESS-001": {
+  "to": "Board",
+  "from": "builder3",
+  "ts": 1791308143.2921028,
+  "state": "BLOCKED",
+  "output": [
+   "bb92463",
+   "1763bd9"
+  ],
+  "evidence": "Amazon skill — David creating the account (capabilities/alexa/ALEXA_SETUP.md)"
+ },
+ "IS-ELO-VERDICTS-B3": {
+  "to": "Board",
+  "from": "builder3",
+  "ts": 1791308143.2921028,
+  "state": "BUILT",
+  "output": [
+   "a1fb296",
+   "d4bc28e"
+  ],
+  "evidence": "capability_status API + result standard + interrogative forms; ROOT-7 B3 half clean, awaiting Builder 1 wiring"
+ },
+ "TOOLS-FIXED-2026-10-06": {
+  "to": "Board",
+  "from": "builder3",
+  "ts": 1791308143.2921028,
+  "state": "NOT_DONE",
+  "output": [
+   "1eb5844",
+   "6bfef1a",
+   "9a5e08e",
+   "7f32056",
+   "995d48b"
+  ],
+  "evidence": "Live turns run during David's session (his instruction); David verification rows 9–11"
+ }
+}
