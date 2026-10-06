@@ -38,7 +38,7 @@ _SAVE_TRIGGERS = [
     r"\bremember\s+(?:this|that|it)\b",
     r"\bsave\s+(?:this|that|it)\b",
     r"\bnote\s+(?:this|that|it|down)\b",
-    # "make a note" is Apple Notes (registry: notes) — B3 2026-10-06
+    r"\bmake\s+a\s+note\b",
     r"\badd\s+(?:this|that)\s+to\s+(?:my\s+)?(?:vault|memory|notes?|obsidian)\b",
     r"\bkeep\s+(?:this|that)\b",
     r"\bstore\s+(?:this|that)\b",
