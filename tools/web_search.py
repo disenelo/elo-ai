@@ -31,6 +31,8 @@ last_kg: dict = {}
 last_spelling_fix: str = ""
 # WO-RESEARCH-001: Google's direct answer to a question ("when did …", "how tall …").
 last_answer_box: dict = {}
+# Wikipedia's one-line description of the last article ("Given name", "American actor").
+last_wiki_description: str = ""
 
 
 @dataclass
@@ -473,6 +475,8 @@ def wiki_summary(name: str) -> SearchResult | None:
                 print(f"[web_search] wikipedia {resp.status_code} for {name!r}", file=sys.stderr)
             return None
         data = resp.json()
+        global last_wiki_description
+        last_wiki_description = data.get("description", "") or ""
         if data.get("type") == "disambiguation" or not data.get("extract"):
             return None
         return SearchResult(

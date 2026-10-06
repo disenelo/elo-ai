@@ -72,6 +72,9 @@ _FACTUAL_RE = re.compile(
     r"|who\s+(?:invented|wrote|created|founded|discovered|designed|directed|painted|built)\s+(?P<i>.+)"
     r"|who\s+was\s+(?P<j>.+)"
     r"|how\s+(?:many|much|tall|old|far|big|long|deep|fast|heavy)\s+(?P<k>.+)"
+    # David L3 2026-10-06: a name he doesn't know is something to figure out, not
+    # a dead end ("who is / what is <Name>" — research, see _answer_name).
+    r"|who(?:'s|\s+is|\s+are)\s+(?P<l>[A-Z][\w\-']*(?:\s+\S+)*)"
     r")$",
 )
 _PERSONAL_RE = re.compile(r"\b(?:i|me|my|mine|we|us|our|you|your|yours|elo|david|k-7|k7|chunk)\b", re.I)
@@ -120,6 +123,8 @@ def factual_question(text: str) -> tuple[str, str] | None:
         return None
     if group in _FACT_GROUPS:
         return ("fact", re.sub(r"^(?:is|are|was|were)\s+", "", topic))
+    if group in ("d", "l"):
+        return ("name", topic)
     return ("define", re.sub(r"^(?:a|an|the)\s+", "", topic, flags=re.I))
 
 
@@ -189,24 +194,36 @@ def _key_facts(text: str) -> set[str]:
     return nums | names
 
 
+def _names(text: str) -> set[str]:
+    return {w.lower() for w in re.findall(r"(?<=\s)[A-Z][a-z]{2,}", text)}
+
+
+def _nums(text: str) -> set[str]:
+    return {n.replace(",", "") for n in re.findall(r"\d[\d,]*(?:\.\d+)?", text)}
+
+
 def _corroborating(sentence: str, src: str, results: list) -> list[str]:
-    """Other domains that repeat this sentence's key facts (≥2, ≥60% of them),
-    or share most of its content (≥6 words, ≥50% of the shorter text)."""
-    facts = _key_facts(sentence)
+    """Other domains that independently state the same thing:
+      dated / numeric claim → every number (date, year, height) appears there,
+                              plus at least one shared name;
+      descriptive claim     → ≥2 shared names and ≥4 shared content words,
+                              or ≥6 shared words covering half the shorter text."""
+    nums, names = _nums(sentence), _names(sentence)
     words = set(ws._content_words(sentence))
     out = []
     for r in results:
         if _host(r.url or "") == _host(src) or not ws._usable_source(r.url or ""):
             continue
         text = f"{r.title} {r.snippet}"
-        if len(facts) >= 2:
-            theirs = _key_facts(text) | set(ws._content_words(text))
-            if len(facts & theirs) / len(facts) >= 0.6:
+        their_words = set(ws._content_words(text))
+        their_names = _names(" " + text) | their_words
+        if nums:
+            if nums <= _nums(text) and (not names or names & their_names):
                 out.append(r.url)
-                continue
-        hay = set(ws._content_words(text))
-        shared = words & hay
-        if len(shared) >= 6 and len(shared) / max(1, min(len(words), len(hay))) >= 0.5:
+            continue
+        shared = words & their_words
+        if (len(names & their_names) >= 2 and len(shared) >= 4) or \
+                (len(shared) >= 6 and len(shared) / max(1, min(len(words), len(their_words))) >= 0.5):
             out.append(r.url)
     return list(dict.fromkeys(out))
 
@@ -244,7 +261,7 @@ def record(topic: str, picks: list[tuple[str, str]], results: list) -> list[Rese
             if c["status"] != "KNOWLEDGE" and STATUSES.index(new) > STATUSES.index(c["status"]):
                 c["history"].append({"from": c["status"], "to": new, "ts": now})
                 c["status"] = new
-            if c["status"] == "VERIFIED" and tinfo["asks"] >= 2:
+            if c["status"] == "VERIFIED":  # David asked → needed; corroborated → stored (2026-10-06)
                 res = _submit_knowledge(c)
                 if res.get("action") in ("write", "reinforce"):
                     c["history"].append({"from": "VERIFIED", "to": "KNOWLEDGE", "ts": now,
@@ -339,8 +356,11 @@ def _answer_fact(question: str, topic: str) -> tuple[str, list[tuple[str, str]],
             continue
         pool += [(s, r.url) for s in ws._sentences(r.snippet)
                  if not ws._FIRST_PERSON_RE.search(s) and not ws._PROMO_START_RE.match(s)]
+    # Every topic word must be there — "tower" alone let Smeaton's Tower answer
+    # "how tall is the Eiffel Tower" (component check 2026-10-06).
     on_topic = {r.url for r in results
-                if not words or any(w in f"{r.title} {r.snippet}".lower() for w in words)}
+                if not words or all(re.search(r"\b" + re.escape(w), f"{r.title} {r.snippet}".lower())
+                                    for w in words)}
     is_who = question.lower().lstrip().startswith("who")
     hits = [(sentence, src) for sentence, src in pool
             if src in on_topic and cue.search(sentence) and not sentence.endswith("?")
@@ -379,7 +399,7 @@ def _recall(topic: str) -> str | None:
         tinfo["asks"] += 1
         tinfo["last"] = now
         for c in claims:
-            if c["status"] == "VERIFIED" and tinfo["asks"] >= 2:
+            if c["status"] == "VERIFIED":  # David asked → needed; corroborated → stored (2026-10-06)
                 res = _submit_knowledge(c)
                 if res.get("action") in ("write", "reinforce"):
                     c["history"].append({"from": "VERIFIED", "to": "KNOWLEDGE", "ts": now,
@@ -402,6 +422,54 @@ def _recall(topic: str) -> str | None:
         line = "Same as I said before — " + lines[0].split(" — ", 1)[-1].split(": ", 1)[-1]
     _last_recall = line
     return line
+
+
+def _context_words(topic: str, n: int = 2) -> list[str]:
+    """The most distinctive words from David's last couple of turns — what the
+    conversation is about, for narrowing an ambiguous name."""
+    tw = set(ws._content_words(topic))
+    recent = list(ws._recent_inputs[-3:-1])            # turns before this one
+    words = [w for t in reversed(recent) for w in ws._content_words(t)
+             if w not in tw and w not in _VAGUE_TOPIC and len(w) > 3]
+    return sorted(dict.fromkeys(words), key=len, reverse=True)[:n]
+
+
+def _search_in_context(topic: str) -> tuple[str, list]:
+    """search_topic, and when the name is ambiguous (no Wikipedia article, no
+    Google knowledge panel) retry with what the conversation is about."""
+    name, results = ws.search_topic(topic, max_results=5)
+    public = ws.last_kg or any("wikipedia.org" in (r.url or "") for r in results)
+    if not public:
+        ctx = _context_words(topic)
+        if ctx:
+            name2, results2 = ws.search_topic(f"{topic} {' '.join(ctx)}", max_results=5)
+            if ws.last_kg or any("wikipedia.org" in (r.url or "") for r in results2):
+                return name2, results2
+    return name, results
+
+
+def _answer_name(topic: str) -> str:
+    """'who is / what is <Name>': a public name (Wikipedia / Google knowledge
+    panel) is looked up and said with its source; a bare first name with
+    nothing public is probably someone in David's life — ask (card 0021's
+    honesty kept for people, not for things)."""
+    if len(topic.split()) == 1:
+        # A bare first name: if Wikipedia's own page for it is about the *name*
+        # ("Sam is a given name…"), it's probably someone in David's life — ask.
+        w = ws.wiki_summary(topic)
+        if not w or re.search(r"\b(?:given name|surname|first name|nickname|unisex name|"
+                              r"may refer to|is a name)\b", (ws.last_wiki_description + " " + w.snippet[:200]),
+                              re.I):
+            return f"I don't know who {topic} is — tell me?"
+    name, results = _search_in_context(topic)
+    public = ws.last_kg or any("wikipedia.org" in (r.url or "") for r in results)
+    if not public and len(topic.split()) == 1:
+        return f"I don't know who {topic} is — tell me?"
+    found = ws.compose_found(name, results)
+    if not found:
+        return f"I don't know {topic}, and I couldn't find anything solid on it either — tell me?"
+    record(name, ws.last_picks, results)
+    return re.sub(r"^Looked it up on (.+?) —", r"Didn't know that one — looked it up on \1:", found, count=1)
 
 
 def research(text: str) -> dict | None:
@@ -448,7 +516,9 @@ def _answer_gap(text: str) -> str | None:
         line, picks, results = got
         record(topic, picks, results)
         return line
-    name, results = ws.search_topic(topic, max_results=5)
+    if kind == "name":
+        return _answer_name(topic)
+    name, results = _search_in_context(topic)
     found = ws.compose_found(name, results)
     if not found:
         return f"Don't know that one, and I couldn't find anything solid on {name} either."
