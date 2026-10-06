@@ -16,16 +16,15 @@ import datetime
 
 _REMINDERS_DIR = os.path.expanduser("~/Documents/DISENELO/reminders")
 
+# B3 2026-10-06: "note that" / "flag that" / "set a note" / "come back to" removed —
+# "come back to the song thing later" set a real reminder; notes are vault_write.
 _TRIGGER_PHRASES = (
     "remind me",
     "set a reminder",
     "don't let me forget",
     "remember to",
-    "note that",
-    "flag that",
-    "come back to",
-    "set a note",
 )
+_DURATION_RE = re.compile(r"\bin\s+(an?|\d+(?:\.\d+)?)\s*(min(?:ute)?s?|hours?|hrs?)\b", re.I)
 
 _TIME_PATTERNS = {
     "in an hour":          60,
@@ -56,7 +55,11 @@ def set_reminder(text: str, context: str = "") -> str:
     delay_minutes = 60  # default: 1 hour
 
     t = text.lower()
-    for phrase, mins in _TIME_PATTERNS.items():
+    _dm = _DURATION_RE.search(t)
+    if _dm:
+        n = 1.0 if _dm.group(1) in ("a", "an") else float(_dm.group(1))
+        delay_minutes = int(round(n * (60 if _dm.group(2).startswith(("h", "hr")) else 1)))
+    for phrase, mins in ({} if _dm else _TIME_PATTERNS).items():
         if phrase in t:
             if mins is not None:
                 delay_minutes = mins
@@ -76,12 +79,18 @@ def set_reminder(text: str, context: str = "") -> str:
             break
 
     # Extract the thing to remember
+    thing = _DURATION_RE.sub("", text)
+    thing = re.sub(r"\b(?:in an hour|tomorrow(?: morning)?|later|end of day)\b", "", thing, flags=re.I)
     thing = re.sub(
-        r'(remind me|set a reminder|don\'t let me forget|remember to|note that|flag that|come back to|set a note)\s*(to|about|that|for)?\s*',
-        '', text, flags=re.I
-    ).strip().strip('.,!?') or context[:80] or text[:80]
+        r"(remind me|set a reminder|don't let me forget|remember to)\s*(to|about|that|for)?\s*",
+        "", thing, flags=re.I,
+    )
+    thing = re.sub(r"^\s*(?:to|about|that|for)\s+", "", thing.strip(), flags=re.I)
+    thing = re.sub(r"\s{2,}", " ", thing).strip().strip(".,!?") or context[:80] or text[:80]
 
     fire_time = now + datetime.timedelta(minutes=delay_minutes)
+    if delay_minutes >= 60 and fire_time.date() > now.date():
+        fire_time = fire_time.replace(second=0, microsecond=0) + datetime.timedelta(minutes=1 if fire_time.second else 0)
     time_str  = fire_time.strftime("%Y-%m-%d %H:%M")
 
     # Write reminder file
@@ -101,7 +110,7 @@ def set_reminder(text: str, context: str = "") -> str:
         return f"Saved in memory but couldn't write the file — {e}"
 
     # Schedule macOS notification
-    delay_secs = delay_minutes * 60
+    delay_secs = max(1, int((fire_time - now).total_seconds()))
     script = (
         f'delay {delay_secs}\n'
         f'display notification "{thing[:100]}" with title "eLo reminder"'
@@ -116,7 +125,10 @@ def set_reminder(text: str, context: str = "") -> str:
         pass
 
     # Human-readable time label
-    if delay_minutes < 60:
+    if fire_time.date() > now.date():
+        time_label = ("tomorrow" if (fire_time.date() - now.date()).days == 1 else fire_time.strftime("%A")) \
+            + f" at {fire_time.strftime('%H:%M')}"
+    elif delay_minutes < 60:
         time_label = f"in {delay_minutes} minutes"
     elif delay_minutes == 60:
         time_label = "in an hour"
@@ -126,7 +138,7 @@ def set_reminder(text: str, context: str = "") -> str:
     else:
         time_label = f"tomorrow ({fire_time.strftime('%H:%M')})"
 
-    return f"Reminder set — {time_label}. '{thing[:60]}'"
+    return f"Got it — I'll remind you {time_label} to {thing[:80]}."
 
 
 def pending_reminders() -> list[dict]:

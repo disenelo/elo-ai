@@ -152,8 +152,9 @@ def is_timer_intent(text: str) -> bool:
     t = text.lower()
     has_timer = any(k in t for k in ("timer", "pomodoro", "focus timer", "break timer"))
     has_duration = parse_duration(t) is not None
-    has_remind_in = bool(re.search(r"\bremind\s+me\s+in\b", t))
-    return (has_timer and has_duration) or has_remind_in
+    # B3 2026-10-06: "remind me in 15 minutes to X" is a reminder (reminder_agent) —
+    # live capability demo it set a timer AND a reminder, alerting twice.
+    return has_timer and has_duration
 
 
 def agent(query: str) -> str:

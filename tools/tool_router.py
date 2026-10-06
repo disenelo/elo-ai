@@ -282,7 +282,6 @@ _INTENT_MAP = [
         r"\bpomodoro\b",
         r"\bfocus\s+timer\b",
         r"\bbreak\s+timer\b",
-        r"\bremind\s+me\s+in\s+\d+\b",
         r"\bstart\s+(?:a\s+)?\d+",
         r"\bmy\s+timers?\b",
         r"\bactive\s+timers?\b",
@@ -1926,6 +1925,15 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     global _last_direct_result  # hoisted — was duplicated inside try blocks (SyntaxError on 3.x)
     _last_direct_result = None  # B3: only an intercept that IS the answer sets it, this turn
     _lower = user_input.lower()
+
+    # B3 2026-10-06: server.py's reminder block already set it (reminder_agent) and
+    # wrapped the result as "[REMINDER_SET]\n<line>\n\nUser asked: …". That line is
+    # the answer — say it, don't hand it to the LLM to paraphrase or deny.
+    if user_input.startswith("[REMINDER_SET]"):
+        _rs_line = user_input.split("\n", 2)[1].strip() if "\n" in user_input else ""
+        if _rs_line:
+            _last_direct_result = _rs_line
+            return _rs_line, "reminder"
 
     # WO-CORE-REPAIR-P0-001: if the world-knowledge gate already injected a
     # [WORLD_KNOWLEDGE] block into user_input (happens before enrich_from_plan),
