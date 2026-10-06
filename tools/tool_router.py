@@ -1928,6 +1928,25 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     # B3 2026-10-06: server.py's reminder block already set it (reminder_agent) and
     # wrapped the result as "[REMINDER_SET]\n<line>\n\nUser asked: …". That line is
     # the answer — say it, don't hand it to the LLM to paraphrase or deny.
+    # B3 2026-10-06: image / 3D generation already ran in server.py; the outcome was
+    # handed to the LLM, which said "I don't have that recorded" / invented a website
+    # (capability demo). The outcome IS the answer.
+    if user_input.startswith("[IMAGE_GEN]"):
+        _ctx = user_input.split("\n", 2)[1] if "\n" in user_input else ""
+        _im = re.match(r"Image generated with (.*?) for prompt: (.*?)\. Opening in Preview", _ctx)
+        if _im:
+            _last_direct_result = (f"Made it — {_im.group(2)}" + (f", with {_im.group(1)}" if _im.group(1) else "")
+                                   + ". It's open in Preview.")
+        else:
+            _fm = re.match(r"Image generation failed for prompt: (.*?) —", _ctx)
+            _last_direct_result = (f"I couldn't make the image of {_fm.group(1)} — every image generator failed."
+                                   if _fm else "I couldn't make that image.")
+        return _last_direct_result, "image_gen"
+    if user_input.startswith("[MODEL_GEN]"):
+        _mm = re.search(r"Generating a 3D model of (.*?) in the background", user_input)
+        _last_direct_result = (f"On it — making a 3D model of {_mm.group(1)}. I'll open it when it's ready."
+                               if _mm else "On it — making that 3D model. I'll open it when it's ready.")
+        return _last_direct_result, "model_gen"
     if user_input.startswith("[REMINDER_SET]"):
         _rs_line = user_input.split("\n", 2)[1].strip() if "\n" in user_input else ""
         if _rs_line:
