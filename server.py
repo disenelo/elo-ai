@@ -6689,7 +6689,8 @@ def _process_turn(raw: str) -> dict:
             _content = (_mem_said + " " + response)[:1000]
             # Classify turn for meaningful continuity categories (WO-067-WRITE-PATH)
             _mem_cats = _cat_classify(_content)
-            _mem_sig  = 0.55 if _mem_cats else 0.25
+            # WO-WKG-AUTO-POPULATE-001: 0.65 clears the WKG gate (≥ 0.6) for categorized turns
+            _mem_sig  = 0.65 if _mem_cats else 0.25
             _mem_summary = _mem_said[:180] + ("…" if len(_mem_said) > 180 else "")
             if _mem_cats:
                 _mem_summary = f"[{','.join(_mem_cats)}] {_mem_summary}"
@@ -6713,6 +6714,10 @@ def _process_turn(raw: str) -> dict:
                 proposed_type="episodic",
                 proposed_weight=3,
                 significance=_mem_sig,
+                # WO-WKG-AUTO-POPULATE-001: SOURCE_ATTRIBUTED lets _maybe_write_wkg_claim fire;
+                # "inference" blocks it (default). Categorized turns ARE source-attributed —
+                # we have the live conversation as the source.
+                epistemic_class="SOURCE_ATTRIBUTED" if _mem_cats else "inference",
                 project=_mem_project_tag,
                 summary=_mem_summary[:200],
                 tags=("interaction", _action) + tuple(_mem_cats),

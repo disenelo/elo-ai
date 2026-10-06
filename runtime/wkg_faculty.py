@@ -242,6 +242,8 @@ def create_entity(
     aliases: list | None = None,
     description: str = "",
     source_ids: list | None = None,
+    domain: str = "",           # WO-WKG-GRAPH-001: domain subgraph membership
+    uncertainty: float | None = None,  # WO-WKG-GRAPH-001: 0.0=certain … 1.0=highly uncertain
 ) -> dict:
     if entity_type not in _ENTITY_TYPES:
         raise ValueError(f"Unknown entity_type: {entity_type!r}")
@@ -270,6 +272,8 @@ def create_entity(
         "description": description,
         "created_at": time.time(),
         "source_ids": source_ids or [],
+        "domain": domain,          # WO-WKG-GRAPH-001
+        "uncertainty": uncertainty,  # WO-WKG-GRAPH-001: None = unassessed
     }
     with _wkg_lock:
         entities = _load("entities")
@@ -401,6 +405,23 @@ def all_claims() -> list:
     accessor, one answer.
     """
     return _load("claims")
+
+
+# WO-WKG-GRAPH-001: domain subgraph registry
+_WKG_DOMAINS = (
+    "Self", "People", "Objects", "Places", "Concepts", "Processes",
+    "Embodiment-Affordances", "Humanities", "Systems", "Art-Design", "Music", "Narrative",
+)
+
+
+def get_domains() -> list[str]:
+    """Return the canonical domain list for the WKG (WO-WKG-GRAPH-001)."""
+    return list(_WKG_DOMAINS)
+
+
+def query_by_domain(domain: str) -> list[dict]:
+    """Return all entities in a given domain subgraph (WO-WKG-GRAPH-001)."""
+    return [e for e in _load("entities") if e.get("domain") == domain]
 
 
 # WO-RELATIONSHIPS-001: relationship profile for a PERSON entity
