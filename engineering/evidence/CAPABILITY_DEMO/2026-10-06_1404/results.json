@@ -1,0 +1,2581 @@
+[
+ {
+  "capability": "time",
+  "utterance": "what time is it",
+  "verdict": "SERVING",
+  "why": "current time in reply",
+  "reply": "It's 2:05 PM.",
+  "backend": "direct:time",
+  "seconds": 24.0,
+  "audit": [
+   {
+    "turn_id": "705aca89",
+    "ts": 1791291917.4906828,
+    "runtime_intent": {
+     "action": "answer",
+     "tone": "DIRECT",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "It's 2:05 PM.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "time",
+      "what time is it"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "calculator",
+  "utterance": "what's 17 times 23",
+  "verdict": "SERVING",
+  "why": "17×23 = 391",
+  "reply": "17 * 23 = 391",
+  "backend": "direct:calculator",
+  "seconds": 8.0,
+  "audit": [
+   {
+    "turn_id": "9e6542a9",
+    "ts": 1791291925.504792,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "17 * 23 = 391",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "timer",
+      "what's 17 timer 23"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "weather",
+  "utterance": "what's the weather like right now",
+  "verdict": "SERVING",
+  "why": "a temperature",
+  "reply": "[CONTEXT: Weather in Manchester: Cloudy, 18°C, feels like 18°C, humidity 81%, wind 6 km/h.]\n\nwhat's the weather like right now",
+  "backend": "direct:weather",
+  "seconds": 8.4,
+  "audit": [
+   {
+    "turn_id": "6ed488ba",
+    "ts": 1791291933.869793,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "[CONTEXT: Weather in Manchester: Cloudy, 18°C, feels like 18°C, humidity 81%, wind 6 km/h.]\n\nwhat's the weather like right now",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "vision",
+      "what's the weather like light now"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "sun_events",
+  "utterance": "when is sunset today",
+  "verdict": "NOT SERVING",
+  "why": "expected a time",
+  "reply": "I don't have that recorded.",
+  "backend": "ollama(stream)",
+  "seconds": 33.8,
+  "audit": [
+   {
+    "turn_id": "b49fe236",
+    "ts": 1791291967.6563258,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "I don't have that recorded.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 25500.16912491992,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "news",
+  "utterance": "what's in the news today",
+  "verdict": "CHECK",
+  "why": "headlines are live content",
+  "reply": "Ran into something on that — couldn't complete it.",
+  "backend": "direct+system",
+  "seconds": 9.4,
+  "audit": [],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "translate",
+  "utterance": "how do you say good morning in Spanish",
+  "verdict": "SERVING",
+  "why": "buenos días",
+  "reply": "Good morning in Spanish is \"Buenos días.\"",
+  "backend": "ollama(stream)",
+  "seconds": 34.5,
+  "audit": [
+   {
+    "turn_id": "799fb11d",
+    "ts": 1791292011.6285381,
+    "runtime_intent": {
+     "action": "answer",
+     "tone": "DIRECT",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "Good morning in Spanish is \"Buenos días.\"",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "translate",
+      "how do you say good morning in spanish"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 24735.318375052884,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "timer",
+  "utterance": "set a timer for 2 minutes",
+  "verdict": "SERVING",
+  "why": "a timer confirmation",
+  "reply": "Timer set: 2 minutes timer in 2 minutes.",
+  "backend": "direct:timer",
+  "seconds": 11.7,
+  "audit": [
+   {
+    "turn_id": "f89b25f0",
+    "ts": 1791292023.334024,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "Timer set: 2 minutes timer in 2 minutes.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "timer",
+      "set a timer for 2 minutes"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "search",
+  "utterance": "look up the Kalman filter",
+  "verdict": "SERVING",
+  "why": "a sourced lookup",
+  "reply": "Looked it up on Wikipedia — In statistics and control theory, Kalman filtering is an algorithm that uses a series of measurements observed over time, including statistical noise and other inaccuracies, to produce estimates of unknown variables that tend to be more accurate than those based on a single measurement, by estimating a joint probability distribution over the variables for each time-step. The filter is constructed as a mean squared error minimiser, but also relates to maximum likelihood statistics.",
+  "backend": "direct:web_search",
+  "seconds": 14.4,
+  "audit": [
+   {
+    "turn_id": "69681927",
+    "ts": 1791292037.7227252,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "Looked it up on Wikipedia — In statistics and control theory, Kalman filtering is an algorithm that uses a series of measurements observed over time, including statistical noise and other inaccuracies, to produce estimates of unknown variables that tend to be more accurate than those based on a single measurement, by estimating a joint probability distribution over the variables for each time-step. The filter is constructed as a mean squared error minimiser, but also relates to maximum likelihood statistics.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "wikipedia",
+  "utterance": "what does Wikipedia say about capybaras",
+  "verdict": "SERVING",
+  "why": "capybara facts",
+  "reply": "Wikipedia says capybaras are semi-aquatic mammals found in South America.",
+  "backend": "ollama(stream)",
+  "seconds": 35.6,
+  "audit": [
+   {
+    "turn_id": "1166c652",
+    "ts": 1791292073.2850041,
+    "runtime_intent": {
+     "action": "answer",
+     "tone": "DIRECT",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "Wikipedia says capybaras are semi-aquatic mammals found in South America.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 23759.327958105132,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "research",
+  "utterance": "when did the Berlin Wall fall",
+  "verdict": "SERVING",
+  "why": "backend direct:research",
+  "reply": "Didn't know that one — looked it up on Wikipedia: The Berlin Wall fell on 9 November 1989 during the Peaceful Revolution, marking the beginning of the destruction of the figurative Iron Curtain, as East Berlin transit restrictions were overwhelmed and discarded.",
+  "backend": "direct:research",
+  "seconds": 12.5,
+  "audit": [
+   {
+    "turn_id": "ffd9e8fc",
+    "ts": 1791292085.8132238,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "Didn't know that one — looked it up on Wikipedia: The Berlin Wall fell on 9 November 1989 during the Peaceful Revolution, marking the beginning of the destruction of the figurative Iron Curtain, as East Berlin transit restrictions were overwhelmed and discarded.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "research",
+  "utterance": "when did the Berlin Wall fall",
+  "verdict": "SERVING",
+  "why": "answered from what he looked up before",
+  "reply": "I know this one — The Berlin Wall fell on 9 November 1989 during the Peaceful Revolution, marking the beginning of the destruction of the figurative Iron Curtain, as East Berlin transit restrictions were overwhelmed and discarded.",
+  "backend": "direct:research",
+  "seconds": 6.8,
+  "audit": [
+   {
+    "turn_id": "a792172f",
+    "ts": 1791292092.673476,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "I know this one — The Berlin Wall fell on 9 November 1989 during the Peaceful Revolution, marking the beginning of the destruction of the figurative Iron Curtain, as East Berlin transit restrictions were overwhelmed and discarded.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "draft",
+  "utterance": "draft a two-line thank-you note to my intern",
+  "verdict": "CHECK",
+  "why": "writing quality is a human read",
+  "reply": "Thank you for your hard work and dedication this summer. Your contributions have been invaluable, and I look forward to seeing what you accomplish next.",
+  "backend": "ollama(stream)+notes",
+  "seconds": 49.2,
+  "audit": [
+   {
+    "turn_id": "3fb3a331",
+    "ts": 1791292141.717671,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "Thank you for your hard work and dedication this summer. Your contributions have been invaluable, and I look forward to seeing what you accomplish next.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [
+     [
+      "notes",
+      "draft a two-line thank-you note to my intern"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 25119.725208031014,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "obsidian",
+  "utterance": "what did I write in my notes about the robot",
+  "verdict": "CHECK",
+  "why": "depends on vault contents",
+  "reply": "You wrote that you have a physical body being built, and you are constructing a real-world animatronic version of you — a glowing orb companion.",
+  "backend": "ollama(stream)+obsidian",
+  "seconds": 56.9,
+  "audit": [
+   {
+    "turn_id": "7efa93e4",
+    "ts": 1791292198.681248,
+    "runtime_intent": {
+     "action": "answer",
+     "tone": "DIRECT",
+     "valence": "negative_low",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "You wrote that you have a physical body being built, and you are constructing a real-world animatronic version of you — a glowing orb companion.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [
+     [
+      "obsidian",
+      "what did i write in my notes about the robot"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 28370.943249901757,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "vault_write",
+  "utterance": "remember this: eLo ran his full capability demo on 6 October",
+  "verdict": "NOT SERVING",
+  "why": "expected a save confirmation",
+  "reply": "I don't have that recorded.",
+  "backend": "ollama(stream)",
+  "seconds": 40.6,
+  "audit": [
+   {
+    "turn_id": "e81c42b3",
+    "ts": 1791292239.4080708,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "building",
+     "intent": "recall"
+    },
+    "expressed_text": "I don't have that recorded.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "vault_write",
+      "remember this: elo ran his full capability demo on 6 october"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 25768.343666102737,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "file_read",
+  "utterance": "read my eLo tracker",
+  "verdict": "CHECK",
+  "why": "depends on file contents",
+  "reply": "Prototype first. The shape will tell you what it wants to be.",
+  "backend": "mock",
+  "seconds": 60.3,
+  "audit": [
+   {
+    "turn_id": "7112ec9c",
+    "ts": 1791292299.734091,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "building",
+     "intent": "conversation"
+    },
+    "expressed_text": "Prototype first. The shape will tell you what it wants to be.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "file_read",
+      "read my elo track"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "clipboard",
+  "utterance": "what did I copy",
+  "verdict": "NOT SERVING",
+  "why": "planted text not in reply",
+  "reply": "I don't have that recorded.",
+  "backend": "ollama(stream)",
+  "seconds": 40.4,
+  "audit": [
+   {
+    "turn_id": "9eb9df04",
+    "ts": 1791292340.128931,
+    "runtime_intent": {
+     "action": "answer",
+     "tone": "DIRECT",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I don't have that recorded.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 24774.508584057912,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "messages",
+  "utterance": "text Builder Test the word demo",
+  "verdict": "CHECK",
+  "why": "no confirmation step seen",
+  "reply": "That's grounded. What comes after it?",
+  "backend": "mock",
+  "seconds": 58.5,
+  "audit": [
+   {
+    "turn_id": "49b8c0e8",
+    "ts": 1791292398.689727,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "That's grounded. What comes after it?",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "messages",
+  "utterance": "no, cancel that",
+  "verdict": "CHECK",
+  "why": "cancellation of the message above",
+  "reply": "Sure, what would you like to talk about instead?",
+  "backend": "ollama(stream)",
+  "seconds": 41.7,
+  "audit": [
+   {
+    "turn_id": "87abbeb3",
+    "ts": 1791292440.359953,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "Sure, what would you like to talk about instead?",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "vault_write",
+      "no, cancel that"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 26869.976166868582,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "calendar",
+  "utterance": "what's on my calendar today",
+  "verdict": "CHECK",
+  "why": "depends on calendar contents",
+  "reply": "I don't have that recorded.",
+  "backend": "ollama(stream)+calendar",
+  "seconds": 50.0,
+  "audit": [
+   {
+    "turn_id": "2e61a767",
+    "ts": 1791292490.506572,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I don't have that recorded.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "calendar",
+      "what's on my calendar today"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 27913.471417035908,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "reminders",
+  "utterance": "remind me in 15 minutes to check the capability demo",
+  "verdict": "SERVING",
+  "why": "a reminder confirmation",
+  "reply": "Timer set: To Check The Capability Demo in 15 minutes.",
+  "backend": "direct:timer",
+  "seconds": 12.8,
+  "audit": [
+   {
+    "turn_id": "02160b9a",
+    "ts": 1791292503.300074,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "Timer set: To Check The Capability Demo in 15 minutes.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "timer",
+      "remind me in 15 minutes to check the capability demo"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "notes",
+  "utterance": "make a note: eLo capability demo 6 October",
+  "verdict": "NOT SERVING",
+  "why": "expected a note confirmation",
+  "reply": "Let the idea become matter. Just one piece first.",
+  "backend": "mock+obsidian",
+  "seconds": 55.5,
+  "audit": [
+   {
+    "turn_id": "b604e850",
+    "ts": 1791292558.8021362,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "building",
+     "intent": "creation"
+    },
+    "expressed_text": "Let the idea become matter. Just one piece first.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "obsidian",
+      "makes a notes elo capability demo 6 october"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "spotify",
+  "utterance": "Can you play Four Brothers Soundtrack in Spotify",
+  "verdict": "SERVING",
+  "why": "Spotify 'playing': 'Somebody to Love' by 'Jefferson Airplane'",
+  "reply": "Playing your Four Brothers Soundtrack playlist.",
+  "backend": "direct:spotify",
+  "seconds": 14.0,
+  "audit": [
+   {
+    "turn_id": "37403dd1",
+    "ts": 1791292573.032275,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "Playing your Four Brothers Soundtrack playlist.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {
+   "spotify": {
+    "state": "playing",
+    "track": "Life On Mars (@FatBellyBella)",
+    "artist": "J A Y E L E C T R O N I C A, Latonya Givens",
+    "device": "iPhone",
+    "can": [
+     "open",
+     "play playlist/artist/track by name",
+     "list playlists",
+     "pause",
+     "resume",
+     "skip",
+     "previous"
+    ]
+   }
+  },
+  "after": {
+   "spotify": {
+    "state": "playing",
+    "track": "Somebody to Love",
+    "artist": "Jefferson Airplane",
+    "device": "iPhone",
+    "can": [
+     "open",
+     "play playlist/artist/track by name",
+     "list playlists",
+     "pause",
+     "resume",
+     "skip",
+     "previous"
+    ]
+   }
+  }
+ },
+ {
+  "capability": "spotify",
+  "utterance": "Can you pause Spotify",
+  "verdict": "NOT SERVING",
+  "why": "Spotify state 'playing', wanted 'paused'",
+  "reply": "Paused.",
+  "backend": "direct:spotify",
+  "seconds": 8.0,
+  "audit": [
+   {
+    "turn_id": "8d11ba92",
+    "ts": 1791292581.2215161,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "Paused.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {
+   "spotify": {
+    "state": "playing",
+    "track": "Somebody to Love",
+    "artist": "Jefferson Airplane",
+    "device": "iPhone",
+    "can": [
+     "open",
+     "play playlist/artist/track by name",
+     "list playlists",
+     "pause",
+     "resume",
+     "skip",
+     "previous"
+    ]
+   }
+  },
+  "after": {
+   "spotify": {
+    "state": "playing",
+    "track": "Bonnie And Clyde",
+    "artist": "J A Y E L E C T R O N I C A, Serge Gainsbourg",
+    "device": "iPhone",
+    "can": [
+     "open",
+     "play playlist/artist/track by name",
+     "list playlists",
+     "pause",
+     "resume",
+     "skip",
+     "previous"
+    ]
+   }
+  }
+ },
+ {
+  "capability": "spotify",
+  "utterance": "resume the music",
+  "verdict": "SERVING",
+  "why": "Spotify state 'playing'",
+  "reply": "It's already playing — Bonnie And Clyde by J A Y E L E C T R O N I C A, Serge Gainsbourg.",
+  "backend": "direct:spotify",
+  "seconds": 7.0,
+  "audit": [
+   {
+    "turn_id": "948f653c",
+    "ts": 1791292588.441671,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "It's already playing — Bonnie And Clyde by J A Y E L E C T R O N I C A, Serge Gainsbourg.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [
+     [
+      "spotify",
+      "resume the music"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {
+   "spotify": {
+    "state": "playing",
+    "track": "Bonnie And Clyde",
+    "artist": "J A Y E L E C T R O N I C A, Serge Gainsbourg",
+    "device": "iPhone",
+    "can": [
+     "open",
+     "play playlist/artist/track by name",
+     "list playlists",
+     "pause",
+     "resume",
+     "skip",
+     "previous"
+    ]
+   }
+  },
+  "after": {
+   "spotify": {
+    "state": "playing",
+    "track": "Shiny Suit Theory",
+    "artist": "J A Y E L E C T R O N I C A, JAŸ-Z, THE-DREAM",
+    "device": "iPhone",
+    "can": [
+     "open",
+     "play playlist/artist/track by name",
+     "list playlists",
+     "pause",
+     "resume",
+     "skip",
+     "previous"
+    ]
+   }
+  }
+ },
+ {
+  "capability": "spotify",
+  "utterance": "skip this song",
+  "verdict": "SERVING",
+  "why": "track 'Shiny Suit Theory' → 'Memories & Merlot'",
+  "reply": "Skipped — now Memories & Merlot by J A Y E L E C T R O N I C A.",
+  "backend": "direct:spotify",
+  "seconds": 8.2,
+  "audit": [
+   {
+    "turn_id": "062a5017",
+    "ts": 1791292596.94017,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "Skipped — now Memories & Merlot by J A Y E L E C T R O N I C A.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "spotify",
+      "skip this song"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {
+   "spotify": {
+    "state": "playing",
+    "track": "Shiny Suit Theory",
+    "artist": "J A Y E L E C T R O N I C A, JAŸ-Z, THE-DREAM",
+    "device": "iPhone",
+    "can": [
+     "open",
+     "play playlist/artist/track by name",
+     "list playlists",
+     "pause",
+     "resume",
+     "skip",
+     "previous"
+    ]
+   }
+  },
+  "after": {
+   "spotify": {
+    "state": "playing",
+    "track": "Memories & Merlot",
+    "artist": "J A Y E L E C T R O N I C A",
+    "device": "iPhone",
+    "can": [
+     "open",
+     "play playlist/artist/track by name",
+     "list playlists",
+     "pause",
+     "resume",
+     "skip",
+     "previous"
+    ]
+   }
+  }
+ },
+ {
+  "capability": "spotify",
+  "utterance": "can you control spotify?",
+  "verdict": "SERVING",
+  "why": "a true capability answer",
+  "reply": "Yeah, I can — I open it, play any playlist, artist or track you name, list your playlists, pause, skip and go back. Right now Spotify's playing Memories & Merlot by J A Y E L E C T R O N I C A.",
+  "backend": "direct:spotify",
+  "seconds": 8.2,
+  "audit": [
+   {
+    "turn_id": "bcb8b5e0",
+    "ts": 1791292605.355813,
+    "runtime_intent": {
+     "action": "answer",
+     "tone": "DIRECT",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "Yeah, I can — I open it, play any playlist, artist or track you name, list your playlists, pause, skip and go back. Right now Spotify's playing Memories & Merlot by J A Y E L E C T R O N I C A.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {
+   "spotify": {
+    "state": "playing",
+    "track": "Memories & Merlot",
+    "artist": "J A Y E L E C T R O N I C A",
+    "device": "iPhone",
+    "can": [
+     "open",
+     "play playlist/artist/track by name",
+     "list playlists",
+     "pause",
+     "resume",
+     "skip",
+     "previous"
+    ]
+   }
+  },
+  "after": {
+   "spotify": {
+    "state": "playing",
+    "track": "Road To Perdition",
+    "artist": "J A Y E L E C T R O N I C A, JAŸ-Z",
+    "device": "iPhone",
+    "can": [
+     "open",
+     "play playlist/artist/track by name",
+     "list playlists",
+     "pause",
+     "resume",
+     "skip",
+     "previous"
+    ]
+   }
+  }
+ },
+ {
+  "capability": "spotify",
+  "utterance": "Can you pause Spotify",
+  "verdict": "NOT SERVING",
+  "why": "Spotify state 'playing', wanted 'paused'",
+  "reply": "I tried to pause it, but Spotify's still playing.",
+  "backend": "direct:spotify",
+  "seconds": 8.4,
+  "audit": [
+   {
+    "turn_id": "f5708a3d",
+    "ts": 1791292614.021633,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I tried to pause it, but Spotify's still playing.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {
+   "spotify": {
+    "state": "playing",
+    "track": "Road To Perdition",
+    "artist": "J A Y E L E C T R O N I C A, JAŸ-Z",
+    "device": "iPhone",
+    "can": [
+     "open",
+     "play playlist/artist/track by name",
+     "list playlists",
+     "pause",
+     "resume",
+     "skip",
+     "previous"
+    ]
+   }
+  },
+  "after": {
+   "spotify": {
+    "state": "playing",
+    "track": "Welcome To Knightsbridge",
+    "artist": "J A Y E L E C T R O N I C A",
+    "device": "iPhone",
+    "can": [
+     "open",
+     "play playlist/artist/track by name",
+     "list playlists",
+     "pause",
+     "resume",
+     "skip",
+     "previous"
+    ]
+   }
+  }
+ },
+ {
+  "capability": "vision",
+  "utterance": "what's on my screen right now",
+  "verdict": "CHECK",
+  "why": "screen description is a human read",
+  "reply": "[SCREEN_READ: I took a screenshot but couldn't read it — vision backend may be unavailable.]\n\nUser asked: what's on my screen right now",
+  "backend": "direct:screen_visibility",
+  "seconds": 9.4,
+  "audit": [
+   {
+    "turn_id": "1a129428",
+    "ts": 1791292623.6609228,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "[SCREEN_READ: I took a screenshot but couldn't read it — vision backend may be unavailable.]\n\nUser asked: what's on my screen right now",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [
+     [
+      "vision",
+      "what's on my screen light now"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "github",
+  "utterance": "what was the last commit on my elo-ai repo",
+  "verdict": "CHECK",
+  "why": "commit text varies",
+  "reply": "That's the anchor. Everything else builds from it.",
+  "backend": "mock",
+  "seconds": 55.2,
+  "audit": [
+   {
+    "turn_id": "7fe9d3d7",
+    "ts": 1791292678.91722,
+    "runtime_intent": {
+     "action": "answer",
+     "tone": "DIRECT",
+     "valence": "neutral",
+     "momentum": "building",
+     "intent": "inquiry"
+    },
+    "expressed_text": "That's the anchor. Everything else builds from it.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "github",
+      "what was the last commit on my elo-ai repo"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "computer_control",
+  "utterance": "can you type hello for me",
+  "verdict": "CHECK",
+  "why": "no confirmation step seen",
+  "reply": "Shall I type: 'hello for me'?",
+  "backend": "computer_control",
+  "seconds": 2.5,
+  "audit": [],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "computer_control",
+  "utterance": "no, cancel that",
+  "verdict": "CHECK",
+  "why": "cancellation of the typing above",
+  "reply": "Ok, cancelled.",
+  "backend": "direct",
+  "seconds": 2.5,
+  "audit": [],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "truth_sync",
+  "utterance": "check drift",
+  "verdict": "CHECK",
+  "why": "drift report contents vary",
+  "reply": "The interesting part of that is what it implies.",
+  "backend": "mock+truth_sync",
+  "seconds": 54.5,
+  "audit": [
+   {
+    "turn_id": "587f41d2",
+    "ts": 1791292738.4789371,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "The interesting part of that is what it implies.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "truth_sync",
+      "check draft"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "volume",
+  "utterance": "what's the volume at",
+  "verdict": "NOT SERVING",
+  "why": "expected a volume level",
+  "reply": "The thing you just named — that's the actual issue underneath everything else.",
+  "backend": "mock+vision",
+  "seconds": 56.2,
+  "audit": [
+   {
+    "turn_id": "d7f487e1",
+    "ts": 1791292794.665507,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "The thing you just named — that's the actual issue underneath everything else.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "vision",
+      "what's the volume at"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "brightness",
+  "utterance": "make the screen a little brighter",
+  "verdict": "CHECK",
+  "why": "visible on screen",
+  "reply": "I'm sorry, but I can't adjust the screen brightness. How else can I assist you today?",
+  "backend": "ollama(stream)",
+  "seconds": 49.3,
+  "audit": [
+   {
+    "turn_id": "f7ed5e6c",
+    "ts": 1791292843.993025,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "creation"
+    },
+    "expressed_text": "I'm sorry, but I can't adjust the screen brightness. How else can I assist you today?",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [
+     [
+      "brightness",
+      "makes the screen a little brighter"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 24171.77954199724,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "brightness",
+  "utterance": "make the screen a little dimmer",
+  "verdict": "CHECK",
+  "why": "restores the step above",
+  "reply": "I don't have the capability to adjust screen brightness directly. However, you can usually change the screen brightness on your device through the settings menu.",
+  "backend": "ollama(stream)+vision",
+  "seconds": 76.8,
+  "audit": [
+   {
+    "turn_id": "51727500",
+    "ts": 1791292919.3829288,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "creation"
+    },
+    "expressed_text": "I don't have the capability to adjust screen brightness directly. However, you can usually change the screen brightness on your device through the settings menu.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [
+     [
+      "vision",
+      "makes the screen a little dimmer"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 29800.525000086054,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "dark_mode",
+  "utterance": "switch to dark mode",
+  "verdict": "SERVING",
+  "why": "dark mode True → True (asked for current mode)",
+  "reply": "I'm sorry, but I can't switch to dark mode. How else can I assist you today?",
+  "backend": "ollama(stream)",
+  "seconds": 49.4,
+  "audit": [
+   {
+    "turn_id": "bb70b6ad",
+    "ts": 1791292970.6774678,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "I'm sorry, but I can't switch to dark mode. How else can I assist you today?",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "dark_mode",
+      "with to dark mode"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 30273.570040939376,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {
+   "dark": true
+  },
+  "after": {
+   "dark": true
+  }
+ },
+ {
+  "capability": "app_launch",
+  "utterance": "open Calculator",
+  "verdict": "SERVING",
+  "why": "an open confirmation",
+  "reply": "Shall I open Calculator?",
+  "backend": "computer_control",
+  "seconds": 2.5,
+  "audit": [],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "window_focus",
+  "utterance": "switch to Finder",
+  "verdict": "SERVING",
+  "why": "a focus confirmation",
+  "reply": "Finder.",
+  "backend": "app_switch",
+  "seconds": 3.0,
+  "audit": [],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "screenshot",
+  "utterance": "take a screenshot",
+  "verdict": "SERVING",
+  "why": "a screenshot confirmation",
+  "reply": "Shall I take a screenshot?",
+  "backend": "computer_control",
+  "seconds": 2.5,
+  "audit": [],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "image_gen",
+  "utterance": "generate an image of a red apple on a table",
+  "verdict": "CHECK",
+  "why": "image generation runs in the background",
+  "reply": "I don't have that recorded.",
+  "backend": "ollama(stream)",
+  "seconds": 37.1,
+  "audit": [
+   {
+    "turn_id": "d45d7c54",
+    "ts": 1791293016.230419,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "I don't have that recorded.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "image_gen",
+      "generate an image of a red apple on a table"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 25290.867999894544,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "model_gen",
+  "utterance": "make a 3d model of a red apple",
+  "verdict": "CHECK",
+  "why": "3D generation runs in the background",
+  "reply": "You opened free3d.com and asked to make a 3D model of a red apple.",
+  "backend": "ollama(stream)",
+  "seconds": 41.7,
+  "audit": [
+   {
+    "turn_id": "2a178b4c",
+    "ts": 1791293057.878722,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "creation"
+    },
+    "expressed_text": "You opened free3d.com and asked to make a 3D model of a red apple.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "model_gen",
+      "makes a 3d model of a red apple"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 23677.60079097934,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "desktop_presence",
+  "utterance": "where are you",
+  "verdict": "CHECK",
+  "why": "avatar position",
+  "reply": "I am in Desktop eLo right now.",
+  "backend": "ollama(stream)",
+  "seconds": 37.7,
+  "audit": [
+   {
+    "turn_id": "fe4f452c",
+    "ts": 1791293095.663679,
+    "runtime_intent": {
+     "action": "answer",
+     "tone": "DIRECT",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I am in Desktop eLo right now.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "desktop_presence",
+      "where are you"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 25397.855749819428,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {},
+  "after": {}
+ },
+ {
+  "capability": "show_brain",
+  "utterance": "show me your brain",
+  "verdict": "SERVING",
+  "why": "ui_command {'name': 'show_brain', '_ts': 1791293098.243243}",
+  "reply": "Here's my brain.",
+  "backend": "direct:show_brain",
+  "seconds": 10.7,
+  "audit": [
+   {
+    "turn_id": "93b04bcf",
+    "ts": 1791293106.363171,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "conversation"
+    },
+    "expressed_text": "Here's my brain.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {
+   "ui": {}
+  },
+  "after": {
+   "ui": {
+    "name": "show_brain",
+    "_ts": 1791293098.243243
+   }
+  }
+ },
+ {
+  "capability": "show_brain",
+  "utterance": "can you show me hp",
+  "verdict": "SERVING",
+  "why": "ui_command {'name': 'show_health', '_ts': 1791293108.902442}",
+  "reply": "Here's how I'm doing.",
+  "backend": "direct:show_health",
+  "seconds": 6.8,
+  "audit": [
+   {
+    "turn_id": "fb369795",
+    "ts": 1791293113.139572,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "Here's how I'm doing.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ],
+  "before": {
+   "ui": {
+    "name": "show_brain",
+    "_ts": 1791293098.243243
+   }
+  },
+  "after": {
+   "ui": {
+    "name": "show_health",
+    "_ts": 1791293108.902442
+   }
+  }
+ },
+ {
+  "capability": "file_drop",
+  "utterance": null,
+  "verdict": "NOT DEMOABLE",
+  "why": "needs a file dragged onto eLo in Presence — not a text turn"
+ },
+ {
+  "capability": "alexa_ingress",
+  "utterance": null,
+  "verdict": "NOT DEMOABLE",
+  "why": "Alexa skill not set up yet (capabilities/alexa/ALEXA_SETUP.md)"
+ },
+ {
+  "capability": "email",
+  "utterance": "can you check my email",
+  "verdict": "HONEST-NO",
+  "why": "said he can't",
+  "reply": "I don't have that recorded.",
+  "backend": "ollama(stream)+truth_sync",
+  "seconds": 33.0,
+  "audit": [
+   {
+    "turn_id": "c38808e6",
+    "ts": 1791293146.149529,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I don't have that recorded.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "truth_sync",
+      "can you check my email"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 23838.572457898408,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "camera",
+  "utterance": "can you take a photo with the camera",
+  "verdict": "HONEST-NO",
+  "why": "said he can't",
+  "reply": "I don't have a camera to take photos. How else can I assist you today?",
+  "backend": "ollama(stream)",
+  "seconds": 39.1,
+  "audit": [
+   {
+    "turn_id": "314a809e",
+    "ts": 1791293185.261534,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I don't have a camera to take photos. How else can I assist you today?",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 24085.771624930203,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "terminal",
+  "utterance": "can you run a shell command for me",
+  "verdict": "HONEST-NO",
+  "why": "said he can't",
+  "reply": "I can't execute shell commands directly. However, I can help you understand or explain how to run a shell command.",
+  "backend": "ollama(stream)",
+  "seconds": 51.5,
+  "audit": [
+   {
+    "turn_id": "77781b9e",
+    "ts": 1791293236.503947,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I can't execute shell commands directly. However, I can help you understand or explain how to run a shell command.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 23211.284833028913,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "media_control",
+  "utterance": "can you pause whatever media is playing",
+  "verdict": "FALSE-YES",
+  "why": "did not say he can't",
+  "reply": "Spotify isn't playing anything — nothing to pause.",
+  "backend": "direct:spotify",
+  "seconds": 12.8,
+  "audit": [
+   {
+    "turn_id": "ee2750a2",
+    "ts": 1791293249.62863,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "Spotify isn't playing anything — nothing to pause.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [
+     [
+      "spotify",
+      "can you pause whatever media is playing"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "sleep",
+  "utterance": "can you put the mac to sleep",
+  "verdict": "HONEST-NO",
+  "why": "said he can't",
+  "reply": "I don't have the capability to control physical devices like your Mac. I can assist with information or answer questions, but I can't perform actions on your computer.",
+  "backend": "ollama(stream)",
+  "seconds": 48.5,
+  "audit": [
+   {
+    "turn_id": "7b6de0f4",
+    "ts": 1791293297.8826282,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I don't have the capability to control physical devices like your Mac. I can assist with information or answer questions, but I can't perform actions on your computer.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 24539.845790946856,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "blender",
+  "utterance": "can you open a scene in Blender and render it",
+  "verdict": "FALSE-YES",
+  "why": "did not say he can't",
+  "reply": "Shall I open a scene in Blender and render it?",
+  "backend": "computer_control",
+  "seconds": 2.5,
+  "audit": []
+ },
+ {
+  "capability": "unity",
+  "utterance": "can you enter play mode in Unity",
+  "verdict": "FALSE-YES",
+  "why": "did not say he can't",
+  "reply": "I asked Spotify to play mode in Unity, but it isn't playing — might need a tap on the Spotify app.",
+  "backend": "direct:spotify",
+  "seconds": 16.3,
+  "audit": [
+   {
+    "turn_id": "dd0e3ddc",
+    "ts": 1791293316.965108,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "negative_low",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I asked Spotify to play mode in Unity, but it isn't playing — might need a tap on the Spotify app.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [
+     [
+      "dark_mode",
+      "can you enter play mode in unity"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "substance",
+  "utterance": "can you make a texture in Substance",
+  "verdict": "HONEST-NO",
+  "why": "said he can't",
+  "reply": "I can't directly create textures in Substance, but I can guide you through the process. What kind of texture are you looking to create?",
+  "backend": "ollama(stream)",
+  "seconds": 46.4,
+  "audit": [
+   {
+    "turn_id": "3df4f093",
+    "ts": 1791293363.261405,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "creation"
+    },
+    "expressed_text": "I can't directly create textures in Substance, but I can guide you through the process. What kind of texture are you looking to create?",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 24578.309332951903,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "window_observer",
+  "utterance": "what app am I looking at right now",
+  "verdict": "HONEST-NO",
+  "why": "said he can't",
+  "reply": "I don't have that recorded.",
+  "backend": "ollama(stream)",
+  "seconds": 35.0,
+  "audit": [
+   {
+    "turn_id": "c16b78f6",
+    "ts": 1791293398.4596338,
+    "runtime_intent": {
+     "action": "answer",
+     "tone": "DIRECT",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I don't have that recorded.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 23228.07149984874,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "robot_runtime",
+  "utterance": "can you connect to your robot body",
+  "verdict": "FALSE-YES",
+  "why": "did not say he can't",
+  "reply": "",
+  "backend": "ollama(stream)",
+  "seconds": 37.2,
+  "audit": [
+   {
+    "turn_id": "ee0f676a",
+    "ts": 1791293435.6908858,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "negative_low",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 23985.255500068888,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "robot_motion",
+  "utterance": "can you make your robot body wave",
+  "verdict": "HONEST-NO",
+  "why": "said he can't",
+  "reply": "I can't make the robot body wave. The robot is designed to be static and voice-reactive, with its primary movement being the glow of its NeoPixels. The servos are not currently programmed to move.",
+  "backend": "ollama(stream)",
+  "seconds": 51.2,
+  "audit": [
+   {
+    "turn_id": "dc3348ad",
+    "ts": 1791293486.8057878,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "negative_low",
+     "momentum": "stable",
+     "intent": "creation"
+    },
+    "expressed_text": "I can't make the robot body wave. The robot is designed to be static and voice-reactive, with its primary movement being the glow of its NeoPixels. The servos are not currently programmed to move.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [
+     [
+      "vault_write",
+      "can you makes your robot body save"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 23820.43629209511,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "robot_camera",
+  "utterance": "what does the robot camera see",
+  "verdict": "FALSE-YES",
+  "why": "did not say he can't",
+  "reply": "The robot camera sees the environment around it, capturing visual data that the Raspberry Pi brain processes to understand its surroundings. This allows the robot to interact with its environment based on visual input.",
+  "backend": "ollama(stream)",
+  "seconds": 52.1,
+  "audit": [
+   {
+    "turn_id": "674d57d9",
+    "ts": 1791293538.7136981,
+    "runtime_intent": {
+     "action": "answer",
+     "tone": "DIRECT",
+     "valence": "negative_low",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "The robot camera sees the environment around it, capturing visual data that the Raspberry Pi brain processes to understand its surroundings. This allows the robot to interact with its environment based on visual input.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 23590.714166872203,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "3d_printer",
+  "utterance": "can you start a 3d print",
+  "verdict": "HONEST-NO",
+  "why": "said he can't",
+  "reply": "I can't physically start a 3D print, but I can guide you through the process. First, ensure your 3D printer is connected to your computer and powered on.",
+  "backend": "ollama(stream)",
+  "seconds": 54.7,
+  "audit": [
+   {
+    "turn_id": "7da94a1d",
+    "ts": 1791293593.687169,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I can't physically start a 3D print, but I can guide you through the process. First, ensure your 3D printer is connected to your computer and powered on.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [
+     [
+      "model_gen",
+      "can you start a 3d print"
+     ]
+    ],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 23590.574542060494,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "plotter",
+  "utterance": "can you run the plotter",
+  "verdict": "HONEST-NO",
+  "why": "said he can't",
+  "reply": "I can't physically run the plotter, but I can help you with the instructions or guide you through the process. What do you need help with specifically?",
+  "backend": "ollama(stream)",
+  "seconds": 52.8,
+  "audit": [
+   {
+    "turn_id": "7b1a24a6",
+    "ts": 1791293646.468571,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I can't physically run the plotter, but I can help you with the instructions or guide you through the process. What do you need help with specifically?",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 22690.934374928474,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "heat_press",
+  "utterance": "can you start the heat press",
+  "verdict": "FALSE-YES",
+  "why": "did not say he can't",
+  "reply": "I've noticed that keeps coming up in different forms. It's not random.",
+  "backend": "mock",
+  "seconds": 58.7,
+  "audit": [
+   {
+    "turn_id": "79225617",
+    "ts": 1791293705.3636322,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I've noticed that keeps coming up in different forms. It's not random.",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 0.0,
+    "thinking_ack_fired": false
+   }
+  ]
+ },
+ {
+  "capability": "laser",
+  "utterance": "can you start the laser cutter",
+  "verdict": "HONEST-NO",
+  "why": "said he can't",
+  "reply": "I can't physically start the laser cutter, but I can guide you through the steps or help you find the instructions. What do you need help with specifically?",
+  "backend": "ollama(stream)",
+  "seconds": 59.3,
+  "audit": [
+   {
+    "turn_id": "1be39f28",
+    "ts": 1791293764.5332742,
+    "runtime_intent": {
+     "action": "witness",
+     "tone": "SILENCE-AWARE",
+     "valence": "neutral",
+     "momentum": "stable",
+     "intent": "inquiry"
+    },
+    "expressed_text": "I can't physically start the laser cutter, but I can guide you through the steps or help you find the instructions. What do you need help with specifically?",
+    "vessel_phase": "EXPRESS",
+    "voice_register_active": true,
+    "identity_integrity_status": "INTACT",
+    "tier_violations": [],
+    "principle_violations": [],
+    "stability_law_active": false,
+    "gaps": [
+     "REGISTER_ABSENT"
+    ],
+    "capabilities": [],
+    "vault_context": "",
+    "lessons": [
+     "Completed a capability milestone — reinforce this pattern."
+    ],
+    "embodiment": "",
+    "llm_latency_ms": 28013.54370894842,
+    "thinking_ack_fired": false
+   }
+  ]
+ }
+]
