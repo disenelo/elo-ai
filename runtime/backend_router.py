@@ -1261,6 +1261,11 @@ def _ollama_stream(
         "Workspace footprint at arm length: roughly a 50cm circle. "
         "When giving any spatial figure for eLo — cross-check it against the 40cm total height. "
         "If the number exceeds the body height for a limb length, recalculate.\n"
+        "FALSE-ACTION RULE: NEVER say 'Done that', 'Done.', 'Sorted.', 'Handled.', 'On it.', 'Got it.', "
+        "'Yeah, done.', 'Sorted that.', 'Opening X', or any completion/confirmation phrase unless you ACTUALLY "
+        "executed the action successfully. If David asks you to list something, list it. "
+        "If David asks you to do something you cannot do, say so clearly. "
+        "Do NOT generate a fake completion. A false 'Done that' is worse than saying you can't do it.\n"
     )
     _behavior_rules = ""  # rules folded into anchor for 8b compatibility
     # Extract the grounding block as a single unit (it spans multiple \n\n-separated paragraphs),

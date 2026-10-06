@@ -7390,6 +7390,30 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # FALSE-ACTION-MISSING-RESPONSE Bug 1: strip false completion phrases from LLM path.
+        # "Done that." / "Sorted." / "Handled." must never appear as the full response from
+        # the LLM when no system action was dispatched. These are pool phrases that should
+        # only appear via _plan.direct_response after a successful system_action execution
+        # (gated at line 5714). If the LLM generates one as its whole output, it is lying.
+        try:
+            _FA_COMPLETIONS = frozenset({
+                "done that.", "done.", "sorted.", "handled.", "sorted that.", "yeah, done.",
+                "done, fam.", "done bruv.", "sorted g.", "mi sort it.", "handled dat.",
+                "done, irie.", "yeah man — sorted.",
+            })
+            _fa_stripped = response.strip().rstrip(".!?").lower().rstrip(".!?")
+            _fa_full     = response.strip().lower()
+            if ((_fa_full in _FA_COMPLETIONS or _fa_stripped + "." in _FA_COMPLETIONS)
+                    and _llm_turn):
+                import logging as _fa_log
+                _fa_log.getLogger("runtime.false_action").warning(
+                    "FALSE-ACTION: LLM generated completion phrase '%s' with no system action — replaced",
+                    response.strip(),
+                )
+                response = "Ran into something — didn't complete that. What did you need?"
+        except Exception:
+            pass
+
         # ── D-3 (card 0020): unverified-memory-claim scrub ────────────────────
         # Post-generation gate. Any "I remember when…" / "you told me…" /
         # "we talked about…" sentence in eLo's own reply must resolve to a real
