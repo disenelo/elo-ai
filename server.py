@@ -6430,6 +6430,16 @@ def _process_turn(raw: str) -> dict:
                         # WO-WORLD-001: store agent name for post-turn WORLD_INTERACTION vault write
                         _wi_agent = _agent or ""
 
+                        # IS-ELO tool result feedback: record success/fail in decision trace.
+                        # _enriched non-empty = tool ran and returned content.
+                        # This is the executive's feedback loop — "did the tool actually work?"
+                        if _agent:
+                            _tool_has_result = bool((_enriched or "").strip())
+                            _decision_trace["tool_result"] = {
+                                "agent": _agent,
+                                "has_result": _tool_has_result,
+                            }
+
                         # Direct-return agents (time, calculator, timer) produce authoritative
                         # factual results that must not be rewritten by the LLM.
                         _direct = _get_direct_result()
@@ -6437,6 +6447,8 @@ def _process_turn(raw: str) -> dict:
                             response = _direct
                             backend_used = f"direct:{_agent}"
                             _llm_latency_ms = 0.0
+                            if _agent and "tool_result" in _decision_trace:
+                                _decision_trace["tool_result"]["direct_return"] = True
 
                 # WO-027 Seam A — inject relevant past corrections as few-shot ICL examples
                 try:
@@ -6732,7 +6744,11 @@ def _process_turn(raw: str) -> dict:
             # Classify turn for meaningful continuity categories (WO-067-WRITE-PATH)
             _mem_cats = _cat_classify(_content)
             # WO-WKG-AUTO-POPULATE-001: 0.65 clears the WKG gate (≥ 0.6) for categorized turns
-            _mem_sig  = 0.65 if _mem_cats else 0.25
+            # IS-ELO: SPG significance score as additional gate input (Builder 1 side).
+            # If significance_faculty scored this turn high (>= 0.6), treat it as significant
+            # even when the category classifier didn't fire — SPG pattern weight is real signal.
+            _spg_sig = float((exec_decision or {}).get("significance_score", 0.0))
+            _mem_sig  = 0.65 if (_mem_cats or _spg_sig >= 0.6) else 0.25
             _mem_summary = _mem_said[:180] + ("…" if len(_mem_said) > 180 else "")
             if _mem_cats:
                 _mem_summary = f"[{','.join(_mem_cats)}] {_mem_summary}"
@@ -6759,7 +6775,7 @@ def _process_turn(raw: str) -> dict:
                 # WO-WKG-AUTO-POPULATE-001: SOURCE_ATTRIBUTED lets _maybe_write_wkg_claim fire;
                 # "inference" blocks it (default). Categorized turns ARE source-attributed —
                 # we have the live conversation as the source.
-                epistemic_class="SOURCE_ATTRIBUTED" if _mem_cats else "inference",
+                epistemic_class="SOURCE_ATTRIBUTED" if (_mem_cats or _spg_sig >= 0.6) else "inference",
                 project=_mem_project_tag,
                 summary=_mem_summary[:200],
                 tags=("interaction", _action) + tuple(_mem_cats),
