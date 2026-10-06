@@ -71,6 +71,48 @@ def get_status(repo: str) -> str:
     return " | ".join(parts)
 
 
+# B3 2026-10-06: David's repos live on this Mac and are ahead of GitHub (elo-ai's
+# origin was 1216 commits behind). "Last commit on my elo-ai repo" means the local one.
+_LOCAL_REPOS = {
+    "elo-ai":         os.path.expanduser("~/elo-ai"),
+    "elo ai":         os.path.expanduser("~/elo-ai"),
+    "elo-planet":     os.path.expanduser("~/eLo-Planet"),
+    "elo planet":     os.path.expanduser("~/eLo-Planet"),
+    "desktop buddy":  os.path.expanduser("~/Desktop/Output/DISENELO-eLoDesktopBuddy"),
+    "desktopbuddy":   os.path.expanduser("~/Desktop/Output/DISENELO-eLoDesktopBuddy"),
+    "presence":       os.path.expanduser("~/Desktop/Output/DISENELO-eLoDesktopBuddy"),
+}
+
+
+def _git(path: str, *args: str) -> str:
+    import subprocess
+    r = subprocess.run(["git", "-C", path, *args], capture_output=True, text=True, timeout=10)
+    return r.stdout.strip() if r.returncode == 0 else ""
+
+
+def local_last_commit(query: str) -> str | None:
+    """'Last commit on elo-ai: "<subject>" — 2 minutes ago.' for a known local
+    repo named in the query (plus how far GitHub is behind), else None."""
+    q = query.lower()
+    name = next((k for k in _LOCAL_REPOS if k in q), None)
+    if not name or not os.path.isdir(_LOCAL_REPOS[name]):
+        return None
+    path = _LOCAL_REPOS[name]
+    line = _git(path, "log", "-1", "--format=%s\x1f%cr")
+    if not line:
+        return None
+    subject, ago = line.split("\x1f", 1)
+    label = os.path.basename(path)
+    out = f"Last commit on {label}: \u201c{subject[:120]}\u201d — {ago}."
+    behind = _git(path, "rev-list", "--count", "@{upstream}..HEAD")
+    if behind.isdigit() and int(behind) > 0:
+        out += f" GitHub's {behind} commit{'s' if behind != '1' else ''} behind."
+    return out
+
+
 def agent(query: str) -> str:
+    local = local_last_commit(query)
+    if local:
+        return local
     repo = _extract_repo(query)
     return get_status(repo)

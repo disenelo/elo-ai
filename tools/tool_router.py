@@ -2149,6 +2149,47 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
             "location_set",
         )
 
+    # ── Clipboard read — B3 2026-10-06: the tool read it; the LLM then said "I don't
+    # have that recorded" (capability demo). What's on the clipboard IS the answer.
+    if re.search(r"\bwhat\s+(?:did\s+i|have\s+i)\s+(?:just\s+)?copi?(?:y|ed)\b|\bwhat'?s\s+(?:on\s+)?(?:my\s+|the\s+)?clipboard\b"
+                 r"|\bwhat'?s\s+copied\b|\bread\s+(?:my\s+|the\s+)?clipboard\b", _lower):
+        try:
+            from tools.clipboard_agent import read as _clip_read
+            _clip = _clip_read()
+            if _clip.startswith("Clipboard is empty"):
+                _last_direct_result = "Your clipboard's empty."
+            else:
+                _body = re.sub(r"^\s*Clipboard contents:\s*", "", _clip).strip()
+                _last_direct_result = (f"You copied: \u201c{_body[:400]}\u201d" + ("…" if len(_body) > 400 else ""))
+            return _last_direct_result, "clipboard"
+        except Exception as _ce:
+            _logger.debug("clipboard intercept failed: %s", _ce)
+
+    # ── Calendar — B3 2026-10-06: the AppleScript read timed out and the LLM said
+    # "I don't have that recorded". EventKit's answer IS the answer.
+    if re.search(r"\b(?:calendar|schedule|diary|agenda)\b", _lower) and \
+            re.search(r"\b(?:what'?s|what\s+is|anything|do\s+i\s+have|am\s+i|today|tomorrow|week|on\s+my|check)\b", _lower):
+        try:
+            from tools.calendar_agent import spoken as _cal_spoken
+            _cl = _cal_spoken(user_input)
+            if _cl:
+                _last_direct_result = _cl
+                return _cl, "calendar"
+        except Exception as _cae:
+            _logger.debug("calendar intercept failed: %s", _cae)
+
+    # ── Last commit on a local repo — B3 2026-10-06: the tool returned "" (no
+    # GITHUB_REPO) and the LLM filled in. The local git log IS the answer.
+    if re.search(r"\b(?:last|latest|most\s+recent)\s+commit\b", _lower):
+        try:
+            from tools.github_agent import local_last_commit as _llc
+            _lc = _llc(user_input)
+            if _lc:
+                _last_direct_result = _lc
+                return _lc, "github"
+        except Exception as _ge:
+            _logger.debug("last-commit intercept failed: %s", _ge)
+
     # ── News — B3 2026-10-06: the headlines ARE the answer. Via the LLM they came
     # back "I don't have that recorded" (capability demo, +news backend).
     _news_pats = next((pats for name, pats in _INTENT_MAP if name == "news"), [])
