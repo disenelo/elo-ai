@@ -3596,8 +3596,7 @@ def _process_turn(raw: str) -> dict:
             if _ws_command:
                 # B3-SEARCH-001: SEARCH_INTENT. Topic from the command, else from
                 # David's recent turns ("read up about it" → the thing he just named).
-                from tools.web_search import resolve_search_topic as _ws_resolve, \
-                    search_topic as _ws_search_topic, compose_found as _ws_compose
+                from tools.web_search import resolve_search_topic as _ws_resolve
                 from faculties.grounding.conversation_tracker import get_tracker as _ws_ct
                 _ws_recent = [u for u, _e in _ws_ct().get_context(
                     (_state or {}).get("person_id", "default")).get("recent_turns", [])]
@@ -3608,13 +3607,14 @@ def _process_turn(raw: str) -> dict:
                 if not _sq_text:
                     _ws_direct = "What do you want me to look up?"
                 else:
-                    _ws_name, _ws_results = _ws_search_topic(_sq_text, max_results=5)
+                    from tools.web_search import lookup as _ws_lookup
+                    _ws_r = _ws_lookup(_sq_text)
+                    _ws_name, _ws_results = _ws_r["result"]["name"], _ws_r["result"]["results"]
                     import sys as _ws_sys
                     print(f"[web_search] command q={_sq_text!r} name={_ws_name!r} "
-                          f"source={getattr(_ws_mod, 'last_source', '')} relevant={len(_ws_results)}",
-                          file=_ws_sys.stderr)
-                    _ws_direct = _ws_compose(_ws_name, _ws_results) or \
-                        f"Searched {_ws_name} — nothing solid came back."
+                          f"source={_ws_r['result']['provider']} relevant={len(_ws_results)} "
+                          f"success={_ws_r['success']}", file=_ws_sys.stderr)
+                    _ws_direct = _ws_r["result"]["line"]
                     if _ws_results and _ws_results[0].url:
                         _LAST_FOUND["url"]   = _ws_results[0].url
                         _LAST_FOUND["title"] = _ws_results[0].title

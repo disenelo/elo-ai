@@ -111,7 +111,12 @@ def _device_id() -> str | None:
     return None
 
 
+_last_started = ""
+
+
 def _start(device_id: str, *, context_uri: str = "", uris: list[str] | None = None) -> None:
+    global _last_started
+    _last_started = context_uri or (uris or [""])[0]
     body = {"context_uri": context_uri} if context_uri else {"uris": uris or []}
     r = sw._put(f"{sw._API}/me/player/play", headers=sw._h(),
                 params={"device_id": device_id}, json=body, timeout=8.0)
@@ -409,33 +414,102 @@ def capability_answer(text: str) -> str | None:
     return f"{_ABILITY_LINES[_ability_i]} Right now Spotify's {_status()}."
 
 
-def handle(text: str) -> str | None:
-    """eLo's line for a Spotify request, after doing it. None when not one."""
+def _handle_line(text: str) -> tuple[str, str, str] | None:
+    """(kind, detail, eLo's line) for a Spotify request, after doing it.
+    kind: control | open | list | choose | play | ability. None when not one."""
     global _last_spotify_ts
     act = control_for(text)
     if act:
         _last_spotify_ts = time.time()
         try:
-            return control(act)
+            return ("control", act, control(act))
         except Exception as e:
-            import sys
-            print(f"[spotify_play] {act} failed: {e}", file=sys.stderr)
-            return f"I couldn't {act} Spotify — it gave me an error."
+            return ("control", act, f"I couldn't {act} Spotify — it gave me an error.", f"{type(e).__name__}: {e}")
     req = parse(text)
     if not req:
         ans = capability_answer(text)
         if ans:
             _last_spotify_ts = time.time()
-        return ans
+            return ("ability", "", ans)
+        return None
     _last_spotify_ts = time.time()
     kind, target = req
     try:
         if kind == "open":
-            return open_app()
+            return ("open", "", open_app())
         if kind == "list":
-            return list_playlists(choose=(target == "choose"))
-        return play(target)
+            return ("choose" if target == "choose" else "list", "", list_playlists(choose=(target == "choose")))
+        return ("play", target, play(target))
     except Exception as e:
-        import sys
-        print(f"[spotify_play] {kind} {target!r} failed: {e}", file=sys.stderr)
-        return "Spotify didn't take that — something went wrong on its side."
+        return (kind, target, "Spotify didn't take that — something went wrong on its side.",
+                f"{type(e).__name__}: {e}")
+
+
+# Control lines that mean Spotify confirmed the change (control() only says
+# these after reading the player state back).
+_CONFIRMED = ("Paused.", "Back on", "Skipped —", "Went back —", "Done — Spotify's")
+
+
+def _verify_started() -> tuple[bool, str | None]:
+    """Did what we just started actually start? Read the player back."""
+    for _ in range(4):
+        time.sleep(0.75)
+        try:
+            st = _player()
+        except Exception as e:
+            return False, f"player unreadable: {e}"
+        uri = ((st.get("context") or {}).get("uri") or (st.get("item") or {}).get("uri") or "")
+        if st.get("is_playing") and _last_started and (uri == _last_started
+                                                       or _last_started.startswith("spotify:artist:")):
+            return True, None
+    return False, f"Spotify isn't playing {_last_started or 'it'} after the request"
+
+
+def execute(text: str) -> dict | None:
+    """{success, result: {kind, detail, line, state}, error} for a Spotify
+    request — success from what Spotify reports afterwards, never from having
+    sent a command. Recorded for the execution-confirmation gate. None when
+    the text isn't a Spotify request."""
+    from tools.capability_status import tool_result, record_result
+    got = _handle_line(text)
+    if not got:
+        return None
+    kind, detail, line = got[0], got[1], got[2]
+    error = got[3] if len(got) > 3 else None
+    if error:
+        ok = False
+    elif kind == "control":
+        ok = line.startswith(_CONFIRMED)
+        error = None if ok else line
+    elif kind in ("play", "choose") and not error:
+        if line.startswith(("Couldn't find", "Spotify isn't showing up", "You don't have")) \
+                or "isn't showing up" in line:
+            ok, error = False, line
+        else:
+            ok, error = _verify_started()
+            if not ok:
+                # Never claim playback Spotify doesn't show (Board Bug 3: execute or say why).
+                line = (f"I asked Spotify to play {detail or 'that'}, but it isn't playing — "
+                        "might need a tap on the Spotify app.")
+    elif kind == "open":
+        from tools.spotify_agent import _spotify_running
+        time.sleep(1.0)
+        ok = _spotify_running()
+        error = None if ok else "Spotify app didn't open"
+    elif kind == "list":
+        ok = not line.startswith("You don't have")
+        error = None if ok else line
+    else:  # ability — an answer about himself, true by construction
+        ok = True
+    try:
+        state = _status()
+    except Exception:
+        state = "unknown"
+    return record_result("spotify", tool_result(ok, {"kind": kind, "detail": detail, "line": line,
+                                                     "state": state}, error))
+
+
+def handle(text: str) -> str | None:
+    """eLo's line for a Spotify request, after doing it. None when not one."""
+    r = execute(text)
+    return r["result"]["line"] if r else None

@@ -388,7 +388,32 @@ def _recall(topic: str) -> str | None:
     return line
 
 
+def research(text: str) -> dict | None:
+    """B3 result standard around answer_gap: {success, result: {line, topic,
+    status}, error}; None when the text isn't a research question. Recorded
+    for the execution-confirmation gate."""
+    from tools.capability_status import tool_result, record_result
+    try:
+        line = _answer_gap(text)
+    except Exception as e:
+        return record_result("research", tool_result(False, {"line": None}, f"{type(e).__name__}: {e}"))
+    if line is None:
+        return None
+    found = not line.startswith("Don't know that one")
+    return record_result("research", tool_result(found, {
+        "line": line, "topic": factual_topic(text),
+        "status": ("KNOWLEDGE" if line.startswith("I know this one") else
+                   "RECALLED" if line.startswith(("Looked that up before", "Same as I said")) else
+                   "RETRIEVED" if found else "NOT_FOUND"),
+    }, None if found else "no source stated it"))
+
+
 def answer_gap(text: str) -> str | None:
+    r = research(text)
+    return r["result"]["line"] if r and r["result"] else None
+
+
+def _answer_gap(text: str) -> str | None:
     """A factual question eLo can't answer from what he holds → look it up and
     say so. None when it isn't a factual question or he already knows."""
     q = factual_question(text)

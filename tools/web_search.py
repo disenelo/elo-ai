@@ -639,3 +639,23 @@ def compose_found(name: str, results: list[SearchResult]) -> str:
     where = " and ".join(labels)
     lead = f"Looked it up on {where} —" if first_time else f"More on {name}, from {where} —"
     return " ".join([lead] + [sent for sent, _ in picked])
+
+
+def lookup(topic: str) -> dict:
+    """B3 result standard: {success, result: {name, line, sources, provider}, error}.
+    One call for the explicit-search path; recorded for the execution gate."""
+    from tools.capability_status import tool_result, record_result
+    try:
+        name, results = search_topic(topic, max_results=5)
+        line = compose_found(name, results)
+        ok = bool(line)
+        return record_result("web_search", tool_result(ok, {
+            "name": name, "line": line or f"Searched {name} — nothing solid came back.",
+            "sources": [src for _, src in last_picks], "provider": last_source,
+            "results": results,
+        }, None if ok else "no relevant results"))
+    except Exception as e:
+        return record_result("web_search", tool_result(False, {
+            "name": topic, "line": f"Searched {topic} — the search itself failed.", "sources": [],
+            "provider": last_source, "results": [],
+        }, f"{type(e).__name__}: {e}"))
