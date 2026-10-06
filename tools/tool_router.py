@@ -2148,6 +2148,18 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
             "location_set",
         )
 
+    # ── Named trackers — B3 2026-10-06: "read my eLo tracker" → "no file path found"
+    # → mock filler. The summary from the file IS the answer.
+    if re.search(r"\btracker\b", _lower) and re.search(
+            r"\b(?:read|open|what'?s\s+in|summari[sz]e|check|show|go\s+through|look\s+at)\b", _lower):
+        try:
+            from tools.file_reader_agent import named_document as _nd, summarise_tracker as _st
+            _doc = _nd(user_input)
+            _last_direct_result = _st(_doc) if _doc else "I can't find a tracker by that name."
+            return _last_direct_result, "file_read"
+        except Exception as _fre:
+            _logger.debug("tracker intercept failed: %s", _fre)
+
     # ── Not built (registry future) → honest no — B3 2026-10-06
     try:
         from tools.capability_status import not_built_answer as _nba
