@@ -328,6 +328,12 @@ def _volume_now() -> tuple[int, bool]:
     return (int(vol.group(1)) if vol else -1), muted
 
 
+def _do_volume(arg: str) -> str:
+    """'get' | 'up' | 'down' — named 'volume' to match execution_gate's
+    _IMMEDIATE_SAFE vocabulary (reversible, no confirmation)."""
+    return _do_volume_get(arg) if arg == "get" else _do_volume_step(arg)
+
+
 def _do_volume_get(_arg: str) -> str:
     vol, muted = _volume_now()
     if vol < 0:
@@ -396,8 +402,7 @@ _ACTIONS = {
     "windows_restore_all":  _do_windows_restore_all,
     "dark_mode":            _do_dark_mode,
     "screenshot":           _do_screenshot,
-    "volume_get":           _do_volume_get,
-    "volume_step":          _do_volume_step,
+    "volume":               _do_volume,
     "brightness":           _do_brightness,
     "app_launch":           _do_app_launch,
 }
@@ -411,7 +416,7 @@ _SAFE_ACTIONS = {
     "windows_minimise_all",
     "windows_restore_all",
     # B3 2026-10-06 — registry says no confirmation; harmless and read back.
-    "dark_mode", "screenshot", "volume_get", "volume_step", "brightness", "app_launch",
+    "dark_mode", "screenshot", "volume", "brightness", "app_launch",
 }
 
 
@@ -424,9 +429,9 @@ _SYSTEM_INTENTS = [
     (r"\b(?:switch|turn|change|go|put)\s+(?:it\s+)?(?:on\s+|to\s+|into\s+)?dark\s*mode\b|\bdark\s*mode\s+on\b|^dark\s*mode$", "dark_mode", "on"),
     (r"\b(?:switch|turn|change|go|put)\s+(?:it\s+)?(?:on\s+|to\s+|into\s+|back\s+to\s+)?light\s*mode\b|\bdark\s*mode\s+off\b|\bturn\s+off\s+dark\s*mode\b", "dark_mode", "off"),
     (r"\b(?:take|grab|capture)\s+(?:a\s+)?screen\s*shot\b|^screen\s*shot$", "screenshot", 0),
-    (r"\bwhat(?:'s|\s+is)\s+the\s+volume\b|\bvolume\s+level\b|\bhow\s+loud\s+is\s+it\b", "volume_get", 0),
-    (r"\b(?:turn\s+(?:the\s+)?(?:volume|sound)\s+up|volume\s+up|louder)\b", "volume_step", "up"),
-    (r"\b(?:turn\s+(?:the\s+)?(?:volume|sound)\s+down|volume\s+down|quieter)\b", "volume_step", "down"),
+    (r"\bwhat(?:'s|\s+is)\s+the\s+volume\b|\bvolume\s+level\b|\bhow\s+loud\s+is\s+it\b", "volume", "get"),
+    (r"\b(?:turn\s+(?:the\s+)?(?:volume|sound)\s+up|volume\s+up|louder)\b", "volume", "up"),
+    (r"\b(?:turn\s+(?:the\s+)?(?:volume|sound)\s+down|volume\s+down|quieter)\b", "volume", "down"),
     (r"\b(?:bright(?:er|ness)|dimm?(?:er)?)\b.{0,30}\bscreen\b|\bscreen\b.{0,30}\b(?:bright(?:er|ness)|dimm?(?:er)?)\b", "brightness", 0),
     (r"^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?(?:open|launch)\s+(?:up\s+)?(?:the\s+)?([A-Za-z][\w\.]*(?:\s[A-Za-z][\w\.]*){0,2}?)(?:\s+app)?(?:\s+for\s+me)?[\s\?\.!]*$", "app_launch", 1),
     # Volume control — must come before generic window patterns
@@ -468,7 +473,7 @@ _SYSTEM_INTENTS = [
 
 _LONG_INPUT_SAFE_ACTIONS = frozenset({
     "volume_set", "volume_mute", "windows_minimise_all", "windows_restore_all",
-    "dark_mode", "screenshot", "volume_get", "volume_step", "brightness",
+    "dark_mode", "screenshot", "volume", "brightness",
 })
 
 
