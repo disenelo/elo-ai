@@ -6576,6 +6576,17 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # ROOT-1 fact extractor: write specific, content-bearing WKG claims from
+        # David's explicit statements ("my X is Y", "I'm building X", etc.).
+        # Distinct from populate_wkg_from_turn() which only creates concept stubs,
+        # and from the category-match path below which writes generic "David ASSOCIATED_WITH
+        # projects" claims that carry no retrievable fact content.
+        try:
+            from runtime.wkg_fact_extractor import extract_and_write as _wkg_fe
+            _wkg_fe(_original_raw, experience_id=_wkg_xid, project=_wkg_proj)
+        except Exception:
+            pass
+
         # ── WO-037 interactions write-back (routed via MemoryFaculty — card 0025) ─
         # WO-067-WRITE-PATH: fixed experience_id bug (MemoryCandidate has no such field
         # → TypeError → silent drop). Now tags meaningful turns with memory_categories
