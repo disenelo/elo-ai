@@ -268,6 +268,16 @@ def _battery_tick() -> None:
                 str(fields.get("physical_state", "")),
                 state.get("motion", {}) or {},
             )
+            # WO-GAME-002 — eating restores the body. Consumed on the
+            # existing tick rather than given a trigger of its own, so it is
+            # live the moment Designer's pickup events start arriving instead
+            # of waiting for someone to remember to connect it. A no-op while
+            # no collectible events exist, which is today.
+            try:
+                from core.collectible_intake import drain_pending as _coll
+                _coll()
+            except Exception:
+                pass
             # Dream requests arrive in blender_state's `intent`, and EVERY
             # turn overwrites that field. The gate that reads it only runs in
             # the 8-20 minute ambient callback, so a request survives only if
