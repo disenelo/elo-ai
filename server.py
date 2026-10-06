@@ -6368,6 +6368,9 @@ def _process_turn(raw: str) -> dict:
                             except Exception:
                                 pass
 
+                        # WO-WORLD-001: store agent name for post-turn WORLD_INTERACTION vault write
+                        _wi_agent = _agent or ""
+
                         # Direct-return agents (time, calculator, timer) produce authoritative
                         # factual results that must not be rewritten by the LLM.
                         _direct = _get_direct_result()
@@ -6911,6 +6914,37 @@ def _process_turn(raw: str) -> dict:
                     source_type="PERCEPTION",
                     author="elo",
                 ))
+        except Exception:
+            pass
+
+        # WO-WORLD-001: WORLD_INTERACTION vault event when a tool/capability ran this turn
+        try:
+            _wi_agent_name = locals().get("_wi_agent") or ""
+            if _wi_agent_name:
+                from memory.memory_faculty import MemoryFaculty as _WiMemFac, MemoryCandidate as _WiMemCand
+                _wi_summary = f"WORLD_INTERACTION: {_wi_agent_name} ran for: {(raw or '')[:120]}"
+                _wi_result = _WiMemFac().submit(_WiMemCand(
+                    source_faculty="world",
+                    content=_wi_summary,
+                    proposed_type="episodic",
+                    proposed_weight=2,
+                    significance=0.32,
+                    project=_mem_project_tag if "_mem_project_tag" in dir() else "general",
+                    summary=_wi_summary,
+                    tags=("WORLD_INTERACTION", _wi_agent_name),
+                    epistemic_class="conversation",
+                    source_type="WORLD_INTERACTION",
+                    author="elo",
+                ))
+                # WO-WORLD-001 P3: causal SPG edge action→consequence when a main memory spot exists
+                _wi_action_spot = (_wi_result or {}).get("spot") or ""
+                _wi_consequence_spot = locals().get("_mem_spot") or ""
+                if _wi_action_spot and _wi_consequence_spot:
+                    try:
+                        from memory.spg_faculty import write_world_causal_edge as _wce
+                        _wce(_wi_action_spot, _wi_consequence_spot, agent_name=_wi_agent_name)
+                    except Exception:
+                        pass
         except Exception:
             pass
 
