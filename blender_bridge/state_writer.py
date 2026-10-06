@@ -420,6 +420,11 @@ _PRESERVE_KEYS = {
     # B3-SHOW-BRAIN-001: "show me your brain" → Presence opens the view. Edge-
     # triggered on _ts; the 0.5s ambient write dropped it before Unity polled.
     "ui_command",
+    # PRESENCE KEEP-LIST (Board 2026-10-06, Builder 3 flag → Designer): three keys Presence reads were dropped by the
+    # 0.5s ambient write before Unity polled. "take five" = leave_command, "come back" = return_command (both edge-
+    # triggered on _ts in EloOSAvatarReceiver.Ack.cs), inner-thought text = inner_thought_text (a NEW value = a new
+    # thought, EloOSAvatarReceiver.cs) — so keeping them does not replay them.
+    "leave_command", "return_command", "inner_thought_text",
 }
 
 _VISION_DEFAULT = {"active": False, "attention": 0.0, "focus": {"x": 0.5, "y": 0.5}, "app": ""}
