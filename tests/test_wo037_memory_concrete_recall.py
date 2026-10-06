@@ -79,8 +79,11 @@ try:
     _tmpdir = tempfile.mkdtemp()
     _tmp_facts = os.path.join(_tmpdir, "facts.json")
     _fs_mod._FACTS_FILE = _tmp_facts
+    import tools.tool_router as _tr4
+    _loc_saved, _tr4._LOCATION_FILE = _tr4._LOCATION_FILE, os.path.join(_tmpdir, "user_location.json")
 
     set_location("Hackney Wick")
+    _tr4._LOCATION_FILE = _loc_saved
     loaded = load_facts()
     _match = any("hackney wick" in f.get("fact","").lower() for f in loaded)
     if _match:

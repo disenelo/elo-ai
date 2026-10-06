@@ -154,12 +154,44 @@ def _save_persisted_location(city: str) -> None:
         _j.dump({"city": city, "_ts": _t.time()}, f)
     os.replace(tmp, _LOCATION_FILE)
 
-# Priority: persisted JSON > ELO_LOCATION env > code default
-_user_location: Optional[str] = (
-    _load_persisted_location()
-    or os.environ.get("ELO_LOCATION", "").strip()
-    or None
-)
+# Where David is — B3 2026-10-06 (David L3): "this should be in the SPG or WKG
+# or eLo knowledge to not have to always come back to something from August".
+# The weather said Manchester because tests/test_wo030 wrote the live
+# user_location.json; eLo's own knowledge (user_profile / facts) said Hackney
+# Wick all along. Resolution now reads what eLo knows first.
+_PROFILE_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                             "memory", "user_profile.json")
+
+
+def _known_location() -> Optional[str]:
+    """David's location from eLo's knowledge of him: user_profile, then facts."""
+    try:
+        import json as _j
+        prof = _j.loads(open(_PROFILE_FILE, encoding="utf-8").read())
+        loc = prof.get("location_studio") or prof.get("location")
+        if loc:
+            return str(loc).strip()
+    except Exception:
+        pass
+    try:
+        from memory.fact_store import load_facts as _lf
+        for f in _lf():
+            if f.get("key") == "location":
+                return f.get("fact", "").split(":", 1)[-1].strip() or None
+    except Exception:
+        pass
+    return None
+
+
+def _resolve_location() -> Optional[str]:
+    """Where to use when David doesn't name a place: what he said this session >
+    what eLo knows about him > the persisted file > ELO_LOCATION."""
+    return (_user_location or _known_location() or _load_persisted_location()
+            or os.environ.get("ELO_LOCATION", "").strip() or None)
+
+
+# Session-only: set when David says where he is this session.
+_user_location: Optional[str] = None
 # Hard-coded fallback — never IP-detect when David is always in London.
 _DEFAULT_LOCATION = "London"
 
@@ -196,8 +228,10 @@ def _detect_followup(user_input: str) -> Optional[str]:
     return None
 
 
-def set_location(city: str) -> None:
-    """Save user's preferred location in memory + blender/user_location.json (survives restarts)."""
+def set_location(city: str, studio: bool = False) -> None:
+    """David said where he is. Session location + blender/user_location.json.
+    Fact: "the studio is in X" updates his studio/home fact; "I'm in X" is where
+    he is now and must not rewrite the studio (travel isn't a move)."""
     global _user_location
     _user_location = city.strip()
     try:
@@ -207,7 +241,10 @@ def set_location(city: str) -> None:
     # WO-037: also save as a durable semantic fact so recall surfaces it specifically
     try:
         from memory.fact_store import save_fact as _sf
-        _sf("location", f"Studio / home location: {_user_location}")
+        if studio:
+            _sf("location", f"Studio / home location: {_user_location}")
+        else:
+            _sf("current_location", f"Where David said he is now: {_user_location}")
     except Exception:
         pass
 
@@ -1295,7 +1332,7 @@ def _agent_weather(query: str) -> str:
         query, re.IGNORECASE
     )
     # WO-030: explicit city in query > persisted location > ASK (never silently default)
-    city = (city_match.group(1).strip() if city_match else None) or _user_location
+    city = (city_match.group(1).strip() if city_match else None) or _resolve_location()
     if not city:
         return (
             "No location saved. Ask David: 'Where are you?' — do NOT look up weather, "
@@ -1864,6 +1901,20 @@ def _youtube_to_spotify(user_input: str) -> str:
         return ""
 
 
+def _spoken_weather(wx: str) -> str:
+    """'Weather in Hackney Wick: Partly sunny, 20°C, feels like 24°C, humidity 65%,
+    wind 0 km/h.' → "Partly sunny in Hackney Wick — 20°C, feels like 24°C." Every
+    value comes from the provider's line; unknown shapes are passed through."""
+    m = re.match(r"\s*Weather in (?P<place>[^:]+):\s*(?P<cond>[^,]+),\s*(?P<t>-?\d+(?:\.\d+)?°[CF])"
+                 r"(?:,\s*feels like (?P<f>-?\d+(?:\.\d+)?°[CF]))?", wx or "")
+    if not m:
+        return (wx or "").strip()
+    line = f"{m['cond'].strip().capitalize()} in {m['place'].strip()} — {m['t']}"
+    if m["f"] and m["f"] != m["t"]:
+        line += f", feels like {m['f']}"
+    return line + "."
+
+
 def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     """
     WO-122 Row 14 ROUTE — OS-level intercepts that fire regardless of Executive
@@ -2082,7 +2133,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     # ── Location setting — direct user configuration action ──
     new_city = detect_location_set(user_input)
     if new_city:
-        set_location(new_city)
+        set_location(new_city, studio=bool(re.search(r"\bstudio\b", user_input, re.I)))
         return (
             f"[CONTEXT: User just set their location to {new_city}. "
             f"Acknowledge warmly and confirm you'll use {new_city} for weather from now on.]\n\n{user_input}",
@@ -2102,15 +2153,16 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     if any(re.search(p, _lower) for p in _WEATHER_DIRECT_PATS):
         try:
             _wx = _agent_weather(user_input)
+            # B3 2026-10-06: server.py speaks an intercept's return verbatim, so
+            # this is eLo's line — live it was "[CONTEXT: Weather in …]\n\n<David's
+            # question>" read out raw. Marked direct: it is the answer, from the data.
             if _wx and "No location saved" not in _wx:
-                return f"[CONTEXT: {_wx}]\n\n{user_input}", "weather"
-            # No location set or no weather API — honest fallback (D7-compliant)
-            return (
-                "[CONTEXT: No weather data available — no location saved and no weather API "
-                "is connected. Tell the user honestly that you can't check the weather, and "
-                "if they want to enable it they can tell you their city (e.g. 'I\\'m in London').]\n\n"
-                + user_input
-            ), "weather"
+                _line = _spoken_weather(_wx)
+                _last_direct_result = _line
+                return _line, "weather"
+            _line = "I can't check the weather right now — tell me where you are and I'll use that."
+            _last_direct_result = _line
+            return _line, "weather"
         except Exception as _we:
             _logger.debug("weather direct intercept failed: %s", _we)
 
@@ -2198,10 +2250,15 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
             try:
                 from capabilities.lights_agent import dispatch_lights as _dl
                 _lr = _dl("set_scene", {"scene": _ls})
+                # B3 2026-10-06: spoken verbatim by server.py — eLo's line, marked direct.
                 if _lr.get("success"):
-                    return f"[LIGHTS: Scene '{_ls}' applied successfully.]\n\n{user_input}", "lights"
+                    _last_direct_result = {"off": "Lights off.", "dim": "Dimmed the lights."}.get(
+                        _ls, f"Lights on {_ls}.")
+                    return _last_direct_result, "lights"
                 elif "not set" in (_lr.get("error") or ""):
-                    return f"[LIGHTS: Scene '{_ls}' requested — Hue bridge not configured (HUE_BRIDGE_IP/HUE_API_KEY).]\n\n{user_input}", "lights"
+                    _last_direct_result = ("I can't reach the lights — the Hue bridge isn't set up yet "
+                                           "(it needs HUE_BRIDGE_IP and HUE_API_KEY).")
+                    return _last_direct_result, "lights"
             except Exception as _le:
                 _logger.debug("lights simple intercept failed: %s", _le)
 

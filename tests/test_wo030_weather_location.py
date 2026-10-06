@@ -58,6 +58,31 @@ def _load_module() -> _types.ModuleType:
 _mod = _load_module()
 
 
+# B3 2026-10-06: set_location() writes the location file AND David's facts.
+# Every test that calls it now points both at temp files — this suite once
+# moved David to Manchester in the live server (user_location.json + facts).
+import contextlib as _ctx
+import tempfile as _tempfile
+
+
+@_ctx.contextmanager
+def _isolated(mod):
+    import memory.fact_store as _fs
+    loc_tmp = _tempfile.mktemp(suffix=".json")
+    facts_tmp = _tempfile.mktemp(suffix=".json")
+    saved = (mod._LOCATION_FILE, _fs._FACTS_FILE)
+    mod._LOCATION_FILE, _fs._FACTS_FILE = loc_tmp, facts_tmp
+    try:
+        yield loc_tmp
+    finally:
+        mod._LOCATION_FILE, _fs._FACTS_FILE = saved
+        for f in (loc_tmp, facts_tmp):
+            try:
+                os.unlink(f)
+            except OSError:
+                pass
+
+
 # ── AT-1 ─────────────────────────────────────────────────────────────────────
 
 def test_at1_default_london():
@@ -105,6 +130,7 @@ def test_at3_session_set():
     """set_location() updates _user_location for the session."""
     saved = _mod._user_location
     try:
+      with _isolated(_mod):
         _mod.set_location("Manchester")
         assert _mod._user_location == "Manchester", \
             f"AT-3 FAIL: _user_location={_mod._user_location!r}"
@@ -115,6 +141,7 @@ def test_at3_session_set():
         )
         city = (city_match.group(1).strip() if city_match else None) or _mod._user_location or _mod._DEFAULT_LOCATION
         assert city == "Manchester", f"AT-3 FAIL: city={city!r} after set_location('Manchester')"
+        assert _mod._resolve_location() == "Manchester", "AT-3 FAIL: session set must outrank knowledge"
     finally:
         _mod._user_location = saved
     print("AT-3 PASS — session set propagates to resolution")
@@ -175,8 +202,10 @@ def test_at8_set_location_persists():
     import json, tempfile, os as _os
     mod = _load_module()
     # Point module at a temp file so we don't clobber the real one
+    import memory.fact_store as _fs
     tmp = tempfile.mktemp(suffix=".json")
     mod._LOCATION_FILE = tmp
+    _facts_saved, _fs._FACTS_FILE = _fs._FACTS_FILE, tempfile.mktemp(suffix=".json")
     try:
         mod.set_location("Bristol")
         assert _os.path.exists(tmp), "AT-8 FAIL: JSON file not written"
@@ -184,6 +213,7 @@ def test_at8_set_location_persists():
         assert data.get("city") == "Bristol", f"AT-8 FAIL: {data}"
         assert "_ts" in data, "AT-8 FAIL: _ts missing from JSON"
     finally:
+        _fs._FACTS_FILE = _facts_saved
         try: _os.unlink(tmp)
         except: pass
     print("AT-8 PASS — set_location() persists to user_location.json")
@@ -250,6 +280,8 @@ def test_at11_agent_weather_no_location_asks():
     saved_loc = mod._user_location
     try:
         mod._user_location = None  # simulate: no location ever set
+        mod._known_location = lambda: None          # …and nothing in eLo's knowledge
+        mod._load_persisted_location = lambda: None  # …and no file
 
         result = mod._agent_weather("what's the weather today?")
 
@@ -282,8 +314,10 @@ def test_at12_set_location_then_agent_resolves():
     """
     import json, tempfile, os as _os
     mod = _load_module()
+    import memory.fact_store as _fs
     tmp = tempfile.mktemp(suffix=".json")
     mod._LOCATION_FILE = tmp
+    _facts_saved, _fs._FACTS_FILE = _fs._FACTS_FILE, tempfile.mktemp(suffix=".json")
 
     saved_loc = mod._user_location
     captured_city: list = []
@@ -325,6 +359,7 @@ def test_at12_set_location_then_agent_resolves():
     finally:
         _ur.urlopen = _orig_urlopen
         mod._user_location = saved_loc
+        _fs._FACTS_FILE = _facts_saved
         try: _os.unlink(tmp)
         except: pass
 
@@ -369,6 +404,33 @@ def test_at13_location_set_phrases():
 
 # ── runner ────────────────────────────────────────────────────────────────────
 
+# ── AT-14 (B3 2026-10-06) ────────────────────────────────────────────────────
+
+def test_at14_knowledge_outranks_stale_file():
+    """David L3: where he is comes from eLo's knowledge, not a loose file. A
+    stale user_location.json saying Manchester must not beat what eLo knows."""
+    import json, time as _ti
+    mod = _load_module()
+    with _isolated(mod) as loc_tmp:
+        json.dump({"city": "Manchester", "_ts": _ti.time()}, open(loc_tmp, "w"))
+        saved_known, saved_loc = mod._known_location, mod._user_location
+        try:
+            mod._user_location = None
+            mod._known_location = lambda: "Hackney Wick"
+            assert mod._resolve_location() == "Hackney Wick", \
+                f"AT-14 FAIL: resolved {mod._resolve_location()!r}, stale file won"
+            mod._known_location = lambda: None
+            assert mod._resolve_location() == "Manchester", "AT-14 FAIL: file is still the fallback"
+            mod.set_location("Paris")                      # "I'm in Paris" — travel
+            import memory.fact_store as _fs
+            facts = {f["key"]: f["fact"] for f in _fs.load_facts()}
+            assert "location" not in facts, "AT-14 FAIL: travel rewrote the studio fact"
+            assert "Paris" in facts.get("current_location", ""), f"AT-14 FAIL: {facts}"
+        finally:
+            mod._known_location, mod._user_location = saved_known, saved_loc
+    print("AT-14 PASS — eLo's knowledge > stale file; travel doesn't move the studio")
+
+
 if __name__ == "__main__":
     tests = [
         test_at1_default_london,
@@ -384,6 +446,7 @@ if __name__ == "__main__":
         test_at11_agent_weather_no_location_asks,
         test_at12_set_location_then_agent_resolves,
         test_at13_location_set_phrases,
+        test_at14_knowledge_outranks_stale_file,
     ]
     failed = 0
     for t in tests:

@@ -27,8 +27,14 @@ try:
     # clear any in-memory location first
     import tools.tool_router as _tr
     _tr._user_location = None
+    # B3 2026-10-06: "no location" now means none in the session, none in eLo's
+    # knowledge and no file — eLo knowing David's studio is not a silent default.
+    _known_saved, _file_saved = _tr._known_location, _tr._load_persisted_location
+    _tr._known_location = lambda: None
+    _tr._load_persisted_location = lambda: None
 
     result = _agent_weather("what's the weather today?")
+    _tr._known_location, _tr._load_persisted_location = _known_saved, _file_saved
     if "ask" in result.lower() or "no location" in result.lower() or "where are you" in result.lower():
         ok("AT-1: no-location weather query returns ask-sentinel (not London weather)")
     else:
@@ -84,10 +90,15 @@ except Exception as e:
 
 # ── AT-5: set_location persists correctly to user_location.json ───────────────
 try:
-    from tools.tool_router import set_location as _set_location
-    _set_location("Hackney Wick")
-    _loc_file = os.path.join("blender", "user_location.json")
+    import tempfile as _tf
+    import tools.tool_router as _tr5
+    import memory.fact_store as _fs5
+    _saved5 = (_tr5._LOCATION_FILE, _fs5._FACTS_FILE)
+    _tr5._LOCATION_FILE, _fs5._FACTS_FILE = _tf.mktemp(suffix=".json"), _tf.mktemp(suffix=".json")
+    _tr5.set_location("Hackney Wick", studio=True)
+    _loc_file = _tr5._LOCATION_FILE   # B3: temp file — never the live one
     data = json.loads(open(_loc_file, encoding="utf-8").read())
+    _tr5._LOCATION_FILE, _fs5._FACTS_FILE = _saved5
     city_val = data.get("city")
     if city_val == "Hackney Wick":
         ok(f"AT-5: user_location.json city='Hackney Wick' (not Manchester)")
