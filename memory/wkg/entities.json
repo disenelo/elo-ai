@@ -2741,5 +2741,412 @@
       "SOURCE-HUM-003"
     ],
     "domain": "Humanities"
+  },
+  {
+    "entity_id": "e3a8c83b-675a-4b4e-9f78-37d4734b2510",
+    "entity_type": "CONCEPT",
+    "label": "Spotify Spotify",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791285753.29218,
+    "source_ids": [
+      "ELO-aw1H-uXT3"
+    ]
+  },
+  {
+    "entity_id": "ae2bb056-3c35-4984-846a-9671b926ad09",
+    "entity_type": "CONCEPT",
+    "label": "CONTEXT",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791291933.762183,
+    "source_ids": [
+      "ELO-47kG-kF28"
+    ]
+  },
+  {
+    "entity_id": "80d8beb4-e87e-4211-80c2-2d6aa8380307",
+    "entity_type": "CONCEPT",
+    "label": "Weather",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791291933.764866,
+    "source_ids": [
+      "ELO-47kG-kF28"
+    ]
+  },
+  {
+    "entity_id": "cc9d44e2-dc2b-43d9-9e8f-ff9226bd4dff",
+    "entity_type": "CONCEPT",
+    "label": "Manchester",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791291933.7671628,
+    "source_ids": [
+      "ELO-47kG-kF28"
+    ]
+  },
+  {
+    "entity_id": "2397428b-4060-4db8-8239-5f4e5d3db342",
+    "entity_type": "CONCEPT",
+    "label": "Cloudy",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791291933.7694342,
+    "source_ids": [
+      "ELO-47kG-kF28"
+    ]
+  },
+  {
+    "entity_id": "ad483fe4-9c1d-4703-adcc-81e975750913",
+    "entity_type": "CONCEPT",
+    "label": "Ran",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791291977.018852,
+    "source_ids": [
+      "ELO-oGXF-38M2"
+    ]
+  },
+  {
+    "entity_id": "16126544-ce6e-4b35-96f4-696cf97b9cfc",
+    "entity_type": "CONCEPT",
+    "label": "Spanish",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292011.3365278,
+    "source_ids": [
+      "ELO-8xtJ-qXyx"
+    ]
+  },
+  {
+    "entity_id": "9f2010d4-b15c-490e-975a-c530a7666021",
+    "entity_type": "CONCEPT",
+    "label": "Buenos",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292011.341815,
+    "source_ids": [
+      "ELO-8xtJ-qXyx"
+    ]
+  },
+  {
+    "entity_id": "0bfcf5c6-21a3-4ddd-95d6-5b6db6fed79f",
+    "entity_type": "CONCEPT",
+    "label": "Buenos d\u00edas.",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292011.344384,
+    "source_ids": [
+      "ELO-8xtJ-qXyx"
+    ]
+  },
+  {
+    "entity_id": "d4f28335-f024-4e57-aa69-ac2a14d750c8",
+    "entity_type": "CONCEPT",
+    "label": "Timer",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292023.298105,
+    "source_ids": [
+      "ELO-q8nY-4X1D"
+    ]
+  },
+  {
+    "entity_id": "abc58cf9-2320-43c3-b0d4-a03bec4dd914",
+    "entity_type": "CONCEPT",
+    "label": "Kalman",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292037.6486971,
+    "source_ids": [
+      "ELO-I5uB-Kank"
+    ]
+  },
+  {
+    "entity_id": "9e3844ea-c321-4d8d-b7fc-f82def4cd14e",
+    "entity_type": "CONCEPT",
+    "label": "Wikipedia",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292037.6528482,
+    "source_ids": [
+      "ELO-I5uB-Kank"
+    ]
+  },
+  {
+    "entity_id": "c2095f5c-5fcf-4beb-985a-e196987553b6",
+    "entity_type": "CONCEPT",
+    "label": "South America",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292072.377433,
+    "source_ids": [
+      "ELO-Pswq-OCxg"
+    ]
+  },
+  {
+    "entity_id": "20370894-f067-44b1-9367-007bcd645ce6",
+    "entity_type": "CONCEPT",
+    "label": "Berlin Wall",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292085.75582,
+    "source_ids": [
+      "ELO-nK8s-DhzF"
+    ]
+  },
+  {
+    "entity_id": "fc679425-966f-43e4-9b79-e5933da209b8",
+    "entity_type": "CONCEPT",
+    "label": "Peaceful Revolution",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292085.759937,
+    "source_ids": [
+      "ELO-nK8s-DhzF"
+    ]
+  },
+  {
+    "entity_id": "00199b28-e1b8-467c-a6ac-17a42e7f86d1",
+    "entity_type": "CONCEPT",
+    "label": "Iron Curtain",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292085.762413,
+    "source_ids": [
+      "ELO-nK8s-DhzF"
+    ]
+  },
+  {
+    "entity_id": "c75929e2-2d0f-46a7-9d1c-f1831a9c95ef",
+    "entity_type": "CONCEPT",
+    "label": "Didn",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292085.7659361,
+    "source_ids": [
+      "ELO-nK8s-DhzF"
+    ]
+  },
+  {
+    "entity_id": "6fdcadfa-f90d-49ce-94f0-7a8f2bc218ef",
+    "entity_type": "CONCEPT",
+    "label": "November",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292085.769192,
+    "source_ids": [
+      "ELO-nK8s-DhzF"
+    ]
+  },
+  {
+    "entity_id": "e8dac4f6-f09d-40fc-bd15-ce8a771b17c9",
+    "entity_type": "CONCEPT",
+    "label": "East Berlin",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292092.632378,
+    "source_ids": [
+      "ELO-f1OS-EGW5"
+    ]
+  },
+  {
+    "entity_id": "ff11e251-3ef0-4d3e-bf0a-b2a361f35c9e",
+    "entity_type": "CONCEPT",
+    "label": "October",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292239.195327,
+    "source_ids": [
+      "ELO-N70J-cMNv"
+    ]
+  },
+  {
+    "entity_id": "51ab188e-c334-416a-b1a8-30a1e3d118fe",
+    "entity_type": "CONCEPT",
+    "label": "Prototype",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292299.6859038,
+    "source_ids": [
+      "ELO-ZEkS-0Bsu"
+    ]
+  },
+  {
+    "entity_id": "622c461d-f3a9-42eb-8275-9d47ea4abee5",
+    "entity_type": "CONCEPT",
+    "label": "Builder Test",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292398.627148,
+    "source_ids": [
+      "ELO-FnwD-iqmq"
+    ]
+  },
+  {
+    "entity_id": "4c0d57c4-25f4-4e02-a975-300dd9c12238",
+    "entity_type": "CONCEPT",
+    "label": "To Check The Capability Demo",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292503.255462,
+    "source_ids": [
+      "ELO-8ldP-HLGm"
+    ]
+  },
+  {
+    "entity_id": "85f60571-bfbe-4c14-9ceb-8f3de7f3f4b4",
+    "entity_type": "CONCEPT",
+    "label": "Four Brothers Soundtrack",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292572.964282,
+    "source_ids": [
+      "ELO-gdy7-sF9b"
+    ]
+  },
+  {
+    "entity_id": "b09ddcf6-d3ea-4bdc-ab7c-0fdf4ada9566",
+    "entity_type": "CONCEPT",
+    "label": "Spotify Playing",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292572.968596,
+    "source_ids": [
+      "ELO-gdy7-sF9b"
+    ]
+  },
+  {
+    "entity_id": "160e11f1-1a67-4805-b34a-8ed5e4ad35cd",
+    "entity_type": "CONCEPT",
+    "label": "Spotify Paused",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292581.185875,
+    "source_ids": [
+      "ELO-19Fn-648f"
+    ]
+  },
+  {
+    "entity_id": "39efebce-2168-43ad-904a-dddc3bb5d9db",
+    "entity_type": "CONCEPT",
+    "label": "Bonnie And Clyde",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292588.3358479,
+    "source_ids": [
+      "ELO-Xhsu-4nup"
+    ]
+  },
+  {
+    "entity_id": "4ba2902f-05e2-4c4d-9dc4-c38823530e3c",
+    "entity_type": "CONCEPT",
+    "label": "Serge Gainsbourg",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292588.34053,
+    "source_ids": [
+      "ELO-Xhsu-4nup"
+    ]
+  },
+  {
+    "entity_id": "d5169d1a-d712-4c7b-bccc-6e87689f0b6d",
+    "entity_type": "CONCEPT",
+    "label": "Skipped",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292596.892704,
+    "source_ids": [
+      "ELO-UAla-7dD0"
+    ]
+  },
+  {
+    "entity_id": "677b9e1e-5942-46a3-be00-e39276394766",
+    "entity_type": "CONCEPT",
+    "label": "Memories",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292596.897633,
+    "source_ids": [
+      "ELO-UAla-7dD0"
+    ]
+  },
+  {
+    "entity_id": "c8ba85ad-934e-4766-be0f-5fb161b02a21",
+    "entity_type": "CONCEPT",
+    "label": "Merlot",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292596.901311,
+    "source_ids": [
+      "ELO-UAla-7dD0"
+    ]
+  },
+  {
+    "entity_id": "d526f4e3-af4c-4955-8fcf-b6f5f57c897c",
+    "entity_type": "CONCEPT",
+    "label": "Yeah",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292605.240452,
+    "source_ids": [
+      "ELO-VBTf-t2wR"
+    ]
+  },
+  {
+    "entity_id": "584b907d-98b2-448f-bb37-0269e4fbb3dd",
+    "entity_type": "CONCEPT",
+    "label": "Right",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292605.2437398,
+    "source_ids": [
+      "ELO-VBTf-t2wR"
+    ]
+  },
+  {
+    "entity_id": "d1e49623-40e1-41b4-b550-619548ee16de",
+    "entity_type": "CONCEPT",
+    "label": "David is working on something tricky today",
+    "aliases": [],
+    "description": "Stated in prior session. interactions_backfill_2026-10-06. Excerpt: \"im working on something tricky today\"",
+    "created_at": 1791292634.461635,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ]
+  },
+  {
+    "entity_id": "99d2907d-c06a-4cf2-9037-8f9e382af1ee",
+    "entity_type": "CONCEPT",
+    "label": "David's friend told me the project is stupid",
+    "aliases": [],
+    "description": "Stated in prior session. interactions_backfill_2026-10-06. Excerpt: \"my friend told me the project is stupid\"",
+    "created_at": 1791292634.698472,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ]
+  },
+  {
+    "entity_id": "1aea8a1a-dc45-42ec-986c-d3593dd0ef5d",
+    "entity_type": "CONCEPT",
+    "label": "David's memory is a lot more foggy than yours",
+    "aliases": [],
+    "description": "Stated in prior session. interactions_backfill_2026-10-06. Excerpt: \"I think my memory is a lot more foggy than yours\"",
+    "created_at": 1791292634.762701,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ]
+  },
+  {
+    "entity_id": "7c1a738b-c573-4d68-83fd-7bb75fec5c30",
+    "entity_type": "CONCEPT",
+    "label": "David's favourite material to sew with is barkcloth from Uganda",
+    "aliases": [],
+    "description": "Stated in prior session. interactions_backfill_2026-10-06. Excerpt: \"My favourite material to sew with is barkcloth from Uganda.\"",
+    "created_at": 1791292634.867751,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ]
   }
 ]
