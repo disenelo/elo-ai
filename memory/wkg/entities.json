@@ -539,5 +539,2207 @@
     "source_ids": [
       "ELO-kI9S-ONiL"
     ]
+  },
+  {
+    "entity_id": "038e346e-90db-498e-9603-e4f4cb599477",
+    "entity_type": "CONCEPT",
+    "label": "Same",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791245865.197034,
+    "source_ids": [
+      "ELO-WAji-LgLG"
+    ]
+  },
+  {
+    "entity_id": "61ff5ee8-3c0f-427a-976a-1d203deadab0",
+    "entity_type": "CONCEPT",
+    "label": "Pinkie",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791245865.203747,
+    "source_ids": [
+      "ELO-WAji-LgLG"
+    ]
+  },
+  {
+    "entity_id": "7166e7f2-d339-4344-9e27-19c90ec8a2cf",
+    "entity_type": "CONCEPT",
+    "label": "Brain",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791245945.735407,
+    "source_ids": [
+      "ELO-yaD6-cuag"
+    ]
+  },
+  {
+    "entity_id": "955a2cc9-27b1-4c3e-a1f4-471823f661a0",
+    "entity_type": "CONCEPT",
+    "label": "Brain Double",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791245972.291101,
+    "source_ids": [
+      "ELO-qtM0-RDVm"
+    ]
+  },
+  {
+    "entity_id": "0ce37b6e-75ca-43e9-8114-853e0046ecc6",
+    "entity_type": "CONCEPT",
+    "label": "Looked",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791245972.294346,
+    "source_ids": [
+      "ELO-qtM0-RDVm"
+    ]
+  },
+  {
+    "entity_id": "5c87bd78-785c-4519-98af-948773fc651c",
+    "entity_type": "CONCEPT",
+    "label": "Pinky",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791245972.297712,
+    "source_ids": [
+      "ELO-qtM0-RDVm"
+    ]
+  },
+  {
+    "entity_id": "3d0450b9-9b18-4dcd-984c-24c37b1e5e0c",
+    "entity_type": "CONCEPT",
+    "label": "Cartoon",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791245972.3010712,
+    "source_ids": [
+      "ELO-qtM0-RDVm"
+    ]
+  },
+  {
+    "entity_id": "fdd9eeea-8fa8-4c63-acb8-8bdaed3fe5e9",
+    "entity_type": "CONCEPT",
+    "label": "Pinky and the Brain.",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246223.5656698,
+    "source_ids": [
+      "ELO-7bWq-yALJ"
+    ]
+  },
+  {
+    "entity_id": "6c323cad-e46b-46cd-acb2-e59b581ef89f",
+    "entity_type": "CONCEPT",
+    "label": "American",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246254.02475,
+    "source_ids": [
+      "ELO-BnzC-pxiA"
+    ]
+  },
+  {
+    "entity_id": "543cded4-da22-4f12-8b5f-2c431d93e4a4",
+    "entity_type": "CONCEPT",
+    "label": "Dolby Surround",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246263.538931,
+    "source_ids": [
+      "ELO-m2Xi-6o45"
+    ]
+  },
+  {
+    "entity_id": "02356fb0-b4f0-46cb-a73a-741c6a2622e0",
+    "entity_type": "CONCEPT",
+    "label": "More",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246263.539859,
+    "source_ids": [
+      "ELO-m2Xi-6o45"
+    ]
+  },
+  {
+    "entity_id": "d15d7804-227f-4131-935b-b86d194fe6f9",
+    "entity_type": "CONCEPT",
+    "label": "Camberwell College",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246273.177719,
+    "source_ids": [
+      "ELO-sMZC-ZMxl"
+    ]
+  },
+  {
+    "entity_id": "15b8d8a3-5024-4547-bc8e-470818aa4ece",
+    "entity_type": "CONCEPT",
+    "label": "Arts Looked",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246273.178956,
+    "source_ids": [
+      "ELO-sMZC-ZMxl"
+    ]
+  },
+  {
+    "entity_id": "68c299a3-0140-4291-9ba1-21499e6f9e39",
+    "entity_type": "CONCEPT",
+    "label": "Arts London",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246273.180279,
+    "source_ids": [
+      "ELO-sMZC-ZMxl"
+    ]
+  },
+  {
+    "entity_id": "4c2c86c3-421f-4087-8aaf-146316876ac6",
+    "entity_type": "CONCEPT",
+    "label": "University",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246273.181393,
+    "source_ids": [
+      "ELO-sMZC-ZMxl"
+    ]
+  },
+  {
+    "entity_id": "337474e5-548f-4bcf-84a6-f83c726455ff",
+    "entity_type": "CONCEPT",
+    "label": "England",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246273.183035,
+    "source_ids": [
+      "ELO-sMZC-ZMxl"
+    ]
+  },
+  {
+    "entity_id": "75b6aec9-123b-4994-89b5-d1602b68e2eb",
+    "entity_type": "CONCEPT",
+    "label": "Fine Art",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246285.184541,
+    "source_ids": [
+      "ELO-KmdC-rKhK"
+    ]
+  },
+  {
+    "entity_id": "e21d64ec-f63e-453d-9114-cc9d575205d7",
+    "entity_type": "CONCEPT",
+    "label": "Bachelor",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246285.186503,
+    "source_ids": [
+      "ELO-KmdC-rKhK"
+    ]
+  },
+  {
+    "entity_id": "77d802d6-802c-4a3f-931e-fdb51654d34f",
+    "entity_type": "CONCEPT",
+    "label": "Jitwam Radio Playlist",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246306.842719,
+    "source_ids": [
+      "ELO-7EsO-FYUs"
+    ]
+  },
+  {
+    "entity_id": "69f11a4c-8f5f-41ef-a4a8-83f9d495e00f",
+    "entity_type": "CONCEPT",
+    "label": "Spotify Searched Jitwam Radio Playlist",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246306.8439739,
+    "source_ids": [
+      "ELO-7EsO-FYUs"
+    ]
+  },
+  {
+    "entity_id": "0f22b654-736d-4cb1-af39-fa84fbc7137d",
+    "entity_type": "CONCEPT",
+    "label": "Spotify Looked",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246370.017565,
+    "source_ids": [
+      "ELO-uqh2-BEiM"
+    ]
+  },
+  {
+    "entity_id": "0152cbfb-100e-4308-bed8-1eb638d1638a",
+    "entity_type": "CONCEPT",
+    "label": "Top Spotify Playlists",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246370.018802,
+    "source_ids": [
+      "ELO-uqh2-BEiM"
+    ]
+  },
+  {
+    "entity_id": "e3fd265a-4346-4095-81ff-70203bfbab23",
+    "entity_type": "CONCEPT",
+    "label": "Summer Dance Hits",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246370.022345,
+    "source_ids": [
+      "ELO-uqh2-BEiM"
+    ]
+  },
+  {
+    "entity_id": "bb55fd06-029b-4190-8490-ed5e0886d824",
+    "entity_type": "CONCEPT",
+    "label": "Summer House",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246370.02352,
+    "source_ids": [
+      "ELO-uqh2-BEiM"
+    ]
+  },
+  {
+    "entity_id": "29c78ef8-5a78-4c17-aae7-c027b0c8c1e9",
+    "entity_type": "CONCEPT",
+    "label": "Tech House",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246370.024405,
+    "source_ids": [
+      "ELO-uqh2-BEiM"
+    ]
+  },
+  {
+    "entity_id": "8a11291a-c760-4b4e-9cc6-a4d3baf4fb59",
+    "entity_type": "CONCEPT",
+    "label": "Funk Rock",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246370.0252402,
+    "source_ids": [
+      "ELO-uqh2-BEiM"
+    ]
+  },
+  {
+    "entity_id": "7cb575ad-53f1-4c3c-8d6e-2fe101fad271",
+    "entity_type": "CONCEPT",
+    "label": "EDM Hits",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246370.029514,
+    "source_ids": [
+      "ELO-uqh2-BEiM"
+    ]
+  },
+  {
+    "entity_id": "49d51daa-dce9-4004-9dad-84066f9009c8",
+    "entity_type": "CONCEPT",
+    "label": "Months",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246370.0307992,
+    "source_ids": [
+      "ELO-uqh2-BEiM"
+    ]
+  },
+  {
+    "entity_id": "daaf8dd8-1543-4a20-a9ab-642eb7ea626d",
+    "entity_type": "CONCEPT",
+    "label": "Housewerk",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246370.031965,
+    "source_ids": [
+      "ELO-uqh2-BEiM"
+    ]
+  },
+  {
+    "entity_id": "b4de8d63-2b70-4690-b6c3-d4d4a01cfc5a",
+    "entity_type": "CONCEPT",
+    "label": "Here",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791246495.566241,
+    "source_ids": [
+      "ELO-NCye-WlcZ"
+    ]
+  },
+  {
+    "entity_id": "8043ca81-6cc9-4ba8-b153-cc73988e1471",
+    "entity_type": "PERSON",
+    "label": "Mansa Musa",
+    "aliases": [
+      "Musa I of Mali",
+      "Musa Keita I"
+    ],
+    "description": "14th-century emperor of the Mali Empire, reigned c.1312\u20131337. Undertook Hajj pilgrimage to Mecca in 1324, distributing gold en route; his wealth is among the largest ever documented in human history. His pilgrimage caused gold price inflation across North Africa and the Middle East.",
+    "created_at": 1791248926.650487,
+    "source_ids": [
+      "SOURCE-HUM-002",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "54540a62-c01e-49b3-982a-314c01a14540",
+    "entity_type": "CULTURAL",
+    "label": "Mali Empire",
+    "aliases": [
+      "Manden Kurufaba",
+      "Empire of Mali"
+    ],
+    "description": "West African empire that flourished c.1230\u20131600 CE. At its peak under Mansa Musa one of the wealthiest states in the world, controlling trans-Saharan gold and salt trade routes. Capital: Niani. Major cities: Timbuktu, Djenn\u00e9.",
+    "created_at": 1791248926.654002,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "9ddabda3-08d8-4fc3-803a-422a2c7b689a",
+    "entity_type": "CONCEPT",
+    "label": "Hajj Pilgrimage",
+    "aliases": [
+      "Hajj",
+      "Muslim pilgrimage to Mecca"
+    ],
+    "description": "Annual Islamic pilgrimage to Mecca, Saudi Arabia \u2014 one of the Five Pillars of Islam. Obligatory for Muslims who are financially and physically able. One of the world's largest annual gatherings.",
+    "created_at": 1791248926.65521,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "9170a45a-0ab4-4fe7-9773-32a8738d650a",
+    "entity_type": "CONCEPT",
+    "label": "Gold Price Collapse Egypt 1324",
+    "aliases": [
+      "Mansa Musa gold inflation",
+      "Cairo gold devaluation 1324"
+    ],
+    "description": "Economic disruption in Cairo, Medina, and Mecca following Mansa Musa's Hajj pilgrimage (1324), during which he distributed so much gold that the metal was devalued in the region for roughly a decade. Documented by Egyptian historian al-Maqrizi.",
+    "created_at": 1791248926.656296,
+    "source_ids": [
+      "SOURCE-HUM-002",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "fc13182f-916f-4977-8ecb-7c26e3a38d15",
+    "entity_type": "CONCEPT",
+    "label": "Extraordinary Wealth",
+    "aliases": [
+      "immense wealth",
+      "incalculable fortune"
+    ],
+    "description": "Abstract concept denoting wealth beyond reliable quantification. Applied to historical figures like Mansa Musa where contemporaneous accounts attest enormous resources but modern monetary estimates are contested.",
+    "created_at": 1791248926.657566,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "5c458afa-edd4-4013-93cc-8a019d6f685e",
+    "entity_type": "PLACE",
+    "label": "West Africa",
+    "aliases": [
+      "West African region"
+    ],
+    "description": "Western sub-region of Africa, roughly from Senegal and Mauritania in the west to Nigeria and Niger in the east. Home to major historical empires: Ghana, Mali, Songhai. Rich in gold and salt resources that drove trans-Saharan trade.",
+    "created_at": 1791248926.6586492,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "28d22d2f-b789-4f5c-b17a-cb4112249acc",
+    "entity_type": "PLACE",
+    "label": "African Continent",
+    "aliases": [
+      "Africa"
+    ],
+    "description": "Earth's second-largest continent. Cradle of modern human origins. Hosts extraordinary cultural, linguistic, and historical diversity across 54 recognised nations and thousands of ethnic groups.",
+    "created_at": 1791248926.6596942,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "169f1293-db4f-4a5e-a20d-660993ce4518",
+    "entity_type": "CULTURAL",
+    "label": "Songhai Empire",
+    "aliases": [
+      "Songhay Empire"
+    ],
+    "description": "West African empire (c.1340\u20131591 CE) that superseded the Mali Empire as the dominant power in the western Sudan. At its peak under Askia the Great, one of the largest empires in African history.",
+    "created_at": 1791248926.6612391,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "71c9b3b8-6391-4df1-a4df-06fabc5659fe",
+    "entity_type": "PERSON",
+    "label": "Alexander the Great",
+    "aliases": [
+      "Alexander III of Macedon",
+      "Alexandros"
+    ],
+    "description": "Macedonian king (356\u2013323 BCE) who created one of the largest empires of the ancient world, stretching from Greece to northwestern India. Student of Aristotle. His campaigns spread Hellenic culture across the Near East, Egypt, and Persia (Hellenisation).",
+    "created_at": 1791248926.663004,
+    "source_ids": [
+      "SOURCE-HUM-002",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "3cf6c1d8-e387-4556-9a5c-7752fb01f377",
+    "entity_type": "CONCEPT",
+    "label": "Hellenism",
+    "aliases": [
+      "Hellenisation",
+      "Greek cultural diffusion"
+    ],
+    "description": "Spread of Greek culture, language, and ideas across the Mediterranean and Near East following Alexander's conquests (c.323\u201331 BCE). Produced philosophical, artistic, and scientific synthesis between Greek and Eastern traditions.",
+    "created_at": 1791248926.664326,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "01c40303-b265-4c92-b94f-95f4ee337549",
+    "entity_type": "CULTURAL",
+    "label": "Roman Empire",
+    "aliases": [
+      "Imperium Romanum",
+      "Rome"
+    ],
+    "description": "Political entity centred on Rome that governed much of Europe, the Mediterranean, and parts of the Middle East from 27 BCE to 476 CE (Western) / 1453 CE (Eastern/Byzantine). Major influence on law, governance, language, engineering, and Western culture.",
+    "created_at": 1791248926.66559,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "1bb8cdc9-6138-42aa-88b7-cacfab43dfd7",
+    "entity_type": "CONCEPT",
+    "label": "Western Legal Tradition",
+    "aliases": [
+      "Roman law tradition",
+      "civil law"
+    ],
+    "description": "Legal tradition derived substantially from Roman law, transmitted through medieval canon law and secular codes. Foundation of legal systems across continental Europe, Latin America, and former European colonies.",
+    "created_at": 1791248926.668166,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "3c60b05f-5999-4261-a8bf-502ec97fc62f",
+    "entity_type": "CONCEPT",
+    "label": "Silk Road",
+    "aliases": [
+      "Silk Routes",
+      "ancient Eurasian trade network"
+    ],
+    "description": "Network of ancient trade routes connecting China, Central Asia, South Asia, the Middle East, East Africa, and Europe (c.2nd century BCE \u2013 15th century CE). Facilitated exchange of silk, spices, ideas, religions, and diseases across Eurasia.",
+    "created_at": 1791248926.6697721,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "deb0a62a-ec7b-45ba-8711-ef4e9205026f",
+    "entity_type": "CONCEPT",
+    "label": "Trans-Saharan Trade",
+    "aliases": [
+      "trans-Saharan trade routes",
+      "Saharan caravan routes"
+    ],
+    "description": "Ancient and medieval trade routes crossing the Sahara Desert linking sub-Saharan Africa with North Africa and the Mediterranean. Primarily traded gold, salt, slaves, and ivory. Enabled the wealth of the Mali and Songhai Empires.",
+    "created_at": 1791248926.671438,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "5fc8ec48-d2a0-403d-934d-2f9e7d4fb5c9",
+    "entity_type": "CONCEPT",
+    "label": "Devaluation of Gold",
+    "aliases": [
+      "gold inflation",
+      "currency devaluation"
+    ],
+    "description": "Reduction in the exchange value of gold relative to other goods. In the economics domain, an increase in gold supply without corresponding increase in demand drives devaluation \u2014 as occurred in North Africa following Mansa Musa's Hajj.",
+    "created_at": 1791248926.672949,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "ef2afecd-4ee2-42e5-8213-7c42cd2cef6a",
+    "entity_type": "PLACE",
+    "label": "Sahara Desert",
+    "aliases": [
+      "the Sahara",
+      "Great Desert"
+    ],
+    "description": "Largest hot desert in the world (~9.2 million km\u00b2), covering most of North Africa. Major barrier and connector \u2014 trade routes and migrations cross it; its expansion has shaped civilisations across millennia.",
+    "created_at": 1791248926.674114,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "9ce2d069-c793-421d-bc58-5dd8abffc54d",
+    "entity_type": "PLACE",
+    "label": "Mesopotamia",
+    "aliases": [
+      "the Land Between Rivers",
+      "ancient Iraq"
+    ],
+    "description": "Historical region between the Tigris and Euphrates rivers (modern Iraq and parts of Syria/Turkey). Site of some of humanity's earliest civilisations: Sumeria, Akkad, Babylon, Assyria. Birthplace of writing (cuneiform), the wheel, and complex city-states.",
+    "created_at": 1791248926.675576,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "f8eb8482-5184-4382-8973-69f6de99767e",
+    "entity_type": "CONCEPT",
+    "label": "Cuneiform Writing",
+    "aliases": [
+      "cuneiform script",
+      "Sumerian writing"
+    ],
+    "description": "One of the earliest writing systems, developed in Mesopotamia around 3100 BCE. Impressed onto clay tablets using a reed stylus, producing wedge-shaped marks. Used for administrative, literary, and religious texts.",
+    "created_at": 1791248926.6766331,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "1d6972e3-897f-4e13-827e-1cb36702f124",
+    "entity_type": "CONCEPT",
+    "label": "Alphabetic Writing",
+    "aliases": [
+      "alphabet",
+      "phonemic script"
+    ],
+    "description": "Writing system where symbols represent phonemes (sounds). Developed in the ancient Near East around 1800\u20131200 BCE. Ancestor of most modern writing systems including Arabic, Latin, Greek, Hebrew, and Cyrillic scripts.",
+    "created_at": 1791248926.6777139,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "f39f1d14-a98b-482c-b981-0529ab12c56c",
+    "entity_type": "PLACE",
+    "label": "Amazon River Basin",
+    "aliases": [
+      "Amazonia",
+      "Amazon rainforest"
+    ],
+    "description": "World's largest tropical rainforest and river drainage basin (~7 million km\u00b2) in South America. Home to extraordinary biodiversity and hundreds of indigenous cultures with distinct languages and knowledge systems.",
+    "created_at": 1791248926.6789708,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "00963f70-6c91-4046-a6d0-623bed9d977c",
+    "entity_type": "CONCEPT",
+    "label": "Indigenous Knowledge Systems",
+    "aliases": [
+      "traditional ecological knowledge",
+      "IKS"
+    ],
+    "description": "Bodies of knowledge, practice, and belief developed by indigenous peoples across generations through direct experience with their environment. Encompasses ecological, medicinal, agricultural, cosmological, and social knowledge.",
+    "created_at": 1791248926.680681,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "aeec7d8b-3f92-4f2e-b0ac-b45c2acec30b",
+    "entity_type": "CONCEPT",
+    "label": "Western Scientific Framework",
+    "aliases": [
+      "scientific method",
+      "Western science"
+    ],
+    "description": "The epistemological tradition centred on empirical observation, hypothesis testing, peer review, and falsifiability. Developed from Enlightenment Europe. Dominant global knowledge-validation system today, though challenged as a complete framework by postcolonial and indigenous knowledge scholars.",
+    "created_at": 1791248926.682912,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "f1bae726-a859-4d60-9320-b91d633225ed",
+    "entity_type": "CONCEPT",
+    "label": "Hero's Journey",
+    "aliases": [
+      "monomyth",
+      "Campbell's monomyth"
+    ],
+    "description": "Narrative archetype identified by Joseph Campbell (1949, 'The Hero with a Thousand Faces'): a hero ventures from ordinary world \u2192 enters special world \u2192 faces trials \u2192 transforms \u2192 returns with boon. Appears across cultures from Gilgamesh to modern film. Cross-cultural structural claim is contested by scholars who note cultural specificity.",
+    "created_at": 1791248926.686049,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "734c70d0-19ad-4653-8149-97ac073ddd13",
+    "entity_type": "PERSON",
+    "label": "Joseph Campbell",
+    "aliases": [
+      "Campbell"
+    ],
+    "description": "American mythologist (1904\u20131987). Synthesised comparative mythology across world cultures in 'The Hero with a Thousand Faces' (1949) and 'The Masks of God' series. Coined the term 'monomyth'. Major influence on George Lucas (Star Wars).",
+    "created_at": 1791248926.687524,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "d28e0e96-af45-4fab-99fe-3a1237d2d75e",
+    "entity_type": "CONCEPT",
+    "label": "Trickster Archetype",
+    "aliases": [
+      "trickster figure",
+      "trickster deity"
+    ],
+    "description": "Cross-cultural mythic figure who breaks rules, disrupts order, and enables transformation through transgression. Examples: Anansi (Akan/West African), Loki (Norse), Coyote (various Native American), Hermes (Greek), Br'er Rabbit (African American). Connects to chaos, creativity, and liminal spaces.",
+    "created_at": 1791248926.689358,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "53412104-d5d3-44f9-926f-fd90ea1bcbae",
+    "entity_type": "CONCEPT",
+    "label": "Chaos and Transformation",
+    "aliases": [
+      "creative destruction",
+      "disruption as creation"
+    ],
+    "description": "The duality of chaos as both destructive and generative. In mythological thinking, disorder is often the precondition for new order. Parallels in modern complexity theory (edge of chaos as site of emergence).",
+    "created_at": 1791248926.690782,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "b8bacdf1-6997-4962-9b82-8e4e61a432b1",
+    "entity_type": "SYMBOLIC",
+    "label": "Anansi",
+    "aliases": [
+      "Kwaku Anansi",
+      "Aunt Nancy"
+    ],
+    "description": "Spider deity and trickster figure in Akan mythology (Ghana/West Africa). Symbol of wisdom, storytelling, and cunning. Stories spread across the African diaspora via the transatlantic slave trade; evolved into Br'er Rabbit in North American tradition.",
+    "created_at": 1791248926.692981,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "678dc5a8-a819-4578-8d36-3a6971c3b78c",
+    "entity_type": "CULTURAL",
+    "label": "Akan Culture",
+    "aliases": [
+      "Akan people",
+      "Akan"
+    ],
+    "description": "Ethnic group and culture of southern Ghana and parts of Ivory Coast. Rich oral literary tradition (including Anansi stories), known for Kente cloth, adinkra symbols, matrilineal social structure, and the Asante Empire.",
+    "created_at": 1791248926.697192,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "1b220740-21ce-4cd8-b745-39961cc4f1bf",
+    "entity_type": "SYMBOLIC",
+    "label": "Prometheus",
+    "aliases": [
+      "Prometheus Bound",
+      "the Titan fire-bringer"
+    ],
+    "description": "Greek Titan who stole fire from the gods and gave it to humanity, enabling civilization, technology, and arts. Punished by Zeus (eternal torment). Symbolic archetype: the rebel creator who suffers for transgression that benefits others. Reappears in Frankenstein, Lucifer myth, modernity narratives.",
+    "created_at": 1791248926.7030542,
+    "source_ids": [
+      "SOURCE-HUM-002",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "2c7b868e-70b3-4f52-971c-5ef0962e520a",
+    "entity_type": "CULTURAL",
+    "label": "Greek Mythology",
+    "aliases": [
+      "Hellenic mythology",
+      "ancient Greek religion"
+    ],
+    "description": "Body of myths originating in ancient Greece, primarily transmitted through Homer's epics and Hesiod's Theogony and Works and Days. Encompasses gods (Olympians), heroes, monsters, and cosmological narratives. Foundational influence on Western literature, art, and culture.",
+    "created_at": 1791248926.708214,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "8be119ea-9aee-42ad-b4af-1dc1e8a259e2",
+    "entity_type": "CULTURAL",
+    "label": "Roman Mythology",
+    "aliases": [
+      "Roman religion",
+      "Latin mythology"
+    ],
+    "description": "Religious and mythological tradition of ancient Rome, heavily syncretised with Greek mythology (Zeus\u2192Jupiter, Hera\u2192Juno, etc.) while incorporating Italic and Etruscan elements. Transmitted through Virgil's Aeneid, Ovid's Metamorphoses.",
+    "created_at": 1791248926.71245,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "bcf219fd-9ce1-4e0c-98f9-a7abb5cd615f",
+    "entity_type": "CONCEPT",
+    "label": "Technology as Transgression",
+    "aliases": [
+      "technological hubris",
+      "fire-theft narrative"
+    ],
+    "description": "The recurring mythological motif that human technological achievement represents theft or transgression against divine order, often punished. Prometheus, the Tower of Babel, Frankenstein. Reflects cultural ambivalence about technological progress.",
+    "created_at": 1791248926.717522,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "645ab794-fb8f-4e87-9d14-2d85b921eb83",
+    "entity_type": "PERSON",
+    "label": "Socrates",
+    "aliases": [
+      "Sokrates"
+    ],
+    "description": "Athenian philosopher (c.470\u2013399 BCE). Developed the Socratic method (elenchus): systematic questioning to expose contradictions and elicit truth. Left no writings; known through Plato's dialogues and Xenophon. Executed by Athens for impiety and corrupting youth.",
+    "created_at": 1791248926.7201998,
+    "source_ids": [
+      "SOURCE-HUM-002",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "35bfd84c-f54e-429d-b9da-4cc1e38bb2ef",
+    "entity_type": "CONCEPT",
+    "label": "Socratic Method",
+    "aliases": [
+      "elenchus",
+      "Socratic dialogue",
+      "method of inquiry"
+    ],
+    "description": "Philosophical technique of cooperative argumentative dialogue, using questions to stimulate critical thinking and expose contradictions in the interlocutor's beliefs. Still fundamental to philosophical education and legal reasoning.",
+    "created_at": 1791248926.721395,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "6fba6f2f-e5db-4e51-9a3e-9a9b3b4e8695",
+    "entity_type": "PERSON",
+    "label": "Plato",
+    "aliases": [
+      "Platon"
+    ],
+    "description": "Athenian philosopher (c.428\u2013348 BCE), student of Socrates, teacher of Aristotle. Founded the Academy (first institution of higher learning in the Western world). Developed Theory of Forms: abstract, immaterial Forms are the most real things; the physical world is a shadow. Major works: Republic, Symposium, Phaedo.",
+    "created_at": 1791248926.722552,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-002"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "61446201-64fe-4519-94a4-f35f47e596f9",
+    "entity_type": "CONCEPT",
+    "label": "Theory of Forms",
+    "aliases": [
+      "Platonic Forms",
+      "Theory of Ideas"
+    ],
+    "description": "Plato's metaphysical doctrine that the material world is a shadow of eternal, perfect, abstract Forms (Ideas). The Form of the Good is highest. Knowledge is recollection (anamnesis) of Forms the soul knew before birth. Foundational to idealism and rationalism.",
+    "created_at": 1791248926.723736,
+    "source_ids": [
+      "SOURCE-HUM-002",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "52cfecdf-60e6-499c-a53b-63da458dec51",
+    "entity_type": "PERSON",
+    "label": "Aristotle",
+    "aliases": [
+      "Aristoteles"
+    ],
+    "description": "Greek philosopher (384\u2013322 BCE), student of Plato, tutor to Alexander the Great. Founded the Lyceum. Systematised logic (syllogism), biology, physics, ethics, politics, rhetoric, and aesthetics. His work was the foundation of medieval scholasticism via Arabic transmission.",
+    "created_at": 1791248926.724897,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-002"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "7a821ab5-8d51-4b93-b7a0-615b370f8cc6",
+    "entity_type": "CONCEPT",
+    "label": "Formal Logic",
+    "aliases": [
+      "Aristotelian logic",
+      "syllogism",
+      "deductive logic"
+    ],
+    "description": "System of valid reasoning based on defined rules for drawing conclusions from premises. Aristotle's syllogism (all A are B; all B are C; therefore all A are C) was the dominant logical framework for nearly 2000 years. Foundation of mathematics, computer science, and analytic philosophy.",
+    "created_at": 1791248926.726291,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "2906274e-7368-43e4-9f13-0c50df7c4efd",
+    "entity_type": "CONCEPT",
+    "label": "Mathematical Logic",
+    "aliases": [
+      "symbolic logic",
+      "modern logic"
+    ],
+    "description": "Extension of formal logic using mathematical notation (Frege, Russell, Whitehead, G\u00f6del). Foundation of proof theory, set theory, computability, and the theoretical basis of computer science.",
+    "created_at": 1791248926.727787,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "fa360c57-8112-4566-872c-fdb59bc2651c",
+    "entity_type": "CONCEPT",
+    "label": "Epistemology",
+    "aliases": [
+      "theory of knowledge",
+      "gnoseology"
+    ],
+    "description": "Branch of philosophy concerned with the nature, scope, and limits of knowledge. Central questions: What is knowledge? How is it justified? What can we know? Major positions: rationalism (reason is primary), empiricism (experience is primary), scepticism (knowledge may be impossible).",
+    "created_at": 1791248926.729007,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "ef9728b4-17e2-4af1-afda-f1a47016c25c",
+    "entity_type": "CONCEPT",
+    "label": "Empiricism",
+    "aliases": [
+      "empirical tradition",
+      "sensory knowledge"
+    ],
+    "description": "Philosophical tradition holding that knowledge derives from sensory experience. Major empiricists: Aristotle (proto-empiricist), John Locke, David Hume, George Berkeley. Counterpole to rationalism. Foundation of the scientific method.",
+    "created_at": 1791248926.730499,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "deaeb32d-1904-4edb-af63-50ef968b8e88",
+    "entity_type": "CONCEPT",
+    "label": "Ethics",
+    "aliases": [
+      "moral philosophy",
+      "normative ethics"
+    ],
+    "description": "Branch of philosophy concerned with moral questions: what is right action? What is good? Major frameworks: virtue ethics (Aristotle \u2014 character), deontology (Kant \u2014 duty/rules), consequentialism (Mill/Bentham \u2014 outcomes), care ethics (Noddings \u2014 relationships).",
+    "created_at": 1791248926.731765,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "b6fafd4c-5c40-47bd-8b80-6f399e39ebcd",
+    "entity_type": "PERSON",
+    "label": "Immanuel Kant",
+    "aliases": [
+      "Kant"
+    ],
+    "description": "German philosopher (1724\u20131804). Central figure of Enlightenment thought. Major works: Critique of Pure Reason (epistemology), Critique of Practical Reason (ethics), Critique of Judgment (aesthetics). Developed the Categorical Imperative as the foundation of morality: act only according to maxims you could will to be universal laws.",
+    "created_at": 1791248926.733835,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "1f0012e1-b6cb-4107-84b0-ed23de3acd78",
+    "entity_type": "CONCEPT",
+    "label": "Categorical Imperative",
+    "aliases": [
+      "Kant's moral law",
+      "universal law formulation"
+    ],
+    "description": "Kant's foundational ethical principle: 'Act only according to that maxim whereby you can at the same time will that it should become a universal law.' Deontological \u2014 moral duty is independent of consequences. Formulation: treat humanity always as an end, never merely as a means.",
+    "created_at": 1791248926.735167,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "3c3aab7e-938d-431e-b7d5-bdc8719b6937",
+    "entity_type": "CONCEPT",
+    "label": "Enlightenment",
+    "aliases": [
+      "Age of Reason",
+      "Aufkl\u00e4rung"
+    ],
+    "description": "Intellectual movement of 17th\u201318th century Europe emphasising reason, individualism, and science over tradition and religious authority. Key figures: Locke, Voltaire, Rousseau, Hume, Kant, Newton. Produced modern liberal democracy, human rights discourse, and the scientific method as dominant epistemology.",
+    "created_at": 1791248926.736703,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "b27e15d3-32d1-4177-85af-fca19605141d",
+    "entity_type": "PERSON",
+    "label": "Homer",
+    "aliases": [
+      "Homer of Chios",
+      "the poet"
+    ],
+    "description": "Ancient Greek poet traditionally credited with composing the Iliad and the Odyssey (c.8th century BCE). Whether a single historical person is debated (the 'Homeric question'). The epics are the oldest surviving works of Western literature and foundational to Western cultural tradition.",
+    "created_at": 1791248926.7382662,
+    "source_ids": [
+      "SOURCE-HUM-002",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "1c6f42e6-1904-4930-8e2e-db78ac2c130d",
+    "entity_type": "CONCEPT",
+    "label": "Iliad",
+    "aliases": [
+      "the Iliad"
+    ],
+    "description": "Ancient Greek epic poem (c.8th century BCE) attributed to Homer. Narrates events during the Trojan War \u2014 the wrath of Achilles. First major work of Western literature. Explores themes of honour (tim\u00e9), fate (moira), heroism, grief, and the futility of war.",
+    "created_at": 1791248926.740449,
+    "source_ids": [
+      "SOURCE-HUM-002",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "ffac0d42-9b28-416b-8cad-4cfecdee3926",
+    "entity_type": "CONCEPT",
+    "label": "Odyssey",
+    "aliases": [
+      "the Odyssey",
+      "Odysseus's voyage"
+    ],
+    "description": "Ancient Greek epic poem (c.8th century BCE) attributed to Homer. Narrates the decade-long journey home of Odysseus (Ulysses) after the fall of Troy. Foundational text for themes of homecoming, identity, temptation, and the journey as transformation.",
+    "created_at": 1791248926.743296,
+    "source_ids": [
+      "SOURCE-HUM-002",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "7032410a-6a70-4d34-8f7d-0cea62b769e7",
+    "entity_type": "CONCEPT",
+    "label": "Western Literary Canon",
+    "aliases": [
+      "literary canon",
+      "canon of world literature"
+    ],
+    "description": "Body of literature considered foundational or exemplary in Western culture. Contested: originally Eurocentric and male-dominated; increasingly challenged and expanded to include world literatures, women writers, and postcolonial voices.",
+    "created_at": 1791248926.746331,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "70479cca-404b-43b4-a541-3391a966a85f",
+    "entity_type": "CONCEPT",
+    "label": "World Literature Diversity",
+    "aliases": [
+      "global literary traditions",
+      "non-Western literature"
+    ],
+    "description": "Recognition of the richness of literary traditions outside the Western canon \u2014 African oral epics (Sundiata, Ozidi Saga), Sanskrit epics (Mahabharata, Ramayana), Chinese classical literature, Arabic maq\u0101ma, Japanese mono no aware tradition, Mesoamerican Popol Vuh.",
+    "created_at": 1791248926.749714,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "dedb6a54-1bf0-4cd4-811f-d37e616f5e37",
+    "entity_type": "CONCEPT",
+    "label": "Magical Realism",
+    "aliases": [
+      "magic realism",
+      "realismo m\u00e1gico"
+    ],
+    "description": "Literary mode in which magical elements appear in an otherwise realistic setting as everyday occurrences. Associated with Latin American literature (Borges, Garc\u00eda M\u00e1rquez, Allende) and African literature (Ben Okri). Reflects worldviews in which the spiritual and material interpenetrate.",
+    "created_at": 1791248926.751883,
+    "source_ids": [
+      "SOURCE-HUM-003",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "c4f3d432-c238-4c19-a9aa-0e23aae86a26",
+    "entity_type": "PERSON",
+    "label": "Gabriel Garc\u00eda M\u00e1rquez",
+    "aliases": [
+      "Garc\u00eda M\u00e1rquez",
+      "Gabo"
+    ],
+    "description": "Colombian novelist and journalist (1927\u20132014). Nobel Prize in Literature (1982). Author of 'One Hundred Years of Solitude' (1967) and 'Love in the Time of Cholera' (1985). Central figure of the Latin American Boom. Master of magical realism.",
+    "created_at": 1791248926.7594812,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "fa3b59d9-092a-4036-a56b-48d3232b4f27",
+    "entity_type": "CONCEPT",
+    "label": "One Hundred Years of Solitude",
+    "aliases": [
+      "Cien a\u00f1os de soledad",
+      "100 Years of Solitude"
+    ],
+    "description": "Novel by Gabriel Garc\u00eda M\u00e1rquez (1967). Chronicles seven generations of the Buend\u00eda family in the fictional town of Macondo. Defining work of magical realism. Sold over 50 million copies; translated into 46 languages. Considered the defining novel of the Latin American Boom.",
+    "created_at": 1791248926.7617438,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "7a60a809-5a9e-46d8-bb68-5fa79432ff6c",
+    "entity_type": "CONCEPT",
+    "label": "Oral Tradition",
+    "aliases": [
+      "oral culture",
+      "oral literature",
+      "orature"
+    ],
+    "description": "Transmission of cultural knowledge, history, law, and artistic expression through spoken word across generations, without written records. Griots (West Africa), Aboriginal Songlines (Australia), Homeric oral composition. Oral traditions carry complex information and are often undervalued in literate-centric epistemologies.",
+    "created_at": 1791248926.765228,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "371680a8-b2bf-46f7-8d6f-fa13e214dfce",
+    "entity_type": "CONCEPT",
+    "label": "Cave Painting",
+    "aliases": [
+      "prehistoric art",
+      "cave art",
+      "parietal art"
+    ],
+    "description": "Earliest known visual art by modern humans, created on cave walls and ceilings. Lascaux (France, c.17,000 BCE), Altamira (Spain, c.14,000 BCE), Sulawesi (Indonesia, c.45,500 BCE \u2014 among the oldest known figurative art). Motifs: animals, hand stencils, geometric patterns.",
+    "created_at": 1791248926.77597,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "ce2a09cf-63c7-4752-bbb2-dab02446b9b3",
+    "entity_type": "CONCEPT",
+    "label": "Visual Meaning-Making",
+    "aliases": [
+      "visual communication",
+      "visual culture"
+    ],
+    "description": "The human capacity to create and interpret meaning through visual forms \u2014 images, symbols, gesture, spatial arrangement. Foundational to art, design, architecture, and typography.",
+    "created_at": 1791248926.7781382,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "920a3bb3-d555-4a77-83df-7c9c1725d959",
+    "entity_type": "CONCEPT",
+    "label": "Baroque",
+    "aliases": [
+      "Baroque art",
+      "Baroque period"
+    ],
+    "description": "European art movement c.1600\u20131750. Characterized by dramatic use of light and shadow (chiaroscuro), movement, emotional intensity, and grandeur. Emerged partly in response to the Protestant Reformation. Major figures: Caravaggio, Rubens, Rembrandt, Bernini, Bach (in music).",
+    "created_at": 1791248926.77981,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "4704546b-6662-4520-8c8e-affa1117397c",
+    "entity_type": "CONCEPT",
+    "label": "Romanticism",
+    "aliases": [
+      "Romantic movement",
+      "Romantic era"
+    ],
+    "description": "19th-century artistic and intellectual movement emphasising emotion, nature, imagination, and individual experience over rationalism and industrialisation. Reaction against Enlightenment and the Industrial Revolution. Literature: Byron, Keats, Shelley. Music: Beethoven, Schubert, Schumann.",
+    "created_at": 1791248926.781218,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "da73c6d7-d31a-4cc4-9b58-00b8f22a6c02",
+    "entity_type": "CONCEPT",
+    "label": "Wabi-sabi",
+    "aliases": [
+      "wabi sabi"
+    ],
+    "description": "Japanese aesthetic philosophy centred on the acceptance of transience and imperfection. Finds beauty in the worn, weathered, asymmetric, and incomplete. Derived from Buddhist notions of impermanence (anicca). Influenced Japanese ceramics (kintsugi), garden design, and tea ceremony.",
+    "created_at": 1791248926.782603,
+    "source_ids": [
+      "SOURCE-HUM-003",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "b2aaf6e1-46b0-4f52-a72b-334d246ab09d",
+    "entity_type": "CULTURAL",
+    "label": "Japanese Aesthetic Tradition",
+    "aliases": [
+      "Japanese aesthetics",
+      "Japanese art tradition"
+    ],
+    "description": "Set of aesthetic values central to Japanese culture: wabi-sabi (impermanence), ma (negative space/pause), mono no aware (pathos of things), iki (sophisticated understated elegance), and y\u016bgen (profound mystery). Expressed through art, architecture, garden design, and everyday objects.",
+    "created_at": 1791248926.784608,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "9f37ac7f-9ef8-4655-b1e2-4266b75e8332",
+    "entity_type": "CULTURAL",
+    "label": "Bauhaus",
+    "aliases": [
+      "Bauhaus school",
+      "Staatliches Bauhaus"
+    ],
+    "description": "German art school (1919\u20131933) founded by Walter Gropius in Weimar. Sought to unify fine arts and functional design. Foundational to modernist design, typography, and architecture. Closed by the Nazis; faculty emigrated to the US and disseminated its ideas globally.",
+    "created_at": 1791248926.7876532,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "f454e3aa-0e6b-411f-9805-f5f1e1c1d03b",
+    "entity_type": "CONCEPT",
+    "label": "Modernist Design",
+    "aliases": [
+      "modernism in design",
+      "functional design"
+    ],
+    "description": "Design philosophy emphasising function over ornamentation, industrial materials, and geometric forms. 'Form follows function' (Louis Sullivan). Shaped 20th-century architecture, typography, product design, and graphic design.",
+    "created_at": 1791248926.7890618,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "3561de69-409e-4fc5-b778-6c0d4a7e2ff2",
+    "entity_type": "CONCEPT",
+    "label": "Paradigm Shift",
+    "aliases": [
+      "scientific revolution",
+      "Kuhnian shift"
+    ],
+    "description": "Thomas Kuhn's concept (The Structure of Scientific Revolutions, 1962): science does not progress by linear accumulation of knowledge but through periodic revolutionary changes in framework (paradigm shifts) \u2014 Copernican revolution, Darwinian evolution, Einsteinian relativity. Normal science operates within a paradigm until anomalies force a crisis.",
+    "created_at": 1791248926.791269,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "e9f74c07-e9d9-4423-8674-e6ab50f563fb",
+    "entity_type": "PERSON",
+    "label": "Thomas Kuhn",
+    "aliases": [
+      "Kuhn"
+    ],
+    "description": "American philosopher and historian of science (1922\u20131996). Author of 'The Structure of Scientific Revolutions' (1962), one of the most cited academic books of the 20th century. Developed the concepts of paradigm, normal science, and paradigm shift.",
+    "created_at": 1791248926.79344,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "bd25f008-2985-453e-a741-79b8b5809190",
+    "entity_type": "CONCEPT",
+    "label": "Logical Positivism",
+    "aliases": [
+      "logical empiricism",
+      "Vienna Circle"
+    ],
+    "description": "Philosophical movement (Vienna Circle, 1920s\u201330s) holding that meaningful statements must be either empirically verifiable or analytically true (tautologies). Metaphysical claims are meaningless. Major influence on 20th-century philosophy of science. Largely superseded but foundational.",
+    "created_at": 1791248926.794894,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "5fce356a-f6dc-42a2-88ac-4dd978ee5f27",
+    "entity_type": "PERSON",
+    "label": "Isaac Newton",
+    "aliases": [
+      "Newton",
+      "Sir Isaac Newton"
+    ],
+    "description": "English mathematician and physicist (1643\u20131727). Formulated laws of motion and universal gravitation (Principia Mathematica, 1687), co-invented calculus (with Leibniz, contested), discovered spectral decomposition of light. His framework dominated physics for over 200 years until Einstein.",
+    "created_at": 1791248926.796352,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "5615f250-3ea5-439d-9c05-8ee611a01715",
+    "entity_type": "CONCEPT",
+    "label": "Newtonian Mechanics",
+    "aliases": [
+      "classical mechanics",
+      "Newtonian physics"
+    ],
+    "description": "Framework of physics based on Newton's three laws of motion and law of universal gravitation. Accurately describes motion at everyday speeds and scales. Superseded at very high speeds by special relativity and at atomic scales by quantum mechanics.",
+    "created_at": 1791248926.7981088,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "e0c52a77-59e1-4300-b83e-0c68c166491a",
+    "entity_type": "CONCEPT",
+    "label": "Relativistic Mechanics",
+    "aliases": [
+      "Einstein's relativity",
+      "special and general relativity"
+    ],
+    "description": "Einstein's framework of physics: special relativity (1905) \u2014 time and space are relative to observer velocity; general relativity (1915) \u2014 gravity is curvature of spacetime. Supersedes Newtonian mechanics at high velocities and massive scales.",
+    "created_at": 1791248926.800627,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "a11e4c9a-e2d9-4541-832f-797e5c1a5d3f",
+    "entity_type": "PERSON",
+    "label": "Marie Curie",
+    "aliases": [
+      "Maria Sk\u0142odowska-Curie",
+      "Madame Curie"
+    ],
+    "description": "Polish-French physicist and chemist (1867\u20131934). First woman to win a Nobel Prize; only person to win Nobel Prizes in two sciences (Physics 1903, Chemistry 1911). Discovered polonium and radium. Pioneered research into radioactivity. Died of aplastic anaemia from radiation exposure.",
+    "created_at": 1791248926.803113,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "e6e2abe7-054c-4d4e-9b8f-9243b9f61a87",
+    "entity_type": "CONCEPT",
+    "label": "Radioactivity Research",
+    "aliases": [
+      "radioactivity",
+      "nuclear physics origins"
+    ],
+    "description": "The scientific study of radioactive decay \u2014 the spontaneous emission of particles or energy from unstable atomic nuclei. Curie's discovery of polonium and radium established radioactivity as an atomic property rather than a molecular one, helping overturn prior models of the atom.",
+    "created_at": 1791248926.805046,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "fcaf2b03-6f64-4de0-a2aa-c202cdf541db",
+    "entity_type": "PERSON",
+    "label": "Johannes Gutenberg",
+    "aliases": [
+      "Gutenberg",
+      "Johann Gutenberg"
+    ],
+    "description": "German inventor (c.1400\u20131468). Developed movable-type printing press in Europe c.1440. The Gutenberg Bible (c.1455) was among the first major books printed with this technology. The press enabled mass literacy, democratised knowledge, accelerated the Reformation and Renaissance.",
+    "created_at": 1791248926.807193,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "84ee099f-1063-443e-b35d-906ba348557d",
+    "entity_type": "CONCEPT",
+    "label": "Printing Press",
+    "aliases": [
+      "movable type printing",
+      "Gutenberg press"
+    ],
+    "description": "Mechanical device for mass-reproducing text and images using movable type, developed in Europe by Gutenberg c.1440 (building on earlier Chinese and Korean block-printing). Enabling technology for the Reformation, Scientific Revolution, and Enlightenment by dramatically reducing cost of distributing knowledge.",
+    "created_at": 1791248926.8095438,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "875595c3-5c3f-4c39-bd78-d878467d5212",
+    "entity_type": "CONCEPT",
+    "label": "Protestant Reformation",
+    "aliases": [
+      "the Reformation",
+      "Reformation"
+    ],
+    "description": "16th-century movement to reform the Roman Catholic Church, initiated by Martin Luther's 95 Theses (1517). Resulted in the establishment of Protestant churches. Accelerated by the printing press, which enabled mass distribution of reformist ideas. Transformed European politics, culture, and religion.",
+    "created_at": 1791248926.8111281,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "aac172fd-675d-42d2-ad36-1ea78eb003fd",
+    "entity_type": "CONCEPT",
+    "label": "Industrial Revolution",
+    "aliases": [
+      "industrialisation",
+      "First Industrial Revolution"
+    ],
+    "description": "Transition from agrarian-handicraft economies to manufacturing-factory economies (c.1760\u20131840, beginning in Britain). Enabled by steam power, mechanised textile production, iron and steel industries. Transformed social structures, urbanisation, labour relations, and environmental conditions.",
+    "created_at": 1791248926.813073,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "bc51d933-258a-45ca-8bf3-57a42c05355a",
+    "entity_type": "CONCEPT",
+    "label": "Urbanisation",
+    "aliases": [
+      "urban growth",
+      "city expansion"
+    ],
+    "description": "Demographic and social process of increasing concentration of population in urban areas. Accelerated by the Industrial Revolution. Associated with social stratification, new labour forms, slums, sanitation challenges, and eventually civil infrastructure.",
+    "created_at": 1791248926.8155038,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "9729c178-4a0c-42e1-af63-89ff64f0dd3c",
+    "entity_type": "PERSON",
+    "label": "Ada Lovelace",
+    "aliases": [
+      "Ada King, Countess of Lovelace",
+      "Augusta Ada Byron"
+    ],
+    "description": "English mathematician (1815\u20131852), daughter of Lord Byron. Collaborated with Charles Babbage on his Analytical Engine. Wrote what is considered the first algorithm intended to be processed by a machine (1843). Widely regarded as the first computer programmer.",
+    "created_at": 1791248926.818388,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "1985e6d9-9276-431e-aba7-756e4df76430",
+    "entity_type": "CONCEPT",
+    "label": "Computation History",
+    "aliases": [
+      "history of computing",
+      "computing origins"
+    ],
+    "description": "Historical trajectory from mechanical calculation (Babbage Analytical Engine, 1837) through electromechanical systems (Turing, 1936) to electronic computers (ENIAC, 1945) and onwards. Ada Lovelace, Alan Turing, Grace Hopper, Claude Shannon are foundational figures.",
+    "created_at": 1791248926.820704,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "5ffafdc6-68f3-420c-bd3b-4618aba9302f",
+    "entity_type": "CONCEPT",
+    "label": "Gothic Architecture",
+    "aliases": [
+      "Gothic style",
+      "medieval Gothic"
+    ],
+    "description": "European architectural style (c.1100\u20131500 CE) characterised by pointed arches, ribbed vaults, flying buttresses, and large stained-glass windows. Developed in France; spread across Europe. Major examples: Notre-Dame de Paris, Chartres Cathedral, Cologne Cathedral. Associated with Christian theology: verticality as aspiration toward the divine.",
+    "created_at": 1791248926.822873,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "a339250b-5d41-4320-a5b3-e4af23d58738",
+    "entity_type": "CONCEPT",
+    "label": "Renaissance Architecture",
+    "aliases": [
+      "Renaissance style",
+      "Italian Renaissance architecture"
+    ],
+    "description": "Architectural style c.1400\u20131600 centred in Italy, reviving Greek and Roman classical forms. Emphasis on symmetry, proportion, geometry, and regularity based on ancient Roman models. Vitruvian principles revived. Key figures: Brunelleschi, Bramante, Michelangelo, Palladio.",
+    "created_at": 1791248926.82554,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "8342b14f-9356-4c87-8969-dad78965ba03",
+    "entity_type": "CONCEPT",
+    "label": "Vitruvian Principles",
+    "aliases": [
+      "Vitruvius",
+      "firmitas utilitas venustas"
+    ],
+    "description": "Architectural theory from Vitruvius's 'De Architectura' (c.15 BCE): a building must have firmitas (structural strength), utilitas (functional usefulness), and venustas (beauty/aesthetics). The triad remains foundational in architectural education. Rediscovered during the Renaissance.",
+    "created_at": 1791248926.8281019,
+    "source_ids": [
+      "SOURCE-HUM-002",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "d1ef976f-9297-4d30-bfb9-bb1ec2c96a82",
+    "entity_type": "PERSON",
+    "label": "Frank Lloyd Wright",
+    "aliases": [
+      "FLW",
+      "Wright"
+    ],
+    "description": "American architect (1867\u20131959). Developed organic architecture \u2014 buildings that harmonise with their natural environment. Major works: Fallingwater, Guggenheim Museum (NY), Usonian houses. Pioneered open-plan interiors, horizontal emphasis, and integration of building with landscape.",
+    "created_at": 1791248926.8305302,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "eb10d5b5-9a1d-4bce-9f76-13a17af6cca7",
+    "entity_type": "CONCEPT",
+    "label": "Organic Architecture",
+    "aliases": [
+      "nature-integrated design",
+      "biophilic architecture"
+    ],
+    "description": "Architectural philosophy in which a building should grow from its natural environment, materials, and cultural context \u2014 not be imposed on the landscape. Associated with Frank Lloyd Wright; precursor to contemporary biophilic design and sustainable architecture.",
+    "created_at": 1791248926.833823,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "c064a090-9f5f-4634-ad91-5e8980ac9a6c",
+    "entity_type": "CULTURAL",
+    "label": "Blues",
+    "aliases": [
+      "the blues",
+      "Delta blues"
+    ],
+    "description": "Music genre originating in the Deep South of the United States in the late 19th century, primarily in African American communities. Developed from spirituals, work songs, field hollers, and African musical traditions. Foundational to rock, jazz, R&B, soul, and hip-hop.",
+    "created_at": 1791248926.835495,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "2607cd01-50d4-4383-bc11-af5cac1b3c14",
+    "entity_type": "CULTURAL",
+    "label": "Rock Music",
+    "aliases": [
+      "rock and roll",
+      "rock 'n' roll"
+    ],
+    "description": "Genre of popular music that originated in the United States in the late 1940s and early 1950s from blues, rhythm and blues, and country music. Electric guitar, drums, and bass guitar are central. Transformed popular culture globally from the 1950s onward.",
+    "created_at": 1791248926.838471,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "3b376133-b7f1-4edd-98dc-a67235f14454",
+    "entity_type": "CULTURAL",
+    "label": "Jazz",
+    "aliases": [
+      "jazz music"
+    ],
+    "description": "Music genre originating in African American communities of New Orleans in the late 19th\u2013early 20th century. Characterised by syncopation, improvisation, swung rhythm, and polyrhythm. Draws on blues, ragtime, and African and European musical traditions.",
+    "created_at": 1791248926.843415,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "3dd480af-ff6e-4ef5-8031-2457fa1059dc",
+    "entity_type": "CONCEPT",
+    "label": "Polyrhythm",
+    "aliases": [
+      "cross-rhythm",
+      "multiple simultaneous rhythms"
+    ],
+    "description": "The simultaneous use of two or more conflicting rhythmic patterns. Central to African traditional music (West African percussion ensembles), jazz, and Afro-Cuban music. Not inherently chaotic \u2014 the patterns interlock and resolve.",
+    "created_at": 1791248926.845781,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "e76e4546-d255-457e-8183-1a87fba3a76b",
+    "entity_type": "CULTURAL",
+    "label": "West African Musical Tradition",
+    "aliases": [
+      "West African music",
+      "Sub-Saharan African musical tradition"
+    ],
+    "description": "Rich musical traditions of West Africa including polyrhythmic percussion (djembe, talking drum), griot singing and storytelling, kora, balafon, and communal singing. Root tradition for blues, jazz, gospel, R&B, hip-hop, Afrobeats, and other African diaspora musics.",
+    "created_at": 1791248926.8501399,
+    "source_ids": [
+      "SOURCE-HUM-003",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "11372246-52f4-4859-a7a9-f583c3d65f0f",
+    "entity_type": "PERSON",
+    "label": "Johann Sebastian Bach",
+    "aliases": [
+      "J.S. Bach",
+      "Bach"
+    ],
+    "description": "German composer and musician (1685\u20131750). Baroque master. Works include the Well-Tempered Clavier, Mass in B minor, St Matthew Passion, Goldberg Variations, and the Brandenburg Concertos. Foundational to Western classical music; influenced virtually every Western composer after him.",
+    "created_at": 1791248926.858784,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "9481abb8-642a-4472-804b-467b7a842624",
+    "entity_type": "CULTURAL",
+    "label": "Western Classical Music",
+    "aliases": [
+      "classical music tradition",
+      "art music"
+    ],
+    "description": "Formal musical tradition of Western Europe, developed c.9th\u201321st century. Major periods: Medieval, Renaissance, Baroque, Classical, Romantic, Modern. Characterised by written notation, complex harmonic structures, and professional performance context.",
+    "created_at": 1791248926.861851,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "d333bd87-f9e3-4b22-bcc9-0a0045afee0a",
+    "entity_type": "CULTURAL",
+    "label": "Griots",
+    "aliases": [
+      "griot",
+      "jali",
+      "jeli",
+      "djeli"
+    ],
+    "description": "West African oral historians, storytellers, praise-singers, and musicians who serve as living repositories of community memory. Griots preserve genealogies, historical narratives, and cultural knowledge across generations through oral performance. Professional caste in Manding cultures (Mand\u00e9 people).",
+    "created_at": 1791248926.864753,
+    "source_ids": [
+      "SOURCE-HUM-003",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "4c11810f-f2bd-4ee3-a8ec-b118278342e8",
+    "entity_type": "CONCEPT",
+    "label": "Rites of Passage",
+    "aliases": [
+      "rites de passage",
+      "initiation rites",
+      "life-cycle rituals"
+    ],
+    "description": "Rituals that mark transitions between social statuses or life stages: birth, coming-of-age, marriage, death. Term coined by Arnold van Gennep (1909). Three phases: separation (from old status), liminality (threshold, betwixt-and-between), incorporation (into new status).",
+    "created_at": 1791248926.867038,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "1330cb3c-3b9d-4f03-a412-54447fb2cbeb",
+    "entity_type": "CONCEPT",
+    "label": "Kintsugi",
+    "aliases": [
+      "kintsukuroi",
+      "golden repair"
+    ],
+    "description": "Japanese art of repairing broken pottery with gold (or silver/platinum) lacquer. Treats breakage as part of the object's history rather than something to hide. Embodies wabi-sabi: the broken and repaired object is more beautiful than the original. Widely used as a metaphor for resilience.",
+    "created_at": 1791248926.8688629,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "418b9cf5-7a89-43c3-91f0-4b4e2aec6ce9",
+    "entity_type": "CONCEPT",
+    "label": "Carnival",
+    "aliases": [
+      "Mardi Gras",
+      "Carnaval",
+      "festival season"
+    ],
+    "description": "Festive season immediately before Lent in Christian tradition, characterised by public celebrations, masquerade, music, and reversal of social hierarchies. Roots in ancient Roman Saturnalia and agricultural festivals. Major carnivals: Venice, Rio de Janeiro, New Orleans (Mardi Gras), Trinidad.",
+    "created_at": 1791248926.8707042,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "9af95cd7-20c6-4b35-ad33-0a4b64274178",
+    "entity_type": "CONCEPT",
+    "label": "Ancestor Veneration",
+    "aliases": [
+      "ancestor worship",
+      "ancestral reverence"
+    ],
+    "description": "Cultural and religious practice of honouring deceased relatives as influential presences in the lives of the living. Present across many cultures: Chinese ancestral rites, Yoruba Egungun, Japanese O-Bon, Mexican D\u00eda de los Muertos, West African traditions. Treats death as a transition rather than an ending.",
+    "created_at": 1791248926.872402,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "a4e6ef77-965c-4e67-9a9f-e4b06b317390",
+    "entity_type": "CULTURAL",
+    "label": "Buddhism",
+    "aliases": [
+      "the Dharma",
+      "Buddha Dhamma"
+    ],
+    "description": "Knowledge system and spiritual tradition founded by Siddhartha Gautama (the Buddha, c.5th\u20134th century BCE) in ancient India. Core teachings: Four Noble Truths (dukkha \u2014 suffering; its origin; its cessation; the path), Eightfold Path, impermanence (anicca), no-self (anatta). Spread across Asia via the Silk Road; now global.",
+    "created_at": 1791248926.874173,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "af040196-968a-4889-a516-dbb005933050",
+    "entity_type": "CULTURAL",
+    "label": "Islam",
+    "aliases": [
+      "Islamic tradition",
+      "Muslim faith"
+    ],
+    "description": "Monotheistic knowledge system and religion founded in 7th-century Arabia by the Prophet Muhammad. Five Pillars: Shahada (faith declaration), Salat (prayer), Zakat (charity), Sawm (fasting during Ramadan), Hajj (pilgrimage to Mecca). Central text: the Quran. Gave rise to the Islamic Golden Age of science, philosophy, and mathematics.",
+    "created_at": 1791248926.8763509,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "faad627b-a2f4-432b-a407-f1f9c03cf5e1",
+    "entity_type": "CONCEPT",
+    "label": "Islamic Golden Age",
+    "aliases": [
+      "Islamic Renaissance",
+      "Golden Age of Islam"
+    ],
+    "description": "Period of Islamic history (c.8th\u201313th century) characterised by remarkable advances in science, mathematics, astronomy, philosophy, and medicine. Preserved and extended Greek knowledge (especially Aristotle) and transmitted it to medieval Europe. Key figures: Al-Khwarizmi (algebra), Ibn Sina (Avicenna, medicine), Al-Biruni (anthropology).",
+    "created_at": 1791248926.878352,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "b0446ccf-614c-4cba-b0c3-5797f222e29e",
+    "entity_type": "CULTURAL",
+    "label": "Yoruba Religion",
+    "aliases": [
+      "Yoruba traditional religion",
+      "If\u00e1",
+      "Orisha tradition"
+    ],
+    "description": "West African knowledge system and spiritual tradition of the Yoruba people (Nigeria, Benin, Togo). Structured cosmology: Olodumare (supreme being), Orishas (divine forces/principles), ancestral spirits, divination system (If\u00e1 \u2014 a sophisticated knowledge corpus). Spread via the African diaspora as Candombl\u00e9, Santer\u00eda, Vodou.",
+    "created_at": 1791248926.881805,
+    "source_ids": [
+      "SOURCE-HUM-003",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "875a26cb-1e25-4abd-9c90-bab50f9c14c3",
+    "entity_type": "CULTURAL",
+    "label": "Afro-Diasporic Religions",
+    "aliases": [
+      "African diaspora religions",
+      "Candombl\u00e9",
+      "Santer\u00eda",
+      "Vodou"
+    ],
+    "description": "Religious traditions developed in the Americas by enslaved Africans and their descendants, blending West African (primarily Yoruba, Fon, Ewe) traditions with Catholicism and indigenous elements. Major examples: Candombl\u00e9 (Brazil), Santer\u00eda/Lucum\u00ed (Cuba), Vodou (Haiti), Obeah (Caribbean).",
+    "created_at": 1791248926.884016,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "efe1f71a-4eb5-45a8-91bd-116b80c98fb0",
+    "entity_type": "CONCEPT",
+    "label": "Animism",
+    "aliases": [
+      "animist worldview",
+      "spirit world belief"
+    ],
+    "description": "Worldview attributing spiritual essence, agency, or personhood to non-human entities (animals, plants, rivers, mountains, objects). The predominant cosmological framework of hunter-gatherer and many agricultural societies globally. Not a unified 'religion' but a broad relational ontology.",
+    "created_at": 1791248926.8858209,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "c08bf0d0-d83d-4bba-a811-42afb1f70baf",
+    "entity_type": "CONCEPT",
+    "label": "Proto-Indo-European",
+    "aliases": [
+      "PIE",
+      "Proto-Indo-European language"
+    ],
+    "description": "Hypothetical ancestor language (not directly attested) reconstructed by historical linguistics, estimated spoken c.4500\u20132500 BCE. Ancestor of the Indo-European language family (English, Spanish, French, German, Hindi, Persian, Russian, etc.) \u2014 the largest language family by number of speakers.",
+    "created_at": 1791248926.8879712,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "1e88fbf4-2b1a-41f9-9b82-080029f9db93",
+    "entity_type": "CONCEPT",
+    "label": "Common Ancestor of Indo-European",
+    "aliases": [
+      "Indo-European proto-language"
+    ],
+    "description": "The inferred single ancestral language from which the Indo-European language family descended, reconstructed through comparative linguistics. Its existence is a scientific consensus; its exact form and homeland are debated (steppe hypothesis vs Anatolia hypothesis).",
+    "created_at": 1791248926.890006,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "06e1f48f-4b2c-47c9-a4b2-9084936a2a03",
+    "entity_type": "CULTURAL",
+    "label": "Arabic Language",
+    "aliases": [
+      "Arabic",
+      "al-arabiyya"
+    ],
+    "description": "Semitic language of the Afro-Asiatic family. Liturgical language of Islam (the Quran is in Classical Arabic). Carrier of the Islamic Golden Age's scientific and philosophical texts into medieval Europe. Today: ~420 million speakers; official language of 26 countries. Rich poetic and literary tradition.",
+    "created_at": 1791248926.892246,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "46bfb688-985d-4fd5-85c0-9b871fffea1e",
+    "entity_type": "CULTURAL",
+    "label": "Swahili",
+    "aliases": [
+      "Kiswahili"
+    ],
+    "description": "Bantu language of the Swahili Coast (East Africa). Lingua franca across East, Central, and parts of Southern Africa (~200 million speakers). Developed through centuries of Indian Ocean trade contacts, incorporating Arabic, Persian, Portuguese, and other loanwords. Rich literary tradition in Arabic script before Romanisation.",
+    "created_at": 1791248926.894218,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "4b885e13-9357-4b6b-9872-816a8d403b0c",
+    "entity_type": "CONCEPT",
+    "label": "Language as Cultural Artefact",
+    "aliases": [
+      "Sapir-Whorf hypothesis",
+      "linguistic relativity"
+    ],
+    "description": "The view that language shapes thought and perception (Sapir-Whorf hypothesis / linguistic relativity). Strong version (language determines thought) largely rejected; weak version (language influences thought) supported by research. Each language encodes a worldview: different colour terms, tense systems, evidentiality markers.",
+    "created_at": 1791248926.895952,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "ddffedbb-9ae0-4deb-abdd-2c1e944d5773",
+    "entity_type": "CONCEPT",
+    "label": "Feudalism",
+    "aliases": [
+      "feudal system",
+      "feudal order"
+    ],
+    "description": "Medieval European social and political system (roughly 9th\u201315th century) based on exchange of land (fief) for military service and loyalty. Hierarchical: king \u2192 lords \u2192 knights \u2192 serfs. Eroded by the Black Death, monetisation of economies, and the Renaissance.",
+    "created_at": 1791248926.897748,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "e06fbf2f-69fd-4dbf-b955-d06d57955277",
+    "entity_type": "CONCEPT",
+    "label": "Ubuntu",
+    "aliases": [
+      "ubuntu philosophy",
+      "I am because we are"
+    ],
+    "description": "African humanist philosophy of personhood and community, most prominent in Nguni Bantu cultures (South Africa, Zimbabwe, etc.). Ubuntu: 'I am because we are' (umuntu ngumuntu ngabantu). Holds that individual identity is constituted through relationships and community. Applied in post-apartheid South Africa's Truth and Reconciliation Commission.",
+    "created_at": 1791248926.901765,
+    "source_ids": [
+      "SOURCE-HUM-003",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "f79e52e3-0126-4bf1-a551-185a58bd672a",
+    "entity_type": "CONCEPT",
+    "label": "Western Individualism",
+    "aliases": [
+      "liberal individualism",
+      "individual rights tradition"
+    ],
+    "description": "Philosophical and cultural tradition emphasising the primacy of the individual person over the collective. Associated with Enlightenment liberalism (Locke, Mill), modern capitalism, and Western legal systems. Contrasts with collectivist traditions in many non-Western societies.",
+    "created_at": 1791248926.903845,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "d129f986-e128-40a3-8c94-699b4b1de403",
+    "entity_type": "CONCEPT",
+    "label": "Social Contract",
+    "aliases": [
+      "social contract theory",
+      "Rousseau's social contract"
+    ],
+    "description": "Political philosophy concept: individuals consent (explicitly or implicitly) to surrender some freedoms to a political authority in exchange for protection of remaining rights. Theorists: Hobbes (sovereign needed to prevent war of all against all), Locke (protect natural rights), Rousseau (general will). Foundation of modern liberal democracy.",
+    "created_at": 1791248926.905758,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "d56b3fd9-e97b-4251-a906-d1ea7ebf1a1d",
+    "entity_type": "CONCEPT",
+    "label": "Democracy",
+    "aliases": [
+      "democratic governance",
+      "popular sovereignty"
+    ],
+    "description": "System of governance in which political authority derives from the consent of the governed. Forms: direct democracy (Athenian), representative democracy (modern), deliberative democracy. Tension between majority rule and protection of minority rights. Ancient Greek origins; modern form developed from 17th-century England and 18th-century revolutions.",
+    "created_at": 1791248926.907923,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "8e69dbfc-d8fa-48f0-ace6-577b1c36f1f7",
+    "entity_type": "CONCEPT",
+    "label": "Republic",
+    "aliases": [
+      "republican government",
+      "res publica"
+    ],
+    "description": "Form of government in which the country is considered a public matter (res publica), not private property of rulers. Power exercised via elected representatives. Roman Republic (509\u201327 BCE) is the classical model. Distinguished from democracy by representative rather than direct participation.",
+    "created_at": 1791248926.9098141,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "f90483ce-4dac-4ee9-bb11-aa520bfc899b",
+    "entity_type": "CONCEPT",
+    "label": "Colonialism",
+    "aliases": [
+      "colonial system",
+      "imperialism"
+    ],
+    "description": "Practice of dominant powers establishing control over other peoples and territories. European colonial period (c.1500\u20131960s) reshaped global economies, cultures, and political systems. Left legacies: extraction economies, language displacement, cultural trauma, artificial borders. Distinct from (but related to) cultural imperialism.",
+    "created_at": 1791248926.9129941,
+    "source_ids": [
+      "SOURCE-HUM-003",
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "598e24df-9e13-4934-8bd8-90b925288e25",
+    "entity_type": "CONCEPT",
+    "label": "Mercantilism",
+    "aliases": [
+      "mercantilist theory",
+      "bullionism"
+    ],
+    "description": "Dominant economic theory of 16th\u201318th century European states: national wealth maximised by exporting more than importing, accumulating gold/silver (bullion), and controlling colonial trade. Led to protectionist policies. Challenged by Adam Smith (The Wealth of Nations, 1776) and the rise of classical liberalism.",
+    "created_at": 1791248926.916391,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "6d4364c0-6cfd-492c-a1b3-2f7f1643aba3",
+    "entity_type": "CONCEPT",
+    "label": "Capitalism",
+    "aliases": [
+      "market capitalism",
+      "market economy"
+    ],
+    "description": "Economic system in which private individuals own the means of production, goods are produced for profit, and markets coordinate production/distribution. Emerged in England from the 17th\u201318th century. Produces vast wealth and innovation; also produces inequality, class stratification, and environmental costs.",
+    "created_at": 1791248926.9219358,
+    "source_ids": [
+      "SOURCE-HUM-001",
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "8edec63a-3f68-4750-a369-fca11ea3f9ea",
+    "entity_type": "CONCEPT",
+    "label": "Gift Economy",
+    "aliases": [
+      "gift exchange",
+      "gift culture",
+      "potlatch"
+    ],
+    "description": "Economic system in which goods and services are given without explicit agreement for immediate or future reward. Creates social bonds, status, and obligation (Marcel Mauss, The Gift, 1925). Examples: potlatch ceremonies (Pacific Northwest indigenous peoples), Kula ring (Trobriand Islands), open-source software culture.",
+    "created_at": 1791248926.924704,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "5e3cb9c5-881b-49ce-a674-3b7010ca6c5c",
+    "entity_type": "CONCEPT",
+    "label": "Division of Labour",
+    "aliases": [
+      "specialisation of labour",
+      "economic specialisation"
+    ],
+    "description": "Organisation of production in which workers specialise in particular tasks or roles rather than each producing everything they need. Adam Smith's key insight (The Wealth of Nations, 1776): specialisation dramatically increases productivity (pin factory example). Foundation of industrial and modern economies.",
+    "created_at": 1791248926.930731,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "4bd3130b-3e76-4237-abab-92215813f471",
+    "entity_type": "CONCEPT",
+    "label": "Anthropology",
+    "aliases": [
+      "human anthropology",
+      "cultural anthropology"
+    ],
+    "description": "The comparative and holistic study of humanity: biological, cultural, linguistic, and archaeological. Four sub-fields: biological/physical anthropology, cultural/social anthropology, linguistic anthropology, archaeology. Developed largely in the 19th\u201320th century; now includes critical and decolonial approaches.",
+    "created_at": 1791248926.938794,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "574a2d2f-44d3-4f33-af93-c618814d672c",
+    "entity_type": "CONCEPT",
+    "label": "Cultural Relativism",
+    "aliases": [
+      "cultural relativism principle"
+    ],
+    "description": "Anthropological principle that a culture's values and practices should be understood on their own terms and within their own context, not judged by the standards of another culture. Franz Boas and his students developed this as a scientific and ethical stance against ethnocentrism. Distinct from moral relativism.",
+    "created_at": 1791248926.941735,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "9898c4af-6738-4c7f-8b40-49851521e113",
+    "entity_type": "CONCEPT",
+    "label": "Ethnocentrism",
+    "aliases": [
+      "cultural bias",
+      "cultural chauvinism"
+    ],
+    "description": "Tendency to evaluate other cultures according to the standards of one's own culture, and to view one's own culture as superior. A cognitive bias embedded in colonial and nationalist ideologies. Cultural relativism developed as its antidote in anthropology.",
+    "created_at": 1791248926.944143,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "ddd1906d-f20e-45b1-add2-dae92111d606",
+    "entity_type": "CONCEPT",
+    "label": "Structuralism",
+    "aliases": [
+      "structural anthropology",
+      "structural linguistics"
+    ],
+    "description": "Intellectual method analysing culture, language, and mind as systems of relationships between elements rather than isolated elements. In anthropology (L\u00e9vi-Strauss): myths, kinship, and rituals are structured like language \u2014 binary oppositions (raw/cooked, nature/culture) organise cultural thought.",
+    "created_at": 1791248926.946104,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "b9391295-3a42-45f9-99b8-53f4e64ac7e2",
+    "entity_type": "PERSON",
+    "label": "Claude L\u00e9vi-Strauss",
+    "aliases": [
+      "L\u00e9vi-Strauss"
+    ],
+    "description": "French anthropologist (1908\u20132009). Father of structural anthropology. Major works: Tristes Tropiques (1955), Mythologiques (4 vols, 1964\u20131971). Applied structuralist method (from Saussurean linguistics) to the study of myths, kinship systems, and totemism. Argued that apparently different cultural practices share deep universal structures.",
+    "created_at": 1791248926.948066,
+    "source_ids": [
+      "SOURCE-HUM-001"
+    ],
+    "domain": "Humanities"
+  },
+  {
+    "entity_id": "c39f6376-8bb8-4208-aebc-745d6cfe8c37",
+    "entity_type": "CONCEPT",
+    "label": "Narrative Theory",
+    "aliases": [
+      "narratology",
+      "narrative studies"
+    ],
+    "description": "Study of the structure, function, and cultural significance of narrative. Developed across literary theory (Propp, Barthes), linguistics (Labov), psychology (Bruner), and anthropology. A narrative is not just a story \u2014 it is a primary cognitive tool for organising experience and transmitting culture.",
+    "created_at": 1791248926.950376,
+    "source_ids": [
+      "SOURCE-HUM-003"
+    ],
+    "domain": "Humanities"
   }
 ]

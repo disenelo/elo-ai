@@ -5,7 +5,7 @@
     "title": "The Book of Wisdom Vol I",
     "author": "Harry B. Joseph",
     "date": null,
-    "notes": "Primary corpus — Phase 2 ingestion"
+    "notes": "Primary corpus \u2014 Phase 2 ingestion"
   },
   {
     "source_id": "SOURCE-002",
@@ -13,7 +13,7 @@
     "title": "eLo experience chain",
     "author": null,
     "date": null,
-    "notes": "Ongoing — every experience_id is a source"
+    "notes": "Ongoing \u2014 every experience_id is a source"
   },
   {
     "source_id": "SOURCE-003",
@@ -21,6 +21,30 @@
     "title": "David L3 design directives",
     "author": "David Charles",
     "date": null,
-    "notes": "Architectural source — not world knowledge"
+    "notes": "Architectural source \u2014 not world knowledge"
+  },
+  {
+    "source_id": "SOURCE-HUM-001",
+    "source_type": "ENCYCLOPAEDIC",
+    "title": "Encyclopaedic consensus \u2014 general humanities",
+    "author": null,
+    "date": null,
+    "notes": "Well-established facts from encyclopaedic / academic consensus (Britannica, peer-reviewed overview). WO-WKG-HUMANITIES-001."
+  },
+  {
+    "source_id": "SOURCE-HUM-002",
+    "source_type": "PRIMARY",
+    "title": "Primary historical sources",
+    "author": null,
+    "date": null,
+    "notes": "Ancient / early primary sources: Ibn Battuta, Herodotus, Plutarch, etc. Cited per claim."
+  },
+  {
+    "source_id": "SOURCE-HUM-003",
+    "source_type": "ACADEMIC",
+    "title": "Academic scholarship \u2014 humanities",
+    "author": null,
+    "date": null,
+    "notes": "Peer-reviewed secondary scholarship. Where contested, claims marked DISPUTED or HYPOTHESIS."
   }
 ]
