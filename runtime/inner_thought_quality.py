@@ -65,6 +65,32 @@ _FILLER_RES = tuple(re.compile(p, re.I) for p in (
     r"\bwithout needing to\b",
 ))
 
+# David, 2026-10-06: "a lot of it says I notice which i do not like."
+#
+# From his live chatlog that day:
+#     "I notice David said 'when is sunset today'."
+#     "I notice David's sentence ends with 'about capybaras.'"
+#     "I notice David's use of the word 'just'."
+#     "I observe the text 'make the screen a little dimmer'."
+#
+# A monitoring system logging events. It describes the surface of what David
+# said and hands it back to him, which is not a thought and is not eLo.
+#
+# The prompt asked for it — "Say the specific thing I notice" — and that is
+# fixed in inner_thought_first. This is the half that holds when the model
+# reaches for the template anyway.
+#
+# "I notice" is only banned where it REPORTS HIM. "i notice the light is
+# different in here" is eLo noticing the world and stays.
+_REPORTING_RES = tuple(re.compile(p, re.I) for p in (
+    r"^\s*i (notice|observe|note)\b",
+    r"\bi (notice|noticed|observe|observed)\s+(that\s+)?(david|he|his|him|the (user|question|text|phrase|word|sentence|tone))\b",
+    r"\bdavid('s)?\s+(said|says|asked|wants|is saying|mentioned|used|emphasi[sz]ed|phrased)\b",
+    r"\bthe (question|sentence|phrase|text|request) (is|was|ends|begins|contains)\b",
+    r"\bhis (use of|choice of|tone in|phrasing|wording)\b",
+))
+
+
 # eLo narrating his own definition.
 _SELF_DEF_RES = tuple(re.compile(p, re.I) for p in (
     r"\bi(?:'m| am) eLo\b\s*[:,]",
@@ -181,10 +207,31 @@ def reject_reason(thought: str, *, asked: str = "", reply: str = "") -> str:
         return "narrates its own character definition"
     if _echoes_traits(t):
         return "reproduces the Core traits descriptor verbatim"
+    if any(r.search(t) for r in _REPORTING_RES):
+        return "reports David's words back instead of thinking"
     if any(r.search(t) for r in _FILLER_RES):
         return "generic contemplative filler"
-    if not _shares_ground(t, asked, reply):
-        return "references nothing from this turn"
+    # RELAXED 2026-10-06, and the conflict is worth recording rather than
+    # resolving quietly.
+    #
+    # The Board's generation-standard brief asked for a specificity check:
+    # "The thought must reference something concrete from the current turn."
+    # David's voice brief, the same day, gives these as the TARGET:
+    #
+    #     "I wonder how plotters function."
+    #     "Robot body can raise arm."
+    #     "the light does shift around now"
+    #
+    # All three reference nothing from the turn, and the specificity check
+    # rejected all three. Those are the thoughts he wants — association and
+    # curiosity, not relevance scoring. David L3 outranks the brief, and his
+    # examples are evidence rather than preference.
+    #
+    # Nothing is lost by relaxing it: the case specificity protected against
+    # was "I am settling into a moment of quiet reflection", and _FILLER_RES
+    # catches that on its own. An untethered thought is now only rejected
+    # when it ALSO reads as filler — which is the real defect, where
+    # untetheredness was only ever a symptom.
     return ""
 
 

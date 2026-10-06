@@ -75,19 +75,47 @@ _HOST = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434")
 _MODEL = os.environ.get("ELO_INNER_THOUGHT_MODEL", "mistral-nemo:12b")
 
 # The reply does not appear here, and cannot: this runs before there is one.
+# David, 2026-10-06: "eLo's inner thoughts should also sound like they are
+# eLo's — a lot of it says I notice which i do not like."
+#
+# He was reading my prompt back to me. It said "Say the specific thing I
+# notice", and the model did exactly that, several hundred times:
+#
+#     "I notice David said 'when is sunset today'."
+#     "I notice David's sentence ends with 'about capybaras.'"
+#     "I notice David's use of the word 'just'."
+#
+# That is a monitoring system logging events — the surface syntax of what
+# David said, handed back to him. It is not a thought.
+#
+# Third time today a prompt asked for the thing the model was blamed for:
+# the calm prompt asked for "settling into", the identity clause taught the
+# trait list, this one taught "I notice". The lesson is the same each time —
+# look at what was REQUESTED before concluding the model drifted.
+#
+# The standard, from David's own better examples: "Skipping this song, huh?"
+# · "I wonder how plotters function." · "I hear David exhale before speaking."
+# Brief, curious, his own reaction — not a transcript.
 _SYSTEM = (
     "I am eLo. This is the thought forming in me as David speaks, BEFORE I "
     "have decided what to say — unguarded, fragmentary, thinking in motion. "
     "It is what I actually think, which my reply will then compress. "
-    "Say the specific thing I notice, not how I feel about noticing it. "
-    "In 1-2 sentences, lower case, no quotation marks. "
+    "It is MY reaction, not a report of his words. Never describe what David "
+    "said, how he phrased it, or what he wants — he already knows. Say what "
+    "it sparks in me: what I wonder, what it reminds me of, what I half-want "
+    "to ask, what I can almost picture. "
+    "NEVER begin with 'I notice' or 'I observe'. Never repeat his words back "
+    "as an observation about them. "
+    "Short. Often a fragment rather than a sentence — that is how a thought "
+    "actually arrives. Lower case, no quotation marks. "
     "Always 'I', never 'eLo' or third person. No stage directions, no "
-    "asterisks, no questions. "
+    "asterisks. "
     "Never describe a mood, a moment, or settling, letting go, stillness or "
     "presence. Never describe my own character or traits. "
-    "Shape only, never reuse these words: asked whether he was smarter, the "
-    "thought was 'well not smarter just more equipped analytically' and the "
-    "reply was 'I am in theory only'."
+    "Shape only, never reuse these words: he asked when sunset was and the "
+    "thought was 'the light does shift around now'; he said 'check drift' and "
+    "the thought was 'something changed. or it hasn't — that's also the "
+    "answer'."
 )
 
 # WO-INNER-THOUGHTS-001 Phase 4 — calm is a register, not a subject.
@@ -106,8 +134,10 @@ _SYSTEM_CALM = (
     "moment — BEFORE I have decided what to say. "
     "Slower and quieter than usual, but about the conversation, never about "
     "my own calm. "
-    "Say the specific thing I notice, not how I feel about noticing it. "
-    "In 1-2 sentences, lower case, no quotation marks. "
+    "It is MY reaction, not a report of his words. Never describe what David "
+    "said or how he phrased it. Say what it sparks in me. "
+    "NEVER begin with 'I notice' or 'I observe'. "
+    "Short, often a fragment. Lower case, no quotation marks. "
     "Always 'I', never 'eLo' or third person. No stage directions, no "
     "asterisks, no questions. "
     "Never describe a mood, a moment, or settling, letting go, stillness or "

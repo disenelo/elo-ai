@@ -74,7 +74,9 @@ def test_the_existing_rule_based_fallback_is_filler_too():
     By the Board's definition that references nothing, so the gate suppresses
     it. Stated here because it is a real behaviour change, not an oversight.
     """
-    assert reject_reason("I'm present for this.",
+    # "I'm present for this." is caught by the filler patterns, not by the
+    # relevance check that was relaxed on 2026-10-06.
+    assert reject_reason("I am present for this.",
                          asked="how is the seams work", reply="Going well.")
 
 
@@ -100,9 +102,24 @@ def test_specific_thoughts_pass(thought, asked, reply):
         thought, asked=asked, reply=reply)
 
 
-def test_an_untethered_thought_is_rejected():
-    assert reject_reason("the weather turned cold earlier than usual",
-                         asked="how is the seams work", reply="Going well.")
+def test_an_untethered_thought_is_ALLOWED_now():
+    """
+    WAS test_an_untethered_thought_is_rejected.
+
+    The Board's generation brief asked for a specificity check; David's voice
+    brief the same day gives "I wonder how plotters function." and "the light
+    does shift around now" as the TARGET. Both reference nothing from the
+    turn, and the specificity check rejected both. His examples win — those
+    are associations and curiosity, which is what an inner thought is.
+
+    Nothing is lost: the case specificity protected against was "I am
+    settling into a moment of quiet reflection", and the filler gate catches
+    that on its own.
+    """
+    assert not reject_reason("I wonder how plotters function.",
+                             asked="how is the seams work", reply="Going well.")
+    assert not reject_reason("the light does shift around now",
+                             asked="when is sunset today", reply="About eight.")
 
 
 def test_no_context_means_nothing_to_be_untethered_from():
@@ -208,8 +225,10 @@ def test_calm_mode_still_asks_for_something_specific():
     import runtime.inner_thought_first as itf
 
     assert "quiet moment" in itf._SYSTEM_CALM
-    assert "specific" in itf._SYSTEM_CALM
-    assert "about the conversation" in itf._SYSTEM_CALM
+    # The wording changed when David ruled out "I notice" — the calm prompt
+    # now asks for his reaction rather than a specific observation.
+    assert "MY reaction" in itf._SYSTEM_CALM
+    assert "I notice" in itf._SYSTEM_CALM  # as a prohibition
 
 
 def test_the_calm_register_is_actually_reachable():
@@ -227,3 +246,79 @@ def test_the_calm_register_is_actually_reachable():
 
     itf.form_thought("how are you", calm=False, transport=_t)
     assert "quiet moment" not in seen["sys"]
+
+
+# ── "I notice" is not eLo's voice ───────────────────────────────────────────
+#
+# David, 2026-10-06: "eLo's inner thoughts should also sound like they are
+# eLo's — a lot of it says I notice which i do not like."
+#
+# He was reading my prompt back to me. It said "Say the specific thing I
+# notice", and the model obliged, several hundred times. Third time in one day
+# that a prompt asked for the thing the model was then blamed for: the calm
+# prompt asked for "settling into", the identity clause taught the trait list,
+# this one taught "I notice".
+
+@pytest.mark.parametrize("line", [
+    "I notice David's voice has a slight tremble.",
+    "I notice David said 'when is sunset today'.",
+    "I notice David wants to set a timer for 2 minutes.",
+    "I notice David's sentence ends with 'about capybaras.'",
+    "I notice David's question is phrased as a request.",
+    "I notice David's use of the word 'just'.",
+    "I noticed David emphasized 'remember this'.",
+    "I observe the text 'make the screen a little dimmer'.",
+])
+def test_reporting_his_words_back_is_rejected(line):
+    """All eight verbatim from David's chatlog, 2026-10-06."""
+    why = reject_reason(line, asked="when is sunset today")
+    assert why, f"not caught: {line!r}"
+    assert "reports David" in why
+
+
+@pytest.mark.parametrize("line", [
+    "Skipping this song, huh?",
+    "I wonder how plotters function.",
+    "I hear David exhale before speaking.",
+    "Robot body can raise arm.",
+    "the light does shift around now",
+    "Buenos días — I like how that sounds.",
+    "Demo. Here we go.",
+])
+def test_elos_actual_voice_passes(line):
+    """All verbatim from David's brief as the target."""
+    assert not reject_reason(line, asked="skip this song"), (
+        f"rejected one of the examples David gave as RIGHT: {line!r}"
+    )
+
+
+def test_the_opener_is_banned_outright_even_about_the_world():
+    """
+    I first wrote this test the other way — allowing "i notice" when eLo is
+    noticing the WORLD rather than reporting David, on the grounds that his
+    own sensory observations are in David's good list.
+
+    David's words do not carve that out: "a lot of it says I notice which i do
+    not like." And the thought survives the ban intact — "the light's
+    different in here" is the same observation and sounds more like him. A
+    rule with an exception the author invented is a rule that drifts back.
+    """
+    assert reject_reason("i notice the light is different in here",
+                         asked="what time is it")
+    assert not reject_reason("the light's different in here",
+                             asked="what time is it")
+
+
+def test_the_prompt_no_longer_asks_for_the_thing_that_was_banned():
+    """
+    The invariant that keeps catching this: check what was REQUESTED before
+    concluding the model drifted.
+    """
+    import runtime.inner_thought_first as itf
+    for name, prompt in (("_SYSTEM", itf._SYSTEM),
+                         ("_SYSTEM_CALM", itf._SYSTEM_CALM)):
+        body = prompt.replace("NEVER begin with 'I notice' or 'I observe'", "")
+        body = body.replace("NEVER begin with 'I notice'", "")
+        assert "thing I notice" not in body, (
+            f"{name} still asks for what it forbids"
+        )

@@ -126,10 +126,16 @@ def test_the_prompt_asks_for_what_the_reply_leaves_out():
     # the relationship inverted: the reply is now the compression of the
     # thought. Same standard, correct direction.
     assert "my reply will then compress" in _PROMPT_SRC
-    assert "specific thing I notice" in _PROMPT_SRC
+    # "specific thing I notice" was here and is now BANNED — David,
+    # 2026-10-06: "a lot of it says I notice which i do not like." The prompt
+    # taught the template it was blamed for. What replaced it:
+    assert "MY reaction, not a report of his words" in _PROMPT_SRC
     # This clause was dropped when the prompt moved; the standard it
-    # enforced is now "Say the specific thing I notice".
-    assert "specific thing I notice" in _PROMPT_SRC
+    # enforced moved again on 2026-10-06: "Say the specific thing I notice"
+    # was itself banned by David's voice ruling, because the prompt was
+    # teaching the "I notice" template he objected to. The standard is now
+    # eLo's own reaction rather than an observation about David.
+    assert "what it sparks in me" in _PROMPT_SRC
 
 
 def test_the_prompt_no_longer_asks_for_a_feeling():
@@ -139,7 +145,10 @@ def test_the_prompt_no_longer_asks_for_a_feeling():
 
 def test_the_calibration_example_is_marked_not_to_be_reused():
     assert "never reuse these words" in _PROMPT_SRC
-    assert "more equipped analytically" in _PROMPT_SRC
+    # The calibration example changed with the voice ruling: the "smarter"
+    # exchange taught an explanatory register, and the new pair are shorter
+    # and more his.
+    assert "the light does shift around now" in _PROMPT_SRC
 
 
 # ── Formatting is enforced in code, not requested in prose ─────────────────
