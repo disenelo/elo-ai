@@ -2148,6 +2148,24 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
             "location_set",
         )
 
+    # ── Messages — B3 2026-10-06: the demo's message request got mock filler, and
+    # send_message said "Sent" whatever happened. Registry: confirm before sending.
+    try:
+        from tools import messages_agent as _msg
+        if _msg.has_pending():
+            if _msg.is_message_confirm(user_input):
+                _last_direct_result = _msg.execute_pending()
+                return _last_direct_result, "messages"
+            if _msg.is_message_cancel(user_input):
+                _msg.cancel_pending()
+                _last_direct_result = "Okay — not sent."
+                return _last_direct_result, "messages"
+        if _msg.is_message_request(user_input):
+            _last_direct_result = _msg.agent(user_input)
+            return _last_direct_result, "messages"
+    except Exception as _me:
+        _logger.debug("messages intercept failed: %s", _me)
+
     # ── Apple Notes: create — B3 2026-10-06: "make a note: X" reached the Obsidian
     # agent and the mock backend answered (capability demo). Registry: notes =
     # Apple Notes ("make a note, new note, apple notes, add note"); "my notes" stays

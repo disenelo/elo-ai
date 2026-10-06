@@ -33,25 +33,72 @@ def _run(script: str) -> str:
 
 # ── send ───────────────────────────────────────────────────────────────────────
 
-def send_message(contact: str, text: str) -> str:
-    c = contact.replace('"', '\\"')
-    t = text.replace('"', '\\"')
-    script = f'''
-        tell application "Messages"
-            set targetService to 1st service whose service type = iMessage
-            set targetBuddy to buddy "{c}" of targetService
-            send "{t}" to targetBuddy
+def _esc(text: str) -> str:
+    return text.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _osa(script: str) -> tuple[int, str, str]:
+    try:
+        r = subprocess.run(["osascript", "-e", script], capture_output=True, text=True, timeout=15.0)
+        return r.returncode, r.stdout.strip(), r.stderr.strip()
+    except Exception as e:
+        return 1, "", str(e)
+
+
+_NOT_ALLOWED = "macOS hasn't given me permission to use {app} yet"
+
+
+def resolve_contact(name: str) -> tuple[str, str] | str:
+    """(full name, phone-or-email) for a contact name, or a line saying why not.
+    B3 2026-10-06: messages went to `buddy "<name>"`, which Messages rarely resolves."""
+    n = _esc(name.strip())
+    rc, out, err = _osa(f'''
+        tell application "Contacts"
+            set ps to (every person whose name contains "{n}")
+            set res to {{}}
+            repeat with p in ps
+                set h to ""
+                if (count of phones of p) > 0 then
+                    set h to value of first phone of p
+                else if (count of emails of p) > 0 then
+                    set h to value of first email of p
+                end if
+                set end of res to (name of p) & "\t" & h
+            end repeat
+            set AppleScript's text item delimiters to "\n"
+            return res as text
         end tell
-    '''
-    result = _run(script)
-    if result.startswith("error"):
-        # Try by phone number / email fallback
-        script2 = f'''
-            tell application "Messages"
-                send "{t}" to participant "{c}" of 1st service
-            end tell
-        '''
-        _run(script2)
+    ''')
+    if rc != 0:
+        if "-1743" in err or "Not authorised" in err or "Not authorized" in err:
+            return _NOT_ALLOWED.format(app="Contacts") + " — so I can't look anyone up."
+        return f"I couldn't search your contacts ({err[:60]})."
+    rows = [r.split("\t", 1) for r in out.splitlines() if r.strip()]
+    rows = [(a, b) for a, b in rows if b]
+    if not rows:
+        return f"I can't find {name} in your contacts with a number or email."
+    exact = [r for r in rows if r[0].lower() == name.strip().lower()]
+    if len(exact) == 1 or len(rows) == 1:
+        return tuple((exact or rows)[0])
+    names = ", ".join(r[0] for r in rows[:4])
+    return f"There's more than one {name} in your contacts — {names}. Which one?"
+
+
+def send_message(contact: str, text: str, handle: str = "") -> str:
+    """Send via iMessage to the contact's handle. Says 'Sent' only when Messages
+    accepted it. B3 2026-10-06: it said 'Sent to X' whatever happened — osascript
+    errors go to stderr, and the code checked stdout."""
+    to = _esc(handle or contact)
+    rc, _out, err = _osa(f'''
+        tell application "Messages"
+            set acct to 1st account whose service type = iMessage
+            send "{_esc(text)}" to participant "{to}" of acct
+        end tell
+    ''')
+    if rc != 0:
+        if "-1743" in err or "Not authorised" in err or "Not authorized" in err:
+            raise RuntimeError(_NOT_ALLOWED.format(app="Messages"))
+        raise RuntimeError(f"Messages didn't send it ({err[:80]})")
     return f"Sent to {contact}: '{text}'"
 
 
@@ -65,9 +112,12 @@ def execute_pending() -> str:
     global _PENDING
     if not _PENDING:
         return "No pending message."
-    result = send_message(_PENDING["contact"], _PENDING["text"])
-    _PENDING = None
-    return result
+    p, _PENDING = _PENDING, None
+    try:
+        send_message(p["contact"], p["text"], p.get("handle", ""))
+        return f"Sent to {p['contact']}."
+    except RuntimeError as e:
+        return f"Not sent — {e}."
 
 
 def cancel_pending() -> None:
@@ -104,6 +154,8 @@ def is_message_cancel(text: str) -> bool:
 
 def _parse(query: str) -> Optional[tuple[str, str]]:
     """Return (contact, message_text) or None if parsing fails."""
+    query = re.sub(r"\b(?:send|write)\s+(?:a\s+)?(?:message|text)\s+to\s+", "message ", query, flags=re.I)
+    query = re.sub(r"^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?", "", query.strip(), flags=re.I)
 
     # Pattern 1: send/text/message [contact] "[quoted text]"
     m = re.search(
@@ -160,5 +212,21 @@ def agent(query: str) -> str:
         return "[MESSAGE: Couldn't parse contact or message text — try: 'message David saying hey come check this' or 'text Mum \"running late\"']"
 
     contact, text = parsed
-    _PENDING = {"contact": contact, "text": text}
-    return f"I can send \"{text}\" to {contact}. Say \"send it\" to confirm, or \"cancel\" to skip."
+    who = resolve_contact(contact)
+    if isinstance(who, str):
+        return who
+    _PENDING = {"contact": who[0], "text": text, "handle": who[1]}
+    return f"Send \u201c{text}\u201d to {who[0]}? Say \u201csend it\u201d or \u201ccancel\u201d."
+
+
+# B3 2026-10-06: a request to message someone, not "send me…" / "text me…".
+_REQUEST_RE = re.compile(
+    r"^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?"
+    r"(?:(?:send\s+(?:a\s+)?(?:message|text)\s+to|text|message|imessage)\s+(?!me\b|us\b|you\b)"
+    r"|tell\s+(?!me\b|us\b|you\b)\w+\s+that\b)",
+    re.IGNORECASE,
+)
+
+
+def is_message_request(text: str) -> bool:
+    return bool(_REQUEST_RE.search(text.strip())) and _parse(text) is not None
