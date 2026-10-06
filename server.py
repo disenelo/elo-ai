@@ -6692,6 +6692,7 @@ def _process_turn(raw: str) -> dict:
                 referents=_cv_referents,
                 author="elo",
                 thread_history=tuple(_cv_thread_hist),
+                project_id=_mem_project_tag,
             ))
             # Write tagged turns to interactions.json for categorised recall (AT-5)
             if _mem_cats:
@@ -9043,6 +9044,14 @@ def _shutdown_cleanly(server: ThreadingHTTPServer) -> None:
     try:
         from faculties.grounding.conversation_tracker import save_continuity as _sv_cont
         _sv_cont("default")
+    except Exception:
+        pass
+    # WO-INTENTIONS-001: persist active intentions to vault at session close
+    try:
+        from memory.intentions import persist_active_intentions_to_vault as _persist_intent
+        _persist_spot = _persist_intent()
+        if _persist_spot:
+            print(f"[eLo server] intentions persisted to vault: {_persist_spot}")
     except Exception:
         pass
     server.shutdown()

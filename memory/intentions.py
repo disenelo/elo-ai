@@ -257,6 +257,47 @@ def intentions_prompt_block(turn_text: str = "", max_open: int = 3) -> str:
         return ""
 
 
+# ── WO-INTENTIONS-001: vault persistence ─────────────────────────────────────
+
+def persist_active_intentions_to_vault() -> str | None:
+    """
+    WO-INTENTIONS-001: write current active + deferred intentions to vault so they
+    survive across sessions. Called at session close (server.py shutdown) and
+    whenever the intentions list changes significantly.
+
+    Returns the vault spot code on success, None if nothing to persist or on error.
+    """
+    try:
+        open_list = open_intentions()
+        if not open_list:
+            return None
+        lines = []
+        for intent in open_list:
+            lines.append(f"[{intent.status}] (p={intent.priority}) {intent.content}")
+            if intent.context:
+                lines.append(f"  context: {intent.context[:120]}")
+        body = "\n".join(lines)
+        summary = f"active_intentions: {len(open_list)} open — {open_list[0].content[:80]}"
+        from memory.memory_faculty import MemoryFaculty, MemoryCandidate
+        result = MemoryFaculty().submit(MemoryCandidate(
+            source_faculty="intentions",
+            content=body,
+            proposed_type="semantic",
+            proposed_weight=6,
+            significance=0.72,
+            project="general",
+            summary=summary[:200],
+            tags=("active_intentions", "INTERNAL"),
+            epistemic_class="canonical",
+            source_type="INTERNAL",
+            author="elo",
+        ))
+        return result.get("spot")
+    except Exception as exc:
+        _log.warning("persist_active_intentions_to_vault failed (non-fatal): %s", exc)
+        return None
+
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _extract_keywords(text: str) -> list[str]:

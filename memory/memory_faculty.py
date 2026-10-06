@@ -39,11 +39,15 @@ class MemoryCandidate:
     # Default "inference" for callers that don't know — never silently "verified".
     epistemic_class: str   = "inference"  # verified|inferred|generated|canonical|inference|...
     source_ref:      str   = ""           # non-empty required when epistemic_class="verified"
+    # WO-PROVENANCE-001: vault entry origin type (threaded to vault_layer.write_memory)
+    source_type:     str   = "CONVERSATION"  # CONVERSATION|TOOL_RESULT|WORLD_INTERACTION|PERCEPTION|INTERNAL|WKG|UNKNOWN
     # WO-CONVERSATION-001: conversation context at write time
     active_topic:    str   = ""           # topic being discussed when this was written
     referents:       dict  = field(default_factory=dict)   # {ref_word: entity_name}
     author:          str   = "elo"        # "elo" | "david" — who authored this entry
     thread_history:  tuple = field(default_factory=tuple)  # recent thread history (frozen)
+    # WO-INTENTIONS-001: project scope
+    project_id:      str   = ""           # specific project id (e.g. "elo_robot", "elo_planet")
 
 
 # ── Constants ────────────────────────────────────────────────────────────────
@@ -132,11 +136,15 @@ class MemoryFaculty:
                 experience_id=candidate.experience_id,
                 epistemic_class=candidate.epistemic_class,
                 source_ref=candidate.source_ref,
+                # WO-PROVENANCE-001: vault entry origin
+                source_type=candidate.source_type,
                 # WO-CONVERSATION-001: conversation context at write time
                 active_topic=candidate.active_topic,
                 referents=dict(candidate.referents) if candidate.referents else None,
                 author=candidate.author,
                 thread_history=list(candidate.thread_history) if candidate.thread_history else None,
+                # WO-INTENTIONS-001: project scope
+                project_id=candidate.project_id,
             )
             # WO-WKG-AUTO-POPULATE-001: after successful vault write, grow the WKG
             # if this candidate meets the epistemic gate (VERIFIED or SOURCE_ATTRIBUTED,
