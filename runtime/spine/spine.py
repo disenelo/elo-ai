@@ -1914,6 +1914,11 @@ def assemble_cognitive_state(
             "single_step" if high_priority_memories else
             "generative"
         ),
+        # WO-CONVERSATION-001: last eLo response from the previous turn
+        last_elo_response=(
+            __import__("runtime.conversation_state", fromlist=["get_last_elo_response"])
+            .get_last_elo_response()
+        ),
     )
 
 

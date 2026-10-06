@@ -403,6 +403,9 @@ class CognitiveState:
     # "generative"     — LLM generates from training data (no grounded evidence)
     reasoning_tier:       str   = "generative"  # conservative default until wired
 
+    # ── Conversation Continuity (WO-CONVERSATION-001) ─────────────────────────
+    last_elo_response:    str   = ""  # what eLo said last turn (≤500 chars); empty on first turn
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. COGNITIVEPLAN

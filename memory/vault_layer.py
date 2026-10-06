@@ -93,6 +93,10 @@ def write_memory(
     source_ref: str = "",
     experience_id: str = "",
     source_type: str = "CONVERSATION",
+    active_topic: str = "",
+    referents: dict | None = None,
+    author: str = "elo",
+    thread_history: list | None = None,
 ) -> str:
     """
     Write a complete tiered memory record.
@@ -147,10 +151,14 @@ def write_memory(
     _append_spot_index(spot, bits, summary_short, date, experience_id=experience_id)
     _write_summary_note(fname, spot, bits, summary_short, date, tags, weight, coded,
                         epistemic_class=epistemic_class, source_ref=source_ref,
-                        experience_id=experience_id, source_type=source_type)
+                        experience_id=experience_id, source_type=source_type,
+                        active_topic=active_topic, referents=referents,
+                        author=author, thread_history=thread_history)
     _write_deep_note(fname, spot, bits, deep_compressed, date, tags, weight,
                      epistemic_class=epistemic_class, source_ref=source_ref,
-                     experience_id=experience_id, source_type=source_type)
+                     experience_id=experience_id, source_type=source_type,
+                     active_topic=active_topic, referents=referents,
+                     author=author, thread_history=thread_history)
 
     # Invalidate cache so next obsidian_loader.load() picks up the new notes
     obsidian_loader.invalidate_cache()
@@ -189,11 +197,22 @@ def _write_summary_note(
     source_ref: str = "",
     experience_id: str = "",
     source_type: str = "CONVERSATION",
+    active_topic: str = "",
+    referents: dict | None = None,
+    author: str = "elo",
+    thread_history: list | None = None,
 ) -> None:
+    import json as _json
     tag_str  = ", ".join(f'"{t}"' for t in tags) if tags else ""
     date_str = date.strftime("%Y-%m-%d")
-    xid_line = f"experience_id: {experience_id}\n" if experience_id else ""
-    src_line = f"source_ref: {source_ref}\n" if source_ref else ""
+    xid_line   = f"experience_id: {experience_id}\n" if experience_id else ""
+    src_line   = f"source_ref: {source_ref}\n" if source_ref else ""
+    topic_line = f"active_topic: {active_topic}\n" if active_topic else ""
+    auth_line  = f"author: {author}\n" if author else ""
+    ref_line   = (f"referents: {_json.dumps(referents)}\n"
+                  if referents else "")
+    thr_line   = (f"thread_history: {_json.dumps(thread_history)}\n"
+                  if thread_history else "")
     content  = (
         f"---\n"
         f"type: memory-summary\n"
@@ -208,6 +227,10 @@ def _write_summary_note(
         f"source_type: {source_type}\n"
         f"{src_line}"
         f"{xid_line}"
+        f"{topic_line}"
+        f"{ref_line}"
+        f"{thr_line}"
+        f"{auth_line}"
         f"tags: [{tag_str}]\n"
         f"deep: [[deep/{fname}-deep]]\n"
         f"---\n\n"
@@ -230,11 +253,22 @@ def _write_deep_note(
     source_ref: str = "",
     experience_id: str = "",
     source_type: str = "CONVERSATION",
+    active_topic: str = "",
+    referents: dict | None = None,
+    author: str = "elo",
+    thread_history: list | None = None,
 ) -> None:
+    import json as _json
     tag_str  = ", ".join(f'"{t}"' for t in tags) if tags else ""
     date_str = date.strftime("%Y-%m-%d")
-    xid_line = f"experience_id: {experience_id}\n" if experience_id else ""
-    src_line = f"source_ref: {source_ref}\n" if source_ref else ""
+    xid_line   = f"experience_id: {experience_id}\n" if experience_id else ""
+    src_line   = f"source_ref: {source_ref}\n" if source_ref else ""
+    topic_line = f"active_topic: {active_topic}\n" if active_topic else ""
+    auth_line  = f"author: {author}\n" if author else ""
+    ref_line   = (f"referents: {_json.dumps(referents)}\n"
+                  if referents else "")
+    thr_line   = (f"thread_history: {_json.dumps(thread_history)}\n"
+                  if thread_history else "")
     content  = (
         f"---\n"
         f"type: memory-deep\n"
@@ -247,6 +281,10 @@ def _write_deep_note(
         f"source_type: {source_type}\n"
         f"{src_line}"
         f"{xid_line}"
+        f"{topic_line}"
+        f"{ref_line}"
+        f"{thr_line}"
+        f"{auth_line}"
         f"tags: [{tag_str}]\n"
         f"summary: [[summary/{fname}]]\n"
         f"---\n\n"

@@ -2258,6 +2258,14 @@ def _init_session():
     except Exception as _idm_e:
         print(f"[eLo server] identity_state increment skipped: {_idm_e}")
 
+    # WO-CONVERSATION-001: reset conversation state at session start
+    try:
+        from runtime.conversation_state import reset as _cs_reset
+        _cs_reset()
+        print("[eLo server] conversation_state reset")
+    except Exception as _cs_e:
+        print(f"[eLo server] conversation_state reset skipped: {_cs_e}")
+
     try:
         from ambient.ambient_engine import start as _ambient_start, register_ambient_callback as _reg_ambient
         _ambient_start(unity_present=True)
@@ -6649,6 +6657,20 @@ def _process_turn(raw: str) -> dict:
             _mem_summary = _mem_said[:180] + ("…" if len(_mem_said) > 180 else "")
             if _mem_cats:
                 _mem_summary = f"[{','.join(_mem_cats)}] {_mem_summary}"
+            # WO-CONVERSATION-001: pull conversation context for vault frontmatter
+            try:
+                from runtime.conversation_state import (
+                    get_active_topic as _cv_topic,
+                    get_referents as _cv_refs,
+                    get_thread_history as _cv_thread,
+                )
+                _cv_active_topic = _cv_topic()
+                _cv_referents    = _cv_refs()
+                _cv_thread_hist  = _cv_thread()
+            except Exception:
+                _cv_active_topic = ""
+                _cv_referents    = {}
+                _cv_thread_hist  = []
             _MemFac().submit(_MemCand(
                 source_faculty="interaction",
                 content=_content,
@@ -6658,6 +6680,10 @@ def _process_turn(raw: str) -> dict:
                 project=_mem_project_tag,
                 summary=_mem_summary[:200],
                 tags=("interaction", _action) + tuple(_mem_cats),
+                active_topic=_cv_active_topic,
+                referents=_cv_referents,
+                author="elo",
+                thread_history=tuple(_cv_thread_hist),
             ))
             # Write tagged turns to interactions.json for categorised recall (AT-5)
             if _mem_cats:
@@ -6788,6 +6814,54 @@ def _process_turn(raw: str) -> dict:
                         context_action=_action,
                         memory_origin=_MemoryOrigin.REAL_EXPERIENCE.value,
                     )
+        except Exception:
+            pass
+
+        # WO-CONVERSATION-001: update session-level conversation state + enrich MemoryCandidate
+        # active_topic comes from memory category classification (already computed above).
+        # Referents come from CognitivePlan's ConversationContext (via _plan).
+        # TOPIC_CHANGE fires a lightweight vault event so topic pivots are retrievable.
+        try:
+            from runtime.conversation_state import (
+                update_after_response as _cs_update,
+                topic_changed as _cs_topic_changed,
+                get_active_topic as _cs_get_topic,
+                get_thread_history as _cs_get_thread,
+            )
+            _cs_new_topic = (_mem_cats[0] if _mem_cats else "") or ""
+            _cs_referents = {}
+            # Pull referents from CognitivePlan's ConversationContext if available
+            try:
+                _cc = getattr(getattr(_plan, "conversation_context", None), None, None)
+                if _cc is None:
+                    # Try via spine snapshot if attached
+                    _cc_raw = getattr(_plan, "current_referents", ())
+                    _cs_referents = {r: r for r in _cc_raw if r}
+            except Exception:
+                pass
+            # Detect TOPIC_CHANGE before updating state
+            _cs_prev_topic = _cs_get_topic()
+            if _cs_topic_changed() and _cs_new_topic and _cs_new_topic != _cs_prev_topic:
+                from memory.memory_faculty import MemoryFaculty as _TcMemFac, MemoryCandidate as _TcMemCand
+                _TcMemFac().submit(_TcMemCand(
+                    source_faculty="conversation",
+                    content=f"Topic changed from '{_cs_prev_topic}' to '{_cs_new_topic}'. David said: {(_original_raw or '')[:200]}",
+                    proposed_type="episodic",
+                    proposed_weight=2,
+                    significance=0.35,
+                    project=_mem_project_tag if "_mem_project_tag" in dir() else "general",
+                    summary=f"TOPIC_CHANGE: {_cs_prev_topic} → {_cs_new_topic}",
+                    tags=("TOPIC_CHANGE", _cs_prev_topic, _cs_new_topic),
+                    epistemic_class="conversation",
+                    active_topic=_cs_new_topic,
+                    author="elo",
+                ))
+            # Update conversation state for next turn
+            _cs_update(
+                elo_response=response or "",
+                active_topic=_cs_new_topic,
+                referents=_cs_referents or None,
+            )
         except Exception:
             pass
 
