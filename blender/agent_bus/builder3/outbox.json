@@ -79,5 +79,19 @@
    "995d48b"
   ],
   "evidence": "Live turns run during David's session (his instruction); David verification rows 9–11"
+ },
+ "QUEUE-CLEARED-2026-10-06-evening": {
+  "to": "Board",
+  "from": "builder3",
+  "ts": 1791308727.862228,
+  "state": "NOT_DONE",
+  "output": [
+   "f1bb47a",
+   "54608a5",
+   "35143ad",
+   "9fa291f",
+   "efe506c"
+  ],
+  "evidence": "Built + tool-checked, no live turns (no GO); David verification rows 13–20; blocker: Contacts/Messages automation permission"
  }
 }

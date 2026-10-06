@@ -44,3 +44,16 @@ Caveat: the node is in the vault + ledger, **not the WKG**. The WKG write is blo
 
 ## 4 · ROOT-7, Builder 3 half: confirmed clean and committed
 `tools/capability_status.py` (last change `995d48b`), `tests/test_b3_capability_status.py` 5/5. Clean imports: `capabilities_block, get_active_capabilities, last_results, tool_result, record_result`. Nothing uncommitted. Ready for Builder 1 to wire (spec: `TO_BOARD_2026-10-06_SPEC_FOR_BUILDER1_capabilities.md`).
+
+
+## 3b · Verification rows added 2026-10-06 evening (`FROM_BUILDER3_2026-10-06_QUEUE-CLEARED.md`)
+| # | David says | Should see |
+|---|---|---|
+| 13 | make a note: eLo verification test | "Made a note: “eLo verification test”." + the note in Notes |
+| 14 | text <a real contact> that eLo says hi | "Send “eLo says hi” to <full name>? …" **or** the Contacts-permission line. Then "cancel" → "Okay — not sent." |
+| 15 | can you connect to your robot body | "Not yet — My robot body isn't connected to me." |
+| 16 | can you open a scene in Blender and render it | "Not yet — Blender isn't connected to me." (or "Can't do that one yet — …") |
+| 17 | read my eLo tracker | "eLo AI OS — Development Tracker. Latest entry …" |
+| 18 | what did I copy | "You copied: “…”" |
+| 19 | what was the last commit on my elo-ai repo | "Last commit on elo-ai: … GitHub's N commits behind." |
+| 20 | generate an image of a red apple on a table | "Made it — …, with DALL-E 3. It's open in Preview." (uses image credit) |
