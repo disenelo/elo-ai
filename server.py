@@ -3504,6 +3504,9 @@ def _process_turn(raw: str) -> dict:
                 from faculties.grounding.conversation_tracker import get_tracker as _ws_ct
                 _ws_recent = [u for u, _e in _ws_ct().get_context(
                     (_state or {}).get("person_id", "default")).get("recent_turns", [])]
+                # Early-return turns (reference gate, fast paths) never reach the
+                # tracker; _last_inputs sees every turn. Most recent last.
+                _ws_recent += [x for x in _last_inputs[:-1] if x not in _ws_recent]
                 _sq_text = _ws_resolve(_original_raw, _ws_recent)
                 _sq_words = set(_sq_text.lower().replace("'", " ").split())
                 if "david" in _sq_words and _sq_words & _DAVID_PERSONAL_TERMS:
@@ -8247,6 +8250,42 @@ def _process_turn(raw: str) -> dict:
                                 "negative_low":  "Something feels off, but I'm staying with it.",
                             }
                             _it_result = _it_vmap.get(_emotion, "I'm present for this.")
+
+                        # Board P0 2026-10-05 — suppressing beats filler.
+                        #
+                        # Two failures in one of David's logs:
+                        #   "the thing I decided not to lead with: 'I'm eLo:
+                        #    calm, observant, playful'"   <- the system prompt
+                        #   "I am settling into a moment of quiet reflection,
+                        #    letting go of any urgency"   <- meditation app
+                        #
+                        # Placed BEFORE the dream override on purpose. A dream
+                        # thought is SUPPOSED to be untethered from the turn —
+                        # that is what waking with something in your head is —
+                        # so gating it on turn-relevance would delete exactly
+                        # the feature 02ef0ae built.
+                        #
+                        # Note this also catches the rule-based fallback above:
+                        # "I'm present for this." references nothing, which is
+                        # the definition the Board gave. Better no thought.
+                        try:
+                            from runtime.inner_thought_quality import (
+                                reject_reason as _itq,
+                            )
+                            _it_why = _itq(
+                                _it_result,
+                                asked=str(_asked_raw or ""),
+                                reply=str(_resp or ""),
+                            )
+                            if _it_why:
+                                import logging as _itq_log
+                                _itq_log.getLogger("elo.inner_thought").warning(
+                                    "inner_thought suppressed (%s): %r",
+                                    _it_why, str(_it_result)[:90],
+                                )
+                                _it_result = ""
+                        except Exception:
+                            pass
 
                         # S2 Phase 3 — the dream wins. Applied after the
                         # generation block rather than short-circuiting it,
