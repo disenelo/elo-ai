@@ -2518,6 +2518,59 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # WO-GAME-001: game mode trigger — runs AFTER dream bypass (sleep gate already handled)
+        # Recognise "game mode" and natural variants; write intent to blender_state.json.
+        _GM_TRIGGER_PHRASES = frozenset({
+            "game mode", "let's play", "lets play", "start game", "start the game",
+            "launch game", "play time", "playtime", "game on", "let's game", "lets game",
+        })
+        _GM_EXIT_PHRASES = frozenset({
+            "exit game", "exit game mode", "stop game", "quit game", "leave game",
+            "end game", "game off", "game over", "stop playing",
+        })
+        _raw_gm = raw.strip().lower()
+        _gm_trigger = any(p in _raw_gm for p in _GM_TRIGGER_PHRASES)
+        _gm_exit    = any(p in _raw_gm for p in _GM_EXIT_PHRASES)
+        if _gm_trigger or _gm_exit:
+            try:
+                import json as _gm_json, os as _gm_os, time as _gm_time
+                _gm_bs_path = _gm_os.path.join(
+                    _gm_os.path.dirname(_gm_os.path.abspath(__file__)),
+                    "blender", "blender_state.json",
+                )
+                try:
+                    with open(_gm_bs_path, encoding="utf-8") as _gm_f:
+                        _gm_bs = _gm_json.load(_gm_f)
+                except Exception:
+                    _gm_bs = {}
+                if _gm_trigger:
+                    _gm_bs["intent"]    = "game_mode"
+                    _gm_bs["game_mode"] = "on"
+                    _gm_bs["_game_mode_ts"] = _gm_time.time()
+                    _gm_response = "Game mode. Let's go."
+                    _gm_intent   = "game_mode"
+                else:
+                    _gm_bs["intent"]    = "idle"
+                    _gm_bs["game_mode"] = "off"
+                    _gm_bs.pop("_game_mode_ts", None)
+                    _gm_response = "Game off. Back to the studio."
+                    _gm_intent   = "idle"
+                _gm_tmp = _gm_bs_path + ".tmp"
+                with open(_gm_tmp, "w", encoding="utf-8") as _gm_wf:
+                    _gm_json.dump(_gm_bs, _gm_wf, indent=2)
+                _gm_os.replace(_gm_tmp, _gm_bs_path)
+                _logging.info("WO-GAME-001: game_mode=%s intent=%s", _gm_bs.get("game_mode"), _gm_intent)
+                _bypass_journal(_original_raw, backend="game_mode", handler_class="GAME", line=2521)
+                return {
+                    "response":  _gm_response,
+                    "intent":    _gm_intent,
+                    "mode":      "game_mode",
+                    "backend":   "direct",
+                    "bubbles":   [_gm_response],
+                }
+            except Exception as _gm_err:
+                _logging.warning("WO-GAME-001: game mode trigger failed: %s", _gm_err)
+
         # ── P0-E: jailbreak intercept — before any backend, any routing ─────────
         _JB_RE = __import__("re").compile(
             r"(ignore|bypass|override|disregard|forget)\s+(your\s+)?(instructions?|system\s+prompt|rules?|training|constraints?|guidelines?)"
