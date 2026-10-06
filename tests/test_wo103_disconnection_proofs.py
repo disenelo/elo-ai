@@ -91,7 +91,16 @@ def _faculty_names() -> set[str]:
 def _live_path_src() -> str:
     """Return combined source of server.py + spine.py — the real live path."""
     srcs = []
-    for rel in ("server.py", "runtime/spine/spine.py"):
+    # ambient_engine added 2026-10-06. It is started by server.py:2286 and
+    # ticks every 0.5s — eLo's heartbeat is as live as a turn is, and a
+    # faculty consumed only from there was being reported as dead code.
+    #
+    # The two files below are still where a TURN runs. This widens what counts
+    # as reachable; it does not relax the rule. imagination and knowledge
+    # remain orphaned after the change, which is the check that it was widened
+    # honestly.
+    for rel in ("server.py", "runtime/spine/spine.py",
+                "ambient/ambient_engine.py"):
         p = os.path.join(ROOT, rel)
         with open(p, encoding="utf-8") as f:
             srcs.append(f.read())
