@@ -207,3 +207,60 @@ def test_the_live_graph_actually_discriminates():
     assert 0 < len(nonzero) < len(scores), (
         "everything or nothing scoring means the key separates no entities"
     )
+
+
+# ── knowing about the world does not depend on David discussing it ─────────
+#
+# David asked: "so eLo doesn't learn history and culture?"
+#
+# He was right to. Sorting on significance ALONE dropped real knowledge at the
+# cap of 10. Measured on a broad query over the live store:
+#
+#     survived : world · Hello, World!\n · Arabic Language · Modernist Design
+#     dropped  : Akan Culture · West African Musical Tradition
+#
+# Both dropped entities score 0.0, which means "not something David returns
+# to" — and the sort was reading that as "least relevant". They are not the
+# same thing. A junk entity ("Hello, World!\n") outranking Akan Culture made
+# it obvious.
+
+def test_significance_lifts_but_does_not_replace_text_relevance():
+    """
+    An entity the text search ranked first, that David never discusses, must
+    not be driven off the end by one he discusses daily.
+    """
+    import pathlib
+    src = (pathlib.Path(__file__).resolve().parent.parent
+           / "memory" / "spg_faculty.py").read_text()
+
+    assert "_SIG_LIFT" in src, (
+        "significance is sorting as the primary key again — that drops "
+        "cultural knowledge at the cap"
+    )
+    assert "reverse=True" not in src.split("_SIG_LIFT")[1][:400], (
+        "a pure significance sort is back"
+    )
+
+
+def test_an_unmentioned_entity_keeps_its_place():
+    """The property, arithmetic rather than by inspection."""
+    lift = 3.0
+    order = {"culture": 0, "robot": 9}          # text put culture first
+    sig = {"culture": 0.0, "robot": 1.0}        # David talks about the robot
+
+    ranked = sorted(order, key=lambda e: order[e] - lift * sig[e])
+
+    assert ranked[0] == "culture", (
+        "an entity the text search ranked first was displaced by one it "
+        "ranked tenth — significance is overpowering relevance"
+    )
+
+
+def test_a_discussed_entity_still_rises():
+    """The lift has to do something, or this is just the old text ordering."""
+    lift = 3.0
+    order = {"culture": 0, "robot": 2}
+    sig = {"culture": 0.0, "robot": 1.0}
+
+    ranked = sorted(order, key=lambda e: order[e] - lift * sig[e])
+    assert ranked[0] == "robot"

@@ -289,8 +289,31 @@ def query_spg_entities(turn_text: str, ccm: dict | None = None) -> list[str]:
                     _linked, next(iter(_distinct)),
                 )
             else:
+                # A BOUNDED NUDGE, not a replacement for text relevance.
+                #
+                # Sorting on significance alone dropped real knowledge at the
+                # cap. Measured on a broad query over the live store:
+                #
+                #   survived : world · Hello, World!\n · Arabic Language ...
+                #   dropped  : Akan Culture · West African Musical Tradition
+                #
+                # Both dropped entities scored 0.0 — meaning "not something
+                # David returns to", which the sort was reading as "least
+                # relevant". They are not the same thing, and eLo knowing
+                # about Akan culture does not depend on David discussing it.
+                # A junk entity ("Hello, World!\n") outranking them made that
+                # plain.
+                #
+                # So text relevance stays primary and significance moves an
+                # entity at most _SIG_LIFT places. Something David returns to
+                # daily rises; something he has never mentioned keeps its
+                # place instead of falling off the end.
+                _SIG_LIFT = 3.0
+                _order = {eid: i for i, eid in enumerate(relevant_entity_ids)}
                 relevant_entity_ids.sort(
-                    key=lambda eid: entity_sig.get(eid, 0.0), reverse=True)
+                    key=lambda eid: _order[eid]
+                    - _SIG_LIFT * entity_sig.get(eid, 0.0)
+                )
                 _log.debug(
                     "SPG rerank: %d entities, %d linked, %d distinct scores; "
                     "top sig=%.2f",
