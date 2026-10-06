@@ -2464,6 +2464,19 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # B3-SHOW-BRAIN-001: "show me your brain / health / hp / battery" opens
+        # Presence's view (same channel as a click) and eLo says one line — no LLM.
+        _sb_direct = None
+        try:
+            from tools.brain_display import ui_command_for as _sb_for, emit as _sb_emit, spoken_for as _sb_spoken
+            _sb_name = _sb_for(raw)
+            if _sb_name:
+                _sb_emit(_sb_name)
+                _sb_direct = (_sb_name, _sb_spoken(_sb_name))
+                print(f"[show_brain] ui_command={_sb_name}", flush=True)
+        except Exception as _sb_err:
+            print(f"[show_brain] error: {_sb_err}", flush=True)
+
         # hard loop guard
         _last_inputs.append(raw)
         if len(_last_inputs) > 3:
@@ -6234,6 +6247,11 @@ def _process_turn(raw: str) -> dict:
                 if not _direct and _ws_direct:
                     response = _ws_direct
                     backend_used = "direct:web_search"
+                    _llm_latency_ms = 0.0
+                    _direct = response
+                if not _direct and _sb_direct:
+                    response = _sb_direct[1]
+                    backend_used = f"direct:{_sb_direct[0]}"
                     _llm_latency_ms = 0.0
                     _direct = response
 

@@ -417,6 +417,9 @@ _PRESERVE_KEYS = {
     # Designer's conscious-rest animation signal (Board 2026-09-27). Asserted
     # every ambient tick, so it cannot go stale the way the dream fields did.
     "calm_mode",
+    # B3-SHOW-BRAIN-001: "show me your brain" → Presence opens the view. Edge-
+    # triggered on _ts; the 0.5s ambient write dropped it before Unity polled.
+    "ui_command",
 }
 
 _VISION_DEFAULT = {"active": False, "attention": 0.0, "focus": {"x": 0.5, "y": 0.5}, "app": ""}
