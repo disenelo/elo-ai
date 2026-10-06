@@ -8441,6 +8441,31 @@ def _process_turn(raw: str) -> dict:
                         except Exception:
                             pass
 
+                        # TTS-CHAT-DIVERGENCE fix: inner_thought fires async (HTTP response
+                        # already gone with inner_thought=""). Mirror the spoken text to
+                        # ambient_speech.json with "-- " prefix so Unity chat log shows it.
+                        # Rule: whatever TTS speaks, Unity chat must display. No exceptions.
+                        try:
+                            if _it_result and _it_result.strip():
+                                import json as _it_asl_json, time as _it_asl_time
+                                _it_asl_path = _it_os.path.join(
+                                    _it_os.path.dirname(_it_os.path.abspath(__file__)),
+                                    "blender", "ambient_speech.json",
+                                )
+                                _it_asl_tmp = _it_asl_path + ".tmp"
+                                with open(_it_asl_tmp, "w", encoding="utf-8") as _it_asl_f:
+                                    _it_asl_json.dump(
+                                        {
+                                            "text":   "-- " + _it_result.strip(),
+                                            "_ts":    _it_asl_time.time(),
+                                            "source": "inner_thought",
+                                        },
+                                        _it_asl_f, ensure_ascii=False,
+                                    )
+                                _it_os.replace(_it_asl_tmp, _it_asl_path)
+                        except Exception:
+                            pass
+
                     except Exception:
                         pass
 
