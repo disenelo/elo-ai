@@ -2457,6 +2457,13 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass
 
+        # B3-SEARCH-001: every turn's input, so "look it up" can find what was named
+        try:
+            from tools.web_search import note_input as _ws_note
+            _ws_note(raw)
+        except Exception:
+            pass
+
         # hard loop guard
         _last_inputs.append(raw)
         if len(_last_inputs) > 3:
@@ -3504,9 +3511,6 @@ def _process_turn(raw: str) -> dict:
                 from faculties.grounding.conversation_tracker import get_tracker as _ws_ct
                 _ws_recent = [u for u, _e in _ws_ct().get_context(
                     (_state or {}).get("person_id", "default")).get("recent_turns", [])]
-                # Early-return turns (reference gate, fast paths) never reach the
-                # tracker; _last_inputs sees every turn. Most recent last.
-                _ws_recent += [x for x in _last_inputs[:-1] if x not in _ws_recent]
                 _sq_text = _ws_resolve(_original_raw, _ws_recent)
                 _sq_words = set(_sq_text.lower().replace("'", " ").split())
                 if "david" in _sq_words and _sq_words & _DAVID_PERSONAL_TERMS:
