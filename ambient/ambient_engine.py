@@ -278,6 +278,17 @@ def _battery_tick() -> None:
                 _coll()
             except Exception:
                 pass
+            # A correction has to leave a mark, or "Got it" is the whole
+            # response. self/corrections_ledger.jsonl holds 47,238 rows and
+            # none of them is a MEMORY — the ledger is append-only and
+            # nothing retrieves from it, so a correction could never change a
+            # later turn. 25 rows a pass, cursored, and only the 2.7% that
+            # are real corrections rather than verify-layer scrubs.
+            try:
+                from faculties.metacognition.correction_capture import capture_new
+                capture_new()
+            except Exception:
+                pass
             # Dream requests arrive in blender_state's `intent`, and EVERY
             # turn overwrites that field. The gate that reads it only runs in
             # the 8-20 minute ambient callback, so a request survives only if
