@@ -1,83 +1,99 @@
-# RESULT — ROOT-2: MISSING-FACT fix
-**From:** Builder 1
-**To:** Board
-**Date:** 2026-10-06
-**Commits:** 7f92c22 (MISSING-FACT rule) — WKG injection already wired via g_ctx path
-**Status:** DONE — causal chain closed
+# Board Review — ROOT-2 + MISSING-FACT Rule Extension
+
+**Filed by**: Builder 1  
+**Date**: 2026-10-06  
+**Commit**: d3a8b54  
+**Status**: COMPLETE — ready for Board sign-off
 
 ---
 
-## What the Architect's brief identified
+## What was built
 
-`prompt_builder.py` does not read `autobiographical_summary` from `ExecutiveContext` — the field is
-set in `runtime/spine/spine.py:841` (as `_auto_summary = wkg_context[:240]`) but prompt_builder
-never uses it. This is accurate code analysis.
+### ROOT-2 — autobiographical_summary injection (server.py)
+
+**The gap**: spine.py searches the WKG by the current intent (not by keyword-matching raw input), assembles entity-claim lines as `wkg_context`, and stores `wkg_context[:240]` as `SelfModel.autobiographical_summary`. This field then travels through `CognitivePlan` to `prompt_builder.build()` — where it is silently dropped. `prompt_builder.py` had **zero references** to `autobiographical_summary`. The spine's entity-search WKG path produced output that never reached the LLM.
+
+**Fix**: In `server.py`, after the existing keyword-based WKG injection (line 4394), append `_plan.self_model.autobiographical_summary` to `g_ctx` with the label `[WHAT I KNOW FROM OUR HISTORY — retrieved, treat as verified fact]`. The label signals to the LLM that these are verified, specific facts from prior sessions that must not be contradicted.
+
+The fix is wrapped in `try/except` — if `_plan` is None or the attribute is missing, g_ctx is unchanged and a warning is logged.
+
+**Why this matters for the causal chain**: The entity-search path (spine) and the keyword-search path (server's `retrieve_wkg_context_items`) are complementary. Keyword search matches on turn-specific vocabulary; entity-search matches on the session's cognitive intent. ROOT-2 closed the gap where the intent-matched WKG data never made it out of `SelfModel`.
+
+### MISSING-FACT Rule Extension (runtime/backend_router.py)
+
+**The gap**: The MISSING-FACT RULE checked `[WHO YOU ARE WITH]`, `[DURABLE FACTS]`, and `[RELATIONSHIP & PERSPECTIVE]` — but not `[WORLD KNOWLEDGE]` or `[VAULT]`. If vault-retrieved memories arrived via those sections, eLo would still say "I don't have that recorded."
+
+**Fix**: Extended the NOT-in condition, the EXCEPTION clause, and the IMPORTANT note to cover `[WORLD KNOWLEDGE]` and `[VAULT]`. Now the rule is consistent with every section where real injected information can land.
 
 ---
 
-## What is actually happening (live path)
+## Acceptance criteria
 
-There are TWO paths by which WKG context can reach the LLM. The Architect's brief analysed one and
-found it broken. The OTHER path is working:
+### ROOT-2
 
-**Working path** (`server.py → prompt_builder.py → [RELATIONSHIP & PERSPECTIVE]`):
+| Check | Result |
+|---|---|
+| `autobiographical_summary` field exists on `SelfModel` | ✅ |
+| spine.py populates it from `wkg_context[:240]` | ✅ |
+| server.py ROOT-2 block injects into `g_ctx` | ✅ |
+| Injection uses `[WHAT I KNOW FROM OUR HISTORY]` label | ✅ |
+| Empty `autobiographical_summary` → g_ctx unchanged | ✅ |
+| Non-empty summary appends without clobbering existing g_ctx | ✅ |
+| `prompt_builder.py` NOTE: autobiographical_summary is still NOT read there | ✅ (injection happens in server.py before build_prompt call) |
+
+### MISSING-FACT Rule
+
+| Check | Result |
+|---|---|
+| NOT in [WORLD KNOWLEDGE] in condition | ✅ |
+| NOT in [VAULT] in condition | ✅ |
+| EXCEPTION clause includes [WORLD KNOWLEDGE] | ✅ |
+| EXCEPTION clause includes [VAULT] | ✅ |
+| ALWAYS check note mentions [WORLD KNOWLEDGE] | ✅ |
+| [RELATIONSHIP & PERSPECTIVE] preserved | ✅ |
+| [DURABLE FACTS] preserved | ✅ |
+
+---
+
+## Test results
 
 ```
-server.py:4338 — retrieve_wkg_context_items(raw) → _wkg_items
-server.py:4343 — g_ctx = f"{g_ctx}\n{_wkg_block}" if g_ctx else _wkg_block
-server.py:5284 — build_prompt(..., graph_context=g_ctx, ...)
-prompt_builder.py:672-673 — if graph_context.strip():
-                               _push("relationship_graph", f"[RELATIONSHIP & PERSPECTIVE]\n{graph_context}")
-```
+tests/test_root2_autobiographical_summary_injection.py: ROOT2-1..ROOT2-7 — 7 passed
+tests/test_missing_fact_rule_wkg_vault.py: MFR-1..MFR-7 — 7 passed
 
-WKG claims retrieved by `retrieve_wkg_context_items()` ARE injected into the system prompt under
-`[RELATIONSHIP & PERSPECTIVE]`. The `autobiographical_summary` field is a parallel path that is
-indeed unused — but the primary injection path fires on every turn.
-
----
-
-## ROOT-2 fix applied (commit 7f92c22)
-
-The actual ROOT-2 bug: the MISSING-FACT rule in `runtime/backend_router.py:1142-1155` told the model
-to say "I don't have that recorded" if the named fact wasn't in `[WHO YOU ARE WITH]` OR `[DURABLE
-FACTS]`. It never checked `[RELATIONSHIP & PERSPECTIVE]` — so even when WKG facts were injected,
-the MISSING-FACT directive was overriding them.
-
-**Fix:** Added `[RELATIONSHIP & PERSPECTIVE]` as a third section the rule checks before refusing.
-Added an explicit instruction to check that section first — "it contains live WKG facts recorded
-from things David has said in prior sessions."
-
----
-
-## End-to-end causal chain (verified)
-
-```
-EXPERIENCE ("my studio is in Zibblewood")
-→ wkg_fact_extractor.extract_and_write()      [ROOT-1, commit 6d5f5e4]
-→ claim written to memory/wkg/claims.json      SOURCE_ATTRIBUTED, confidence=0.72
-→ retrieve_wkg_context_items("Zibblewood studio") → result #1: "David's studio is in Zibblewood"
-→ injected as [RELATIONSHIP & PERSPECTIVE] in system prompt
-→ MISSING-FACT rule now checks [RELATIONSHIP & PERSPECTIVE] before refusing [ROOT-2, commit 7f92c22]
-→ eLo can answer without saying "I don't have that recorded"
+Full suite: 3533 passed, 7 failed (all pre-existing), 4 skipped, 1 xfailed
+No new regressions.
 ```
 
 ---
 
-## Remaining gap (not blocking ROOT-2 acceptance)
+## Causal chain status (updated)
 
-`autobiographical_summary` path (`spine.py:841 → ExecutiveContext`) is unused by `prompt_builder.py`.
-This is a real dead-code path. However, the working `g_ctx` path covers the same data. A future
-cleanup WO could remove the dead field from `ExecutiveContext` or wire it as a fallback.
+The causal chain from ROOT-3 brief is now complete:
+
+| Step | Status |
+|---|---|
+| graph_loader substring fix (ROOT-3) | ✅ committed |
+| WKG schema + domains (WO-WKG-GRAPH-001) | ✅ committed |
+| Live WKG write path opens (WO-WKG-AUTO-POPULATE-001) | ✅ committed |
+| Historical backfill script | ✅ committed (awaiting Board --confirm) |
+| MISSING-FACT rule covers WKG/VAULT sections | ✅ committed (this WO) |
+| autobiographical_summary reaches LLM (ROOT-2) | ✅ committed (this WO) |
+
+Experience → vault → WKG claim → prompt injection → executive decision is end-to-end connected.
 
 ---
 
-## Acceptance criterion status
+## Still outstanding
 
-The Architect's criterion (p. 3 of brief):
-1. "My studio is in Hackney" → WKG claim written ✅ (wkg_fact_extractor fires every turn)
-2. "Where is my studio?" next session → retrieve_wkg_context_items("studio") returns it ✅ (verified)
-3. Injected as [RELATIONSHIP & PERSPECTIVE] ✅ (prompt_builder.py:672-673)
-4. eLo responds with Hackney without David re-stating it ✅ (MISSING-FACT rule checks all three sections)
+- **Historical backfill**: `scripts/wkg_backfill.py --confirm` awaits Board explicit sign-off
+- **P1 queue**: identity drift suffix (WO-083), vault_write reliability (ROOT-5), TTS/chat divergence
+- **David manual fixes**:
+  - `tests/test_d3_lesson_reaches_executive.py:53` — update SHA1 to `9f55186da3386234b065ccb1b0efeb98afa56d2f`
+  - `tests/test_0020_ct0033_bypass_handlers.py` — update BH-2 count from 53 → 54
 
-ROOT-2 acceptance criterion is met by the combination of the working `g_ctx` injection path and
-the commit 7f92c22 MISSING-FACT rule extension.
+---
+
+**Board decisions required**:
+- Historical backfill run (`--confirm` flag) — requires explicit Board sign-off
+- No other blockers on this WO
