@@ -255,6 +255,23 @@ def form_thought(
     except Exception:
         pass
 
+    # A wondering eLo forms is kept, so he can come back to it.
+    #
+    # faculties/curiosity already holds open_questions.json and server.py
+    # already READS it to surface one. Measured 2026-10-06: the file held 0
+    # questions and nothing in production ever called store_question. The
+    # read side was wired and the write side never was, so eLo could surface
+    # a question he was never able to keep.
+    #
+    # Here rather than at the call site because this is where a thought is
+    # known to be real — past the deadline, the leak scrub and the quality
+    # gate. A rejected thought should not leave a question behind.
+    try:
+        from faculties.metacognition.open_question_capture import capture
+        capture(thought, asked=asked)
+    except Exception:
+        pass
+
     return thought
 
 
