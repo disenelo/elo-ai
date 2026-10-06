@@ -4393,6 +4393,24 @@ def _process_turn(raw: str) -> dict:
         except Exception as _wkg_e:
             _logging.warning("WO-WKG-001: wkg ctx items failed (non-fatal): %s", _wkg_e)
 
+        # ── ROOT-2: spine entity-search WKG — autobiographical_summary injection ──
+        # spine.py searches WKG entities matched to the current intent (not keyword-
+        # matched to raw input) and stores the result as SelfModel.autobiographical_summary.
+        # prompt_builder.py has zero references to that field — it was silently dropped.
+        # Injected here so the executive actually sees what spine retrieved about David.
+        try:
+            _auto_summary = getattr(getattr(_plan, "self_model", None), "autobiographical_summary", "") or ""
+            if _auto_summary.strip():
+                _auto_block = (
+                    "[WHAT I KNOW FROM OUR HISTORY — retrieved, treat as verified fact]\n"
+                    + _auto_summary.strip()
+                    + "\n[These are specific facts recorded from our sessions. "
+                    + "Do not contradict or ignore them in favour of a general answer.]"
+                )
+                g_ctx = f"{g_ctx}\n{_auto_block}" if g_ctx else _auto_block
+        except Exception as _root2_e:
+            _logging.warning("ROOT-2: autobiographical_summary injection failed (non-fatal): %s", _root2_e)
+
         # ── SPG feedback — what keeps coming up ───────────────────────────────
         # SPG had 214 nodes and a working reader, query_spg_entities(), that
         # NOTHING called. The spine references SPG 24 times and every one is
