@@ -7708,6 +7708,11 @@ def _process_turn(raw: str) -> dict:
                 _sc_delta = "voice_rewrite"
             elif _agent and "mock" in backend_used and _action == "celebrate":
                 _sc_delta = "capability_celebrate_override"
+            elif locals().get("_elo_raw") and locals().get("_elo_raw") != response:
+                # WO-VAULT-WRITE-INVESTIGATE-001: delta_cause was "unknown" for any
+                # scrub-based modification (mirror scrub, argot scrub, MCG, etc.).
+                # Now explicitly tagged so the delta is observable and measurable.
+                _sc_delta = "scrub_modified"
             _sc_record(
                 raw_input=raw,
                 elo_raw_gen=_elo_raw,
