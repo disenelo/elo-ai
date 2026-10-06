@@ -386,7 +386,10 @@ def _maybe_write_wkg_claim(candidate: "MemoryCandidate", source_ref: str = "") -
     global _WKG_SESSION_WRITES
     if _WKG_SESSION_WRITES >= _WKG_MAX_SESSION_WRITES:
         return
-    if candidate.epistemic_class not in _WKG_GATE_EPISTEMIC:
+    # WO-0085: normalise case — callers use "verified"/"canonical" (lowercase),
+    # gate uses uppercase. Normalise before comparison and before passing to record_claim.
+    _epi_normalised = candidate.epistemic_class.upper()
+    if _epi_normalised not in _WKG_GATE_EPISTEMIC:
         return
     if candidate.significance < _WKG_GATE_SIGNIFICANCE:
         return
@@ -416,7 +419,7 @@ def _maybe_write_wkg_claim(candidate: "MemoryCandidate", source_ref: str = "") -
             subject_entity_id=_DAVID_ENTITY_ID,
             relationship_type="ASSOCIATED_WITH",
             object_entity_id=obj_id,
-            epistemic_class=candidate.epistemic_class,
+            epistemic_class=_epi_normalised,
             source_id=source_ref or candidate.source_faculty or "memory_faculty",
             experience_id=candidate.experience_id or None,
             confidence=min(1.0, candidate.significance + 0.1),

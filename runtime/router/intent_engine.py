@@ -182,6 +182,9 @@ _INTENT_PATTERNS: list[tuple[str, list[str]]] = [
         r"\bnote\s+(?:this|that|it|down)\b",
         r"\badd\s+(?:this|that)\s+to\s+(?:my\s+)?(?:vault|memory|notes?)\b",
         r"\bwrite\s+(?:this|that)\s+down\b",
+        r"\bdon'?t\s+forget\b",
+        r"\bkeep\s+(?:this|that)\b",
+        r"\bmake\s+a\s+note\b",
     ]),
     ("draft", [
         r"\b(?:write|draft|compose)\s+(?:a\s+|an\s+)?(?:pitch|email|scene|brief|bio|outline|post|story)\b",

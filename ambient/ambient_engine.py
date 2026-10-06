@@ -202,6 +202,51 @@ def _read_state() -> dict:
         return {}
 
 
+_LEGS_TO_COST: dict = {}
+
+
+def _consume_movement_costs() -> None:
+    """WO-UNITY-MOVEMENT-BATTERY: drain physical battery from Unity movement events."""
+    try:
+        from runtime.unity_events_cursor import iter_events_from, read_cursor, write_cursor
+        from core.health_battery import PHYSICAL_EVENT_COSTS, drain_physical
+        if not _LEGS_TO_COST:
+            _LEGS_TO_COST.update({
+                "teleport":     PHYSICAL_EVENT_COSTS["teleporting"],
+                "parkour":      PHYSICAL_EVENT_COSTS["parkour"],
+                "parkour_drop": PHYSICAL_EVENT_COSTS["parkour"],
+                "wall_jump":    PHYSICAL_EVENT_COSTS["parkour"],
+                "climb":        PHYSICAL_EVENT_COSTS["parkour"],
+                "climb_down":   PHYSICAL_EVENT_COSTS["parkour"],
+                "hop":          PHYSICAL_EVENT_COSTS["jumping"],
+                "drop":         PHYSICAL_EVENT_COSTS["jumping"],
+            })
+        cursor_seq = read_cursor()
+        max_consumed = cursor_seq
+        for event in iter_events_from(cursor_seq):
+            seq = event.get("seq", -1)
+            etype = event.get("type", "")
+            if etype == "movement_cost":
+                subject = str(event.get("subject", "")).lower()
+                payload = event.get("payload", {})
+                if payload.get("phase", "exit") == "exit":
+                    cost = _LEGS_TO_COST.get(subject) or PHYSICAL_EVENT_COSTS.get(subject)
+                    if cost:
+                        drain_physical(cost)
+            elif etype == "movement_report":
+                legs = event.get("legs", [])
+                for leg in (legs if isinstance(legs, list) else []):
+                    cost = _LEGS_TO_COST.get(str(leg).lower())
+                    if cost:
+                        drain_physical(cost)
+            if isinstance(seq, int) and seq > max_consumed:
+                max_consumed = seq
+        if max_consumed > cursor_seq:
+            write_cursor(max_consumed)
+    except Exception:
+        pass
+
+
 def _battery_tick() -> None:
     """
     Per-cycle dream-state coherence.
@@ -232,6 +277,26 @@ def _battery_tick() -> None:
 
         fields: dict = {}
         state = _read_state()
+
+        # ── WO-MOTION-STATE-READ: ingest Designer's motion_state.json ────────
+        # Designer writes physical_state/animation when Unity moves eLo.
+        # Silent no-op if the file doesn't exist yet or is stale (> 2s old).
+        try:
+            import json as _ms_json, time as _ms_time
+            _motion_path = os.path.join(os.path.dirname(__file__), "..", "blender", "motion_state.json")
+            with open(_motion_path) as _ms_f:
+                _ms = _ms_json.load(_ms_f)
+            if _ms_time.time() - float(_ms.get("timestamp", 0)) < 2.0:
+                _ms_motion = state.get("motion") or {}
+                _ms_phys = _ms.get("physical_state")
+                _ms_anim = _ms.get("animation")
+                if _ms_phys:
+                    _ms_motion = dict(_ms_motion, physical_state=_ms_phys)
+                if _ms_anim:
+                    _ms_motion = dict(_ms_motion, animation=_ms_anim)
+                state = dict(state, motion=_ms_motion)
+        except Exception:
+            pass
 
         # ── Health battery — the ONLY ticker ──────────────────────────────
         # It briefly lived in server.py's ambient_thought() instead (my
@@ -1007,6 +1072,7 @@ def _run(unity_present: bool) -> None:
         # Runs every cycle, before any early-exit branch below, so drain and
         # restore keep accruing whether or not eLo speaks.
         _battery_tick()
+        _consume_movement_costs()
 
         # ── Event polling ─────────────────────────────────────────────────────
         data = _read_events()

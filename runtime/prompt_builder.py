@@ -584,6 +584,17 @@ def build(
     except Exception:
         pass
 
+    # ── WO-ROOT-7-B1-WIRE: live capability state — prevents denying active tools ─
+    # tools.capability_status has live state (Spotify playing, etc.) while
+    # self_knowledge has the static registry. Both serve different needs.
+    try:
+        from tools.capability_status import capabilities_block as _cap_block_fn
+        _cap_live = _cap_block_fn()
+        if _cap_live:
+            _push("capability_live_state", "\n## What I can do right now\n" + _cap_live)
+    except Exception:
+        pass
+
     if personality_block.strip():
         _push("personality_block", personality_block)
 
