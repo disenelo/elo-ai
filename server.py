@@ -2463,6 +2463,15 @@ def _process_turn(raw: str) -> dict:
     except Exception:
         pass
 
+    # WO-PERCEPTION-001: snapshot blender_state.json at turn start, compute delta from prev turn.
+    # perceive() must be called here (before _lock) so get_last_result() at the vault write
+    # site (line ~6938) finds a fresh result, not the stale empty dict from startup.
+    try:
+        from runtime.perception_faculty import perceive as _perc_perceive
+        _perc_perceive(_BLENDER_STATE_PATH)
+    except Exception:
+        pass
+
     # WO-INTENT-ALIGN-001: intent alignment gate — fires non-blocking, logs digest to debug
     try:
         from engineering.hooks.intent_align_gate import load_index as _iag_idx, match_topics as _iag_match, format_digest as _iag_fmt
@@ -4366,6 +4375,16 @@ def _process_turn(raw: str) -> dict:
         _max_s      = exec_decision.get("max_sentences", 4)
         _raw_lower  = raw.lower()
 
+        # ── Decision trace — record WHAT + WHY the Executive decided ──────────
+        # IS-ELO: exec decisions must be auditable. inner_thought is post-hoc
+        # rationalisation; this is the actual decision with its grounding sources.
+        _decision_trace = {
+            "action":     _action,
+            "cal_reason": _cal_reason,
+            "tone":       exec_decision.get("tone", ""),
+            "grounded_by": [],  # populated below as WKG/vault context assembles
+        }
+
         g_ctx = graph_context(raw)
 
         # ── WO-RELATIONSHIPS-001: David relationship profile — persistent facts from WKG ──
@@ -4378,6 +4397,7 @@ def _process_turn(raw: str) -> dict:
             _rel_profile = _get_rel_profile(_DAVID_WKG_ID, max_facts=12)
             if _rel_profile:
                 g_ctx = f"{g_ctx}\n{_rel_profile}" if g_ctx else _rel_profile
+                _decision_trace["grounded_by"].append("wkg_relationship_profile")
         except Exception as _rel_e:
             _logging.warning("WO-RELATIONSHIPS-001: relationship profile failed (non-fatal): %s", _rel_e)
 
@@ -4390,6 +4410,7 @@ def _process_turn(raw: str) -> dict:
             if _wkg_items:
                 _wkg_block = _render_ctx_block(_wkg_items)
                 g_ctx = f"{g_ctx}\n{_wkg_block}" if g_ctx else _wkg_block
+                _decision_trace["grounded_by"].append(f"wkg_claims:{len(_wkg_items)}")
         except Exception as _wkg_e:
             _logging.warning("WO-WKG-001: wkg ctx items failed (non-fatal): %s", _wkg_e)
 
@@ -4408,6 +4429,7 @@ def _process_turn(raw: str) -> dict:
                     + "Do not contradict or ignore them in favour of a general answer.]"
                 )
                 g_ctx = f"{g_ctx}\n{_auto_block}" if g_ctx else _auto_block
+                _decision_trace["grounded_by"].append("autobiographical_summary")
         except Exception as _root2_e:
             _logging.warning("ROOT-2: autobiographical_summary injection failed (non-fatal): %s", _root2_e)
 
@@ -5291,6 +5313,8 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             _facts_prefix = ""
         _combined_vault = (_lt_prefix + _facts_prefix + _vault_ctx + "\n\n" + _project_ctx).strip() if _project_ctx else (_lt_prefix + _facts_prefix + _vault_ctx).strip()
+        if _vault_ctx.strip():
+            _decision_trace["grounded_by"].append("vault")
         # INT-8: inject any pending file-drop results as context so eLo can reference them
         try:
             from desktop.file_drop_handler import pop_pending_drops as _pop_drops
@@ -6946,11 +6970,12 @@ def _process_turn(raw: str) -> dict:
                     content=_delta_text,
                     proposed_type="episodic",
                     proposed_weight=3 if _high else 2,
-                    significance=0.45 if _high else 0.28,
+                    # High-sig changes (mode/asleep/dream_phase) clear the WKG gate (≥ 0.6)
+                    significance=0.65 if _high else 0.35,
                     project="general",
                     summary=f"OBSERVATION: {', '.join(_perc_result.get('changed_fields', [])[:4])}",
                     tags=("OBSERVATION", "environment") + tuple(_perc_result.get("changed_fields", [])[:3]),
-                    epistemic_class="conversation",
+                    epistemic_class="SOURCE_ATTRIBUTED" if _high else "conversation",
                     source_type="PERCEPTION",
                     author="elo",
                 ))
@@ -7014,6 +7039,22 @@ def _process_turn(raw: str) -> dict:
         # quirk bank — 15% chance, generates a topic-specific eLo observation in background
         try:
             _quirk_observe(raw)
+        except Exception:
+            pass
+
+        # IS-ELO: write decision trace to data/decision_trace.jsonl for auditability.
+        # Records what the Executive decided and what grounded that decision (WKG/vault).
+        try:
+            import json as _dt_json
+            import time as _dt_time
+            _dt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "decision_trace.jsonl")
+            _dt_entry = {
+                "ts": _dt_time.time(),
+                "input_snippet": (_original_raw or "")[:120],
+                **_decision_trace,
+            }
+            with open(_dt_path, "a", encoding="utf-8") as _dtf:
+                _dtf.write(_dt_json.dumps(_dt_entry, ensure_ascii=False) + "\n")
         except Exception:
             pass
 

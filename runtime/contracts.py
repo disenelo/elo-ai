@@ -423,6 +423,12 @@ class CognitiveState:
     wkg_unavailable:      bool  = False  # True if WKG graph was unreachable or empty this turn
     failed_faculties:     tuple = field(default_factory=tuple)  # names of faculties that failed
 
+    # ── Decision Trace (IS-ELO: exec decisions must be auditable) ─────────────
+    # Written by server.py after exec_decision is resolved. Records WHAT the
+    # Executive decided and WHY, so inner_thought is not the only audit trail.
+    # Format: {"action": str, "cal_reason": str, "tone": str, "grounded_by": [str]}
+    decision_trace:       dict  = field(default_factory=dict)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. COGNITIVEPLAN
