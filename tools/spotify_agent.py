@@ -62,31 +62,31 @@ def agent(query: str) -> str:
     """
     Main entry point for tool_router.
     Returns a single-line context string.
+
+    B3-SPOTIFY-001 (2026-10-06): acts only on a real request. It used to act on
+    substrings — "back" → previous track, "stop" → pause, any "play" → resume —
+    so "you are playing something right now" would restart David's music.
+    Controls go through spotify_play (Web API, player state read back).
     """
-    q = query.lower()
+    from tools import spotify_play as _sp
 
-    # control commands
-    if any(w in q for w in ["next", "skip"]):
-        control("next")
-        track = get_current_track()
-        return f"SPOTIFY: skipped — now {track or 'nothing playing'}"
-    if "previous" in q or "back" in q:
-        control("previous")
-        track = get_current_track()
-        return f"SPOTIFY: went back — now {track or 'nothing playing'}"
-    if "pause" in q or "stop" in q:
-        control("pause")
-        return "SPOTIFY: paused"
-    if "play" in q and "what" not in q:
-        control("play")
-        track = get_current_track()
-        return f"SPOTIFY: playing — {track or 'nothing found'}"
+    act = _sp.control_for(query)
+    if not act and re.match(
+        r"^(?:(?:can|could|will|would)\s+you\s+)?(?:please\s+)?(?:play|put\s+on)\s+"
+        r"(?:some\s+)?(?:music|something|anything|spotify)\b", query.strip(), re.I,
+    ):
+        act = "resume"
+    if act:
+        try:
+            return f"SPOTIFY: {_sp.control(act)}"
+        except Exception as e:
+            return f"SPOTIFY: {act} failed — {e}"
 
-    # status queries
+    # status only — no side effects
     track = get_current_track()
     if track:
         return f"SPOTIFY: {track}"
-    return "SPOTIFY: nothing playing (Spotify may not be open)"
+    return "SPOTIFY: nothing playing (eLo can open Spotify and start anything David names)"
 
 
 # ── intent gates (WO-020) ─────────────────────────────────────────────────────

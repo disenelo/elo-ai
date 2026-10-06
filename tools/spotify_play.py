@@ -280,8 +280,32 @@ def _now(state: dict) -> str:
     return f"{it.get('name', '')} by {who}" if who else it.get("name", "")
 
 
+def _control_app(action: str) -> str:
+    """No Web API device but the app is open — drive the app itself, then
+    report what its own player state says."""
+    from tools import spotify_agent as sa
+    before = _status()
+    if action == "pause" and not before.startswith("playing"):
+        return "Spotify isn't playing anything — nothing to pause."
+    if action == "resume" and before.startswith("playing"):
+        return f"It's already {before}."
+    sa.control({"resume": "play"}.get(action, action))
+    time.sleep(1.0)
+    after = _status()
+    if action == "pause":
+        return "Paused." if not after.startswith("playing") else "I tried to pause it, but Spotify's still playing."
+    if action == "resume":
+        return f"Back on — {after[len('playing '):]}." if after.startswith("playing") \
+            else "I tried to resume it, but Spotify's still paused."
+    return f"Done — Spotify's {after} now." if after != before else "Spotify didn't move to another track."
+
+
 def control(action: str) -> str:
     before = _player()
+    if not before:
+        from tools.spotify_agent import _spotify_running
+        if _spotify_running():
+            return _control_app(action)
     playing = bool(before.get("is_playing"))
     if action == "pause":
         if not before or not playing:
@@ -322,19 +346,67 @@ def control(action: str) -> str:
 _MENTION_RE = re.compile(r"\b(?:spotify|playlists?|the\s+music|music\s+playing|what'?s\s+playing|song|track)\b", re.I)
 
 
+def _status() -> str:
+    """What Spotify is doing, in words. Web API first; when it has no device,
+    the app itself (AppleScript) — live 2026-10-06 the API had no device while
+    the app sat paused on a track."""
+    try:
+        st = _player()
+        now = _now(st)
+        if now:
+            return f"playing {now}" if st.get("is_playing") else f"paused on {now}"
+    except Exception:
+        pass
+    try:
+        from tools.spotify_agent import get_current_track, _spotify_running
+        if not _spotify_running():
+            return "not open"
+        cur = get_current_track()  # "Artist — Track (playing|paused)"
+        if cur:
+            m = re.match(r"(.+?) — (.+) \((playing|paused)\)$", cur)
+            if m:
+                verb = "playing" if m.group(3) == "playing" else "paused on"
+                return f"{verb} {m.group(2)} by {m.group(1)}"
+            return cur
+        return "open, nothing loaded"
+    except Exception:
+        return "status unavailable"
+
+
 def awareness_context(text: str) -> str | None:
     if not _MENTION_RE.search(text or ""):
         return None
-    try:
-        state = _player()
-        now = _now(state)
-        status = (f"playing {now}" if state.get("is_playing") else f"paused on {now}") if now else "nothing loaded"
-    except Exception:
-        status = "status unavailable right now"
     return ("[CAPABILITY_RESULT: Spotify — eLo controls Spotify on David's Mac himself: "
             "launch the app, start any playlist / artist / track by name, list David's playlists, "
-            f"pause, resume, skip, go back. Right now Spotify is {status}. "
-            "Never say you can't control Spotify.]")
+            f"pause, resume, skip, go back. Right now Spotify is {_status()}. "
+            "Never say you can't control Spotify — if David says you can, he is right.]")
+
+
+# Asked, or told, whether he can control Spotify. Answered here: live
+# 2026-10-06 the LLM, given the fact above as the first line of the message,
+# still said "I don't have that recorded".
+_ABILITY_RE = re.compile(
+    r"\b(?:can\s+you|could\s+you|you\s+can|you\s+could|are\s+you\s+able|you(?:'re|\s+are)\s+able|"
+    r"do\s+you\s+know\s+how\s+to|able\s+to)\b"
+    r".{0,40}\b(?:control|use|run|operate|work|access|handle|play|pause|skip|manage)\b", re.I)
+
+
+# Rotated: elo_response_gate blanks a reply identical to the previous one
+# (live 2026-10-06 the second "can you control spotify?" came back "").
+_ABILITY_LINES = [
+    "Yeah, I can — I open it, play any playlist, artist or track you name, list your playlists, pause, skip and go back.",
+    "I can, yeah — open it, start whatever playlist, artist or track you name, list your playlists, pause, skip, go back.",
+    "Yep, that's mine to run — opening it, playing what you name, listing your playlists, pausing, skipping, going back.",
+]
+_ability_i = -1
+
+
+def capability_answer(text: str) -> str | None:
+    global _ability_i
+    if not (_SPOTIFY_RE.search(text or "") and _ABILITY_RE.search(text or "")):
+        return None
+    _ability_i = (_ability_i + 1) % len(_ABILITY_LINES)
+    return f"{_ABILITY_LINES[_ability_i]} Right now Spotify's {_status()}."
 
 
 def handle(text: str) -> str | None:
@@ -351,7 +423,10 @@ def handle(text: str) -> str | None:
             return f"I couldn't {act} Spotify — it gave me an error."
     req = parse(text)
     if not req:
-        return None
+        ans = capability_answer(text)
+        if ans:
+            _last_spotify_ts = time.time()
+        return ans
     _last_spotify_ts = time.time()
     kind, target = req
     try:
