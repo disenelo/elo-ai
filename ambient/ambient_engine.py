@@ -208,7 +208,7 @@ _LEGS_TO_COST: dict = {}
 def _consume_movement_costs() -> None:
     """WO-UNITY-MOVEMENT-BATTERY: drain physical battery from Unity movement events."""
     try:
-        from runtime.unity_events_cursor import iter_events_from, read_cursor, write_cursor
+        from runtime.unity_events_cursor import iter_events_from, read_cursor, write_cursor, max_seq as _max_seq
         from core.health_battery import PHYSICAL_EVENT_COSTS, drain_physical
         if not _LEGS_TO_COST:
             _LEGS_TO_COST.update({
@@ -222,6 +222,11 @@ def _consume_movement_costs() -> None:
                 "drop":         PHYSICAL_EVENT_COSTS["jumping"],
             })
         cursor_seq = read_cursor()
+        # Rotation detection: Unity restarts seq from 0 on each launch.
+        # If the file's highest seq < cursor, the log rotated — reset to -1.
+        if cursor_seq > 0 and _max_seq() < cursor_seq:
+            cursor_seq = -1
+            write_cursor(-1)
         max_consumed = cursor_seq
         for event in iter_events_from(cursor_seq):
             seq = event.get("seq", -1)
@@ -234,7 +239,9 @@ def _consume_movement_costs() -> None:
                     if cost:
                         drain_physical(cost)
             elif etype == "movement_report":
-                legs = event.get("legs", [])
+                # legs is nested: payload.report.legs
+                report = event.get("payload", {}).get("report", {})
+                legs = report.get("legs", [])
                 for leg in (legs if isinstance(legs, list) else []):
                     cost = _LEGS_TO_COST.get(str(leg).lower())
                     if cost:
