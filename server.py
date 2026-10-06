@@ -2477,6 +2477,17 @@ def _process_turn(raw: str) -> dict:
         except Exception as _sb_err:
             print(f"[show_brain] error: {_sb_err}", flush=True)
 
+        # B3-SPOTIFY-001: "open Spotify" / "play <playlist|artist|track>" / "list my
+        # playlists" — done here via the Web API; eLo reports what happened, no LLM.
+        _spot_direct = None
+        try:
+            from tools.spotify_play import handle as _spot_handle
+            _spot_direct = _spot_handle(raw)
+            if _spot_direct:
+                print(f"[spotify_play] {_spot_direct}", flush=True)
+        except Exception as _spot_err:
+            print(f"[spotify_play] error: {_spot_err}", flush=True)
+
         # hard loop guard
         _last_inputs.append(raw)
         if len(_last_inputs) > 3:
@@ -2628,7 +2639,7 @@ def _process_turn(raw: str) -> dict:
             return {"response": _loc_resp, "mode": "direct", "backend": "direct"}
 
         # T10: "Open Spotify" — direct open, no confirm flow
-        if _re.search(r'\bopen\s+spotify\b', raw, _re.I):
+        if _spot_direct is None and _re.search(r'\bopen\s+spotify\b', raw, _re.I):
             try:
                 import subprocess as _sp_sub
                 _sp_sub.Popen(["open", "-a", "Spotify"])
@@ -5688,6 +5699,20 @@ def _process_turn(raw: str) -> dict:
         if _tk_routed:
             pass  # already handled above
 
+        # ── B3 integrations: Spotify / SHOW_BRAIN / explicit web search ────────
+        # The tool already ran this turn; its line IS the answer. Ahead of the
+        # spine's own direct plan: live 2026-10-06 "List me a few and choose
+        # one" became a system action "list folder 'me'" that overrode the
+        # playlist answer with "Ran into something on that".
+        elif _spot_direct or _sb_direct or _ws_direct:
+            if _spot_direct:
+                response, backend_used = _spot_direct, "direct:spotify"
+            elif _sb_direct:
+                response, backend_used = _sb_direct[1], f"direct:{_sb_direct[0]}"
+            else:
+                response, backend_used = _ws_direct, "direct:web_search"
+            _llm_latency_ms = 0.0
+
         elif _ml_hau:
             _, response  = _ml_hau
             backend_used = "direct"
@@ -6294,19 +6319,6 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
 
-                # B3-SEARCH-001: David told eLo to look it up — what he found IS the
-                # answer. Handed back directly so the missing-fact rule can't turn
-                # it into "I don't have that recorded".
-                if not _direct and _ws_direct:
-                    response = _ws_direct
-                    backend_used = "direct:web_search"
-                    _llm_latency_ms = 0.0
-                    _direct = response
-                if not _direct and _sb_direct:
-                    response = _sb_direct[1]
-                    backend_used = f"direct:{_sb_direct[0]}"
-                    _llm_latency_ms = 0.0
-                    _direct = response
 
                 if not _direct:
                     _llm_latency_ms = 0.0
