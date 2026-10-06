@@ -64,7 +64,11 @@ def test_the_guard_working_is_not_a_correction():
 
 def test_identity_drift_outweighs_a_clarification():
     drift = cc.capture(DRIFT, apply=False)
-    clar = cc.capture({"id": "c", "why": "character identity clarification"},
+    # corrected_response is required now — a correction with nothing on the
+    # other side of it is not learnable. The first version of this fixture
+    # omitted it and the test went red the moment that guard landed.
+    clar = cc.capture({"id": "c", "why": "character identity clarification",
+                       "input": "who are you", "corrected_response": "I'm eLo."},
                       apply=False)
     assert drift["weight"] > clar["weight"]
 
