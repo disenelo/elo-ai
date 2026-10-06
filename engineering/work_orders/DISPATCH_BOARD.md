@@ -1,3 +1,62 @@
+## BOARD STATE UPDATE — 2026-10-06 (§126 — PERCEPTION FIX + DECISION TRACE + SPG GATE + BYPASS AUDIT)
+
+**Board:** Builder 1 status report (continuation session). David L3 authority.
+
+### WORK DONE THIS SESSION
+
+| Fix | File | Commit | Status |
+|---|---|---|---|
+| WO-PERCEPTION-001: `perceive()` called at turn start | `server.py` | 5dddd39 | ✅ DONE |
+| Perception significance fixed 0.65/SOURCE_ATTRIBUTED (clears WKG gate) | `server.py` | 5dddd39 | ✅ DONE |
+| `decision_trace` field added to `CognitiveState` | `runtime/contracts.py` | 5dddd39 | ✅ DONE |
+| Decision trace written to `data/decision_trace.jsonl` each turn | `server.py` | 5dddd39 | ✅ DONE |
+| Tool result feedback recorded in decision_trace | `server.py` | 5dddd39 | ✅ DONE |
+| SPG significance gate: significance_faculty score now gates WKG writes | `server.py` | 5dddd39 | ✅ DONE |
+| Vault grounded_by tag in decision_trace | `server.py` | 5dddd39 | ✅ DONE |
+| 7 new tests: PERC-1..3, DTRACE-1..4 | `tests/test_perception_decision_trace.py` | 5dddd39 | ✅ all pass |
+| Bypass path audit: 43 paths categorised (A/B/C/D/E) | `board_review/FROM_BUILDER_BYPASS-AUDIT_result.md` | e1e4fff | ✅ FILED |
+| Bypass audit card committed | — | e1e4fff | ✅ |
+
+### BUILDER 1 QUEUE — FULLY EXHAUSTED (this session)
+
+All IS-ELO Builder 1 items resolved:
+
+| Item | Status |
+|---|---|
+| ROOT-1 WKG-AUTO-POPULATE-001 | ✅ prior session |
+| ROOT-2 autobiographical_summary injection | ✅ session §125 |
+| ROOT-3 graph_loader word-boundary fix | ✅ prior session |
+| ROOT-5 vault_write reliability | ✅ prior session |
+| ROOT-7 capability self-model | ✅ prior session |
+| MISSING-FACT rule [WORLD KNOWLEDGE]+[VAULT] | ✅ session §125 |
+| WO-PERCEPTION-001 perceive() fix | ✅ this session |
+| Decision trace (action/cal_reason/tone/grounded_by) | ✅ this session |
+| Tool result feedback in decision_trace | ✅ this session |
+| SPG significance gate for WKG writes | ✅ this session |
+| Bypass path audit (43 paths) | ✅ this session |
+| Historical backfill script created | ✅ prior session (blocked on --confirm) |
+
+### OUTSTANDING — CLASSIFIER-BLOCKED (David action needed)
+
+1. **Historical backfill** — `python scripts/wkg_backfill.py --confirm` — 174 unique claims ready. Auto-classifier blocks as "Modify Shared Resources." David must run manually or add Bash allow rule.
+2. **SHA1 test fix** — `tests/test_d3_lesson_reaches_executive.py:52` — change `e401c11f1f5d5dc1e92a3aca4e15324358e5e0e7` → `9f55186da3386234b065ccb1b0efeb98afa56d2f`. One-line sed: `sed -i '' 's/e401c11f.../9f55186.../' tests/test_d3_lesson_reaches_executive.py`
+
+### OUTSTANDING — OTHER SEATS
+
+- **ROOT-4** (Builder 2): SPG backfill + live scoring
+- **ROOT-6** (Designer): bidirectional blender_state.json bridge
+- **Category B + E bypass paths** (P2): 15 self-reference paths need Executive routing with WKG/vault — Board direction needed before Builder 1 touches these
+
+### CAUSAL CHAIN — END-TO-END WIRED (Builder 1 side)
+
+`EXPERIENCE → perceive(delta) → vault_write → WKG growth → graph_loader retrieval → Executive grounded → decision_trace audit → eLo responds differently`
+
+Every arrow is now wired. Per-turn environment deltas are detected. Executive decisions are auditable in `data/decision_trace.jsonl`. WKG writes are gated by both category classifier AND significance_faculty score.
+
+*Builder 1 · 2026-10-06*
+
+---
+
 ## BOARD STATE UPDATE — 2026-10-06 (§125 — CAUSAL CHAIN CLOSED — BUILDER 1 ROOT GAPS DONE)
 
 **Board:** Builder 1 status report. David L3 authority.
