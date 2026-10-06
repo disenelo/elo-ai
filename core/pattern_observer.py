@@ -85,13 +85,15 @@ def log(user_input: str, attention_model: dict) -> None:
     })
 
 
-def observe(current_action: str = "") -> Optional[str]:
+def observe(current_action: str = "", current_input: str = "") -> Optional[str]:
     """
     Check for a surfaceable pattern. Returns one observation string or None.
 
     Args:
         current_action: The CAL action for the current turn.
                         Ground and witness actions suppress observation.
+        current_input:  The raw user input for the current turn (accepted for
+                        call-site parity; not used internally).
     """
     global _last_fire_turn
 

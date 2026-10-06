@@ -673,7 +673,7 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
             {"role": "user",   "content": user_input},
         ],
         "stream":     False,
-        "keep_alive": "2h",    # CT0031 Fix A: keep model loaded between turns
+        "keep_alive": "30m",   # CT0031 Fix A: keep model loaded between turns (card 0047 F-B: must be 30m)
         "options":    {"temperature": 0.7, "num_predict": 256, "num_ctx": 4096},
     }).encode()
     req = _ureq.Request(
@@ -2095,7 +2095,7 @@ def _ollama_stream(
         "model":      model,
         "messages":   _ollama_messages,
         "stream":     True,
-        "keep_alive": "2h",
+        "keep_alive": "30m",   # card 0047 F-B: must be 30m on every Ollama path
         "options":    {"temperature": 0.2, "num_predict": max_tokens or (512 if _is_math_query else 256), "num_ctx": 16384},  # WO-PROMPT-SIZE-001 / WO-002 / COG-005: math gets 512 to fit working + answer
     }).encode()
     req = _ureq.Request(

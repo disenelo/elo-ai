@@ -107,6 +107,14 @@ _CHALLENGE_PHRASES= ["is this too", "too ambitious", "maybe it's too", "maybe th
 _WITNESS_PHRASES  = ["i miss", "i wish i", "part of me", "sometimes i wonder",
                      "i don't know why i feel", "i feel like i've lost"]
 
+# Genuinely reflective tag-questions and musing phrases — not commands, not questions
+# expecting a factual answer. "isn't it", "doesn't it" etc. end a musing, not a request.
+_REFLECT_PHRASES  = ["isn't it", "isn't that", "doesn't it", "don't you think",
+                     "isn't there", "wouldn't it", "interesting tension",
+                     "interesting paradox", "interesting contradiction",
+                     "that's an interesting", "that is an interesting",
+                     "curious isn't", "funny isn't", "strange isn't"]
+
 _SOCIAL_PHRASES   = ["nice to see you", "good to see you", "great to see you",
                      "lovely to see you", "glad to see you", "hi again", "hello again",
                      "good to be back", "nice to be back"]
@@ -334,6 +342,12 @@ def _conversation_action(
     # 8. Building momentum — default to build, not reflect
     if momentum == "building" and valence not in ("negative_low", "negative_high"):
         return {"action": "build", "confidence": 0.65, "reason": "building momentum, stay in build mode", "candidates": _cands}
+
+    # Genuinely reflective musing — tag-questions and open-ended tensions route to REFLECT,
+    # not ANSWER, even when intent is "conversation" (WO-SEAM-A AT-4).
+    if any(p in t for p in _REFLECT_PHRASES):
+        return {"action": "reflect", "confidence": 0.75,
+                "reason": "reflective musing / tag-question", "candidates": _cands}
 
     # conversation intent → answer is the correct default per _RESPONSE_GOAL
     if intent == "conversation":
