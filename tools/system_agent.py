@@ -475,7 +475,24 @@ _LONG_INPUT_SAFE_ACTIONS = frozenset({
 })
 
 
+# B3 2026-10-06: these say what happened ("Volume's at 100%", "It's already in dark
+# mode"). Planned by the spine they got a canned "Sorted." / "Done." instead — live,
+# "what's the volume at" → "Sorted." So detect() (spine, pipeline) doesn't offer
+# them; tool_router answers them itself via detect_direct().
+_DIRECT_ACTIONS = frozenset({"volume", "volume_set", "volume_mute", "dark_mode", "screenshot"})
+
+
+def detect_direct(user_input: str) -> Optional[tuple[str, str]]:
+    hit = _detect_all(user_input)
+    return hit if hit and hit[0] in _DIRECT_ACTIONS else None
+
+
 def detect(user_input: str) -> Optional[tuple[str, str]]:
+    hit = _detect_all(user_input)
+    return None if hit and hit[0] in _DIRECT_ACTIONS else hit
+
+
+def _detect_all(user_input: str) -> Optional[tuple[str, str]]:
     """
     Detect a system action intent. Returns (action_name, arg) or None.
     The caller should confirm with the user before calling execute().

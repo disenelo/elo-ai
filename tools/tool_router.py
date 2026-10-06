@@ -2179,6 +2179,20 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
         except Exception as _fre:
             _logger.debug("tracker intercept failed: %s", _fre)
 
+    # ── Volume / mute / dark mode / screenshot — B3 2026-10-06: done here and the
+    # Mac's own answer spoken (the spine's canned pool said "Sorted.").
+    try:
+        from tools.system_agent import detect_direct as _sd, execute as _sx
+        _sa = _sd(user_input)
+        if _sa:
+            try:
+                _last_direct_result = _sx(*_sa)
+            except Exception as _sxe:
+                _last_direct_result = f"That didn't work — {str(_sxe)[:80]}."
+            return _last_direct_result, "system"
+    except Exception as _sde:
+        _logger.debug("direct system intercept failed: %s", _sde)
+
     # ── Not built (registry future) → honest no — B3 2026-10-06
     try:
         from tools.capability_status import not_built_answer as _nba
