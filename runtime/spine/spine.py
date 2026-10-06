@@ -1908,6 +1908,12 @@ def assemble_cognitive_state(
         movement_am_moving=_body.get("movement_am_moving", False),
         movement_arrived=_body.get("movement_arrived", False),
         movement_what_happened=_body.get("movement_what_happened", "none"),
+        # WO-REASONING-001: tag the depth of evidence-based reasoning available this turn
+        reasoning_tier=(
+            "retrieval_only" if _wkg_context else
+            "single_step" if high_priority_memories else
+            "generative"
+        ),
     )
 
 

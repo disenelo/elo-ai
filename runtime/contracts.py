@@ -395,6 +395,14 @@ class CognitiveState:
     # ── Faculty Provenance (WO-PROVENANCE-001) ────────────────────────────────
     faculty_provenance:   dict  = field(default_factory=dict)  # {faculty_name: summary_string}
 
+    # ── Reasoning Tier (WO-REASONING-001) ────────────────────────────────────
+    # Tags the depth of evidence-based reasoning available this turn.
+    # "retrieval_only" — answer from vault/WKG without additional inference
+    # "single_step"    — one inference from evidence (default for most turns)
+    # "multi_step"     — chained reasoning across multiple evidence sources
+    # "generative"     — LLM generates from training data (no grounded evidence)
+    reasoning_tier:       str   = "generative"  # conservative default until wired
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. COGNITIVEPLAN
