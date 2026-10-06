@@ -117,9 +117,22 @@ def capture(row: Mapping[str, Any], *, apply: bool = True) -> dict | None:
     except Exception:
         kind, sig = "other", "other"
 
+    # The metacognitive half: a correction IS eLo finding out a response of
+    # his was poor. Carried on the record so "was that response poor, and
+    # why" is answerable from the memory rather than re-derived from the
+    # reason string every time something wants to know.
+    try:
+        from faculties.metacognition.response_assessment import assess_correction
+        verdict = assess_correction(row)
+    except Exception:
+        verdict = {}
+
     record = {
         "kind": kind,
         "signature": sig,
+        "verdict": verdict.get("verdict", ""),
+        "cause": verdict.get("cause", ""),
+        "severity": verdict.get("severity", 0.0),
         "summary": _summary(kind, row),
         "weight": _WEIGHT.get(kind, 5),
         "input": str(row.get("input", "") or "")[:600],
@@ -142,7 +155,9 @@ def capture(row: Mapping[str, Any], *, apply: bool = True) -> dict | None:
                 f"Why: {record['why']}"
             ),
             weight=record["weight"],
-            tags=["correction", kind, sig],
+            tags=["correction", kind, sig,
+                  f"cause:{record['cause']}"] if record.get("cause")
+                 else ["correction", kind, sig],
             # INFERRED, not VERIFIED: that a correction happened is certain,
             # that eLo was wrong in the way the reason says is a judgement the
             # verify layer made.
