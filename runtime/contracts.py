@@ -412,6 +412,11 @@ class CognitiveState:
     environment_delta:    dict  = field(default_factory=dict)
     perception_changed:   bool  = False   # True if any environment field changed this turn
 
+    # ── Simulation Tracker (WO-SIMULATION-001) ────────────────────────────────
+    # What eLo planned vs what it actually completed, across turns.
+    pending_actions:      tuple = field(default_factory=tuple)   # intended but not yet run
+    executed_actions:     tuple = field(default_factory=tuple)   # completed this session
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. COGNITIVEPLAN

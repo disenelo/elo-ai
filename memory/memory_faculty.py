@@ -48,6 +48,8 @@ class MemoryCandidate:
     thread_history:  tuple = field(default_factory=tuple)  # recent thread history (frozen)
     # WO-INTENTIONS-001: project scope
     project_id:      str   = ""           # specific project id (e.g. "elo_robot", "elo_planet")
+    # WO-SIMULATION-001: epistemic content type
+    content_type:    str   = ""           # "ASSERTED" (grounded) | "SIMULATED" (generated/speculative) | ""
 
 
 # ── Constants ────────────────────────────────────────────────────────────────
@@ -145,6 +147,8 @@ class MemoryFaculty:
                 thread_history=list(candidate.thread_history) if candidate.thread_history else None,
                 # WO-INTENTIONS-001: project scope
                 project_id=candidate.project_id,
+                # WO-SIMULATION-001: ASSERTED | SIMULATED | ""
+                content_type=candidate.content_type,
             )
             # WO-WKG-AUTO-POPULATE-001: after successful vault write, grow the WKG
             # if this candidate meets the epistemic gate (VERIFIED or SOURCE_ATTRIBUTED,

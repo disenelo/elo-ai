@@ -2274,6 +2274,14 @@ def _init_session():
     except Exception as _perc_e:
         print(f"[eLo server] perception_faculty reset skipped: {_perc_e}")
 
+    # WO-SIMULATION-001: reset simulation_tracker at session start
+    try:
+        from runtime.simulation_tracker import reset as _sim_reset
+        _sim_reset()
+        print("[eLo server] simulation_tracker reset")
+    except Exception as _sim_e:
+        print(f"[eLo server] simulation_tracker reset skipped: {_sim_e}")
+
     try:
         from ambient.ambient_engine import start as _ambient_start, register_ambient_callback as _reg_ambient
         _ambient_start(unity_present=True)
@@ -6871,6 +6879,14 @@ def _process_turn(raw: str) -> dict:
                 active_topic=_cs_new_topic,
                 referents=_cs_referents or None,
             )
+        except Exception:
+            pass
+
+        # WO-SIMULATION-001: record this turn's plan actions as executed
+        try:
+            from runtime.simulation_tracker import record_turn_actions as _sim_record
+            _plan_exec_order = list(getattr(_plan, "execution_order", None) or [])
+            _sim_record(_plan_exec_order, auto_execute=True)
         except Exception:
             pass
 

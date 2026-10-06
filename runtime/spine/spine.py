@@ -1879,6 +1879,17 @@ def assemble_cognitive_state(
     except Exception:
         pass
 
+    # WO-SIMULATION-001: read pending/executed actions from simulation_tracker
+    _sim_fields: dict = {}
+    try:
+        import runtime.simulation_tracker as _sim_trk
+        _sim_fields = {
+            "pending_actions":  _sim_trk.get_pending_actions(),
+            "executed_actions": _sim_trk.get_executed_actions(),
+        }
+    except Exception as _sim_err:
+        _log.warning("simulation_tracker unavailable (non-fatal): %s", _sim_err)
+
     # D1 ruling (Card 0035): intent_signal is the COGNITIVE intent that the
     # Executive decides on — sourced from core/memory_relevance_filter (attention_model["intent"]).
     # The intent_engine's router hint travels as `capability_hint`, elsewhere.
@@ -1936,6 +1947,8 @@ def assemble_cognitive_state(
         # WO-PERCEPTION-001: environment delta from blender_state.json
         environment_delta=_perception_result.get("environment_delta", {}),
         perception_changed=_perception_result.get("perception_changed", False),
+        # WO-SIMULATION-001: pending vs executed actions from simulation_tracker
+        **_sim_fields,
     )
 
 

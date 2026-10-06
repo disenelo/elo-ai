@@ -98,6 +98,7 @@ def write_memory(
     author: str = "elo",
     thread_history: list | None = None,
     project_id: str = "",
+    content_type: str = "",
 ) -> str:
     """
     Write a complete tiered memory record.
@@ -155,13 +156,13 @@ def write_memory(
                         experience_id=experience_id, source_type=source_type,
                         active_topic=active_topic, referents=referents,
                         author=author, thread_history=thread_history,
-                        project_id=project_id)
+                        project_id=project_id, content_type=content_type)
     _write_deep_note(fname, spot, bits, deep_compressed, date, tags, weight,
                      epistemic_class=epistemic_class, source_ref=source_ref,
                      experience_id=experience_id, source_type=source_type,
                      active_topic=active_topic, referents=referents,
                      author=author, thread_history=thread_history,
-                     project_id=project_id)
+                     project_id=project_id, content_type=content_type)
 
     # Invalidate cache so next obsidian_loader.load() picks up the new notes
     obsidian_loader.invalidate_cache()
@@ -205,6 +206,7 @@ def _write_summary_note(
     author: str = "elo",
     thread_history: list | None = None,
     project_id: str = "",
+    content_type: str = "",
 ) -> None:
     import json as _json
     tag_str  = ", ".join(f'"{t}"' for t in tags) if tags else ""
@@ -214,6 +216,7 @@ def _write_summary_note(
     topic_line = f"active_topic: {active_topic}\n" if active_topic else ""
     auth_line  = f"author: {author}\n" if author else ""
     pid_line   = f"project_id: {project_id}\n" if project_id else ""
+    ct_line    = f"content_type: {content_type}\n" if content_type else ""
     ref_line   = (f"referents: {_json.dumps(referents)}\n"
                   if referents else "")
     thr_line   = (f"thread_history: {_json.dumps(thread_history)}\n"
@@ -237,6 +240,7 @@ def _write_summary_note(
         f"{thr_line}"
         f"{auth_line}"
         f"{pid_line}"
+        f"{ct_line}"
         f"tags: [{tag_str}]\n"
         f"deep: [[deep/{fname}-deep]]\n"
         f"---\n\n"
@@ -264,6 +268,7 @@ def _write_deep_note(
     author: str = "elo",
     thread_history: list | None = None,
     project_id: str = "",
+    content_type: str = "",
 ) -> None:
     import json as _json
     tag_str  = ", ".join(f'"{t}"' for t in tags) if tags else ""
@@ -273,6 +278,7 @@ def _write_deep_note(
     topic_line = f"active_topic: {active_topic}\n" if active_topic else ""
     auth_line  = f"author: {author}\n" if author else ""
     pid_line   = f"project_id: {project_id}\n" if project_id else ""
+    ct_line    = f"content_type: {content_type}\n" if content_type else ""
     ref_line   = (f"referents: {_json.dumps(referents)}\n"
                   if referents else "")
     thr_line   = (f"thread_history: {_json.dumps(thread_history)}\n"
@@ -294,6 +300,7 @@ def _write_deep_note(
         f"{thr_line}"
         f"{auth_line}"
         f"{pid_line}"
+        f"{ct_line}"
         f"tags: [{tag_str}]\n"
         f"summary: [[summary/{fname}]]\n"
         f"---\n\n"
