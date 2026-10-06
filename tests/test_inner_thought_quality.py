@@ -147,3 +147,53 @@ def test_the_gate_runs_before_the_dream_override():
     gate = src.index("from runtime.inner_thought_quality import")
     dream = src.index("# S2 Phase 3 — the dream wins.")
     assert gate < dream, "the quality gate would suppress eLo's dream thoughts"
+
+
+# ── the prompt must not ask for what the gate rejects ───────────────────────
+#
+# The Board blamed the model for "I am settling into a moment of quiet
+# reflection, letting go of any urgency". It was not the model. The calm-mode
+# prompt asked:
+#
+#     "what am I settling into — what is becoming clear, or what am I
+#      letting go?"
+#
+# which produced "settling into" and "letting go of any" verbatim. Both are
+# now in _FILLER_RES, so leaving the prompt alone would have suppressed every
+# calm-mode inner thought — the gate rejecting exactly what the prompt
+# requested, on every quiet turn.
+
+def _server_source() -> str:
+    return (pathlib.Path(__file__).resolve().parent.parent / "server.py").read_text()
+
+
+def test_no_inner_thought_prompt_requests_a_blacklisted_phrase():
+    """
+    Any prompt that asks for language the gate rejects guarantees silence.
+    Checked against the real pattern list, so adding a filler pattern without
+    checking the prompts fails here.
+    """
+    import re
+
+    from runtime.inner_thought_quality import _FILLER_RES
+
+    src = _server_source()
+    # The inner-thought system prompts are the _it_sys assignments.
+    prompts = re.findall(r"_it_sys = \(\s*(.*?)\n\s*\)", src, re.DOTALL)
+    assert prompts, "no _it_sys prompt found — the block moved"
+
+    for prompt in prompts:
+        for rx in _FILLER_RES:
+            assert not rx.search(prompt), (
+                f"an inner-thought prompt asks for {rx.pattern!r}, which the "
+                f"quality gate rejects — every such turn would be silent"
+            )
+
+
+def test_calm_mode_still_asks_for_something_specific():
+    """Calm means slower and quieter, not content-free."""
+    src = _server_source()
+    i = src.index("I am eLo. This is my inner voice in a quiet moment.")
+    block = src[i:i + 900]
+    assert "specific" in block
+    assert "about the conversation" in block

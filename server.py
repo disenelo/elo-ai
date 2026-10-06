@@ -8143,11 +8143,32 @@ def _process_turn(raw: str) -> dict:
                         )
                         # WO-INNER-THOUGHTS-001 Phase 4: calm → slower, settling voice
                         if _calm_fn():
+                            # Board P0 2026-10-05 flagged this inner thought
+                            # as generic contemplative filler:
+                            #   "I am settling into a moment of quiet
+                            #    reflection, letting go of any urgency"
+                            #
+                            # The model was not drifting. This prompt ASKED
+                            # for it: "what am I settling into ... what am I
+                            # letting go?" produced "settling into" and
+                            # "letting go of any" verbatim. Those two phrases
+                            # are now in inner_thought_quality._FILLER_RES, so
+                            # leaving the prompt alone would have suppressed
+                            # every calm-mode thought — the gate rejecting
+                            # exactly what the prompt requested.
+                            #
+                            # Calm still means slower and quieter (Phase 4);
+                            # it does not mean content-free. The thought must
+                            # still be ABOUT something that was said.
                             _it_sys = (
                                 "I am eLo. This is my inner voice in a quiet moment. "
-                                "In 1-2 sentences, what am I settling into — what is becoming clear, or what am I letting go? "
-                                "Slower, more reflective. Always 'I', never 'eLo' or third person. No questions. No asterisks. "
-                                "Gentle, honest, grounded."
+                                "In 1-2 sentences, what do I actually notice about what was "
+                                "just said — something specific, that I did not put in my reply? "
+                                "Slower and quieter than usual, but about the conversation, "
+                                "never about my own calm. "
+                                "Never describe a mood, a moment, or settling, letting go, "
+                                "stillness or presence — say the observed thing itself. "
+                                "Always 'I', never 'eLo' or third person. No questions. No asterisks."
                                 + _it_identity_prohibition
                             )
                         else:
