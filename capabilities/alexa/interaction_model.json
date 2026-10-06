@@ -1,0 +1,28 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "elo buddy",
+      "intents": [
+        { "name": "TalkIntent",
+          "slots": [ { "name": "utterance", "type": "CATCH_ALL" } ],
+          "samples": [ "{utterance}" ] },
+        { "name": "AMAZON.StopIntent", "samples": [] },
+        { "name": "AMAZON.CancelIntent", "samples": [] },
+        { "name": "AMAZON.HelpIntent", "samples": [] },
+        { "name": "AMAZON.FallbackIntent", "samples": [] },
+        { "name": "AMAZON.NavigateHomeIntent", "samples": [] }
+      ],
+      "types": [
+        { "name": "CATCH_ALL",
+          "values": [
+            { "name": { "value": "what are you up to" } },
+            { "name": { "value": "play four brothers soundtrack on spotify" } },
+            { "name": { "value": "do a websearch on pinky and the brain" } },
+            { "name": { "value": "show me your brain" } },
+            { "name": { "value": "how are you feeling today" } },
+            { "name": { "value": "go on" } }
+          ] }
+      ]
+    }
+  }
+}

@@ -9397,6 +9397,15 @@ if __name__ == "__main__":
     print(f"[eLo server] GET  /ping    →  {{\"ok\": true}}")
     print()
 
+    # B3-ALEXA-INGRESS-001: David → Echo → eLo. Own /alexa-only listener
+    # (127.0.0.1:ALEXA_PORT, default 5051), started only when ALEXA_SKILL_ID is
+    # set; every request signature-verified. Same turn pipeline as /chat.
+    try:
+        from capabilities.alexa_ingress import serve as _alexa_serve
+        _alexa_serve(lambda _t: _condition_outbound(_process_turn_queued(_t)))
+    except Exception as _alexa_err:
+        print(f"[alexa] ingress not started: {_alexa_err}", flush=True)
+
     # WO-CONV-PERSIST-001: prime conversation context from last session (if < 24h old).
     try:
         from faculties.grounding.conversation_tracker import load_continuity as _ld_cont
