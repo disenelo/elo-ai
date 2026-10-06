@@ -4332,6 +4332,19 @@ def _process_turn(raw: str) -> dict:
 
         g_ctx = graph_context(raw)
 
+        # ── WO-RELATIONSHIPS-001: David relationship profile — persistent facts from WKG ──
+        # Loads all SOURCE_ATTRIBUTED claims about David that have accumulated from experience.
+        # These are always present regardless of what the current turn is about, so eLo does not
+        # need David to re-state facts from previous sessions.
+        try:
+            from runtime.wkg_faculty import get_relationship_profile as _get_rel_profile
+            _DAVID_WKG_ID = "6de402af-8b5a-4238-950f-79bb1a00ab58"
+            _rel_profile = _get_rel_profile(_DAVID_WKG_ID, max_facts=12)
+            if _rel_profile:
+                g_ctx = f"{g_ctx}\n{_rel_profile}" if g_ctx else _rel_profile
+        except Exception as _rel_e:
+            _logging.warning("WO-RELATIONSHIPS-001: relationship profile failed (non-fatal): %s", _rel_e)
+
         # ── WO-WKG-004/WO-WKG-001: WKG claim injection via structured ContextItem rendering ──
         # retrieve_wkg_context_items maps wkg_epistemic_class → EpistemicClass (see graph_loader.py)
         try:

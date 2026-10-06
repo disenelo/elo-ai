@@ -403,6 +403,83 @@ def all_claims() -> list:
     return _load("claims")
 
 
+# WO-RELATIONSHIPS-001: relationship profile for a PERSON entity
+_RELATIONSHIP_GATE_CLASSES = frozenset({"SOURCE_ATTRIBUTED", "VERIFIED"})
+_RELATIONSHIP_MIN_CONFIDENCE = 0.60
+
+
+def get_relationship_profile(entity_id: str, *, max_facts: int = 12) -> str:
+    """
+    Return a formatted profile string of SOURCE_ATTRIBUTED facts about an entity.
+
+    Only claims where this entity is the SUBJECT are included (facts ABOUT them,
+    not facts that merely reference them). Gates: epistemic_class must be
+    SOURCE_ATTRIBUTED or VERIFIED, confidence >= 0.60.
+
+    Returns empty string if no qualifying claims exist.
+    """
+    entity = get_entity(entity_id)
+    if not entity:
+        return ""
+    entity_label = entity.get("label", "")
+    entities_index = {e["entity_id"]: e for e in _load("entities")}
+
+    subject_claims = [
+        c for c in _load("claims")
+        if c.get("subject_entity_id") == entity_id
+        and c.get("epistemic_class") in _RELATIONSHIP_GATE_CLASSES
+        and c.get("confidence", 0) >= _RELATIONSHIP_MIN_CONFIDENCE
+        and not c.get("contradicted_by")
+    ]
+    subject_claims.sort(key=lambda c: (-c.get("confidence", 0), -c.get("recorded_at", 0)))
+
+    if not subject_claims:
+        return ""
+
+    import re as _re
+    _UUID_RE = _re.compile(
+        r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", _re.I
+    )
+    # Contamination signatures from the old category-label extractor
+    _CONTAMINATED_DESC_PREFIXES = (
+        "Topic from conversation:",
+        "Topic from interaction:",
+    )
+    # Generic single-word stubs left by the old category-label extractor
+    _JUNK_LABELS = frozenset({
+        "identity", "projects", "world", "creative", "people",
+        "context", "topic", "concept", "entity", "thing",
+        "plans", "preferences", "learning", "relationship",
+        "commitments", "user", "contextual state",
+    })
+
+    lines: list[str] = []
+    seen: set[str] = set()
+    for claim in subject_claims:
+        if len(lines) >= max_facts:
+            break
+        obj_id = claim.get("object_entity_id", "")
+        obj_ent = entities_index.get(obj_id, {})
+        obj_label = (obj_ent.get("label") or "").strip()
+        obj_desc = (obj_ent.get("description") or "").strip()
+        # Skip UUID-only labels (entity not resolved)
+        if not obj_label or _UUID_RE.match(obj_label):
+            continue
+        # Skip contaminated category-label stubs from the old extractor
+        if any(obj_desc.startswith(p) for p in _CONTAMINATED_DESC_PREFIXES):
+            continue
+        if obj_label.lower() in _JUNK_LABELS:
+            continue
+        if obj_label in seen:
+            continue
+        seen.add(obj_label)
+        lines.append(f"- {obj_label}")
+
+    if not lines:
+        return ""
+    return f"[WHAT I KNOW ABOUT {entity_label.upper()}]\n" + "\n".join(lines)
+
+
 def _link_claim_to_spg(claim: dict) -> None:
     """
     Give every claim an SPG node under its OWN claim_id.
