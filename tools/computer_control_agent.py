@@ -162,13 +162,10 @@ def parse_intent(text: str) -> Optional[dict]:
         {"type": "screenshot"}
         {"type": "open",   "app": str}
     """
-    m = _OPEN_RE.search(text)
-    if m:
-        return {"type": "open", "app": m.group(1).strip()}
-
-    if _SS_RE.search(text):
-        return {"type": "screenshot"}
-
+    # B3 2026-10-06: opening apps and screenshots belong to system_agent (registry:
+    # app_launch / screenshot, no confirmation; done and read back). Claiming them
+    # here asked "Shall I open Calculator?" and did nothing in the capability demo —
+    # and offered "Shall I open a scene in Blender and render it?" (not built).
     m = _TYPE_RE.search(text)
     if m:
         return {"type": "type", "text": m.group(1).strip()}

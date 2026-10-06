@@ -162,6 +162,10 @@ def get_active_capabilities(refresh: bool = False) -> dict:
     except Exception as e:
         caps["_registry"] = {"name": "registry", "status": "INACTIVE", "can": [], "live": {},
                              "reason": f"registry unreadable: {e}"}
+    # Registered but not implemented here (system_agent can't read or set this
+    # Mac's display brightness) — never offered as something he can do.
+    if "brightness" in caps:
+        caps["brightness"].update(status="INACTIVE", reason="can't reach this Mac's display brightness")
     for cid, info in _b3_live().items():
         base = caps.get(cid, {"name": cid.replace("_", " ").title()})
         caps[cid] = {**base, **info}

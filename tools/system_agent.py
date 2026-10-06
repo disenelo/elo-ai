@@ -129,8 +129,19 @@ def _do_app_quit(app_name: str) -> str:
     return f"Quit {app}."
 
 
+_HOME_FOLDERS = {"desktop": "~/Desktop", "documents": "~/Documents", "downloads": "~/Downloads",
+                 "pictures": "~/Pictures", "music": "~/Music", "movies": "~/Movies", "home": "~"}
+
+
+def _expand_folder(path: str) -> str:
+    """'desktop' means David's Desktop, not a folder of that name wherever the
+    server happens to run (B3 2026-10-06: it listed elo-ai/desktop/)."""
+    p = path.strip()
+    return os.path.expanduser(_HOME_FOLDERS.get(p.lower(), p))
+
+
 def _do_folder_open(path: str) -> str:
-    expanded = os.path.expanduser(path)
+    expanded = _expand_folder(path)
     if not os.path.isdir(expanded):
         raise ValueError(f"Folder not found: {expanded}")
     subprocess.run(["open", expanded], check=True)
@@ -138,7 +149,7 @@ def _do_folder_open(path: str) -> str:
 
 
 def _do_folder_list(path: str) -> str:
-    expanded = os.path.expanduser(path)
+    expanded = _expand_folder(path)
     if not os.path.isdir(expanded):
         raise ValueError(f"Folder not found: {expanded}")
     entries = sorted(os.scandir(expanded), key=lambda e: (not e.is_dir(), e.name.lower()))
@@ -282,6 +293,90 @@ def _do_windows_restore_all(_arg: str) -> str:
 
 # ── Action registry ────────────────────────────────────────────────────────────
 
+# ── B3 2026-10-06: capability demo showed these registered but missing ─────────
+# Each reads the result back and says only what the Mac reports.
+
+def _dark_mode_state() -> bool:
+    return _osascript('tell application "System Events" to tell appearance preferences '
+                      'to get dark mode').strip() == "true"
+
+
+def _do_dark_mode(arg: str) -> str:
+    want = arg != "off"
+    if _dark_mode_state() == want:
+        return f"It's already in {'dark' if want else 'light'} mode."
+    _osascript('tell application "System Events" to tell appearance preferences '
+               f'to set dark mode to {"true" if want else "false"}')
+    if _dark_mode_state() != want:
+        raise RuntimeError("the Mac didn't switch")
+    return "Dark mode on." if want else "Light mode on."
+
+
+def _do_screenshot(_arg: str) -> str:
+    import datetime as _dt
+    path = os.path.expanduser(f"~/Desktop/eLo screenshot {_dt.datetime.now():%Y-%m-%d at %H.%M.%S}.png")
+    subprocess.run(["screencapture", "-x", path], capture_output=True, timeout=15)
+    if not os.path.exists(path):
+        raise RuntimeError("screencapture didn't write a file")
+    return "Screenshot saved to your Desktop."
+
+
+def _volume_now() -> tuple[int, bool]:
+    out = _osascript("get volume settings")  # output volume:42, input volume:…, output muted:false
+    vol = re.search(r"output volume:(\d+)", out)
+    muted = "output muted:true" in out
+    return (int(vol.group(1)) if vol else -1), muted
+
+
+def _do_volume_get(_arg: str) -> str:
+    vol, muted = _volume_now()
+    if vol < 0:
+        raise RuntimeError("couldn't read the volume")
+    return f"Volume's at {vol}%" + (" — but it's muted." if muted else ".")
+
+
+def _do_volume_step(direction: str) -> str:
+    vol, _ = _volume_now()
+    new = max(0, min(100, vol + (10 if direction == "up" else -10)))
+    _osascript(f"set volume output volume {new} without output muted")
+    got, _ = _volume_now()
+    return f"Volume {'up' if direction == 'up' else 'down'} to {got}%."
+
+
+def _do_brightness(_arg: str) -> str:
+    # No supported way to read or set this Mac's display brightness from here,
+    # so nothing is attempted and nothing is claimed.
+    return "I can't change your screen's brightness yet — that's not something I can reach on this Mac."
+
+
+def _app_installed(name: str) -> str | None:
+    """The real app name (its case) if it's installed, else None."""
+    want = _resolve_app(name).lower() + ".app"
+    for base in ("/Applications", "/System/Applications", "/System/Applications/Utilities",
+                 os.path.expanduser("~/Applications")):
+        try:
+            for entry in os.listdir(base):
+                if entry.lower() == want:
+                    return entry[:-4]
+        except OSError:
+            continue
+    return None
+
+
+def _do_app_launch(app_name: str) -> str:
+    app = _app_installed(app_name)
+    if not app:
+        raise RuntimeError(f"no app called {app_name} on this Mac")
+    subprocess.run(["open", "-a", app], capture_output=True, timeout=15)
+    for _ in range(10):
+        running = _osascript(f'tell application "System Events" to (name of processes) contains "{app}"')
+        if running.strip() == "true":
+            return f"{app}'s open."
+        import time as _t
+        _t.sleep(0.5)
+    raise RuntimeError(f"{app} didn't open")
+
+
 _ACTIONS = {
     "window_fullscreen":    _do_window_fullscreen,
     "window_focus":         _do_window_focus,
@@ -299,6 +394,12 @@ _ACTIONS = {
     "volume_mute":          _do_volume_mute,
     "windows_minimise_all": _do_windows_minimise_all,
     "windows_restore_all":  _do_windows_restore_all,
+    "dark_mode":            _do_dark_mode,
+    "screenshot":           _do_screenshot,
+    "volume_get":           _do_volume_get,
+    "volume_step":          _do_volume_step,
+    "brightness":           _do_brightness,
+    "app_launch":           _do_app_launch,
 }
 
 # safe actions — execute immediately without confirmation gate
@@ -309,6 +410,8 @@ _SAFE_ACTIONS = {
     "volume_mute",
     "windows_minimise_all",
     "windows_restore_all",
+    # B3 2026-10-06 — registry says no confirmation; harmless and read back.
+    "dark_mode", "screenshot", "volume_get", "volume_step", "brightness", "app_launch",
 }
 
 
@@ -317,6 +420,15 @@ _SAFE_ACTIONS = {
 # (pattern, action, arg_capture_group)
 # group=0 means full match (used when no capture group is needed for the arg)
 _SYSTEM_INTENTS = [
+    # B3 2026-10-06 — dark mode, screenshot, volume read/step, brightness, open <app>
+    (r"\b(?:switch|turn|change|go|put)\s+(?:it\s+)?(?:on\s+|to\s+|into\s+)?dark\s*mode\b|\bdark\s*mode\s+on\b|^dark\s*mode$", "dark_mode", "on"),
+    (r"\b(?:switch|turn|change|go|put)\s+(?:it\s+)?(?:on\s+|to\s+|into\s+|back\s+to\s+)?light\s*mode\b|\bdark\s*mode\s+off\b|\bturn\s+off\s+dark\s*mode\b", "dark_mode", "off"),
+    (r"\b(?:take|grab|capture)\s+(?:a\s+)?screen\s*shot\b|^screen\s*shot$", "screenshot", 0),
+    (r"\bwhat(?:'s|\s+is)\s+the\s+volume\b|\bvolume\s+level\b|\bhow\s+loud\s+is\s+it\b", "volume_get", 0),
+    (r"\b(?:turn\s+(?:the\s+)?(?:volume|sound)\s+up|volume\s+up|louder)\b", "volume_step", "up"),
+    (r"\b(?:turn\s+(?:the\s+)?(?:volume|sound)\s+down|volume\s+down|quieter)\b", "volume_step", "down"),
+    (r"\b(?:bright(?:er|ness)|dimm?(?:er)?)\b.{0,30}\bscreen\b|\bscreen\b.{0,30}\b(?:bright(?:er|ness)|dimm?(?:er)?)\b", "brightness", 0),
+    (r"^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?(?:open|launch)\s+(?:up\s+)?(?:the\s+)?([A-Za-z][\w\.]*(?:\s[A-Za-z][\w\.]*){0,2}?)(?:\s+app)?(?:\s+for\s+me)?[\s\?\.!]*$", "app_launch", 1),
     # Volume control — must come before generic window patterns
     (r"\b(?:turn|set|put)\s+(?:the\s+)?(?:volume|audio|sound)\s+(?:to\s+|at\s+)?(\d+)\s*%?", "volume_set",           1),
     (r"\bvolume\s+(?:to\s+|at\s+)?(\d+)\s*%?",                                                "volume_set",           1),
@@ -339,8 +451,9 @@ _SYSTEM_INTENTS = [
     # Folder / file operations
     (r"\bopen\s+(~?[\w\/\.\-]+)\s+(?:folder|directory)",                                       "folder_open",          1),
     (r"\bshow\s+(?:me\s+)?(~?[\w\/\.\-]+)\s+(?:folder|in finder)",                             "folder_open",          1),
-    (r"\bwhat'?s?\s+in\s+(~?[\w\/\.\-]+)\b",                                                   "folder_list",          1),
-    (r"\blist\s+(~?[\w\/\.\-]+)\b",                                                            "folder_list",          1),
+    # B3 2026-10-06: only a folder-shaped target — "what's in the news" listed a folder "the"
+    (r"\bwhat'?s?\s+in\s+(~?/[\w\/\.\-]+|~|(?:my\s+)?(?:desktop|documents|downloads|pictures|music|movies|home)(?:\s+folder)?)(?:\s|$|\?)",  "folder_list",          1),
+    (r"\blist\s+(~?/[\w\/\.\-]+|~|(?:my\s+)?(?:desktop|documents|downloads|pictures|music|movies|home)(?:\s+folder)?)(?:\s|$|\?)",            "folder_list",          1),
     (r"\borgan(?:ise|ize)\s+(~?[\w\/\.\-]+)\b",                                                "folder_organise",      1),
     (r"\btidy\s+(?:up\s+)?(~?[\w\/\.\-]+)\b",                                                  "folder_organise",      1),
     (r"\bcp\s+(~?[\w\/\.\- ]+(?:->|–>|→)[\w\/\.\- ]+)\b",                                      "file_copy",            1),
@@ -355,6 +468,7 @@ _SYSTEM_INTENTS = [
 
 _LONG_INPUT_SAFE_ACTIONS = frozenset({
     "volume_set", "volume_mute", "windows_minimise_all", "windows_restore_all",
+    "dark_mode", "screenshot", "volume_get", "volume_step", "brightness",
 })
 
 
@@ -376,8 +490,14 @@ def detect(user_input: str) -> Optional[tuple[str, str]]:
             continue
         m = re.search(pattern, text, re.IGNORECASE)
         if m:
+            if isinstance(group, str):          # literal argument ("on", "up", …)
+                return action, group
+            if action == "app_launch" and not _app_installed(m.group(group).strip()):
+                continue                        # "open the door" isn't an app
             try:
                 arg = m.group(group).strip()
+                if action == "folder_list":
+                    arg = re.sub(r"^my\s+|\s+folder$", "", arg)
                 return action, arg
             except IndexError:
                 continue
