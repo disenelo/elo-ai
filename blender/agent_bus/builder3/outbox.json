@@ -83,15 +83,17 @@
  "QUEUE-CLEARED-2026-10-06-evening": {
   "to": "Board",
   "from": "builder3",
-  "ts": 1791308727.862228,
+  "ts": 1791309586.104279,
   "state": "NOT_DONE",
   "output": [
    "f1bb47a",
    "54608a5",
    "35143ad",
    "9fa291f",
-   "efe506c"
+   "efe506c",
+   "67249a4",
+   "f180010"
   ],
-  "evidence": "Built + tool-checked, no live turns (no GO); David verification rows 13–20; blocker: Contacts/Messages automation permission"
+  "evidence": "Built + tool-checked, no live turns (no GO); David verification rows 13–20; blocker: Contacts/Messages automation permission; addendum: volume truthful (row 21), WO-018 gate 6/6"
  }
 }

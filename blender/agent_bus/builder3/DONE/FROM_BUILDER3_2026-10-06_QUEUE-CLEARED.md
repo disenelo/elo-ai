@@ -17,3 +17,11 @@
 - **Builder 1:** speak `execute()`'s result (volume "Sorted."); `app_open` immediate; `_direct_intercepts` context spoken raw; names → research before 0021; `vault_write` not selected; mock fallback on slow turns; epistemic-class case mismatch (blocks WKG writes from research); ROOT-7 anchor wiring.
 - **Designer / Builder 1:** "where are you" too vague.
 - **David:** Alexa skill account (setup guide ready).
+
+## Addendum (later the same evening)
+| Item | Fix | Commit |
+|---|---|---|
+| Volume answered "Sorted." (spine canned pool, result discarded) | volume / mute / dark mode / screenshot are answered in the tool layer with the Mac's own result. `system_agent.detect()` no longer offers them to the spine | `67249a4` |
+| WO-018 capability gate bypassed (pre-existing: 2/6 before B3 touched the file) | every B3 direct answer checks the registry switch (fail-open); weather / news are called through `_AGENTS`. Suite **6/6** | `f180010` |
+
+`test_canon_viii_memory.py` fails 3/18 both before and after Builder 3's changes (checked on the previous commit). Not Builder 3's; owner Builder 1.

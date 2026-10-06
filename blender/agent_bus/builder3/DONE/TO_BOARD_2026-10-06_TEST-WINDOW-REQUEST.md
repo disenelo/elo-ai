@@ -57,3 +57,5 @@ Caveat: the node is in the vault + ledger, **not the WKG**. The WKG write is blo
 | 18 | what did I copy | "You copied: “…”" |
 | 19 | what was the last commit on my elo-ai repo | "Last commit on elo-ai: … GitHub's N commits behind." |
 | 20 | generate an image of a red apple on a table | "Made it — …, with DALL-E 3. It's open in Preview." (uses image credit) |
+
+| 21 | what's the volume at | "Volume's at N%." (not "Sorted.") |
