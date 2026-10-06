@@ -2246,6 +2246,18 @@ def _init_session():
 
     print(f"[eLo server] session {_state.get('session_count', 1)} started")
 
+    # WO-IDENTITY-STATE-001: increment session count in persistent identity_state.json
+    try:
+        from runtime.identity_state_manager import load as _idm_load, increment_session as _idm_inc, save as _idm_save
+        _id_st = _idm_load()
+        _id_st = _idm_inc(_id_st, model=None)  # model populated later when backend is known
+        _idm_save(_id_st)
+        print(f"[eLo server] identity_state: session {_id_st['session_count']}, "
+              f"first={_id_st.get('first_session_at')}, "
+              f"model_changes={_id_st.get('model_changes', 0)}")
+    except Exception as _idm_e:
+        print(f"[eLo server] identity_state increment skipped: {_idm_e}")
+
     try:
         from ambient.ambient_engine import start as _ambient_start, register_ambient_callback as _reg_ambient
         _ambient_start(unity_present=True)

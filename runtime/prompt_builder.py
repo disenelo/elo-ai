@@ -560,6 +560,19 @@ def build(
     except Exception:
         pass
 
+    # ── WO-IDENTITY-STATE-001: Persistent identity — stable across model changes ──
+    # Injects session count and stable_behaviour_baseline from memory/identity_state.json.
+    # This block tells whichever LLM is running that eLo's core behaviours have been
+    # consistent across N sessions — resists model-induced personality drift.
+    try:
+        from runtime.identity_state_manager import load as _ism_load, as_prompt_block as _ism_block
+        _id_state = _ism_load()
+        _id_block = _ism_block(_id_state)
+        if _id_block:
+            _push("persistent_identity", _id_block)
+    except Exception:
+        pass
+
     # ── CAPABILITY-SELF-MODEL: what eLo CAN do right now (Board ruling 2026-10-06) ─
     # Prevents eLo from denying capabilities it actually has (e.g. "I can't control
     # Spotify" while actively playing Spotify). Block is compact — never blocks turn.
