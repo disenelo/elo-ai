@@ -170,6 +170,27 @@ def _iter_signals(path: Path = _SIGNALS_PATH) -> Iterator[dict]:
                 continue
 
 
+def _overall(significance) -> float:
+    """
+    One significance number from whatever the signal carries.
+
+    Signals written by significance_faculty hold the full 14-dimension dict
+    with an "overall" key; older rows hold a bare float. Anything else scores
+    0.0 rather than raising, because one malformed row must not abort a
+    backfill of thirteen thousand.
+    """
+    if isinstance(significance, (int, float)):
+        return float(significance)
+    if isinstance(significance, dict):
+        v = significance.get("overall")
+        if isinstance(v, (int, float)):
+            return float(v)
+        vals = [float(x) for x in significance.values()
+                if isinstance(x, (int, float))]
+        return round(sum(vals) / len(vals), 4) if vals else 0.0
+    return 0.0
+
+
 def build_graph(signals_path: Path = _SIGNALS_PATH) -> SPGGraph:
     """
     Read spg_signals.jsonl and construct an SPGGraph.
@@ -190,7 +211,11 @@ def build_graph(signals_path: Path = _SIGNALS_PATH) -> SPGGraph:
         sig_type   = sig.get("signal_type", "unknown")
         embodiment = sig.get("embodiment", "desktop")
         ts         = sig.get("ts", 0.0)
-        raw_sig    = float(sig.get("significance", 0.0))
+        # Every live signal carries significance as the 14-dimension DICT
+        # from significance_faculty, not a float — all 13,919 of them. This
+        # was float(dict), a TypeError, which is why build_and_save() has
+        # never completed on real data and the graph on disk holds 3 nodes.
+        raw_sig = _overall(sig.get("significance"))
 
         node_id = f"{turn_id}:{sig_type}"
         content_hash = hashlib.sha256(json.dumps(sig, sort_keys=True).encode()).hexdigest()[:16]
