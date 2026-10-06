@@ -50,7 +50,7 @@ def _detect_app(text):
 def test_at1_open_spotify():
     assert parse_intent("open Spotify") is None, "AT-1 FAIL: computer control still claims 'open'"
     result = _detect_app("open Spotify")
-    assert result == ("app_launch", "spotify"), f"AT-1 FAIL: {result}"
+    assert result == ("app_open", "spotify"), f"AT-1 FAIL: {result}"
     print(f"AT-1 PASS — 'open Spotify' → {result}")
 
 
@@ -58,7 +58,7 @@ def test_at1_open_spotify():
 
 def test_at2_strip_the_app():
     result = _detect_app("open the Notes app")
-    assert result == ("app_launch", "notes"), f"AT-2 FAIL: {result!r} (expected app 'notes')"
+    assert result == ("app_open", "notes"), f"AT-2 FAIL: {result!r} (expected app 'notes')"
     print(f"AT-2 PASS — 'open the Notes app' → {result!r}")
 
 
@@ -66,7 +66,7 @@ def test_at2_strip_the_app():
 
 def test_at3_multi_word_app():
     result = _detect_app("open Visual Studio Code")
-    assert result == ("app_launch", "visual studio code"), f"AT-3 FAIL: {result!r}"
+    assert result == ("app_open", "visual studio code"), f"AT-3 FAIL: {result!r}"
     print(f"AT-3 PASS — multi-word app preserved: {result!r}")
 
 
@@ -109,8 +109,8 @@ def test_at6_execute_disabled():
 def test_at7_no_stale_latch():
     r1 = _detect_app("open Spotify")
     r2 = _detect_app("open Safari")
-    assert r1 == ("app_launch", "spotify"), f"AT-7 FAIL: r1={r1}"
-    assert r2 == ("app_launch", "safari"),  f"AT-7 FAIL: r2={r2}"
+    assert r1 == ("app_open", "spotify"), f"AT-7 FAIL: r1={r1}"
+    assert r2 == ("app_open", "safari"),  f"AT-7 FAIL: r2={r2}"
     print("AT-7 PASS — no stale latch: Spotify then Safari → both correct")
 
 

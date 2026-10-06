@@ -2149,6 +2149,25 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
             "location_set",
         )
 
+    # ── News — B3 2026-10-06: the headlines ARE the answer. Via the LLM they came
+    # back "I don't have that recorded" (capability demo, +news backend).
+    _news_pats = next((pats for name, pats in _INTENT_MAP if name == "news"), [])
+    if any(re.search(p, _lower) for p in _news_pats):
+        try:
+            _nw = _agent_news(user_input)
+            if _nw:
+                _src, _, _items = _nw.partition(": ")
+                _heads = [h.strip() for h in _items.split(" | ") if h.strip()][:3]
+                _src = _src.replace("Top headlines from ", "")
+                _line = f"Top from {_src}: " + " ".join(h if h.endswith((".", "?", "!")) else h + "."
+                                                        for h in _heads)
+                _last_direct_result = _line
+                return _line, "news"
+        except Exception as _ne:
+            _logger.debug("news direct intercept failed: %s", _ne)
+            _last_direct_result = "I couldn't reach the news feed just now."
+            return _last_direct_result, "news"
+
     # ── Weather — intercept before capability path to prevent screen_visibility bleed ──
     # When weather is asked but no API/location is available, return an honest
     # "no data" context rather than letting the pipeline fall through to screen_visibility.

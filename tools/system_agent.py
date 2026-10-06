@@ -387,7 +387,7 @@ _ACTIONS = {
     "window_fullscreen":    _do_window_fullscreen,
     "window_focus":         _do_window_focus,
     "window_close":         _do_window_close,
-    "app_open":             _do_app_open,
+    "app_open":             _do_app_launch,   # B3: verified open (was activate-only)
     "app_quit":             _do_app_quit,
     "folder_open":          _do_folder_open,
     "folder_list":          _do_folder_list,
@@ -404,7 +404,6 @@ _ACTIONS = {
     "screenshot":           _do_screenshot,
     "volume":               _do_volume,
     "brightness":           _do_brightness,
-    "app_launch":           _do_app_launch,
 }
 
 # safe actions — execute immediately without confirmation gate
@@ -416,7 +415,7 @@ _SAFE_ACTIONS = {
     "windows_minimise_all",
     "windows_restore_all",
     # B3 2026-10-06 — registry says no confirmation; harmless and read back.
-    "dark_mode", "screenshot", "volume", "brightness", "app_launch",
+    "dark_mode", "screenshot", "volume", "brightness", "app_open",
 }
 
 
@@ -432,8 +431,7 @@ _SYSTEM_INTENTS = [
     (r"\bwhat(?:'s|\s+is)\s+the\s+volume\b|\bvolume\s+level\b|\bhow\s+loud\s+is\s+it\b", "volume", "get"),
     (r"\b(?:turn\s+(?:the\s+)?(?:volume|sound)\s+up|volume\s+up|louder)\b", "volume", "up"),
     (r"\b(?:turn\s+(?:the\s+)?(?:volume|sound)\s+down|volume\s+down|quieter)\b", "volume", "down"),
-    (r"\b(?:bright(?:er|ness)|dimm?(?:er)?)\b.{0,30}\bscreen\b|\bscreen\b.{0,30}\b(?:bright(?:er|ness)|dimm?(?:er)?)\b", "brightness", 0),
-    (r"^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?(?:open|launch)\s+(?:up\s+)?(?:the\s+)?([A-Za-z][\w\.]*(?:\s[A-Za-z][\w\.]*){0,2}?)(?:\s+app)?(?:\s+for\s+me)?[\s\?\.!]*$", "app_launch", 1),
+    (r"^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?(?:open|launch)\s+(?:up\s+)?(?:the\s+)?([A-Za-z][\w\.]*(?:\s[A-Za-z][\w\.]*){0,2}?)(?:\s+app)?(?:\s+for\s+me)?[\s\?\.!]*$", "app_open", 1),
     # Volume control — must come before generic window patterns
     (r"\b(?:turn|set|put)\s+(?:the\s+)?(?:volume|audio|sound)\s+(?:to\s+|at\s+)?(\d+)\s*%?", "volume_set",           1),
     (r"\bvolume\s+(?:to\s+|at\s+)?(\d+)\s*%?",                                                "volume_set",           1),
@@ -497,7 +495,7 @@ def detect(user_input: str) -> Optional[tuple[str, str]]:
         if m:
             if isinstance(group, str):          # literal argument ("on", "up", …)
                 return action, group
-            if action == "app_launch" and not _app_installed(m.group(group).strip()):
+            if action == "app_open" and not _app_installed(m.group(group).strip()):
                 continue                        # "open the door" isn't an app
             try:
                 arg = m.group(group).strip()
