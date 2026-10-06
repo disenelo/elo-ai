@@ -1924,6 +1924,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     (location set). Returns (enriched, executor) if an intercept fires, else None.
     """
     global _last_direct_result  # hoisted — was duplicated inside try blocks (SyntaxError on 3.x)
+    _last_direct_result = None  # B3: only an intercept that IS the answer sets it, this turn
     _lower = user_input.lower()
 
     # WO-CORE-REPAIR-P0-001: if the world-knowledge gate already injected a
