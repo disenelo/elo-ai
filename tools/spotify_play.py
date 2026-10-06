@@ -73,10 +73,9 @@ def parse(text: str) -> tuple[str, str] | None:
         if m:
             target = re.sub(r"\s+playlist$", "", _TAIL_RE.sub("", m.group(1)).strip(" ,.'\""), flags=re.I).strip()
             if target and not _GENERIC.match(target):
-                # "play X" is a music verb; "put on / start / shuffle X" only
-                # when X is one of David's playlists ("I put on a jacket").
-                if re.match(r"(?:.*\s)?play\b", body, re.I):
-                    return ("play", target)
+                # Without "Spotify" in the sentence, only one of David's own
+                # playlists counts — live 2026-10-06 "can you enter play mode in
+                # Unity" became a Spotify request; "I put on a jacket" likewise.
                 try:
                     if _own_playlist(target, _all_playlists()):
                         return ("play", target)
