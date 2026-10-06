@@ -1899,6 +1899,17 @@ def _youtube_to_spotify(user_input: str) -> str:
         return ""
 
 
+def _cap_on(cap_id: str) -> bool:
+    """WO-018 capability gate for the B3 direct answers: a capability disabled in
+    the registry never fires here either. Fail-open when the registry can't be
+    read (WO-018 AT-5)."""
+    try:
+        from runtime.capabilities.registry import all_enabled
+        return cap_id in {c.id for c in all_enabled()}
+    except Exception:
+        return True
+
+
 def _spoken_weather(wx: str) -> str:
     """'Weather in Hackney Wick: Partly sunny, 20°C, feels like 24°C, humidity 65%,
     wind 0 km/h.' → "Partly sunny in Hackney Wick — 20°C, feels like 24°C." Every
@@ -2169,7 +2180,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
 
     # ── Named trackers — B3 2026-10-06: "read my eLo tracker" → "no file path found"
     # → mock filler. The summary from the file IS the answer.
-    if re.search(r"\btracker\b", _lower) and re.search(
+    if _cap_on("file_read") and re.search(r"\btracker\b", _lower) and re.search(
             r"\b(?:read|open|what'?s\s+in|summari[sz]e|check|show|go\s+through|look\s+at)\b", _lower):
         try:
             from tools.file_reader_agent import named_document as _nd, summarise_tracker as _st
@@ -2184,7 +2195,8 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     try:
         from tools.system_agent import detect_direct as _sd, execute as _sx
         _sa = _sd(user_input)
-        if _sa:
+        if _sa and _cap_on({"volume": "volume", "volume_set": "volume", "volume_mute": "volume",
+                            "dark_mode": "dark_mode", "screenshot": "screenshot"}[_sa[0]]):
             try:
                 _last_direct_result = _sx(*_sa)
             except Exception as _sxe:
@@ -2215,7 +2227,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
                 _msg.cancel_pending()
                 _last_direct_result = "Okay — not sent."
                 return _last_direct_result, "messages"
-        if _msg.is_message_request(user_input):
+        if _msg.is_message_request(user_input) and _cap_on("messages"):
             _last_direct_result = _msg.agent(user_input)
             return _last_direct_result, "messages"
     except Exception as _me:
@@ -2228,7 +2240,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     _nm = re.match(r"^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?(?:make|create|add|write|start)\s+"
                    r"(?:a\s+|an\s+)?(?:new\s+)?(?:apple\s+)?note\b\s*(?:called|named|titled|about|saying|that|:)?\s*(.*)$",
                    user_input.strip(), re.IGNORECASE)
-    if _nm:
+    if _nm and _cap_on("notes"):
         _title = _nm.group(1).strip().strip('"\'\u201c\u201d').rstrip(".!?")
         if not _title:
             _last_direct_result = "What should the note say?"
@@ -2245,7 +2257,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     # ── Clipboard read — B3 2026-10-06: the tool read it; the LLM then said "I don't
     # have that recorded" (capability demo). What's on the clipboard IS the answer.
     if re.search(r"\bwhat\s+(?:did\s+i|have\s+i)\s+(?:just\s+)?copi?(?:y|ed)\b|\bwhat'?s\s+(?:on\s+)?(?:my\s+|the\s+)?clipboard\b"
-                 r"|\bwhat'?s\s+copied\b|\bread\s+(?:my\s+|the\s+)?clipboard\b", _lower):
+                 r"|\bwhat'?s\s+copied\b|\bread\s+(?:my\s+|the\s+)?clipboard\b", _lower) and _cap_on("clipboard"):
         try:
             from tools.clipboard_agent import read as _clip_read
             _clip = _clip_read()
@@ -2260,7 +2272,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
 
     # ── Calendar — B3 2026-10-06: the AppleScript read timed out and the LLM said
     # "I don't have that recorded". EventKit's answer IS the answer.
-    if re.search(r"\b(?:calendar|schedule|diary|agenda)\b", _lower) and \
+    if _cap_on("calendar") and re.search(r"\b(?:calendar|schedule|diary|agenda)\b", _lower) and \
             re.search(r"\b(?:what'?s|what\s+is|anything|do\s+i\s+have|am\s+i|today|tomorrow|week|on\s+my|check)\b", _lower):
         try:
             from tools.calendar_agent import spoken as _cal_spoken
@@ -2273,7 +2285,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
 
     # ── Last commit on a local repo — B3 2026-10-06: the tool returned "" (no
     # GITHUB_REPO) and the LLM filled in. The local git log IS the answer.
-    if re.search(r"\b(?:last|latest|most\s+recent)\s+commit\b", _lower):
+    if re.search(r"\b(?:last|latest|most\s+recent)\s+commit\b", _lower) and _cap_on("github"):
         try:
             from tools.github_agent import local_last_commit as _llc
             _lc = _llc(user_input)
@@ -2286,9 +2298,9 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     # ── News — B3 2026-10-06: the headlines ARE the answer. Via the LLM they came
     # back "I don't have that recorded" (capability demo, +news backend).
     _news_pats = next((pats for name, pats in _INTENT_MAP if name == "news"), [])
-    if any(re.search(p, _lower) for p in _news_pats):
+    if any(re.search(p, _lower) for p in _news_pats) and _cap_on("news"):
         try:
-            _nw = _agent_news(user_input)
+            _nw = _AGENTS.get("news", _agent_news)(user_input)
             if _nw:
                 _src, _, _items = _nw.partition(": ")
                 _heads = [h.strip() for h in _items.split(" | ") if h.strip()][:3]
@@ -2312,9 +2324,9 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
         r"\bwhat.s\s+it\s+like\s+outside\b",
         r"\brain(?:ing)?\s+outside\b",
     ]
-    if any(re.search(p, _lower) for p in _WEATHER_DIRECT_PATS):
+    if any(re.search(p, _lower) for p in _WEATHER_DIRECT_PATS) and _cap_on("weather"):
         try:
-            _wx = _agent_weather(user_input)
+            _wx = _AGENTS.get("weather", _agent_weather)(user_input)
             # B3 2026-10-06: server.py speaks an intercept's return verbatim, so
             # this is eLo's line — live it was "[CONTEXT: Weather in …]\n\n<David's
             # question>" read out raw. Marked direct: it is the answer, from the data.

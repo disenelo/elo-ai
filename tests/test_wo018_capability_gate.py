@@ -113,7 +113,9 @@ _reg.all_enabled      = _reg.__dict__.get("_real_all_enabled", _reg.all_enabled)
 
 try:
     assert len(_weather_calls_2) == 1, f"weather agent should have been called once: {_weather_calls_2}"
-    assert "CONTEXT" in result_2[0], f"enriched context expected: {result_2[0]!r}"
+    # B3 2026-10-06: weather is now a direct answer (server.py spoke the old
+    # "[CONTEXT: …]" string raw); the gate's point — enabled → runs once — holds.
+    assert "London: cloudy" in result_2[0], f"weather result expected in answer: {result_2[0]!r}"
     assert result_2[1] == "weather", f"agent name should be 'weather': {result_2[1]!r}"
     ok("AT-2: enabled capability dispatched normally")
 except AssertionError as e: fail("AT-2", e)
