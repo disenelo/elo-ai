@@ -406,6 +406,12 @@ class CognitiveState:
     # ── Conversation Continuity (WO-CONVERSATION-001) ─────────────────────────
     last_elo_response:    str   = ""  # what eLo said last turn (≤500 chars); empty on first turn
 
+    # ── Perception Faculty (WO-PERCEPTION-001) ────────────────────────────────
+    # Environment delta: which blender_state.json fields changed since last turn.
+    # Keys = field label; values = (old_value, new_value).
+    environment_delta:    dict  = field(default_factory=dict)
+    perception_changed:   bool  = False   # True if any environment field changed this turn
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. COGNITIVEPLAN

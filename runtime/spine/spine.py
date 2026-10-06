@@ -1826,6 +1826,20 @@ def assemble_cognitive_state(
     except Exception as _env_err:
         _log.warning("_environment_faculty failed (non-fatal): %s", _env_err)
 
+    # WO-PERCEPTION-001: environment delta — diff blender_state.json against last turn
+    _perception_result = {"environment_delta": {}, "perception_changed": False}
+    try:
+        import os as _perc_os
+        _bs_perc_path = _perc_os.path.join(
+            _perc_os.path.dirname(_perc_os.path.dirname(_perc_os.path.dirname(
+                _perc_os.path.abspath(__file__)))),
+            "blender", "blender_state.json",
+        )
+        from runtime.perception_faculty import perceive as _perceive
+        _perception_result = _perceive(_bs_perc_path)
+    except Exception as _perc_err:
+        _log.warning("perception_faculty failed (non-fatal): %s", _perc_err)
+
     # WO-QBODY-CONSEQUENCES-001 + WO-QMOVEMENT-001: read proprioception + movement lifecycle
     _body = {}
     try:
@@ -1919,6 +1933,9 @@ def assemble_cognitive_state(
             __import__("runtime.conversation_state", fromlist=["get_last_elo_response"])
             .get_last_elo_response()
         ),
+        # WO-PERCEPTION-001: environment delta from blender_state.json
+        environment_delta=_perception_result.get("environment_delta", {}),
+        perception_changed=_perception_result.get("perception_changed", False),
     )
 
 

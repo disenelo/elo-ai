@@ -2266,6 +2266,14 @@ def _init_session():
     except Exception as _cs_e:
         print(f"[eLo server] conversation_state reset skipped: {_cs_e}")
 
+    # WO-PERCEPTION-001: reset perception prev-snapshot at session start
+    try:
+        from runtime.perception_faculty import reset as _perc_reset
+        _perc_reset()
+        print("[eLo server] perception_faculty reset")
+    except Exception as _perc_e:
+        print(f"[eLo server] perception_faculty reset skipped: {_perc_e}")
+
     try:
         from ambient.ambient_engine import start as _ambient_start, register_ambient_callback as _reg_ambient
         _ambient_start(unity_present=True)
@@ -6862,6 +6870,30 @@ def _process_turn(raw: str) -> dict:
                 active_topic=_cs_new_topic,
                 referents=_cs_referents or None,
             )
+        except Exception:
+            pass
+
+        # WO-PERCEPTION-001: OBSERVATION vault event when environment changes
+        try:
+            from runtime.perception_faculty import get_last_result as _perc_get, format_delta_for_vault as _perc_fmt
+            _perc_result = _perc_get()
+            if _perc_result.get("perception_changed") and _perc_result.get("delta"):
+                from memory.memory_faculty import MemoryFaculty as _PMemFac, MemoryCandidate as _PMemCand
+                _delta_text = _perc_fmt(_perc_result["delta"])
+                _high = _perc_result.get("high_sig_change", False)
+                _PMemFac().submit(_PMemCand(
+                    source_faculty="perception",
+                    content=_delta_text,
+                    proposed_type="episodic",
+                    proposed_weight=3 if _high else 2,
+                    significance=0.45 if _high else 0.28,
+                    project="general",
+                    summary=f"OBSERVATION: {', '.join(_perc_result.get('changed_fields', [])[:4])}",
+                    tags=("OBSERVATION", "environment") + tuple(_perc_result.get("changed_fields", [])[:3]),
+                    epistemic_class="conversation",
+                    source_type="PERCEPTION",
+                    author="elo",
+                ))
         except Exception:
             pass
 
