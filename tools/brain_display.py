@@ -23,7 +23,10 @@ from __future__ import annotations
 import re
 import time
 
-_LEAD_RE = re.compile(r"^(?:show|can\s+you\s+show|let\s+me\s+see|open)")
+# Presence's leads, plus the interrogative forms (IS-ELO verdicts 2026-10-06):
+# "could / would you show", "can I see".
+_LEAD_RE = re.compile(r"^(?:show|(?:can|could|would|will)\s+you\s+(?:please\s+)?show|let\s+me\s+see|"
+                      r"(?:can|could|may)\s+i\s+see|open)")
 _BRAIN_RE = re.compile(r"\b(?:brain|diagnostics?)\b")
 _HEALTH_RE = re.compile(r"\b(?:health|energy|battery|hp)\b")
 

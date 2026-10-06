@@ -91,6 +91,22 @@ def factual_question(text: str) -> tuple[str, str] | None:
     None. Never personal, never about the conversation itself ("what is the
     plan"), never eLo's own world."""
     t = (text or "").strip().rstrip("?!. ")
+    # Embedded questions (IS-ELO verdicts 2026-10-06): "can you tell me what a
+    # capybara is", "do you know what a Kalman filter is", "could you tell me
+    # when the Berlin Wall fell".
+    t = re.sub(r"^(?:(?:can|could|would|will)\s+you\s+(?:please\s+)?(?:tell\s+me|explain|say)"
+               r"|do\s+you\s+know|i\s+wonder)\s+", "", t, flags=re.I)
+    emb = re.match(r"^what\s+(?P<x>(?:a|an|the)\s+.+?|[A-Z][\w\-']*(?:\s+\S+)*?)\s+(?:is|are|was|were|means?)$", t)
+    if emb:
+        t = f"what is {emb.group('x')}"
+    emb = re.match(r"^(?P<w>when|where)\s+(?!did\b|was\b|were\b|is\b)(?P<x>.+)$", t, flags=re.I)
+    if emb:
+        topic = emb.group("x")
+        if not _PERSONAL_RE.search(topic):
+            return ("fact", re.sub(r"\s+\w+$", "", topic) if len(topic.split()) > 2 else topic)
+        return None
+    t = re.sub(r"^(how\s+(?:many|much|tall|old|far|big|long|deep|fast|heavy)\s+.+?)\s+(?:is|are|was|were)$", r"\1", t,
+               flags=re.I)
     m = _FACTUAL_RE.match(t) or _FACTUAL_RE.match(t[0].lower() + t[1:] if t else t)
     if not m:
         return None

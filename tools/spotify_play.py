@@ -64,9 +64,24 @@ def parse(text: str) -> tuple[str, str] | None:
     if not (_SPOTIFY_RE.search(t) or re.search(r"\bplaylists?\b", low) or in_context):
         return None
     if not (_SPOTIFY_RE.search(t) or re.search(r"\bplaylists?\b", low)):
-        # Context only: just the list / choose follow-ups.
+        # Context only: list / choose follow-ups, and "play / put on X" right
+        # after a Spotify turn ("can you put on Four Brothers Soundtrack").
         if _LIST_RE.search(t) or _CHOOSE_RE.search(t):
             return ("list", "choose" if _CHOOSE_RE.search(t) else "")
+        body = _HEAD_RE.sub("", t).rstrip("?.! ")
+        m = _PLAY_RE.search(body)
+        if m:
+            target = re.sub(r"\s+playlist$", "", _TAIL_RE.sub("", m.group(1)).strip(" ,.'\""), flags=re.I).strip()
+            if target and not _GENERIC.match(target):
+                # "play X" is a music verb; "put on / start / shuffle X" only
+                # when X is one of David's playlists ("I put on a jacket").
+                if re.match(r"(?:.*\s)?play\b", body, re.I):
+                    return ("play", target)
+                try:
+                    if _own_playlist(target, _all_playlists()):
+                        return ("play", target)
+                except Exception:
+                    pass
         return None
     if _LIST_RE.search(t) or (_CHOOSE_RE.search(t) and "playlist" in low):
         return ("list", "choose" if _CHOOSE_RE.search(t) else "")
@@ -248,6 +263,7 @@ _CONTROL_RES = [
         r"(?=.*\b(?:spotify|music|song|track|playing|playback)\b)"
         r"|(?=.*\b(?:spotify|music|song|track|playing|playback)\b).*\b(?:can|could|will|would)\s+you\s+(?:please\s+)?(?:pause|stop)\b"
         r"|\bstop\s+playing\b|\bpause\s+(?:spotify|the\s+music|music)\b"
+        r"|\b(?:turn|switch|shut)\s+(?:the\s+)?(?:music|spotify|song)\s+off\b"
         r"|^(?:pause|stop|stop\s+it|pause\s+it)$", re.I)),
     ("resume", re.compile(
         r"\b(?:resume|unpause|un-pause|carry\s+on\s+playing|keep\s+playing)\b"

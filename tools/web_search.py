@@ -300,6 +300,12 @@ _SEARCH_COMMAND_RE = re.compile(
     r"|look\s+(?:it|that|this|them|him|her)\s+up"
     r"|look\s+up"
     r"|google\s+(?:it|that|this)"
+    # IS-ELO verdicts 2026-10-06: interrogative / object forms route too —
+    # "can you google X", "could you search X", "would you mind googling that".
+    r"|(?:^|please\s+|(?:can|could|would|will)\s+you\s+(?:please\s+|mind\s+)?)"
+    r"googl(?:e|ing)\s+(?!docs?\b|drive\b|maps?\b|calendar\b|is\b|was\b)(?=\w)"
+    r"|(?:can|could|would|will)\s+you\s+(?:please\s+)?search\s+(?!my\s+notes?\b)(?=\w)"
+    r"|look\s+into"
     r"|read\s+up\s+(?:on|about)"
     r"|find\s+out\s+(?:about|what)"
     r"|get\s+(?:a|me\s+a)\s+summary"
