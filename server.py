@@ -3483,6 +3483,7 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             _ws_command = False
         _ws_direct = None
+        _ws_backend = "direct:web_search"
         if not _world_graph_hit and not _ws_command:
             # Inline (?i:...) makes "who/what/is/are" case-insensitive; the captured
             # proper-noun keeps its case so we only fire for capitalised nouns.
@@ -3580,6 +3581,18 @@ def _process_turn(raw: str) -> dict:
                 "studio", "background", "nationality", "country", "london",
                 "camberwell", "south london",
             })
+            # WO-RESEARCH-001: a factual question eLo can't answer from his own world
+            # (graph gate above) or memory → he looks it up and says so; asked again,
+            # he answers from what he found (ledger: RETRIEVED → … → KNOWLEDGE).
+            _rs_answer = None
+            if not _ws_command and not _world_graph_hit:
+                try:
+                    from tools.research import answer_gap as _rs_gap
+                    _rs_answer = _rs_gap(_original_raw)
+                    if _rs_answer:
+                        print(f"[research] {_rs_answer[:120]}", flush=True)
+                except Exception as _rs_err:
+                    print(f"[research] error: {_rs_err}", flush=True)
             if _ws_command:
                 # B3-SEARCH-001: SEARCH_INTENT. Topic from the command, else from
                 # David's recent turns ("read up about it" → the thing he just named).
@@ -3606,6 +3619,9 @@ def _process_turn(raw: str) -> dict:
                         _LAST_FOUND["url"]   = _ws_results[0].url
                         _LAST_FOUND["title"] = _ws_results[0].title
                     raw = f"[WEB_SEARCH: {_ws_name}]\n{_wfmt(_ws_results)}\n\nUser asked: {_original_raw}"
+            elif _rs_answer:
+                _ws_direct = _rs_answer
+                _ws_backend = "direct:research"
             elif not _world_graph_hit and is_search_intent(raw):
                 _sq_text = _sq(raw)
                 # P0-WEBSEARCH: vague query enrichment — "read up about it" / "get a summary from
@@ -5710,7 +5726,7 @@ def _process_turn(raw: str) -> dict:
             elif _sb_direct:
                 response, backend_used = _sb_direct[1], f"direct:{_sb_direct[0]}"
             else:
-                response, backend_used = _ws_direct, "direct:web_search"
+                response, backend_used = _ws_direct, _ws_backend
             _llm_latency_ms = 0.0
 
         elif _ml_hau:

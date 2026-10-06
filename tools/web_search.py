@@ -29,6 +29,8 @@ last_source: str = ""  # "serpapi" | "ddg" | ""
 # ({"title", "description"}) and spelling fix ("Pinkie" → "Pinky and the Brain").
 last_kg: dict = {}
 last_spelling_fix: str = ""
+# WO-RESEARCH-001: Google's direct answer to a question ("when did …", "how tall …").
+last_answer_box: dict = {}
 
 
 @dataclass
@@ -83,8 +85,8 @@ def search(query: str, max_results: int = 5, engine: str = "") -> list[SearchRes
     Falls back to DuckDuckGo if no key or SerpAPI fails.
     Sets last_source to "serpapi" or "ddg" so callers can surface the fallback.
     """
-    global last_source, last_kg, last_spelling_fix
-    last_kg, last_spelling_fix = {}, ""
+    global last_source, last_kg, last_spelling_fix, last_answer_box
+    last_kg, last_spelling_fix, last_answer_box = {}, "", {}
     key = _SERPAPI_KEY()
     if key:
         chosen = engine or _detect_engine(query)
@@ -118,7 +120,14 @@ def _serp_search(query: str, key: str, max_results: int, engine: str = "google")
         resp.raise_for_status()
         data = resp.json()
 
-        global last_kg, last_spelling_fix
+        global last_kg, last_spelling_fix, last_answer_box
+        _ab = data.get("answer_box") or {}
+        last_answer_box = {
+            "answer":  str(_ab.get("answer") or _ab.get("result") or ""),
+            "snippet": str(_ab.get("snippet") or ""),
+            "title":   str(_ab.get("title") or ""),
+            "link":    str(_ab.get("link") or ""),
+        } if _ab else {}
         _kg = data.get("knowledge_graph") or {}
         last_kg = {"title": _kg.get("title", ""), "description": _kg.get("description", "")} if _kg else {}
         _si = data.get("search_information") or {}
@@ -511,7 +520,8 @@ _PROMO_START_RE = re.compile(
     r"read\s+more|learn\s+more|find\s+out|discover|get|order|see|check\s+out)\b",
     re.IGNORECASE,
 )
-_PROMO_ANY_RE = re.compile(r"\b(?:invites\s+you|learn\s+more|click\s+here|\d+\s+likes?|\d+\s+comments?)\b",
+_PROMO_ANY_RE = re.compile(r"\b(?:invites\s+you|learn\s+more|click\s+here|\d+\s+likes?|\d+\s+comments?|"
+                           r"find\s+out\s+more|sign\s+up|subscribe|book\s+now|buy\s+now)\b",
                            re.IGNORECASE)
 
 # What eLo has already told David per topic, so "tell me more" brings the next
@@ -520,29 +530,69 @@ _PROMO_ANY_RE = re.compile(r"\b(?:invites\s+you|learn\s+more|click\s+here|\d+\s+
 _said: dict[str, set[str]] = {}
 
 
+_ABBR = frozenset("mr mrs ms dr st jr sr vs etc no co inc ltd mt ft approx est fig e.g i.e u.s u.k".split())
+# Social / forum hosts: a post is somebody's opinion, not a finding.
+_SOCIAL_HOSTS = ("facebook.com", "instagram.com", "tiktok.com", "twitter.com", "x.com",
+                 "pinterest.", "threads.net", "linkedin.com", "quora.com")
+_FIRST_PERSON_RE = re.compile(r"\b(?:I|I've|I'm|I'd|my|me|we've)\b")
+
+
 def _sentences(snippet: str) -> list[str]:
-    """Complete sentences from a snippet; a trailing "..." fragment is dropped."""
+    """Complete sentences from a snippet; a trailing "..." fragment is dropped.
+    Initials and abbreviations don't end a sentence ("Rudolf E. Kálmán")."""
     s = re.sub(r"\s+", " ", snippet or "").strip()
     s = re.sub(r"^[A-Z][a-z]{2} \d{1,2}, \d{4}\s*[—–-]\s*", "", s)  # "Oct 5, 2026 — "
-    out = []
-    for m in re.finditer(r"(.+?[.!?])(?=\s|$)", s):
-        sent = m.group(1).strip()
-        if sent.endswith("...") or len(sent) < 25:
+    out, start = [], 0
+    for m in re.finditer(r"[.!?](?=\s|$)", s):
+        before = s[start:m.start()].split()
+        last = before[-1].lower().rstrip(".") if before else ""
+        if m.group() == "." and (re.fullmatch(r"[a-z]", last) or last in _ABBR):
+            continue
+        sent = s[start:m.end()].strip()
+        start = m.end()
+        if sent.endswith("...") or len(sent) < 25 or not re.match(r"[A-Z0-9\"'“‘(]", sent):
             continue
         out.append(sent)
     return out
+
+
+def _usable_source(url: str) -> bool:
+    return not any(h in (url or "") for h in _SOCIAL_HOSTS)
 
 
 def _key(sentence: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", sentence.lower()).strip()[:60]
 
 
+# WO-RESEARCH-001: what the last compose_found said, sentence by sentence,
+# with the source each came from — read by tools/research.py for the ledger.
+last_picks: list[tuple[str, str]] = []   # (sentence, source url | "google:knowledge_graph")
+
+
+def source_label(url: str) -> str:
+    """How eLo names a source out loud: "Wikipedia", "Google", else the site."""
+    if not url:
+        return "the web"
+    if url.startswith("google:"):
+        return "Google"
+    host = re.sub(r"^https?://(?:www\.|en\.|m\.)?", "", url).split("/")[0]
+    named = {"wikipedia.org": "Wikipedia", "britannica.com": "Britannica", "imdb.com": "IMDb",
+             "bbc.co.uk": "the BBC", "bbc.com": "the BBC", "nasa.gov": "NASA"}
+    for k, v in named.items():
+        if host.endswith(k):
+            return v
+    return host
+
+
 def compose_found(name: str, results: list[SearchResult]) -> str:
     """eLo's spoken report of what he found. Every clause is lifted from the
-    source text; only the lead-in is his. Wikipedia's lead first, then
-    "<name> is/are …" sentences, then Google's own description, then other
-    on-topic sentences. Promo and social copy are skipped. A follow-up on the
-    same topic gives the next findings, never a repeat."""
+    source text; only the lead-in is his, and it names where it came from
+    (WO-RESEARCH-001: retrieved, never passed off as his own knowledge).
+    Wikipedia's lead first, then "<name> is/are …" sentences, then Google's
+    own description, then other on-topic sentences. Promo and social copy are
+    skipped. A follow-up on the same topic gives the next findings, never a
+    repeat."""
+    global last_picks
     words = _content_words(name)
     said = _said.setdefault(name.lower(), set())
     first_time = not said
@@ -550,35 +600,42 @@ def compose_found(name: str, results: list[SearchResult]) -> str:
     encyclopedic, defining, other = [], [], []
     for r in results:
         if "wikipedia.org" in (r.url or ""):
-            encyclopedic += _sentences(r.snippet)
+            encyclopedic += [(s, r.url) for s in _sentences(r.snippet)]
+            continue
+        if not _usable_source(r.url):
             continue
         for sent in _sentences(r.snippet):
             low = sent.lower()
             if _PROMO_START_RE.match(sent) or _PROMO_ANY_RE.search(sent) or not any(w in low for w in words):
                 continue
+            if _FIRST_PERSON_RE.search(sent):
+                continue
             if re.match(r"^(?:the\s+)?" + re.escape(name.lower()) + r"\s+(?:is|are|was|were)\b", low):
-                defining.append(sent)
+                defining.append((sent, r.url))
             else:
-                other.append(sent)
+                other.append((sent, r.url))
     kg = (last_kg.get("description") or "").strip()
     if kg and not kg.endswith((".", "!", "?")):
         kg += "."
-    ordered = encyclopedic + defining + ([kg] if kg else []) + other
+    ordered = encyclopedic + defining + ([(kg, "google:knowledge_graph")] if kg else []) + other
 
     picked, keys = [], set()
-    for sent in ordered:
+    for sent, src in ordered:
         k = _key(sent)
         if k in said or k in keys:
             continue
-        picked.append(sent)
+        picked.append((sent, src))
         keys.add(k)
         if len(picked) == 2:
             break
 
+    last_picks = picked
     if not picked:
         if first_time:
             return ""
         return f"That's everything solid I found on {name} — nothing new past what I told you."
     said.update(keys)
-    lead = "Looked it up —" if first_time else f"More on {name} —"
-    return " ".join([lead] + picked)
+    labels = list(dict.fromkeys(source_label(src) for _, src in picked))
+    where = " and ".join(labels)
+    lead = f"Looked it up on {where} —" if first_time else f"More on {name}, from {where} —"
+    return " ".join([lead] + [sent for sent, _ in picked])
