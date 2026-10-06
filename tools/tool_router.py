@@ -316,7 +316,6 @@ _INTENT_MAP = [
         r"\bremember\s+(?:this|that|it)\b",
         r"\bsave\s+(?:this|that|it)\b",
         r"\bnote\s+(?:this|that|it|down)\b",
-        r"\bmake\s+a\s+note\b",
         r"\badd\s+(?:this|that)\s+to\s+(?:my\s+)?(?:vault|memory|notes?|obsidian)\b",
         r"\bwrite\s+(?:this|that)\s+down\b",
         r"\bsave\s+(?:to\s+)?(?:my\s+)?(?:vault|memory|notes?|obsidian)\b",
@@ -2148,6 +2147,31 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
             f"Acknowledge warmly and confirm you'll use {new_city} for weather from now on.]\n\n{user_input}",
             "location_set",
         )
+
+    # ── Save to memory — B3 2026-10-06: "remember this: …" came back "I don't have
+    # that recorded" (capability demo). The tool saving it IS the answer.
+    try:
+        from tools.vault_writer import is_save_intent as _is_save, agent as _vault_save, \
+            _extract_content as _vault_content
+        _q = _lower.strip()
+        if _is_save(user_input) and not _q.endswith("?") and \
+                not re.match(r"^(?:do\s+you\s+|d'you\s+)?remember\s+(?:when|how|what|who|that\s+time)\b", _q):
+            _to_save = user_input
+            _content = _vault_content(user_input).strip()
+            if len(_content) < 3 or _content.lower() == user_input.strip().lower():
+                # bare "remember this" → what David said just before
+                from tools.web_search import _recent_inputs as _ri
+                _prev = [t for t in _ri[:-1] if t.strip()][-1:] if len(_ri) > 1 else []
+                _to_save = f"remember this: {_prev[0]}" if _prev else user_input
+            _saved = _vault_save(_to_save)
+            _title = re.sub(r"^Saved to (?:Obsidian )?vault:\s*", "", _saved).strip("'\" ")
+            _last_direct_result = f"Saved — I'll remember that: \u201c{_title}\u201d."
+            return _last_direct_result, "vault_write"
+    except ValueError:
+        _last_direct_result = "What do you want me to remember?"
+        return _last_direct_result, "vault_write"
+    except Exception as _ve:
+        _logger.debug("vault save intercept failed: %s", _ve)
 
     # ── Clipboard read — B3 2026-10-06: the tool read it; the LLM then said "I don't
     # have that recorded" (capability demo). What's on the clipboard IS the answer.
