@@ -114,6 +114,29 @@ class ThoughtInFlight:
         return (time.time() - self._started) * 1000
 
 
+def _calm_now() -> bool:
+    """
+    Is eLo in calm mode this turn?
+
+    Read here rather than passed in, so restoring the calm register costs
+    Builder 1's file nothing. Read-only: this never writes blender_state.
+    """
+    try:
+        import json
+        import os
+        path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(
+                os.path.abspath(__file__)))),
+            "blender", "blender_state.json",
+        )
+        with open(path, encoding="utf-8") as f:
+            st = json.load(f) or {}
+        return bool(st.get("calm_mode")
+                    or str((st.get("state") or {}).get("mode", "")) == "calm")
+    except Exception:
+        return False
+
+
 def start(asked: str, *, history: str = "", generator: Callable | None = None
           ) -> ThoughtInFlight | None:
     """
@@ -135,11 +158,13 @@ def start(asked: str, *, history: str = "", generator: Callable | None = None
             _log.warning("inner thought generator unavailable: %s", e)
             return None
 
-        def gen(_a=asked, _h=history):             # type: ignore[misc]
+        _calm = _calm_now()
+
+        def gen(_a=asked, _h=history, _c=_calm):   # type: ignore[misc]
             # Generous deadline: this is off the critical path, so a slow
             # thought costs nothing. Assembly's own COLLECT_TIMEOUT_S is what
             # protects the turn.
-            return _ft(_a, history=_h, deadline_s=20.0)
+            return _ft(_a, history=_h, calm=_c, deadline_s=20.0)
 
     handle = ThoughtInFlight(asked)
     handle._spawn(gen)

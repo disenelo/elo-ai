@@ -177,10 +177,16 @@ def test_no_inner_thought_prompt_requests_a_blacklisted_phrase():
 
     from runtime.inner_thought_quality import _FILLER_RES
 
-    src = _server_source()
-    # The inner-thought system prompts are the _it_sys assignments.
-    prompts = re.findall(r"_it_sys = \(\s*(.*?)\n\s*\)", src, re.DOTALL)
-    assert prompts, "no _it_sys prompt found — the block moved"
+    # The prompts moved. Builder 1 wired Option C (91d8331) and removed the
+    # separate Ollama call that held the _it_sys strings; generation now lives
+    # in runtime/inner_thought_first.py, so that is where they are checked.
+    # Any _it_sys still in server.py is checked too, so a reintroduced one
+    # cannot slip past.
+    import runtime.inner_thought_first as itf
+
+    prompts = [itf._SYSTEM, itf._SYSTEM_CALM]
+    prompts += re.findall(r"_it_sys = \(\s*(.*?)\n\s*\)", _server_source(),
+                          re.DOTALL)
 
     for prompt in prompts:
         for rx in _FILLER_RES:
@@ -191,9 +197,33 @@ def test_no_inner_thought_prompt_requests_a_blacklisted_phrase():
 
 
 def test_calm_mode_still_asks_for_something_specific():
-    """Calm means slower and quieter, not content-free."""
-    src = _server_source()
-    i = src.index("I am eLo. This is my inner voice in a quiet moment.")
-    block = src[i:i + 900]
-    assert "specific" in block
-    assert "about the conversation" in block
+    """
+    Calm means slower and quieter, not content-free.
+
+    The calm register was LOST when Option C was wired — the separate call it
+    lived in was removed and my spec to Builder 1 did not list it among the
+    things to keep. Restored in inner_thought_first rather than server.py, so
+    their file needed no further change.
+    """
+    import runtime.inner_thought_first as itf
+
+    assert "quiet moment" in itf._SYSTEM_CALM
+    assert "specific" in itf._SYSTEM_CALM
+    assert "about the conversation" in itf._SYSTEM_CALM
+
+
+def test_the_calm_register_is_actually_reachable():
+    """A register nothing selects is the same as no register."""
+    import runtime.inner_thought_first as itf
+
+    seen = {}
+
+    def _t(system, user, *, deadline_s):
+        seen["sys"] = system
+        return "i noticed the pause before he asked"
+
+    itf.form_thought("how are you", calm=True, transport=_t)
+    assert "quiet moment" in seen["sys"]
+
+    itf.form_thought("how are you", calm=False, transport=_t)
+    assert "quiet moment" not in seen["sys"]

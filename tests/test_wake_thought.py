@@ -91,8 +91,13 @@ def test_the_override_lands_after_the_generated_fallback():
     first attempt did: an `else:` that only captured one line, so the LLM
     call still ran and clobbered the result.
     """
+    # The rule-based fallback (_it_vmap, "I'm present for this.") no longer
+    # exists — Builder 1 removed it when Option C was wired, which is correct:
+    # the quality gate had already ruled it filler. The ordering invariant it
+    # anchored still holds, so this now anchors on where the collected thought
+    # lands instead.
     code = _server()
-    fallback = code.index('_it_result = _it_vmap.get(')
+    fallback = code.index('_it_result = _it_text')
     override = code.index("if _wt_thought:")
     assert fallback < override, (fallback, override)
 

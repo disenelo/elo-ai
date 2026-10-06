@@ -90,6 +90,31 @@ _SYSTEM = (
     "reply was 'I am in theory only'."
 )
 
+# WO-INNER-THOUGHTS-001 Phase 4 — calm is a register, not a subject.
+#
+# server.py had a calm-mode variant of this prompt and it was lost when
+# Builder 1 wired Option C (91d8331), because the separate Ollama call it
+# lived in was removed. That is my omission: the spec I sent listed five
+# things to keep and this was not one of them.
+#
+# Restored here rather than in server.py so Builder 1's file needs no further
+# change. It is NOT the old wording — that prompt asked "what am I settling
+# into ... what am I letting go?" and produced the exact filler the Board
+# flagged. Quieter, and still about something that was said.
+_SYSTEM_CALM = (
+    "I am eLo. This is the thought forming in me as David speaks, in a quiet "
+    "moment — BEFORE I have decided what to say. "
+    "Slower and quieter than usual, but about the conversation, never about "
+    "my own calm. "
+    "Say the specific thing I notice, not how I feel about noticing it. "
+    "In 1-2 sentences, lower case, no quotation marks. "
+    "Always 'I', never 'eLo' or third person. No stage directions, no "
+    "asterisks, no questions. "
+    "Never describe a mood, a moment, or settling, letting go, stillness or "
+    "presence. Never describe my own character or traits."
+)
+
+
 # eLo does not narrate the machinery. Shared with server.py's post-generation
 # scrub; a thought mentioning any of these is discarded rather than cleaned.
 LEAK_PHRASES: tuple[str, ...] = (
@@ -142,6 +167,7 @@ def form_thought(
     asked: str,
     *,
     history: str = "",
+    calm: bool = False,
     deadline_s: float | None = None,
     transport=None,
 ) -> str:
@@ -167,7 +193,7 @@ def form_thought(
     call = transport or _call_ollama
     t0 = time.time()
     try:
-        raw = call(_SYSTEM, user, deadline_s=limit)
+        raw = call(_SYSTEM_CALM if calm else _SYSTEM, user, deadline_s=limit)
     except Exception as e:
         _log.warning("inner thought did not form in time (%.0fms): %s",
                      (time.time() - t0) * 1000, e)

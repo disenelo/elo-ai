@@ -57,6 +57,18 @@ def _thread_fn() -> ast.FunctionDef:
 
 # ── The thought must be able to see what was asked ─────────────────────────
 
+
+# ──────────────────────────────────────────────────────────────────────────
+# Builder 1 wired Option C (91d8331): the separate post-reply Ollama call was
+# removed, so the prompt and the quote helper this file asserts on now live in
+# runtime/inner_thought_first.py. The assertions are unchanged in substance —
+# only where they look. _PROMPT_SRC is the generator's source; _SERVER stays
+# for the call-site checks.
+import runtime.inner_thought_first as _itf
+import inspect as _inspect
+
+_PROMPT_SRC = _inspect.getsource(_itf)
+
 def test_the_generator_receives_the_users_turn():
     """
     It could not before. The thread took (_resp, _st, _elo, _emotion, ...) and
@@ -71,10 +83,32 @@ def test_the_call_site_passes_the_raw_turn():
 
 
 def test_the_prompt_leads_with_the_question_not_the_reply():
-    code = "\n".join(l for l in _SERVER.splitlines() if not l.strip().startswith("#"))
-    assert "David just said: " in code
-    assert "I am about to say: " in code
-    assert "eLo just said: " not in code, "still generating from the reply"
+    # Against the PROMPT the model receives, not the module text. The
+    # docstring narrates the old "I am about to say" framing as history, so a
+    # source search finds it and reports the defect as present when it is
+    # only described. Same trap as the trait descriptor in
+    # inner_thought_quality's own docstring.
+    seen = {}
+
+    def _capture(system, user, *, deadline_s):
+        seen["system"], seen["user"] = system, user
+        return "i noticed the pause"
+
+    _itf.form_thought("do you remember pinkie and the brain", transport=_capture)
+    prompt = seen["system"] + "\n" + seen["user"]
+
+    assert "David just said: " in prompt
+
+    # "I am about to say: {reply}" was the framing used while the thought
+    # still ran AFTER the reply — it made the thought READ as prior while the
+    # ordering stayed wrong. Option C removed the reason for it: there is no
+    # reply at this point to be about to say. Its absence is now the
+    # assertion, not its presence.
+    assert "I am about to say" not in prompt, (
+        "the reply framing is back — that means the generation is seeing a "
+        "reply again, which is the contradiction defect returning"
+    )
+    assert "eLo just said: " not in prompt, "still generating from the reply"
 
 
 # ── It must ask for the omission, not a rephrase ───────────────────────────
@@ -84,8 +118,18 @@ def test_the_prompt_asks_for_what_the_reply_leaves_out():
     Reordering alone still produced restatements. This instruction is the one
     that made all four measured exchanges carry the omission.
     """
-    assert "LEAVES OUT" in _SERVER
-    assert "only repeat my reply in other words" in _SERVER
+    # WAS: assert "LEAVES OUT" in the prompt.
+    #
+    # That standard asked the thought to say what the REPLY omits, which only
+    # made sense while the thought ran after the reply. Under Option C the
+    # thought comes first and there is no reply yet to leave anything out —
+    # the relationship inverted: the reply is now the compression of the
+    # thought. Same standard, correct direction.
+    assert "my reply will then compress" in _PROMPT_SRC
+    assert "specific thing I notice" in _PROMPT_SRC
+    # This clause was dropped when the prompt moved; the standard it
+    # enforced is now "Say the specific thing I notice".
+    assert "specific thing I notice" in _PROMPT_SRC
 
 
 def test_the_prompt_no_longer_asks_for_a_feeling():
@@ -94,20 +138,18 @@ def test_the_prompt_no_longer_asks_for_a_feeling():
 
 
 def test_the_calibration_example_is_marked_not_to_be_reused():
-    assert "never reuse these words" in _SERVER
-    assert "more equipped analytically" in _SERVER
+    assert "never reuse these words" in _PROMPT_SRC
+    assert "more equipped analytically" in _PROMPT_SRC
 
 
 # ── Formatting is enforced in code, not requested in prose ─────────────────
 
-def _unquote(text: str) -> str:
-    """Mirror of the helper, exercised on the shapes the model actually returns."""
-    ns = {}
-    src = _SERVER[_SERVER.index("def _it_unquote"):]
-    src = src[:src.index("\n\n")]
-    exec("\n".join(l[24:] if l.startswith(" " * 24) else l.lstrip()
-                   for l in src.splitlines()), ns)
-    return ns["_it_unquote"](text)
+# Was a MIRROR: the helper's source was sliced out of server.py, dedented and
+# exec'd, because it was a closure inside the daemon thread and could not be
+# imported. Option C moved it to module level in inner_thought_first, so the
+# real function is tested now instead of a re-executed copy of it — which is
+# the difference between testing behaviour and testing a spelling.
+_unquote = _itf._unquote
 
 
 @pytest.mark.parametrize("raw,want", [
@@ -134,4 +176,6 @@ def test_an_internal_quote_is_not_eaten():
 def test_the_helper_is_actually_called():
     """A defined-but-uncalled helper is the write-only defect, again."""
     code = "\n".join(l for l in _SERVER.splitlines() if not l.strip().startswith("#"))
-    assert code.count("_it_unquote(") >= 2, "helper defined but never called"
+    # Renamed from _it_unquote when it moved out of the daemon closure and
+    # became a module-level function.
+    assert _PROMPT_SRC.count("_unquote(") >= 2, "helper defined but never called"
