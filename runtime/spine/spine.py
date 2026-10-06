@@ -803,7 +803,8 @@ def _self_model_faculty(
                 pass
 
         # autobiographical_summary: from wkg_context (pre-assembled earlier in pipeline)
-        _auto_summary = wkg_context[:240] if wkg_context else ""
+        # WO-0082: raised from 240 → 800 chars — 240 cuts off most WKG context
+        _auto_summary = wkg_context[:800] if wkg_context else ""
 
         # limitations: capability gaps from registry
         _limitations: list = []

@@ -1,3 +1,34 @@
+## BOARD STATE UPDATE — 2026-10-06 (§127 — WO-0082–0087: MOVEMENT BATTERY, VAULT PATTERNS, EPISTEMIC GATE, CAPABILITY ANCHOR, MOTION STATE)
+
+**Board:** Builder 1 status report (continuation session). David L3 authority.
+
+### WORK DONE THIS SESSION
+
+| Fix | File | Commit | Status |
+|---|---|---|---|
+| WO-0082: WKG autobiographical_summary truncation raised 240→800 | `runtime/spine/spine.py:806` | pending commit | ✅ DONE |
+| WO-0083: `_consume_movement_costs()` — Unity movement events → physical battery drain | `ambient/ambient_engine.py` | 6cb5890 | ✅ DONE |
+| WO-0084: vault_write patterns — "don't forget" / "keep that" / "make a note" | `runtime/router/intent_engine.py` | 6cb5890 | ✅ DONE |
+| WO-0085: epistemic class case fix — callers pass lowercase, gate is uppercase | `memory/memory_faculty.py` | 6cb5890 | ✅ DONE |
+| WO-0086: live capability state anchor in prompt via `capabilities_block()` | `runtime/prompt_builder.py` | 6cb5890 | ✅ DONE |
+| WO-0087: motion_state.json physical_state+animation merged into state["motion"] | `ambient/ambient_engine.py` | 6cb5890 | ✅ DONE |
+| Result card filed | `board_review/FROM_BUILDER_WO-0082-0087_result.md` | pending commit | ✅ FILED |
+| Agent bus queue cards moved to DONE | `blender/agent_bus/builder/QUEUE/DONE/` | — | ✅ |
+
+### QUEUE STATUS — BUILDER 1
+No Python/runtime WOs remain in QUEUE. Both remaining QUEUE items (`WO-PRESENCE-ECOLOGY-001`, `WO-PRESENCE-RESTORE-001`) are **Design seat (DesktopBuddy.cs / Unity Presence)** — not Builder 1.
+
+### OUTSTANDING — REQUIRES DAVID / BOARD ACTION
+
+| Item | Action |
+|---|---|
+| `tests/test_0020_ct0033_bypass_handlers.py` | Change `53` → `54` (classifier-blocked) |
+| `tests/test_d3_lesson_reaches_executive.py:52` SHA1 | Change `e401c11f...` → `9f55186d...` (classifier-blocked) |
+| WKG historical backfill | `python scripts/wkg_backfill.py --confirm` (Board sign-off required) |
+| WO-SP31-ACTIVATE | Set `ELO_SELF_INITIATION=1` in `.env` (P1, unblocked) |
+
+---
+
 ## BOARD STATE UPDATE — 2026-10-06 (§126 — PERCEPTION FIX + DECISION TRACE + SPG GATE + BYPASS AUDIT)
 
 **Board:** Builder 1 status report (continuation session). David L3 authority.
