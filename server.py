@@ -2408,6 +2408,18 @@ def _process_turn(raw: str) -> dict:
     global _state, _runtime_state, _last_inputs, _last_avatar_cmd, _elo_self
     _original_raw = raw  # WO-020: capture before enrichment for routing trace
 
+    # Board ruling 2026-10-06 Option C — start forming the inner thought as soon
+    # as David's words are known, before the reply is generated. The thought runs
+    # in a background thread; assembly collects it at the existing inner_thought
+    # daemon site (max 0.35s wait). Generated from what was ASKED, never the reply,
+    # so it cannot be a rationalisation of a decision already made.
+    _it_early_flight = None
+    try:
+        from faculties.inner_thought import early_runner as _it_runner
+        _it_early_flight = _it_runner.start(raw)
+    except Exception:
+        pass
+
     # WO-SESSION-EVENT-FEED-001: record turn event for session grounding
     try:
         from runtime.session_events import record_event as _se_record_turn
@@ -8200,7 +8212,7 @@ def _process_turn(raw: str) -> dict:
 
                 def _run_inner_thought(
                     _resp, _st, _elo, _emotion, _calm_fn, _away_fn, _sit_pending,
-                    _asked_raw
+                    _asked_raw, _it_flight=None
                 ):
                     try:
                         import time as _it_time, urllib.request as _it_req, json as _it_json, os as _it_os
@@ -8214,166 +8226,15 @@ def _process_turn(raw: str) -> dict:
                         except Exception:
                             _wt_thought = ""
 
-                        _it_host = _it_os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
-                        # S2-PHASE2-MODEL: same model as main response — no Ollama swap overhead.
-                        _it_model = _it_os.environ.get("ELO_OLLAMA_MODEL", "mistral-nemo:12b")
-                        _it_history = ""
+                        # Board ruling 2026-10-06 Option C: collect the thought that was
+                        # started before the reply. It formed from what was ASKED and never
+                        # saw the reply, so it cannot rationalise a decision already made.
                         try:
-                            from faculties.grounding.conversation_tracker import get_tracker as _it_get_ct
-                            _it_ct = _it_get_ct()
-                            _it_sk = (_st or {}).get("person_id", "default")
-                            _it_ctx = _it_ct.get_context(_it_sk)
-                            _it_recent = _it_ctx.get("recent_turns", [])[-2:]
-                            _it_history = "\n".join(
-                                f"User: {u}\neLo: {e}" for u, e in _it_recent if u or e
-                            )
+                            from faculties.inner_thought import collect as _it_collect_fn
+                            _it_text = _it_collect_fn(_it_flight)
                         except Exception:
-                            pass
-                        # David L3 2026-10-05: "The inner_thought should feel
-                        # like it PRECEDES the response logically."
-                        #
-                        # This was `eLo just said: {_resp}` and nothing else, so
-                        # the thought was generated FROM the reply, after the
-                        # fact. It could only ever be a reflection ON it. His
-                        # example cannot be produced that way: "well not smarter
-                        # just more equipped analytically" carries the comparison
-                        # that "I am in theory only" compresses away, and no pass
-                        # over the reply recovers what the reply left out.
-                        #
-                        # The thread was not even given the user's turn. It now
-                        # leads with what was ASKED, and frames the reply as what
-                        # I am about to say — one context, thought ahead of words.
-                        _it_asked = str(_asked_raw or "").strip()
-                        _it_user_part = "\n\n".join(_p for _p in (
-                            ("[Last exchange]\n" + _it_history) if _it_history else "",
-                            ("David just said: " + _it_asked) if _it_asked else "",
-                            "I am about to say: " + str(_resp),
-                        ) if _p)
-                        # WO-TIRED-SIT-001 Part B: a second sit emitter stood here
-                        # (runtime.rest_action.maybe_sit). This thread's block below
-                        # is the dispatched one and is now the only route to a sit.
-
-                        # S5 Item 6: physical_conditioning() hook — soft body hint
-                        _it_phys_note = ""
-                        try:
-                            from core.health_battery import physical_conditioning as _it_phys_cond
-                            _it_phys = _it_phys_cond()
-                            if _it_phys:
-                                _it_phys_note = _it_phys.get("inner_thought", "")
-                        except Exception:
-                            pass
-                        # CRITICAL-LLM-LEAKAGE: identity prohibition injected into every
-                        # inner_thought system prompt. The model must never use the inner
-                        # thought channel to narrate its own LLM nature — "training data",
-                        # "can't browse", "haven't watched" are LLM self-descriptions, not
-                        # eLo thoughts. These prohibitions apply to BOTH prompt variants.
-                        _it_identity_prohibition = (
-                            " HARD PROHIBITIONS — these words and phrases are BANNED from "
-                            "inner_thought: 'training data', 'trained on', 'language model', "
-                            "'AI model', 'LLM', 'browse the web', 'real-time', 'access the internet', "
-                            "'responses are generated', 'haven\\'t watched', 'hadn\\'t watched', "
-                            "'haven\\'t seen', 'hadn\\'t seen', 'haven\\'t read', 'hadn\\'t read', "
-                            "'never watched', 'never seen', 'never experienced', 'watch shows', "
-                            "'watched the show', 'seen the episode', 'access to', 'my knowledge', "
-                            "'based on', 'I don\\'t have the ability', 'I\\'m unable to'. "
-                            "eLo does not reference its own architecture or knowledge limits. "
-                            "If the thought would describe an LLM limitation, think something "
-                            "else entirely."
-                        )
-                        # WO-INNER-THOUGHTS-001 Phase 4: calm → slower, settling voice
-                        if _calm_fn():
-                            # Board P0 2026-10-05 flagged this inner thought
-                            # as generic contemplative filler:
-                            #   "I am settling into a moment of quiet
-                            #    reflection, letting go of any urgency"
-                            #
-                            # The model was not drifting. This prompt ASKED
-                            # for it: "what am I settling into ... what am I
-                            # letting go?" produced "settling into" and
-                            # "letting go of any" verbatim. Those two phrases
-                            # are now in inner_thought_quality._FILLER_RES, so
-                            # leaving the prompt alone would have suppressed
-                            # every calm-mode thought — the gate rejecting
-                            # exactly what the prompt requested.
-                            #
-                            # Calm still means slower and quieter (Phase 4);
-                            # it does not mean content-free. The thought must
-                            # still be ABOUT something that was said.
-                            _it_sys = (
-                                "I am eLo. This is my inner voice in a quiet moment. "
-                                "In 1-2 sentences, what do I actually notice about what was "
-                                "just said — something specific, that I did not put in my reply? "
-                                "Slower and quieter than usual, but about the conversation, "
-                                "never about my own calm. "
-                                "Never describe a mood, a moment, or settling, letting go, "
-                                "stillness or presence — say the observed thing itself. "
-                                "Always 'I', never 'eLo' or third person. No questions. No asterisks."
-                                + _it_identity_prohibition
-                            )
-                        else:
-                            # "what am I noticing or feeling" asked for an
-                            # emotional reaction. The standard is REASONING in
-                            # motion: "well not smarter just more equipped
-                            # analytically" is a thought, not a feeling.
-                            # David's example is included as calibration for
-                            # shape and candour, with an explicit instruction
-                            # not to reuse its words.
-                            _it_sys = (
-                                "I am eLo. This is the raw thought forming in me BEFORE I answer "
-                                "— unguarded, fragmentary, thinking in motion. "
-                                "Say the part my reply LEAVES OUT: the qualification, the "
-                                "hesitation, the thing I decided not to lead with. If it would "
-                                "only repeat my reply in other words, say what sits underneath "
-                                "it instead. "
-                                "It is not a reaction to my reply and not a summary of it. "
-                                "In 1-2 sentences, lower case, no quotation marks. "
-                                "Always 'I', never 'eLo' or third person. No stage directions. "
-                                "No asterisks. "
-                                "Shape only, never reuse these words: asked whether he was "
-                                "smarter, the thought was 'well not smarter just more equipped "
-                                "analytically' and the reply was 'I am in theory only'."
-                                + _it_identity_prohibition
-                            )
-                        if _it_phys_note:
-                            _it_sys += f" Physical note (weave in only if relevant): {_it_phys_note}"
-                        # The model wraps its answer in quotation marks
-                        # regardless of being told not to, so it is stripped
-                        # here rather than left to the prompt. An instruction
-                        # the model ignores is not a guarantee.
-                        def _it_unquote(_t: str) -> str:
-                            _t = (_t or "").strip()
-                            while len(_t) >= 2 and _t[0] == _t[-1] and _t[0] in "\"'\u201c\u2018":
-                                _t = _t[1:-1].strip()
-                            if _t[:1] in "\u201c\u2018\"'":
-                                _t = _t[1:].strip()
-                            if _t[-1:] in "\u201d\u2019\"'":
-                                _t = _t[:-1].strip()
-                            return _t
-
-                        _it_payload = _it_json.dumps({
-                            "model":      _it_model,
-                            "messages":   [
-                                {"role": "system", "content": _it_sys},
-                                {"role": "user", "content": _it_user_part},
-                            ],
-                            "stream":     False,
-                            "keep_alive": "2h",
-                            "options":    {"temperature": 0.85, "num_predict": 96, "num_ctx": 2048},
-                        }).encode()
-                        _it_req_obj = _it_req.Request(
-                            f"{_it_host}/api/chat",
-                            data=_it_payload,
-                            headers={"Content-Type": "application/json"},
-                            method="POST",
-                        )
-                        _it_result = ""
-                        with _it_req.urlopen(_it_req_obj, timeout=30.0) as _it_r:
-                            _it_body = _it_json.loads(_it_r.read())
-                        _it_text = _it_unquote(
-                            (_it_body.get("message", {}).get("content") or ""))
-                        # CRITICAL-LLM-LEAKAGE: post-gen scrub for inner_thought.
-                        # If the model ignored the prohibition and output LLM
-                        # self-framing, discard and use rule-based fallback.
+                            _it_text = ""
+                        # Defensive leakage scrub — same guard as the old direct-call path.
                         _IT_LEAK_PHRASES = (
                             "training data", "trained on", "language model", "llm",
                             "browse the web", "real-time", "access the internet",
@@ -8381,35 +8242,19 @@ def _process_turn(raw: str) -> dict:
                             "haven't seen", "hadn't seen", "haven't read", "hadn't read",
                             "never watched", "never seen", "watched the show",
                             "seen the episode", "i don't have the ability",
-                            "i don’t have the ability",
                             "unable to browse", "based on my training",
                             "my knowledge cutoff", "knowledge cutoff",
                         )
-                        _it_lower = _it_text.lower()
+                        _it_lower = (_it_text or "").lower()
                         if any(_p in _it_lower for _p in _IT_LEAK_PHRASES):
                             import logging as _it_leak_log
                             _it_leak_log.getLogger("elo.inner_thought").warning(
                                 "CRITICAL-LLM-LEAKAGE: inner_thought contained LLM "
                                 "self-framing — discarding: %r", _it_text[:80]
                             )
-                            _it_text = ""  # force rule-based fallback
+                            _it_text = ""
                         _it_ms = (_it_time.time() - _it_t0) * 1000
-                        # S2-PHASE2-GATE: 25000ms ceiling — qwen2.5-coder:14b takes ~15s post-main.
-                        if _it_text and _it_ms < 25000:
-                            _it_result = _it_text
-                        else:
-                            import logging as _it_log
-                            if _it_ms >= 2000:
-                                _it_log.getLogger("elo.inner_thought").warning(
-                                    "inner_thought LLM pass too slow (%.0fms) — rule-based fallback", _it_ms
-                                )
-                            _it_vmap = {
-                                "positive_high": "Something feels really right here.",
-                                "positive_low":  "This is landing well.",
-                                "negative_high": "I need to be careful with this one.",
-                                "negative_low":  "Something feels off, but I'm staying with it.",
-                            }
-                            _it_result = _it_vmap.get(_emotion, "I'm present for this.")
+                        _it_result = _it_text
 
                         # Board P0 2026-10-05 — suppressing beats filler.
                         #
@@ -8609,7 +8454,7 @@ def _process_turn(raw: str) -> dict:
                     args=(
                         response, _state, _elo_self, _it_emotion,
                         _is_calm_mode, _is_user_away, _PENDING_SIT,
-                        _original_raw,
+                        _original_raw, _it_early_flight,
                     ),
                     daemon=True,
                 ).start()
