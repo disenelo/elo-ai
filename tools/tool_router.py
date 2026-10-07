@@ -1899,6 +1899,17 @@ def _youtube_to_spotify(user_input: str) -> str:
         return ""
 
 
+# WO-122: inside enrich_from_plan the Executive's selection is known. A B3 data
+# answer (weather, news, calendar, clipboard, last commit, tracker) stands down
+# when the Executive picked something else ("what's the weather" → time, RT-3).
+# None = called without a plan (server.py's first pass) — unchanged behaviour.
+_plan_hint: Optional[set] = None
+
+
+def _plan_allows(cap_id: str) -> bool:
+    return _plan_hint is None or cap_id in _plan_hint
+
+
 def _cap_on(cap_id: str) -> bool:
     """WO-018 capability gate for the B3 direct answers: a capability disabled in
     the registry never fires here either. Fail-open when the registry can't be
@@ -2180,7 +2191,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
 
     # ── Named trackers — B3 2026-10-06: "read my eLo tracker" → "no file path found"
     # → mock filler. The summary from the file IS the answer.
-    if _cap_on("file_read") and re.search(r"\btracker\b", _lower) and re.search(
+    if _cap_on("file_read") and _plan_allows("file_read") and re.search(r"\btracker\b", _lower) and re.search(
             r"\b(?:read|open|what'?s\s+in|summari[sz]e|check|show|go\s+through|look\s+at)\b", _lower):
         try:
             from tools.file_reader_agent import named_document as _nd, summarise_tracker as _st
@@ -2257,7 +2268,8 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     # ── Clipboard read — B3 2026-10-06: the tool read it; the LLM then said "I don't
     # have that recorded" (capability demo). What's on the clipboard IS the answer.
     if re.search(r"\bwhat\s+(?:did\s+i|have\s+i)\s+(?:just\s+)?copi?(?:y|ed)\b|\bwhat'?s\s+(?:on\s+)?(?:my\s+|the\s+)?clipboard\b"
-                 r"|\bwhat'?s\s+copied\b|\bread\s+(?:my\s+|the\s+)?clipboard\b", _lower) and _cap_on("clipboard"):
+                 r"|\bwhat'?s\s+copied\b|\bread\s+(?:my\s+|the\s+)?clipboard\b", _lower) and _cap_on("clipboard") \
+            and _plan_allows("clipboard"):
         try:
             from tools.clipboard_agent import read as _clip_read
             _clip = _clip_read()
@@ -2272,7 +2284,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
 
     # ── Calendar — B3 2026-10-06: the AppleScript read timed out and the LLM said
     # "I don't have that recorded". EventKit's answer IS the answer.
-    if _cap_on("calendar") and re.search(r"\b(?:calendar|schedule|diary|agenda)\b", _lower) and \
+    if _cap_on("calendar") and _plan_allows("calendar") and re.search(r"\b(?:calendar|schedule|diary|agenda)\b", _lower) and \
             re.search(r"\b(?:what'?s|what\s+is|anything|do\s+i\s+have|am\s+i|today|tomorrow|week|on\s+my|check)\b", _lower):
         try:
             from tools.calendar_agent import spoken as _cal_spoken
@@ -2285,7 +2297,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
 
     # ── Last commit on a local repo — B3 2026-10-06: the tool returned "" (no
     # GITHUB_REPO) and the LLM filled in. The local git log IS the answer.
-    if re.search(r"\b(?:last|latest|most\s+recent)\s+commit\b", _lower) and _cap_on("github"):
+    if re.search(r"\b(?:last|latest|most\s+recent)\s+commit\b", _lower) and _cap_on("github") and _plan_allows("github"):
         try:
             from tools.github_agent import local_last_commit as _llc
             _lc = _llc(user_input)
@@ -2298,7 +2310,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     # ── News — B3 2026-10-06: the headlines ARE the answer. Via the LLM they came
     # back "I don't have that recorded" (capability demo, +news backend).
     _news_pats = next((pats for name, pats in _INTENT_MAP if name == "news"), [])
-    if any(re.search(p, _lower) for p in _news_pats) and _cap_on("news"):
+    if any(re.search(p, _lower) for p in _news_pats) and _cap_on("news") and _plan_allows("news"):
         try:
             _nw = _AGENTS.get("news", _agent_news)(user_input)
             if _nw:
@@ -2324,7 +2336,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
         r"\bwhat.s\s+it\s+like\s+outside\b",
         r"\brain(?:ing)?\s+outside\b",
     ]
-    if any(re.search(p, _lower) for p in _WEATHER_DIRECT_PATS) and _cap_on("weather"):
+    if any(re.search(p, _lower) for p in _WEATHER_DIRECT_PATS) and _cap_on("weather") and _plan_allows("weather"):
         try:
             _wx = _AGENTS.get("weather", _agent_weather)(user_input)
             # B3 2026-10-06: server.py speaks an intercept's return verbatim, so
@@ -2430,7 +2442,7 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
                         _ls, f"Lights on {_ls}.")
                     return _last_direct_result, "lights"
                 elif "not set" in (_lr.get("error") or ""):
-                    _last_direct_result = ("I can't reach the lights — the Hue bridge isn't set up yet "
+                    _last_direct_result = (f"I can't set the lights to {_ls} — the Hue bridge isn't set up yet "
                                            "(it needs HUE_BRIDGE_IP and HUE_API_KEY).")
                     return _last_direct_result, "lights"
             except Exception as _le:
@@ -2759,7 +2771,14 @@ def enrich_from_plan(
     _last_direct_result = None
 
     # 1. Direct intercepts (WO-122) — always fire regardless of Executive choice.
-    _di = _direct_intercepts(user_input)
+    #    B3 data answers among them consult the Executive's selection (_plan_hint).
+    global _plan_hint
+    _plan_hint = {(e[0] if isinstance(e, (list, tuple)) else (e.get("agent", "") if isinstance(e, dict) else ""))
+                  for e in (plan_capabilities or [])}
+    try:
+        _di = _direct_intercepts(user_input)
+    finally:
+        _plan_hint = None
     if _di is not None:
         _logger.info("WO-122 ROUTE: direct intercept fired — executor=%r", _di[1])
         return _di

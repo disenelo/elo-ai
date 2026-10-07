@@ -163,14 +163,23 @@ except Exception as e:
 
 # IQ-7: record_intent_abandoned() exists and writes without error
 try:
+    # B3 2026-10-07: this wrote into the LIVE self/journals/decision_journal.jsonl
+    # (test_xdna001 AT-2 then finds "test-id-001" there, and test_loop_one_brain
+    # reads it as eLo's latest decision). Point the journal at a temp file.
+    import tempfile as _tf, self.decision_journal as _dj
     from self.decision_journal import record_intent_abandoned
-    record_intent_abandoned(
-        intent_id="test-id-001",
-        kind="move",
-        content="window_corner",
-        reason="out-competed by sit intent",
-        lane="internal",
-    )
+    _dj_saved, _dj._JOURNAL = _dj._JOURNAL, _tf.mktemp(suffix=".jsonl")
+    try:
+        record_intent_abandoned(
+            intent_id="test-id-001",
+            kind="move",
+            content="window_corner",
+            reason="out-competed by sit intent",
+            lane="internal",
+        )
+        assert open(_dj._JOURNAL).read().count("test-id-001") == 1
+    finally:
+        _dj._JOURNAL = _dj_saved
     ok("IQ-7: record_intent_abandoned() callable without error")
 except Exception as e:
     fail("IQ-7", e)
