@@ -136,6 +136,21 @@ def _capability_faculty(meaning: str, intent: str, current_embodiment: str = "de
         # Sentence-length inputs (> 3 words) require ≥ 2 distinct content-word matches.
         _meaning_word_count = len(lower.split())
         _min_cap_score = 2 if _meaning_word_count > 3 else 1
+
+        # WO-EXECUTIVE-WEATHER-CLIPBOARD: pre-compute router-confirmed IDs BEFORE the
+        # score gate so capabilities like "weather" and "clipboard" (single-verb matches)
+        # are not silently excluded from the candidate list on longer queries.
+        # Root cause: agent_route boost ran AFTER the gate — "what is the weather"
+        # (4 words → min_score=2) scores 1 on weather, gate drops it, boost never applies.
+        _pre_routed_ids: set = set()
+        try:
+            from runtime.router.agent_router import route as _pre_agent_route
+            _pre_routed = _pre_agent_route(intent, meaning, chain=None)
+            _pre_routed_ids = {a[0] for a in _pre_routed}
+        except Exception as _pra_err:
+            _log.debug("capability_faculty/pre_route: %s", _pra_err)
+
+        _cap_by_id: dict = {}
         for cap in ALL_CAPABILITIES:
             if cap.future or not cap.enabled:
                 continue
@@ -144,14 +159,18 @@ def _capability_faculty(meaning: str, intent: str, current_embodiment: str = "de
             if "any" not in _scope and current_embodiment not in _scope:
                 continue
             score = sum(_verb_score(v, lower) for v in cap.verbs)
-            if score >= _min_cap_score:
-                candidates.append({
+            # Router-confirmed caps bypass the minimum score gate — the router already
+            # matched intent → capability explicitly. Give them a baseline score of 1.
+            if score >= _min_cap_score or cap.id in _pre_routed_ids:
+                _entry = {
                     "id":       cap.id,
                     "category": cap.category,
-                    "score":    score,
+                    "score":    max(score, 1),
                     "requires_confirmation": cap.requires_confirmation,
                     "health":   cap.health_state,
-                })
+                }
+                candidates.append(_entry)
+                _cap_by_id[cap.id] = _entry
         candidates.sort(key=lambda x: x["score"], reverse=True)
     except Exception as e:
         _log.debug("capability_faculty: %s", e)
@@ -161,7 +180,7 @@ def _capability_faculty(meaning: str, intent: str, current_embodiment: str = "de
         from runtime.router.agent_router import route as agent_route
         chain = None
         routed = agent_route(intent, meaning, chain=chain)
-        # Merge with capability candidates
+        # Merge with capability candidates — boost router-confirmed caps that made the list
         routed_ids = {a[0] for a in routed}
         for cap in candidates:
             if cap["id"] in routed_ids:
