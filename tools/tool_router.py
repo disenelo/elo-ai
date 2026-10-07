@@ -164,20 +164,24 @@ _PROFILE_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 
 def _known_location() -> Optional[str]:
-    """David's location from eLo's knowledge of him: user_profile, then facts."""
-    try:
-        import json as _j
-        prof = _j.loads(open(_PROFILE_FILE, encoding="utf-8").read())
-        loc = prof.get("location_studio") or prof.get("location")
-        if loc:
-            return str(loc).strip()
-    except Exception:
-        pass
+    """David's studio/home from eLo's knowledge of him: the "location" fact first
+    (it's what "the studio is in X" updates), then user_profile's
+    user.location_studio as the backup. Never where he was born or raised."""
     try:
         from memory.fact_store import load_facts as _lf
         for f in _lf():
             if f.get("key") == "location":
-                return f.get("fact", "").split(":", 1)[-1].strip() or None
+                loc = f.get("fact", "").split(":", 1)[-1].strip()
+                if loc:
+                    return loc
+    except Exception:
+        pass
+    try:
+        import json as _j
+        prof = _j.loads(open(_PROFILE_FILE, encoding="utf-8").read())
+        loc = (prof.get("user") or {}).get("location_studio") or prof.get("location_studio")
+        if loc:
+            return str(loc).strip()
     except Exception:
         pass
     return None

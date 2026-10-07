@@ -3,7 +3,7 @@ WO-030 acceptance tests — weather default location + city parsing + persistenc
 
 AT-1  No-city query → city falls back to London (not None/"auto")
 AT-2  Explicit city overrides default ("weather in Paris" → Paris)
-AT-3  Session set propagates ("I'm in Manchester" → Manchester in next call)
+AT-3  Session set propagates ("I'm in Testville" → Testville in next call)
 AT-4  "What about London, Hackney Wick?" parses as followup with comma place-name
 AT-5  Followup builds synthetic "weather in London, Hackney Wick" query
 AT-6  _DEFAULT_LOCATION constant is "London"
@@ -131,17 +131,17 @@ def test_at3_session_set():
     saved = _mod._user_location
     try:
       with _isolated(_mod):
-        _mod.set_location("Manchester")
-        assert _mod._user_location == "Manchester", \
+        _mod.set_location("Testville")
+        assert _mod._user_location == "Testville", \
             f"AT-3 FAIL: _user_location={_mod._user_location!r}"
-        # Bare "what's the weather?" should now resolve Manchester
+        # Bare "what's the weather?" should now resolve Testville
         city_match = re.search(
             r"(?:in|at|for)\s+([A-Za-z][A-Za-z\s,\-]{1,40}?)(?:\?|$|\s+today|\s+now|\s+like|\s+forecast)",
             "what's the weather?", re.IGNORECASE
         )
         city = (city_match.group(1).strip() if city_match else None) or _mod._user_location or _mod._DEFAULT_LOCATION
-        assert city == "Manchester", f"AT-3 FAIL: city={city!r} after set_location('Manchester')"
-        assert _mod._resolve_location() == "Manchester", "AT-3 FAIL: session set must outrank knowledge"
+        assert city == "Testville", f"AT-3 FAIL: city={city!r} after set_location('Testville')"
+        assert _mod._resolve_location() == "Testville", "AT-3 FAIL: session set must outrank knowledge"
     finally:
         _mod._user_location = saved
     print("AT-3 PASS — session set propagates to resolution")
@@ -412,7 +412,7 @@ def test_at14_knowledge_outranks_stale_file():
     import json, time as _ti
     mod = _load_module()
     with _isolated(mod) as loc_tmp:
-        json.dump({"city": "Manchester", "_ts": _ti.time()}, open(loc_tmp, "w"))
+        json.dump({"city": "Testville", "_ts": _ti.time()}, open(loc_tmp, "w"))
         saved_known, saved_loc = mod._known_location, mod._user_location
         try:
             mod._user_location = None
@@ -420,7 +420,7 @@ def test_at14_knowledge_outranks_stale_file():
             assert mod._resolve_location() == "Hackney Wick", \
                 f"AT-14 FAIL: resolved {mod._resolve_location()!r}, stale file won"
             mod._known_location = lambda: None
-            assert mod._resolve_location() == "Manchester", "AT-14 FAIL: file is still the fallback"
+            assert mod._resolve_location() == "Testville", "AT-14 FAIL: file is still the fallback"
             mod.set_location("Paris")                      # "I'm in Paris" — travel
             import memory.fact_store as _fs
             facts = {f["key"]: f["fact"] for f in _fs.load_facts()}

@@ -41,3 +41,16 @@ def test_executive_proposes_weather_first():
 def test_selected_weather_is_answered_directly():
     enriched, agent = tr.enrich_from_plan("what's the weather like right now", [("weather", "what's the weather")])
     assert agent == "weather" and "[CONTEXT" not in enriched and re.search(r"°[CF]", enriched)
+
+
+def test_profile_is_the_backup_when_the_fact_is_missing(tmp_path, monkeypatch):
+    """David: the location is part of weather. If the 'location' fact were lost,
+    user_profile's user.location_studio answers — not born/raised."""
+    import json
+    import memory.fact_store as fs
+    monkeypatch.setattr(fs, "_FACTS_FILE", str(tmp_path / "facts.json"))
+    prof = tmp_path / "user_profile.json"
+    prof.write_text(json.dumps({"user": {"location_born": "Fulham, London",
+                                         "location_studio": "Hackney Wick, London"}}))
+    monkeypatch.setattr(tr, "_PROFILE_FILE", str(prof))
+    assert tr._known_location() == "Hackney Wick, London"
