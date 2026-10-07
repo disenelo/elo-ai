@@ -468,6 +468,9 @@ def _action_default_tier(action: str) -> int:
 # WO-032b: time-boxed Groq 429 cooldown — clears automatically after 60 s so one transient
 # rate-limit doesn't pin the entire session to mock.  0.0 = not in cooldown.
 _groq_quota_cooldown_until: float = 0.0
+# 413 = prompt too large for Groq's TPM window — session-permanent until restart.
+# Re-trying a 413 every turn wastes time; cooldown is long (1 hour) because the prompt won't shrink.
+_groq_413_cooldown_until: float = 0.0
 
 # singleton mock backend — preserves anti-repetition buffer across all mock calls this session
 _mock_backend_instance = None
@@ -566,6 +569,9 @@ def normalise(text: str, max_sentences: int = 4) -> str:
 def _groq_call(system_prompt: str, user_input: str, model: str = None, max_tokens: int = None) -> str:
     """Call Groq cloud inference via stdlib urllib (OpenAI-compatible REST, no SDK required).
     WO-032b: switched from httpx to urllib — zero external dependencies."""
+    global _groq_413_cooldown_until
+    if _groq_413_cooldown_until and time.monotonic() < _groq_413_cooldown_until:
+        raise RuntimeError("Groq 413 cooldown active — prompt too large for TPM window")
     api_key = os.environ.get("GROQ_API_KEY", "")
     if not api_key:
         raise RuntimeError("GROQ_API_KEY not set")
@@ -575,21 +581,28 @@ def _groq_call(system_prompt: str, user_input: str, model: str = None, max_token
     _MAX_GROQ_SP = int(os.environ.get("ELO_GROQ_SP_MAX", "24000"))
     if len(system_prompt) > _MAX_GROQ_SP:
         system_prompt = system_prompt[:_MAX_GROQ_SP]
-    result = _json_post(
-        "https://api.groq.com/openai/v1/chat/completions",
-        payload={
-            "model":       model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user",   "content": user_input},
-            ],
-            "max_tokens":  max_tokens or 400,
-            "temperature": 0.7,
-        },
-        headers={"Authorization": f"Bearer {api_key}",
-                 "Content-Type":  "application/json"},
-    )
-    return result["choices"][0]["message"]["content"].strip()
+    try:
+        result = _json_post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            payload={
+                "model":       model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user",   "content": user_input},
+                ],
+                "max_tokens":  max_tokens or 400,
+                "temperature": 0.7,
+            },
+            headers={"Authorization": f"Bearer {api_key}",
+                     "Content-Type":  "application/json"},
+        )
+        return result["choices"][0]["message"]["content"].strip()
+    except _urllib_err.HTTPError as _ge:
+        if _ge.code == 413:
+            _groq_413_cooldown_until = time.monotonic() + 3600.0
+            _logger.warning("Groq 413 — prompt too large for TPM window; 1hr cooldown applied")
+            raise RuntimeError(f"Groq 413: prompt too large ({len(system_prompt)} chars)") from _ge
+        raise
 
 
 def _cerebras_available() -> bool:
@@ -859,7 +872,7 @@ def _route_by_tier(
                 raw = _ollama_call(system_prompt, user_input)
                 # WO-0057-PART-C: 4s rule — if prompt_eval exceeded threshold, try REASONING tier
                 _pe_ms = _last_ollama_metrics.get("prompt_eval_ms", 0)
-                if os.environ.get("ELO_4S_RULE", "0") == "1" and _pe_ms > 4000:
+                if os.environ.get("ELO_4S_RULE", "1") != "0" and _pe_ms > 4000:
                     _logger.info(
                         "4s rule triggered: prompt_eval=%.0fms, trying REASONING tier", _pe_ms
                     )
@@ -2168,19 +2181,34 @@ def _ollama_stream(
     return _raw_output, first_token_ms
 
 
+_ollama_probe_cache: dict = {"result": None, "ts": 0.0}
+_OLLAMA_DEAD_TTL = 30.0   # seconds before re-probing a dead Ollama
+_OLLAMA_LIVE_TTL = 120.0  # seconds before re-probing a live Ollama
+
 def _ollama_available() -> bool:
-    """True only when Ollama is up AND at least one model is installed (WO-073)."""
+    """True only when Ollama is up AND at least one model is installed (WO-073).
+    Caches the result so a dead Ollama doesn't cost 2s per turn (David ruling 2026-08-19/08-30)."""
+    import time as _time
+    _now = _time.monotonic()
+    _cached = _ollama_probe_cache["result"]
+    _age = _now - _ollama_probe_cache["ts"]
+    _ttl = _OLLAMA_LIVE_TTL if _cached else _OLLAMA_DEAD_TTL
+    if _cached is not None and _age < _ttl:
+        return _cached
     try:
         import urllib.request as _ureq, json as _json
         host  = os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
         model = os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
         with _ureq.urlopen(f"{host}/api/tags", timeout=2) as _r:
             if _r.status != 200:
+                _ollama_probe_cache.update({"result": False, "ts": _now})
                 return False
             models = [m.get("name", "") for m in _json.loads(_r.read()).get("models", [])]
-        # Accept if the configured model is present, or any model at all as fallback
-        return any(model in m for m in models) or len(models) > 0
+        _live = any(model in m for m in models) or len(models) > 0
+        _ollama_probe_cache.update({"result": _live, "ts": _now})
+        return _live
     except Exception:
+        _ollama_probe_cache.update({"result": False, "ts": _now})
         return False
 
 

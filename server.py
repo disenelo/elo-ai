@@ -2695,6 +2695,38 @@ def _process_turn(raw: str) -> dict:
             _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2142)
             return {"response": _loc_resp, "mode": "direct", "backend": "direct"}
 
+        # T11: time / date — local datetime.now(), never touch LLM
+        # David ruling 2026-08-19: "if it is taking longer than 4s it should figure out a quicker route"
+        # Time is always on the computer. Zero network. Zero LLM.
+        _TIME_Q_TRIGGERS = (
+            "what time is it", "what's the time", "whats the time", "what time",
+            "what's the date", "whats the date", "what date is it", "what is the date",
+            "what day is it", "what day is today", "what is today", "today's date",
+            "todays date", "what's today", "whats today", "tell me the time",
+            "current time", "current date",
+        )
+        if any(t in _at_low for t in _TIME_Q_TRIGGERS):
+            import datetime as _dt
+            _now = _dt.datetime.now()
+            _time_str = _now.strftime("%-I:%M %p")
+            _date_str = _now.strftime("%A, %-d %B %Y")
+            # Pick response based on whether they asked for date/day or time
+            _asked_date = any(t in _at_low for t in ("date", "day", "today"))
+            _asked_time = any(t in _at_low for t in ("time",))
+            if _asked_date and not _asked_time:
+                _time_resp = f"It's {_date_str}."
+            elif _asked_date and _asked_time:
+                _time_resp = f"{_time_str} — {_date_str}."
+            else:
+                _time_resp = f"It's {_time_str}."
+            try:
+                if not _is_user_away():
+                    _voice_speak(_time_resp)
+            except Exception:
+                pass
+            _bypass_journal(_original_raw, backend="direct", handler_class="CLOCK", line=2697)
+            return {"response": _time_resp, "mode": "direct", "backend": "direct"}
+
         # T10: "Open Spotify" — direct open, no confirm flow
         if _spot_direct is None and _re.search(r'\bopen\s+spotify\b', raw, _re.I):
             try:
