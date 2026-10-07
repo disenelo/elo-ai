@@ -88,7 +88,9 @@ PHYSICAL_EVENT_COSTS: dict[str, float] = {
     "parkour": 0.020,
     # David L3 ruling 2026-10-05: teleporting drains more than any other move.
     # Hierarchy: walk < hop < parkour < teleport.
-    "teleporting": 0.035,
+    # David 2026-10-07: "Teleport should take a lot more than all of the others" — "1-2 bars" of the health bar.
+    # The bar shows elo_battery = 0.6·cognitive + 0.4·physical (10 segments), so 0.375 physical = 0.15 shown = 1.5 bars.
+    "teleporting": 0.375,
 }
 
 # physical_state bands (ADDENDUM A)
