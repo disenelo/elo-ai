@@ -349,6 +349,16 @@ def _do_volume_step(direction: str) -> str:
     return f"Volume {'up' if direction == 'up' else 'down'} to {got}%."
 
 
+def _do_battery(_arg: str) -> str:
+    """The Mac's battery, from pmset. A desktop on mains says so — never a guess."""
+    out = subprocess.run(["pmset", "-g", "batt"], capture_output=True, text=True, timeout=5).stdout
+    m = re.search(r"(\d+)%;\s*([\w ]+?);", out)
+    if not m:
+        return "This Mac's on mains power — it doesn't have a battery."
+    pct, state = m.group(1), m.group(2).strip()
+    return f"Your Mac's battery is at {pct}%" + ("" if state in ("discharging",) else f", {state}") + "."
+
+
 def _do_brightness(_arg: str) -> str:
     # No supported way to read or set this Mac's display brightness from here,
     # so nothing is attempted and nothing is claimed.
@@ -404,6 +414,7 @@ _ACTIONS = {
     "screenshot":           _do_screenshot,
     "volume":               _do_volume,
     "brightness":           _do_brightness,
+    "battery":              _do_battery,
 }
 
 # safe actions — execute immediately without confirmation gate
@@ -415,7 +426,7 @@ _SAFE_ACTIONS = {
     "windows_minimise_all",
     "windows_restore_all",
     # B3 2026-10-06 — registry says no confirmation; harmless and read back.
-    "dark_mode", "screenshot", "volume", "brightness", "app_open",
+    "dark_mode", "screenshot", "volume", "brightness", "app_open", "battery",
 }
 
 
@@ -428,6 +439,8 @@ _SYSTEM_INTENTS = [
     (r"\b(?:switch|turn|change|go|put)\s+(?:it\s+)?(?:on\s+|to\s+|into\s+)?dark\s*mode\b|\bdark\s*mode\s+on\b|^dark\s*mode$", "dark_mode", "on"),
     (r"\b(?:switch|turn|change|go|put)\s+(?:it\s+)?(?:on\s+|to\s+|into\s+|back\s+to\s+)?light\s*mode\b|\bdark\s*mode\s+off\b|\bturn\s+off\s+dark\s*mode\b", "dark_mode", "off"),
     (r"\b(?:take|grab|capture)\s+(?:a\s+)?screen\s*shot\b|^screen\s*shot$", "screenshot", 0),
+    (r"\b(?:what'?s|what\s+is|how'?s|how\s+much\s+is\s+left\s+on)\s+(?:my|the)\s+(?:mac'?s?\s+|laptop'?s?\s+|computer'?s?\s+)?battery\b"
+     r"|\bmy\s+battery\s+(?:level|life|percentage)\b", "battery", "get"),
     (r"\bwhat(?:'s|\s+is)\s+the\s+volume\b|\bvolume\s+level\b|\bhow\s+loud\s+is\s+it\b", "volume", "get"),
     (r"\b(?:turn\s+(?:the\s+)?(?:volume|sound)\s+up|volume\s+up|louder)\b", "volume", "up"),
     (r"\b(?:turn\s+(?:the\s+)?(?:volume|sound)\s+down|volume\s+down|quieter)\b", "volume", "down"),
@@ -471,7 +484,7 @@ _SYSTEM_INTENTS = [
 
 _LONG_INPUT_SAFE_ACTIONS = frozenset({
     "volume_set", "volume_mute", "windows_minimise_all", "windows_restore_all",
-    "dark_mode", "screenshot", "volume", "brightness",
+    "dark_mode", "screenshot", "volume", "brightness", "battery",
 })
 
 
@@ -479,7 +492,7 @@ _LONG_INPUT_SAFE_ACTIONS = frozenset({
 # mode"). Planned by the spine they got a canned "Sorted." / "Done." instead — live,
 # "what's the volume at" → "Sorted." So detect() (spine, pipeline) doesn't offer
 # them; tool_router answers them itself via detect_direct().
-_DIRECT_ACTIONS = frozenset({"volume", "volume_set", "volume_mute", "dark_mode", "screenshot"})
+_DIRECT_ACTIONS = frozenset({"volume", "volume_set", "volume_mute", "dark_mode", "screenshot", "battery"})
 
 
 def detect_direct(user_input: str) -> Optional[tuple[str, str]]:

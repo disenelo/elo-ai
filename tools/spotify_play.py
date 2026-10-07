@@ -433,6 +433,13 @@ def _handle_line(text: str) -> tuple[str, str, str] | None:
     """(kind, detail, eLo's line) for a Spotify request, after doing it.
     kind: control | open | list | choose | play | ability. None when not one."""
     global _last_spotify_ts
+    if _PLAY_MUSIC_RE.match((text or "").strip()):
+        _last_spotify_ts = time.time()
+        try:
+            kind, line = play_music()
+            return (kind, "resume" if kind == "control" else "music", line)
+        except Exception as e:
+            return ("play", "music", "Spotify didn't take that — something went wrong on its side.", str(e))
     act = control_for(text)
     if act:
         _last_spotify_ts = time.time()
@@ -522,6 +529,23 @@ def execute(text: str) -> dict | None:
         state = "unknown"
     return record_result("spotify", tool_result(ok, {"kind": kind, "detail": detail, "line": line,
                                                      "state": state}, error))
+
+
+_PLAY_MUSIC_RE = re.compile(r"^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?(?:play|put\s+on)\s+"
+                            r"(?:some\s+)?(?:music|something|anything|a\s+tune|tunes)\b", re.I)
+
+
+def play_music() -> tuple[str, str]:
+    """'Play some music': resume what's loaded ("control"/"resume" — verified
+    like any control); nothing loaded → start David's first playlist ("play" —
+    verified against that playlist's URI). Returns (kind, line)."""
+    st = _player()
+    if st.get("item"):
+        return "control", control("resume")
+    mine = _all_playlists()
+    if not mine:
+        return "list", "You don't have any playlists I can see."
+    return "play", play(mine[0]["name"])
 
 
 def handle(text: str) -> str | None:

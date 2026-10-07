@@ -140,3 +140,55 @@ def agent(query: str) -> str:
 
     except Exception as e:
         return f"Reminders unavailable: {e}"
+
+
+# ── Open reminders from Reminders' own store (B3 2026-10-07) ──────────────────
+# "What's on my reminders?" timed out: the AppleScript `whose completed is false`
+# query is too slow. Reminders keeps its data in local SQLite stores — read-only
+# here, every store, open + not deleted.
+import glob as _glob
+import os as _os
+import sqlite3 as _sqlite3
+from datetime import datetime as _dt
+
+_STORES = _os.path.expanduser("~/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores/Data-*.sqlite")
+_EPOCH_2001 = 978307200
+
+
+def open_reminders() -> list[dict] | None:
+    """[{title, due (datetime|None), list}] — due-dated first, then the rest.
+    None when no store can be read."""
+    out, read_any = [], False
+    for path in _glob.glob(_STORES):
+        try:
+            con = _sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=3)
+            rows = con.execute(
+                """select r.ZTITLE, r.ZDUEDATE, l.ZNAME from ZREMCDREMINDER r
+                   left join ZREMCDBASELIST l on l.Z_PK = r.ZLIST
+                   where r.ZCOMPLETED = 0 and coalesce(r.ZMARKEDFORDELETION, 0) = 0
+                     and r.ZTITLE is not null and trim(r.ZTITLE) != ''""").fetchall()
+            con.close()
+            read_any = True
+        except Exception:
+            continue
+        for title, due, lst in rows:
+            out.append({"title": title.strip(), "due": _dt.fromtimestamp(due + _EPOCH_2001) if due else None,
+                        "list": lst or ""})
+    if not read_any:
+        return None
+    return sorted(out, key=lambda r: (r["due"] is None, r["due"] or _dt.max))
+
+
+def spoken_open_reminders(limit: int = 5) -> str:
+    rs = open_reminders()
+    if rs is None:
+        return "I can't read your reminders right now."
+    if not rs:
+        return "No open reminders."
+    items = []
+    for r in rs[:limit]:
+        fmt = "%a %d %b" if r["due"] and r["due"].year == _dt.now().year else "%d %b %Y"
+        due = f" (due {r['due'].strftime(fmt)})" if r["due"] else ""
+        items.append(r["title"] + due)
+    more = f" — and {len(rs) - limit} more" if len(rs) > limit else ""
+    return f"You've got {len(rs)} open reminder{'s' if len(rs) != 1 else ''}: " + "; ".join(items) + more + "."

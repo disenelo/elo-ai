@@ -255,7 +255,11 @@ def detect_location_set(user_input: str) -> Optional[str]:
     for pat in _LOCATION_SET_PATTERNS:
         m = re.search(pat, t, re.IGNORECASE)
         if m:
-            return m.group(1).strip().title()
+            # B3 2026-10-07: "I'm in Paris this week" set the city "Paris This Week".
+            city = re.sub(r"\s+(?:this|next|for\s+the)\s+(?:week|weekend|month|morning|afternoon|evening)$"
+                          r"|\s+(?:today|tonight|tomorrow|for\s+now|at\s+the\s+moment|right\s+now|now)$",
+                          "", m.group(1).strip(), flags=re.IGNORECASE).strip()
+            return city.title() if city else None
     return None
 
 # ── intent keyword map ─────────────────────────────────────────────────────────
@@ -2207,8 +2211,9 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     try:
         from tools.system_agent import detect_direct as _sd, execute as _sx
         _sa = _sd(user_input)
-        if _sa and _cap_on({"volume": "volume", "volume_set": "volume", "volume_mute": "volume",
-                            "dark_mode": "dark_mode", "screenshot": "screenshot"}[_sa[0]]):
+        _sa_cap = {"volume": "volume", "volume_set": "volume", "volume_mute": "volume",
+                   "dark_mode": "dark_mode", "screenshot": "screenshot"}.get(_sa[0]) if _sa else None
+        if _sa and (_sa_cap is None or _cap_on(_sa_cap)):
             try:
                 _last_direct_result = _sx(*_sa)
             except Exception as _sxe:
