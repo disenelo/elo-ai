@@ -53,6 +53,7 @@ HIGH_EMOTION_THRESHOLD = 0.7
 RESTORE_DREAM_FULL = 0.30          # NREM+REM
 RESTORE_DREAM_NREM = 0.12          # NREM only
 RESTORE_CALM_PER_MIN = 0.008
+RESTORE_CALM_PHYSICAL_PER_MIN = 0.2   # body refill while calm/meditating (~1 of 10 HP bars per 30 s) — David 2026-10-07
 RESTORE_HARD_IDLE_PER_MIN = 0.005
 HARD_IDLE_AFTER_S = 1800           # 30 minutes
 
@@ -553,7 +554,9 @@ def calm_tick(dt_seconds: float = 1.0) -> None:
     amount = RESTORE_CALM_PER_MIN * (max(0.0, float(dt_seconds)) / 60.0)
     restore(amount)
     if _physical_engaged:
-        restore_physical(amount)
+        # BODY refills visibly while he meditates (David 2026-10-07: "meditating for a while now and his health is still
+        # drained"). 0.008/min (flagged above as 60x off) = 1 HP bar per 12.5 min. Now 0.2/min = ~1 bar per 30 s.
+        restore_physical(RESTORE_CALM_PHYSICAL_PER_MIN * (max(0.0, float(dt_seconds)) / 60.0))
 
 
 def on_wake_from_dream(phase: str) -> float:

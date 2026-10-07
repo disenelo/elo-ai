@@ -189,7 +189,11 @@ def _is_calm() -> bool:
     """
     try:
         with open(_PRESENCE_STATE_PATH, encoding="utf-8") as f:
-            return json.load(f).get("state") in ("CALM_IDLE", "MEDITATION")
+            _ps = json.load(f)
+        # Presence writes the field as "mode" (server._is_calm_mode reads "mode"); this copy read "state" and was never
+        # calm, so the calm restore never ran (2026-10-07: meditated 6 min, body stayed 0.0). A calm this tick asserted
+        # itself counts too — he is resting even while David is active.
+        return (_ps.get("mode") or _ps.get("state")) in ("CALM_IDLE", "MEDITATION") or _brain_calm_asserted
     except Exception:
         return False
 
@@ -647,15 +651,19 @@ def _calm_on_low_battery(battery_state: str, motion: dict) -> dict:
     global _brain_calm_asserted
 
     presence_calm = _is_calm()
-    # EXHAUSTED BODY -> NOT calm (David 2026-10-07: "why won't he just sit instead of meditation? cause meditation is
-    # broken with mouse movement"). Asserting calm every 0.5 s for a spent BODY fought every mouse move AND made
-    # runtime/rest_decision answer "already_resting", so eLo's own decision to sit never happened. The tick no longer
-    # forces calm for the body; eLo decides to sit (rest_decision -> issued_by "elo", WO-TIRED-SIT-001 — the tick must
-    # NOT emit sit_command itself: Builder 2, 559836f). A low MIND battery still rests in calm, as before.
-    if _body_is_spent() and battery_state not in _BATTERY_REST_STATES:
-        if _brain_calm_asserted:
-            _brain_calm_asserted = False   # release a calm this tick asserted earlier for the body
-        return {"calm_mode": presence_calm}
+    # Resting for the BODY: once calm was asserted, keep resting until the body is RESTED (0.75) — with the 70/30 blend
+    # the "low" band clears at ~5% body, which would end the rest at 0 HP bars (David 2026-10-07).
+    if _brain_calm_asserted:
+        try:
+            from core.health_battery import get_physical as _gp2, snapshot as _snp2
+            if _snp2().get("physical_battery") is not None and _gp2() < 0.75 and not _is_speaking():
+                if battery_state not in _BATTERY_REST_STATES:
+                    battery_state = "low"   # treat as still resting
+        except Exception:
+            pass
+    # An exhausted BODY rests in calm between turns (ADDENDUM A), refilling ~1 HP bar / 30 s (calm_tick), held until the
+    # body is rested (0.75) above. eLo's own sit decision (rest_decision, issued_by "elo") runs on chat turns only; the tick
+    # must not emit sit_command itself (WO-TIRED-SIT-001, Builder 2 559836f). Between-turn sit = Builder 1 card.
     if not _rest_is_needed(battery_state):
         if _brain_calm_asserted:
             # Recovered — release so CalmExit can play.
