@@ -472,6 +472,91 @@ _groq_quota_cooldown_until: float = 0.0
 # Re-trying a 413 every turn wastes time; cooldown is long (1 hour) because the prompt won't shrink.
 _groq_413_cooldown_until: float = 0.0
 
+# ─────────────────────────────────────────────────────────────────────────────
+# INTENT-FIRST ROUTER (card 0001) — David ruling 2026-08-30: "I don't want a
+# Ladder." Provider chosen from intent BEFORE any call goes out. Boot-time
+# health check so a dead Ollama costs nothing per turn. No cascade.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Ordered preference list per intent. First available provider wins.
+# "conversational" / lightweight → Groq first (fast, cheap, always keyed).
+# "build" / reasoning → Groq still leads; escalate to OpenAI/Claude if needed.
+# "local_only" → Ollama only; if dead, return a clear failure message, no cascade.
+_INTENT_PROVIDER_PREFERENCE: dict[str, list[str]] = {
+    "conversational": ["groq", "cerebras", "gemini", "openai", "claude"],
+    "conversation":   ["groq", "cerebras", "gemini", "openai", "claude"],
+    "celebrate":      ["groq", "cerebras", "gemini", "openai", "claude"],
+    "social":         ["groq", "cerebras", "gemini", "openai", "claude"],
+    "time":           ["groq", "cerebras", "gemini", "openai"],
+    "factual":        ["groq", "cerebras", "gemini", "openai", "claude"],
+    "lookup":         ["groq", "cerebras", "gemini", "openai", "claude"],
+    "build":          ["groq", "cerebras", "openai", "gemini", "claude"],
+    "reflect":        ["groq", "cerebras", "openai", "gemini", "claude"],
+    "plan":           ["groq", "openai", "cerebras", "gemini", "claude"],
+    "challenge":      ["groq", "openai", "claude", "cerebras", "gemini"],
+    "creation":       ["groq", "openai", "cerebras", "gemini", "claude"],
+    "planning":       ["groq", "openai", "cerebras", "gemini", "claude"],
+    "memory":         ["groq", "cerebras", "gemini", "openai"],
+    "local_only":     ["ollama"],
+}
+
+# Boot-time health: populated once on first route() call. Not per-turn.
+# Ollama check uses the 30s TTL cache; all others check env key only (instant).
+_BOOT_HEALTH: dict[str, bool] = {}
+
+
+def _get_boot_health() -> dict[str, bool]:
+    """Populate provider health once at session start. Never re-probe within TTL."""
+    global _BOOT_HEALTH
+    if _BOOT_HEALTH:
+        return _BOOT_HEALTH
+    _BOOT_HEALTH = {
+        "groq":     _groq_available(),
+        "cerebras": _cerebras_available(),
+        "gemini":   _gemini_available(),
+        "openai":   _openai_available(),
+        "claude":   _claude_available(),
+        "ollama":   _ollama_available(),  # uses 30s dead-provider cache
+    }
+    _logger.info(
+        "intent-first router boot health: %s",
+        {k: v for k, v in _BOOT_HEALTH.items()},
+    )
+    return _BOOT_HEALTH
+
+
+def _ifr_call(
+    system_prompt: str,
+    user_input: str,
+    provider: str,
+    action: str,
+    max_sentences: int,
+    budget: int,
+) -> tuple[str, str] | None:
+    """Try one provider. Returns (text, backend_name) or None on failure."""
+    try:
+        if provider == "groq":
+            raw = _groq_call(system_prompt, user_input, max_tokens=budget)
+            return _finish(raw, action, max_sentences, "groq"), "groq"
+        if provider == "cerebras":
+            raw = _cerebras_call(system_prompt, user_input, max_tokens=budget)
+            return _finish(raw, action, max_sentences, "cerebras"), "cerebras"
+        if provider == "gemini":
+            raw = _gemini_call(system_prompt, user_input)
+            return _finish(raw, action, max_sentences, "gemini"), "gemini"
+        if provider == "openai":
+            raw = _openai_call(system_prompt, user_input, max_tokens=budget)
+            return _finish(raw, action, max_sentences, "openai"), "openai"
+        if provider == "claude":
+            raw = _claude_call(system_prompt, user_input, max_tokens=budget)
+            return _finish(raw, action, max_sentences, "claude"), "claude"
+        if provider == "ollama":
+            raw = _ollama_call(system_prompt, user_input)
+            return _finish(raw, action, max_sentences, "ollama"), "ollama"
+    except Exception as _e:
+        _logger.warning("intent-first router: %s failed: %s", provider, _e)
+    return None
+
 # singleton mock backend — preserves anti-repetition buffer across all mock calls this session
 _mock_backend_instance = None
 
@@ -2297,6 +2382,7 @@ def route(
     Returns:
         (response_text, backend_name)
     """
+    global _groq_quota_cooldown_until, _groq_413_cooldown_until, _openai_quota_cooldown_until
     # Vol XX M-2: escalation logging — record when Executive tier > action's cheapest default
     _default_tier = _action_default_tier(action)
     if tier and tier > _default_tier:
@@ -2812,6 +2898,41 @@ def route(
 
     # ── end discourse-signal augmentation ────────────────────────────────────────
 
+    # ── INTENT-FIRST ROUTER (card 0001) ──────────────────────────────────────────
+    # David ruling 2026-08-30: "I don't want a Ladder." Pick provider from intent
+    # BEFORE any per-turn probe. One attempt on the preferred provider, ONE retry on
+    # the next tier. If local_only and Ollama dead, say so — do not cascade.
+    _ifr_action = (action or "").lower().strip()
+    if _ifr_action in _INTENT_PROVIDER_PREFERENCE and mode != "mock":
+        _health = _get_boot_health()
+        _prefs = _INTENT_PROVIDER_PREFERENCE[_ifr_action]
+        if _ifr_action == "local_only":
+            # Explicit local-only: Ollama or honest failure — never cascade to cloud
+            if _health.get("ollama"):
+                _r = _ifr_call(system_prompt, user_input, "ollama", action, max_sentences, _budget)
+                if _r:
+                    return _r
+            return "Local model is offline right now.", "mock"
+        _tried: list[str] = []
+        for _pref in _prefs:
+            # Skip providers that failed boot health or are in cooldown
+            if not _health.get(_pref):
+                continue
+            if _pref == "groq" and _groq_quota_cooldown_until and time.monotonic() < _groq_quota_cooldown_until:
+                continue
+            if _pref == "groq" and _groq_413_cooldown_until and time.monotonic() < _groq_413_cooldown_until:
+                continue
+            if _pref == "openai" and _openai_quota_cooldown_until and time.monotonic() < _openai_quota_cooldown_until:
+                continue
+            _r = _ifr_call(system_prompt, user_input, _pref, action, max_sentences, _budget)
+            if _r:
+                return _r
+            _tried.append(_pref)
+            if len(_tried) >= 2:
+                break  # one primary + one retry; don't cascade further
+        # If intent-first router found no working provider, fall through to mode routing below
+    # ── end intent-first router ───────────────────────────────────────────────────
+
     # explicit mode overrides
     if mode == "mock":
         return _mock_fallback(user_input), "mock"
@@ -2884,7 +3005,6 @@ def route(
         # WO-032: pinned Groq mode — voice-consistent, no Claude/OpenAI drift.
         # Falls through to Cerebras → Mock only; never touches OpenAI, Gemini, or Claude.
         # WO-032b: _groq_quota_cooldown_until replaces the session-permanent bool — clears after 60 s.
-        global _groq_quota_cooldown_until
         _groq_fell_through = False
         _in_cooldown = _groq_quota_cooldown_until and time.monotonic() < _groq_quota_cooldown_until
         if _groq_available() and not _in_cooldown:
@@ -2954,7 +3074,6 @@ def route(
         _fh_degraded = lambda *a, **k: None  # noqa: E731
         _fh_recovered = lambda *a, **k: None  # noqa: E731
 
-    global _openai_quota_cooldown_until
     # card 0069: cooldown replaces the session-permanent bool — clears after 60 s so one transient
     # 429 doesn't permanently snub OpenAI. David: "feel out the failsafes."
     _openai_in_cooldown = (_openai_quota_cooldown_until
