@@ -245,6 +245,10 @@ def _consume_movement_costs() -> None:
                 report = event.get("payload", {}).get("report", {})
                 legs = report.get("legs", [])
                 for leg in (legs if isinstance(legs, list) else []):
+                    # A teleport is charged ONCE, by its movement_cost event (exit). Its "teleport" leg in the movement
+                    # report is the same move — charging it too doubled the cost (test 2026-10-07: one warp took 0.77).
+                    if str(leg).lower() == "teleport":
+                        continue
                     cost = _LEGS_TO_COST.get(str(leg).lower())
                     if cost:
                         drain_physical(cost)
@@ -578,6 +582,7 @@ _CALM_HOLD_SECONDS = 600.0
 _CALM_LOOP_SPEED = 0.28          # matches Unity's calmLoopSpeed
 
 _brain_calm_asserted = False
+_brain_sit_asserted = False   # David 2026-10-07: an exhausted BODY sits to rest (not meditation)
 
 
 def _body_is_spent() -> bool:
@@ -623,9 +628,45 @@ def _calm_on_low_battery(battery_state: str, motion: dict) -> dict:
     Yields to a dream in progress, to speech, and to a commanded state —
     calm is rest, not an interruption.
     """
-    global _brain_calm_asserted
+    global _brain_calm_asserted, _brain_sit_asserted
 
     presence_calm = _is_calm()
+    # EXHAUSTED BODY -> SIT, not meditation (David 2026-10-07: "why won't he just sit instead of meditation? cause
+    # meditation is broken with mouse movement"). Re-asserting calm every 0.5 s fought every mouse move (calm ends on
+    # user activity -> re-asserted -> loop) and calm refilled the body 60x slower than sitting. A sit HOLDS through mouse
+    # moves (Unity: a commanded sit ends only on a real interrupt or a release) and refills at the sitting rate via
+    # motion.physical = "sitting". A low MIND battery still rests in calm, as before.
+    body_spent = _body_is_spent()
+    if _brain_sit_asserted and not body_spent:
+        # keep sitting until the body is RESTED again (0.75), not just past "exhausted" (0.10 = up in ~12 s with 1 bar)
+        try:
+            from core.health_battery import get_physical as _gp
+            body_spent = _gp() < 0.75
+        except Exception:
+            pass
+    mind_low = battery_state in _BATTERY_REST_STATES
+    if body_spent and not mind_low:
+        try:
+            from faculties.dream.dream_faculty import is_dreaming as _is_dreaming_s
+            if _is_dreaming_s() or _is_speaking() or _is_commanded():
+                return {"calm_mode": presence_calm}
+        except Exception:
+            pass
+        out = {"calm_mode": presence_calm,
+               "motion": {"animation": "idle", "physical": "sitting", "speed": 0.5, "intensity": 0.4,
+                          "duration": 4.0, "mood": "resting", "mode": "idle"}}
+        if not _brain_sit_asserted:
+            _brain_sit_asserted = True
+            out["sit_command"] = {"_ts": round(time.time(), 3)}   # edge-triggered: ONE sit per exhaustion
+            _log.info("REST: body exhausted -> sit (not calm)")
+        return out
+    if _brain_sit_asserted and not body_spent:
+        _brain_sit_asserted = False   # body recovered -> stand up
+        _log.info("REST: body recovered -> stand")
+        return {"calm_mode": presence_calm,
+                "sit_command": {"released": True, "_ts": round(time.time(), 3)},
+                "motion": {"animation": "idle", "speed": 0.5, "intensity": 0.5, "duration": 4.0,
+                           "mood": "open", "mode": "idle"}}
     if not _rest_is_needed(battery_state):
         if _brain_calm_asserted:
             # Recovered — release so CalmExit can play.

@@ -425,6 +425,9 @@ _PRESERVE_KEYS = {
     # triggered on _ts in EloOSAvatarReceiver.Ack.cs), inner-thought text = inner_thought_text (a NEW value = a new
     # thought, EloOSAvatarReceiver.cs) — so keeping them does not replay them.
     "leave_command", "return_command", "inner_thought_text",
+    # 2026-10-07: the ambient rest sit (exhausted body -> sit / release on recovery) must survive the 0.5 s write.
+    # Unity edge-triggers it on _ts (sit AND release), and ignores stamps from before launch.
+    "sit_command",
 }
 
 _VISION_DEFAULT = {"active": False, "attention": 0.0, "focus": {"x": 0.5, "y": 0.5}, "app": ""}
