@@ -1,0 +1,103 @@
+# BUILDER 2 — SESSION START
+*Updated: 2026-10-06 by Board — COMPLETE QUEUE*
+
+---
+
+## P0 — Inner thought voice fix
+
+**Spec:** `blender/agent_bus/builder2/FROM_ARCHITECT_2026-10-06_INNER-THOUGHT-VOICE.md`
+
+David called this out from his chatlog. The inner thought system produces "I notice David said X" on nearly every turn. This sounds like a monitoring system, not eLo.
+
+**Two files to fix:**
+
+### 1. `inner_thought_first.py` (or wherever generation template lives)
+
+Replace the prompt pattern that produces "I notice [David...]". The new instruction:
+
+> Generate eLo's inner thought as what HE is thinking or feeling — not a description of what David said.
+> WRONG: "I notice David said 'when is sunset today'"
+> RIGHT: "The light does shift around this time." or "Curious what the sky looks like right now."
+> WRONG: "I notice David wants to set a timer"
+> RIGHT: "Two minutes. Here we go."
+> The thought must be from eLo's perspective. It may reference David's words by implication but must not paraphrase them.
+
+### 2. `inner_thought_quality.py` (quality checker)
+
+Add rejection rules:
+
+```python
+BANNED_PATTERNS = [
+    r"^I notice David ",
+    r"^I notice David's ",
+    r"^I observe ",
+    r"^I notice (?:that )?(?:David's|the|a) (?:sentence|question|word|phrase|use of)",
+]
+
+def check(thought: str) -> bool:
+    import re
+    for p in BANNED_PATTERNS:
+        if re.search(p, thought, re.IGNORECASE):
+            return False  # reject — regenerate
+    return True
+```
+
+**Acceptance:** Three example inner thoughts produced that do NOT contain "I notice David..." and read as eLo's actual voice. File alongside the quality checker change.
+
+---
+
+## P1 — SPG live scoring (after P0)
+
+SPG backfill is done (3,309 turns, commit `efe3cd3`). Live scoring from new turns is not yet active.
+
+Wire `spg_faculty.py` to score each new turn as it completes. Significance patterns from live turns should update `data/spg_graph.json` incrementally. This is gated on Builder 1's ROOT-2 landing — significance of a turn cannot be properly scored until the Executive has real WKG context to work from.
+
+**When Builder 1's ROOT-2 lands:** activate live SPG scoring. Per turn: call `score_turn(turn_data)`, append to `data/spg_signals.jsonl`, update any pattern nodes in `data/spg_graph.json`.
+
+---
+
+## P2 — deferred_threads.json (cross-session curiosity)
+
+eLo cannot sustain curiosity across sessions. This is a P2 item from the IS ELO verdicts.
+
+`faculties/inner_thought/deferred_threads.json` (create if doesn't exist): tracks unresolved curiosity threads across sessions.
+
+Structure:
+```json
+[
+  {
+    "thread_id": "DT-001",
+    "sparked_by": "David mentioned plotters — I don't know how they work",
+    "status": "OPEN",
+    "created": "2026-10-06T14:00:00Z",
+    "last_checked": null,
+    "resolved": null
+  }
+]
+```
+
+On session start: load `deferred_threads.json`, find OPEN threads. If any are relevant to the current context, surface as inner thought. When resolved (eLo finds out), update status to RESOLVED.
+
+Gate: do not build until P0 (voice fix) and Builder 1's ROOT-2 are done. The point of deferred threads is real experience persisting — that only matters once the causal chain works.
+
+---
+
+## FILE OWNERSHIP
+
+`faculties/inner_thought/` (all), `faculties/metacognition/` (all), `faculties/spg/` (all), `self_improvement/` (all)
+
+Do NOT touch: `server.py`, `spine.py`, `backend_router.py`, `ambient_engine.py`. Spec changes to those files as a TO_BOARD message.
+
+## STANDING RULES
+
+- No whole-repo `git stash` — `git add <your paths>` only
+- No `git reset --hard` without Board + David L3 authority
+- No tests against live server (port 5050) during active David session
+- CAP queue SUSPENDED until causal chain P0s done
+- Acceptance criterion: David sees the changed behaviour in his chatlog
+
+## RESULTS
+
+`DONE/FROM_BUILDER2_<date>_<topic>.md` + `outbox.json`. Board reads both.
+
+*Board · 2026-10-06*

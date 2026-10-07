@@ -1,0 +1,11 @@
+[
+  {
+    "ts": "2026-10-07T13:57:15",
+    "seat": "builder2",
+    "card": "0004_spg_interactions_backfill",
+    "state": "BUILT",
+    "commit": "d5aab22",
+    "test": "pytest -k spg \u2014 158 passed",
+    "note": "3330->3333 nodes, 9 live nodes preserved; range 2026-06-06->2026-10-06 filed to board_review"
+  }
+]
