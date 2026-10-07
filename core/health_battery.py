@@ -89,8 +89,9 @@ PHYSICAL_EVENT_COSTS: dict[str, float] = {
     # David L3 ruling 2026-10-05: teleporting drains more than any other move.
     # Hierarchy: walk < hop < parkour < teleport.
     # David 2026-10-07: "Teleport should take a lot more than all of the others" — "1-2 bars" of the health bar.
-    # The bar shows elo_battery = 0.6·cognitive + 0.4·physical (10 segments), so 0.375 physical = 0.15 shown = 1.5 bars.
-    "teleporting": 0.375,
+    # 2026-10-07 (later): the HP bar now shows the BODY (physical) directly, 10 segments -> 0.15 = 1.5 bars.
+    # (Was 0.375 when the bar showed the 0.6·mind + 0.4·body blend.)
+    "teleporting": 0.15,
 }
 
 # physical_state bands (ADDENDUM A)
