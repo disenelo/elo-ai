@@ -2182,12 +2182,13 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     # ── Location setting — direct user configuration action ──
     new_city = detect_location_set(user_input)
     if new_city:
-        set_location(new_city, studio=bool(re.search(r"\bstudio\b", user_input, re.I)))
-        return (
-            f"[CONTEXT: User just set their location to {new_city}. "
-            f"Acknowledge warmly and confirm you'll use {new_city} for weather from now on.]\n\n{user_input}",
-            "location_set",
-        )
+        _studio = bool(re.search(r"\bstudio\b", user_input, re.I))
+        set_location(new_city, studio=_studio)
+        # B3 2026-10-07: server.py speaks this return verbatim — it used to be the
+        # "[CONTEXT: User just set their location …]" instruction, read out raw.
+        _last_direct_result = (f"Got it — your studio's in {new_city}. I'll remember that." if _studio
+                               else f"Got it — you're in {new_city}. I'll use that for the weather.")
+        return _last_direct_result, "location_set"
 
     # ── Named trackers — B3 2026-10-06: "read my eLo tracker" → "no file path found"
     # → mock filler. The summary from the file IS the answer.
@@ -2294,6 +2295,18 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
                 return _cl, "calendar"
         except Exception as _cae:
             _logger.debug("calendar intercept failed: %s", _cae)
+
+    # ── Open reminders — B3 2026-10-07: the AppleScript read timed out ("Reminders
+    # unavailable: … timed out"). Reminders' own store IS the answer.
+    if _cap_on("reminders") and _plan_allows("reminders") and re.search(
+            r"\b(?:what'?s|what\s+are|show|list|read|check|any)\b.{0,20}\b(?:my\s+)?reminders\b"
+            r"|\bwhat\s+(?:do\s+)?i\s+(?:need|have)\s+to\s+do\b|\bmy\s+to-?do\s+list\b", _lower):
+        try:
+            from tools.reminders_agent import spoken_open_reminders as _sor
+            _last_direct_result = _sor()
+            return _last_direct_result, "reminders"
+        except Exception as _rre:
+            _logger.debug("reminders read failed: %s", _rre)
 
     # ── Last commit on a local repo — B3 2026-10-06: the tool returned "" (no
     # GITHUB_REPO) and the LLM filled in. The local git log IS the answer.
@@ -2937,8 +2950,9 @@ def enrich_from_plan(
                 # actual response. Execute for the side-effect only; discard result.
                 if ag_name == "vault_write":
                     _logger.info(
-                        "WO-VAULT-OPTION-A: vault_write fired as background write "
-                        "(result discarded from context_parts to prevent mock contamination)"
+                        "WO-VAULT-OPTION-A: vault_write OK — %s "
+                        "(result discarded from context_parts to prevent mock contamination)",
+                        str(data)[:120],
                     )
                 else:
                     context_parts.append(data)
@@ -2963,7 +2977,12 @@ def enrich_from_plan(
                 except Exception:
                     pass
         except Exception as _e:
-            _logger.debug("WO-122 ROUTE: plan capability %s failed: %s", ag_name, _e)
+            if ag_name == "vault_write":
+                _logger.error(
+                    "ROOT-5: vault_write FAILED — entry NOT saved. Error: %s", _e, exc_info=True
+                )
+            else:
+                _logger.debug("WO-122 ROUTE: plan capability %s failed: %s", ag_name, _e)
             # WO-CAP-001: record failure — failures are informative world state
             try:
                 from self.capability_memory import record_capability_result as _rcr
