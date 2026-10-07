@@ -693,8 +693,19 @@ def build(
                 _push("world_knowledge", f"[WORLD KNOWLEDGE]\n{_vc_filtered[:2000]}")
 
         # relationship graph context — entities, connections, viewpoint
+        # ROOT-2-FIX (0098): mark retrieved WKG facts as AUTHORITATIVE so the LLM
+        # cannot override them with hallucinated alternatives. Prompt authority only.
         if graph_context.strip():
-            _push("relationship_graph", f"[RELATIONSHIP & PERSPECTIVE]\n{graph_context}")
+            _push(
+                "relationship_graph",
+                "[RETRIEVED FACTS — AUTHORITATIVE]\n"
+                "The following was retrieved from stored knowledge and session history.\n"
+                "These are ground truth. Use them exactly as stated.\n"
+                "Do NOT override, contradict, or second-guess them with a generated alternative.\n"
+                "If you are uncertain, cite what is here rather than guessing.\n"
+                "---\n"
+                + graph_context,
+            )
     else:
         # backward-compatible path
         if state_context.strip():
