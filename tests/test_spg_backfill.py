@@ -163,3 +163,75 @@ def test_the_real_history_produces_a_real_graph(_):
         "had exactly one value"
     )
     assert max(sig) > 0.5
+
+
+# ── incremental ─────────────────────────────────────────────────────────────
+#
+# build() constructs a FRESH graph. Re-running it to pick up new turns would
+# discard every node written live since the last pass — the claim-keyed nodes
+# from record_claim, which are the half that grows on its own. Measured
+# 2026-10-06: 3,330 nodes, 3,321 backfilled and 9 live. A rebuild would have
+# silently dropped those 9.
+
+def _live_node(gid="live-claim-1", sig=0.5):
+    from memory.spg_graph import Node
+    return Node(id=gid, significance=sig)
+
+
+def test_a_second_pass_adds_rather_than_rebuilds():
+    rows = [_row(f"turn {i} about the robot",
+                 ts=f"2026-09-01T10:{i:02d}:00+00:00") for i in range(4)]
+    g = bf.build(rows[:2])
+    before = len(g._nodes)
+
+    g2, added = bf.update(rows, graph=g)
+
+    assert len(added) == 2
+    assert len(g2._nodes) == before + 2
+
+
+def test_live_written_nodes_survive_a_second_pass():
+    """The 9 that a rebuild would have dropped."""
+    rows = [_row("the robot shell")]
+    g = bf.build(rows)
+    g.add_node(_live_node())
+
+    g2, _ = bf.update(rows + [_row("a later turn", ts="2026-09-02T10:00:00+00:00")],
+                      graph=g)
+
+    assert "live-claim-1" in g2._nodes, (
+        "a claim-keyed node written live was discarded by the backfill"
+    )
+
+
+def test_an_already_processed_turn_is_not_processed_twice():
+    rows = [_row("the robot shell")]
+    g = bf.build(rows)
+    g2, added = bf.update(rows, graph=g)
+    assert added == []
+    assert len(g2._nodes) == len(g._nodes)
+
+
+def test_unprocessed_reports_only_what_is_missing():
+    rows = [_row(f"turn {i} about the robot",
+                 ts=f"2026-09-01T10:{i:02d}:00+00:00") for i in range(5)]
+    g = bf.build(rows[:3])
+    assert len(bf.unprocessed(rows, graph=g)) == 2
+
+
+def test_a_new_turn_links_back_to_the_existing_graph():
+    """An added node that edges to nothing is a node, not a graph."""
+    rows = [_row("the robot shell", ts="2026-09-01T10:00:00+00:00"),
+            _row("the robot shell again", ts="2026-09-01T10:05:00+00:00")]
+    g = bf.build(rows[:1])
+    g2, _ = bf.update(rows, graph=g)
+    assert g2._edges, "the new turn formed no link to what came before"
+
+
+def test_update_does_not_write():
+    """A dry run must be a dry run — the caller saves."""
+    import pathlib
+    src = (pathlib.Path(__file__).resolve().parent.parent
+           / "memory" / "spg_backfill.py").read_text()
+    body = src[src.index("def update("):]
+    assert ".save(" not in body and "open(" not in body

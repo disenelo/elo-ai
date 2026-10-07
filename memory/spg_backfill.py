@@ -259,3 +259,114 @@ def recurring_topics(rows: list[dict] | None = None, top: int = 20
     """What David actually returns to. The answer the graph exists to give."""
     rows = load_interactions() if rows is None else rows
     return topic_counts(rows).most_common(top)
+
+
+# ── Incremental ──────────────────────────────────────────────────────────────
+#
+# build() constructs a FRESH graph. Re-running it to pick up new turns would
+# discard every node written live since the last pass — the claim-keyed nodes
+# from record_claim, which are the half that grows on its own. Measured
+# 2026-10-06: 3,330 nodes, of which 3,321 backfilled and 9 live. A rebuild
+# would have silently dropped those 9.
+#
+# So a second pass ADDS. It reads what is already there, works out which turns
+# are missing, and appends only those.
+
+def processed_ids(graph) -> set:
+    """Backfill node ids already in a graph."""
+    nodes = getattr(graph, "_nodes", {}) or {}
+    return {nid for nid in nodes if str(nid).startswith("bf-")}
+
+
+def unprocessed(rows: list[dict] | None = None, graph=None) -> list[dict]:
+    """
+    Turns that have no node yet, oldest first.
+
+    Identity is the node id build() would mint, so this answers "has this turn
+    been processed" by the same key the graph is stored under rather than by a
+    guess about timestamps.
+    """
+    rows = load_interactions() if rows is None else rows
+    rows = sorted(rows, key=_ts)
+
+    if graph is None:
+        try:
+            from memory.spg_graph import SPGGraph
+            graph = SPGGraph.load()
+        except Exception as e:
+            _log.warning("spg_backfill: cannot load graph — %s", e)
+            return []
+
+    have = processed_ids(graph)
+    out = []
+    for i, row in enumerate(rows):
+        nid = f"bf-{i:05d}-{str(row.get('timestamp',''))[:19]}"
+        if nid not in have:
+            out.append(row)
+    return out
+
+
+def update(rows: list[dict] | None = None, graph=None):
+    """
+    Add any unprocessed turns to the existing graph, in place.
+
+    Returns (graph, added) where added is the list of turns processed. The
+    caller saves — this never writes, so a dry run is a dry run.
+    """
+    rows = load_interactions() if rows is None else rows
+    rows = sorted(rows, key=_ts)
+
+    if graph is None:
+        from memory.spg_graph import SPGGraph
+        graph = SPGGraph.load()
+
+    have = processed_ids(graph)
+    counts = topic_counts(rows)
+    recurring = {t for t, n in counts.items() if n >= MIN_TOPIC_COUNT}
+
+    # Every turn's id and topics, so a new node can edge to an existing one.
+    ids: list[str] = []
+    stamps: list[float] = []
+    per_topic: dict[str, list[str]] = {}
+    for i, row in enumerate(rows):
+        nid = f"bf-{i:05d}-{str(row.get('timestamp',''))[:19]}"
+        ids.append(nid)
+        stamps.append(_ts(row))
+        for t in _topics(row.get("user", "")) & recurring:
+            per_topic.setdefault(t, []).append(nid)
+
+    added: list[dict] = []
+    for i, row in enumerate(rows):
+        if ids[i] in have:
+            continue
+        graph.add_node(Node(
+            id=ids[i], content_hash="",
+            significance=score(row, counts),
+            embodiment=str(row.get("project_tag", "") or "desktop"),
+            ts=stamps[i],
+        ))
+        added.append(row)
+
+        if i > 0:
+            gap = stamps[i] - stamps[i - 1]
+            if 0 <= gap <= SESSION_GAP_S:
+                graph.add_edge(Edge(
+                    from_node=ids[i - 1], to_node=ids[i], link_type="temporal",
+                    weight=round(max(0.1, 1.0 - gap / SESSION_GAP_S), 3),
+                    evidence=f"{gap:.0f}s apart",
+                ))
+
+        for t in _topics(row.get("user", "")) & recurring:
+            members = per_topic.get(t, [])
+            pos = members.index(ids[i]) if ids[i] in members else -1
+            if pos > 0:
+                graph.add_edge(Edge(
+                    from_node=members[pos - 1], to_node=ids[i],
+                    link_type="semantic",
+                    weight=round(min(1.0, math.log1p(counts[t]) / 6.0), 3),
+                    evidence=f"topic:{t}",
+                ))
+
+    _log.info("spg_backfill: %d new turn(s) added to %d existing nodes",
+              len(added), len(have))
+    return graph, added
