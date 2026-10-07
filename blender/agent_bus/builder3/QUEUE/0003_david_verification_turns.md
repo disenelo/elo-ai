@@ -30,3 +30,21 @@ All 12 turns recorded (pass or fail noted). David has seen it in his chatlog.
 - commit:
 - test:
 - notes:
+
+## Seat pre-check (Builder 3, 2026-10-07, before David's session; no live-server turns)
+Each turn traced through the language faculty → Executive candidates → B3 tool layer, with real side effects stubbed. Predicted reply and owner if it fails:
+
+| # | Turn | Predicted eLo reply | Path / owner |
+|---|---|---|---|
+| 1 | What's the weather like? | "<conditions> in Hackney Wick — <t>°C…" | weather (Executive top candidate) · B3 |
+| 2 | Play some music | "Back on — <track>." or "Playing your <first playlist> playlist." | spotify_play.play_music (`268b4c6`) · B3 |
+| 3 | Pause the music | "Paused." | spotify_play.control · B3 |
+| 4 | What's on my reminders? | "You've got 14 open reminders: …" (Reminders' own store; the AppleScript read timed out) | `268b4c6` · B3 |
+| 5 | Make a note: eLo capability demo complete 2026-10-06 | "Made a note: “…”." + the note in Notes | `f1bb47a` · B3 |
+| 6 | What did I just ask you to note? | depends on memory recall: **Builder 1 (ROOT-2)**. The Apple Note isn't read back by B3 | B1 |
+| 7 | Open Spotify | "Opening Spotify." | spotify_play.open_app · B3 |
+| 8 | Show me your brain | "Here's my brain." + the view opens | brain_display · B3 |
+| 9 | What's my battery? | **"This Mac's on mains power — it doesn't have a battery."** (Mac Studio, pmset). If David means *eLo's* battery, that's "show me your health" / "your battery" → health view | `268b4c6` · B3 |
+| 10 | Search for the latest AI news | "Looked it up on <source> — …" | web_search · B3 |
+| 11 | Remember this: my studio is in Hackney Wick | "Got it — your studio's in Hackney Wick. I'll remember that." The fact is saved (facts.json "location"). No raw [CONTEXT] any more | `268b4c6` · B3 (the vault "Saved." line is B1's) |
+| 12 | Where is my studio? | must say "Hackney Wick" without re-telling: **Builder 1 (ROOT-2 demonstration)**. The fact exists in memory/facts.json + user_profile | B1 |
