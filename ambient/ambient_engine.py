@@ -536,7 +536,20 @@ def _maybe_emit_dream_intent(battery_snapshot: dict, blender_state: dict) -> dic
     global _dream_trigger_ts
     try:
         from core.health_battery import ENERGY_LOW as _ENERGY_LOW
-        elo_battery = float(battery_snapshot.get("elo_battery", 1.0))
+        # David 2026-10-07: "Mind battery stays internal, drives dreaming
+        # only." This read elo_battery — the BLEND — which is not the mind.
+        # After the 70/30 ruling that blend floors at 0.70 with a rested
+        # body, against an ENERGY_LOW of 0.25, so dreaming would have become
+        # conditional on physical exhaustion and a mentally spent eLo with
+        # working legs would never dream at all.
+        #
+        # Falls back to elo_battery when the snapshot predates this field, so
+        # an old state file degrades to the previous behaviour rather than
+        # never dreaming.
+        elo_battery = float(
+            battery_snapshot.get("mind_battery",
+                                 battery_snapshot.get("elo_battery", 1.0))
+        )
         if elo_battery > _ENERGY_LOW:
             return {}
         is_calm = bool(blender_state.get("is_calm", False))

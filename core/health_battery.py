@@ -199,8 +199,12 @@ PHYSICAL_EXPRESSIONS: dict[str, dict[str, str]] = {
 # sits at 1.0; averaging it in unconditionally would floor elo_battery at 0.4
 # and make ENERGY_CRITICAL (0.10) unreachable, silently breaking the parent
 # WO's dream trigger. So: no motion reported -> elo_battery IS cognitive.
-WEIGHT_COGNITIVE = 0.6
-WEIGHT_PHYSICAL = 0.4
+# RULED 2026-10-07 by David, no longer [BUILDER CHOICE]: "The 60% mind / 40%
+# body blend is WRONG. Mind is not more than body." 70% body, 30% mind.
+# Rationale from the original spec (2026-09-24): "moving tires him out,
+# sitting resets his legs" — eLo is physical first.
+WEIGHT_COGNITIVE = 0.3
+WEIGHT_PHYSICAL = 0.7
 
 # ── Hardware override ──────────────────────────────────────────────────────────
 # WO PART A section 6 says psutil.sensors_battery() overrides the simulated
@@ -711,6 +715,19 @@ def consume_game_events(*, rng: random.Random | None = None) -> list[dict]:
 PHYSICAL_UNTRACKED = "untracked"
 
 
+def mind_battery() -> float:
+    """
+    The cognitive track alone, unblended.
+
+    The same ruling says the mind battery "drives dreaming only". It could
+    not: the dream trigger reads elo_battery, which is the BLEND. At 70/30 a
+    rested body floors that at 0.70 against an ENERGY_LOW of 0.25, so a
+    mentally exhausted eLo with working legs would never dream. Exposed so
+    the trigger can read what the ruling says drives it.
+    """
+    return round(_cognitive_battery, 4)
+
+
 def snapshot() -> dict:
     """
     The battery fields Unity reads. Written each tick.
@@ -728,6 +745,10 @@ def snapshot() -> dict:
     signal here", which is different from "rested".
     """
     fields = {
+        # The mind track, unblended. Dreaming reads this, not elo_battery —
+        # see mind_battery() above.
+        "mind_battery": round(_cognitive_battery, 4),
+
         "elo_battery": round(get_energy(), 3),
         "elo_battery_state": get_state(),
     }
