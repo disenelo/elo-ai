@@ -209,7 +209,7 @@ def _consume_movement_costs() -> None:
     """WO-UNITY-MOVEMENT-BATTERY: drain physical battery from Unity movement events."""
     try:
         from runtime.unity_events_cursor import iter_events_from, read_cursor, write_cursor, max_seq as _max_seq
-        from core.health_battery import PHYSICAL_EVENT_COSTS, drain_physical
+        from core.health_battery import PHYSICAL_EVENT_COSTS, drain_physical, publish as _batt_publish
         if not _LEGS_TO_COST:
             _LEGS_TO_COST.update({
                 "teleport":     PHYSICAL_EVENT_COSTS["teleporting"],
@@ -228,6 +228,7 @@ def _consume_movement_costs() -> None:
             cursor_seq = -1
             write_cursor(-1)
         max_consumed = cursor_seq
+        _drained = False
         for event in iter_events_from(cursor_seq):
             seq = event.get("seq", -1)
             etype = event.get("type", "")
@@ -238,6 +239,7 @@ def _consume_movement_costs() -> None:
                     cost = _LEGS_TO_COST.get(subject) or PHYSICAL_EVENT_COSTS.get(subject)
                     if cost:
                         drain_physical(cost)
+                        _drained = True
             elif etype == "movement_report":
                 # legs is nested: payload.report.legs
                 report = event.get("payload", {}).get("report", {})
@@ -246,10 +248,15 @@ def _consume_movement_costs() -> None:
                     cost = _LEGS_TO_COST.get(str(leg).lower())
                     if cost:
                         drain_physical(cost)
+                        _drained = True
             if isinstance(seq, int) and seq > max_consumed:
                 max_consumed = seq
         if max_consumed > cursor_seq:
             write_cursor(max_consumed)
+        # Push updated battery to blender_state.json so Unity sees it immediately.
+        # Without this, the drain stays in memory until the next server turn.
+        if _drained:
+            _batt_publish()
     except Exception:
         pass
 
