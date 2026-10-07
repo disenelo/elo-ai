@@ -97,7 +97,7 @@ _INTENT_PATTERNS: list[tuple[str, list[str]]] = [
         r"\b(?:skip|next)\s+(?:this|the\s+)?(?:song|track)\b",
         r"\bskip\b",                              # bare skip is almost always music
         r"\bpause\s+(?:the\s+)?(?:song|music|track|this)\b",
-        r"\bwhat(?:'s|\s+is)\s+(?:playing|on)\b",
+        r"\bwhat(?:'s|\s+is)\s+(?:playing|on)\b(?!\s+(?:my|the|your)\s+(?:clipboard|calendar|schedule|screen|desktop|mind|list|agenda))",
         r"\bnow\s+playing\b",
         r"\bcurrent\s+(?:song|track)\b",
         # volume — music-specific (system volume patterns are in "system" intent above)
