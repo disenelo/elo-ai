@@ -1060,6 +1060,24 @@ def build(
     if grounding_block and grounding_block.strip():
         _push("conversation_ground", grounding_block.strip())
 
+    # WO-INNER-THOUGHT-ANCHOR-B1: inject previous turn's inner_thought_text so eLo's
+    # own perspective from the last moment is present as context (Option C ordering:
+    # after self-model, before respond_now — closest to output = strongest signal).
+    # Quality gate already ran at generation time; banned "I notice [David...]" can't arrive here.
+    try:
+        import os as _it_os, json as _it_json
+        _it_bs_path = _it_os.path.join(
+            _it_os.path.dirname(_it_os.path.dirname(_it_os.path.abspath(__file__))),
+            "blender", "blender_state.json",
+        )
+        with open(_it_bs_path, "r", encoding="utf-8") as _it_f:
+            _it_bs = _it_json.load(_it_f)
+        _it_text = str(_it_bs.get("inner_thought_text", "") or "").strip()
+        if _it_text:
+            _push("inner_thought_anchor", f"[MY CURRENT INNER THOUGHT]\n{_it_text}")
+    except Exception:
+        pass
+
     # WO-002: Terminal directive — prevent 8b model from treating system prompt as a document.
     # Must be the very last thing in the assembled prompt.
     _push(
