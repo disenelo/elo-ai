@@ -205,6 +205,9 @@ def _read_state() -> dict:
 _LEGS_TO_COST: dict = {}
 
 
+_MOVE_COST_SEQ = -1   # the battery charger's OWN bookmark into unity_events.json (not the shared cursor)
+
+
 def _consume_movement_costs() -> None:
     """WO-UNITY-MOVEMENT-BATTERY: drain physical battery from Unity movement events."""
     try:
@@ -221,12 +224,14 @@ def _consume_movement_costs() -> None:
                 "hop":          PHYSICAL_EVENT_COSTS["jumping"],
                 "drop":         PHYSICAL_EVENT_COSTS["jumping"],
             })
-        cursor_seq = read_cursor()
-        # Rotation detection: Unity restarts seq from 0 on each launch.
-        # If the file's highest seq < cursor, the log rotated — reset to -1.
+        # OWN BOOKMARK (2026-10-07): this charger used the SHARED unity_events_cursor.json, which server.py's ACK poller
+        # advances every 0.1 s past every event it sees. Reading every 0.5 s, the charger mostly found the teleports
+        # already "consumed" and skipped them (live: 6 warps, 2 charged). It now keeps its own seq in memory and never
+        # writes the shared cursor. Rotation: Unity restarts seq at 0 on each launch -> if the file's top < ours, restart.
+        global _MOVE_COST_SEQ
+        cursor_seq = _MOVE_COST_SEQ
         if cursor_seq > 0 and _max_seq() < cursor_seq:
             cursor_seq = -1
-            write_cursor(-1)
         max_consumed = cursor_seq
         _drained = False
         for event in iter_events_from(cursor_seq):
@@ -255,8 +260,7 @@ def _consume_movement_costs() -> None:
                         _drained = True
             if isinstance(seq, int) and seq > max_consumed:
                 max_consumed = seq
-        if max_consumed > cursor_seq:
-            write_cursor(max_consumed)
+        _MOVE_COST_SEQ = max(max_consumed, cursor_seq)
         # Push updated battery to blender_state.json so Unity sees it immediately.
         # Without this, the drain stays in memory until the next server turn.
         if _drained:
