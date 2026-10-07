@@ -361,6 +361,17 @@ def _battery_tick() -> None:
                 capture_new()
             except Exception:
                 pass
+            # Something set down is not something dropped.
+            # EloSelfState.open_threads is read by spine.py:1264 and becomes
+            # has_deferred_threads, which executive_context:281 uses to prefer
+            # "reflect" — pick up the open thread. It has been [] on every
+            # turn eLo has ever taken, so that preference has never fired.
+            # This writes its first link.
+            try:
+                from faculties.metacognition.deferred_threads import sync_to_self_state
+                sync_to_self_state()
+            except Exception:
+                pass
             # Dream requests arrive in blender_state's `intent`, and EVERY
             # turn overwrites that field. The gate that reads it only runs in
             # the 8-20 minute ambient callback, so a request survives only if
