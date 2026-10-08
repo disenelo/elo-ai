@@ -23,9 +23,11 @@ David talks to an Echo → the Alexa skill → a tunnel → eLo's `/alexa` liste
 - **Pronunciation:** if Alexa mishears "elo" (as "hello" or "yellow"), try the invocation name `e lo` and test again.
 
 ## How it behaves
-- Every request is verified: Amazon certificate URL and chain, signature over the body, timestamp within 150 s, and Skill ID. Anything else gets a 400. The listener serves `/alexa` only, so `/chat` is never reachable through the tunnel.
-- Alexa allows 8 s per reply, and an eLo turn can take longer. Past about 6.5 s eLo says "Give me a sec on that — say 'go on' and I'll tell you." The finished answer comes on your next sentence.
-- "Stop" / "cancel" → "Later." and the session ends.
+- Every request is verified: Amazon certificate URL and chain, signature over the body, timestamp within 150 s, and Skill ID. Anything else gets a 400. The listener serves `/alexa` (and its own short-lived audio clips) only, so `/chat` is never reachable through the tunnel.
+- **Only the brain speaks as eLo** (2026-10-08). Opening the skill sends "hey eLo" to the brain, and his reply is the greeting. Everything you say goes to the brain.
+- What the brain can't answer is said by **Alexa, in Alexa's voice**, worded as Alexa: "I didn't catch that for eLo" (Amazon passed no words on), and "eLo's working on that, say 'go on'" (the turn ran past ~6.5 s of Alexa's 8 s; his real answer comes when you say "go on"). "Stop" ends the session quietly.
+- The log shows each request: `[alexa] intent=… heard='…'`, then `→ eLo (eLo voice): '…'` or `→ Alexa system: '…'`.
+- The interaction model sets the fallback sensitivity to LOW and gives ~70 example sentences, so Amazon passes more of what you say to eLo. Re-upload it after any change (JSON Editor → drag the file → Save → Build).
 
 ## eLo's own voice on the Echo (2026-10-08)
 - Every reply is sent to the Echo as an audio clip in eLo's ElevenLabs voice (the same voice settings as on the Mac), not in Alexa's voice.

@@ -21,11 +21,15 @@ def _launch():
     return {"request": {"type": "LaunchRequest"}}
 
 
+def _elo(t):
+    return {"response": "Yo — what's up?"}
+
+
 def test_voiced_reply_is_ssml_audio_served_by_listener():
-    out = ai.handle(_launch(), lambda t: {}, base=BASE)["response"]["outputSpeech"]
+    out = ai.handle(_launch(), _elo, base=BASE)["response"]["outputSpeech"]
     assert out["type"] == "SSML" and out["ssml"].startswith(f'<speak><audio src="{BASE}/alexa/audio/')
     path = out["ssml"].split(BASE, 1)[1].split('"')[0]
-    assert ai.audio_clip(path) == "MP3:Yo — it's eLo. What's up?".encode()
+    assert ai.audio_clip(path) == "MP3:Yo — what's up?".encode()
 
 
 def test_talk_reply_voiced():
@@ -43,8 +47,8 @@ def test_falls_back_to_alexa_voice(why, monkeypatch):
     if why == "slow":
         monkeypatch.setattr(ai, "_VOICE_DEADLINE_S", 1.6)
         monkeypatch.setattr(ai, "_alexa_mp3", lambda t: time.sleep(3) or b"x")
-    out = ai.handle(_launch(), lambda t: {}, base=base)["response"]["outputSpeech"]
-    assert out == {"type": "PlainText", "text": "Yo — it's eLo. What's up?"}
+    out = ai.handle(_launch(), _elo, base=base)["response"]["outputSpeech"]
+    assert out == {"type": "PlainText", "text": "Yo — what's up?"}
 
 
 @pytest.mark.parametrize("p", ["/alexa/audio/abc.mp3", "/chat", "/alexa/audio/" + "0" * 32 + ".mp3",
@@ -57,3 +61,9 @@ def test_clips_expire(monkeypatch):
     tok = ai._store(b"x")
     monkeypatch.setattr(ai.time, "time", lambda: 10 ** 12)
     assert ai.audio_clip(f"/alexa/audio/{tok}.mp3") is None
+
+
+def test_system_prompts_never_use_elos_voice():
+    fb = {"request": {"type": "IntentRequest", "intent": {"name": "AMAZON.FallbackIntent"}}}
+    out = ai.handle(fb, _elo, base=BASE)["response"]["outputSpeech"]
+    assert out == {"type": "PlainText", "text": ai.SYS_MISSED}

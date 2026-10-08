@@ -156,26 +156,38 @@ def _run(turn_fn, utterance: str) -> dict:
     return slot
 
 
-def _text(result: dict | None) -> str:
+# Only the brain speaks as eLo (David, 2026-10-08: "the responses to Alexa aren't
+# eLo's — they're generically written"). eLo's voice carries brain text only.
+# The few things the brain can't answer (Alexa didn't pass words on, the turn is
+# still running) are Alexa's own system prompts: worded as Alexa, spoken in
+# Alexa's voice, never as eLo.
+SYS_SLOW = "eLo's working on that. Say 'go on' to hear him."
+SYS_STILL = "eLo's still thinking. Say 'go on' in a moment."
+SYS_MISSED = "I didn't catch that for eLo. Say it again?"
+SYS_EMPTY = "eLo didn't answer that one. Try again?"
+SYS_HELP = "You're talking to eLo. Just speak normally, and say stop when you're done."
+OPEN_UTTERANCE = "hey eLo"   # opening the skill is David greeting eLo; the brain answers it
+
+
+def _text(result: dict | None) -> tuple[str, bool]:
     t = ((result or {}).get("response") or "").strip()
-    return t or "I lost that one — say it again?"
+    return (t, True) if t else (SYS_EMPTY, False)
 
 
-def talk(utterance: str, turn_fn) -> str:
-    """eLo's spoken reply to one Alexa utterance, within the time budget."""
+def talk(utterance: str, turn_fn) -> tuple[str, bool]:
+    """(reply, from_brain) for one Alexa utterance, within the time budget."""
     with _pending_lock:
         p = _pending.get("slot")
         if p is not None:
             if p["done"].is_set():
                 _pending.clear()
-                prefix = "" if _GO_ON_RE.match(utterance.strip()) else "On what you asked before — "
-                return prefix + _text(p["result"])
-            return "Still on your last one — say 'go on' in a moment."
+                return _text(p["result"])
+            return SYS_STILL, False
         slot = _run(turn_fn, utterance)
         if slot["done"].wait(_BUDGET_S):
             return _text(slot["result"])
         _pending["slot"] = slot
-        return "Give me a sec on that — say 'go on' and I'll tell you."
+        return SYS_SLOW, False
 
 
 # ── 2b · eLo's own voice on the Echo (ElevenLabs → SSML <audio>) ───────────────
@@ -254,13 +266,19 @@ def _voiced(text: str, base: str | None, t0: float) -> dict | None:
 
 # ── 3 · Alexa request → Alexa response ────────────────────────────────────────
 
-def _speech(text: str, end: bool = False, reprompt: str | None = "Anything else?",
+def _speech(text: str, end: bool = False, elo: bool = False,
             base: str | None = None, t0: float | None = None) -> dict:
-    out = _voiced(text, base, t0 if t0 is not None else time.monotonic())
+    """elo=True: brain text, in eLo's voice when possible. elo=False: Alexa system prompt."""
+    out = _voiced(text, base, t0 if t0 is not None else time.monotonic()) if elo else None
     resp: dict = {"outputSpeech": out or {"type": "PlainText", "text": text[:7900]}, "shouldEndSession": end}
-    if reprompt and not end:
-        resp["reprompt"] = {"outputSpeech": {"type": "PlainText", "text": reprompt}}
+    print(f"[alexa] → {'eLo' if elo else 'Alexa system'}"
+          f"{' (eLo voice)' if out else ''}: {text[:100]!r}", flush=True)
     return {"version": "1.0", "response": resp}
+
+
+def _brain(utterance: str, turn_fn, base, t0) -> dict:
+    reply, from_brain = talk(utterance, turn_fn)
+    return _speech(reply, elo=from_brain, base=base, t0=t0)
 
 
 def handle(req: dict, turn_fn, base: str | None = None) -> dict:
@@ -269,23 +287,23 @@ def handle(req: dict, turn_fn, base: str | None = None) -> dict:
     r = req.get("request") or {}
     kind = r.get("type", "")
     if kind == "LaunchRequest":
-        return _speech("Yo — it's eLo. What's up?", reprompt="I'm here — what's up?", base=base, t0=t0)
+        print(f"[alexa] opened → brain: {OPEN_UTTERANCE!r}", flush=True)
+        return _brain(OPEN_UTTERANCE, turn_fn, base, t0)
     if kind == "SessionEndedRequest":
         return {"version": "1.0", "response": {}}
     if kind != "IntentRequest":
-        return _speech("Didn't catch that — say it again?", base=base, t0=t0)
+        return _speech(SYS_MISSED)
     intent = (r.get("intent") or {})
     name = intent.get("name", "")
+    utterance = (((intent.get("slots") or {}).get("utterance") or {}).get("value") or "").strip()
+    print(f"[alexa] intent={name} heard={utterance!r}", flush=True)
     if name in ("AMAZON.StopIntent", "AMAZON.CancelIntent"):
-        return _speech("Later.", end=True, base=base, t0=t0)
+        return {"version": "1.0", "response": {"shouldEndSession": True}}   # ends quietly
     if name == "AMAZON.HelpIntent":
-        return _speech("Just talk to me like normal — I'm the same eLo as on your Mac.", base=base, t0=t0)
-    if name == "TalkIntent":
-        utterance = (((intent.get("slots") or {}).get("utterance") or {}).get("value") or "").strip()
-        if not utterance:
-            return _speech("Didn't catch that — say it again?", base=base, t0=t0)
-        return _speech(talk(utterance, turn_fn), base=base, t0=t0)
-    return _speech("Didn't catch that — say it again?", base=base, t0=t0)
+        return _speech(SYS_HELP)
+    if name == "TalkIntent" and utterance:
+        return _brain(utterance, turn_fn, base, t0)
+    return _speech(SYS_MISSED)          # FallbackIntent / no words: eLo heard nothing
 
 
 # ── 4 · the dedicated listener ────────────────────────────────────────────────

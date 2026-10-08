@@ -84,10 +84,320 @@
               "name": {
                 "value": "connect"
               }
+            },
+            {
+              "name": {
+                "value": "yes"
+              }
+            },
+            {
+              "name": {
+                "value": "no"
+              }
+            },
+            {
+              "name": {
+                "value": "thanks"
+              }
+            },
+            {
+              "name": {
+                "value": "cool"
+              }
+            },
+            {
+              "name": {
+                "value": "nice one"
+              }
+            },
+            {
+              "name": {
+                "value": "what you telling me"
+              }
+            },
+            {
+              "name": {
+                "value": "what are you telling me"
+              }
+            },
+            {
+              "name": {
+                "value": "what do you mean"
+              }
+            },
+            {
+              "name": {
+                "value": "tell me more"
+              }
+            },
+            {
+              "name": {
+                "value": "why"
+              }
+            },
+            {
+              "name": {
+                "value": "how come"
+              }
+            },
+            {
+              "name": {
+                "value": "really"
+              }
+            },
+            {
+              "name": {
+                "value": "I'm good thanks"
+              }
+            },
+            {
+              "name": {
+                "value": "not much"
+              }
+            },
+            {
+              "name": {
+                "value": "I'm tired today"
+              }
+            },
+            {
+              "name": {
+                "value": "I had a long day at the studio"
+              }
+            },
+            {
+              "name": {
+                "value": "what's the weather like"
+              }
+            },
+            {
+              "name": {
+                "value": "what's the weather in hackney wick"
+              }
+            },
+            {
+              "name": {
+                "value": "play some music"
+              }
+            },
+            {
+              "name": {
+                "value": "pause the music"
+              }
+            },
+            {
+              "name": {
+                "value": "skip this song"
+              }
+            },
+            {
+              "name": {
+                "value": "what's playing"
+              }
+            },
+            {
+              "name": {
+                "value": "open spotify"
+              }
+            },
+            {
+              "name": {
+                "value": "what's on my reminders"
+              }
+            },
+            {
+              "name": {
+                "value": "remind me to call mum tomorrow"
+              }
+            },
+            {
+              "name": {
+                "value": "make a note that the prints are drying"
+              }
+            },
+            {
+              "name": {
+                "value": "what's on my calendar today"
+              }
+            },
+            {
+              "name": {
+                "value": "what time is it"
+              }
+            },
+            {
+              "name": {
+                "value": "what did we talk about yesterday"
+              }
+            },
+            {
+              "name": {
+                "value": "do you remember what I told you about my studio"
+              }
+            },
+            {
+              "name": {
+                "value": "where is my studio"
+              }
+            },
+            {
+              "name": {
+                "value": "who are you"
+              }
+            },
+            {
+              "name": {
+                "value": "what are you thinking about"
+              }
+            },
+            {
+              "name": {
+                "value": "are you tired"
+              }
+            },
+            {
+              "name": {
+                "value": "how's your battery"
+              }
+            },
+            {
+              "name": {
+                "value": "what have you been doing"
+              }
+            },
+            {
+              "name": {
+                "value": "what's the latest AI news"
+              }
+            },
+            {
+              "name": {
+                "value": "search for screen printing with silicone"
+              }
+            },
+            {
+              "name": {
+                "value": "look up the history of the M65 field jacket"
+              }
+            },
+            {
+              "name": {
+                "value": "how do pen plotters actually work"
+              }
+            },
+            {
+              "name": {
+                "value": "tell me a joke"
+              }
+            },
+            {
+              "name": {
+                "value": "tell me something interesting"
+              }
+            },
+            {
+              "name": {
+                "value": "what should I work on next"
+              }
+            },
+            {
+              "name": {
+                "value": "help me think through the kickstarter"
+              }
+            },
+            {
+              "name": {
+                "value": "I'm working on the eLo book"
+              }
+            },
+            {
+              "name": {
+                "value": "I'm sewing a jacket pattern"
+              }
+            },
+            {
+              "name": {
+                "value": "the heat press is warming up"
+              }
+            },
+            {
+              "name": {
+                "value": "I need a break"
+              }
+            },
+            {
+              "name": {
+                "value": "I'm going out for a bit"
+              }
+            },
+            {
+              "name": {
+                "value": "I'm back"
+              }
+            },
+            {
+              "name": {
+                "value": "good morning"
+              }
+            },
+            {
+              "name": {
+                "value": "good night"
+              }
+            },
+            {
+              "name": {
+                "value": "see you later"
+              }
+            },
+            {
+              "name": {
+                "value": "what do you think"
+              }
+            },
+            {
+              "name": {
+                "value": "can you help me with something"
+              }
+            },
+            {
+              "name": {
+                "value": "I want to talk about K7 and Chunk"
+              }
+            },
+            {
+              "name": {
+                "value": "let's brainstorm"
+              }
+            },
+            {
+              "name": {
+                "value": "what's on your mind"
+              }
+            },
+            {
+              "name": {
+                "value": "I love that"
+              }
+            },
+            {
+              "name": {
+                "value": "that's not right"
+              }
+            },
+            {
+              "name": {
+                "value": "say that again"
+              }
             }
           ]
         }
-      ]
+      ],
+      "modelConfiguration": {
+        "fallbackIntentSensitivity": {
+          "level": "LOW"
+        }
+      }
     }
   }
 }

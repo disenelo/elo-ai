@@ -139,11 +139,18 @@ def _say(resp):
     return resp["response"]["outputSpeech"]["text"]
 
 
-def test_launch_and_stop():
-    assert "eLo" in _say(ai.handle(_req(kind="LaunchRequest"), lambda t: {}))
+def test_launch_is_answered_by_the_brain_and_stop_is_quiet():
+    seen = []
+    r = ai.handle(_req(kind="LaunchRequest"), lambda t: seen.append(t) or {"response": "Yo, what's good?"})
+    assert seen == [ai.OPEN_UTTERANCE] and _say(r) == "Yo, what's good?"
     stop = {"request": {"type": "IntentRequest", "intent": {"name": "AMAZON.StopIntent"}}}
     r = ai.handle(stop, lambda t: {})
-    assert r["response"]["shouldEndSession"] is True
+    assert r["response"]["shouldEndSession"] is True and "outputSpeech" not in r["response"]
+
+
+def test_no_words_is_alexa_system_not_elo():
+    fb = {"request": {"type": "IntentRequest", "intent": {"name": "AMAZON.FallbackIntent"}}}
+    assert _say(ai.handle(fb, lambda t: pytest.fail("brain must not be called"))) == ai.SYS_MISSED
 
 
 def test_talk_goes_through_the_turn_and_keeps_session_open():
@@ -161,8 +168,8 @@ def test_slow_turn_is_held_then_delivered(monkeypatch):
         time.sleep(0.5)
         return {"response": "Here's the long answer."}
     first = _say(ai.handle(_req(utterance="tell me something long"), slow))
-    assert "go on" in first
-    assert "Still on" in _say(ai.handle(_req(utterance="go on"), slow))   # not done yet
+    assert first == ai.SYS_SLOW
+    assert _say(ai.handle(_req(utterance="go on"), slow)) == ai.SYS_STILL   # not done yet
     time.sleep(0.5)
     assert _say(ai.handle(_req(utterance="go on"), slow)) == "Here's the long answer."
     assert not ai._pending
