@@ -11,7 +11,10 @@ from __future__ import annotations
 import os
 import re
 import time
-import httpx
+try:
+    import httpx   # only needed when a key is set; tool_router falls back if missing
+except ImportError:
+    httpx = None
 
 _BASE    = "https://dataservice.accuweather.com"
 _TIMEOUT = 8.0

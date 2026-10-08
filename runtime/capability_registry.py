@@ -368,7 +368,7 @@ def dispatch_create(query: str, sub_capability: str = "CREATE_DRAFT", **kwargs) 
                 _df.write(_draft_output)
             result["dispatched"]   = True
             result["draft_path"]   = _draft_path
-            result["notification"] = f"Draft ready — {_draft_fname}"
+            result["notification"] = f"I've made a draft ({_draft_fname}) — want to see it?"
 
         elif sub_capability == "READ_FILE_CONTEXT":
             from tools.file_reader_agent import agent as _file_reader

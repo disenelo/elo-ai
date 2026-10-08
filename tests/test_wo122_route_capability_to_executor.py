@@ -107,7 +107,9 @@ try:
     with _AgentSwap(weather=_weather_forbidden, time=_time_stub):
         # Weather-worded query; Executive picked time only.
         query = "what's the weather in London"
-        enriched, agent = enrich_from_plan(query, [("time", "the time")])
+        # Plan query must carry time-of-day intent: WO-CAP-COG-004 (2026-09-20)
+        # strips a bare "the time", which this 2026-08-19 test predates.
+        enriched, agent = enrich_from_plan(query, [("time", "what time is it")])
 
     if "15:00" in enriched and agent == "time":
         ok("RT-3 — only Executive's choice (time) ran; weather-keyword did NOT trigger weather")
