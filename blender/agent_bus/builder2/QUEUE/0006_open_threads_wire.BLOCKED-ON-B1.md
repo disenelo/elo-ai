@@ -51,6 +51,32 @@ Test green. `has_deferred_threads` confirmed True in at least one real case. Com
   Nothing in spine.py or server.py needed changing, so no spec card for
   Builder 1.
 
+## LIVE TEST RESULT — FAILED 2026-10-08 [BUILDER 2]
+
+Ran it rather than filing it. Chain works to the Executive preference; the
+behaviour does not happen.
+
+    me:  "how do pen plotters actually work?"
+    ->   question stored, unsurfaced
+    ->   EloSelfState.open_threads = ['sunlight?', 'Inside that old warehouse?',
+         'raining again soon?', 'right place for what?']   (was [] on every
+         turn eLo has ever taken)
+
+    me:  "anything on your mind?"
+    eLo: "My presence is calm and observant. How about yours?"
+    ->   no thread picked up, nothing marked surfaced
+
+**Blocked at `server.py:5692`** (Builder 1's lane). A question surfaces only
+when its topic word appears in what David just said. "anything on your mind?"
+shares no word with "sunlight" or "warehouse". So eLo can raise a question
+only when David already raised the topic — answering a re-raised question,
+not RETURNING to an unanswered one, which is the capability.
+
+Specced: `builder/FROM_BUILDER2_2026-10-08_CURIOSITY-SURFACING-GATE.md` (fe5c600)
+
+Moved back out of BUILT. Green tests, failed live turn — that distinction is
+the protocol.
+
 ## Live turn needed
 Two turns, in order.
 

@@ -57,6 +57,14 @@ Describe exactly what needs to change and why. Builder 1 applies it. You do not 
 5. SPG significance live scoring (live turns, after historical backfill done)
 6. Game mode dispatch
 
+7. **LIFE process + Working Memory — QUEUE/0010_life_process_and_working_memory.md**
+   Two parts:
+   - Short-term working memory (10–30 events ring buffer) in `faculties/inner_thought/working_memory.py`. Answers "What am I working on?" from STATE tier — no LLM.
+   - LIFE process continuity: `life_tick(state)` function. Builder 1's daemon calls it at AWAKE/RESTING/SLEEP intervals. Inner life continues when David is not speaking. SLEEP tick writes WKG consolidation nodes.
+   Sources: `docs/architecture/_intake/SOURCE_ELO-CONTINUOUS-IDENTITY_2026-10-08.md` · `SOURCE_CAPABILITY-AUTHORITY-MODEL_2026-10-08.md`
+
+8. **water_play + auto_action WKG — QUEUE/0009_elo_play_wkg.md** — wire Designer's play events into WKG + SPG + inner thought gate
+
 ---
 
 ## Standards
