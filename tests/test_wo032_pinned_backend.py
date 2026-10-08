@@ -23,13 +23,19 @@ def ok(n):      global PASS; PASS += 1; print(f"  ✅ {n}")
 def fail(n, r): global FAIL; FAIL += 1; print(f"  ❌ {n}: {r}")
 
 
-# ── AT-1: ELO_BACKEND=groq in .env ───────────────────────────────────────────
+# ── AT-1: ELO_BACKEND is configured in .env ─────────────────────────────────
+# Updated 2026-10-08: WO-032 originally set ELO_BACKEND=groq; David ruling
+# 2026-08-20 changed primary to LOCAL (Ollama-first). Check that SOME active
+# ELO_BACKEND line exists (not commented out) rather than pinning to "groq".
 try:
+    import re as _re
     _env_src = open(".env", encoding="utf-8").read()
-    if "ELO_BACKEND=groq" in _env_src and not _env_src.split("ELO_BACKEND=groq")[0].rstrip().endswith("#"):
-        ok("AT-1: ELO_BACKEND=groq is active (uncommented) in .env")
+    _active = [l for l in _env_src.splitlines()
+               if _re.match(r'^ELO_BACKEND=\S+', l)]
+    if _active:
+        ok(f"AT-1: ELO_BACKEND is active in .env ({_active[0]!r})")
     else:
-        fail("AT-1", "ELO_BACKEND=groq not found as an active line in .env")
+        fail("AT-1", "no active ELO_BACKEND= line found in .env")
 except Exception as e:
     fail("AT-1", e)
 

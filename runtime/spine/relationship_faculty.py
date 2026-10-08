@@ -137,6 +137,38 @@ def _expression_posture(familiarity: float) -> str:
     return "open"
 
 
+# Conflict/repair signal sets for _derive_relationship_mode
+_CONFLICT_SIGNALS = frozenset({
+    "that's wrong", "thats wrong", "you're wrong", "youre wrong",
+    "you keep doing this", "stop doing this", "i'm frustrated", "im frustrated",
+    "this is frustrating", "you never", "you always", "why do you keep",
+    "this is wrong", "wrong again", "you got it wrong", "incorrect",
+    "that was wrong",
+})
+_REPAIR_SIGNALS = frozenset({
+    "it's fine", "its fine", "let's move on", "lets move on",
+    "i forgive", "we're good", "were good", "no worries", "forget it",
+    "it's okay", "its okay", "all good", "apology accepted",
+    "nevermind", "never mind",
+})
+
+
+def _derive_relationship_mode(raw: str, familiarity: float) -> str:
+    """Derive relationship mode from raw input and familiarity score.
+
+    Priority: repair signal → post_conflict; conflict signal → in_conflict;
+    then familiarity thresholds: ≥0.55 → established, else → new.
+    """
+    raw_lower = raw.lower()
+    if any(sig in raw_lower for sig in _REPAIR_SIGNALS):
+        return "post_conflict"
+    if any(sig in raw_lower for sig in _CONFLICT_SIGNALS):
+        return "in_conflict"
+    if familiarity >= 0.55:
+        return "established"
+    return "new"
+
+
 def _load_json(path: str) -> dict:
     try:
         with open(path, encoding="utf-8") as f:

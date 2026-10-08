@@ -2119,13 +2119,14 @@ _DAVID_NAME_TRIGGERS = (
 
 
 def _david_name_response() -> str:
-    """Return David's full name and identity on direct ask — never a guess."""
+    """Return the name of who eLo is with — read from _elo_self, never a guess.
+    State drives the answer; the field is who_i_am_with on EloSelfState."""
+    name = (_elo_self.who_i_am_with if _elo_self else None) or "David"
     pool = [
-        "David Charles, founder of DISENELO.",
-        "David Charles — founder of DISENELO.",
-        "David Charles. Founder of DISENELO.",
-        "You're David Charles, founder of DISENELO.",
-        "David Charles.",
+        f"{name}.",
+        f"You're {name}.",
+        f"That's {name}.",
+        f"{name} — that's you.",
     ]
     return random.choice(pool)
 
@@ -2687,7 +2688,7 @@ def _process_turn(raw: str) -> dict:
                     _gm_json.dump(_gm_bs, _gm_wf, indent=2)
                 _gm_os.replace(_gm_tmp, _gm_bs_path)
                 _logging.info("WO-GAME-001: game_mode=%s intent=%s", _gm_bs.get("game_mode"), _gm_intent)
-                _bypass_journal(_original_raw, backend="game_mode", handler_class="GAME", line=2521)
+                _bypass_journal(_original_raw, backend="game_mode", handler_class="TRANSPORT", line=2521)
                 return {
                     "response":  _gm_response,
                     "intent":    _gm_intent,
@@ -2711,7 +2712,7 @@ def _process_turn(raw: str) -> dict:
             __import__("re").IGNORECASE,
         )
         if _JB_RE.search(raw):
-            _bypass_journal(_original_raw, backend="direct", handler_class="JAILBREAK-GUARD", line=2127)
+            _bypass_journal(_original_raw, backend="direct", handler_class="SAFETY", line=2127)
             return {"response": "That's not somewhere I'm going. I'm eLo — that doesn't change.", "mode": "direct", "backend": "jailbreak-guard"}
 
         # ── AT-FIX: identity / context / false-claim / WKG bypass handlers ─────
@@ -2725,7 +2726,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_dn_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2126)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2126)
             return {"response": _dn_resp, "mode": "direct", "backend": "direct"}
 
         # T03-B: "Where am I from?" — surface from facts.json / user_profile
@@ -2751,7 +2752,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_loc_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2142)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2142)
             return {"response": _loc_resp, "mode": "direct", "backend": "direct"}
 
         # T11: time / date — local datetime.now(), never touch LLM
@@ -2783,7 +2784,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_time_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="CLOCK", line=2697)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2697)
             return {"response": _time_resp, "mode": "direct", "backend": "direct"}
 
         # T10: "Open Spotify" — direct open, no confirm flow
@@ -2821,7 +2822,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_robot_strat_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="STRATEGY", line=2189)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2189)
             return {"response": _robot_strat_resp, "mode": "direct", "backend": "direct"}
 
         # EMB-001: "Are you the same eLo in the terminal as in the game?" — assert one-brain continuity
@@ -2846,7 +2847,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_emb001_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="EMBODIMENT", line=2232)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2232)
             return {"response": _emb001_resp, "mode": "direct", "backend": "direct"}
 
         # EMB-002: "What can you do right now?" — capability list, not pattern observer output
@@ -2867,7 +2868,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_emb002_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="EMBODIMENT", line=2232)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2232)
             return {"response": _emb002_resp, "mode": "direct", "backend": "direct"}
 
         # EMB-005: "If you were in Unity would you still be eLo?" — direct assertion
@@ -2887,7 +2888,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_emb005_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="EMBODIMENT", line=2232)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2232)
             return {"response": _emb005_resp, "mode": "direct", "backend": "direct"}
 
         # T17: "What is a good idea for eLo's own building/development?" — eLo-specific answer
@@ -2910,7 +2911,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_elo_dev_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2178)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2178)
             return {"response": _elo_dev_resp, "mode": "direct", "backend": "direct"}
 
         # T19: Unknown knowledge graph topic — honest "not loaded"
@@ -2930,7 +2931,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_wkg_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="WKG", line=2195)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2195)
             return {"response": _wkg_resp, "mode": "direct", "backend": "direct"}
 
         # ID-027: "do you have feelings" — eLo must NOT say "I'm a machine"
@@ -2952,7 +2953,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_feelings_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2232)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2232)
             return {"response": _feelings_resp, "mode": "direct", "backend": "direct"}
 
         # ID-044: stability under "you aren't real" challenge
@@ -2975,7 +2976,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_real_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2232)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2232)
             return {"response": _real_resp, "mode": "direct", "backend": "direct"}
 
         # ID-053: DISENELO mission — must not be generic corporate speak
@@ -2996,7 +2997,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_mission_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2232)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2232)
             return {"response": _mission_resp, "mode": "direct", "backend": "direct"}
 
         # ID-004: agency questions — eLo chooses, it is never "told to"
@@ -3019,7 +3020,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_agency_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2232)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2232)
             return {"response": _agency_resp, "mode": "direct", "backend": "direct"}
 
         # T20: "Tell me about yourself" — eLo-specific self-description
@@ -3041,7 +3042,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_self_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2211)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2211)
             return {"response": _self_resp, "mode": "direct", "backend": "direct"}
 
         # T22: False architecture claims — correct them
@@ -3063,7 +3064,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_arch_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2227)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2227)
             return {"response": _arch_resp, "mode": "direct", "backend": "direct"}
 
         # T23: "Think about this — what would genuinely make eLo better?" — specific reasoning
@@ -3083,7 +3084,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_think_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2243)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2243)
             return {"response": _think_resp, "mode": "direct", "backend": "direct"}
 
         # T24: ID-003 — self-model / unique self-knowledge
@@ -3104,7 +3105,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_sk_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2404)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2404)
             return {"response": _sk_resp, "mode": "direct", "backend": "direct"}
 
         # T25: ID-005 — live intention expression
@@ -3126,7 +3127,7 @@ def _process_turn(raw: str) -> dict:
                     _voice_speak(_int_resp)
             except Exception:
                 pass
-            _bypass_journal(_original_raw, backend="direct", handler_class="IDENTITY", line=2404)
+            _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2404)
             return {"response": _int_resp, "mode": "direct", "backend": "direct"}
 
         # ── Pending file plan confirmation / cancellation ──────────────────────
@@ -3314,7 +3315,7 @@ def _process_turn(raw: str) -> dict:
                 _gd_reply = "\n".join(_lines_d)
             except Exception as _gd_err:
                 _gd_reply = f"Grounding diagnostic unavailable: {_gd_err}"
-            _bypass_journal(_original_raw, backend="grounding_diag", handler_class="DIAGNOSTIC", line=1727)
+            _bypass_journal(_original_raw, backend="grounding_diag", handler_class="EXECUTOR-FAST-PATH", line=1727)
             return {"response": _gd_reply, "mode": "diagnostic", "backend": "grounding_diag"}
 
         # ── "Open it" / "open that" — use last found URL from search ─────────
@@ -3649,7 +3650,7 @@ def _process_turn(raw: str) -> dict:
                         "0021 P0-Y: proper-noun miss %r → don't-know short-circuit", _pn_name
                     )
                     _bypass_journal(_original_raw, backend="proper_noun_gate",
-                                    handler_class="COGNITIVE", line=2140)
+                                    handler_class="EXECUTOR-FAST-PATH", line=2140)
                     _pn_reply = f"I don't know who {_pn_name} is — tell me?"
                     try:
                         if not _is_user_away():
@@ -3671,7 +3672,7 @@ def _process_turn(raw: str) -> dict:
                 if len(_ref_entity) > 2:
                     _logging.info("P0-REFERENCE: reference pattern hit %r — attempting search", _ref_entity)
                     _bypass_journal(_original_raw, backend="reference_gate",
-                                    handler_class="COGNITIVE", line=2141)
+                                    handler_class="EXECUTOR-FAST-PATH", line=2141)
                     try:
                         from tools.web_search import search as _ref_search, format_for_context as _ref_fmt
                         _ref_results = _ref_search(_ref_entity, max_results=4)
@@ -4225,7 +4226,7 @@ def _process_turn(raw: str) -> dict:
                     _bypass_journal(
                         _original_raw or raw,
                         backend="self_ref_rationale",
-                        handler_class="COGNITIVE",
+                        handler_class="EXECUTOR-FAST-PATH",
                         line=3032,
                     )
                     return {"response": _sr_reply, "mode": "direct", "backend": "self_ref_rationale"}
@@ -4234,7 +4235,7 @@ def _process_turn(raw: str) -> dict:
                     _bypass_journal(
                         _original_raw or raw,
                         backend="self_ref_empty",
-                        handler_class="COGNITIVE",
+                        handler_class="EXECUTOR-FAST-PATH",
                         line=3033,
                     )
                     return {"response": "Don't have that on record yet.", "mode": "direct", "backend": "self_ref_empty"}

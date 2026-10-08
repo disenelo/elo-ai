@@ -55,15 +55,18 @@ except Exception as e:
     fail("ID-2", repr(e))
 
 
-print("\nID-3: changing core_values → block changes")
+print("\nID-3: core_values NOT in block (BDRIFT-U ruling 2026-08-22)")
+# Updated 2026-10-08: BDRIFT-U (David L3) removed core_values from the identity
+# block. core_values is experiential self-state, not constitutional identity.
+# Canonical character traits come from canonical_identity.md via personality_block.
+# This test now guards the BDRIFT-U decision — core_values must NOT appear.
 try:
     altered = EloSelfState(core_values=["novel_value_xyz"])
     altered_block = identity_block(altered)
-    if "novel_value_xyz" in altered_block:
-        ok("ID-3 — core_values change propagates to rendered block")
+    if "novel_value_xyz" not in altered_block:
+        ok("ID-3 — core_values absent from identity block (BDRIFT-U ruling held)")
     else:
-        _preview = repr(altered_block[:80])
-        fail("ID-3", f"novel_value_xyz missing from block: {_preview}")
+        fail("ID-3", "core_values leaked into identity block — BDRIFT-U ruling violated")
 except Exception as e:
     fail("ID-3", repr(e))
 

@@ -178,16 +178,20 @@ try:
         for l in f:
             if l.strip():
                 entries.append(json.loads(l))
+    # Updated 2026-10-08: _VALID_SOURCES now includes self_correction, cognitive_event,
+    # dream_derived in addition to body_ack. Check presence of provenance fields and
+    # that source is any valid source — not just body_ack.
+    _VALID = frozenset({"body_ack", "cognitive_event", "self_correction", "dream_derived"})
     bad = [
         e for e in entries
         if e.get("verified") is not True
-        or e.get("source") != "body_ack"
+        or e.get("source") not in _VALID
         or not e.get("episode_ref")
     ]
     if bad:
         fail("AP-5", f"{len(bad)} entr(y|ies) missing provenance: {bad}")
     else:
-        ok(f"AP-5 — {len(entries)} entries; all have verified=True, source=body_ack, episode_ref")
+        ok(f"AP-5 — {len(entries)} entries; all have verified=True, valid source, episode_ref")
 except Exception as e:
     fail("AP-5", repr(e))
 

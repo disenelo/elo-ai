@@ -30,8 +30,15 @@ try:
         "D-6: empty-response predicate not on the exit path"
     # It must be BEFORE the final return so it can substitute the payload.
     idx_alarm = src.find("D-6 silent-turn alarm")
-    # Find the return {} block that immediately follows the process-turn body.
-    idx_return = src.find('        return {\n            "response": response,\n            "bubbles":  _bubbles,')
+    # Find the final return {} block that closes _process_turn — it contains both
+    # "response": response and "bubbles": _bubbles; use the LAST occurrence since
+    # there can be multiple return-dict blocks earlier in the function.
+    # Updated 2026-10-08: return format has extra spacing around field separators.
+    import re as _re
+    # Find the final return block by finding the last "bubbles": _bubbles
+    # (the close of _process_turn's return dict) and working backwards to the return.
+    _all_bubbles = list(_re.finditer(r'"bubbles"\s*:\s*_bubbles', src))
+    idx_return = _all_bubbles[-1].start() if _all_bubbles else -1
     assert 0 < idx_alarm < idx_return, \
         "D-6: alarm is not positioned before the final return"
     ok("D-6.a: silent-turn alarm sits on the exit path before the final return")
@@ -44,7 +51,8 @@ try:
     with open(SERVER, encoding="utf-8") as f:
         src = f.read()
     idx = src.find("D-6 silent-turn alarm")
-    window = src[idx:idx + 1200]
+    # Look back up to 200 chars (the .warning( call precedes the alarm string)
+    window = src[max(0, idx - 200):idx + 1200]
     assert "warning" in window.lower() or "WARNING" in window, \
         "D-6: alarm does not log at WARNING"
     assert "raw=" in window or "raw%" in window, \

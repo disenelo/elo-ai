@@ -278,6 +278,7 @@ def test_at11_agent_weather_no_location_asks():
     mod = _load_module()
 
     saved_loc = mod._user_location
+    saved_env = os.environ.pop("ELO_LOCATION", None)
     try:
         mod._user_location = None  # simulate: no location ever set
         mod._known_location = lambda: None          # …and nothing in eLo's knowledge
@@ -300,6 +301,8 @@ def test_at11_agent_weather_no_location_asks():
         )
     finally:
         mod._user_location = saved_loc
+        if saved_env is not None:
+            os.environ["ELO_LOCATION"] = saved_env
 
     print(f"AT-11 PASS — no-location → ask-string: {result[:80]!r}")
 

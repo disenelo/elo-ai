@@ -262,14 +262,16 @@ def retrieve(user_input: str, top_k: int = 3) -> list[dict]:
             continue
         kw_score = sum(1 for k in e.get("keywords", []) if _kw_match(k, text.lower()))
         # §D: epistemic_kind is distinct from ontology type.
-        # Authored entities default to "fact"; promoted nodes carry their own kind.
-        epistemic_kind = e.get("epistemic_kind") or e.get("status") or "fact"
+        # Authored entities use their ontology type (person/place/event/fact) when no
+        # explicit epistemic_kind is present; promoted nodes carry their own kind.
+        entity_type    = e.get("type", "entity")
+        epistemic_kind = e.get("epistemic_kind") or e.get("status") or entity_type
         results.append({
             "label":      e.get("name", e.get("id", "")),
             "content":    e.get("description", ""),
             "confidence": float(e.get("confidence", 1.0)),
             "kind":       epistemic_kind,
-            "type":       e.get("type", "entity"),
+            "type":       entity_type,
             "evidence":   list(e.get("evidence", [])),
             "score":      kw_score,
         })

@@ -105,7 +105,7 @@ try:
         def kill(self): _killed.append("killed")
         def wait(self, timeout=None): pass
 
-    def _fake_pulse4(phonemes, stop):
+    def _fake_pulse4(phonemes, stop, text=""):
         stop.set()   # simulate cancellation during lipsync
 
     # Patch the audio bytes so no real API call happens, and real tempfile is used

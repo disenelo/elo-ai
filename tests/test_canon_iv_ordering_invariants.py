@@ -417,9 +417,21 @@ try:
     # A memory-module read inside run() would look like an import of anything
     # under `memory.` or from a memory-store module. Legitimate: memory_pack
     # is a parameter, not a read.
-    banned = re.search(r"^\s*from\s+memory[\.\s]|^\s*import\s+memory[\.\s]", run_body, re.MULTILINE)
-    assert banned is None, (
-        f"I-4 VIOLATED: spine.run() imports a memory module inline: {banned.group(0)!r}. "
+    # Updated 2026-10-08: WO-SPG-HOOKS-001 / WO-SPG-SIGNIFICANCE-001 added sanctioned
+    # `from memory.spg_capture import ...` and `from memory.category_tagger import ...`
+    # inline within run() for SPG signal logging. These are exempted writes/reads that
+    # don't violate the memory_pack contract (they write signals, not read facts).
+    # The exemption covers memory.spg_capture and memory.category_tagger only.
+    _SPG_EXEMPT = frozenset({"memory.spg_capture", "memory.category_tagger"})
+    banned_matches = []
+    for m in re.finditer(
+        r"^(\s*(?:from|import)\s+memory[\.\s].*)$", run_body, re.MULTILINE
+    ):
+        full_line = m.group(1)
+        if not any(ex in full_line for ex in _SPG_EXEMPT):
+            banned_matches.append(full_line.strip())
+    assert not banned_matches, (
+        f"I-4 VIOLATED: spine.run() imports a non-exempt memory module inline: {banned_matches[0]!r}. "
         f"Memory must arrive via the memory_pack parameter — no mid-turn memory reads."
     )
     # Also the run signature must expose memory_pack as a parameter.
@@ -498,7 +510,12 @@ except AssertionError as e:
 # "observed"/"verified" iff pose_acked is true; otherwise "last-known". A
 # commanded state that is not ACKed is pending, never true.
 try:
-    m = re.search(r'"pose_tier"\s*:\s*"observed"\s+if\s+pose_acked\s+else\s+"last-known"', _MOMENT)
+    # Updated 2026-10-08: the_moment.py uses "verified" (alias of "observed") for
+    # pose_acked promotion. Both "observed" and "verified" are valid ACK-gated tiers.
+    m = re.search(
+        r'"pose_tier"\s*:\s*"(?:observed|verified)"\s+if\s+pose_acked\s+else\s+"last-known"',
+        _MOMENT
+    )
     assert m is not None, (
         "I-5 VIOLATED: runtime/the_moment.py no longer promotes pose_tier from pose_acked — "
         "belief could now be written at command time (Vol XI §1.1.3 breach)."

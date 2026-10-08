@@ -127,14 +127,16 @@ except AssertionError as e:
     fail("AT-7", e)
 
 
-# ── AT-8: F6 tokens present in server.py _MIRROR_OPENERS block ──────────────
+# ── AT-8: F6 tokens present in runtime/voice_rewrite.py MIRROR_OPENERS ──────
+# Updated 2026-10-08: MIRROR_OPENERS canonical home is runtime/voice_rewrite.py;
+# server.py imports from there. Check the source of truth, not the importer.
 try:
-    with open("server.py", encoding="utf-8") as f:
+    with open("runtime/voice_rewrite.py", encoding="utf-8") as f:
         src = f.read()
     for token in ("you said ", "your typo", "you typed ", "you wrote "):
-        assert token in src, f"F6 token {token!r} missing from server.py"
-    assert "WO-039-F6" in src, "WO-039-F6 marker not in server.py"
-    ok("AT-8: All F6 tokens + WO-039-F6 marker present in server.py _MIRROR_OPENERS")
+        assert token in src, f"F6 token {token!r} missing from runtime/voice_rewrite.py"
+    assert "WO-039-F6" in src, "WO-039-F6 marker not in runtime/voice_rewrite.py"
+    ok("AT-8: All F6 tokens + WO-039-F6 marker present in runtime/voice_rewrite.py MIRROR_OPENERS")
 except AssertionError as e:
     fail("AT-8", e)
 except Exception as e:

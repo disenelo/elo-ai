@@ -157,11 +157,13 @@ try:
         _ec_mod._AUTOB = fake_autob
         try:
             # File doesn't exist yet — should create
-            append_autobiography("wall-jump succeeded", kind="movement")
+            append_autobiography("wall-jump succeeded", kind="movement",
+                                 verified=True, source="body_ack", episode_ref="test.001")
             assert os.path.exists(fake_autob), "append_autobiography must create the file"
 
             # Append a second entry — first must still be there
-            append_autobiography("sat beside David", kind="presence")
+            append_autobiography("sat beside David", kind="presence",
+                                 verified=True, source="body_ack", episode_ref="test.002")
             with open(fake_autob, encoding="utf-8") as f:
                 lines = [l.strip() for l in f if l.strip()]
             assert len(lines) == 2, f"must have 2 entries after 2 appends, got {len(lines)}"

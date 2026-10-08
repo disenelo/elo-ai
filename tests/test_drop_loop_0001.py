@@ -38,9 +38,11 @@ def _patch_drop_root(monkeypatch, tmp: Path):
     monkeypatch.setattr(cat, "FOR_DAVID",  tmp / "04_FOR_DAVID")
     monkeypatch.setattr(cat, "SHIPPED",    tmp / "05_SHIPPED")
     import creative.drop_loop as dl
-    monkeypatch.setattr(dl, "INBOX",      tmp / "01_INBOX")
-    monkeypatch.setattr(dl, "CATALOGUED", tmp / "02_CATALOGUED")
-    monkeypatch.setattr(dl, "FOR_DAVID",  tmp / "04_FOR_DAVID")
+    monkeypatch.setattr(dl, "INBOX",           tmp / "01_INBOX")
+    monkeypatch.setattr(dl, "CATALOGUED",      tmp / "02_CATALOGUED")
+    monkeypatch.setattr(dl, "FOR_DAVID",       tmp / "04_FOR_DAVID")
+    # _PROCESSED_LOG is set at import time from CATALOGUED; patch it directly
+    monkeypatch.setattr(dl, "_PROCESSED_LOG",  tmp / "02_CATALOGUED" / "_processed.log")
 
 
 def test_three_unlike_files_catalogued_not_renamed(tmp_path, monkeypatch):

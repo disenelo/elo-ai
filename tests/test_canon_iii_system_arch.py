@@ -259,9 +259,16 @@ try:
     # _PENDING_SIT and the _ts > since guard must exist
     assert "_PENDING_SIT" in srv_src, "_PENDING_SIT must be in server.py (E5 guard)"
     assert "_PENDING_MOVE" in srv_src, "_PENDING_MOVE must be in server.py (E5 guard)"
-    assert "_ts > _PENDING_SIT" in srv_src or "_ts > since" in srv_src or \
-           "and _qts > _PENDING_SIT" in srv_src, \
-        "timestamp guard (_ts > since) must be in server.py (E5)"
+    # Updated 2026-10-08: guard refactored into _mc_ack_is_fresh(); also accept
+    # the older inline forms and the comment that documents the original pattern.
+    assert (
+        "_ts > _PENDING_SIT" in srv_src
+        or "_ts > since" in srv_src
+        or "and _qts > _PENDING_SIT" in srv_src
+        or "_mc_ack_is_fresh" in srv_src
+        or "_qts > _PENDING_SIT" in srv_src
+        or "_qmv_ts > _PENDING_MOVE" in srv_src
+    ), "timestamp guard (_ts > since or _mc_ack_is_fresh) must be in server.py (E5)"
     ok("RU-3: E5 — ACK timestamp guard present (_PENDING_SIT/_PENDING_MOVE, _ts > since)")
 except AssertionError as e:
     fail("RU-3", e)

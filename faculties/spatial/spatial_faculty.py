@@ -531,6 +531,33 @@ def _shadow_log(entry: dict) -> None:
 
 # ── Executive prompt context (never blocks; silent when peripheral) ────────────
 
+@dataclass(frozen=True)
+class SpatialContext:
+    """Read-only spatial context assembled from live desktop state."""
+    affordances: tuple = ()          # reachable surface affordances
+    presence:    str   = "active"    # current presence tier
+    surface_count: int = 0           # surfaces in the world map
+
+
+def assemble(live_state=None, world_map: "DesktopWorldMap | None" = None) -> "SpatialContext":
+    """Assemble a SpatialContext from live state. Never raises — returns empty context on failure."""
+    try:
+        presence  = presence_from_live_state(live_state) if live_state else PRESENCE_ACTIVE
+        n         = len(world_map.surfaces) if world_map else 0
+        affordances = tuple()
+        if world_map:
+            for surf in world_map.surfaces:
+                affordances = affordances + tuple(affordances_for_type(surf.surface_type))
+        return SpatialContext(
+            affordances=affordances,
+            presence=presence,
+            surface_count=n,
+        )
+    except Exception as _e:
+        _log.debug("SpatialFaculty.assemble: %s", _e)
+        return SpatialContext()
+
+
 def context_block(live_state=None, world_map: "DesktopWorldMap | None" = None) -> str:
     """
     Return a prompt-ready spatial context block for the Executive.

@@ -22,24 +22,27 @@ def ok(n):      global PASS; PASS += 1; print(f"  ✅ {n}")
 def fail(n, r): global FAIL; FAIL += 1; print(f"  ❌ {n}: {r}")
 
 
-# ── AT-1: quota flag exists ───────────────────────────────────────────────────
+# ── AT-1: quota cooldown variable exists ─────────────────────────────────────
+# Updated 2026-10-08: was _openai_quota_exceeded (bool); now _openai_quota_cooldown_until (float)
+# per David ruling 2026-08-21: "do not snub them out — use what is available to feel out failsafes."
 try:
     import runtime.backend_router as _br
-    if hasattr(_br, "_openai_quota_exceeded"):
-        ok("AT-1: _openai_quota_exceeded flag exists in backend_router")
+    if hasattr(_br, "_openai_quota_cooldown_until"):
+        ok("AT-1: _openai_quota_cooldown_until cooldown variable exists in backend_router")
     else:
-        fail("AT-1", "_openai_quota_exceeded not found in backend_router")
+        fail("AT-1", "_openai_quota_cooldown_until not found in backend_router")
 except Exception as e:
     fail("AT-1", e)
 
 
-# ── AT-2: auto mode block checks the quota flag ───────────────────────────────
+# ── AT-2: auto mode block checks the cooldown timer ──────────────────────────
+# Updated 2026-10-08: checks for cooldown float pattern instead of old bool flag
 try:
     _src = open("runtime/backend_router.py", encoding="utf-8").read()
-    if "_openai_quota_exceeded" in _src and "not _openai_quota_exceeded" in _src:
-        ok("AT-2: auto mode guards OpenAI block with quota flag check")
+    if "_openai_quota_cooldown_until" in _src and "time.monotonic() < _openai_quota_cooldown_until" in _src:
+        ok("AT-2: auto mode guards OpenAI block with cooldown timer check")
     else:
-        fail("AT-2", "quota flag guard not found in route() auto block")
+        fail("AT-2", "cooldown timer guard not found in route() auto block")
 except Exception as e:
     fail("AT-2", e)
 
@@ -74,23 +77,27 @@ except Exception as e:
     fail("AT-4", e)
 
 
-# ── AT-5: "Can't reach" only fires on backend_used == "mock" ─────────────────
-# _bh_degraded is defined as (backend_used == "mock" ...) a few lines above the
-# message; the guard on the message itself is "if _bh_degraded".
+# ── AT-5: degraded path lets mock through (S1-DEGRADED-HOLDING-LINE) ─────────
+# Updated 2026-10-08: "Can't reach my thinking" replacement string was removed.
+# S1-DEGRADED-HOLDING-LINE: when _bh_degraded and _agent is None → pass.
+# Mock is eLo-voiced by design; the stall-string replacement terminated the turn
+# with a promise that was never kept (25% of turns). Let mock through instead.
 try:
     _src = open("server.py", encoding="utf-8").read()
-    # Use "right now" suffix — unique to the code line; the guard comment above uses the
-    # shorter form "Can't reach my thinking" without "right now", so find() was hitting
-    # the comment (line 2703) instead of the guarded code (line 3011).
-    _idx = _src.find("Can't reach my thinking right now")
-    if _idx >= 0:
-        _window = _src[max(0, _idx - 600):_idx + 100]
-        if "_bh_degraded" in _window and "backend_used" in _window:
-            ok("AT-5: 'Can't reach my thinking' guarded by _bh_degraded (backend_used == 'mock')")
-        else:
-            fail("AT-5", f"guard context unexpected: {_window[:200]!r}")
+    # _bh_degraded must be defined as (backend_used == "mock" ...)
+    _bh_def_idx = _src.find("_bh_degraded = (_llm_turn and backend_used == \"mock\"")
+    # The guard block must use: if _bh_degraded and _agent is None: ... pass
+    _bh_guard_idx = _src.find("if _bh_degraded and _agent is None:")
+    # S1-DEGRADED-HOLDING-LINE comment confirms the pass is intentional
+    _s1_idx = _src.find("S1-DEGRADED-HOLDING-LINE")
+    if _bh_def_idx >= 0 and _bh_guard_idx >= 0 and _s1_idx >= 0:
+        ok("AT-5: _bh_degraded tied to backend_used=='mock'; degraded path uses pass (S1-DEGRADED-HOLDING-LINE)")
     else:
-        fail("AT-5", "'Can't reach my thinking' string not found in server.py")
+        _missing = []
+        if _bh_def_idx < 0: _missing.append("_bh_degraded=(backend_used=='mock') definition")
+        if _bh_guard_idx < 0: _missing.append("if _bh_degraded and _agent is None guard")
+        if _s1_idx < 0: _missing.append("S1-DEGRADED-HOLDING-LINE marker")
+        fail("AT-5", f"missing: {', '.join(_missing)}")
 except Exception as e:
     fail("AT-5", e)
 

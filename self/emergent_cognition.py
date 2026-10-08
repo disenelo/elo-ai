@@ -32,6 +32,7 @@ if TYPE_CHECKING:
 _log  = logging.getLogger(__name__)
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _AUTOB_DEFAULT = os.path.join(_ROOT, "self", "journals", "autobiography.jsonl")
+_AUTOB = _AUTOB_DEFAULT  # alias used by tests that patch _AUTOB directly
 
 # ── Thresholds ────────────────────────────────────────────────────────────────
 _ABSENT_THRESHOLD    = 300.0  # seconds idle before absence-awareness fires
@@ -205,7 +206,7 @@ def append_autobiography(
         "source": source,
         "episode_ref": episode_ref,
     }
-    target = _path or _AUTOB_DEFAULT
+    target = _path or _AUTOB
     try:
         with open(target, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")
@@ -221,7 +222,7 @@ def recent_autobiography(n: int = 10, *, _path: str | None = None) -> list[dict]
     Only entries with verified=True are returned — unverified entries
     do not reach the Executive.
     """
-    target = _path or _AUTOB_DEFAULT
+    target = _path or _AUTOB
     try:
         with open(target, encoding="utf-8") as f:
             lines = [l.strip() for l in f if l.strip()]
