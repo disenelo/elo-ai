@@ -109,3 +109,66 @@ def test_an_engaged_body_dominates_the_blend(monkeypatch):
     assert hb._combined() == pytest.approx(0.3), (
         "a spent body should pull the blend down hard — it is 70% of it"
     )
+
+
+# ── the other reason Chain 3 could never fire ───────────────────────────────
+#
+# The dream trigger has two gates: a tired mind and calm. The mind gate was
+# fixed in 990a6a4 — it read the BLEND, which at 70/30 floors at 0.70 against
+# an ENERGY_LOW of 0.25.
+#
+# The calm gate was broken differently and for longer. _maybe_emit_dream_intent
+# read blender_state["is_calm"]. Measured against the live state 2026-10-08:
+#
+#     calm_mode  present
+#     is_calm    ABSENT, and the only writers of it anywhere are test fixtures
+#
+# ambient_engine computes the signal itself twelve lines above the call and
+# writes it as calm_mode. So the gate was always False and CHAIN 3 has never
+# fired, however tired or calm eLo was.
+#
+# The tests passed throughout because they hand in {"is_calm": True} —
+# inventing the field production does not have. A fixture that supplies the
+# key under test is the "checking spellings, not properties" trap, and it hid
+# this for as long as the chain has existed.
+
+def test_the_calm_gate_reads_the_key_production_writes(monkeypatch):
+    import ambient.ambient_engine as ae
+    monkeypatch.setattr(ae, "_dream_trigger_ts", 0.0)
+    assert ae._maybe_emit_dream_intent(
+        {"mind_battery": 0.05}, {"calm_mode": True}) == {"intent": "dream"}
+
+
+def test_the_old_fixture_shape_still_works(monkeypatch):
+    """Existing tests and any older state file must not break."""
+    import ambient.ambient_engine as ae
+    monkeypatch.setattr(ae, "_dream_trigger_ts", 0.0)
+    assert ae._maybe_emit_dream_intent(
+        {"mind_battery": 0.05}, {"is_calm": True}) == {"intent": "dream"}
+
+
+def test_not_calm_still_blocks(monkeypatch):
+    import ambient.ambient_engine as ae
+    monkeypatch.setattr(ae, "_dream_trigger_ts", 0.0)
+    assert ae._maybe_emit_dream_intent(
+        {"mind_battery": 0.05}, {"calm_mode": False}) == {}
+
+
+def test_the_live_state_carries_calm_mode_and_not_is_calm():
+    """
+    The measurement that found this. If live state ever starts carrying
+    is_calm, this is the place to notice rather than rediscovering it.
+    """
+    import json
+    import pathlib
+    p = (pathlib.Path(__file__).resolve().parent.parent
+         / "blender" / "blender_state.json")
+    if not p.exists():
+        pytest.skip("no live state on this machine")
+    d = json.loads(p.read_text())
+    flat = dict(d)
+    flat.update(d.get("state") or {})
+    assert "calm_mode" in flat
+    assert "is_calm" not in flat, (
+        "production now writes is_calm too — the compatibility read can go"
+    )

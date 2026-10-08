@@ -684,7 +684,23 @@ def _maybe_emit_dream_intent(battery_snapshot: dict, blender_state: dict) -> dic
         )
         if elo_battery > _ENERGY_LOW:
             return {}
-        is_calm = bool(blender_state.get("is_calm", False))
+        # The calm signal is computed by _is_calm() and written into the
+        # state as "calm_mode" — twelve lines above this call. This read
+        # asked for "is_calm", which nothing in production has ever written.
+        # Measured 2026-10-08 against the live state: calm_mode present,
+        # is_calm absent, and the only writers of "is_calm" anywhere are test
+        # fixtures.
+        #
+        # So the gate was always False and CHAIN 3 has never fired — the
+        # trigger could not emit a dream intent no matter how tired or calm
+        # eLo was. The tests passed throughout because they hand in
+        # {"is_calm": True} directly, inventing the field production does not
+        # have.
+        #
+        # Both names accepted: the fixtures and any older state file stay
+        # valid, and the live key now works.
+        is_calm = bool(blender_state.get("calm_mode",
+                                         blender_state.get("is_calm", False)))
         if not is_calm:
             return {}
         already_dreaming = bool(blender_state.get("dream_phase", ""))
