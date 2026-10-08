@@ -187,6 +187,28 @@ _SIGNAL_WORDS: dict[str, object] = {
     "looping":           "idle",
     "circling":          "idle",
     "stuck in a loop":   "idle",
+    # ── FULL-PRESENCE-WIRE 2026-10-08: water / world / weather commands ──────────
+    "go swim":           "swim",
+    "go swimming":       "swim",
+    "swim around":       "swim",
+    "dive in":           "dive",
+    "dive under":        "dive_under",
+    "jump in":           "jump_in",
+    "jump into":         "jump_in",
+    "leap in":           "jump_in",
+    "get out of the water": "leave_water",
+    "leave the water":   "leave_water",
+    "get out of pool":   "get_out",
+    "drain the pool":    "drain_pool",
+    "fill the pool":     "fill_pool",
+    "play in the water": "play_water",
+    "have a swim":       "swim",
+    "float around":      "float",
+    "float in the ring": "doughnut",
+    "stomp":             "stomp",
+    "stomp it":          "stomp",
+    "break the rock":    "break_rock",
+    "chimney climb":     "chimney",
     # ── P0 routing fix 2026-10-05: movement capability verbs that were
     # reaching the LLM unclassified (peek/climb/walljump/etc.). These must
     # be caught here BEFORE the LLM sees them. Bare "climb" is intentionally
@@ -208,6 +230,75 @@ _SIGNAL_WORDS: dict[str, object] = {
     "teleport":          "explore",
     "disappear":         "step_out",
 }
+
+# ── FULL-PRESENCE-WIRE 2026-10-08: Extended movement vocabulary ───────────────
+# Valid movement_intent strings the Executive may emit when driven by world context.
+# Not all appear in _SIGNAL_WORDS — some are context-only (emitted by layer 2.5 below).
+# Unity's PresenceSystem reads these from blender_state.json → movement_intent.
+_WORLD_MOVE_VOCAB: frozenset = frozenset({
+    "swim", "play_water", "fill_pool", "deep_water",
+    "lava", "acid", "poison", "muddy",
+    "doughnut", "float", "ring", "dive", "dive_under",
+    "leap", "jump_in", "leave_water", "get_out",
+    "drain", "drain_pool", "stomp", "break_rock",
+    "chimney", "wall_jumps",
+    "weather_rain", "weather_snow", "weather_fog", "weather_clear",
+})
+
+# World zone → movement intent (Layer 2.5).
+# Populated from blender_state.json → zone / surface_type field.
+_WORLD_ZONE_INTENTS: dict[str, str] = {
+    "pool":        "swim",
+    "water":       "swim",
+    "deep_water":  "deep_water",
+    "doughnut":    "doughnut",
+    "ring":        "float",
+    "muddy":       "muddy",
+    "hazard_lava": "lava",
+    "hazard_acid": "acid",
+    "hazard_poison": "poison",
+    "chimney":     "chimney",
+}
+
+# Weather code → movement intent (Layer 2.5).
+_WEATHER_INTENTS: dict[str, str] = {
+    "rain":   "weather_rain",
+    "snow":   "weather_snow",
+    "fog":    "weather_fog",
+    "mist":   "weather_fog",
+    "clear":  "weather_clear",
+    "sunny":  "weather_clear",
+}
+
+
+def _world_context_intent() -> str:
+    """
+    Layer 2.5 — world context reader.
+    Checks blender_state.json → zone / weather to pick a movement intent.
+    Returns "" when no world context maps to a known intent.
+    Fail-quiet: never raises.
+    """
+    try:
+        import json as _js, os as _os
+        _path = _os.path.join(
+            _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))),
+            "blender", "blender_state.json",
+        )
+        with open(_path, encoding="utf-8") as _f:
+            _st = _js.load(_f)
+        # Zone intent
+        _zone = str((_st.get("zone") or _st.get("surface_type") or "")).lower()
+        if _zone and _zone in _WORLD_ZONE_INTENTS:
+            return _WORLD_ZONE_INTENTS[_zone]
+        # Weather intent
+        _weather = str(((_st.get("weather") or {}).get("summary") or "")).lower()
+        for _key, _intent in _WEATHER_INTENTS.items():
+            if _key in _weather:
+                return _intent
+    except Exception:
+        pass
+    return ""
+
 
 # ── Layer 2: Emotional state → movement directive ─────────────────────────────
 # Maps the 20-state light engine vocabulary to movement directives.
@@ -382,6 +473,14 @@ def compute(
         _dbg_layer  = "inquiry"
         _dbg_reason = f"intent=inquiry, energy={energy:.2f} > 0.55 → go_top"
         movement_intent = "go_top"
+
+    # Layer 2.5 — world context (zone / weather) — FULL-PRESENCE-WIRE 2026-10-08
+    # Runs after signal words so a user command always wins; runs before emotional
+    # state so being in water/doughnut/hazard takes precedence over mood.
+    elif (_wc_intent := _world_context_intent()):
+        _dbg_layer  = "world_context"
+        _dbg_reason = f"world zone/weather → {_wc_intent!r}"
+        movement_intent = _wc_intent
 
     # Layer 2 — emotional state from light engine
     elif _EMOTIONAL_DIRECTIVES.get(emotional_state):
