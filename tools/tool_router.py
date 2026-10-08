@@ -1326,6 +1326,65 @@ def get_last_weather_condition() -> str:
     return _last_weather_condition
 
 
+# WEATHER-ON-OPEN (card 0006): one Presence key word per provider description.
+# Order matters: storm before rain, sleet before snow, mist/fog before cloud.
+_PRESENCE_WX = (
+    ("storm",    r"thunder|storm"),
+    ("blizzard", r"blizzard"),
+    ("sleet",    r"sleet|ice pellets|freezing rain"),
+    ("snow",     r"snow"),
+    ("drizzle",  r"drizzle"),
+    ("shower",   r"shower"),
+    ("rain",     r"rain"),
+    ("fog",      r"fog"),
+    ("mist",     r"mist"),
+    ("haze",     r"haze|smoke|dust"),
+    ("overcast", r"overcast"),
+    ("cloud",    r"cloud"),
+    ("sunny",    r"sunny"),
+    ("clear",    r"clear|fair"),
+)
+_wx_now: dict = {"ts": 0.0, "word": ""}
+
+
+def presence_weather_word(desc: str) -> str:
+    """Map a provider description ("Patchy light rain") to Presence's word ("rain"). "" if unknown."""
+    d = (desc or "").lower()
+    for word, pat in _PRESENCE_WX:
+        if re.search(pat, d):
+            return word
+    return ""
+
+
+def get_current_weather(max_age_s: float = 600.0) -> str:
+    """Real local weather as one Presence key word (rain/snow/fog/cloud/clear…).
+
+    Called by Builder 1 on unity_events weather_request (app_open) and on its
+    10–15 min refresh. Uses David's known location (never a guessed city).
+    Returns "" when there is no location or the fetch fails — publish nothing
+    rather than a wrong "clear". Cached for max_age_s so refreshes stay cheap.
+    """
+    global _last_weather_condition
+    import time as _t
+    if _wx_now["word"] and _t.time() - _wx_now["ts"] < max_age_s:
+        return _wx_now["word"]
+    if not _resolve_location():
+        return ""
+    _prev = _last_weather_condition
+    _last_weather_condition = ""          # only this fetch counts, never a stale value
+    try:
+        _agent_weather("what's the weather")
+    except Exception as _e:
+        _logger.warning("get_current_weather: fetch failed (%s)", _e)
+    word = presence_weather_word(_last_weather_condition)
+    if not word:
+        _last_weather_condition = _prev
+        return ""
+    _last_weather_condition = word
+    _wx_now.update(ts=_t.time(), word=word)
+    return word
+
+
 def _agent_weather(query: str) -> str:
     # Location priority:
     #   1. Explicit city in this query ("weather in London")
