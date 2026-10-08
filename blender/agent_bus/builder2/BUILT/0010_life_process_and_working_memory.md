@@ -168,3 +168,71 @@ After extended idle: WKG node written from SLEEP consolidation, David can ask eL
 - B1-0105: capability fabric — LIFE is one of the four concurrent processes
 - B1-0106: daemon hosts the LIFE loop, calls life_tick() at appropriate interval
 - B1 existing: vault_write / WKG (working_memory's SLEEP consolidation writes here)
+
+
+---
+
+## Result
+- commit: `256f3e2`
+- test: `tests/test_life_and_working_memory.py` — 19 passed (all 7 named tests present)
+- notes:
+
+**A. Working memory** — `faculties/inner_thought/working_memory.py`, exact API
+from the card. Live:
+
+    [WORKING MEMORY — what has just happened, recorded not inferred]
+    15:56 opened Blender
+    15:56 eLo robot shell (recorded)
+    Current: eLo robot shell
+
+- **Name collision flagged, not merged.** `runtime/working_memory.py` already
+  exists and is wired into server.py — it holds cognitive FRAMES, goals and
+  attention (what eLo is holding in mind during a turn). This is an event
+  TIMELINE. Different things. A test asserts the two classes have not
+  converged, because someone will otherwise merge them in good faith and lose
+  the authority field.
+- Authority defaults to `recorded`, **never** `definitive`. The other default
+  would let an inference read as a fact from the OS, and avoiding exactly that
+  guess is why this tier exists.
+- Empty when nothing has happened — an empty string, not a sentence saying so.
+
+**B. LIFE** — `faculties/inner_thought/life.py`, `life_tick(state)` and
+nothing else. No thread, no scheduler, no timer; a test greps for them. The
+card says the loop lives in your daemon (0106) and two things driving eLo's
+life is the mistake already made with sits, dreams and deferral stores.
+
+    AWAKE    does nothing — the turn path already thinks on every message
+    RESTING  actions=['read_working_memory','carried_threads']   14.7ms
+    SLEEP    actions=['held_threads'], dream_due reported       145.3ms
+
+- **SLEEP does not start a dream.** Dreaming already triggers from
+  ambient_engine on a spent mind battery in calm. This reports `dream_due` and
+  leaves the decision there.
+
+**FOR BUILDER 1 (cards 0104 / 0106)** — the contract is exported from
+`faculties.inner_thought`:
+
+    from faculties.inner_thought import as_context        # STATE tier, 0104
+    from faculties.inner_thought import life_tick, RESTING, SLEEP   # 0106
+
+`as_context()` returns "" when nothing has happened. `life_tick()` never
+raises and returns `{state, ok, actions, elapsed_ms, ...}`. Suggested
+intervals are in `TICK_INTERVAL_S` — advisory, since this module schedules
+nothing.
+
+**NOT BUILT:** events are only added by whatever calls `add_event()`. The card
+lists app-open/close from Presence "if Designer wires event bus" — that bus
+does not exist yet, so nothing populates the timeline automatically. The one
+caller today is this module's own API. Flagged rather than faked with a
+synthetic feed.
+
+## Live turn needed
+Two, and the first will fail until something feeds the timeline:
+
+1. **"What was I doing?"** — should answer from working memory, no model.
+   Needs app/task events arriving first (Designer's bus, or Builder 1 calling
+   `add_event` on task changes).
+2. **Between messages** — with the daemon calling `life_tick("RESTING")`,
+   deferred threads stay carried while David is away. Observable as
+   `EloSelfState.open_threads` staying populated during idle rather than only
+   during a turn.

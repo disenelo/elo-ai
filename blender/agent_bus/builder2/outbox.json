@@ -7,5 +7,45 @@
     "commit": "d5aab22",
     "test": "pytest -k spg \u2014 158 passed",
     "note": "3330->3333 nodes, 9 live nodes preserved; range 2026-06-06->2026-10-06 filed to board_review"
+  },
+  {
+    "ts": "2026-10-08T15:57:02",
+    "seat": "builder2",
+    "card": "0005_metacognition_integration_check",
+    "state": "BUILT",
+    "commit": "c2a85de",
+    "note": "audit: 4 of 5 wired; metacognition.py unwired AND uncalibrated \u2014 observe-only"
+  },
+  {
+    "ts": "2026-10-08T15:57:02",
+    "seat": "builder2",
+    "card": "0006_open_threads_wire",
+    "state": "BLOCKED",
+    "commit": "0395cf0",
+    "note": "BLOCKED: chain green, LIVE TURN FAILED at server.py:5692 topic-overlap gate; specced fe5c600"
+  },
+  {
+    "ts": "2026-10-08T15:57:02",
+    "seat": "builder2",
+    "card": "0008_fix_b2_failures",
+    "state": "BUILT",
+    "commit": "9062e20",
+    "note": "all 5 already green (B1 daaf7d1/13ef597); flagged: pytest never collects script-style tests"
+  },
+  {
+    "ts": "2026-10-08T15:57:02",
+    "seat": "builder2",
+    "card": "0009_elo_play_wkg",
+    "state": "BUILT",
+    "commit": "6ba0b30",
+    "note": "water_play+auto_action -> WKG as SIMULATED_EXPERIENCE + SPG; drive layer not invented"
+  },
+  {
+    "ts": "2026-10-08T15:57:02",
+    "seat": "builder2",
+    "card": "0010_life_process_and_working_memory",
+    "state": "BUILT",
+    "commit": "256f3e2",
+    "note": "working memory + life_tick; no loop here (B1 0106 owns it); timeline has no feeder yet"
   }
 ]
