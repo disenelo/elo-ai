@@ -8903,8 +8903,13 @@ def _turn_worker() -> None:
     """Single-threaded worker that drains _turn_queue in FIFO order.
     Guarantees turn processing order matches HTTP arrival order."""
     while True:
-        text, result_holder, done_event = _turn_queue.get()
+        text, result_holder, done_event, *_rest = _turn_queue.get()
+        _turn_model = _rest[0] if _rest else None
         try:
+            # ALEXA-MODEL-OVERRIDE: per-turn Ollama model, set here on the worker
+            # that runs the turn (a thread-local set by the caller never reached it).
+            from runtime import backend_router as _br_pt
+            _br_pt._per_turn.ollama_model = _turn_model
             result = _process_turn(text)
             # S2 Phase 1 — one shape for every turn. 41 of _process_turn's 43
             # turn-shaped returns carry only {response, mode, backend}; every
@@ -8921,15 +8926,21 @@ def _turn_worker() -> None:
             _logging.warning("turn worker error: %s", _tw_exc)
             result_holder.append({"inner_thought": "", "response": "", "emotion": "neutral", "intent": "error", "mode": "error", "backend": "error"})
         finally:
+            try:
+                from runtime import backend_router as _br_pt
+                _br_pt._per_turn.ollama_model = None
+            except Exception:
+                pass
             done_event.set()
             _turn_queue.task_done()
 
 
-def _process_turn_queued(text: str) -> dict:
-    """Enqueue a chat turn and block until the FIFO worker processes it."""
+def _process_turn_queued(text: str, model: str | None = None) -> dict:
+    """Enqueue a chat turn and block until the FIFO worker processes it.
+    model: Ollama model for this turn only (ALEXA-MODEL-OVERRIDE); None = ELO_OLLAMA_MODEL."""
     _result: list = []
     _done = threading.Event()
-    _turn_queue.put((text, _result, _done))
+    _turn_queue.put((text, _result, _done, model))
     _done.wait()
     return _result[0] if _result else {"inner_thought": "", "response": "", "emotion": "neutral", "intent": "error", "mode": "error", "backend": "error"}
 
@@ -9648,12 +9659,8 @@ if __name__ == "__main__":
         _ALEXA_REPLY_MODEL = os.environ.get("ELO_ALEXA_REPLY_MODEL", "mistral-nemo:12b")
 
         def _alexa_turn_handler(_t):
-            from runtime import backend_router as _br
-            _br._per_turn.ollama_model = _ALEXA_REPLY_MODEL
-            try:
-                return _condition_outbound(_process_turn_queued(_t))
-            finally:
-                _br._per_turn.ollama_model = None
+            # The model travels with the turn through the queue (B3 review 70feb80).
+            return _condition_outbound(_process_turn_queued(_t, model=_ALEXA_REPLY_MODEL))
 
         _alexa_serve(_alexa_turn_handler)
     except Exception as _alexa_err:

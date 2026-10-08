@@ -74,10 +74,12 @@ _TIER_CREATE         = 4   # WO-CREATE-CAPABILITY: file/draft generation (REASON
 _last_ollama_metrics: dict = {}
 
 # ── ALEXA-MODEL-OVERRIDE: per-turn Ollama model override (thread-local) ───────
-# Set _per_turn.ollama_model before dispatching a turn to pin a specific model
-# for that thread only (e.g. Alexa turns use mistral-nemo:12b already in RAM).
-import threading as _threading
-_per_turn = _threading.local()
+# server.py's single FIFO turn worker sets _per_turn.ollama_model for the turn it
+# is running (from the turn's queue entry) and clears it after. A plain shared
+# value, not thread-local: the reply can be generated off the thread that queued
+# the turn, and turns run one at a time (B3 review 70feb80).
+import types as _types
+_per_turn = _types.SimpleNamespace(ollama_model=None)
 
 # ── WO-0057-PART-C: 4-second rule data dir ───────────────────────────────────
 _4S_DATA_PATH = os.path.join(
@@ -1193,7 +1195,8 @@ def _ollama_stream(
     """
     import urllib.request as _ureq, json as _json, time as _t
     host  = os.environ.get("ELO_OLLAMA_HOST",  "http://localhost:11434").rstrip("/")
-    model = os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
+    # ALEXA-MODEL-OVERRIDE: the live reply path is this stream — same override as _ollama_call.
+    model = getattr(_per_turn, "ollama_model", None) or os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
     # WO-002: llama3.1:8b treats long system prompts as documents to analyze.
     # Fix: use only identity anchor + 3-sentence behavior rules + grounding block (FIRST) + respond.
     # Grounding goes BEFORE behavior rules so subject/pronoun resolution is highest-signal.
