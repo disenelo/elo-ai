@@ -178,36 +178,114 @@ def talk(utterance: str, turn_fn) -> str:
         return "Give me a sec on that — say 'go on' and I'll tell you."
 
 
+# ── 2b · eLo's own voice on the Echo (ElevenLabs → SSML <audio>) ───────────────
+# Alexa plays an <audio> clip only from a public HTTPS URL, as MP3 48 kbps at
+# 16/22.05/24 kHz. The clip is made with eLo's ElevenLabs voice (the same call
+# voice/voice_engine.py makes), converted with ffmpeg, kept in memory under an
+# unguessable token for 10 min, and served by this listener at
+# /alexa/audio/<token>.mp3 through the same tunnel. Any failure, or not enough
+# of Alexa's 8 s left → Alexa's own voice reads the text (never silence).
+# ALEXA_VOICE=off turns it off.
+
+import secrets as _secrets
+import subprocess as _subprocess
+
+_VOICE_DEADLINE_S = 7.3     # whole reply incl. TTS must land inside Alexa's 8 s
+_AUDIO_TTL_S = 600
+_audio: dict[str, tuple[float, bytes]] = {}
+_audio_lock = threading.Lock()
+_TOKEN_RE = re.compile(r"^/alexa/audio/([0-9a-f]{32})\.mp3$")
+
+
+def _voice_on() -> bool:
+    return os.environ.get("ALEXA_VOICE", "elevenlabs").lower() != "off" \
+        and bool(os.environ.get("ELEVENLABS_API_KEY")) and bool(os.environ.get("ELEVENLABS_VOICE_ID"))
+
+
+def _alexa_mp3(text: str) -> bytes | None:
+    """eLo's ElevenLabs voice for text, re-encoded for Alexa. None on any failure."""
+    from voice.voice_engine import _fetch_elevenlabs_audio, _clean_for_tts
+    raw = _fetch_elevenlabs_audio(_clean_for_tts(text))
+    if not raw:
+        return None
+    out = _subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", "pipe:0",
+                           "-ac", "1", "-codec:a", "libmp3lame", "-b:a", "48k", "-ar", "24000",
+                           "-f", "mp3", "pipe:1"], input=raw, capture_output=True, timeout=4)
+    return out.stdout if out.returncode == 0 and out.stdout else None
+
+
+def _store(mp3: bytes) -> str:
+    tok = _secrets.token_hex(16)
+    now = time.time()
+    with _audio_lock:
+        for k in [k for k, (ts, _) in _audio.items() if now - ts > _AUDIO_TTL_S]:
+            _audio.pop(k, None)
+        _audio[tok] = (now, mp3)
+    return tok
+
+
+def audio_clip(path: str) -> bytes | None:
+    m = _TOKEN_RE.match(path or "")
+    if not m:
+        return None
+    with _audio_lock:
+        hit = _audio.get(m.group(1))
+    return hit[1] if hit and time.time() - hit[0] <= _AUDIO_TTL_S else None
+
+
+def _voiced(text: str, base: str | None, t0: float) -> dict | None:
+    """SSML outputSpeech in eLo's voice, or None (caller falls back to text)."""
+    if not base or not _voice_on():
+        return None
+    left = _VOICE_DEADLINE_S - (time.monotonic() - t0)
+    if left < 1.5:
+        return None
+    box: dict = {}
+    th = threading.Thread(target=lambda: box.setdefault("mp3", _alexa_mp3(text)), daemon=True)
+    th.start()
+    th.join(left)
+    mp3 = box.get("mp3")
+    if not mp3:
+        print(f"[alexa] voice: fell back to Alexa's voice ({'timeout' if th.is_alive() else 'no audio'})", flush=True)
+        return None
+    url = f"{base}/alexa/audio/{_store(mp3)}.mp3"
+    return {"type": "SSML", "ssml": f'<speak><audio src="{url}"/></speak>'}
+
+
 # ── 3 · Alexa request → Alexa response ────────────────────────────────────────
 
-def _speech(text: str, end: bool = False, reprompt: str | None = "Anything else?") -> dict:
-    resp: dict = {"outputSpeech": {"type": "PlainText", "text": text[:7900]}, "shouldEndSession": end}
+def _speech(text: str, end: bool = False, reprompt: str | None = "Anything else?",
+            base: str | None = None, t0: float | None = None) -> dict:
+    out = _voiced(text, base, t0 if t0 is not None else time.monotonic())
+    resp: dict = {"outputSpeech": out or {"type": "PlainText", "text": text[:7900]}, "shouldEndSession": end}
     if reprompt and not end:
         resp["reprompt"] = {"outputSpeech": {"type": "PlainText", "text": reprompt}}
     return {"version": "1.0", "response": resp}
 
 
-def handle(req: dict, turn_fn) -> dict:
+def handle(req: dict, turn_fn, base: str | None = None) -> dict:
+    """base = public https origin of the tunnel (eLo's voice); None → Alexa's voice."""
+    t0 = time.monotonic()
     r = req.get("request") or {}
     kind = r.get("type", "")
     if kind == "LaunchRequest":
-        return _speech("Yo — it's eLo. What's up?", reprompt="I'm here — what's up?")
+        return _speech("Yo — it's eLo. What's up?", reprompt="I'm here — what's up?", base=base, t0=t0)
     if kind == "SessionEndedRequest":
         return {"version": "1.0", "response": {}}
     if kind != "IntentRequest":
-        return _speech("Didn't catch that — say it again?")
+        return _speech("Didn't catch that — say it again?", base=base, t0=t0)
     intent = (r.get("intent") or {})
     name = intent.get("name", "")
     if name in ("AMAZON.StopIntent", "AMAZON.CancelIntent"):
-        return _speech("Later.", end=True)
+        return _speech("Later.", end=True, base=base, t0=t0)
     if name == "AMAZON.HelpIntent":
-        return _speech("Just talk to me like normal — I'm the same eLo as on your Mac.")
+        return _speech("Just talk to me like normal — I'm the same eLo as on your Mac.", base=base, t0=t0)
     if name == "TalkIntent":
         utterance = (((intent.get("slots") or {}).get("utterance") or {}).get("value") or "").strip()
         if not utterance:
-            return _speech("Didn't catch that — say it again?")
-        return _speech(talk(utterance, turn_fn))
-    return _speech("Didn't catch that — say it again?")
+            return _speech("Didn't catch that — say it again?", base=base, t0=t0)
+        return _speech(talk(utterance, turn_fn), base=base, t0=t0)
+    return _speech("Didn't catch that — say it again?", base=base, t0=t0)
 
 
 # ── 4 · the dedicated listener ────────────────────────────────────────────────
@@ -244,10 +322,20 @@ def serve(turn_fn, port: int | None = None) -> object | None:
                 return
             req = json.loads(body.decode("utf-8"))
             print(f"[alexa] {req.get('request', {}).get('type')} accepted", flush=True)
-            self._send(200, handle(req, turn_fn))
+            host = (self.headers.get("Host") or "").strip()
+            base = f"https://{host}" if re.fullmatch(r"[A-Za-z0-9.-]+\.[A-Za-z]{2,}", host) else None
+            self._send(200, handle(req, turn_fn, base=base))
 
         def do_GET(self):
-            self._send(404, {"error": "not found"})
+            clip = audio_clip(self.path)
+            if clip is None:
+                self._send(404, {"error": "not found"})
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "audio/mpeg")
+            self.send_header("Content-Length", str(len(clip)))
+            self.end_headers()
+            self.wfile.write(clip)
 
     srv = ThreadingHTTPServer(("127.0.0.1", port), _H)
     threading.Thread(target=srv.serve_forever, daemon=True).start()

@@ -27,6 +27,12 @@ David talks to an Echo → the Alexa skill → a tunnel → eLo's `/alexa` liste
 - Alexa allows 8 s per reply, and an eLo turn can take longer. Past about 6.5 s eLo says "Give me a sec on that — say 'go on' and I'll tell you." The finished answer comes on your next sentence.
 - "Stop" / "cancel" → "Later." and the session ends.
 
+## eLo's own voice on the Echo (2026-10-08)
+- Every reply is sent to the Echo as an audio clip in eLo's ElevenLabs voice (the same voice settings as on the Mac), not in Alexa's voice.
+- The clip is converted to Alexa's format (MP3 48 kbps, 24 kHz), kept in memory for 10 min under a random name, and fetched by Amazon through the same tunnel at `/alexa/audio/<random>.mp3`.
+- If ElevenLabs fails, or the reply leaves too little of Alexa's 8 s, Alexa reads the text in its own voice instead. The log shows `[alexa] voice: fell back…`.
+- `ALEXA_VOICE=off` in `.env` turns it off. Each reply uses ElevenLabs characters on David's key.
+
 ## Known limits (v1)
 - eLo's Mac voice also speaks the reply (local TTS has no per-turn mute; that belongs to the voice/runtime owner).
 - The tunnel URL changes each run unless you set up a named cloudflared tunnel.
