@@ -1086,6 +1086,24 @@ def build(
         _it_text = str(_it_bs.get("inner_thought_text", "") or "").strip()
         if _it_text:
             _push("inner_thought_anchor", f"[MY CURRENT INNER THOUGHT]\n{_it_text}")
+        # ROOT-6 BIDIRECTIONAL BRIDGE: inject last movement failure so eLo knows
+        # what his body couldn't do (e.g. "pool is empty, can't swim") on this turn.
+        # Only injected when fresh (< 30 s) to avoid stale feedback persisting.
+        try:
+            import time as _lmr_time
+            _lmr = _it_bs.get("last_movement_result") or {}
+            _lmr_ok  = _lmr.get("ok", True)
+            _lmr_ts  = float(_lmr.get("ts", 0))
+            if (not _lmr_ok) and (_lmr_time.time() - _lmr_ts < 30.0):
+                _lmr_intent = _lmr.get("intent", "")
+                _lmr_reason = _lmr.get("reason", "")
+                _lmr_line   = f"[BODY FEEDBACK] My last movement ({_lmr_intent}) couldn't happen"
+                if _lmr_reason:
+                    _lmr_line += f": {_lmr_reason}"
+                _lmr_line += ". Account for this if it's relevant."
+                _push("movement_feedback", _lmr_line)
+        except Exception:
+            pass
     except Exception:
         pass
 

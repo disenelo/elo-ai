@@ -377,6 +377,36 @@ def _consume_presence_events() -> None:
                     _wfe(claim, experience_id=f"brain_action_{seq}", project="presence")
                 except Exception:
                     pass
+                # ROOT-6 BIDIRECTIONAL BRIDGE: write movement result to blender_state.json
+                # so the brain reads it on the NEXT TURN (prompt_builder injects it).
+                # Only record failures — successes don't need cognitive feedback.
+                try:
+                    payload = event.get("payload", {})
+                    ok = payload.get("ok", True)
+                    if not ok:
+                        import time as _btime, json as _bjson, os as _bos
+                        _why = str(payload.get("reason", "") or payload.get("why", "")).strip()
+                        _bs_path = _bos.path.join(
+                            _bos.path.dirname(_bos.path.dirname(_bos.path.abspath(__file__))),
+                            "blender", "blender_state.json",
+                        )
+                        try:
+                            with open(_bs_path, "r", encoding="utf-8") as _bf:
+                                _bs = _bjson.load(_bf)
+                        except Exception:
+                            _bs = {}
+                        _bs["last_movement_result"] = {
+                            "intent": subject,
+                            "ok": False,
+                            "reason": _why,
+                            "ts": _btime.time(),
+                        }
+                        _tmp = _bs_path + ".tmp"
+                        with open(_tmp, "w", encoding="utf-8") as _bf:
+                            _bjson.dump(_bs, _bf, indent=2)
+                        _bos.replace(_tmp, _bs_path)
+                except Exception:
+                    pass
 
             elif etype == "water_play" and subject:
                 # eLo had fun in water — flag as positive experience in WKG
