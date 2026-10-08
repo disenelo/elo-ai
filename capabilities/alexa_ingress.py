@@ -190,6 +190,16 @@ def talk(utterance: str, turn_fn) -> tuple[str, bool]:
         return SYS_SLOW, False
 
 
+def reply_model() -> str:
+    """Ollama model for Alexa turns (David, 2026-10-08): the inner-thought model, so
+    the inner thought and the reply share one loaded model — no 12B↔14B swap, which
+    cost ~20–30 s a turn. eLo's main model (ELO_OLLAMA_MODEL) stays for everything
+    else ("eLo isn't a simple chat model"). Override with ALEXA_OLLAMA_MODEL."""
+    return (os.environ.get("ALEXA_OLLAMA_MODEL")
+            or os.environ.get("ELO_INNER_THOUGHT_MODEL")
+            or "mistral-nemo:12b")      # runtime/inner_thought_first.py default
+
+
 # ── 2b · eLo's own voice on the Echo (ElevenLabs → SSML <audio>) ───────────────
 # Alexa plays an <audio> clip only from a public HTTPS URL, as MP3 48 kbps at
 # 16/22.05/24 kHz. The clip is made with eLo's ElevenLabs voice (the same call

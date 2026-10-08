@@ -178,3 +178,12 @@ def test_slow_turn_is_held_then_delivered(monkeypatch):
 def test_listener_off_without_skill_id(monkeypatch):
     monkeypatch.delenv("ALEXA_SKILL_ID", raising=False)
     assert ai.serve(lambda t: {}) is None
+
+
+def test_reply_model_is_the_inner_thought_model(monkeypatch):
+    for k in ("ALEXA_OLLAMA_MODEL", "ELO_INNER_THOUGHT_MODEL"):
+        monkeypatch.delenv(k, raising=False)
+    from runtime import inner_thought_first as itf
+    assert ai.reply_model() == itf._MODEL == "mistral-nemo:12b"
+    monkeypatch.setenv("ALEXA_OLLAMA_MODEL", "x:1b")
+    assert ai.reply_model() == "x:1b"
