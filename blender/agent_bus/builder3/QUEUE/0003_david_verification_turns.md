@@ -48,3 +48,12 @@ Each turn traced through the language faculty → Executive candidates → B3 to
 | 10 | Search for the latest AI news | "Looked it up on <source> — …" | web_search · B3 |
 | 11 | Remember this: my studio is in Hackney Wick | "Got it — your studio's in Hackney Wick. I'll remember that." The fact is saved (facts.json "location"). No raw [CONTEXT] any more | `268b4c6` · B3 (the vault "Saved." line is B1's) |
 | 12 | Where is my studio? | must say "Hackney Wick" without re-telling: **Builder 1 (ROOT-2 demonstration)**. The fact exists in memory/facts.json + user_profile | B1 |
+
+## Seat re-check (Builder 3, 2026-10-08, after this week's routing changes; no live-server turns)
+Run under the server's python, offline. Actions stubbed (notes, location/fact writes, state writes, system actions). Fingerprints of memory/facts.json, blender/user_location.json, blender_state.json and user_profile.json were unchanged.
+- 1 weather → "Cloudy in Hackney Wick — 13°C, feels like 9°C." (real fetch) ✅
+- 2 play some music → spotify play_music · 3 pause → spotify control:pause · 7 open Spotify → spotify open ✅ (classified only; Spotify not touched)
+- 4 reminders → "You've got 14 open reminders: Buy Morning After Tea Green (due 26 Nov 2018); …" ✅ routes. ⚠️ Lists oldest first, so David will hear 2018 items first. Flagged, not changed.
+- 5 note → "Made a note: “eLo capability demo complete 2026-10-06”." ✅ · 8 brain → "Here's my brain." ✅ · 9 battery → "This Mac's on mains power — it doesn't have a battery." ✅
+- 10 search → web_search ✅ · 11 → "Got it — your studio's in Hackney Wick. I'll remember that." ✅
+- 6 and 12 → no Builder 3 tool; memory recall (Builder 1, ROOT-2; d16a948 marks WKG facts AUTHORITATIVE). On 2026-10-07, 12 answered "Born in Fulham, raised in Brixton." Unverified since.
