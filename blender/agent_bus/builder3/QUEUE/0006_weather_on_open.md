@@ -39,3 +39,9 @@ App opens → `weather_request` fires → brain fetches real weather → `weathe
 ## Live turn needed
 > David opens the app on a rain / clear day and Presence shows matching weather.
 > Board closes card on David's visual confirmation.
+
+## Update (Builder 3, 2026-10-08 evening): consumer fixed by B3 under file lock, 4f5ad98
+- With the lock protocol in place (WO-B1-0107) and David's "use lock protocol, let's get everything done", B3 applied its own spec (TO_BOARD_2026-10-08_WEATHER-CONSUMER-REVIEW.md) to `ambient/ambient_engine.py`, holding `ambient_engine.py.lock`, and released the lock after the commit.
+- `_publish_weather()`: on `weather_request`/`app_open` (fresh fetch) and every 12 min (first fetch at server start), it calls `get_current_weather()` in a background thread and writes `{"weather": "<word>"}`, the plain string Presence matches. No hard-coded city, all providers, nothing published when there's no word.
+- Tests: test_b3_weather_publish 4; existing ambient suites green.
+- Not done: needs a Presence relaunch, then David sees Presence match the sky (Board closes on that).
