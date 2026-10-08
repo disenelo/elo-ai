@@ -482,6 +482,17 @@ def _battery_tick() -> None:
                 _coll()
             except Exception:
                 pass
+            # Card 0009 — what eLo does for fun is experience, not telemetry.
+            # Presence fires water_play and auto_action when he dives, leaps
+            # or stomps of his own accord; Board verified 2026-10-08 that
+            # nothing consumed them, so none of it has ever reached WKG or
+            # SPG. Consumed on the tick that already runs, so it is live the
+            # moment the events start arriving.
+            try:
+                from core.play_experience import drain_pending as _play
+                _play()
+            except Exception:
+                pass
             # A correction has to leave a mark, or "Got it" is the whole
             # response. self/corrections_ledger.jsonl holds 47,238 rows and
             # none of them is a MEMORY — the ledger is append-only and
