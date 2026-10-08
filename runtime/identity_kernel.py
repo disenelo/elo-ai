@@ -97,6 +97,98 @@ class IdentityKernel:
         return "\n".join(parts)
 
 
+# ── WO-0105 Capability Fabric: Four Core Invariants ───────────────────────────
+# These are enforced architectural contracts, not suggestions.
+# Every capability dispatch, faculty invocation, and tool result passes through these.
+
+# INVARIANT 1: Capabilities may extend eLo's perception, knowledge, reasoning, memory,
+#              imagination, or ability to act. They must not replace eLo's identity.
+
+# INVARIANT 2: External tools provide results. eLo determines what those results mean
+#              to eLo and how eLo responds.
+
+# INVARIANT 3: eLo's inner life is continuous and is not suspended merely because a
+#              capability is being invoked.
+
+# INVARIANT 4: eLo does not select a tier. eLo recognises a need and uses the capability
+#              appropriate to that need.
+
+_CAPABILITY_INVARIANTS: tuple[str, ...] = (
+    "Capabilities may extend eLo's perception, knowledge, reasoning, memory, "
+    "imagination, or ability to act. They must not replace eLo's identity.",
+    "External tools provide results. eLo determines what those results mean "
+    "to eLo and how eLo responds.",
+    "eLo's inner life is continuous and is not suspended merely because a "
+    "capability is being invoked.",
+    "eLo does not select a tier. eLo recognises a need and uses the capability "
+    "appropriate to that need.",
+)
+
+
+def two_truths_gate(
+    operational_result: dict | None,
+    identity_response: str | None = None,
+) -> dict:
+    """
+    Separates operational truth from identity truth before any faculty synthesises a response.
+
+    Operational truth: what actually happened (macOS clock, calculator, search result,
+    filesystem state). Trusted by source authority. Never overridden by generated knowledge.
+
+    Identity truth: how eLo responds to what happened — expression, tone, framing,
+    emotional context. Comes from SELF (identity_kernel + current inner state).
+
+    Args:
+        operational_result: Result-metadata dict from a capability dispatcher (value, source,
+                            authority, confidence, freshness), or None if no system truth.
+        identity_response:  Pre-formed identity-layer text, if available. Usually None here —
+                            prompt_builder constructs it later using IDENTITY.as_anchor_block().
+
+    Returns:
+        {
+          "operational":  { ...result dict } | None,  # system truth, never overwritten
+          "identity":     str | None,                  # eLo's voice layer
+          "synthesise":   bool,                        # True = LLM needed to blend
+          "fast_answer":  str | None,                  # Set when no LLM needed at all
+        }
+
+    The caller is responsible for routing:
+      - fast_answer is set  → return it directly (no LLM call)
+      - synthesise is True  → pass both truths to faculty for voice-wrapped response
+      - both None           → fall through to executive
+    """
+    gate: dict = {
+        "operational": operational_result,
+        "identity":    identity_response,
+        "synthesise":  False,
+        "fast_answer": None,
+    }
+
+    if operational_result is None:
+        gate["synthesise"] = True
+        return gate
+
+    value = operational_result.get("value")
+    authority = operational_result.get("authority", "inference")
+    source = operational_result.get("source", "unknown")
+
+    if value is None:
+        gate["synthesise"] = True
+        return gate
+
+    # Definitive system truth (time, date, math) — answer in eLo's voice but
+    # do NOT let LLM override the factual content. Set fast_answer if no
+    # further synthesis is needed.
+    if authority == "definitive" and source == "macOS":
+        gate["fast_answer"] = str(value)
+        gate["synthesise"] = False
+        return gate
+
+    # Recorded or inference truth still needs voice synthesis
+    gate["synthesise"] = True
+    return gate
+
+
 # Module-level singleton — loaded once at import, frozen for the session lifetime
 try:
     IDENTITY: IdentityKernel = IdentityKernel.load()

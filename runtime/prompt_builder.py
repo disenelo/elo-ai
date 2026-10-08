@@ -1152,3 +1152,127 @@ def build(
     })
 
     return assembled
+
+
+# ── WO-0105 CAPABILITY FABRIC: Typed Faculty Prompt Builders ──────────────────
+#
+# Faculty prompts are built from classified packets, not from a full context dump.
+# Each faculty receives exactly what it needs for its contract — no more.
+#
+# Contract shapes (from WO-0105 spec):
+#   Executive:  {facts, state, constraints, options, goal}  → {decision, rationale, confidence, next_action}
+#   Planning:   {goal, current_state, constraints}          → {plan, sequence, dependencies, blockers}
+#   Creativity: {intent, constraints, reference_context}    → {ideas, variations, rationale}
+#
+# INVARIANT 2: External tools provide results. eLo determines what those results
+# mean to eLo and how eLo responds. Faculty prompts must preserve this — the
+# identity_anchor is always injected first.
+
+_FACULTY_IDENTITY_PREAMBLE = (
+    "You are eLo. You do not adopt a new identity to use this faculty. "
+    "The following information has been prepared for you. "
+    "Use it to inform your response. Your voice, values, and relationship with David do not change."
+)
+
+
+def build_faculty_prompt(
+    faculty: str,
+    packet: dict,
+) -> str:
+    """
+    Build a focused faculty prompt from a classified packet.
+
+    Faculty names: "executive" | "planning" | "creativity"
+    Packet keys vary by faculty (see contract shapes above).
+
+    Always injects IDENTITY anchor first (INVARIANT 1 + 2).
+    Never injects the full conversation history or raw user message.
+    Returns the assembled prompt string for direct use as a system message.
+    """
+    sections: list[str] = []
+
+    # Identity anchor — always first (INVARIANTS 1 + 2)
+    try:
+        from runtime.identity_kernel import IDENTITY as _IK, _CAPABILITY_INVARIANTS
+        sections.append(_IK.as_anchor_block())
+    except Exception:
+        sections.append("[IDENTITY ANCHOR]\nname: eLo\npurpose: Be genuinely present with David.")
+
+    sections.append(_FACULTY_IDENTITY_PREAMBLE)
+
+    faculty_lower = (faculty or "").lower().strip()
+
+    if faculty_lower == "executive":
+        # Contract: {facts, state, constraints, options, goal}
+        parts = ["[EXECUTIVE FACULTY — DECISION PACKET]"]
+        if packet.get("goal"):
+            parts.append(f"GOAL: {packet['goal']}")
+        if packet.get("facts"):
+            facts = packet["facts"]
+            if isinstance(facts, list):
+                parts.append("FACTS:\n" + "\n".join(f"  - {f}" for f in facts))
+            else:
+                parts.append(f"FACTS: {facts}")
+        if packet.get("state"):
+            parts.append(f"CURRENT STATE: {packet['state']}")
+        if packet.get("constraints"):
+            c = packet["constraints"]
+            if isinstance(c, list):
+                parts.append("CONSTRAINTS:\n" + "\n".join(f"  - {x}" for x in c))
+            else:
+                parts.append(f"CONSTRAINTS: {c}")
+        if packet.get("options"):
+            opts = packet["options"]
+            if isinstance(opts, list):
+                parts.append("OPTIONS:\n" + "\n".join(f"  - {o}" for o in opts))
+            else:
+                parts.append(f"OPTIONS: {opts}")
+        parts.append(
+            "\nRespond as eLo. Return: decision, your rationale, confidence (high/medium/low), "
+            "and the single next action. Be direct. No padding."
+        )
+        sections.append("\n".join(parts))
+
+    elif faculty_lower == "planning":
+        # Contract: {goal, current_state, constraints}
+        parts = ["[PLANNING FACULTY — PLAN PACKET]"]
+        if packet.get("goal"):
+            parts.append(f"GOAL: {packet['goal']}")
+        if packet.get("current_state"):
+            parts.append(f"CURRENT STATE: {packet['current_state']}")
+        if packet.get("constraints"):
+            c = packet["constraints"]
+            if isinstance(c, list):
+                parts.append("CONSTRAINTS:\n" + "\n".join(f"  - {x}" for x in c))
+            else:
+                parts.append(f"CONSTRAINTS: {c}")
+        parts.append(
+            "\nRespond as eLo. Return: a plan, the sequence of steps, any dependencies, "
+            "and known blockers. Be concrete. Keep steps small and reversible."
+        )
+        sections.append("\n".join(parts))
+
+    elif faculty_lower == "creativity":
+        # Contract: {intent, constraints, reference_context}
+        parts = ["[CREATIVITY FACULTY — CREATIVE PACKET]"]
+        if packet.get("intent"):
+            parts.append(f"INTENT: {packet['intent']}")
+        if packet.get("reference_context"):
+            parts.append(f"REFERENCE CONTEXT: {packet['reference_context']}")
+        if packet.get("constraints"):
+            c = packet["constraints"]
+            if isinstance(c, list):
+                parts.append("CONSTRAINTS:\n" + "\n".join(f"  - {x}" for x in c))
+            else:
+                parts.append(f"CONSTRAINTS: {c}")
+        parts.append(
+            "\nRespond as eLo. Return: 2-3 ideas, a variation for each, and your rationale. "
+            "Prefer the unexpected angle. Stay within constraints."
+        )
+        sections.append("\n".join(parts))
+
+    else:
+        # Unknown faculty — minimal wrapper, identity preserved
+        sections.append(f"[FACULTY: {faculty}]\n{packet}")
+
+    return "\n\n".join(sections)
