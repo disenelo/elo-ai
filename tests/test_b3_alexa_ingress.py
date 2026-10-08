@@ -11,8 +11,14 @@ import time
 from datetime import datetime, timedelta, timezone
 
 import pytest
+import threading
 
 from capabilities import alexa_ingress as ai
+
+@pytest.fixture(autouse=True)
+def _echo_not_connected(monkeypatch):
+    monkeypatch.setattr(ai, "_echo_is_mouth", lambda: False)
+
 
 SKILL = "amzn1.ask.skill.test-0000"
 URL = "https://s3.amazonaws.com/echo.api/echo-api-cert.pem"
@@ -187,3 +193,13 @@ def test_reply_model_is_the_inner_thought_model(monkeypatch):
     assert ai.reply_model() == itf._MODEL == "mistral-nemo:12b"
     monkeypatch.setenv("ALEXA_OLLAMA_MODEL", "x:1b")
     assert ai.reply_model() == "x:1b"
+
+
+def test_bluetooth_mouth_runs_turn_in_background_and_says_nothing(monkeypatch):
+    monkeypatch.setattr(ai, "_echo_is_mouth", lambda: True)
+    seen, gate = [], threading.Event()
+    def turn(t):
+        seen.append(t); gate.set(); return {"response": "spoken over Bluetooth"}
+    r = ai.handle(_req(utterance="how's it going"), turn)
+    assert r["response"] == {"shouldEndSession": True}
+    assert gate.wait(2) and seen == ["how's it going"]

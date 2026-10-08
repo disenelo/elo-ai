@@ -286,7 +286,37 @@ def _speech(text: str, end: bool = False, elo: bool = False,
     return {"version": "1.0", "response": resp}
 
 
+def _echo_is_mouth() -> bool:
+    """The Echo is connected to the Mac over Bluetooth (tools/echo_speaker), so eLo can
+    answer through it in his own voice."""
+    try:
+        from tools.echo_speaker import device_index
+        return device_index() is not None
+    except Exception:
+        return False
+
+
+def _turn_via_echo(turn_fn):
+    """David spoke through the Echo → eLo's reply (only) goes back through it."""
+    def run(text):
+        from tools import echo_speaker as _es
+        _es.want_for(180)
+        try:
+            return turn_fn(text)
+        finally:
+            _es.want_for(30)     # his reply may still be speaking after the turn returns
+    return run
+
+
 def _brain(utterance: str, turn_fn, base, t0) -> dict:
+    if _echo_is_mouth():
+        # Alexa is eLo's ears; Bluetooth is his mouth. The turn runs in the
+        # background and his own voice comes out of the Echo whenever the brain
+        # finishes — no 8 s limit, no second copy in Alexa's voice. The session
+        # ends so the Echo's mic doesn't hear eLo's voice back as input.
+        _run(_turn_via_echo(turn_fn), utterance)
+        print(f"[alexa] → eLo via Bluetooth (no Alexa speech): {utterance!r}", flush=True)
+        return {"version": "1.0", "response": {"shouldEndSession": True}}
     reply, from_brain = talk(utterance, turn_fn)
     return _speech(reply, elo=from_brain, base=base, t0=t0)
 
