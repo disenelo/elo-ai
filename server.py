@@ -2881,6 +2881,28 @@ def _process_turn(raw: str) -> dict:
             _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2697)
             return {"response": _time_resp, "mode": "direct", "backend": "direct"}
 
+        # WO-0104 CAPABILITY-DISPATCHER: FACT tier — math expressions
+        # T11 covers time/date; this covers arithmetic so "28 × 74" never hits LLM.
+        # dispatch_fact() uses safe AST eval — no exec() on raw user input.
+        try:
+            from runtime.capability_dispatcher import classify as _cap_classify, dispatch_fact as _cap_dispatch
+            if _cap_classify(raw) == "FACT":
+                _cap_result = _cap_dispatch(raw)
+                if _cap_result and _cap_result.get("value") is not None:
+                    _cap_val = str(_cap_result["value"])
+                    # Only intercept if this doesn't look like a time/date (T11 already handled those)
+                    _cap_is_timedate = any(t in _at_low for t in ("time", "date", "day", "today", "tomorrow", "yesterday"))
+                    if not _cap_is_timedate:
+                        try:
+                            if not _is_user_away():
+                                _voice_speak(_cap_val)
+                        except Exception:
+                            pass
+                        _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=0)
+                        return {"response": _cap_val, "mode": "direct", "backend": "capability_dispatcher"}
+        except Exception:
+            pass
+
         # T10: "Open Spotify" — direct open, no confirm flow
         if _spot_direct is None and _re.search(r'\bopen\s+spotify\b', raw, _re.I):
             try:
