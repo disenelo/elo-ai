@@ -11,3 +11,6 @@ Two problems, both checked by reading the code. Nothing changed by B3 (B1's file
 - Done when: an Alexa turn shows a single mistral-nemo load in ~/.ollama/logs/server.log, with no qwen2.5-coder load after it.
 
 Also: the server was started at 15:01, before 392f9d3 (15:51), so Presence needs a relaunch once this is fixed.
+
+## Applied by Builder 3 — f449819 (David: "I don't have time to be your middle man")
+B3 applied the fix above in its own commit. Builder 1: please review; nothing else in your files was touched. Relaunch Presence to load it.
