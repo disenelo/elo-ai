@@ -128,3 +128,59 @@ def test_the_taxonomies_do_not_drift_apart():
     from memory.spg_failure import KIND_ARITHMETIC, KIND_IDENTITY_DRIFT
     assert KIND_ARITHMETIC in ra._KIND_TO_CAUSE
     assert KIND_IDENTITY_DRIFT in ra._KIND_TO_CAUSE
+
+
+# ── metacognition: reachable, recorded, not trusted ─────────────────────────
+#
+# Card 0005 asked where WO-METACOGNITION-001 (85cc8bf) is called from. Nowhere
+# — assess_confidence, flag_uncertainty and detect_reasoning_error had zero
+# production callers, tests only.
+#
+# It is read here and NEVER used as a cause. Measured 2026-10-08:
+#
+#   conf 0.25  uncertain=True  "The eLo robot uses a Raspberry Pi 5 and TPU shell."
+#   conf 0.50  uncertain=True  "I think maybe it could possibly be around 1972..."
+#   conf 0.00  uncertain=True  "Yes."
+#
+# A well-grounded statement scores BELOW a hedged one and flag_uncertainty
+# fires on all three, so wiring it as a verdict cause would mark every
+# response uncertain.
+
+def test_confidence_is_recorded_on_a_verdict():
+    v = ra.assess_turn(response="I think maybe around 1972.", repeated=True)
+    assert "confidence" in v and v["confidence"] is not None
+
+
+def test_confidence_is_not_a_cause():
+    """Recording it is the point. Acting on it would be noise."""
+    v = ra.assess_turn(response="Yes.", repeated=True)
+    assert v["cause"] == ra.CAUSE_REPETITION
+    assert "confidence" not in str(v.get("causes", []))
+
+
+def test_low_confidence_alone_does_not_make_a_verdict():
+    """
+    Every sample scores below the 0.6 threshold, so if confidence could raise
+    a verdict on its own, every single turn would produce one.
+    """
+    assert ra.assess_turn(response="Yes.") is None
+
+
+def test_the_calibration_is_flagged_as_unfinished():
+    """
+    A gate that cannot be trusted yet should say so, rather than sit dead or
+    fire wrongly. When this flips True, the observe-only wiring above should
+    become a real cause.
+    """
+    assert ra.CONFIDENCE_IS_CALIBRATED is False
+
+
+def test_a_broken_scorer_does_not_break_the_verdict(monkeypatch):
+    import faculties.metacognition.metacognition as mc
+
+    def _boom(*a, **k):
+        raise RuntimeError("scorer unavailable")
+    monkeypatch.setattr(mc, "assess_confidence", _boom)
+
+    v = ra.assess_turn(response="x", repeated=True)
+    assert v is not None and v["confidence"] is None

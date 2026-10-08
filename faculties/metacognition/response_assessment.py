@@ -142,6 +142,8 @@ def assess_turn(
 
     worst = max(causes, key=lambda c: SEVERITY.get(c, 0.0))
     return {
+        # Recorded, not acted on — see CONFIDENCE_IS_CALIBRATED above.
+        "confidence": _confidence(response),
         "verdict": SUPPRESSED if not str(response or "").strip() else ANSWERED,
         "cause": worst,
         "causes": causes,
@@ -149,6 +151,39 @@ def assess_turn(
         "observed_by": "output_guards",
         "ts": time.time(),
     }
+
+
+# WO-METACOGNITION-001 (85cc8bf) built assess_confidence / flag_uncertainty /
+# detect_reasoning_error and nothing has ever called them — zero production
+# callers, tests only. Card 0005 went looking for the entry point; there is
+# none.
+#
+# It is NOT wired as a cause, and that is deliberate. Measured 2026-10-08:
+#
+#   conf 0.25  uncertain=True  "The eLo robot uses a Raspberry Pi 5 and TPU shell."
+#   conf 0.50  uncertain=True  "I think maybe it could possibly be around 1972..."
+#   conf 0.00  uncertain=True  "Yes."
+#
+# A well-grounded factual statement scores BELOW a hedged uncertain one, and
+# flag_uncertainty (threshold 0.6) fires on all three. The score is really
+# measuring WKG coverage, which is low across the board, so wiring it as a
+# verdict cause would mark every response eLo gives as uncertain — noise
+# dressed as self-knowledge.
+#
+# So it is READ and recorded, never acted on. That makes it reachable and its
+# calibration measurable instead of invisible, which is the same shape as the
+# observe-only Vol XI envelope check: a gate that cannot be trusted yet should
+# announce itself rather than either sit dead or fire wrongly.
+CONFIDENCE_IS_CALIBRATED: bool = False
+
+
+def _confidence(response: str) -> float | None:
+    """metacognition's own score, recorded for calibration. Never a cause."""
+    try:
+        from faculties.metacognition.metacognition import assess_confidence
+        return round(float(assess_confidence(str(response or ""), {})), 4)
+    except Exception:
+        return None
 
 
 def was_poor(verdict: Mapping[str, Any] | None) -> bool:
