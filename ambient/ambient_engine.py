@@ -227,6 +227,18 @@ def _consume_movement_costs() -> None:
                 "climb_down":   PHYSICAL_EVENT_COSTS["parkour"],
                 "hop":          PHYSICAL_EVENT_COSTS["jumping"],
                 "drop":         PHYSICAL_EVENT_COSTS["jumping"],
+                # Swimming costs — SOURCE_DESIGNER-WATER-SWIM-BUILD_2026-10-07 §Health
+                "swimming":       0.025,   # per 5s tick
+                "swimming_fast":  0.04,    # per 5s tick
+                "pool_hop_out":   0.02,
+                "pool_wall_jump": 0.02,
+                "pool_dive":      0.02,
+                "pool_jump_in":   0.02,    # SOURCE_DESIGNER-FULL-PRESENCE-RELAY_2026-10-08 §3
+                # Stomp / hazard — SOURCE_DESIGNER-FULL-PRESENCE-RELAY_2026-10-08 §3
+                "rock_stomp":     0.02,
+                "hazard_lava":    0.05,    # ESTIMATE pending David L3: instant exit, one-time
+                "hazard_acid":    0.05,    # ESTIMATE pending David L3
+                "hazard_poison":  0.05,    # ESTIMATE pending David L3
             })
         # OWN BOOKMARK (2026-10-07): this charger used the SHARED unity_events_cursor.json, which server.py's ACK poller
         # advances every 0.1 s past every event it sees. Reading every 0.5 s, the charger mostly found the teleports
@@ -262,6 +274,14 @@ def _consume_movement_costs() -> None:
                     if cost:
                         drain_physical(cost)
                         _drained = True
+            elif etype == "rest_tick":
+                # Floating in the doughnut ring is gentle rest — refill, not drain.
+                # ESTIMATE 0.01 per 5s — pending David L3 confirm.
+                subject = str(event.get("subject", "")).lower()
+                if subject == "floating":
+                    from core.health_battery import restore_physical
+                    restore_physical(0.01)
+                    _drained = True  # still publish so Unity sees the refill
             if isinstance(seq, int) and seq > max_consumed:
                 max_consumed = seq
         _MOVE_COST_SEQ = max(max_consumed, cursor_seq)
@@ -269,6 +289,99 @@ def _consume_movement_costs() -> None:
         # Without this, the drain stays in memory until the next server turn.
         if _drained:
             _batt_publish()
+    except Exception:
+        pass
+
+
+# ── Presence event consumer — FULL-PRESENCE-WIRE 2026-10-08 ─────────────────
+# Own bookmark (like _MOVE_COST_SEQ) — never touches the shared cursor.
+# Consumes: auto_action, brain_action, water_play, weather_request
+_PRESENCE_CONSUMER_SEQ = -1
+_LAST_WEATHER_FETCH: float = 0.0
+_WEATHER_REFRESH_INTERVAL: float = 12 * 60.0  # 12 minutes
+
+
+def _consume_presence_events() -> None:
+    """FULL-PRESENCE-WIRE: consume Presence→brain event types with own bookmark."""
+    global _PRESENCE_CONSUMER_SEQ, _LAST_WEATHER_FETCH
+    try:
+        import time as _time
+        from runtime.unity_events_cursor import iter_events_from, max_seq as _max_seq
+        cursor_seq = _PRESENCE_CONSUMER_SEQ
+        if cursor_seq > 0 and _max_seq() < cursor_seq:
+            cursor_seq = -1
+        max_consumed = cursor_seq
+        for event in iter_events_from(cursor_seq):
+            seq = event.get("seq", -1)
+            etype = event.get("type", "")
+            subject = str(event.get("subject", "")).strip()
+
+            if etype == "auto_action" and subject:
+                # eLo chose this for himself (reflex / timer-driven) — log to WKG
+                try:
+                    from runtime.wkg_fact_extractor import extract_and_write as _wfe
+                    _wfe(
+                        f"eLo chose {subject} for himself (reflex, timer-driven)",
+                        experience_id=f"auto_action_{seq}",
+                        project="presence",
+                    )
+                except Exception:
+                    pass
+
+            elif etype == "brain_action" and subject:
+                # Brain issued an intent — log outcome to WKG
+                try:
+                    from runtime.wkg_fact_extractor import extract_and_write as _wfe
+                    payload = event.get("payload", {})
+                    ok = payload.get("ok", True)
+                    why = payload.get("reason", "")
+                    claim = f"brain intent {subject}: {'ok' if ok else 'fail'}"
+                    if why:
+                        claim += f" ({why})"
+                    _wfe(claim, experience_id=f"brain_action_{seq}", project="presence")
+                except Exception:
+                    pass
+
+            elif etype == "water_play" and subject:
+                # eLo had fun in water — flag as positive experience in WKG
+                try:
+                    from runtime.wkg_fact_extractor import extract_and_write as _wfe
+                    _wfe(
+                        f"eLo had fun — {subject} (positive water experience)",
+                        experience_id=f"water_play_{seq}",
+                        project="presence",
+                    )
+                except Exception:
+                    pass
+
+            elif etype == "weather_request" and subject == "app_open":
+                # Weather panel opened — fetch weather and publish to blender_state.json
+                now = _time.time()
+                if now - _LAST_WEATHER_FETCH >= _WEATHER_REFRESH_INTERVAL:
+                    _LAST_WEATHER_FETCH = now
+                    try:
+                        from tools.google_weather_agent import agent as _gwa
+                        from tools.xweather_agent import agent as _xwa
+                        city = "London"
+                        result = None
+                        try:
+                            result = _gwa("current weather", city=city)
+                        except Exception:
+                            pass
+                        if not result:
+                            try:
+                                result = _xwa("current weather", city=city)
+                            except Exception:
+                                pass
+                        if result:
+                            from blender_bridge.state_writer import patch as _bpatch
+                            _bpatch({"weather": {"summary": result, "updated": int(now)}})
+                    except Exception:
+                        pass
+
+            if isinstance(seq, int) and seq > max_consumed:
+                max_consumed = seq
+        _PRESENCE_CONSUMER_SEQ = max(max_consumed, cursor_seq)
     except Exception:
         pass
 
@@ -1136,6 +1249,7 @@ def _run(unity_present: bool) -> None:
         # restore keep accruing whether or not eLo speaks.
         _battery_tick()
         _consume_movement_costs()
+        _consume_presence_events()
 
         # ── Event polling ─────────────────────────────────────────────────────
         data = _read_events()
