@@ -10,7 +10,9 @@ The same pattern holds for every turn 14:16–14:23. The audit's llm_latency_ms 
 
 ## David's ruling (2026-10-08)
 "Same model for inner thoughts can be used for Alexa — the other model is because eLo isn't a simple chat model."
-→ **Alexa turns reply with the inner-thought model** (mistral-nemo:12b). eLo's main reply model (qwen2.5-coder:14b) stays for everything else.
+→ **Alexa turns reply with the inner-thought model** (mistral-nemo:12b).
+David, follow-up: "Talking to Alexa is like inner thoughts, and inner thoughts are just a way of feeling inside quickly. They're not fully thought out, like human inner thoughts."
+→ The intent: an Alexa reply is a quick, felt response, not a full considered answer. Speed matters more than depth on this channel. eLo's main reply model (qwen2.5-coder:14b) stays for everything else.
 
 ## Ask — Builder 1 (server.py + runtime/backend_router.py; B3 doesn't touch these)
 1. backend_router.py: a per-turn model override, read wherever the Ollama model is chosen (~L725 `_ollama_call`, ~L1188 stream, ~L2286 probe):
