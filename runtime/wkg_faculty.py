@@ -452,14 +452,16 @@ def get_relationship_profile(entity_id: str, *, max_facts: int = 12) -> str:
         and c.get("confidence", 0) >= _RELATIONSHIP_MIN_CONFIDENCE
         and not c.get("contradicted_by")
     ]
-    # Sort: highest confidence first; within same confidence, newest recorded_at
-    # first. Claims with no recorded_at (None) sort LAST — `-None→0` would
-    # incorrectly rank them before any real timestamp (~1.7e9), so map None to
-    # -inf so the negation becomes +inf and they fall to the end.
+    # Sort: highest confidence first; within same confidence, newest first.
+    # Claims use 'created_at' (the actual write timestamp). The field was
+    # previously called 'recorded_at' in the sort key — that name never existed
+    # in the claim store so the recency tiebreak always resolved to None→0 and
+    # fell back to insertion order. Fixed to use 'created_at'. Claims with no
+    # timestamp sort LAST (mapped to -inf → negated to +inf → end of sort).
     subject_claims.sort(
         key=lambda c: (
             -c.get("confidence", 0),
-            -(c.get("recorded_at") if c.get("recorded_at") is not None else float("-inf")),
+            -(c.get("created_at") if c.get("created_at") is not None else float("-inf")),
         )
     )
 
