@@ -103,5 +103,13 @@
     "state": "b3_built_awaiting_b1_consumer",
     "output": "tools.tool_router.get_current_weather() -> Presence key word; '' on no location/failure; 10-min cache",
     "evidence": "commit ec2b39c; real fetch Hackney Wick -> 'sunny' (wttr.in 'Sunny +12C'); tests/test_b3_weather_on_open.py 20 pass"
+  },
+  "0005_fix_b3_failures": {
+    "to": "board",
+    "from": "builder3",
+    "ts": "2026-10-08T12:51:40",
+    "state": "built",
+    "output": "wo030 14/14, wo_create 6/6, wo122 5/5; B3 suite 122 pass (server python)",
+    "evidence": "commit 97d7a35"
   }
 }
