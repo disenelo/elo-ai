@@ -31,6 +31,39 @@ Test green. `has_deferred_threads` confirmed True in at least one real case. Com
 **Rows 29, 41, 42, 73, 82** (skill improvement / prediction error / developmental change) are marked "Future WO" in the brief — not this seat's to start. Board notes them as genuinely open, not done.
 
 ## Result
+- commit: `0395cf0` (chain test) · `fba4167` (the wire itself)
+- test: `test_deferred_threads_chain.py` — 7 passed; with the related suites, 36 passed
+- notes:
+  1. **open_threads populated by something other than restore()** — yes.
+     `deferred_threads.sync_to_self_state()`, called from `ambient_engine:402`,
+     writes it from unsurfaced questions. Before this, `open_thread()` was
+     called from exactly one place — `restore()` — replaying a payload whose
+     list was always empty. A closed loop on nothing.
+  2. **spine.py:1264 reads the updated store** — yes, unchanged and untouched.
+     A test asserts the two lines still exist, because the other six model
+     spine's read and would all pass if spine stopped doing it.
+  3. **has_deferred_threads = True** — confirmed. Asserted causally: the only
+     difference between the case where it is True and where it is False is
+     whether a question was left unsurfaced.
+  4. **executive_context:281 reflect preference fires** — confirmed, at 0.70.
+     Picking the thread back up turns it off again.
+
+  Nothing in spine.py or server.py needed changing, so no spec card for
+  Builder 1.
+
+## Live turn needed
+Two turns, in order.
+
+Turn 1 — ask something that makes eLo wonder without answering it himself,
+e.g. **"how do plotters actually work?"**. He should answer, and internally
+form a question he does not surface.
+
+Turn 2, same session or next — say something open like **"anything on your
+mind?"**. He should reach back for the thread rather than starting fresh;
+the Executive is now biased toward reflect while a thread is open.
+
+Before this, `has_deferred_threads` was False on every turn eLo had ever
+taken, so that bias had never once fired.
 - commit:
 - test:
 - notes:
