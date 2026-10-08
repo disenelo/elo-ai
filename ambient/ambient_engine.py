@@ -301,6 +301,42 @@ _LAST_WEATHER_FETCH: float = 0.0
 _WEATHER_REFRESH_INTERVAL: float = 12 * 60.0  # 12 minutes
 
 
+_WEATHER_BUSY = False
+
+
+def _publish_weather(force: bool = False) -> None:
+    """Card 0006 (B3): David's real local weather → blender_state.json["weather"]
+    as ONE Presence key word (rain/snow/fog/cloud/sunny/clear…), the same plain
+    string server.py writes per turn. tools.tool_router.get_current_weather():
+    David's known location (never a hard-coded city), every provider incl.
+    wttr.in, "" on no location / failure → nothing published (never a stale or
+    guessed "clear"). Background thread: a fetch can take seconds and must not
+    stall the ambient cycle. Called on app_open (force) and every cycle
+    (refreshes once _WEATHER_REFRESH_INTERVAL has passed)."""
+    global _LAST_WEATHER_FETCH, _WEATHER_BUSY
+    now = time.time()
+    if _WEATHER_BUSY or (not force and now - _LAST_WEATHER_FETCH < _WEATHER_REFRESH_INTERVAL):
+        return
+    _LAST_WEATHER_FETCH = now
+    _WEATHER_BUSY = True
+
+    def _fetch():
+        global _WEATHER_BUSY
+        try:
+            from tools.tool_router import get_current_weather
+            word = get_current_weather(max_age_s=0 if force else 600)
+            if word:
+                from blender_bridge.state_writer import patch as _bpatch
+                _bpatch({"weather": word})
+        except Exception:
+            pass
+        finally:
+            _WEATHER_BUSY = False
+
+    import threading as _thr
+    _thr.Thread(target=_fetch, name="weather-publish", daemon=True).start()
+
+
 def _consume_presence_events() -> None:
     """FULL-PRESENCE-WIRE: consume Presence→brain event types with own bookmark."""
     global _PRESENCE_CONSUMER_SEQ, _LAST_WEATHER_FETCH
@@ -355,29 +391,8 @@ def _consume_presence_events() -> None:
                     pass
 
             elif etype == "weather_request" and subject == "app_open":
-                # Weather panel opened — fetch weather and publish to blender_state.json
-                now = _time.time()
-                if now - _LAST_WEATHER_FETCH >= _WEATHER_REFRESH_INTERVAL:
-                    _LAST_WEATHER_FETCH = now
-                    try:
-                        from tools.google_weather_agent import agent as _gwa
-                        from tools.xweather_agent import agent as _xwa
-                        city = "London"
-                        result = None
-                        try:
-                            result = _gwa("current weather", city=city)
-                        except Exception:
-                            pass
-                        if not result:
-                            try:
-                                result = _xwa("current weather", city=city)
-                            except Exception:
-                                pass
-                        if result:
-                            from blender_bridge.state_writer import patch as _bpatch
-                            _bpatch({"weather": {"summary": result, "updated": int(now)}})
-                    except Exception:
-                        pass
+                # Card 0006 (B3): app opened → fetch David's real weather now.
+                _publish_weather(force=True)
 
             if isinstance(seq, int) and seq > max_consumed:
                 max_consumed = seq
@@ -1288,6 +1303,7 @@ def _run(unity_present: bool) -> None:
         _battery_tick()
         _consume_movement_costs()
         _consume_presence_events()
+        _publish_weather()          # card 0006: 12-min refresh (and first fetch at start)
 
         # ── Event polling ─────────────────────────────────────────────────────
         data = _read_events()
