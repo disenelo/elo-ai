@@ -236,9 +236,9 @@ def _consume_movement_costs() -> None:
                 "pool_jump_in":   0.02,    # SOURCE_DESIGNER-FULL-PRESENCE-RELAY_2026-10-08 §3
                 # Stomp / hazard — SOURCE_DESIGNER-FULL-PRESENCE-RELAY_2026-10-08 §3
                 "rock_stomp":     0.02,
-                "hazard_lava":    0.05,    # ESTIMATE pending David L3: instant exit, one-time
-                "hazard_acid":    0.05,    # ESTIMATE pending David L3
-                "hazard_poison":  0.05,    # ESTIMATE pending David L3
+                "hazard_lava":    0.05,    # David L3 confirmed 2026-10-08: instant exit, one-time
+                "hazard_acid":    0.05,    # David L3 confirmed 2026-10-08
+                "hazard_poison":  0.05,    # David L3 confirmed 2026-10-08
             })
         # OWN BOOKMARK (2026-10-07): this charger used the SHARED unity_events_cursor.json, which server.py's ACK poller
         # advances every 0.1 s past every event it sees. Reading every 0.5 s, the charger mostly found the teleports
@@ -276,7 +276,7 @@ def _consume_movement_costs() -> None:
                         _drained = True
             elif etype == "rest_tick":
                 # Floating in the doughnut ring is gentle rest — refill, not drain.
-                # ESTIMATE 0.01 per 5s — pending David L3 confirm.
+                # 0.01 per 5s — David L3 confirmed 2026-10-08.
                 subject = str(event.get("subject", "")).lower()
                 if subject == "floating":
                     from core.health_battery import restore_physical
