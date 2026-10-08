@@ -207,3 +207,79 @@ def test_it_does_not_shadow_runtime_working_memory():
     assert not hasattr(rwm.WorkingMemory, "add_event"), (
         "the two WorkingMemory classes have converged — one of them should go"
     )
+
+
+# ── the feeder ──────────────────────────────────────────────────────────────
+#
+# Card 0010 shipped the timeline with nothing writing to it and said so. The
+# card expected app events from "Designer's event bus if wired" — that bus
+# does not exist. Unity already writes the app name every tick:
+#
+#     blender/perch_state.json   {"app": "Claude", "edge": "bottom"}
+#     blender/motion_state.json  {"window": "Claude", "win_id": 473}
+#
+# The signal was there under a different name the whole time. This is what
+# makes "what was I doing?" answerable from state rather than from a model.
+
+def test_a_focus_change_is_recorded(tmp_path, monkeypatch):
+    import faculties.inner_thought.working_memory as wmm
+    monkeypatch.setattr(wmm, "_INSTANCE", wmm.WorkingMemory())
+    monkeypatch.setattr(wmm, "_current_app", lambda: "Blender")
+
+    ev = wmm.observe_focus()
+    assert ev is not None
+    assert ev["content"] == "Blender"
+    assert ev["type"] == "APP_FOCUSED"
+
+
+def test_unity_observing_it_is_definitive_not_inference(tmp_path, monkeypatch):
+    """
+    The OS reported the window. This is not eLo concluding what David is
+    doing, and the authority field is the thing that keeps those apart.
+    """
+    import faculties.inner_thought.working_memory as wmm
+    monkeypatch.setattr(wmm, "_INSTANCE", wmm.WorkingMemory())
+    monkeypatch.setattr(wmm, "_current_app", lambda: "Blender")
+    assert wmm.observe_focus()["authority"] == wmm.AUTHORITY_DEFINITIVE
+
+
+def test_the_same_app_is_not_logged_twice(monkeypatch):
+    """
+    The tick runs every 0.5s. Logging the app each time would fill a
+    thirty-row buffer with one app and lose the session.
+    """
+    import faculties.inner_thought.working_memory as wmm
+    monkeypatch.setattr(wmm, "_INSTANCE", wmm.WorkingMemory())
+    monkeypatch.setattr(wmm, "_current_app", lambda: "Blender")
+
+    assert wmm.observe_focus() is not None
+    assert wmm.observe_focus() is None
+    assert wmm.observe_focus() is None
+
+
+def test_switching_back_and_forth_is_recorded(monkeypatch):
+    import faculties.inner_thought.working_memory as wmm
+    monkeypatch.setattr(wmm, "_INSTANCE", wmm.WorkingMemory())
+
+    apps = iter(["Blender", "Blender", "Photoshop", "Blender"])
+    monkeypatch.setattr(wmm, "_current_app", lambda: next(apps))
+
+    got = [wmm.observe_focus() for _ in range(4)]
+    recorded = [g["content"] for g in got if g]
+    assert recorded == ["Blender", "Photoshop", "Blender"]
+
+
+def test_elos_own_window_is_not_a_record(monkeypatch):
+    """eLo perching on himself says only that eLo exists."""
+    import faculties.inner_thought.working_memory as wmm
+    monkeypatch.setattr(wmm, "_INSTANCE", wmm.WorkingMemory())
+    for app in ("", "Presence", "eLo", "unknown"):
+        monkeypatch.setattr(wmm, "_current_app", lambda a=app: a)
+        assert wmm.observe_focus() is None
+
+
+def test_the_ambient_tick_observes_focus():
+    import pathlib
+    src = (pathlib.Path(__file__).resolve().parent.parent
+           / "ambient" / "ambient_engine.py").read_text()
+    assert "working_memory import observe_focus" in src

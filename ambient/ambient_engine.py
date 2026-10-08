@@ -493,6 +493,17 @@ def _battery_tick() -> None:
                 _play()
             except Exception:
                 pass
+            # What David is actually in front of. Card 0010 shipped the
+            # timeline with nothing writing to it and said so; the card
+            # expected an event bus from Designer that does not exist. Unity
+            # already writes the app name every tick into perch_state.json
+            # and motion_state.json — the signal was there under a different
+            # name the whole time. Deduped, so only a CHANGE is recorded.
+            try:
+                from faculties.inner_thought.working_memory import observe_focus
+                observe_focus()
+            except Exception:
+                pass
             # A correction has to leave a mark, or "Got it" is the whole
             # response. self/corrections_ledger.jsonl holds 47,238 rows and
             # none of them is a MEMORY — the ledger is append-only and

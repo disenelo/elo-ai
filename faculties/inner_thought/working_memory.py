@@ -31,7 +31,9 @@ reader has to guess anyway.
 """
 from __future__ import annotations
 
+import json
 import logging
+import os
 import threading
 import time
 from typing import Any, Iterable, Mapping
@@ -191,3 +193,67 @@ def recent_events(n: int = 10) -> list[dict]:
 
 def query(q: str) -> list[dict]:
     return _INSTANCE.query(q)
+
+
+# ── Feeder: what David is actually in front of ──────────────────────────────
+#
+# Card 0010 shipped the timeline with nothing writing to it, and said so. The
+# card expected app events from "Designer's event bus if wired" — that bus
+# does not exist. But Unity already writes the app name every tick:
+#
+#     blender/perch_state.json   {"app": "Claude", "edge": "bottom"}
+#     blender/motion_state.json  {"window": "Claude", "win_id": 473}
+#
+# So the signal was there, under a different name, the whole time. Reading it
+# makes "what was I doing?" answerable from state instead of from a model,
+# which is the point of the STATE tier.
+#
+# Authority is `definitive`: Unity observed the window. It is not eLo's
+# inference about what David is doing — it is what the OS reported.
+
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_PERCH_PATH = os.path.join(_ROOT, "blender", "perch_state.json")
+_MOTION_PATH = os.path.join(_ROOT, "blender", "motion_state.json")
+
+# Apps worth nothing as a record. eLo perching on his own window says only
+# that eLo exists.
+_IGNORED_APPS = frozenset({"", "unknown", "none", "presence", "elo", "desktop"})
+
+
+def _current_app() -> str:
+    """Whatever Unity last reported, or "" if it reported nothing usable."""
+    for path, key in ((_PERCH_PATH, "app"), (_MOTION_PATH, "window")):
+        try:
+            with open(path, encoding="utf-8") as f:
+                app = str((json.load(f) or {}).get(key, "") or "").strip()
+            if app and app.lower() not in _IGNORED_APPS:
+                return app
+        except Exception:
+            continue
+    return ""
+
+
+def observe_focus(app: str | None = None) -> dict | None:
+    """
+    Record an app change, if there is one. Returns the event, or None.
+
+    Deduped against the last APP_FOCUSED: a timeline that logs the same app
+    every half-second is noise, and the ring buffer would hold thirty
+    identical rows instead of a session.
+    """
+    current = _current_app() if app is None else str(app or "").strip()
+    if not current or current.lower() in _IGNORED_APPS:
+        return None
+
+    for e in _INSTANCE.recent_events(MAX_EVENTS):
+        if e.get("type") == "APP_FOCUSED":
+            if str(e.get("content", "")) == current:
+                return None
+            break
+
+    return _INSTANCE.add_event({
+        "type": "APP_FOCUSED",
+        "content": current,
+        "source": "unity",
+        "authority": AUTHORITY_DEFINITIVE,
+    })
