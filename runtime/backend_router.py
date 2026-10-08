@@ -73,6 +73,12 @@ _TIER_CREATE         = 4   # WO-CREATE-CAPABILITY: file/draft generation (REASON
 # ── CT0031: Ollama timing telemetry — populated by _ollama_call each turn ─────
 _last_ollama_metrics: dict = {}
 
+# ── ALEXA-MODEL-OVERRIDE: per-turn Ollama model override (thread-local) ───────
+# Set _per_turn.ollama_model before dispatching a turn to pin a specific model
+# for that thread only (e.g. Alexa turns use mistral-nemo:12b already in RAM).
+import threading as _threading
+_per_turn = _threading.local()
+
 # ── WO-0057-PART-C: 4-second rule data dir ───────────────────────────────────
 _4S_DATA_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -722,7 +728,9 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
     """Call local Ollama instance via stdlib urllib."""
     import urllib.request as _ureq, json as _json
     host  = os.environ.get("ELO_OLLAMA_HOST",  "http://localhost:11434").rstrip("/")
-    model = os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
+    # ALEXA-MODEL-OVERRIDE: thread-local set by Alexa handler wins over env var,
+    # so Alexa replies reuse mistral-nemo:12b already warm from inner thought.
+    model = getattr(_per_turn, "ollama_model", None) or os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
     # WO-OLLAMA-SPEED-001: trim system prompt for local inference speed.
     # llama3.2:3b evaluates ~150 tok/sec; 12000 chars ≈ 3000 tok → ~20s prompt eval.
     _SP_MAX = int(os.environ.get("ELO_OLLAMA_SP_MAX", "12000"))

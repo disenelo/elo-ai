@@ -9642,7 +9642,20 @@ if __name__ == "__main__":
     # set; every request signature-verified. Same turn pipeline as /chat.
     try:
         from capabilities.alexa_ingress import serve as _alexa_serve
-        _alexa_serve(lambda _t: _condition_outbound(_process_turn_queued(_t)))
+        # ALEXA-MODEL-OVERRIDE: pin mistral-nemo:12b for Alexa replies so the model
+        # already loaded by inner thought stays warm — no reload between thought and reply.
+        # ELO_ALEXA_REPLY_MODEL overrides the default in .env.
+        _ALEXA_REPLY_MODEL = os.environ.get("ELO_ALEXA_REPLY_MODEL", "mistral-nemo:12b")
+
+        def _alexa_turn_handler(_t):
+            from runtime import backend_router as _br
+            _br._per_turn.ollama_model = _ALEXA_REPLY_MODEL
+            try:
+                return _condition_outbound(_process_turn_queued(_t))
+            finally:
+                _br._per_turn.ollama_model = None
+
+        _alexa_serve(_alexa_turn_handler)
     except Exception as _alexa_err:
         print(f"[alexa] ingress not started: {_alexa_err}", flush=True)
 
