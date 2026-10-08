@@ -2398,6 +2398,10 @@ def route(
         _env_mode = "local"
     mode = mode or _env_mode or "auto"
 
+    # WO-TIER-FIX-001: populate boot health ONCE per turn regardless of which branch runs.
+    # This primes the Ollama TTL cache so the mode=="local" branch never re-probes.
+    _boot_health = _get_boot_health()
+
     # intent-based model override — user explicitly named a backend
     _override = _detect_model_override(user_input)
     if _override == "claude" and _claude_available():
@@ -2904,7 +2908,7 @@ def route(
     # the next tier. If local_only and Ollama dead, say so — do not cascade.
     _ifr_action = (action or "").lower().strip()
     if _ifr_action in _INTENT_PROVIDER_PREFERENCE and mode != "mock":
-        _health = _get_boot_health()
+        _health = _boot_health  # already populated above — no re-probe
         _prefs = _INTENT_PROVIDER_PREFERENCE[_ifr_action]
         if _ifr_action == "local_only":
             # Explicit local-only: Ollama or honest failure — never cascade to cloud
@@ -2938,7 +2942,8 @@ def route(
         return _mock_fallback(user_input), "mock"
 
     if mode == "local":
-        if _ollama_available():
+        # WO-TIER-FIX-001: use cached boot health — never re-probe dead Ollama per-turn.
+        if _boot_health.get("ollama", False):
             try:
                 raw = _ollama_call(system_prompt, user_input)
                 # post-response voice filter: remove banned phrases that llama3.1:8b produces
@@ -2965,6 +2970,16 @@ def route(
                 return normalise(raw, max_sentences), "ollama"
             except Exception as e:
                 _logger.warning("Ollama failed: %s", e)
+        # WO-TIER-FIX-001: local+dead Ollama → degrade to best available cloud, not mock.
+        # David ruling 2026-10-08: "fix the Tier system" — silence is not acceptable when cloud is live.
+        _logger.info("WO-TIER-FIX-001: local mode, Ollama dead — degrading to cloud tier")
+        for _fallback_p in ("groq", "cerebras", "gemini", "openai", "claude"):
+            if not _boot_health.get(_fallback_p):
+                continue
+            _r = _ifr_call(system_prompt, user_input, _fallback_p, action, max_sentences, _budget)
+            if _r:
+                _logger.info("WO-TIER-FIX-001: local-dead fallback answered by %s", _fallback_p)
+                return _r
         return _mock_fallback(user_input), "mock"
 
     if mode == "cloud":

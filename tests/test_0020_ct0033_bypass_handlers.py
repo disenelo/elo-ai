@@ -40,13 +40,14 @@ def test_bh1_helper_exists():
 # Updated 2026-09-20: WO additions pushed count to 42 (authorized)
 # Updated 2026-09-29: 10 new WO handlers added (session 3 dispatch) → count is now 52 (authorized)
 # Updated 2026-10-05: P0-REFERENCE gate added reference_gate handler → count is now 53 (authorized)
+# Updated 2026-10-08: Full Presence Wire relay handlers added → count is now 55 (authorized)
 def test_bh2_count_31():
     with open(os.path.join(ROOT, "server.py"), encoding="utf-8") as f:
         src = f.read()
     count = src.count("_bypass_journal(_original_raw,")
-    if count != 53:
-        err(f"BH-2: expected 53 _bypass_journal calls, found {count}")
-    ok(f"BH-2: exactly 53 _bypass_journal calls present")
+    if count != 55:
+        err(f"BH-2: expected 55 _bypass_journal calls, found {count}")
+    ok(f"BH-2: exactly 55 _bypass_journal calls present")
 
 
 # ── BH-3: COGNITIVE handlers fall through (no return after bypass_journal) ────
