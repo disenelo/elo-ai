@@ -48276,5 +48276,2025 @@
     "affective_snapshot": null,
     "cognitive_snapshot": null,
     "context_action": null
+  },
+  {
+    "claim_id": "27a8fc8b-3425-4f23-b421-0d741889a5c5",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9098d92e-06c2-480e-91bd-fe0ebe562f71",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:answer"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791292678.876534,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "7e3b36b2-5287-47a3-84cc-15d09e299199",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "ebbfe451-d02e-44ce-8ae1-48dab7bab9af",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:answer"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791293095.620691,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "ad2a3586-3b0b-40da-929b-ccf9cc361a91",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "05a0fa2d-559c-4985-b474-c9ea10ceef7f",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "turn_broad:witness"
+    ],
+    "confidence": 0.55,
+    "created_at": 1791293316.9124842,
+    "memory_type": "episodic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "witness"
+  },
+  {
+    "claim_id": "54cad9b8-3729-4f0c-9ac4-d7d902f0af6d",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "36c787bd-bfa7-4dfe-9905-0bdb175dc990",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel_profile"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791293345.143469,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "48e112f0-2735-40db-a52f-09bec8174c00",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9e151aab-fa78-49ff-ae4a-784cb7162dbc",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:witness"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791293351.050215,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "46d5a0cd-2716-4d8d-aea2-0435a2531151",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "a091f7a4-5c1d-4b06-baba-33e7d25e9f33",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791293372.23981,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "2732d2a6-9765-41f6-b28e-b0c15388d64e",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "548cfa5b-c7c3-4e3d-aabf-7938fd45339c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:answer"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791293398.415159,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "be9bb157-49ef-4449-98dd-bae953858fb7",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "2320e6ab-0f1f-447b-83c7-b5f709be7304",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:witness"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791293435.628834,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "9f0c57f6-4f24-416a-9fc6-a83b782ec797",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "2320e6ab-0f1f-447b-83c7-b5f709be7304",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:witness"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791293473.711824,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "9dd7559a-8199-4460-9b83-c2c977532d4a",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "2320e6ab-0f1f-447b-83c7-b5f709be7304",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:answer"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791293526.481121,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "8af9e4d4-1a91-40cb-b72a-6e47ff7a0eec",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "beeaa477-7224-493f-9f05-e887eefe2960",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791294516.1891258,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "46243433-6d67-4a7c-81c9-890f5c0afaa1",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "3b21f6b3-3237-489b-a56b-f64010ecbfaf",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791294851.761655,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "a24c10fd-246a-40ad-8004-5de199ac64f0",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "d0c2ad00-2f78-4375-9eb5-6b39204206da",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791295114.716893,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "cc7e6684-8c59-43cb-a070-005b01597f18",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "0aa0a46b-4a5c-4c66-a870-a01b9eaa6eba",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791295173.27919,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "f02eeaf0-047a-45a4-8fe2-8a5916530068",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "7bb7cb54-f587-4029-819e-419213f327ea",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791295588.685864,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "7ca650ed-af07-441a-b2a1-d4ca4c9c4aee",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "02f79038-878a-4405-b5a9-aa5f1c7a37d6",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791295877.067789,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "a7351c75-5829-44ca-a9c2-7637fd5b10c2",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "548cfa5b-c7c3-4e3d-aabf-7938fd45339c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:witness"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791296182.1772318,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "5c297723-3638-4f43-954c-daf3942b8e60",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "548cfa5b-c7c3-4e3d-aabf-7938fd45339c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:witness"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791296266.137706,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "0a78d175-204e-4e16-b40b-b7dfc162813c",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "93a22af6-f22f-4874-8ace-2db1053e9457",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791296594.609366,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "ceaa18b5-4ccb-4122-9340-4a294cde1c75",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "04773a8c-1c1a-4949-8e7e-ff41c139ce14",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "turn_broad:witness"
+    ],
+    "confidence": 0.55,
+    "created_at": 1791296617.2918248,
+    "memory_type": "episodic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "witness"
+  },
+  {
+    "claim_id": "8d4b7710-8cde-41d3-8140-595f1ca8bfd2",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "8421af4b-903a-427d-95d7-b3206bcb5f78",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791296880.65267,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "ee2602b8-cba2-4a0b-ac12-1a22cbcc2916",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9e151aab-fa78-49ff-ae4a-784cb7162dbc",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "turn_broad:witness"
+    ],
+    "confidence": 0.55,
+    "created_at": 1791296912.23195,
+    "memory_type": "episodic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "witness"
+  },
+  {
+    "claim_id": "f60dffae-9e4f-48bc-9bc7-3ffd348c40f8",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9e151aab-fa78-49ff-ae4a-784cb7162dbc",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "turn_broad:witness"
+    ],
+    "confidence": 0.55,
+    "created_at": 1791297037.369605,
+    "memory_type": "episodic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "witness"
+  },
+  {
+    "claim_id": "f277ccfe-7385-421f-908d-be274557bb16",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9e151aab-fa78-49ff-ae4a-784cb7162dbc",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "turn_broad:witness"
+    ],
+    "confidence": 0.55,
+    "created_at": 1791297211.428415,
+    "memory_type": "episodic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "witness"
+  },
+  {
+    "claim_id": "038070b3-f609-4002-b20e-3fdce81fcf76",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "4b9be28e-b50f-421e-8a1a-5a11e42d7b86",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791297658.093965,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "6b61e085-b054-4aeb-9274-a927b641129e",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "6fa3f4dc-09be-4a42-b845-60b17c464609",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b734200"
+    ],
+    "confidence": 0.75,
+    "created_at": 1791297870.8135831,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": null,
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "f0e1f282-90e1-4df2-ae9f-571dac0f58c0",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9098d92e-06c2-480e-91bd-fe0ebe562f71",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:answer"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791297871.0268779,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "bbb5ce3b-0727-40d5-bae4-b3c2c14d6e59",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "0b053ee9-5a33-48d8-a84f-5396874a7463",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791298637.2151392,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "644ce297-8948-4bc3-93c3-b7665fe6d5d3",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "b7aa75e6-7b9c-4504-b67d-d18409126662",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791308892.463818,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "614dd65c-fa69-41ce-b98e-8bcfcfd6b947",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "f1832736-9c5b-457c-9096-f84c74e4bd2b",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791308980.8722858,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "8456787f-6493-45ee-bad1-35172bc5b9ac",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "eaf9e811-c74c-423d-8e66-3fefc98a5292",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791309760.674405,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "920d89f4-199c-4df5-82b4-6bc72f5d8b39",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "1bae4a50-191a-419c-be58-8f6a15f3f821",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791309801.4864361,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "abac2781-98d1-4b23-9384-63655eaac62c",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "fab18773-6609-46ec-897d-c699bf269932",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791310245.0822358,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "6dd2e315-1248-4f1a-b179-2365f692fa73",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "0455b0ef-a237-44b7-aaae-fa807fd4b725",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5_debug"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791310264.904555,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "0c01decd-6d56-4bf0-9060-32b6f529ad6e",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "4dc4fcd3-ffb2-42b9-a254-606c60410395",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791310311.275248,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "c3f8d448-6940-4c3f-98aa-064577c21a29",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "29b33901-0e92-462b-8cb8-cf91ed01d9ff",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791310353.259862,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "3aa5dc30-8f85-4162-82af-36295c0283c3",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "640df0d8-5308-46d8-a2f4-316464d53332",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791310417.590177,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "c79ed855-a80b-48d1-8a82-c410cd0fa710",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "b4845622-41f3-4a41-b3bb-01857724fe68",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791310466.116342,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "80d32ca5-c7ee-4872-8f66-888877ba5358",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "fa07b1dc-4294-4b8d-a261-7d5ba0c1156e",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791310468.0791192,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "b27f062d-f2f1-4fe1-a380-5dfb97a11cca",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "0167f057-e595-4337-872d-5d10eb7027cc",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791310514.1702242,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "38f49214-f8fa-4133-9c97-2a6d944b2af8",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "f8be9938-1edf-42d7-b44e-e694c9c0c3e8",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791310520.883542,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "91b6ed8e-13a6-45d2-9e22-bdc6b5305499",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "5ce33709-ced5-4e52-a187-b9e2254f7d52",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791317797.39635,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "9742f2b6-4ad3-443f-b667-936848d529c1",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791380108.358722,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "test-xp-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "5eefce83-d951-428c-8df8-ce052e99bd53",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791380176.9151769,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "e0987af0-1433-4e03-a0e6-0d53e7414f69",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791380210.9165812,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "31f9639a-f79f-402f-89a4-ba5abf7e80aa",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "83161b8c-1369-416b-b3f7-d8db6d9c67aa",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791380349.530805,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "verify-turn-1791380349",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "870af9d7-848c-49b9-93dd-674f46e2fb9c",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791380380.1072617,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "8ae28668-fa4d-4762-a82f-6a75d91726fd",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791380499.1224482,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "e79b8b9b-03c7-452a-8dc7-c973c1636aa1",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791380594.6860697,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "a7eadc78-dec3-44fa-97a6-9118e98fd5ed",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "80f3f458-142f-482c-b983-fd5bdda00d05",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b771a20"
+    ],
+    "confidence": 0.75,
+    "created_at": 1791380664.2926452,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": null,
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "48010dd1-0811-4c5c-a16b-57b761c15464",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "548cfa5b-c7c3-4e3d-aabf-7938fd45339c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:answer"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791380664.624167,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "41f57329-697e-465a-8406-46b20c5a83aa",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791380824.5578094,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "1c88e358-6b60-4bb4-b114-5e8497cdbe7e",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791380929.297862,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "2a4c3ee6-a359-44d6-8caa-2b99a3cb1fa5",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791381145.7892706,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "883e0ad3-8767-4626-bd49-a1230bc36f7c",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791381663.463962,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "275db8a1-099a-4de2-ab91-0246fd0735e4",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791381784.2037446,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "8dc5b231-b023-44e8-bcbb-bcda56dd8e98",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791382594.3154998,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "d708fdaa-7277-447b-afdd-a49490d5c650",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791382612.7591972,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "1dbc35be-aa4b-4a41-95ba-6a1222211362",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "c27647ba-f897-41da-be1d-c6debefc3b91",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b774698"
+    ],
+    "confidence": 0.75,
+    "created_at": 1791400187.9199512,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": null,
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "7a234f1f-bcd3-4df4-a8d7-222f57813481",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9098d92e-06c2-480e-91bd-fe0ebe562f71",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:witness"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791400189.921077,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "7f8bf166-8f22-4bfc-ba79-2c17b80102e9",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791459939.321105,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "3293ee7a-aaf0-4777-b96f-210c85c4b746",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "90798b60-0c26-4ba7-a125-a40a70a2ac0a",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791460061.255682,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "aa006633-011c-4a14-90ee-31c49448cdd5",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791460089.4941828,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "561d97ec-a3b7-4167-84a8-1f203b838d1b",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791460171.917043,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "cf6b4ebc-5dab-4998-82c2-1f78617ea4e3",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791463444.1511612,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "ad2c614b-e1f1-4212-ab45-6ff91e002331",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "9d36ac57-0200-4815-a1dc-11a99b278185",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b7179d0"
+    ],
+    "confidence": 0.75,
+    "created_at": 1791463866.273859,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": null,
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "3741b40a-df16-4c98-8ea3-564a9006ee23",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "2320e6ab-0f1f-447b-83c7-b5f709be7304",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:answer"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791463866.477313,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "14807be4-fb9b-41a0-a680-c752d9bc03e7",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "f660873e-f98d-4bb9-a54e-9cb6c837bf3c",
+    "epistemic_class": "VERIFIED",
+    "source_ids": [
+      "GN\u00b7LN\u00b72610\u00b75\u00b75b758"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791463880.8796191,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": null,
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "b4299ed9-fbc8-4551-959d-4d183e37c771",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "5d00b90a-2632-4654-b48f-0bc096696423",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "turn_broad:answer"
+    ],
+    "confidence": 0.55,
+    "created_at": 1791463885.2830641,
+    "memory_type": "episodic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "answer"
+  },
+  {
+    "claim_id": "66a809a7-16a4-401d-ab04-23baf880bd00",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "35bbdeb7-4d35-4b67-bc01-7f403642e10d",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791463898.914639,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "38538caa-0251-44ca-89a0-bce8467c54e9",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791463904.186669,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "c0474841-3707-4fbc-a8f0-8c3b77eebee9",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "5d00b90a-2632-4654-b48f-0bc096696423",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "turn_broad:answer"
+    ],
+    "confidence": 0.55,
+    "created_at": 1791463933.058817,
+    "memory_type": "episodic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": "answer"
+  },
+  {
+    "claim_id": "1848ff63-6219-47ff-a4d6-fee08ca1ff78",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "6c061320-0699-4655-8465-5ada01be0abf",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791464040.407167,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "135c5e3d-80d3-42ea-bc29-c99d2cb2f277",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "60f8cb75-6949-4873-be33-5715b169867e",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b72b8c8"
+    ],
+    "confidence": 0.75,
+    "created_at": 1791465538.01163,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": null,
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "d78e3bc6-558d-4d87-9453-215e674ad13c",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "2e7e2c75-afee-450f-9166-8491bfeed551",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:witness"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791465538.161858,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "9efe93aa-9262-448d-978d-85325a012baa",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791466258.700991,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "bd3777bd-c522-4837-9370-c6aa6f5674f8",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791466382.613138,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "cde3dc56-4b9f-4d19-8e62-b14fe23afa3c",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "460b7c57-0765-491c-95b8-387e42692814",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791466434.199218,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "ba0dd8f6-9e5d-47da-a94a-b22113c97ab9",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "d482f252-10d7-43fe-97a9-f11493a67598",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791466485.887916,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "7a4c2d53-655f-474c-8a22-c2347b64fe0b",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:test"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791466519.3860118,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "causal-chain-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "41d5bde7-bb49-4e11-a2b2-b3b36624a1dc",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "49128717-6293-4b24-a6cc-81b110df1f72",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "test_rel5"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791466723.74646,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "9976689c-0f64-44c0-ac1d-631721d0fa2d",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "78f1d86b-5e7a-45dd-b6f7-0192c6babcb6",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b71a918"
+    ],
+    "confidence": 0.75,
+    "created_at": 1791467489.964834,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": null,
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "052d8844-eb48-40c3-b654-1aa5cce97dbc",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "2e7e2c75-afee-450f-9166-8491bfeed551",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:witness"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791467490.13342,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "cb0b3af2-1294-4f26-bfe4-7ad43f2a382d",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "74ffcd21-5bc5-44cc-8440-6005676bb349",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b72cfd8"
+    ],
+    "confidence": 0.75,
+    "created_at": 1791468051.60194,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": null,
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "186cc015-a48e-4ce0-9cfd-2395a943bd48",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "ebbfe451-d02e-44ce-8ae1-48dab7bab9af",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "interaction:witness"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791468051.775894,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "7db218f7-ed55-4f8c-bd38-67b1906909f1",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "causal-chain-test-001"
+    ],
+    "confidence": 0.95,
+    "created_at": 1791468432.510897,
+    "memory_type": "unclassified",
+    "significance_score": null,
+    "experience_id": null,
+    "contradicted_by": [],
+    "memory_origin": null,
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "e0e98d6b-69b2-46c2-b36b-426f557ea24e",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:eLo"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791471752.295802,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "wkg-growth-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "76f78fc0-12e8-42d9-a37a-d6cdbaa106e6",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "cf718b92-ae42-4430-937b-28983ea51d5d",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:eLo"
+    ],
+    "confidence": 0.65,
+    "created_at": 1791471752.46877,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "wkg-growth-test-001",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "8eb5d0ae-b287-45cd-b5e7-fe48e729e70f",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:eLo"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791471797.205893,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "wo-0090-verify",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "83592094-8a8b-47af-9b40-20ec05f68eef",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "cf718b92-ae42-4430-937b-28983ea51d5d",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:eLo"
+    ],
+    "confidence": 0.65,
+    "created_at": 1791471797.386603,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "wo-0090-verify",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "fe302d14-12df-4d7b-ae0c-68b52f07f79c",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "00f506cc-3300-4c6a-8867-6b880e136c23",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:eLo"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791471836.128273,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "wo-0090-final-verify",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "55fed772-7d9d-4b0d-959d-1eef6d641520",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "b0142a8f-9ae9-4db1-98d8-df7d0d2d0c2d",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:elo_core"
+    ],
+    "confidence": 0.65,
+    "created_at": 1791472078.0587578,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "backfill:2026-08-04T19-02-12-680376Z",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "695f12d6-c02c-46cf-b18b-56584647c3e6",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "d6feb035-cb11-4a2b-80df-2566f0da901e",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:elo_core"
+    ],
+    "confidence": 0.68,
+    "created_at": 1791472078.462903,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "backfill:2026-08-13T22-20-21-203361Z",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "f82d39e9-530f-4b35-9f4e-28be8a16a4f1",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "91e0b574-2e4e-4cd3-af75-27b44bf70aaa",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:disenelo_universe"
+    ],
+    "confidence": 0.65,
+    "created_at": 1791472078.67261,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "backfill:2026-09-11T05-53-58-613983+00-00",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "fa0c909d-890b-4a6c-8956-2812527440c8",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "91e0b574-2e4e-4cd3-af75-27b44bf70aaa",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:disenelo_universe"
+    ],
+    "confidence": 0.65,
+    "created_at": 1791472078.801901,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "backfill:2026-09-11T05-56-24-903943+00-00",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "ac3d438c-44cc-4eda-8290-ac4f5651e65b",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "d1e49623-40e1-41b4-b550-619548ee16de",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:elo_core"
+    ],
+    "confidence": 0.65,
+    "created_at": 1791472078.999109,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "backfill:2026-09-16T02-32-28-382673+00-00",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "3b8fa445-ff4e-4f44-89ec-865be942b83f",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "99d2907d-c06a-4cf2-9037-8f9e382af1ee",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:elo_core"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791472079.270206,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "backfill:2026-09-20T03-02-44-365777+00-00",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "8a9594e3-9f9c-42cc-a26c-ac09c1b39fc2",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "f6bb98d2-2f05-499d-abc3-7305c5361a77",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:elo_core"
+    ],
+    "confidence": 0.7,
+    "created_at": 1791472079.3986938,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "backfill:2026-09-20T03-02-44-365777+00-00",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "fd323b35-23bd-4311-83c4-3a3c9fb99e4d",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "ASSOCIATED_WITH",
+    "object_entity_id": "e0d75bd2-7f44-4a58-be4b-ba323b5a0b3b",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:orb_device"
+    ],
+    "confidence": 0.65,
+    "created_at": 1791472079.5334668,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "backfill:2026-09-20T03-14-09-210277+00-00",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "cab84614-a84a-4598-8870-e8c25ccdf918",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "1aea8a1a-dc45-42ec-986c-d3593dd0ef5d",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:elo_ai_core"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791472079.756643,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "backfill:2026-09-24T13-19-14-400258+00-00",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
+  },
+  {
+    "claim_id": "5b6a26e3-c087-4108-a348-257860189bd7",
+    "subject_entity_id": "6de402af-8b5a-4238-950f-79bb1a00ab58",
+    "relationship_type": "HAS_PROPERTY",
+    "object_entity_id": "7c1a738b-c573-4d68-83fd-7bb75fec5c30",
+    "epistemic_class": "SOURCE_ATTRIBUTED",
+    "source_ids": [
+      "fact_extractor:elo_core"
+    ],
+    "confidence": 0.72,
+    "created_at": 1791472079.915199,
+    "memory_type": "semantic",
+    "significance_score": null,
+    "experience_id": "backfill:2026-10-04T20-13-59-195839+00-00",
+    "contradicted_by": [],
+    "memory_origin": "real_experience",
+    "affective_snapshot": null,
+    "cognitive_snapshot": null,
+    "context_action": null
   }
 ]

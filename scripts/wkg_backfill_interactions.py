@@ -1,136 +1,132 @@
-#!/usr/bin/env python3
 """
-scripts/wkg_backfill_interactions.py — WKG historical backfill from interactions.json
+scripts/wkg_backfill_interactions.py — WO-0096 WKG BACKFILL
 
-WO-WKG-BUILD-NOW Job 3 (David L3 2026-10-06):
-    Read interactions.json → extract entities/concepts → write to WKG.
-    All claims tagged provenance: "interactions_backfill_2026-10-06".
+Processes interactions.json into WKG nodes. Facts/knowledge from David's
+utterances only (Builder 1 scope). Significance patterns → SPG (Builder 2).
 
-Run from ~/elo-ai/: python scripts/wkg_backfill_interactions.py
+Deduplication: uses timestamp as experience_id prefix so already-processed
+turns are skipped on re-runs.
 
-Dry-run mode (no writes):
-    python scripts/wkg_backfill_interactions.py --dry-run
+Run: python3 scripts/wkg_backfill_interactions.py [--dry-run]
 """
 from __future__ import annotations
 
-import argparse
 import json
-import logging
 import os
 import sys
-import time
+import argparse
+import logging
 
-# ── resolve project root ───────────────────────────────────────────────────────
-_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, _ROOT)
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(message)s")
-_log = logging.getLogger("wkg_backfill")
-
-_INTERACTIONS_PATH = os.path.join(_ROOT, "memory", "interactions.json")
-_DAVID_ENTITY_ID   = "6de402af-8b5a-4238-950f-79bb1a00ab58"
-_PROVENANCE        = "interactions_backfill_2026-10-06"
-_BATCH_SIZE        = 100    # log progress every N entries
-_MAX_CLAIMS        = 2000   # safety cap — stop before hammering the store
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+log = logging.getLogger("wkg_backfill")
 
 
-def _load_interactions() -> list[dict]:
-    with open(_INTERACTIONS_PATH) as f:
-        data = json.load(f)
-    _log.info("Loaded %d interactions", len(data))
-    return data if isinstance(data, list) else []
+def _xid_from_entry(entry: dict) -> str:
+    ts = entry.get("timestamp", "")
+    # Use timestamp as a stable dedup key, normalised to safe chars
+    return "backfill:" + ts.replace(":", "-").replace(".", "-")[:32]
 
 
-def _extract_topics(entry: dict) -> list[str]:
-    """Return candidate topic labels from an interaction entry."""
-    topics: list[str] = []
-    # explicit concepts field
-    for c in (entry.get("concepts") or []):
-        if isinstance(c, str) and len(c) >= 3:
-            topics.append(c.strip())
-    # first meaningful phrase from user message
-    user = (entry.get("user") or "").strip()
-    if user and len(user) >= 4:
-        # take first 60 chars, strip trailing partial words
-        snip = user[:60].rsplit(" ", 1)[0] if " " in user[:60] else user[:60]
-        if snip and snip not in topics:
-            topics.append(snip)
-    return topics[:5]  # max 5 topics per entry
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dry-run", action="store_true", help="Parse + match patterns but don't write")
+    ap.add_argument("--limit", type=int, default=0, help="Max entries to process (0 = all)")
+    args = ap.parse_args()
 
+    interactions_path = os.path.join(ROOT, "memory", "interactions.json")
+    if not os.path.isfile(interactions_path):
+        log.error("interactions.json not found at %s", interactions_path)
+        sys.exit(1)
 
-def run(dry_run: bool = False) -> None:
-    from runtime.wkg_faculty import search_entities, create_entity, record_claim
+    with open(interactions_path, encoding="utf-8") as f:
+        entries = json.load(f)
 
-    interactions = _load_interactions()
-    n_claims = 0
-    n_skipped = 0
-    n_entities_created = 0
-    n_entries = 0
+    if not isinstance(entries, list):
+        log.error("interactions.json is not a list")
+        sys.exit(1)
 
-    for i, entry in enumerate(interactions):
-        if n_claims >= _MAX_CLAIMS:
-            _log.info("Reached max claim cap (%d) — stopping", _MAX_CLAIMS)
-            break
+    log.info("Loaded %d interactions", len(entries))
 
-        topics = _extract_topics(entry)
-        if not topics:
-            n_skipped += 1
+    # Build set of already-processed source_ids from existing WKG claims
+    from runtime import wkg_faculty as wf
+    existing_claims = wf._load("claims")
+    processed_xids: set[str] = set()
+    for c in existing_claims:
+        for sid in (c.get("source_ids") or []):
+            processed_xids.add(sid)
+
+    log.info("Existing WKG: %d entities, %d claims, %d unique source_ids",
+             len(wf._load("entities")), len(existing_claims), len(processed_xids))
+
+    from runtime.wkg_fact_extractor import extract_and_write
+
+    processed = 0
+    skipped_dup = 0
+    skipped_empty = 0
+    written_claims = 0
+    errors = 0
+
+    limit = args.limit or len(entries)
+
+    for entry in entries[:limit]:
+        user_msg = (entry.get("user") or "").strip()
+        if not user_msg or len(user_msg) < 8:
+            skipped_empty += 1
             continue
 
-        n_entries += 1
+        # Skip turns where eLo's own world-knowledge injection was prepended —
+        # those are not David's raw words and should not be treated as stated facts.
+        if user_msg.startswith("[WORLD_KNOWLEDGE") or user_msg.startswith("[REMINDER_SET]"):
+            skipped_empty += 1
+            continue
 
-        for topic in topics:
-            if n_claims >= _MAX_CLAIMS:
-                break
-            try:
-                hits = search_entities(topic[:60])
-                if hits:
-                    obj_id = hits[0]["entity_id"]
-                    entity_created = False
-                else:
-                    if not dry_run:
-                        obj = create_entity(
-                            entity_type="CONCEPT",
-                            label=topic[:80],
-                            description=f"Backfill entity from interactions.json ({_PROVENANCE})",
-                            source_ids=[_PROVENANCE],
-                        )
-                        obj_id = obj["entity_id"]
-                    else:
-                        obj_id = f"dry-run-{topic[:20]}"
-                    entity_created = True
-                    n_entities_created += 1
+        xid = _xid_from_entry(entry)
+        if xid in processed_xids:
+            skipped_dup += 1
+            continue
 
-                if not dry_run:
-                    record_claim(
-                        subject_entity_id=_DAVID_ENTITY_ID,
-                        relationship_type="ASSOCIATED_WITH",
-                        object_entity_id=obj_id,
-                        epistemic_class="SOURCE_ATTRIBUTED",
-                        source_id=_PROVENANCE,
-                        confidence=0.55,
-                    )
-                n_claims += 1
-            except Exception as e:
-                _log.debug("Skipping topic %r: %s", topic, e)
+        project = entry.get("project_tag", "general")
+
+        if args.dry_run:
+            # Just match patterns without writing
+            from runtime.wkg_fact_extractor import _PATTERNS, _QUESTION_PREFIXES, _MAX_UTTERANCE_LEN
+            if user_msg.endswith("?") or _QUESTION_PREFIXES.match(user_msg) or len(user_msg) > _MAX_UTTERANCE_LEN:
+                skipped_empty += 1
                 continue
+            matched = [tmpl.format(**{k: v for k, v in m.groupdict().items() if v})
+                       for pat, rel, sig, tmpl in _PATTERNS
+                       if (m := pat.search(user_msg))]
+            if matched:
+                log.info("[DRY-RUN] %s | %s | facts: %s", xid[:20], user_msg[:60], matched)
+                processed += 1
+        else:
+            try:
+                claim_ids = extract_and_write(user_msg, experience_id=xid, project=project)
+                if claim_ids:
+                    written_claims += len(claim_ids)
+                    log.debug("Wrote %d claims for %s", len(claim_ids), xid[:20])
+                processed += 1
+            except Exception as exc:
+                log.warning("extract_and_write error for %s: %s", xid[:20], exc)
+                errors += 1
 
-        if i % _BATCH_SIZE == 0:
-            _log.info(
-                "Progress: %d/%d entries | %d claims | %d entities created",
-                i + 1, len(interactions), n_claims, n_entities_created,
-            )
+    ents_after = wf._load("entities")
+    claims_after = wf._load("claims")
 
-    _log.info(
-        "Backfill %s — entries processed: %d | entries skipped: %d | "
-        "claims written: %d | entities created: %d",
-        "DRY RUN" if dry_run else "COMPLETE",
-        n_entries, n_skipped, n_claims, n_entities_created,
-    )
+    print()
+    print("=" * 60)
+    print(f"WKG Backfill {'[DRY-RUN] ' if args.dry_run else ''}Complete")
+    print(f"  Entries processed : {processed}")
+    print(f"  Skipped (dup)     : {skipped_dup}")
+    print(f"  Skipped (empty/Q) : {skipped_empty}")
+    print(f"  Claims written    : {written_claims if not args.dry_run else 'N/A'}")
+    print(f"  Errors            : {errors}")
+    print(f"  WKG entities after: {len(ents_after)}")
+    print(f"  WKG claims after  : {len(claims_after)}")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="WKG backfill from interactions.json")
-    parser.add_argument("--dry-run", action="store_true", help="Preview without writing")
-    args = parser.parse_args()
-    run(dry_run=args.dry_run)
+    main()

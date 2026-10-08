@@ -3148,5 +3148,1120 @@
     "source_ids": [
       "interactions_backfill_2026-10-06"
     ]
+  },
+  {
+    "entity_id": "cfa86421-96a7-4d2f-9860-e8c21c70735a",
+    "entity_type": "CONCEPT",
+    "label": "Everything",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292678.633302,
+    "source_ids": [
+      "ELO-e4JC-9Hju"
+    ]
+  },
+  {
+    "entity_id": "0ec8e056-d948-40eb-a7ec-01c959041a3d",
+    "entity_type": "CONCEPT",
+    "label": "However",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791292897.521559,
+    "source_ids": [
+      "ELO-N9aV-MaEF"
+    ]
+  },
+  {
+    "entity_id": "efcdb03d-4ab1-4a32-904d-5173e6392b4f",
+    "entity_type": "CONCEPT",
+    "label": "Mac",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791293284.686382,
+    "source_ids": [
+      "ELO-on9U-onyK"
+    ]
+  },
+  {
+    "entity_id": "bf90896d-f39c-427c-98be-b3ba98aee056",
+    "entity_type": "CONCEPT",
+    "label": "Unity",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791293316.8727539,
+    "source_ids": [
+      "ELO-bBwS-g2PL"
+    ]
+  },
+  {
+    "entity_id": "36c787bd-bfa7-4dfe-9905-0bdb175dc990",
+    "entity_type": "CONCEPT",
+    "label": "David works in Hackney Wick",
+    "aliases": [],
+    "description": "Stated: \"my studio is in Hackney Wick\"",
+    "created_at": 1791293345.139646,
+    "source_ids": []
+  },
+  {
+    "entity_id": "53013591-d117-4ad8-aa5c-f0f85850cff3",
+    "entity_type": "CONCEPT",
+    "label": "Substance",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791293350.9715252,
+    "source_ids": [
+      "ELO-D9LH-5ET9"
+    ]
+  },
+  {
+    "entity_id": "a091f7a4-5c1d-4b06-baba-33e7d25e9f33",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791293372",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791293372\"",
+    "created_at": 1791293372.236543,
+    "source_ids": [],
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791293372.285918
+  },
+  {
+    "entity_id": "9b69a21f-d63a-473f-8b16-5ad69a6d452f",
+    "entity_type": "CONCEPT",
+    "label": "NeoPixels",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791293473.5975318,
+    "source_ids": [
+      "ELO-TXE3-VfPX"
+    ]
+  },
+  {
+    "entity_id": "4ea24706-9cde-4815-b585-5ce9a207fb10",
+    "entity_type": "CONCEPT",
+    "label": "First",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791293581.073602,
+    "source_ids": [
+      "ELO-gT0p-nMRS"
+    ]
+  },
+  {
+    "entity_id": "beeaa477-7224-493f-9f05-e887eefe2960",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791294516",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791294516\"",
+    "created_at": 1791294516.186027,
+    "source_ids": [],
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791294516.225489
+  },
+  {
+    "entity_id": "3b21f6b3-3237-489b-a56b-f64010ecbfaf",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791294851",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791294851\"",
+    "created_at": 1791294851.7591,
+    "source_ids": [],
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791294851.794883
+  },
+  {
+    "entity_id": "d0c2ad00-2f78-4375-9eb5-6b39204206da",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791295114",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791295114\"",
+    "created_at": 1791295114.714436,
+    "source_ids": [],
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791295114.7501252
+  },
+  {
+    "entity_id": "0aa0a46b-4a5c-4c66-a870-a01b9eaa6eba",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791295173",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791295173\"",
+    "created_at": 1791295173.276839,
+    "source_ids": [],
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791295173.3252459
+  },
+  {
+    "entity_id": "7bb7cb54-f587-4029-819e-419213f327ea",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791295588",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791295588\"",
+    "created_at": 1791295588.6830962,
+    "source_ids": [],
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791295588.722993
+  },
+  {
+    "entity_id": "02f79038-878a-4405-b5a9-aa5f1c7a37d6",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791295877",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791295877\"",
+    "created_at": 1791295877.0651,
+    "source_ids": [],
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791295877.102083
+  },
+  {
+    "entity_id": "415d40db-cb57-4bbe-9af7-d9c8593a777a",
+    "entity_type": "CONCEPT",
+    "label": "Hackney Wick",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791296182.086394,
+    "source_ids": [
+      "ELO-P9Rb-KIv0"
+    ]
+  },
+  {
+    "entity_id": "6a0d092d-714c-47ac-8b0a-33ca792b056e",
+    "entity_type": "CONCEPT",
+    "label": "Partly",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791296182.09307,
+    "source_ids": [
+      "ELO-P9Rb-KIv0"
+    ]
+  },
+  {
+    "entity_id": "93a22af6-f22f-4874-8ace-2db1053e9457",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791296594",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791296594\"",
+    "created_at": 1791296594.605867,
+    "source_ids": [],
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791296594.652263
+  },
+  {
+    "entity_id": "8421af4b-903a-427d-95d7-b3206bcb5f78",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791296880",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791296880\"",
+    "created_at": 1791296880.649232,
+    "source_ids": [],
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791296880.697481
+  },
+  {
+    "entity_id": "e90bb50c-ed5c-4ef8-a769-0612db15b53f",
+    "entity_type": "CONCEPT",
+    "label": "Screenshot",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791296912.18886,
+    "source_ids": [
+      "ELO-QNhE-iRk6"
+    ]
+  },
+  {
+    "entity_id": "a77ee164-3171-4fd2-a8f7-a18e89baffb6",
+    "entity_type": "CONCEPT",
+    "label": "Sorted",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791296985.773653,
+    "source_ids": [
+      "ELO-NASv-beuG"
+    ]
+  },
+  {
+    "entity_id": "59ebca94-185b-44f3-8d46-d3a84812caf3",
+    "entity_type": "CONCEPT",
+    "label": "Calculator",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791296993.883442,
+    "source_ids": [
+      "ELO-QuD5-IY3c"
+    ]
+  },
+  {
+    "entity_id": "216c2d46-5e44-4b2d-812f-6e2fdd7571d8",
+    "entity_type": "CONCEPT",
+    "label": "BBC News",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297211.3494039,
+    "source_ids": [
+      "ELO-gCUS-Ta3D"
+    ]
+  },
+  {
+    "entity_id": "bda6df78-5198-4a1a-beb7-43822ffbf8d7",
+    "entity_type": "CONCEPT",
+    "label": "RAF Fairford",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297211.3599732,
+    "source_ids": [
+      "ELO-gCUS-Ta3D"
+    ]
+  },
+  {
+    "entity_id": "500b8de8-3408-4b05-a931-fc5ed3449d75",
+    "entity_type": "CONCEPT",
+    "label": "Watch",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297211.366546,
+    "source_ids": [
+      "ELO-gCUS-Ta3D"
+    ]
+  },
+  {
+    "entity_id": "3c290163-3e2b-4d75-9479-a161035de442",
+    "entity_type": "CONCEPT",
+    "label": "Lille",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297211.375819,
+    "source_ids": [
+      "ELO-gCUS-Ta3D"
+    ]
+  },
+  {
+    "entity_id": "ef795f2d-caa3-461d-8aca-e7ad051d5b13",
+    "entity_type": "CONCEPT",
+    "label": "British",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297211.3793359,
+    "source_ids": [
+      "ELO-gCUS-Ta3D"
+    ]
+  },
+  {
+    "entity_id": "b1d8ef9e-7996-4967-8649-a95207e1ad91",
+    "entity_type": "CONCEPT",
+    "label": "Russia",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297211.382407,
+    "source_ids": [
+      "ELO-gCUS-Ta3D"
+    ]
+  },
+  {
+    "entity_id": "4b9be28e-b50f-421e-8a1a-5a11e42d7b86",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791297658",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791297658\"",
+    "created_at": 1791297658.0880919,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791297658.164948
+  },
+  {
+    "entity_id": "4bcbb111-e015-4cfc-b2cd-f1d75cbd6896",
+    "entity_type": "CONCEPT",
+    "label": "Emma Mcgill",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297852.775181,
+    "source_ids": [
+      "ELO-Jx3C-Ucmo"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "3a78886d-034f-4220-b113-0a0cdcdefbbf",
+    "entity_type": "CONCEPT",
+    "label": "Nothing",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297852.779485,
+    "source_ids": [
+      "ELO-Jx3C-Ucmo"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "8384151e-5129-4144-864a-10a49cd8db2a",
+    "entity_type": "CONCEPT",
+    "label": "Next",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297852.783484,
+    "source_ids": [
+      "ELO-Jx3C-Ucmo"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "49c9f4b0-43e7-43c3-9a36-8e527fc78afc",
+    "entity_type": "CONCEPT",
+    "label": "Birthday",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297852.787091,
+    "source_ids": [
+      "ELO-Jx3C-Ucmo"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "4ef0d729-f855-467b-b20c-556f3e8f7225",
+    "entity_type": "CONCEPT",
+    "label": "Saturday",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297852.790984,
+    "source_ids": [
+      "ELO-Jx3C-Ucmo"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "226867df-b2b3-4986-87b5-4ae7512533d3",
+    "entity_type": "CONCEPT",
+    "label": "Last",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297870.70259,
+    "source_ids": [
+      "ELO-wbYf-kTcH"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "6244c330-91bf-46dc-b8d4-105d986e900d",
+    "entity_type": "CONCEPT",
+    "label": "WKG",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297870.712825,
+    "source_ids": [
+      "ELO-wbYf-kTcH"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "9bb30fe2-9897-4b97-b3a8-3172664b242c",
+    "entity_type": "CONCEPT",
+    "label": "AUTO",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297870.7163038,
+    "source_ids": [
+      "ELO-wbYf-kTcH"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "cb3857eb-967a-48d8-97e7-0c6700129fe7",
+    "entity_type": "CONCEPT",
+    "label": "POPULATE",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297870.7222662,
+    "source_ids": [
+      "ELO-wbYf-kTcH"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "a618a309-1779-49b9-8ded-518dbbcf2bec",
+    "entity_type": "CONCEPT",
+    "label": "GRAPH",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297870.727253,
+    "source_ids": [
+      "ELO-wbYf-kTcH"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d1ffd06b-f4d9-4325-9a0b-2e8233f348a3",
+    "entity_type": "CONCEPT",
+    "label": "GitHub",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791297870.734506,
+    "source_ids": [
+      "ELO-wbYf-kTcH"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "6fa3f4dc-09be-4a42-b845-60b17c464609",
+    "entity_type": "CONCEPT",
+    "label": "[commitments] what was the last commit on my elo-ai repo",
+    "aliases": [],
+    "description": "Auto-populated from vault write (episodic). Project: elo_core.",
+    "created_at": 1791297870.807746,
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b734200"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "0b053ee9-5a33-48d8-a84f-5396874a7463",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791298637",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791298637\"",
+    "created_at": 1791298637.2080882,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791298637.2515662
+  },
+  {
+    "entity_id": "b7aa75e6-7b9c-4504-b67d-d18409126662",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791308892",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791308892\"",
+    "created_at": 1791308892.453707,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791308892.4991329
+  },
+  {
+    "entity_id": "f1832736-9c5b-457c-9096-f84c74e4bd2b",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791308980",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791308980\"",
+    "created_at": 1791308980.86989,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791308980.9071622
+  },
+  {
+    "entity_id": "eaf9e811-c74c-423d-8e66-3fefc98a5292",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791309760",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791309760\"",
+    "created_at": 1791309760.671395,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "1bae4a50-191a-419c-be58-8f6a15f3f821",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791309801",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791309801\"",
+    "created_at": 1791309801.482704,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "fab18773-6609-46ec-897d-c699bf269932",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791310245",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791310245\"",
+    "created_at": 1791310245.0793579,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "0455b0ef-a237-44b7-aaae-fa807fd4b725",
+    "entity_type": "CONCEPT",
+    "label": "test_label_debug_1791310264",
+    "aliases": [],
+    "description": "Stated: test fact test_label_debug_1791310264",
+    "created_at": 1791310264.90029,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test cleanup",
+    "deprecated_at": 1791310265.083693
+  },
+  {
+    "entity_id": "4dc4fcd3-ffb2-42b9-a254-606c60410395",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791310311",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791310311\"",
+    "created_at": 1791310311.271245,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "29b33901-0e92-462b-8cb8-cf91ed01d9ff",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791310353",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791310353\"",
+    "created_at": 1791310353.25684,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791310353.310327
+  },
+  {
+    "entity_id": "640df0d8-5308-46d8-a2f4-316464d53332",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791310417",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791310417\"",
+    "created_at": 1791310417.587295,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "b4845622-41f3-4a41-b3bb-01857724fe68",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791310466",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791310466\"",
+    "created_at": 1791310466.1132002,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791310466.152276
+  },
+  {
+    "entity_id": "fa07b1dc-4294-4b8d-a261-7d5ba0c1156e",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791310468",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791310468\"",
+    "created_at": 1791310468.076203,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791310468.116041
+  },
+  {
+    "entity_id": "0167f057-e595-4337-872d-5d10eb7027cc",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791310514",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791310514\"",
+    "created_at": 1791310514.167369,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791310514.203124
+  },
+  {
+    "entity_id": "f8be9938-1edf-42d7-b44e-e694c9c0c3e8",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791310520",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791310520\"",
+    "created_at": 1791310520.8797052,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791310520.918473
+  },
+  {
+    "entity_id": "5ce33709-ced5-4e52-a187-b9e2254f7d52",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791317797",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791317797\"",
+    "created_at": 1791317797.393149,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791317797.4321651
+  },
+  {
+    "entity_id": "73289f75-60f0-41fa-a8c6-b15b492ded4c",
+    "entity_type": "CONCEPT",
+    "label": "David's studio is in Hackney Wick",
+    "aliases": [],
+    "description": "Stated: \"my studio is in Hackney Wick\"",
+    "created_at": 1791380108.355283,
+    "source_ids": [
+      "test-xp-001"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "83161b8c-1369-416b-b3f7-d8db6d9c67aa",
+    "entity_type": "CONCEPT",
+    "label": "David's studio computer is a Mac Studio M2 Ultra",
+    "aliases": [],
+    "description": "Stated: \"my studio computer is a Mac Studio M2 Ultra\"",
+    "created_at": 1791380349.523018,
+    "source_ids": [
+      "verify-turn-1791380349"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "3cd46a29-87df-4cdb-9865-9b80d481570b",
+    "entity_type": "CONCEPT",
+    "label": "Light",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791380664.1767821,
+    "source_ids": [
+      "ELO-vd0G-2xKm"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "80f3f458-142f-482c-b983-fd5bdda00d05",
+    "entity_type": "CONCEPT",
+    "label": "[contextual_state] What's the weather like right now?",
+    "aliases": [],
+    "description": "Auto-populated from vault write (episodic). Project: elo_core.",
+    "created_at": 1791380664.287596,
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b771a20"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "72237c3f-f11c-48c4-b6d0-4b19e8bce64b",
+    "entity_type": "CONCEPT",
+    "label": "Stop",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791400187.7620192,
+    "source_ids": [
+      "ELO-zdb9-ERDA"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "c27647ba-f897-41da-be1d-c6debefc3b91",
+    "entity_type": "CONCEPT",
+    "label": "[commitments,contextual_state] rain stop",
+    "aliases": [],
+    "description": "Auto-populated from vault write (episodic). Project: elo_core.",
+    "created_at": 1791400187.901197,
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b774698"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "90798b60-0c26-4ba7-a125-a40a70a2ac0a",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791460061",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791460061\"",
+    "created_at": 1791460061.252231,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791460061.337767
+  },
+  {
+    "entity_id": "f5b174b8-a198-456d-aa16-1d0c008e8c1d",
+    "entity_type": "CONCEPT",
+    "label": "Monty Python",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791462315.008577,
+    "source_ids": [
+      "ELO-TbOp-9pHt"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "9d36ac57-0200-4815-a1dc-11a99b278185",
+    "entity_type": "CONCEPT",
+    "label": "[projects,user] what do I keep coming back to?",
+    "aliases": [],
+    "description": "Auto-populated from vault write (episodic). Project: elo_core.",
+    "created_at": 1791463866.270661,
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b7179d0"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "f660873e-f98d-4bb9-a54e-9cb6c837bf3c",
+    "entity_type": "CONCEPT",
+    "label": "Ouagadougou or Wagadugu is the capital and largest city of Burkina Faso, and the",
+    "aliases": [],
+    "description": "Auto-populated from vault write (semantic). Project: general.",
+    "created_at": 1791463880.875925,
+    "source_ids": [
+      "GN\u00b7LN\u00b72610\u00b75\u00b75b758"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "b73a520f-4bd9-4f65-aac7-d8932a6c4a63",
+    "entity_type": "CONCEPT",
+    "label": "Burkina Faso",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791463885.1889348,
+    "source_ids": [
+      "ELO-X30H-UQS8"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "440a4948-5554-42ca-828e-6f926c2fe16f",
+    "entity_type": "CONCEPT",
+    "label": "Ouagadougou",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791463885.194649,
+    "source_ids": [
+      "ELO-X30H-UQS8"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "05d20f90-d501-448c-83f4-73f457653307",
+    "entity_type": "CONCEPT",
+    "label": "Wagadugu",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791463885.1983519,
+    "source_ids": [
+      "ELO-X30H-UQS8"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "35bbdeb7-4d35-4b67-bc01-7f403642e10d",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791463898",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791463898\"",
+    "created_at": 1791463898.911926,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791463898.952448
+  },
+  {
+    "entity_id": "5dc7958e-dcba-44b5-b69a-f7d6346984d0",
+    "entity_type": "CONCEPT",
+    "label": "Don",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791463932.989645,
+    "source_ids": [
+      "ELO-26BN-n9ss"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "6c061320-0699-4655-8465-5ada01be0abf",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791464040",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791464040\"",
+    "created_at": 1791464040.403927,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791464040.451187
+  },
+  {
+    "entity_id": "0b849ba1-b864-4954-8663-952d1369534e",
+    "entity_type": "CONCEPT",
+    "label": "float.",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791465537.939028,
+    "source_ids": [
+      "ELO-CIj6-y0uu"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "60f8cb75-6949-4873-be33-5715b169867e",
+    "entity_type": "CONCEPT",
+    "label": "[user] float",
+    "aliases": [],
+    "description": "Auto-populated from vault write (episodic). Project: elo_core.",
+    "created_at": 1791465538.00837,
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b72b8c8"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "a23590b1-0b70-46c8-9c0e-89cfcbda691f",
+    "entity_type": "CONCEPT",
+    "label": "Lava",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791465595.444295,
+    "source_ids": [
+      "ELO-PLS4-82nl"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "75ccebe7-19b7-425b-a559-ffafd76d5596",
+    "entity_type": "CONCEPT",
+    "label": "Earth",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791465595.4483452,
+    "source_ids": [
+      "ELO-PLS4-82nl"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "460b7c57-0765-491c-95b8-387e42692814",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791466434",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791466434\"",
+    "created_at": 1791466434.1946392,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791466434.24511
+  },
+  {
+    "entity_id": "d482f252-10d7-43fe-97a9-f11493a67598",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791466485",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791466485\"",
+    "created_at": 1791466485.8829398,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791466485.92738
+  },
+  {
+    "entity_id": "49128717-6293-4b24-a6cc-81b110df1f72",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791466723",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791466723\"",
+    "created_at": 1791466723.74076,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791466723.7947168
+  },
+  {
+    "entity_id": "78f1d86b-5e7a-45dd-b6f7-0192c6babcb6",
+    "entity_type": "CONCEPT",
+    "label": "[user] return",
+    "aliases": [],
+    "description": "Auto-populated from vault write (episodic). Project: elo_core.",
+    "created_at": 1791467489.961045,
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b71a918"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "74ffcd21-5bc5-44cc-8440-6005676bb349",
+    "entity_type": "CONCEPT",
+    "label": "[identity] You are",
+    "aliases": [],
+    "description": "Auto-populated from vault write (episodic). Project: elo_core.",
+    "created_at": 1791468051.59828,
+    "source_ids": [
+      "GN\u00b7CV\u00b72610\u00b73\u00b72cfd8"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "cf718b92-ae42-4430-937b-28983ea51d5d",
+    "entity_type": "CONCEPT",
+    "label": "David is working on the robot head",
+    "aliases": [],
+    "description": "Stated: \"My studio is in Hackney Wick, East London. I'm working on the robot head.\"",
+    "created_at": 1791471752.4654348,
+    "source_ids": [
+      "wkg-growth-test-001"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "03ecc7de-3235-4e67-8fc1-efd1f6783e83",
+    "entity_type": "CONCEPT",
+    "label": "Test studio in Hackney Wick",
+    "aliases": [],
+    "description": "Test fact for WO-0090 verification",
+    "created_at": 1791471789.90117,
+    "source_ids": [
+      "wo-0090-test"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "00f506cc-3300-4c6a-8867-6b880e136c23",
+    "entity_type": "CONCEPT",
+    "label": "David's keyboard is a Keychron K3",
+    "aliases": [],
+    "description": "Stated: \"My keyboard is a Keychron K3. I'm currently testing the WKG growth pipeline.\"",
+    "created_at": 1791471836.1249542,
+    "source_ids": [
+      "wo-0090-final-verify"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "b0142a8f-9ae9-4db1-98d8-df7d0d2d0c2d",
+    "entity_type": "CONCEPT",
+    "label": "David is working on and the science behind you",
+    "aliases": [],
+    "description": "Stated: \"Just so I can see what I'm writing and the science behind you\"",
+    "created_at": 1791472078.0552478,
+    "source_ids": [
+      "backfill:2026-08-04T19-02-12-680376Z"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d6feb035-cb11-4a2b-80df-2566f0da901e",
+    "entity_type": "CONCEPT",
+    "label": "eLo essentially a presence that grows alongside you",
+    "aliases": [],
+    "description": "Stated: \"I think eLo is essentially a presence that grows alongside you\"",
+    "created_at": 1791472078.459779,
+    "source_ids": [
+      "backfill:2026-08-13T22-20-21-203361Z"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "91e0b574-2e4e-4cd3-af75-27b44bf70aaa",
+    "entity_type": "CONCEPT",
+    "label": "David is working on the elo game and its everything to me",
+    "aliases": [],
+    "description": "Stated: \"im working on the elo game and its everything to me\"",
+    "created_at": 1791472078.6698189,
+    "source_ids": [
+      "backfill:2026-09-11T05-53-58-613983+00-00"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "f6bb98d2-2f05-499d-abc3-7305c5361a77",
+    "entity_type": "CONCEPT",
+    "label": "Project project is stupid",
+    "aliases": [],
+    "description": "Stated: \"my friend told me the project is stupid\"",
+    "created_at": 1791472079.395798,
+    "source_ids": [
+      "backfill:2026-09-20T03-02-44-365777+00-00"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "e0d75bd2-7f44-4a58-be4b-ba323b5a0b3b",
+    "entity_type": "CONCEPT",
+    "label": "David is working on the arm but im not sure what angle yet",
+    "aliases": [],
+    "description": "Stated: \"im building the arm but im not sure what angle yet\"",
+    "created_at": 1791472079.530438,
+    "source_ids": [
+      "backfill:2026-09-20T03-14-09-210277+00-00"
+    ],
+    "domain": "",
+    "uncertainty": null
   }
 ]
