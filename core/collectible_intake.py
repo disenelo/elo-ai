@@ -46,10 +46,11 @@ CURSOR_PATH = os.path.join(_ROOT, "blender", "collectible_cursor.json")
 
 COLLECTIBLE_TYPE = "collectible"
 
-# [BUILDER CHOICE — pending David/Designer confirmation] What one item gives
-# back, as a fraction of the physical battery. An apple is a snack, not a
-# meal: ten of them is a full recovery, which keeps collecting worth doing
-# across a play session without making one pickup trivialise fatigue.
+# UNKNOWN — resolved by the Designer's spawn rate, which does not exist
+# yet. With no spawn rate there is nothing to balance against, so this is
+# a pure assumption and the protocol says to name it as one. The
+# reasoning behind the shape: an apple is a snack, not a meal, so ten is
+# a full recovery — but ten OF WHAT FREQUENCY is the unknown.
 ITEM_RESTORE: dict[str, float] = {
     "apple": 0.10,
 }

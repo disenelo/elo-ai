@@ -58,9 +58,10 @@ SELF_SUBJECTS: frozenset[str] = frozenset({
     "stomp", "jump_in", "chimney", "dive", "leap", "climb_out",
 })
 
-# [BUILDER CHOICE] Significance of a play event. A thing eLo chose unprompted
-# says more about him than a thing he enjoyed while already doing it, so
-# auto_action scores above water_play.
+# UNKNOWN — resolved by whether self-initiated play predicts his
+# preferences better than enjoyed play, measurable once events arrive.
+# The ORDER is reasoned (a thing chosen unprompted says more about him
+# than a thing enjoyed while already doing it); the magnitudes are mine.
 SIGNIFICANCE: dict[str, float] = {
     AUTO_ACTION: 0.65,
     WATER_PLAY: 0.50,

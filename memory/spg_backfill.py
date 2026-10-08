@@ -53,10 +53,12 @@ _log = logging.getLogger("elo.spg_backfill")
 _ROOT = Path(__file__).parent.parent
 INTERACTIONS = _ROOT / "memory" / "interactions.json"
 
-# [BUILDER CHOICE — pending Board confirmation, same standing as
-# significance_faculty._WEIGHTS]. Recurrence dominates because the brief
-# defines significance as repetition. Mode is a weak prior: a turn where
-# something was BUILT or REFLECTED on carries more than a social reflex.
+# UNKNOWN — resolved by whether SPG-ranked recall surfaces what David
+# actually wanted across ~20 real turns. These three are not measured;
+# the SHAPE is reasoned (the brief defines significance as repetition,
+# so recurrence dominates) but the magnitudes are mine.
+# _SEAT_EPISTEMIC_PROTOCOL §2: an assumption is an UNKNOWN wearing a
+# number. Filed TO_BOARD_2026-10-08_FOUR-STATES-SELF-AUDIT.
 W_RECURRENCE: float = 0.70
 W_MODE:       float = 0.20
 W_SUBSTANCE:  float = 0.10

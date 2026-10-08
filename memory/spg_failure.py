@@ -58,7 +58,10 @@ KIND_CHARACTER = "character_clarification"
 KIND_ARITHMETIC = "arithmetic"
 KIND_OTHER = "other"
 
-# [BUILDER CHOICE] A correction's significance BEFORE recurrence is applied.
+# UNKNOWN — and this one is a VALUES call, not a technical one: is being
+# WRONG (arithmetic) worse than not sounding like himself (identity
+# drift)? Resolved by David ranking them. The ordering below is mine and
+# is filed for a ruling, not settled.
 FAILURE_WEIGHT: dict[str, float] = {
     KIND_ARITHMETIC:     0.90,   # objectively wrong, and checkable
     KIND_IDENTITY_DRIFT: 0.85,   # stopped sounding like himself

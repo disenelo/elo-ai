@@ -61,9 +61,10 @@ CAUSE_FACTUAL = "factual_error"
 CAUSE_TONE = "tone"
 CAUSE_UNSPECIFIED = "unspecified"
 
-# [BUILDER CHOICE] How much each cause should weigh on later behaviour.
-# Identity and factual errors outrank tone: sounding wrong is a smaller
-# failure than being wrong or not being himself.
+# UNKNOWN — same VALUES call as spg_failure.FAILURE_WEIGHT, and kept in
+# the same order so one ruling settles both. Is being WRONG worse than
+# not sounding like himself? Mine until David rules. Filed
+# TO_BOARD_2026-10-08_FOUR-STATES-SELF-AUDIT.
 SEVERITY: dict[str, float] = {
     CAUSE_FACTUAL: 0.90,
     CAUSE_IDENTITY: 0.85,
