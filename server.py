@@ -2487,6 +2487,100 @@ def _init_session():
                         except Exception as _win_err:
                             _poller_log.warning("WO-094: window_event_faculty error: %s", _win_err)
 
+                    # PRESENCE-FULL-RELAY: auto_action — eLo's own reflex/timer-chosen action
+                    # Emitted when Presence's timers select an action (not brain-driven).
+                    elif _ev_type == "auto_action":
+                        try:
+                            _subject = _ev.get("subject", "")
+                            _payload = _ev.get("payload", {})
+                            _poller_log.info(
+                                "PRESENCE auto_action: eLo chose %s %s",
+                                _subject, _payload,
+                            )
+                            try:
+                                from runtime.wkg_faculty import get_wkg_faculty as _wkg_fac
+                                _wkg = _wkg_fac()
+                                _wkg.extract_and_write(
+                                    f"eLo chose to {_subject} on his own (timer-driven, not from David)",
+                                    {"source": "auto_action", "subject": _subject},
+                                )
+                            except Exception:
+                                pass
+                        except Exception as _aa_err:
+                            _poller_log.warning("PRESENCE auto_action error: %s", _aa_err)
+
+                    # PRESENCE-FULL-RELAY: brain_action — result of a brain-sent movement intent
+                    # Presence replies {subject, ok, why} so brain learns what worked.
+                    elif _ev_type == "brain_action":
+                        try:
+                            _subject = _ev.get("subject", "")
+                            _payload = _ev.get("payload", {})
+                            _ok = _payload.get("ok", True)
+                            _why = _payload.get("why", "")
+                            _poller_log.info(
+                                "PRESENCE brain_action: %s → ok=%s why=%s",
+                                _subject, _ok, _why,
+                            )
+                            if not _ok and _why:
+                                try:
+                                    from runtime.wkg_faculty import get_wkg_faculty as _wkg_fac
+                                    _wkg = _wkg_fac()
+                                    _wkg.extract_and_write(
+                                        f"eLo's body could not {_subject}: {_why}",
+                                        {"source": "brain_action", "subject": _subject},
+                                    )
+                                except Exception:
+                                    pass
+                        except Exception as _ba_err:
+                            _poller_log.warning("PRESENCE brain_action error: %s", _ba_err)
+
+                    # PRESENCE-FULL-RELAY: water_play — eLo doing something fun in water
+                    # Marks genuine fun moments for inner_thought and WKG experience growth.
+                    elif _ev_type == "water_play":
+                        try:
+                            _subject = _ev.get("subject", "")
+                            _payload = _ev.get("payload", {})
+                            _poller_log.info("PRESENCE water_play: %s %s", _subject, _payload)
+                            try:
+                                from runtime.wkg_faculty import get_wkg_faculty as _wkg_fac
+                                _wkg = _wkg_fac()
+                                _wkg.extract_and_write(
+                                    f"eLo was playing in the water ({_subject}) — fun moment",
+                                    {"source": "water_play", "subject": _subject, "fun": True},
+                                )
+                            except Exception:
+                                pass
+                        except Exception as _wp_err:
+                            _poller_log.warning("PRESENCE water_play error: %s", _wp_err)
+
+                    # PRESENCE-FULL-RELAY: weather_request — app opened, fetch real weather
+                    # Triggers get_current_weather() in background; result lands in next
+                    # blender_state.json write via get_last_weather_condition().
+                    elif _ev_type == "weather_request":
+                        try:
+                            _wx_subject = _ev.get("subject", "")
+                            _poller_log.info("PRESENCE weather_request: %s → triggering fetch", _wx_subject)
+
+                            def _do_weather_fetch(_log=_poller_log) -> None:
+                                try:
+                                    from tools.tool_router import get_current_weather as _get_wx
+                                    _word = _get_wx(max_age_s=600.0)
+                                    if _word:
+                                        _log.info("PRESENCE weather_request: got %r", _word)
+                                    else:
+                                        _log.warning("PRESENCE weather_request: fetch returned empty")
+                                except Exception as _wx_err:
+                                    _log.warning("PRESENCE weather_request fetch error: %s", _wx_err)
+
+                            import threading as _wxth
+                            _wxth.Thread(
+                                target=_do_weather_fetch,
+                                daemon=True,
+                                name="weather-fetch",
+                            ).start()
+                        except Exception as _wr_err:
+                            _poller_log.warning("PRESENCE weather_request error: %s", _wr_err)
+
                 if _new_seq > _ack_consumed_seq:
                     _ack_consumed_seq = _new_seq
                     _wc(_ack_consumed_seq)
