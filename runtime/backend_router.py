@@ -506,6 +506,14 @@ _INTENT_PROVIDER_PREFERENCE: dict[str, list[str]] = {
     "planning":       ["groq", "openai", "cerebras", "gemini", "claude"],
     "memory":         ["groq", "cerebras", "gemini", "openai"],
     "local_only":     ["ollama"],
+    # WO-0001 gap-fill: action types the Executive emits that were missing from the
+    # intent-first map and falling through to the old ladder.
+    "answer":         ["groq", "cerebras", "gemini", "openai", "claude"],
+    "question":       ["groq", "cerebras", "gemini", "openai", "claude"],
+    "witness":        ["groq", "cerebras", "gemini", "openai", "claude"],
+    "ground":         ["groq", "cerebras", "gemini", "openai", "claude"],
+    "connect":        ["groq", "cerebras", "gemini", "openai", "claude"],
+    "silence":        ["groq", "cerebras", "gemini", "openai", "claude"],
 }
 
 # Boot-time health: populated once on first route() call. Not per-turn.
