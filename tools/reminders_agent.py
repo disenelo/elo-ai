@@ -85,6 +85,25 @@ def _parse_title(query: str) -> str:
     return t.strip()
 
 
+_ADD_RE = re.compile(r"^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?"
+                     r"(?:add\s+(?:a\s+)?reminder(?:\s+to|:)\s*|remind\s+me\s+to\s+)", re.I)
+
+
+def _explicit_add_title(query: str) -> str | None:
+    """The reminder title when the text is an explicit add request, else None."""
+    t = query.strip()
+    low = t.lower()
+    if "\nuser asked:" in low:                       # enriched turn: keep only David's words
+        t = t[low.rfind("\nuser asked:") + len("\nuser asked:"):].strip()
+    m = _ADD_RE.match(t)
+    if not m:
+        return None
+    title = t[m.end():].strip().rstrip("?.!").strip()
+    if not title or title.startswith("["):
+        return None
+    return title
+
+
 def _parse_due_days(title: str) -> tuple[str, int | None]:
     """Return (cleaned title, days_offset) or (title, None) if no date found."""
     patterns = [
@@ -116,7 +135,12 @@ def agent(query: str) -> str:
             numbered = ", ".join(f"{i + 1}. {name}" for i, name in enumerate(items))
             return f"Your reminders: {numbered}"
 
-        title = _parse_title(query)
+        # Write only on an explicit add ("remind me to …", "add a reminder …").
+        # Anything else selected here (chat, enriched "[tag] … user asked: …"
+        # text) used to become a reminder — 2026-06..09 junk in David's list.
+        title = _explicit_add_title(query)
+        if not title:
+            return spoken_open_reminders()            # read-only, never a write
         title, days = _parse_due_days(title)
 
         # Escape any quotes in the title to avoid breaking the AppleScript string
@@ -156,14 +180,14 @@ _EPOCH_2001 = 978307200
 
 
 def open_reminders() -> list[dict] | None:
-    """[{title, due (datetime|None), list}] — due-dated first, then the rest.
-    None when no store can be read."""
+    """[{title, due (datetime|None), list, created}] — upcoming due dates soonest
+    first, then everything else newest first. None when no store can be read."""
     out, read_any = [], False
     for path in _glob.glob(_STORES):
         try:
             con = _sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=3)
             rows = con.execute(
-                """select r.ZTITLE, r.ZDUEDATE, l.ZNAME from ZREMCDREMINDER r
+                """select r.ZTITLE, r.ZDUEDATE, l.ZNAME, r.ZCREATIONDATE from ZREMCDREMINDER r
                    left join ZREMCDBASELIST l on l.Z_PK = r.ZLIST
                    where r.ZCOMPLETED = 0 and coalesce(r.ZMARKEDFORDELETION, 0) = 0
                      and r.ZTITLE is not null and trim(r.ZTITLE) != ''""").fetchall()
@@ -171,12 +195,15 @@ def open_reminders() -> list[dict] | None:
             read_any = True
         except Exception:
             continue
-        for title, due, lst in rows:
+        for title, due, lst, created in rows:
             out.append({"title": title.strip(), "due": _dt.fromtimestamp(due + _EPOCH_2001) if due else None,
-                        "list": lst or ""})
+                        "list": lst or "", "created": created or 0.0})
     if not read_any:
         return None
-    return sorted(out, key=lambda r: (r["due"] is None, r["due"] or _dt.max))
+    today = _dt.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    upcoming = sorted((r for r in out if r["due"] and r["due"] >= today), key=lambda r: r["due"])
+    rest = sorted((r for r in out if not (r["due"] and r["due"] >= today)), key=lambda r: -r["created"])
+    return upcoming + rest
 
 
 def spoken_open_reminders(limit: int = 5) -> str:
