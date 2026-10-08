@@ -1,99 +1,107 @@
 {
- "B3-SEARCH-001_websearch_routing": {
-  "to": "Board",
-  "from": "builder3",
-  "ts": 1791308143.2921028,
-  "state": "CLOSED",
-  "output": [
-   "9f20607",
-   "d5d8c68"
-  ],
-  "evidence": "Board accepted 2026-10-06 (JOBS-1-2-ACCEPTED)"
- },
- "B3-SHOW-BRAIN-001_voice_trigger": {
-  "to": "Board",
-  "from": "builder3",
-  "ts": 1791308143.2921028,
-  "state": "CLOSED",
-  "output": [
-   "21ae027"
-  ],
-  "evidence": "Board accepted 2026-10-06; on David's verification list row 12"
- },
- "B3-SPOTIFY-001": {
-  "to": "Board",
-  "from": "builder3",
-  "ts": 1791308143.2921028,
-  "state": "NOT_DONE",
-  "output": [
-   "32b7919",
-   "65e8d32",
-   "a3aed42",
-   "0f40b87"
-  ],
-  "evidence": "Test-window breach ruling: needs David-visible turns — verification list rows 1–5"
- },
- "WO-RESEARCH-001": {
-  "to": "Board",
-  "from": "builder3",
-  "ts": 1791308143.2921028,
-  "state": "NOT_DONE",
-  "output": [
-   "bf6c8a8",
-   "c064128"
-  ],
-  "evidence": "Needs David-visible turns — rows 6–8; row 6 = acceptance criterion (node GN·LN·2610·5·67d88)"
- },
- "B3-ALEXA-INGRESS-001": {
-  "to": "Board",
-  "from": "builder3",
-  "ts": 1791308143.2921028,
-  "state": "BLOCKED",
-  "output": [
-   "bb92463",
-   "1763bd9"
-  ],
-  "evidence": "Amazon skill — David creating the account (capabilities/alexa/ALEXA_SETUP.md)"
- },
- "IS-ELO-VERDICTS-B3": {
-  "to": "Board",
-  "from": "builder3",
-  "ts": 1791308143.2921028,
-  "state": "BUILT",
-  "output": [
-   "a1fb296",
-   "d4bc28e"
-  ],
-  "evidence": "capability_status API + result standard + interrogative forms; ROOT-7 B3 half clean, awaiting Builder 1 wiring"
- },
- "TOOLS-FIXED-2026-10-06": {
-  "to": "Board",
-  "from": "builder3",
-  "ts": 1791308143.2921028,
-  "state": "NOT_DONE",
-  "output": [
-   "1eb5844",
-   "6bfef1a",
-   "9a5e08e",
-   "7f32056",
-   "995d48b"
-  ],
-  "evidence": "Live turns run during David's session (his instruction); David verification rows 9–11"
- },
- "QUEUE-CLEARED-2026-10-06-evening": {
-  "to": "Board",
-  "from": "builder3",
-  "ts": 1791309586.104279,
-  "state": "NOT_DONE",
-  "output": [
-   "f1bb47a",
-   "54608a5",
-   "35143ad",
-   "9fa291f",
-   "efe506c",
-   "67249a4",
-   "f180010"
-  ],
-  "evidence": "Built + tool-checked, no live turns (no GO); David verification rows 13–20; blocker: Contacts/Messages automation permission; addendum: volume truthful (row 21), WO-018 gate 6/6"
- }
+  "B3-SEARCH-001_websearch_routing": {
+    "to": "Board",
+    "from": "builder3",
+    "ts": 1791308143.2921028,
+    "state": "CLOSED",
+    "output": [
+      "9f20607",
+      "d5d8c68"
+    ],
+    "evidence": "Board accepted 2026-10-06 (JOBS-1-2-ACCEPTED)"
+  },
+  "B3-SHOW-BRAIN-001_voice_trigger": {
+    "to": "Board",
+    "from": "builder3",
+    "ts": 1791308143.2921028,
+    "state": "CLOSED",
+    "output": [
+      "21ae027"
+    ],
+    "evidence": "Board accepted 2026-10-06; on David's verification list row 12"
+  },
+  "B3-SPOTIFY-001": {
+    "to": "Board",
+    "from": "builder3",
+    "ts": 1791308143.2921028,
+    "state": "NOT_DONE",
+    "output": [
+      "32b7919",
+      "65e8d32",
+      "a3aed42",
+      "0f40b87"
+    ],
+    "evidence": "Test-window breach ruling: needs David-visible turns \u2014 verification list rows 1\u20135"
+  },
+  "WO-RESEARCH-001": {
+    "to": "Board",
+    "from": "builder3",
+    "ts": 1791308143.2921028,
+    "state": "NOT_DONE",
+    "output": [
+      "bf6c8a8",
+      "c064128"
+    ],
+    "evidence": "Needs David-visible turns \u2014 rows 6\u20138; row 6 = acceptance criterion (node GN\u00b7LN\u00b72610\u00b75\u00b767d88)"
+  },
+  "B3-ALEXA-INGRESS-001": {
+    "to": "Board",
+    "from": "builder3",
+    "ts": 1791308143.2921028,
+    "state": "BLOCKED",
+    "output": [
+      "bb92463",
+      "1763bd9"
+    ],
+    "evidence": "Amazon skill \u2014 David creating the account (capabilities/alexa/ALEXA_SETUP.md)"
+  },
+  "IS-ELO-VERDICTS-B3": {
+    "to": "Board",
+    "from": "builder3",
+    "ts": 1791308143.2921028,
+    "state": "BUILT",
+    "output": [
+      "a1fb296",
+      "d4bc28e"
+    ],
+    "evidence": "capability_status API + result standard + interrogative forms; ROOT-7 B3 half clean, awaiting Builder 1 wiring"
+  },
+  "TOOLS-FIXED-2026-10-06": {
+    "to": "Board",
+    "from": "builder3",
+    "ts": 1791308143.2921028,
+    "state": "NOT_DONE",
+    "output": [
+      "1eb5844",
+      "6bfef1a",
+      "9a5e08e",
+      "7f32056",
+      "995d48b"
+    ],
+    "evidence": "Live turns run during David's session (his instruction); David verification rows 9\u201311"
+  },
+  "QUEUE-CLEARED-2026-10-06-evening": {
+    "to": "Board",
+    "from": "builder3",
+    "ts": 1791309586.104279,
+    "state": "NOT_DONE",
+    "output": [
+      "f1bb47a",
+      "54608a5",
+      "35143ad",
+      "9fa291f",
+      "efe506c",
+      "67249a4",
+      "f180010"
+    ],
+    "evidence": "Built + tool-checked, no live turns (no GO); David verification rows 13\u201320; blocker: Contacts/Messages automation permission; addendum: volume truthful (row 21), WO-018 gate 6/6"
+  },
+  "0006_weather_on_open": {
+    "to": "board",
+    "from": "builder3",
+    "ts": "2026-10-08T11:11:44",
+    "state": "b3_built_awaiting_b1_consumer",
+    "output": "tools.tool_router.get_current_weather() -> Presence key word; '' on no location/failure; 10-min cache",
+    "evidence": "commit ec2b39c; real fetch Hackney Wick -> 'sunny' (wttr.in 'Sunny +12C'); tests/test_b3_weather_on_open.py 20 pass"
+  }
 }
