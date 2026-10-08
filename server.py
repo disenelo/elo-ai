@@ -6881,8 +6881,11 @@ def _process_turn(raw: str) -> dict:
             if _mem_cats:
                 _write_interaction(_mem_said, response, _mem_cats,
                                    mode=_action, project_tag=_mem_project_tag)
-        except Exception:
-            pass
+        except Exception as _vault_exc:
+            import logging as _vlog
+            _vlog.getLogger("runtime.vault_write").warning(
+                "ROOT-5: vault_write (interaction) failed — %s", _vault_exc
+            )
 
         # MEMORY-PREF-EXTRACT: detect preference statements in raw user input and
         # save them to facts.json so they survive server restart and appear in
@@ -7054,8 +7057,11 @@ def _process_turn(raw: str) -> dict:
                 active_topic=_cs_new_topic,
                 referents=_cs_referents or None,
             )
-        except Exception:
-            pass
+        except Exception as _vault_exc2:
+            import logging as _vlog2
+            _vlog2.getLogger("runtime.vault_write").warning(
+                "ROOT-5: vault_write (topic_change) failed — %s", _vault_exc2
+            )
 
         # WO-SIMULATION-001: record this turn's plan actions as executed
         try:
@@ -7087,8 +7093,11 @@ def _process_turn(raw: str) -> dict:
                     source_type="PERCEPTION",
                     author="elo",
                 ))
-        except Exception:
-            pass
+        except Exception as _vault_exc3:
+            import logging as _vlog3
+            _vlog3.getLogger("runtime.vault_write").warning(
+                "ROOT-5: vault_write (perception) failed — %s", _vault_exc3
+            )
 
         # WO-WORLD-001: WORLD_INTERACTION vault event when a tool/capability ran this turn
         try:
@@ -7118,8 +7127,11 @@ def _process_turn(raw: str) -> dict:
                         _wce(_wi_action_spot, _wi_consequence_spot, agent_name=_wi_agent_name)
                     except Exception:
                         pass
-        except Exception:
-            pass
+        except Exception as _vault_exc4:
+            import logging as _vlog4
+            _vlog4.getLogger("runtime.vault_write").warning(
+                "ROOT-5: vault_write (world_interaction) failed — %s", _vault_exc4
+            )
 
         # WO-108 Row 5 LOOK: directed-look production wire.
         # Records an observation each turn when eLo's gaze is on an active window.
