@@ -3252,6 +3252,9 @@ def route_streaming(
     _env_mode = _env_mode or "auto"
     mode = mode or _env_mode
 
+    # WO-0001: boot health populated once per session — never re-probe per turn
+    _boot_health = _get_boot_health()
+
     # ── CLOSURE FAST-RETURN (streaming path) ─────────────────────────────────────
     # route() has its own fast-return, but route_streaming() with mode=="local"
     # calls _ollama_stream() directly — never reaching route()'s block.
@@ -3299,6 +3302,65 @@ def route_streaming(
         ]
         return _RS_CHALLENGE_POOL[_rc_random.randint(0, len(_RS_CHALLENGE_POOL) - 1)], "discourse", 0.0
     # ── end challenge fast-return ─────────────────────────────────────────────────
+
+    # ── INTENT-FIRST ROUTER — streaming (WO-0001) ────────────────────────────────
+    # route() has IFR at line ~2924; route_streaming() bypassed it by going to
+    # _ollama_stream() first. This mirrors route()'s IFR so mode=="local" + slow
+    # Ollama no longer causes 30–180s hangs on factual/conversational turns.
+    _ifr_action_s = (action or "").lower().strip()
+    if _ifr_action_s in _INTENT_PROVIDER_PREFERENCE and mode != "mock":
+        _prefs_s = _INTENT_PROVIDER_PREFERENCE[_ifr_action_s]
+        if _ifr_action_s == "local_only":
+            if _boot_health.get("ollama"):
+                try:
+                    _s_raw, _s_first = _ollama_stream(
+                        system_prompt, user_input,
+                        max_tokens=_budget, on_first_sentence=on_first_sentence,
+                    )
+                    if _s_raw and not _has_lore_drift(_s_raw, user_input):
+                        return _finish(_s_raw, action, max_sentences, "ollama"), "ollama(stream)", _s_first
+                except Exception as _s_exc:
+                    _logger.warning("IFR local_only ollama stream: %s", _s_exc)
+            return "Local model is offline right now.", "mock", 0.0
+        _tried_s: list[str] = []
+        for _pref_s in _prefs_s:
+            if not _boot_health.get(_pref_s):
+                continue
+            if _pref_s == "groq" and _groq_quota_cooldown_until and _t.monotonic() < _groq_quota_cooldown_until:
+                continue
+            if _pref_s == "groq" and _groq_413_cooldown_until and _t.monotonic() < _groq_413_cooldown_until:
+                continue
+            if _pref_s == "openai" and _openai_quota_cooldown_until and _t.monotonic() < _openai_quota_cooldown_until:
+                continue
+            if _pref_s == "groq":
+                try:
+                    _s_raw, _s_first = _groq_stream(
+                        system_prompt, user_input,
+                        max_tokens=_budget, on_first_sentence=on_first_sentence,
+                    )
+                    if _s_raw and not _has_lore_drift(_s_raw, user_input):
+                        return _finish(_s_raw, action, max_sentences, "groq"), "groq(stream)", _s_first
+                except Exception as _s_exc:
+                    _logger.warning("IFR groq stream: %s", _s_exc)
+            elif _pref_s == "ollama" and _boot_health.get("ollama"):
+                try:
+                    _s_raw, _s_first = _ollama_stream(
+                        system_prompt, user_input,
+                        max_tokens=_budget, on_first_sentence=on_first_sentence,
+                    )
+                    if _s_raw and not _has_lore_drift(_s_raw, user_input):
+                        return _finish(_s_raw, action, max_sentences, "ollama"), "ollama(stream)", _s_first
+                except Exception as _s_exc:
+                    _logger.warning("IFR ollama stream: %s", _s_exc)
+            else:
+                _s_r = _ifr_call(system_prompt, user_input, _pref_s, action, max_sentences, _budget)
+                if _s_r:
+                    return _s_r[0], _s_r[1], 0.0
+            _tried_s.append(_pref_s)
+            if len(_tried_s) >= 2:
+                break  # one primary + one retry — no cascade
+        # IFR fell through — continue to mode-specific branch below
+    # ── end IFR streaming ────────────────────────────────────────────────────────
 
     # CT0031 Fix B: Ollama streaming for local/offline mode
     if mode == "local" and _ollama_available():
