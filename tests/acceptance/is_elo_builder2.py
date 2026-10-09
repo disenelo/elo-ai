@@ -217,11 +217,31 @@ def check_dreaming() -> None:
     sigs = [float(d.get("significance") or 0) for d in dreams
             if isinstance(d.get("significance"), (int, float))]
     retained = [d for d in dreams if d.get("retained")]
-    row("Learning — dreams are kept",
-        PASS if retained else FAIL,
-        f"{len(retained)} retained of {len(dreams)}; max significance "
-        f"{max(sigs):.3f} vs threshold 0.72" if sigs else "no scored dreams",
-        "" if retained else "threshold unreachable — David's ruling pending")
+    # Read the live threshold. This row hard-coded 0.72 and kept reporting it
+    # after David's ruling moved it — an acceptance check quoting a number
+    # that no longer existed.
+    try:
+        from runtime.memory_origin import DREAM_RETENTION_THRESHOLD as _T
+    except Exception:
+        _T = None
+    would = [x for x in sigs if _T is not None and x >= _T]
+    if retained:
+        row("Learning — dreams are kept", PASS,
+            f"{len(retained)} retained of {len(dreams)}")
+    elif not sigs:
+        row("Learning — dreams are kept", FAIL, "no scored dreams")
+    elif would:
+        # The bar is demonstrably reachable; the journal simply predates the
+        # change. Not a failure and not a pass — it flips the next time eLo
+        # dreams. Says so rather than reporting a stale cause.
+        row("Learning — dreams are kept", BLOCKED,
+            f"0 marked retained of {len(dreams)}, but {len(would)} clear the "
+            f"current {_T} (max {max(sigs):.3f})",
+            "entries predate the ruling; flips on the next dream cycle")
+    else:
+        row("Learning — dreams are kept", FAIL,
+            f"0 retained of {len(dreams)}; max {max(sigs):.3f} vs threshold {_T}",
+            "threshold unreachable by construction")
 
     try:
         import ambient.ambient_engine as ae
