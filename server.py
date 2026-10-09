@@ -2598,6 +2598,15 @@ def _process_turn(raw: str) -> dict:
     global _state, _runtime_state, _last_inputs, _last_avatar_cmd, _elo_self
     _original_raw = raw  # WO-020: capture before enrichment for routing trace
 
+    # WO-0106 DAEMON WIRE: notify daemon a request arrived.
+    # If SLEEP: triggers STIRRING beat (SLEEP→RESTING tick→AWAKE) before reply.
+    # If RESTING/AWAKE: marks AWAKE immediately. Never blocks. LIFE loop unaffected.
+    try:
+        from runtime.elo_daemon import get_daemon as _get_daemon
+        _get_daemon()._mark_awake()
+    except Exception:
+        pass
+
     # Board ruling 2026-10-06 Option C — start forming the inner thought as soon
     # as David's words are known, before the reply is generated. The thought runs
     # in a background thread; assembly collects it at the existing inner_thought
@@ -9802,6 +9811,15 @@ if __name__ == "__main__":
             print("[eLo server] conversation continuity loaded")
     except Exception:
         pass
+
+    # WO-0106 DAEMON STARTUP: start the eLo persistent daemon before the turn worker.
+    # Loads faculties once, starts LIFE loop. LIFE loop is independent of request flow.
+    try:
+        from runtime.elo_daemon import get_daemon as _get_daemon
+        _get_daemon()
+        print("[eLo server] eLo daemon started — LIFE loop running")
+    except Exception as _de:
+        print(f"[eLo server] daemon start failed (non-fatal): {_de}")
 
     # P0-Z: FIFO turn queue worker — guarantees arrival-order processing
     threading.Thread(target=_turn_worker, daemon=True, name="turn-worker").start()
