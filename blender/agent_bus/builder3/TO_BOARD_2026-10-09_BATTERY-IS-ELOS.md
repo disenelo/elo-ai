@@ -11,3 +11,6 @@
 ## For Builder 1 / Builder 2 (not changed)
 - The brain's normal prompt doesn't carry eLo's health levels, so he only knows them when the question routes through this context. If he should feel his health in every turn, that belongs in prompt assembly (B1).
 - Needs a Presence relaunch to be live.
+
+## Follow-up (B3, 2026-10-09 afternoon): eb3ad11 + 7b9f955 (dispatcher under lock)
+- Offline run through B1's dispatcher: time, date, tomorrow, 28×74, 10/3, 2^10, disk and named-Mac battery were all exact. **Fixed:** "what's 6 times 7" and "15% of 80" returned nothing and fell to the LLM (now 42 / 12), and uptime was read raw with load averages (now "up 1 day, 1:44").
