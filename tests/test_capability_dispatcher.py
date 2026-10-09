@@ -165,3 +165,10 @@ class TestDispatchFactBuiltin:
         elapsed = time.monotonic() - start
         assert elapsed < 1.0, f"dispatch_fact took {elapsed:.2f}s — LLM call suspected"
         assert result is not None
+
+
+
+def test_spoken_sums_reach_system_primitives():
+    # B3 2026-10-09: no symbol run to extract → whole request to math.calculate
+    assert dispatch_fact("what's 6 times 7")["value"] == "42"
+    assert dispatch_fact("what is 15% of 80")["value"] == "12"

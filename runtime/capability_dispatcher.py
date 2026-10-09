@@ -155,6 +155,12 @@ def dispatch_fact(request: str) -> dict[str, Any] | None:
                 if expr:
                     val = sp.math.calculate(expr)
                     return _fact_result(_unwrap(val), "macOS")
+                # B3: spoken sums ("6 times 7", "15% of 80") have no symbol run to
+                # extract. system_primitives normalises the words and refuses
+                # anything that isn't arithmetic, so the whole request is safe here.
+                val = sp.math.calculate(request)
+                if _unwrap(val) is not None:
+                    return _fact_result(_unwrap(val), "macOS")
         except Exception:
             pass
 
