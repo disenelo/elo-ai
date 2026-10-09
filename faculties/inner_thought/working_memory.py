@@ -57,13 +57,46 @@ _AUTHORITIES = (AUTHORITY_DEFINITIVE, AUTHORITY_RECORDED, AUTHORITY_INFERENCE)
 PROJECT_TYPES = ("TASK_CHANGED", "PROJECT_SET")
 
 
+_STORE_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "self", "state", "working_memory.json",
+)
+
+
 class WorkingMemory:
     """A bounded, ordered record of what has happened. Thread-safe."""
 
-    def __init__(self, max_events: int = MAX_EVENTS):
+    def __init__(self, max_events: int = MAX_EVENTS, *, path: str | None = None):
         self._events: list[dict] = []
         self._max = max(1, int(max_events))
         self._lock = threading.Lock()
+        # Persisted, because an in-memory timeline cannot answer the question
+        # it exists for. The ambient tick records focus in the server process;
+        # the STATE tier reads it from wherever it is asked. Those are
+        # different processes, and the acceptance suite caught it by reporting
+        # an empty timeline while focus had been recorded for hours.
+        self._path = _STORE_PATH if path is None else path
+        self._load()
+
+    def _load(self) -> None:
+        try:
+            with open(self._path, encoding="utf-8") as f:
+                rows = json.load(f)
+            if isinstance(rows, list):
+                self._events = [r for r in rows if isinstance(r, dict)][-self._max:]
+        except Exception:
+            self._events = []
+
+    def _save(self) -> None:
+        """Atomic. A half-written timeline reads as a truncated session."""
+        try:
+            os.makedirs(os.path.dirname(self._path), exist_ok=True)
+            tmp = f"{self._path}.tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(self._events, f, indent=2)
+            os.replace(tmp, self._path)
+        except Exception as e:
+            _log.debug("working memory not persisted (non-fatal): %s", e)
 
     # ── writing ──────────────────────────────────────────────────────────
     def add_event(self, event: Mapping[str, Any]) -> dict | None:
@@ -95,16 +128,22 @@ class WorkingMemory:
             self._events.append(row)
             if len(self._events) > self._max:
                 self._events = self._events[-self._max:]
+            self._save()
         return row
 
     # ── reading ──────────────────────────────────────────────────────────
     def recent_events(self, n: int = 10) -> list[dict]:
-        """Last n events, newest first."""
+        """Last n events, newest first. Re-reads — see all_events."""
         with self._lock:
+            self._load()
             return list(reversed(self._events[-max(0, int(n)):]))
 
     def all_events(self) -> list[dict]:
+        # Re-read before answering. The writer is usually a different process
+        # (the ambient tick) from the reader (the STATE tier), so a cached
+        # list would answer with whatever this process happened to see.
         with self._lock:
+            self._load()
             return list(self._events)
 
     def query(self, query: str) -> list[dict]:
@@ -162,6 +201,7 @@ class WorkingMemory:
     def clear(self) -> None:
         with self._lock:
             self._events = []
+            self._save()
 
 
 # ── Process-wide instance ────────────────────────────────────────────────────

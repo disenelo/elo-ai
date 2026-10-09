@@ -27,8 +27,10 @@ from faculties.inner_thought.working_memory import (
 
 
 @pytest.fixture
-def wm():
-    return WorkingMemory()
+def wm(tmp_path):
+    # Isolated path: WorkingMemory persists now, so a bare one would load —
+    # and write — eLo's real timeline.
+    return WorkingMemory(path=str(tmp_path / "wm.json"))
 
 
 def _ev(t="APP_OPENED", content="opened Blender", **kw):
@@ -223,7 +225,8 @@ def test_it_does_not_shadow_runtime_working_memory():
 
 def test_a_focus_change_is_recorded(tmp_path, monkeypatch):
     import faculties.inner_thought.working_memory as wmm
-    monkeypatch.setattr(wmm, "_INSTANCE", wmm.WorkingMemory())
+    monkeypatch.setattr(wmm, "_INSTANCE",
+                        wmm.WorkingMemory(path=str(tmp_path / "wm.json")))
     monkeypatch.setattr(wmm, "_current_app", lambda: "Blender")
 
     ev = wmm.observe_focus()
@@ -238,18 +241,20 @@ def test_unity_observing_it_is_definitive_not_inference(tmp_path, monkeypatch):
     doing, and the authority field is the thing that keeps those apart.
     """
     import faculties.inner_thought.working_memory as wmm
-    monkeypatch.setattr(wmm, "_INSTANCE", wmm.WorkingMemory())
+    monkeypatch.setattr(wmm, "_INSTANCE",
+                        wmm.WorkingMemory(path=str(tmp_path / "wm.json")))
     monkeypatch.setattr(wmm, "_current_app", lambda: "Blender")
     assert wmm.observe_focus()["authority"] == wmm.AUTHORITY_DEFINITIVE
 
 
-def test_the_same_app_is_not_logged_twice(monkeypatch):
+def test_the_same_app_is_not_logged_twice(tmp_path, monkeypatch):
     """
     The tick runs every 0.5s. Logging the app each time would fill a
     thirty-row buffer with one app and lose the session.
     """
     import faculties.inner_thought.working_memory as wmm
-    monkeypatch.setattr(wmm, "_INSTANCE", wmm.WorkingMemory())
+    monkeypatch.setattr(wmm, "_INSTANCE",
+                        wmm.WorkingMemory(path=str(tmp_path / "wm.json")))
     monkeypatch.setattr(wmm, "_current_app", lambda: "Blender")
 
     assert wmm.observe_focus() is not None
@@ -257,9 +262,10 @@ def test_the_same_app_is_not_logged_twice(monkeypatch):
     assert wmm.observe_focus() is None
 
 
-def test_switching_back_and_forth_is_recorded(monkeypatch):
+def test_switching_back_and_forth_is_recorded(tmp_path, monkeypatch):
     import faculties.inner_thought.working_memory as wmm
-    monkeypatch.setattr(wmm, "_INSTANCE", wmm.WorkingMemory())
+    monkeypatch.setattr(wmm, "_INSTANCE",
+                        wmm.WorkingMemory(path=str(tmp_path / "wm.json")))
 
     apps = iter(["Blender", "Blender", "Photoshop", "Blender"])
     monkeypatch.setattr(wmm, "_current_app", lambda: next(apps))
@@ -269,10 +275,11 @@ def test_switching_back_and_forth_is_recorded(monkeypatch):
     assert recorded == ["Blender", "Photoshop", "Blender"]
 
 
-def test_elos_own_window_is_not_a_record(monkeypatch):
+def test_elos_own_window_is_not_a_record(tmp_path, monkeypatch):
     """eLo perching on himself says only that eLo exists."""
     import faculties.inner_thought.working_memory as wmm
-    monkeypatch.setattr(wmm, "_INSTANCE", wmm.WorkingMemory())
+    monkeypatch.setattr(wmm, "_INSTANCE",
+                        wmm.WorkingMemory(path=str(tmp_path / "wm.json")))
     for app in ("", "Presence", "eLo", "unknown"):
         monkeypatch.setattr(wmm, "_current_app", lambda a=app: a)
         assert wmm.observe_focus() is None
@@ -283,3 +290,71 @@ def test_the_ambient_tick_observes_focus():
     src = (pathlib.Path(__file__).resolve().parent.parent
            / "ambient" / "ambient_engine.py").read_text()
     assert "working_memory import observe_focus" in src
+
+
+# ── it must survive the process that observed it ───────────────────────────
+#
+# Caught by the acceptance suite, not by a unit test: it reported an EMPTY
+# timeline while the ambient tick had been recording app focus for hours.
+# Each process held its own _INSTANCE, so the live server's timeline, the
+# daemon's, and anything asking "what was I doing?" were three different
+# empty lists.
+#
+# Every other store here persists — open_questions.json, spg_graph.json,
+# corrections_ledger.jsonl. In-memory is the one shape that cannot answer the
+# question this exists for.
+
+def test_one_process_writes_and_another_reads(tmp_path):
+    """The actual failure: the writer and the reader are different processes."""
+    from faculties.inner_thought.working_memory import WorkingMemory
+
+    store = str(tmp_path / "wm.json")
+    writer = WorkingMemory(path=store)
+    writer.add_event({"type": "APP_FOCUSED", "content": "Blender",
+                      "source": "unity", "authority": "definitive"})
+
+    reader = WorkingMemory(path=store)          # stands in for another process
+    assert [e["content"] for e in reader.recent_events()] == ["Blender"]
+
+
+def test_a_reader_sees_a_write_that_happened_after_it_started(tmp_path):
+    """
+    The STATE tier is long-lived; the ambient tick writes under it. A cached
+    list would answer with whatever that process happened to see at startup.
+    """
+    from faculties.inner_thought.working_memory import WorkingMemory
+
+    store = str(tmp_path / "wm.json")
+    reader = WorkingMemory(path=store)
+    assert reader.as_context() == ""
+
+    WorkingMemory(path=store).add_event(
+        {"type": "APP_FOCUSED", "content": "Photoshop", "source": "unity"})
+
+    assert "Photoshop" in reader.as_context()
+
+
+def test_the_ring_buffer_still_bounds_the_persisted_file(tmp_path):
+    from faculties.inner_thought.working_memory import MAX_EVENTS, WorkingMemory
+    import json
+
+    store = str(tmp_path / "wm.json")
+    wm = WorkingMemory(path=store)
+    for i in range(MAX_EVENTS + 12):
+        wm.add_event({"type": "TASK_CHANGED", "content": f"task {i}"})
+
+    assert len(json.loads(open(store).read())) == MAX_EVENTS
+
+
+def test_an_unwritable_store_does_not_break_the_tick(tmp_path):
+    """Losing the timeline must not cost the tick that produced the event."""
+    from faculties.inner_thought.working_memory import WorkingMemory
+    wm = WorkingMemory(path="/nonexistent-dir-xyz/wm.json")
+    assert wm.add_event({"type": "APP_FOCUSED", "content": "Blender"}) is not None
+
+
+def test_a_corrupt_store_reads_as_empty_not_as_a_crash(tmp_path):
+    from faculties.inner_thought.working_memory import WorkingMemory
+    store = tmp_path / "wm.json"
+    store.write_text("{ not json")
+    assert WorkingMemory(path=str(store)).recent_events() == []
