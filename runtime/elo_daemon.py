@@ -23,10 +23,9 @@ LIFE LOOP states:
   RESTING — No active conversation; inner_thought ticking slowly
   SLEEP   — Extended idle; dreaming/consolidation
 
-THRESHOLDS — [PROPOSAL, pending David confirmation]:
+THRESHOLDS — confirmed [DAVID 2026-10-09]:
   AWAKE → RESTING : 5 minutes since last request
   RESTING → SLEEP : 20 minutes in RESTING state
-Change _RESTING_AFTER_S and _SLEEP_AFTER_S below once David confirms.
 """
 from __future__ import annotations
 
@@ -47,9 +46,9 @@ class LifeState(str, Enum):
     SLEEP   = "SLEEP"
 
 
-# [PROPOSAL — pending David confirmation before these go live in production]
+# Confirmed [DAVID 2026-10-09]
 _RESTING_AFTER_S: float = 5 * 60    # seconds idle before AWAKE → RESTING
-_SLEEP_AFTER_S: float   = 20 * 60   # seconds resting before RESTING → SLEEP
+_SLEEP_AFTER_S: float   = 20 * 60   # seconds in RESTING before → SLEEP
 
 # Inner-thought tick intervals by state (slower when resting/sleeping)
 _TICK_INTERVAL: dict[LifeState, float] = {
@@ -244,11 +243,37 @@ class EloDaemon:
 
     def _mark_awake(self) -> None:
         with self._lock:
+            prev_state = self._state
             self._last_request_ts = time.time()
-            if self._state != LifeState.AWAKE:
-                _log.info("eLo life state → AWAKE (request received)")
+            if self._state == LifeState.SLEEP:
+                # STIRRING beat [DAVID 2026-10-09]: ease back via RESTING, not instant jump.
+                # Fire one inner_thought tick at RESTING rate before transitioning to AWAKE.
+                _log.info("eLo life state → STIRRING (SLEEP → RESTING → AWAKE)")
+                self._state = LifeState.RESTING
+                self._resting_since_ts = 0.0
+                threading.Thread(
+                    target=self._stirring_beat,
+                    name="eLo-stirring",
+                    daemon=True,
+                ).start()
+            elif self._state != LifeState.AWAKE:
+                _log.info("eLo life state → AWAKE (request received from %s)", prev_state.value)
                 self._state = LifeState.AWAKE
                 self._resting_since_ts = 0.0
+
+    def _stirring_beat(self) -> None:
+        """STIRRING beat: fire one life_tick at RESTING pace, then ease to AWAKE."""
+        try:
+            from faculties.inner_thought import life_tick as _life_tick, RESTING as _RESTING
+            _life_tick(_RESTING)
+        except Exception:
+            pass
+        finally:
+            with self._lock:
+                if self._state == LifeState.RESTING:
+                    _log.info("eLo life state → AWAKE (STIRRING complete)")
+                    self._state = LifeState.AWAKE
+                    self._resting_since_ts = 0.0
 
     def _compute_next_state(self, now: float) -> LifeState:
         idle = now - self._last_request_ts
@@ -288,12 +313,12 @@ class EloDaemon:
         self._tick_count += 1
         _log.debug("LIFE tick #%d state=%s idle=%.0fs", self._tick_count, state.value, idle_seconds)
 
-        # inner_thought tick — B2-0010 integration point
+        # inner_thought tick — B2-0010 (life_tick contract: never raises, returns {state,ok,actions,elapsed_ms})
         try:
-            from runtime.inner_thought_first import tick as _it_tick
-            _it_tick(state=state.value, idle_seconds=idle_seconds)
+            from faculties.inner_thought import life_tick as _life_tick
+            _life_tick(state.value)
         except Exception:
-            pass  # inner_thought not yet wired or B2-0010 not delivered — silent
+            pass  # B2-0010 not yet delivered — silent
 
         if self._on_inner_tick:
             try:

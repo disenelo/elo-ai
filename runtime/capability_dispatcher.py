@@ -140,13 +140,13 @@ def dispatch_fact(request: str) -> dict[str, Any] | None:
                 return _fact_result(_unwrap(val), "macOS")
             if key == "battery":
                 val = sp.computer.battery()
-                return _fact_result(_unwrap(val), "macOS")
+                return _fact_result(_format_system_value("battery", _unwrap(val)), "macOS")
             if key == "disk":
                 val = sp.computer.disk()
-                return _fact_result(_unwrap(val), "macOS")
+                return _fact_result(_format_system_value("disk", _unwrap(val)), "macOS")
             if key == "uptime":
                 val = sp.computer.uptime()
-                return _fact_result(_unwrap(val), "macOS")
+                return _fact_result(_format_system_value("uptime", _unwrap(val)), "macOS")
             if key == "math":
                 expr = _extract_math_expr(request)
                 if expr:
@@ -198,6 +198,35 @@ def _unwrap(val: Any) -> Any:
     if isinstance(val, dict) and "value" in val:
         return val["value"]
     return val
+
+
+def _format_system_value(key: str, val: Any) -> str:
+    """
+    Format structured system_primitives values into human-readable strings.
+    dict values (battery, disk, uptime) need this; scalars pass through as-is.
+    """
+    if not isinstance(val, dict):
+        return str(val)
+    if key == "battery":
+        pct = val.get("percent")
+        if pct is not None:
+            source = "charging" if val.get("charging") else val.get("power_source", "")
+            return f"{pct}% battery ({source})" if source else f"{pct}% battery"
+        power = val.get("power_source", "")
+        if not val.get("has_battery", True):
+            return f"No battery — running on {power}" if power else "Desktop (no battery)"
+        return "Battery status unavailable"
+    if key == "disk":
+        free = val.get("free", "")
+        total = val.get("total", "")
+        used_pct = val.get("capacity", "")
+        if free and total:
+            return f"{free} free of {total} ({used_pct} used)"
+        return str(val)
+    if key == "uptime":
+        # uptime val may be a raw string already (from `uptime` command output)
+        return str(val).strip()
+    return str(val)
 
 
 def _fact_result(value: Any, source: str) -> dict[str, Any]:

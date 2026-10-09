@@ -220,9 +220,34 @@ class TestDaemonStateTransitions:
                     d = EloDaemon()
                     d.start()
                     time.sleep(0.15)
-                    # Now send a request — should wake up
                     d.handle_request("hello")
                     state_after = d.state
                     d.stop()
 
         assert state_after == LifeState.AWAKE
+
+    def test_stirring_beat_from_sleep(self):
+        """
+        STIRRING beat [DAVID 2026-10-09]: on incoming request during SLEEP,
+        daemon does NOT jump directly to AWAKE. It eases through RESTING first,
+        fires one life_tick, then transitions to AWAKE.
+        """
+        d = EloDaemon()
+        d.start()
+        # Manually force to SLEEP
+        with d._lock:
+            d._state = LifeState.SLEEP
+            d._resting_since_ts = time.time() - 999
+        assert d.state == LifeState.SLEEP
+
+        # handle_request fires STIRRING → RESTING → (async) AWAKE
+        d.handle_request("hey")
+        # Immediately after: state is RESTING (STIRRING thread not done yet)
+        # or already AWAKE if stirring was fast. Either is valid — must NOT be SLEEP.
+        assert d.state in (LifeState.RESTING, LifeState.AWAKE), (
+            f"Expected RESTING or AWAKE after STIRRING, got {d.state}"
+        )
+        # Wait for stirring thread to complete
+        time.sleep(0.5)
+        assert d.state == LifeState.AWAKE, f"Expected AWAKE after stirring, got {d.state}"
+        d.stop()
