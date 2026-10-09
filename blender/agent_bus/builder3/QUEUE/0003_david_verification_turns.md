@@ -58,3 +58,7 @@ Run under the server's python, offline. Actions stubbed (notes, location/fact wr
 - 10 search → web_search ✅ · 11 → "Got it — your studio's in Hackney Wick. I'll remember that." ✅
 - 6 and 12 → no Builder 3 tool; memory recall (Builder 1, ROOT-2; d16a948 marks WKG facts AUTHORITATIVE). On 2026-10-07, 12 answered "Born in Fulham, raised in Brixton." Unverified since.
 - Turn 4 follow-up (009f576): the Reminders tool used to write any text it was handed as a new reminder. 10 of David's 14 "open reminders" are eLo/test junk (chat scraps from Jun–Jul, "[todo_vault]…", "[reminder_set]… user asked:…", four "Test from eLo" from the 2026-09-15 manual check). It now writes only on an explicit add, and reads newest first. **Not deleted** (no-delete rule). Until David ticks them off in Reminders, turn 4 will read them out.
+
+## Turn 9 corrected (David 2026-10-09: "Battery is eLo's health, not my battery"; "battery is for the robot, and battery for DISENELO Presence is health, connected but different via the embodiment")
+- "What's my battery?" / "What's your battery?" → eLo answers about **his own health** in Presence, in his own words (e.g. full / 100%). He may say that battery is his robot body's measure and the robot isn't connected. **Never the Mac's power.** (3cd600c, e817eab)
+- The old expected answer ("This Mac's on mains power…") was wrong. The Mac is only used when David names it ("my Mac's battery").
