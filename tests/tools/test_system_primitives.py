@@ -68,3 +68,13 @@ def test_command_vocab_dict_exists():
     assert COMMAND_VOCAB["TIME"] == "time.now"
     assert all(v in CAPABILITIES for v in COMMAND_VOCAB.values())
     assert system.run("NOPE")["value"] is None
+
+
+def test_percent_of_and_spoken_sums():
+    assert _v(system.math.calculate("15% of 80")) == "12"
+    assert _v(system.math.calculate("what is 15 percent of 80")) == "12"
+
+
+def test_uptime_is_readable():
+    up = _v(system.computer.uptime())
+    assert up.startswith("up ") and "load average" not in up

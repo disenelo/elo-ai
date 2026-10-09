@@ -131,12 +131,18 @@ _MATH_WORDS = (("×", "*"), ("÷", "/"), (" x ", " * "), ("times", "*"), ("multi
                ("squared", "^2"), ("cubed", "^3"), (",", ""))
 
 
+import re as _re   # parsing only (percent-of); no shell, no eval
+_PCT_OF = _re.compile(r"(\d+(?:\.\d+)?)\s*(?:%|percent|per\s+cent)\s+of\s+(\d+(?:\.\d+)?)")
+
+
 def _clean_expr(expression: str) -> str:
     e = expression.lower().strip().rstrip("?=").strip()
     for lead in ("what's", "what is", "whats", "how much is", "calculate", "work out", "eval"):
         if e.startswith(lead):
             e = e[len(lead):].strip()
             break
+    # "15% of 80" / "15 percent of 80" → (15/100)*80
+    e = _PCT_OF.sub(lambda m: f"({m.group(1)}/100)*{m.group(2)}", e)
     e = f" {e} "
     for word, op in _MATH_WORDS:
         e = e.replace(word, op)
@@ -188,7 +194,10 @@ class _Computer:
     @staticmethod
     @_safe
     def uptime():
-        return _ok(_sh(["uptime"]))
+        """'up 1 day, 1:44' (the uptime command without users/load averages)."""
+        raw = _sh(["uptime"])
+        m = _re.search(r"\bup\s+(.*?),\s+\d+\s+users?\b", raw)
+        return _ok("up " + " ".join(m.group(1).split()) if m else raw)
 
     @staticmethod
     @_safe
