@@ -2894,14 +2894,19 @@ def _process_turn(raw: str) -> dict:
         # T11 covers time/date; this covers arithmetic so "28 × 74" never hits LLM.
         # dispatch_fact() uses safe AST eval — no exec() on raw user input.
         try:
+            import time as _cap_time
+            _t_cap0 = _cap_time.time()
             from runtime.capability_dispatcher import classify as _cap_classify, dispatch_fact as _cap_dispatch
-            if _cap_classify(raw) == "FACT":
+            _cap_tier = _cap_classify(raw)
+            if _cap_tier == "FACT":
                 _cap_result = _cap_dispatch(raw)
+                _t_cap_ms = (_cap_time.time() - _t_cap0) * 1000
                 if _cap_result and _cap_result.get("value") is not None:
                     _cap_val = str(_cap_result["value"])
                     # Only intercept if this doesn't look like a time/date (T11 already handled those)
                     _cap_is_timedate = any(t in _at_low for t in ("time", "date", "day", "today", "tomorrow", "yesterday"))
                     if not _cap_is_timedate:
+                        print(f"[SPEED] FACT short-circuit: {_cap_val!r} ({_t_cap_ms:.0f}ms) — LLM skipped", flush=True)
                         try:
                             if not _is_user_away():
                                 _voice_speak(_cap_val)
@@ -2909,8 +2914,12 @@ def _process_turn(raw: str) -> dict:
                             pass
                         _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=0)
                         return {"response": _cap_val, "mode": "direct", "backend": "capability_dispatcher"}
-        except Exception:
-            pass
+                else:
+                    print(f"[SPEED] FACT tier but dispatch returned None ({_t_cap_ms:.0f}ms) — falling to LLM", flush=True)
+            else:
+                print(f"[SPEED] tier={_cap_tier} for {raw[:50]!r} — LLM path", flush=True)
+        except Exception as _cap_exc:
+            print(f"[SPEED] FACT gate exception: {_cap_exc} — LLM path", flush=True)
 
         # T10: "Open Spotify" — direct open, no confirm flow
         if _spot_direct is None and _re.search(r'\bopen\s+spotify\b', raw, _re.I):
@@ -6701,9 +6710,10 @@ def _process_turn(raw: str) -> dict:
                         print(f"[spotify_play] awareness error: {_spa_err}", flush=True)
 
                 if not _direct:
+                    import time as _perf_mod
+                    print(f"[SPEED] LLM fired for {_original_raw[:60]!r}", flush=True)
                     _llm_latency_ms = 0.0
                     _early_tts_sentence = [None]  # tracks first sentence spoken early
-                    import time as _perf_mod
                     _t0 = _perf_mod.perf_counter()
                     # WO-026: stream when ELO_STREAM != "0" (default on)
                     if os.environ.get("ELO_STREAM", "1") != "0":
