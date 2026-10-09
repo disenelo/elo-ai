@@ -276,6 +276,7 @@ _ANIM_CMD_MAP = [
     (_re.compile(r'\b(celebrate|do\s+a\s+dance|show\s+me\s+you\s+can\s+dance|happy\s+dance)\b', _re.I), "celebrate"),
     (_re.compile(r'\b(run\s+around|go\s+for\s+a\s+run|sprint)\b', _re.I), "run"),
     (_re.compile(r'\b(gun\s+check|check\s+your\s+gun|show\s+the\s+gun)\b', _re.I), "gun_check"),
+    (_re.compile(r'\b(sit\s+with\s+me(?:\s+for\s+a\s+bit)?|come\s+sit\s+with\s+me|sit\s+down|take\s+a\s+seat|have\s+a\s+seat|can\s+you\s+have\s+a\s+seat|take\s+5|take\s+five|rest\s+a\s+bit|just\s+sit|come\s+sit)\b', _re.I), "sit"),
 ]
 _ANIM_REPLIES = ["On it.", "Alright.", "Here we go.", "Okay.", "Done."]
 
