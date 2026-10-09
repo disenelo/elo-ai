@@ -282,17 +282,21 @@ def dispatch_state(request: str) -> dict[str, Any] | None:
     Returns a result dict or None (fall through to executive).
     Checks blender_state.json and working memory (B2 card 0010 when available).
     """
+    from faculties.inner_thought import as_context  # STATE tier reads inner_thought timeline
+
     low = request.lower()
 
-    # "what am I working on" — check company_state first
+    # "what am I working on" — check company_state first, then inner_thought context
     if re.search(r"\bwhat\s+(?:am\s+i|are\s+we)\s+(?:working\s+on|building|doing|making)\b", low, re.I):
         try:
             from runtime.capability_registry import read_company_state as _rcs
             cs = _rcs()
             summary = cs.get("summary") or cs.get("active") or ""
             if summary:
+                ctx = as_context(5)
+                combined = f"{summary}\n\n{ctx}".strip() if ctx.strip() else summary
                 return {
-                    "value":      summary,
+                    "value":      combined,
                     "source":     "elo_state",
                     "authority":  "recorded",
                     "confidence": 0.9,
