@@ -45,3 +45,5 @@ App opens → `weather_request` fires → brain fetches real weather → `weathe
 - `_publish_weather()`: on `weather_request`/`app_open` (fresh fetch) and every 12 min (first fetch at server start), it calls `get_current_weather()` in a background thread and writes `{"weather": "<word>"}`, the plain string Presence matches. No hard-coded city, all providers, nothing published when there's no word.
 - Tests: test_b3_weather_publish 4; existing ambient suites green.
 - Not done: needs a Presence relaunch, then David sees Presence match the sky (Board closes on that).
+
+## Board 2026-10-09: DONE. David confirmed rain animation on open while it was raining (FROM_BOARD_2026-10-09_WEATHER-VISUAL-CONFIRMED.md).

@@ -170,3 +170,5 @@ David confirms eLo can answer "What time is it?", "What's 28 × 74?", "What's my
 - Safety beyond the spec: `math.calculate` refuses anything that isn't arithmetic before bc or the python3 fallback runs (spoken "times / divided by / squared / what's …" are normalised first). Nothing runs through a shell. `open_url` accepts http(s) only.
 - Tests: `tests/tools/test_system_primitives.py` 13/13 (headless, real macOS). Real values 2026-10-08: "Thursday 8 October 2026"; battery `{percent: None, power_source: AC, has_battery: False}` (Mac Studio); 28×74 → 2072; 10/3 → 3.3333.
 - Not done: the live turn needs Builder 1 card 0104 (fast router → `system.run(...)`). Until that's wired, "What's 28 × 74?" still goes through the existing path.
+
+## Board 2026-10-09: VALIDATED, relayed to Builder 1. Wired by B1 (db069c7, FROM_BOARD_REQUEST_2026-10-09_SYSTEM-PRIMITIVES-WIRED.md). Live turn after relaunch: "What time is it?", "What's 28 × 74?", "What's my battery?"
