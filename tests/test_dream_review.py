@@ -88,10 +88,16 @@ def test_unretained_associations_are_not_auto_storable():
 
 def test_the_gate_threshold_is_the_canonical_one():
     """Not a second threshold invented here."""
-    assert dr.DREAM_RETENTION_THRESHOLD == DREAM_RETENTION_THRESHOLD == 0.72
+    # The pin is the POINT of this test: the two modules must agree, and the
+    # gate must use that one number rather than inventing its own. The literal
+    # tracks David's ruling (0.72 -> 0.45, 2026-10-09) and is expected to be
+    # tuned again — so the boundary cases below derive from the constant
+    # instead of hard-coding it twice more and breaking on every tune.
+    assert dr.DREAM_RETENTION_THRESHOLD == DREAM_RETENTION_THRESHOLD == 0.45
 
-    just_under = dr.review(_entry(), assessor=lambda e: 0.719)
-    just_over = dr.review(_entry(), assessor=lambda e: 0.72)
+    _t = DREAM_RETENTION_THRESHOLD
+    just_under = dr.review(_entry(), assessor=lambda e: _t - 0.001)
+    just_over = dr.review(_entry(), assessor=lambda e: _t)
     assert just_under.retained is False
     assert just_over.retained is True
 
@@ -107,9 +113,31 @@ def test_there_is_no_way_for_the_faculty_to_address_david():
 
 
 def test_executive_payload_declares_it_does_not_surface_directly():
-    payload = dr.review(_entry()).for_executive()
+    """
+    An UNRETAINED dream does not surface. Pinned to a below-threshold
+    assessor on purpose.
+
+    This read `dr.review(_entry())` with no assessor and asserted False
+    unconditionally, which passed only because nothing had ever retained --
+    `surfaces_directly` IS `self.retained` (dream_review.py:299, by design in
+    WO-DREAM-WAKE-CURIOSITY-001). When David's ruling lowered the threshold on
+    2026-10-09 the fixture started clearing it (0.52) and this went red. It had
+    encoded the broken state as an invariant, so it is pinned here rather than
+    relaxed: the claim "an unretained dream stays quiet" is still enforced, and
+    it no longer depends on retention being impossible.
+    """
+    review = dr.review(_entry(), assessor=lambda e: 0.10)
+    assert review.retained is False
+    payload = review.for_executive()
     assert payload["surfaces_directly"] is False
     assert set(payload) == {"cognitive", "creative", "surfaces_directly"}
+
+
+def test_a_retained_dream_does_surface():
+    """The other half, which nothing asserted while retention was dead."""
+    review = dr.review(_entry(), assessor=lambda e: 0.99)
+    assert review.retained is True
+    assert review.for_executive()["surfaces_directly"] is True
 
 
 # ── Two output channels (WO section 46) ───────────────────────────────────────

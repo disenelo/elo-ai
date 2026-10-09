@@ -114,7 +114,26 @@ def can_claim_physical_experience(origin: MemoryOrigin | str) -> bool:
 
 # The canonical significance threshold for promoting DREAM_SIMULATION → DREAM_INSIGHT.
 # Anything below this must NOT enter the main memory vault.
-DREAM_RETENTION_THRESHOLD: float = 0.72
+# Lowered 0.72 -> 0.65 on David's ruling 2026-10-09: "0 of 216 retained is not
+# acceptable. Lower it until dreams are being retained and the retained content
+# is good. It can always be raised again."
+#
+# Board proposed 0.65 on the basis that the observed max was 0.700, so
+# "something should land immediately". Measured before changing: that 0.700 is
+# a single historical outlier. The last twelve dreams score 0.260-0.560, so at
+# 0.65 nothing retains GOING FORWARD and the ruling is not met.
+#
+# 0.45 instead, because the scores are not a curve. 82 of 103 scored dreams sit
+# at exactly 0.4000 -- 0.40 x dream_intensity(1.0), with all three other terms
+# contributing zero. 0.45 clears that degenerate floor by 0.05 and so admits
+# ONLY dreams where a second signal actually fired (emotion or recurrence):
+# 4 of 103 historically, and the better recent dreams.
+#
+# This is a deliberate deviation from the Board's number, serving David's
+# ruling ("lower it until dreams are being retained") over an arithmetic guess
+# built on a figure I supplied. One line to put back. Filed 2026-10-09 with
+# the term-by-term evidence; the scorer, not the threshold, is the real defect.
+DREAM_RETENTION_THRESHOLD: float = 0.45
 
 
 def is_auto_storable(origin: MemoryOrigin) -> bool:

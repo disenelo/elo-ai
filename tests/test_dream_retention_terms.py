@@ -85,14 +85,24 @@ def test_unresolved_is_worth_a_fifth_of_the_score():
     assert abs(with_unresolved - without - 0.20) < 0.001
 
 
-def test_the_best_real_dream_still_falls_short():
+def test_the_best_real_dream_now_clears_the_bar():
     """
     f3baa315, the highest-scoring dream eLo has had: intensity 1.0,
-    recurrence 1.0, emotional 0.667, unresolved 0 -> 0.700 against 0.72.
+    recurrence 1.0, emotional 0.667, unresolved 0 -> 0.700.
 
-    If this ever passes, retention has started working and the journal should
-    show retained=True entries.
+    This was `test_the_best_real_dream_still_falls_short` and asserted 0.700
+    < 0.72, with the note "if this ever passes, retention has started
+    working". David ruled the threshold down to 0.65 on 2026-10-09, so it has
+    — the tripwire fired as designed and is turned over here rather than
+    deleted.
+
+    What it does NOT yet mean: 82 of 103 scored dreams sit at exactly 0.4000
+    and nothing lives between 0.46 and 0.70, so this one dream is the only
+    one the new bar admits. See the filing to Board, 2026-10-09.
     """
     from runtime.memory_origin import DREAM_RETENTION_THRESHOLD as T
     best = 0.40 * 1.0 + 0.30 * 0.667 + 0.20 * 0.0 + 0.10 * 1.0
-    assert round(best, 3) < T
+    assert round(best, 3) >= T, (
+        f"best real dream {round(best, 3)} no longer clears {T} — the "
+        "threshold was raised past what any real dream has ever scored, "
+        "which is the state David ruled out")
