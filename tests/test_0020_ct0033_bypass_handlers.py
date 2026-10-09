@@ -45,9 +45,9 @@ def test_bh2_count_31():
     with open(os.path.join(ROOT, "server.py"), encoding="utf-8") as f:
         src = f.read()
     count = src.count("_bypass_journal(_original_raw,")
-    if count != 55:
-        err(f"BH-2: expected 55 _bypass_journal calls, found {count}")
-    ok(f"BH-2: exactly 55 _bypass_journal calls present")
+    if count != 56:
+        err(f"BH-2: expected 56 _bypass_journal calls, found {count}")
+    ok(f"BH-2: exactly 56 _bypass_journal calls present")
 
 
 # ── BH-3: COGNITIVE handlers fall through (no return after bypass_journal) ────
