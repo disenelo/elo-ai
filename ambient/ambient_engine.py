@@ -431,6 +431,17 @@ def _consume_presence_events() -> None:
         pass
 
 
+# Designer's live motion feed. A module constant rather than a path built
+# inside the tick, because the tick overrides whatever `_read_state` returned
+# whenever this file is fresher than 2s — so a test that monkeypatches the
+# motion state was silently losing to David's actual desktop. Observed
+# 2026-10-09: test_walking_to_exhaustion asserted on `walk`, the live file
+# said `sitting`, and the test failed only while eLo was running.
+_MOTION_STATE_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "blender", "motion_state.json"
+)
+
+
 def _battery_tick() -> None:
     """
     Per-cycle dream-state coherence.
@@ -467,7 +478,7 @@ def _battery_tick() -> None:
         # Silent no-op if the file doesn't exist yet or is stale (> 2s old).
         try:
             import json as _ms_json, time as _ms_time
-            _motion_path = os.path.join(os.path.dirname(__file__), "..", "blender", "motion_state.json")
+            _motion_path = _MOTION_STATE_PATH
             with open(_motion_path) as _ms_f:
                 _ms = _ms_json.load(_ms_f)
             if _ms_time.time() - float(_ms.get("timestamp", 0)) < 2.0:

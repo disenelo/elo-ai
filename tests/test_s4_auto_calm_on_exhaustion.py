@@ -131,6 +131,14 @@ def test_walking_to_exhaustion_lands_in_calm_through_the_real_tick(monkeypatch):
     published: list[dict] = []
     monkeypatch.setattr("blender_bridge.state_writer.patch", published.append)
     monkeypatch.setattr(ae, "_read_state", lambda: {"motion": _WALK})
+    # Seal the tick off from David's actual desktop. _battery_tick ingests
+    # blender/motion_state.json whenever it is fresher than 2s and that
+    # OVERRIDES _read_state — so while eLo is running, this test asserted on
+    # `walk` and the tick silently saw whatever eLo was really doing.
+    # Observed 2026-10-09: live file said `sitting`, so he never drained and
+    # the test failed with "walked to rested". Green when eLo was off, red
+    # when he was on; nothing to do with the code under test.
+    monkeypatch.setattr(ae, "_MOTION_STATE_PATH", "/nonexistent/motion_state.json")
     monkeypatch.setattr("self.elo_self_model.update", lambda fn: None)
 
     import time
