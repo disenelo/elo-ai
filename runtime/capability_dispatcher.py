@@ -44,7 +44,10 @@ _FACT_PATTERNS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\bwhat(?:'s| is| are)?\s+(?:today|the\s+date|today'?s?\s+date)\b", re.I), "date"),
     (re.compile(r"\btomorrow(?:'s)?\s+date\b", re.I),                    "tomorrow"),
     (re.compile(r"\byesterday(?:'s)?\s+date\b", re.I),                   "yesterday"),
-    (re.compile(r"\bbattery\b",                      re.I),              "battery"),
+    # "battery" alone is eLo's (robot battery / Presence health — David 2026-10-09),
+    # handled by tool_router._elo_health_context. The Mac only when named.
+    (re.compile(r"\b(?:mac(?:book)?|laptop|computer)'?s?\s+battery\b"
+                r"|\bbattery\s+(?:on|of|in)\s+(?:my|the|this)\s+(?:mac(?:book)?|laptop|computer)\b", re.I), "battery"),
     (re.compile(r"\bdisk\s*(?:space|usage|free)?\b", re.I),              "disk"),
     (re.compile(r"\buptime\b",                       re.I),              "uptime"),
     # Arithmetic: expression contains digits and operator — e.g. "28 × 74", "5+3*2"

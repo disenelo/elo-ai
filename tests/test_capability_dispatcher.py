@@ -28,11 +28,16 @@ class TestClassify:
     def test_date_request_alt(self):
         assert classify("what is today") == TIER_FACT
 
+    # David 2026-10-09: "battery" is eLo's (robot battery / Presence health), never the
+    # Mac by default, so a bare battery question is NOT a macOS FACT.
     def test_battery_request(self):
-        assert classify("how much battery do I have?") == TIER_FACT
+        assert classify("how much battery do I have?") != TIER_FACT
 
     def test_battery_request_short(self):
-        assert classify("battery?") == TIER_FACT
+        assert classify("battery?") != TIER_FACT
+
+    def test_battery_request_named_mac_is_fact(self):
+        assert classify("what's my Mac's battery?") == TIER_FACT
 
     def test_disk_request(self):
         assert classify("how much disk space is left?") == TIER_FACT
