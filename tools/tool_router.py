@@ -2002,6 +2002,53 @@ def _spoken_weather(wx: str) -> str:
     return line + "."
 
 
+_ELO_HP_ASK = re.compile(
+    r"\b(?:battery|health|hp|energy|charge|charged|power\s+level|tired|run(?:ning)?\s+(?:low|out))\b")
+_ELO_HP_SELF = re.compile(r"\b(?:your|you|elo'?s?|my|robot'?s?)\b|^\s*(?:battery|health|hp)\s*\??\s*$")
+_HOST_DEVICE = re.compile(r"\b(?:mac|macbook|computer|laptop|phone|iphone|ipad|watch|airpods|mouse|keyboard)\b")
+
+
+def _elo_health_context(lower: str) -> Optional[str]:
+    """eLo's own battery/health for the body he's in, as a fact for the brain. None if
+    the turn isn't asking about it (or names a device of David's)."""
+    if not (_ELO_HP_ASK.search(lower) and _ELO_HP_SELF.search(lower)) or _HOST_DEVICE.search(lower):
+        return None
+    if not re.search(r"\b(?:what|how|is|are|do|does|you|check|tell|show|level|left|low|full)\b|\?", lower):
+        return None
+    try:
+        from core import health_battery as _hb
+        snap = _hb.snapshot()
+    except Exception:
+        return None
+    try:
+        from runtime.embodiment_capabilities import current_body as _cb, ROBOT as _ROBOT
+        body = _cb()
+    except Exception:
+        body, _ROBOT = "desktop", "robot"
+
+    def pct(x):
+        return f"{round(float(x) * 100)}%" if isinstance(x, (int, float)) else None
+
+    overall, mind, phys = pct(snap.get("elo_battery")), pct(snap.get("mind_battery")), pct(snap.get("physical_battery"))
+    state = snap.get("elo_battery_state") or ""
+    hw = False
+    try:
+        hw = _hb._hardware_enabled()
+    except Exception:
+        pass
+    if body == _ROBOT and hw:
+        return (f"Your robot body's battery: {phys or overall} ({state}). In the robot, battery is your real "
+                f"power; your health in Presence follows it. Answer as yourself, briefly.")
+    parts = [f"You're in DISENELO Presence (your desktop body). There your battery is your HEALTH: {overall}"
+             + (f", {state}" if state else "")]
+    if mind:
+        parts.append(f"mind {mind}")
+    parts.append(f"body {phys}" if phys else "body not tracked right now")
+    return ("; ".join(parts) + ". \"Battery\" is your robot body's measure, and the robot isn't connected "
+            "(not built yet), so there's no robot battery reading. This is YOUR health, not David's Mac. "
+            "Answer as yourself, briefly.")
+
+
 def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     """
     WO-122 Row 14 ROUTE — OS-level intercepts that fire regardless of Executive
@@ -2047,6 +2094,16 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     # the lore intercept is redundant AND harmful — it matches "eLo" mentions
     # inside the injected context rather than the original query.  Skip it.
     _has_wk = "[world_knowledge" in _lower
+
+    # ── eLo's battery / health — his body, never the Mac (B3, David 2026-10-09) ──
+    # "Battery is eLo's health, not my battery." / "Battery is for the robot, and
+    # battery for DISENELO Presence is health — connected but different via the
+    # embodiment." The brain gets his real levels for the body he is in now and
+    # answers in his own words (context, not a written reply). The Mac's power is
+    # only for an explicit "Mac/computer/laptop battery" (system_agent).
+    _elo_hp = _elo_health_context(_lower)
+    if _elo_hp:
+        return f"[CONTEXT: {_elo_hp}]\n\n{user_input}", "elo_health"
 
     # ── eLo universe lore intercept ──
     _LORE_INTERCEPTS = [

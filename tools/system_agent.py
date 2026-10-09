@@ -439,8 +439,10 @@ _SYSTEM_INTENTS = [
     (r"\b(?:switch|turn|change|go|put)\s+(?:it\s+)?(?:on\s+|to\s+|into\s+)?dark\s*mode\b|\bdark\s*mode\s+on\b|^dark\s*mode$", "dark_mode", "on"),
     (r"\b(?:switch|turn|change|go|put)\s+(?:it\s+)?(?:on\s+|to\s+|into\s+|back\s+to\s+)?light\s*mode\b|\bdark\s*mode\s+off\b|\bturn\s+off\s+dark\s*mode\b", "dark_mode", "off"),
     (r"\b(?:take|grab|capture)\s+(?:a\s+)?screen\s*shot\b|^screen\s*shot$", "screenshot", 0),
-    (r"\b(?:what'?s|what\s+is|how'?s|how\s+much\s+is\s+left\s+on)\s+(?:my|the)\s+(?:mac'?s?\s+|laptop'?s?\s+|computer'?s?\s+)?battery\b"
-     r"|\bmy\s+battery\s+(?:level|life|percentage)\b", "battery", "get"),
+    # Only an explicitly named Mac/computer/laptop. A bare "my/your battery" is eLo's
+    # health (David 2026-10-09) — tool_router._elo_health_context.
+    (r"\b(?:mac(?:book)?|laptop|computer)'?s?\s+battery\b"
+     r"|\bbattery\s+(?:on|of|in)\s+(?:my|the|this)\s+(?:mac(?:book)?|laptop|computer)\b", "battery", "get"),
     (r"\bwhat(?:'s|\s+is)\s+the\s+volume\b|\bvolume\s+level\b|\bhow\s+loud\s+is\s+it\b", "volume", "get"),
     (r"\b(?:turn\s+(?:the\s+)?(?:volume|sound)\s+up|volume\s+up|louder)\b", "volume", "up"),
     (r"\b(?:turn\s+(?:the\s+)?(?:volume|sound)\s+down|volume\s+down|quieter)\b", "volume", "down"),
