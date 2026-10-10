@@ -626,3 +626,81 @@ def mark_contradicted(claim_id: str, contradicting_claim_id: str) -> None:
                 if contradicting_claim_id not in c["contradicted_by"]:
                     c["contradicted_by"].append(contradicting_claim_id)
         _save("claims", claims)
+
+
+# WO-B1-0110: session tracker to avoid repeating the same random fact.
+_last_surfaced_fact: str = ""
+
+
+def pick_random_fact(entity_id: str | None = None) -> str | None:
+    """
+    WO-B1-0110: Select a random high-quality WKG fact suitable for spontaneous
+    surfacing. Applies the same quality filters as get_relationship_profile().
+
+    Returns a short sentence in eLo's voice, or None if no fact is available.
+
+    entity_id: if provided, draws only from facts about that entity.
+               If None, samples from all SOURCE_ATTRIBUTED/VERIFIED claims.
+    """
+    import random as _rand
+    import re as _re
+
+    _UUID_RE = _re.compile(
+        r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", _re.I
+    )
+    _CONTAMINATED_DESC_PREFIXES = (
+        "Topic from conversation:",
+        "Topic from interaction:",
+    )
+    _JUNK_LABELS = frozenset({
+        "identity", "projects", "world", "creative", "people",
+        "context", "topic", "concept", "entity", "thing",
+        "plans", "preferences", "learning", "relationship",
+        "commitments", "user", "contextual state",
+    })
+
+    entities_index = {e["entity_id"]: e for e in _load("entities")}
+    claims = _load("claims")
+
+    candidates: list[str] = []
+    for c in claims:
+        if entity_id and c.get("subject_entity_id") != entity_id:
+            continue
+        if c.get("epistemic_class") not in _RELATIONSHIP_GATE_CLASSES:
+            continue
+        if c.get("confidence", 0) < _RELATIONSHIP_MIN_CONFIDENCE:
+            continue
+        if c.get("contradicted_by"):
+            continue
+        obj_id = c.get("object_entity_id", "")
+        obj_ent = entities_index.get(obj_id, {})
+        if obj_ent.get("deprecated"):
+            continue
+        obj_label = (obj_ent.get("label") or "").strip()
+        obj_desc = (obj_ent.get("description") or "").strip()
+        if not obj_label or _UUID_RE.match(obj_label):
+            continue
+        if obj_label.startswith("[") or obj_label.startswith("test_label_"):
+            continue
+        if obj_label == "?" or obj_label.endswith("?"):
+            continue
+        if any(obj_desc.startswith(p) for p in _CONTAMINATED_DESC_PREFIXES):
+            continue
+        if obj_label.lower() in _JUNK_LABELS:
+            continue
+        # Prefer biographical / cultural facts — skip stubs and parenthetical tags
+        if len(obj_label.split()) < 3:
+            continue
+        if "(" in obj_label and ")" in obj_label:
+            continue
+        candidates.append(obj_label)
+
+    if not candidates:
+        return None
+
+    global _last_surfaced_fact
+    # Avoid repeating the last surfaced fact
+    pool = [f for f in candidates if f != _last_surfaced_fact] or candidates
+    fact = _rand.choice(pool)
+    _last_surfaced_fact = fact
+    return f"Did you know — {fact.lower()}." if not fact.endswith(".") else fact
