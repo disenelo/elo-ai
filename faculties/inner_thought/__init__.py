@@ -15,6 +15,9 @@ from faculties.inner_thought.life import AWAKE, RESTING, SLEEP, life_tick
 from faculties.inner_thought.preprocess import (
     INJECT_KEY, is_complex, pre_thought,
 )
+from faculties.inner_thought.random_fact import (
+    clear_pending, is_pending, maybe_signal,
+)
 from faculties.inner_thought.working_memory import (
     WorkingMemory, add_event, as_context, current_project, get_working_memory,
 )
@@ -28,4 +31,6 @@ __all__ = [
     "life_tick", "AWAKE", "RESTING", "SLEEP",
     # 2026-10-10 — the pre-processor Builder 1 injects BEFORE generation
     "pre_thought", "is_complex", "INJECT_KEY",
+    # WO-B1-0110 — the hand eLo raises; Builder 1 selects and speaks
+    "is_pending", "clear_pending", "maybe_signal",
 ]

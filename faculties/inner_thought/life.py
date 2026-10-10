@@ -150,6 +150,20 @@ def life_tick(state: str) -> dict:
         _log.warning("life_tick(%s) failed (non-fatal): %s", s, e)
         out = {"actions": [], "error": str(e)}
 
+    # WO-B1-0110 — does eLo raise a hand this beat? Runs for AWAKE too, which
+    # otherwise does nothing here on purpose. That exception is deliberate and
+    # narrow: the rule AWAKE obeys is "no second thinker competing with the
+    # turn path", and this thinks nothing — it sets a flag that Builder 1's
+    # delivery hook polls. It cannot race the turn path because one of its own
+    # gates is that eLo is not already speaking or under command.
+    try:
+        from faculties.inner_thought.random_fact import maybe_signal
+        if maybe_signal(s):
+            out.setdefault("actions", []).append("random_fact")
+            out["random_fact"] = True
+    except Exception:                            # never a failed tick
+        pass
+
     out["state"] = s
     out["ok"] = "error" not in out
     out["elapsed_ms"] = round((time.time() - t0) * 1000, 1)
