@@ -1330,6 +1330,30 @@ def ambient_thought() -> None:
             except Exception:
                 pass
 
+        # WO-B1-0110: WKG random fact — 12% draw, AWAKE/RESTING only, 15-min cooldown
+        try:
+            import time as _rft
+            _rf_last = (_state or {}).get("last_random_fact_ts", 0)
+            _rf_lc = (_state or {}).get("lifecycle_state", "")
+            _rf_eligible = (
+                not _is_user_away()
+                and _rf_lc not in ("dreaming", "sleeping")
+                and (_rft.time() - _rf_last) > 900
+                and random.random() < 0.12
+            )
+            if _rf_eligible:
+                from runtime.wkg_faculty import pick_random_fact as _prf
+                _wkg_rf = _prf()
+                if _wkg_rf:
+                    _top_intent["wkg_fact"] = _wkg_rf
+                    try:
+                        from blender_bridge.state_writer import patch as _rfp
+                        _rfp({"last_random_fact_ts": _rft.time()})
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
         # Synthesis observer — cross-signal connections
         try:
             from faculties.synthesis.observer import (
