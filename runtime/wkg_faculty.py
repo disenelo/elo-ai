@@ -500,6 +500,20 @@ def get_relationship_profile(entity_id: str, *, max_facts: int = 12) -> str:
         # Skip UUID-only labels (entity not resolved)
         if not obj_label or _UUID_RE.match(obj_label):
             continue
+        # WKG-FACT-QUALITY-001: skip bracket-prefixed category labels.
+        # These are David's questions stored as "facts" — e.g. "[commitments] what
+        # was the last commit", "[user] float". Real biographical facts never lead
+        # with a bracket tag. Filter: label starts with "[".
+        if obj_label.startswith("["):
+            continue
+        # WKG-FACT-QUALITY-001: skip test fixture entities (test_label_*)
+        if obj_label.startswith("test_label_"):
+            continue
+        # WKG-FACT-QUALITY-001: skip question-form entries — they are stored
+        # user queries, not facts about the person. Detect bare "?" label and
+        # labels that end with a question mark.
+        if obj_label == "?" or obj_label.endswith("?"):
+            continue
         # Skip contaminated category-label stubs from the old extractor
         if any(obj_desc.startswith(p) for p in _CONTAMINATED_DESC_PREFIXES):
             continue
