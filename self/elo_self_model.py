@@ -163,8 +163,11 @@ class EloSelfState:
     # WO-107: Identity as first-class state — constitutional baseline, asserted every turn.
     # Readable by the Executive. Drift guard compares live prompt against these fields.
     identity_name: str = "eLo"
+    # WIRE-DRIFT-FIX-001: aligned with living_presence_spec.txt "Core:" line.
+    # "observant" and "emotionally aware" were not in the spec — caused drift guard
+    # to fire every turn. "direct", "emotionally present", "creative" added to match spec.
     core_values: list = field(default_factory=lambda: [
-        "calm", "observant", "playful", "emotionally aware", "curious", "grounded",
+        "calm", "curious", "playful", "direct", "emotionally present", "creative", "grounded",
     ])
     invariants: list = field(default_factory=lambda: [
         "never preachy", "never dramatic", "never overly clinical", "never trapped in abstraction",
@@ -231,7 +234,7 @@ def load() -> EloSelfState:
             embodiment_milestones=list(data.get("embodiment_milestones", _DEFAULT_EMBODIMENT_MILESTONES)),
             identity_name=str(data.get("identity_name", "eLo")),
             core_values=list(data.get("core_values", [
-                "calm", "observant", "playful", "emotionally aware", "curious", "grounded",
+                "calm", "curious", "playful", "direct", "emotionally present", "creative", "grounded",
             ])),
             invariants=list(data.get("invariants", [
                 "never preachy", "never dramatic", "never overly clinical",
