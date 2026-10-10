@@ -25,6 +25,10 @@ _WKG_DIR = os.path.join(os.path.dirname(__file__), "..", "memory", "wkg")
 # only protects the file write itself; the full RMW cycle needs a lock.
 _wkg_lock = threading.Lock()
 
+# WO-B1-0111: session-level claim IDs returned by the last get_relationship_profile()
+# call. Populated on each profile retrieval; consumed by deprecate_recent_claims().
+_session_profile_claim_ids: list[str] = []
+
 _EPISTEMIC_CLASSES = frozenset({
     "VERIFIED",
     "HISTORICAL",
@@ -487,6 +491,7 @@ def get_relationship_profile(entity_id: str, *, max_facts: int = 12) -> str:
 
     lines: list[str] = []
     seen: set[str] = set()
+    _returned_claim_ids: list[str] = []
     for claim in subject_claims:
         if len(lines) >= max_facts:
             break
@@ -501,17 +506,12 @@ def get_relationship_profile(entity_id: str, *, max_facts: int = 12) -> str:
         if not obj_label or _UUID_RE.match(obj_label):
             continue
         # WKG-FACT-QUALITY-001: skip bracket-prefixed category labels.
-        # These are David's questions stored as "facts" — e.g. "[commitments] what
-        # was the last commit", "[user] float". Real biographical facts never lead
-        # with a bracket tag. Filter: label starts with "[".
         if obj_label.startswith("["):
             continue
         # WKG-FACT-QUALITY-001: skip test fixture entities (test_label_*)
         if obj_label.startswith("test_label_"):
             continue
-        # WKG-FACT-QUALITY-001: skip question-form entries — they are stored
-        # user queries, not facts about the person. Detect bare "?" label and
-        # labels that end with a question mark.
+        # WKG-FACT-QUALITY-001: skip question-form entries
         if obj_label == "?" or obj_label.endswith("?"):
             continue
         # Skip contaminated category-label stubs from the old extractor
@@ -523,10 +523,49 @@ def get_relationship_profile(entity_id: str, *, max_facts: int = 12) -> str:
             continue
         seen.add(obj_label)
         lines.append(f"- {obj_label}")
+        # WO-B1-0111: record claim id for correction targeting
+        cid = claim.get("claim_id")
+        if cid:
+            _returned_claim_ids.append(cid)
+
+    # WO-B1-0111: expose last retrieved claim ids to deprecate_recent_claims()
+    global _session_profile_claim_ids
+    _session_profile_claim_ids = _returned_claim_ids
 
     if not lines:
         return ""
     return f"[WHAT I KNOW ABOUT {entity_label.upper()}]\n" + "\n".join(lines)
+
+
+def deprecate_recent_claims(reason: str = "user_correction", *, max_deprecate: int = 3) -> int:
+    """
+    WO-B1-0111: Mark the most recently retrieved profile claims as contradicted
+    so they are excluded from future get_relationship_profile() retrievals.
+
+    Uses the session tracker populated by get_relationship_profile(). Capped at
+    `max_deprecate` to avoid mass-deprecating on a generic "that's wrong" with
+    no specific target.
+
+    Returns the count of claims actually updated.
+    """
+    global _session_profile_claim_ids
+    target_ids = set(_session_profile_claim_ids[:max_deprecate])
+    if not target_ids:
+        return 0
+    sentinel = f"{reason}_{int(time.time())}"
+    count = 0
+    with _wkg_lock:
+        claims = _load("claims")
+        changed = False
+        for c in claims:
+            if c.get("claim_id") in target_ids:
+                c.setdefault("contradicted_by", []).append(sentinel)
+                changed = True
+                count += 1
+        if changed:
+            _save("claims", claims)
+    _session_profile_claim_ids = []
+    return count
 
 
 def _link_claim_to_spg(claim: dict) -> None:

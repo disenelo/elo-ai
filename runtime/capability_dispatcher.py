@@ -30,10 +30,12 @@ import time as _time
 from typing import Any
 
 # ── Tier labels ────────────────────────────────────────────────────────────────
-TIER_FACT      = "FACT"
-TIER_STATE     = "STATE"
-TIER_COGNITION = "COGNITION"
-TIER_UNKNOWN   = "UNKNOWN"
+TIER_FACT       = "FACT"
+TIER_STATE      = "STATE"
+TIER_COGNITION  = "COGNITION"
+TIER_UNKNOWN    = "UNKNOWN"
+# WO-B1-0111: pre-LLM correction / unlearn tier
+TIER_CORRECTION = "CORRECTION"
 
 # ── FACT patterns (coarse, fast — no LLM) ─────────────────────────────────────
 # Each pattern maps to a string key used in dispatch_fact().
@@ -77,6 +79,53 @@ _COGNITION_PATTERNS: tuple[re.Pattern, ...] = tuple(re.compile(p, re.I) for p in
     r"\bwhat\s+do\s+(?:you|elo)\s+think\b",
     r"\bhelp\s+me\s+(?:decide|choose|figure)\b",
 ))
+
+# ── CORRECTION patterns (WO-B1-0111) — user flagging a wrong WKG claim ────────
+_CORRECTION_PATTERNS: tuple[re.Pattern, ...] = tuple(re.compile(p, re.I) for p in (
+    r"\bthat(?:'?s|\s+is)\s+(?:not\s+)?(?:wrong|incorrect|false|off|not\s+right|not\s+true)\b",
+    r"\bforget\s+(?:that|what\s+you\s+said|what\s+you\s+just\s+said|it)\b",
+    r"\byou(?:'?ve|\s+have)\s+got\s+(?:me|it|that|this)\s+wrong\b",
+    r"\bgot\s+(?:me|it|that|this)\s+wrong\b",
+    r"\bi\s+(?:never|don'?t|didn'?t)\s+(?:have|own|use|said|do|did)\b",
+    r"\bthat'?s\s+not\s+(?:me|mine|accurate|correct|right|true)\b",
+    r"\bunlearn\s+that\b",
+    r"\bno[,\s]+(?:i|that|you)\b.*\bwrong\b",
+))
+
+
+def is_correction(request: str) -> bool:
+    """WO-B1-0111: True when the request is correcting a prior WKG recall."""
+    low = request.lower()
+    return any(p.search(low) for p in _CORRECTION_PATTERNS)
+
+
+def dispatch_correction(request: str) -> dict[str, Any] | None:
+    """
+    WO-B1-0111: Deprecate the most recently retrieved WKG profile claims and
+    return an in-character acknowledgement. No LLM involved.
+    """
+    try:
+        from runtime.wkg_faculty import deprecate_recent_claims as _deprecate
+        count = _deprecate(reason="user_correction")
+        if count > 0:
+            return {
+                "value": "Got it — I had that wrong. I've flagged it. What's the right version?",
+                "source": "wkg_correction",
+                "authority": "user_instruction",
+                "confidence": 1.0,
+                "freshness": "live",
+                "corrected_count": count,
+            }
+        return {
+            "value": "Noted. Nothing flagged from my last recall to unlearn — tell me what's right and I'll hold it.",
+            "source": "wkg_correction",
+            "authority": "user_instruction",
+            "confidence": 1.0,
+            "freshness": "live",
+            "corrected_count": 0,
+        }
+    except Exception:
+        return None
 
 
 def classify(request: str) -> str:

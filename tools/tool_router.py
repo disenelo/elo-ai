@@ -2089,6 +2089,33 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
             _last_direct_result = _rs_line
             return _rs_line, "reminder"
 
+    # WO-B1-0111: correction / unlearn intercept — fires pre-LLM.
+    # Detects "that's wrong" / "forget that" / "you've got me wrong" and marks
+    # the most recently retrieved WKG profile claims as contradicted so they
+    # stop surfacing. Returns an in-character acknowledgement, no LLM.
+    try:
+        from runtime.capability_dispatcher import is_correction as _is_correction, dispatch_correction as _dispatch_correction
+        if _is_correction(user_input):
+            _corr = _dispatch_correction(user_input)
+            if _corr and _corr.get("value"):
+                _corr_resp = _corr["value"]
+                _last_direct_result = _corr_resp
+                try:
+                    import json as _cj, time as _ct, os as _co
+                    _dt_path = _co.path.join(_co.path.dirname(_co.path.abspath(__file__)), "..", "data", "decision_trace.jsonl")
+                    with open(_dt_path, "a", encoding="utf-8") as _dtf:
+                        _dtf.write(_cj.dumps({
+                            "ts": _ct.time(),
+                            "event": "wkg_correction",
+                            "request": user_input[:200],
+                            "corrected_count": _corr.get("corrected_count", 0),
+                        }) + "\n")
+                except Exception:
+                    pass
+                return _corr_resp, "wkg_correction"
+    except Exception:
+        pass
+
     # WO-CORE-REPAIR-P0-001: if the world-knowledge gate already injected a
     # [WORLD_KNOWLEDGE] block into user_input (happens before enrich_from_plan),
     # the lore intercept is redundant AND harmful — it matches "eLo" mentions
