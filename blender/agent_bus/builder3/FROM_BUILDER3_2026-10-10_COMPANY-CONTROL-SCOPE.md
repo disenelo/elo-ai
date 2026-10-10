@@ -30,3 +30,6 @@
 
 ## Update: David 2026-10-10: Voice Monkey PARKED
 "I don't want more APIs for no reason." The Voice Monkey route stays dormant (no token will be set). Next: check whether David's lights work in Apple Home / Matter (free, local, no account), and use that. Waiting on the light brand from David.
+
+## Update: v3 = DEFAULT (9a5eb3b): eLo asks Alexa out loud
+David: "I need eLo to talk to Alexa, then Alexa turns the lights off." eLo says "Alexa … turn off the lights" on the Mac speakers (never the Echo, which ignores its own wake word), in his voice. No account, no API, no cost. Phrases: data/alexa_phrases.json. Not live-tested yet (David away; it would switch his lights). Depends on the Echo hearing the Mac (volume/distance).
