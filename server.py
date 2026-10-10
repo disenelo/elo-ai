@@ -8698,7 +8698,7 @@ def _process_turn(raw: str) -> dict:
         # ── WIRE-8: identity drift guard — check core values present in response ─
         try:
             from self.elo_self_model import check_identity_drift as _check_drift
-            _drift_missing = _check_drift(_elo_self, response or "")
+            _drift_missing = _check_drift(_elo_self, system or "")
             if _drift_missing:
                 import logging as _w8_log
                 _w8_log.warning(f"[IDENTITY DRIFT DETECTED] missing values: {_drift_missing}")
