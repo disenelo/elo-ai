@@ -1,6 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 SEAT="${1:-builder}"
-PROMPT="${2:-Read blender/agent_bus/$SEAT/START_HERE.md. Check inbox for new FROM_BOARD files. Do one card. Commit. File to Board. Exit.}"
-cd "$(dirname "$0")/.."
-if ! command -v claude &>/dev/null; then echo "[start_seat] claude CLI not found" >&2; exit 1; fi
-exec claude --print "$PROMPT"
+PROMPT="${2:-Read your inbox, pick the highest-priority card, build it, commit, file to board_review/, EXIT.}"
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+LOG_DIR="${REPO_ROOT}/data"
+mkdir -p "${LOG_DIR}"
+LOG_FILE="${LOG_DIR}/watchdog_seat_runs.log"
+echo "[start_seat.sh] $(date '+%Y-%m-%d %H:%M:%S') seat=${SEAT}" >> "${LOG_FILE}"
+exec claude --print --dangerously-skip-permissions --add-dir "${REPO_ROOT}" --output-format text "${PROMPT}" >> "${LOG_FILE}" 2>&1
