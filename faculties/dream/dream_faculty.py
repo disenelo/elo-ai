@@ -945,6 +945,17 @@ def wake_from_dream(dream_result: DreamResult, elo_self):
     # internal_intents the sole proposer — this adds no bypass).
     if (dream_result.journal_entry or {}).get("retained"):
         events.append("dream_insight")
+        # ...and becomes a memory. Board asked 2026-10-10 why
+        # `memory_written` was false on every cycle: nothing in this path had
+        # ever written to the vault. `memory_written` is computed from
+        # `memory_refs` in runtime/executive.py:688, which is a list of topic
+        # strings, so it never reported a write. This is the write.
+        # Fail-quiet by contract -- nothing here may stop eLo waking up.
+        try:
+            from faculties.dream.dream_memory import write_retained
+            write_retained(dream_result.journal_entry or {})
+        except Exception:
+            pass
 
     events = events[-8:]
 
