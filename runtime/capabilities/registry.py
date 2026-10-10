@@ -167,6 +167,13 @@ _COMMUNICATION: list[Capability] = [
         ack_source=ACK_SYNC_RETURN,
     ),
     Capability(
+        id="devices", display_name="Devices (Shortcuts)", category=CAT_STUDIO,
+        description="Run David's allow-listed device Shortcuts: lights, scenes, speakers (WO-B3-0011)",
+        verbs=["turn on the lights", "turn off the lights", "lights out", "design mode", "run shortcut"],
+        execution_priority=3, agent_module="tools.device_control",
+        ack_source=ACK_SYNC_RETURN,
+    ),
+    Capability(
         id="create_document", display_name="Documents", category=CAT_CREATIVE,
         description="Write a text or markdown document into ~/Documents/eLo (WO-B3-0009)",
         verbs=["write that up", "make me a list", "create a doc", "write me a summary", "save that as a document"],

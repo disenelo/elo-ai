@@ -16,6 +16,13 @@ import py_compile
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+# This file tests the Hue wiring. tools/device_control (WO-B3-0011) runs David's
+# real Shortcuts for the same phrases and sits first in the router, so it is
+# switched off here: a test must never toggle a real light (it did once,
+# 2026-10-10: "Lights Out" ran and failed on a missing app).
+import tools.device_control as _dc
+_dc.match = lambda _text: None
+
 PASS = 0
 FAIL = 0
 

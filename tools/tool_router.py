@@ -2587,6 +2587,18 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
         except Exception as _gm_err:
             _logger.debug("game_mode intercept failed: %s", _gm_err)
 
+    # WO-B3-0011 — devices via David's Shortcuts ("turn off the lights" → his
+    # "Lights Out" shortcut). Allow-listed only. Runs before the Hue block below,
+    # which has no bridge configured.
+    try:
+        from tools.device_control import match as _dev_match, run as _dev_run
+        _dev = _dev_match(user_input) if _cap_on("devices") else None
+        if _dev:
+            _last_direct_result = _dev_run(_dev)["result"]["line"]
+            return _last_direct_result, "devices"
+    except Exception as _dev_err:
+        _logger.warning("device_control failed: %s", _dev_err)
+
     # §8 Lights — wire dispatch_lights() into the active runtime (BUILD_STATUS gap)
     _LIGHTS_SCENE_MAP = {
         "calm": ["calm", "relax", "chill", "meditat", "leaf on water", "reflective"],
