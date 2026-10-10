@@ -21,7 +21,16 @@ HTTP API, https://voicemonkey.io/docs/api/trigger). Set VOICE_MONKEY_TOKEN in
 .env and create Voice Monkey "Routine Trigger" devices with the IDs in
 _ALEXA_DEVICES (or data/alexa_devices.json); each starts an Alexa Routine
 ("turn off the lights"…). When Voice Monkey isn't set up, the macOS Shortcut
-is used as before.
+is used as before.  [PARKED by David 2026-10-10: "I don't want more APIs for no
+reason." Dormant without VOICE_MONKEY_TOKEN.]
+
+v3, DEFAULT (David 2026-10-10: "I need eLo to talk to Alexa, then Alexa turns the
+lights off"): eLo SAYS it out loud through the Mac speakers ("Alexa … turn off
+the lights") and the Echo hears it, like David asking. No account, no API, no
+cost. Always the Mac speakers: an Echo ignores its own wake word from its own
+speaker, so this never goes to the Echo even when eLo's voice is set to it.
+Phrases: data/alexa_phrases.json overrides _SPOKEN. ELO_DEVICE_ROUTE=shortcut
+uses the macOS Shortcuts instead.
 """
 from __future__ import annotations
 
@@ -40,6 +49,12 @@ _ALEXA_FILE = os.path.join(_ROOT, "data", "alexa_devices.json")
 _ALEXA_DEVICES = {"Lights On": "elo-lights-on", "Lights Out": "elo-lights-off",
                   "Design Mode": "elo-design-mode", "Living Room Sounds": "elo-living-room-sounds"}
 _VM_URL = "https://api-v3.voicemonkey.io/trigger"
+
+# What eLo says to Alexa for each command (after "Alexa").
+_PHRASE_FILE = os.path.join(_ROOT, "data", "alexa_phrases.json")
+_SPOKEN = {"Lights On": "turn on the lights", "Lights Out": "turn off the lights",
+           "Design Mode": "design mode", "Living Room Sounds": "living room sounds"}
+_MAC_SPEAKERS = os.environ.get("ELO_MAC_SPEAKERS", "Mac Studio Speakers")
 
 # Spoken forms → the shortcut they mean (lower-case, after normalising).
 _ALIASES = {
@@ -94,7 +109,25 @@ def alexa_devices() -> dict[str, str]:
     return dict(_ALEXA_DEVICES)
 
 
+def _route() -> str:
+    return "shortcut" if os.environ.get("ELO_DEVICE_ROUTE", "speak").lower() == "shortcut" else "speak"
+
+
+def phrases() -> dict[str, str]:
+    try:
+        with open(_PHRASE_FILE, encoding="utf-8") as f:
+            m = json.load(f)
+        if isinstance(m, dict) and m:
+            return {str(k): str(v) for k, v in m.items()}
+    except Exception:
+        pass
+    return dict(_SPOKEN)
+
+
 def controllable() -> list[str]:
+    if _route() == "speak":
+        said = {k.lower(): k for k in phrases()}
+        return [said[a.lower()] for a in allow_list() if a.lower() in said]
     have = {n.lower(): n for n in _all_shortcuts()}
     out = [have[a.lower()] for a in allow_list() if a.lower() in have]
     for cmd in alexa_devices():
@@ -147,6 +180,68 @@ def _run_alexa(name: str, device: str) -> dict:
                          "line": f"Asked Alexa: {name.lower()}."}))
 
 
+def _mac_index() -> int | None:
+    """CoreAudio index of the Mac's own speakers (ffmpeg AudioToolbox)."""
+    try:
+        err = subprocess.run(["ffmpeg", "-hide_banner", "-f", "lavfi", "-i", "anullsrc", "-t", "0.01",
+                              "-f", "audiotoolbox", "-list_devices", "true", "-"],
+                             capture_output=True, text=True, timeout=8).stderr
+    except Exception:
+        return None
+    for line in err.splitlines():
+        m = re.search(r"\[(\d+)\]\s+(.+?),\s", line)
+        if m and m.group(2).strip() == _MAC_SPEAKERS:
+            return int(m.group(1))
+    return None
+
+
+def _say_on_mac(text: str) -> bool:
+    """Say text out loud on the Mac speakers only, in eLo's voice (ElevenLabs) when
+    available, else macOS `say`. Blocks until finished."""
+    import tempfile
+    idx = _mac_index()
+    audio = None
+    try:
+        from voice.voice_engine import _fetch_elevenlabs_audio
+        audio = _fetch_elevenlabs_audio(text)
+    except Exception:
+        audio = None
+    if audio:
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
+            f.write(audio)
+            path = f.name
+        try:
+            cmd = (["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", path, "-f", "audiotoolbox",
+                    "-audio_device_index", str(idx), "-"] if idx is not None else ["afplay", path])
+            return subprocess.run(cmd, capture_output=True, timeout=30).returncode == 0
+        finally:
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
+    cmd = ["say"] + (["-a", _MAC_SPEAKERS] if idx is not None else []) + [text]
+    return subprocess.run(cmd, capture_output=True, timeout=30).returncode == 0
+
+
+def _run_speak(name: str) -> dict:
+    """eLo asks Alexa out loud: 'Alexa' … pause … '<command>'."""
+    from tools.capability_status import tool_result, record_result
+    phrase = phrases().get(name) or {k.lower(): v for k, v in phrases().items()}.get(name.lower(), name.lower())
+    try:
+        ok = _say_on_mac("Alexa.")
+        time.sleep(0.8)                      # let the Echo wake before the command
+        ok = _say_on_mac(phrase) and ok
+    except Exception as e:
+        return record_result("devices", tool_result(False, {"shortcut": name,
+                             "line": f"I couldn't say it to Alexa — {type(e).__name__}."}, str(e)[:200]))
+    if not ok:
+        return record_result("devices", tool_result(False, {"shortcut": name,
+                             "line": "I couldn't play that out loud for Alexa."}, "playback failed"))
+    # eLo can't hear whether Alexa understood; he says what he did.
+    return record_result("devices", tool_result(True, {"shortcut": name, "via": "spoken",
+                         "line": f"Asked Alexa: “{phrase}”."}))
+
+
 def run(name: str) -> dict:
     from tools.capability_status import tool_result, record_result
     if name not in controllable():
@@ -155,6 +250,8 @@ def run(name: str) -> dict:
     alexa = {k.lower(): v for k, v in alexa_devices().items()}
     if name.lower() in alexa:
         return _run_alexa(name, alexa[name.lower()])
+    if _route() == "speak":
+        return _run_speak(name)
     try:
         r = subprocess.run(["shortcuts", "run", name], capture_output=True, text=True, timeout=45)
     except subprocess.TimeoutExpired:

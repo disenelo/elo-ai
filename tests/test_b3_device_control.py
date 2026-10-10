@@ -24,6 +24,7 @@ def ran(monkeypatch, tmp_path):
     monkeypatch.setattr(dc, "_ALLOW_FILE", str(tmp_path / "none.json"))
     monkeypatch.setattr(dc, "_ALEXA_FILE", str(tmp_path / "none2.json"))
     monkeypatch.delenv("VOICE_MONKEY_TOKEN", raising=False)
+    monkeypatch.setenv("ELO_DEVICE_ROUTE", "shortcut")      # these tests cover the Shortcuts route
     dc._cache.update(ts=0.0, names=[])
     return calls
 
@@ -98,3 +99,46 @@ def test_alexa_commands_controllable_even_without_mac_shortcut(monkeypatch, tmp_
     dc._cache.update(ts=0.0, names=[])
     monkeypatch.setenv("VOICE_MONKEY_TOKEN", "tok")
     assert dc.match("turn off the lights") == "Lights Out"
+
+
+
+# ── v3 default: eLo says it to Alexa out loud on the Mac speakers ──────────────
+
+@pytest.fixture
+def spoken(monkeypatch, tmp_path):
+    said = []
+    monkeypatch.delenv("ELO_DEVICE_ROUTE", raising=False)
+    monkeypatch.delenv("VOICE_MONKEY_TOKEN", raising=False)
+    monkeypatch.setattr(dc, "_PHRASE_FILE", str(tmp_path / "none.json"))
+    monkeypatch.setattr(dc, "_ALLOW_FILE", str(tmp_path / "none2.json"))
+    monkeypatch.setattr(dc, "_say_on_mac", lambda text: said.append(text) or True)
+    monkeypatch.setattr(dc.time, "sleep", lambda s: None)
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: pytest.fail("no shortcut/real command in spoken mode"))
+    return said
+
+
+def test_spoken_is_the_default_and_needs_no_shortcuts(spoken):
+    assert dc._route() == "speak"
+    assert dc.match("turn off the lights") == "Lights Out"
+
+
+def test_says_wake_word_then_command(spoken):
+    r = dc.run("Lights Out")
+    assert spoken == ["Alexa.", "turn off the lights"]
+    assert r["success"] and r["result"]["via"] == "spoken"
+    assert r["result"]["line"] == "Asked Alexa: “turn off the lights”."
+
+
+def test_playback_failure_is_honest(spoken, monkeypatch):
+    monkeypatch.setattr(dc, "_say_on_mac", lambda text: False)
+    r = dc.run("Lights On")
+    assert not r["success"] and "couldn't play" in r["result"]["line"]
+
+
+def test_phrases_can_be_changed(spoken, tmp_path, monkeypatch):
+    f = tmp_path / "p.json"; f.write_text('{"Lights Out": "turn off the studio lights"}')
+    monkeypatch.setattr(dc, "_PHRASE_FILE", str(f))
+    monkeypatch.setattr(dc, "_ALLOW_FILE", str(tmp_path / "a.json"))
+    (tmp_path / "a.json").write_text('{"shortcuts": ["Lights Out"]}')
+    dc.run("Lights Out")
+    assert spoken[-1] == "turn off the studio lights"
