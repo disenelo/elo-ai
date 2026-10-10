@@ -287,8 +287,7 @@ def _speech(text: str, end: bool = False, elo: bool = False,
 
 
 def _echo_is_mouth() -> bool:
-    """The Echo is connected to the Mac over Bluetooth (tools/echo_speaker), so eLo can
-    answer through it in his own voice."""
+    """The Echo is connected to the Mac over Bluetooth (tools/echo_speaker)."""
     try:
         from tools.echo_speaker import device_index
         return device_index() is not None
@@ -296,26 +295,27 @@ def _echo_is_mouth() -> bool:
         return False
 
 
-def _turn_via_echo(turn_fn):
-    """David spoke through the Echo → eLo's reply (only) goes back through it."""
-    def run(text):
-        from tools import echo_speaker as _es
-        _es.want_for(180)
-        try:
-            return turn_fn(text)
-        finally:
-            _es.want_for(30)     # his reply may still be speaking after the turn returns
-    return run
+def _reply_mode() -> str:
+    """'ears' (default): Alexa only hears David; eLo's reply plays wherever David set
+    his voice (Presence settings: Mac or Echo, tools/echo_speaker.voice_output).
+    'skill' (ALEXA_REPLY=skill): the older mode, Alexa itself speaks the reply within 8 s."""
+    return "skill" if os.environ.get("ALEXA_REPLY", "ears").lower() == "skill" else "ears"
 
 
 def _brain(utterance: str, turn_fn, base, t0) -> dict:
-    if _echo_is_mouth():
-        # Alexa is eLo's ears; Bluetooth is his mouth. The turn runs in the
-        # background and his own voice comes out of the Echo whenever the brain
-        # finishes — no 8 s limit, no second copy in Alexa's voice. The session
-        # ends so the Echo's mic doesn't hear eLo's voice back as input.
-        _run(_turn_via_echo(turn_fn), utterance)
-        print(f"[alexa] → eLo via Bluetooth (no Alexa speech): {utterance!r}", flush=True)
+    if _reply_mode() == "ears":
+        # David 2026-10-10: Alexa is eLo's ears; his mouth is the Mac or the Echo,
+        # David's choice in settings. The turn runs in the background and his
+        # reply plays from the chosen speaker whenever the brain finishes: no 8 s
+        # limit, never a copy in Alexa's voice. The session ends so the Echo's mic
+        # doesn't hear eLo back.
+        _run(turn_fn, utterance)
+        try:
+            from tools.echo_speaker import voice_output
+            where = voice_output()
+        except Exception:
+            where = "mac"
+        print(f"[alexa] → eLo (ears only; voice on {where}): {utterance!r}", flush=True)
         return {"version": "1.0", "response": {"shouldEndSession": True}}
     reply, from_brain = talk(utterance, turn_fn)
     return _speech(reply, elo=from_brain, base=base, t0=t0)

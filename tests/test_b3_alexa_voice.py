@@ -9,6 +9,7 @@ from capabilities import alexa_ingress as ai
 @pytest.fixture(autouse=True)
 def _echo_not_connected(monkeypatch):
     monkeypatch.setattr(ai, "_echo_is_mouth", lambda: False)
+    monkeypatch.setenv("ALEXA_REPLY", "skill")     # these tests cover the Alexa-speaks mode
 
 
 BASE = "https://example.trycloudflare.com"

@@ -13,8 +13,9 @@ the Mac's other sound stays where it is. No Alexa cloud, no 8-second limit.
   connect()     → connect over Bluetooth (blueutil), True when it shows as an output
   disconnect()
   play(path)    → play an audio file on the Echo; False when not connected / failed
-  want_for(s)   → eLo speaks through the Echo for the next s seconds (off by default)
-  speaking()    → True only while wanted AND connected (voice_engine routes to it)
+  voice_output()/set_voice_output("mac"|"echo") → David's setting (Presence settings UI)
+  want_for(s)   → eLo speaks through the Echo for the next s seconds
+  speaking()    → True when (setting is echo OR wanted) AND connected (voice_engine routes to it)
 
 The Echo's name/address come from ECHO_SPEAKER_NAME (default "Echo Dot-Studio")
 and ECHO_SPEAKER_ADDRESS (looked up from the paired list when unset).
@@ -142,8 +143,92 @@ def disconnect() -> bool:
 
 # Off by default (David, 2026-10-08): "route it to the speaker only if he wants to
 # speak to me via the speaker — do not change all audio to the speaker." Nothing
-# routes unless a turn asks for it (want_for); the Mac's own output is never changed.
+# routes unless a turn asks for it (want_for) or David has chosen the Echo as eLo's
+# voice (voice_output). The Mac's own output device is never changed.
 _want = {"until": 0.0}
+
+# ── eLo's voice output: "mac" | "echo" (David, 2026-10-10) ─────────────────────
+# "I want it through the Mac, and in settings … I can choose Alexa or Mac … I don't
+# want all my audio coming through the bluetooth speaker, just eLo."
+# Presence's settings write a unity_events.json event
+#     {"type": "voice_output", "subject": "echo" | "mac", "_ts": …}
+# The newest one wins and is remembered in data/voice_output.json (the events file
+# is trimmed, and the choice must survive restarts). Default: "mac".
+import json as _json
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_EVENTS = os.path.join(_ROOT, "blender", "unity_events.json")
+_SETTING = os.path.join(_ROOT, "data", "voice_output.json")
+_CHOICES = ("mac", "echo")
+_vo_cache = {"ts": 0.0, "value": None}
+
+
+def _latest_choice_event() -> tuple[float, str] | None:
+    try:
+        with open(_EVENTS, encoding="utf-8") as f:
+            content = f.read()
+    except Exception:
+        return None
+    dec, idx, best = _json.JSONDecoder(), 0, None
+    while idx < len(content):
+        while idx < len(content) and content[idx] in " \t\r\n":
+            idx += 1
+        if idx >= len(content):
+            break
+        try:
+            obj, idx = dec.raw_decode(content, idx)
+        except ValueError:
+            nl = content.find("\n", idx)
+            idx = len(content) if nl < 0 else nl + 1
+            continue
+        if isinstance(obj, dict) and obj.get("type") == "voice_output":
+            v = str(obj.get("subject", "")).strip().lower()
+            if v in _CHOICES:
+                best = (float(obj.get("_ts") or 0.0), v)
+    return best
+
+
+def _saved() -> dict:
+    try:
+        with open(_SETTING, encoding="utf-8") as f:
+            d = _json.load(f)
+        return d if d.get("output") in _CHOICES else {}
+    except Exception:
+        return {}
+
+
+def set_voice_output(choice: str, ts: float | None = None) -> str:
+    """Remember David's choice; choosing the Echo connects it (Mac output restored)."""
+    choice = (choice or "").strip().lower()
+    if choice not in _CHOICES:
+        raise ValueError(f"voice output must be one of {_CHOICES}")
+    prev = _saved().get("output", "mac")
+    os.makedirs(os.path.dirname(_SETTING), exist_ok=True)
+    tmp = _SETTING + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        _json.dump({"output": choice, "_ts": ts or time.time()}, f)
+    os.replace(tmp, _SETTING)
+    _vo_cache.update(ts=0.0, value=None)
+    if choice == "echo" and prev != "echo" and device_index(fresh=True) is None:
+        import threading as _th
+        _th.Thread(target=connect, name="echo-connect", daemon=True).start()
+    return choice
+
+
+def voice_output() -> str:
+    """'mac' or 'echo': where eLo's voice goes. Newest Presence setting wins. Cached 2 s."""
+    if time.time() - _vo_cache["ts"] < 2.0 and _vo_cache["value"]:
+        return _vo_cache["value"]
+    saved = _saved()
+    ev = _latest_choice_event()
+    if ev and ev[0] > float(saved.get("_ts") or 0.0):
+        try:
+            set_voice_output(ev[1], ts=ev[0])
+            saved = {"output": ev[1]}
+        except Exception:
+            pass
+    value = saved.get("output", "mac")
+    _vo_cache.update(ts=time.time(), value=value)
+    return value
 
 
 def want_for(seconds: float) -> None:
@@ -156,10 +241,13 @@ def stop_wanting() -> None:
 
 
 def speaking() -> bool:
-    """True only while a turn wants the Echo AND it is connected as an output."""
+    """True when eLo's voice should go to the Echo now: David chose the Echo
+    (voice_output) or a turn asked for it (want_for), AND the Echo is connected.
+    Not connected → False, so eLo speaks on the Mac rather than not at all."""
     if os.environ.get("ECHO_SPEAKER", "on").lower() == "off":
         return False
-    return time.time() < _want["until"] and device_index() is not None
+    wanted = voice_output() == "echo" or time.time() < _want["until"]
+    return wanted and device_index() is not None
 
 
 def play(path: str, timeout: float = 120) -> bool:

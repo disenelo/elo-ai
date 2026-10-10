@@ -18,6 +18,7 @@ from capabilities import alexa_ingress as ai
 @pytest.fixture(autouse=True)
 def _echo_not_connected(monkeypatch):
     monkeypatch.setattr(ai, "_echo_is_mouth", lambda: False)
+    monkeypatch.setenv("ALEXA_REPLY", "skill")     # these tests cover the Alexa-speaks mode
 
 
 SKILL = "amzn1.ask.skill.test-0000"
@@ -195,11 +196,19 @@ def test_reply_model_is_the_inner_thought_model(monkeypatch):
     assert ai.reply_model() == "x:1b"
 
 
-def test_bluetooth_mouth_runs_turn_in_background_and_says_nothing(monkeypatch):
-    monkeypatch.setattr(ai, "_echo_is_mouth", lambda: True)
+@pytest.mark.parametrize("where", ["mac", "echo"])
+def test_ears_mode_runs_turn_in_background_and_alexa_says_nothing(monkeypatch, where):
+    monkeypatch.setenv("ALEXA_REPLY", "ears")
+    import tools.echo_speaker as es
+    monkeypatch.setattr(es, "voice_output", lambda: where)
     seen, gate = [], threading.Event()
     def turn(t):
-        seen.append(t); gate.set(); return {"response": "spoken over Bluetooth"}
+        seen.append(t); gate.set(); return {"response": "his reply plays on the chosen speaker"}
     r = ai.handle(_req(utterance="how's it going"), turn)
     assert r["response"] == {"shouldEndSession": True}
     assert gate.wait(2) and seen == ["how's it going"]
+
+
+def test_ears_is_the_default(monkeypatch):
+    monkeypatch.delenv("ALEXA_REPLY", raising=False)
+    assert ai._reply_mode() == "ears"

@@ -4,10 +4,13 @@ from tools import echo_speaker as es
 
 
 @pytest.fixture(autouse=True)
-def _clean():
+def _clean(tmp_path, monkeypatch):
+    monkeypatch.setattr(es, "_SETTING", str(tmp_path / "voice_output.json"))
+    monkeypatch.setattr(es, "_EVENTS", str(tmp_path / "unity_events.json"))
+    es._vo_cache.update(ts=0.0, value=None)
     es._idx_cache.update(ts=0.0, idx=None); es.stop_wanting()
     yield
-    es._idx_cache.update(ts=0.0, idx=None); es.stop_wanting()
+    es._idx_cache.update(ts=0.0, idx=None); es.stop_wanting(); es._vo_cache.update(ts=0.0, value=None)
 
 LIST = """[AudioToolbox @ 0x1] CoreAudio devices:
 [AudioToolbox @ 0x1] [0]            Mac Studio Speakers, BuiltInSpeakerDevice
@@ -61,3 +64,29 @@ def test_connect_puts_mac_output_back(monkeypatch):
     monkeypatch.setattr(es, "_address", lambda: "28:73:F6:8F:71:E5")
     monkeypatch.setattr(es.time, "sleep", lambda s: None)
     assert es.connect() is True and out["now"] == "Mac Studio Speakers"
+
+
+def test_voice_output_defaults_to_mac_and_mac_never_routes(monkeypatch):
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 1)     # Echo connected
+    assert es.voice_output() == "mac" and es.speaking() is False
+
+
+def test_presence_setting_event_wins_and_is_remembered(monkeypatch, tmp_path):
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 1)
+    ev = tmp_path / "unity_events.json"
+    ev.write_text('{"seq":1,"type":"gaze_target_changed","subject":"1","_ts":1}\n'
+                  '{"seq":2,"type":"voice_output","subject":"echo","_ts":100}\n')
+    assert es.voice_output() == "echo" and es.speaking() is True
+    ev.write_text('{"seq":3,"type":"gaze_target_changed","subject":"2","_ts":200}\n')   # event trimmed away
+    es._vo_cache.update(ts=0.0, value=None)
+    assert es.voice_output() == "echo"                                   # remembered
+    ev.write_text('{"seq":4,"type":"voice_output","subject":"mac","_ts":300}\n')
+    es._vo_cache.update(ts=0.0, value=None)
+    assert es.voice_output() == "mac" and es.speaking() is False
+
+
+def test_echo_chosen_but_not_connected_falls_back_to_mac(monkeypatch):
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: None)
+    monkeypatch.setattr(es, "connect", lambda *a, **k: False)
+    es.set_voice_output("echo")
+    assert es.speaking() is False      # eLo still speaks, on the Mac
