@@ -31,6 +31,29 @@ def pytest_ignore_collect(collection_path, config):
     return None
 
 
+# ── the live dream journal is not a test fixture ────────────────────────────
+# Found 2026-10-10: 102 of 231 entries in self/dream_journal.jsonl were test
+# output. tests/test_dream_scene_images.py calls run_dream() with a stub llm
+# returning {"narrative":"n","insight":"i"} and a _Self whose focal_thread is
+# "x" and session_read is "y" -- which is where the 360 "y" and 270 "x" dream
+# seeds came from, and where all six "retained" dreams came from. I read that
+# contamination as production behaviour and reported it as such.
+#
+# Applied here rather than in one test file so no future test can write into
+# eLo's real dream history by forgetting to patch a path.
+@pytest.fixture(autouse=True)
+def _dream_journal_is_not_live(tmp_path_factory, monkeypatch):
+    try:
+        import faculties.dream.dream_faculty as _df
+    except Exception:
+        return
+    d = tmp_path_factory.mktemp("dreams")
+    monkeypatch.setattr(_df, "_JOURNAL_PATH", d / "dream_journal.jsonl", raising=False)
+    # Same reasoning for the two live stores the dream path reads.
+    monkeypatch.setattr(_df, "_INTERACTIONS_PATH", d / "interactions.json", raising=False)
+    monkeypatch.setattr(_df, "_SYMBOL_HISTORY_PATH", d / "symbol_history.json", raising=False)
+
+
 # ── fixtures for test_loop_one_brain.py ─────────────────────────────────────
 # test_loop_2/3/4/7 take `rows`; test_loop_6/7 take `confirmed_lessons`.
 # These are read from live runtime files — skip if not present yet.

@@ -95,9 +95,13 @@ def test_the_dream_leaves_an_inner_event(_isolated):
     # The stated property is unchanged -- the dream is the most recent thing
     # that happened to him -- so the tail is checked rather than one slot.
     # Before 2026-10-10 no dream had ever retained, so this never came up.
-    tail = events[-2:]
-    assert "connection" in tail, events[-3:]
-    assert all(e in ("connection", "dream_insight") for e in tail), events[-3:]
+    # The property is that the DREAM is the most recent thing that happened
+    # to him. The last event is therefore "connection", or "dream_insight"
+    # when the dream also retained. Earlier events are whatever he was
+    # carrying before and are not this test's business -- an earlier version
+    # asserted the whole tail was dream events and tripped over a live
+    # identity_drift event sitting in front of it.
+    assert events[-1] in ("connection", "dream_insight"), events[-3:]
     assert before[-1:] != ["connection"] or len(before) < 8
 
 

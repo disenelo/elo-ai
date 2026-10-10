@@ -185,7 +185,7 @@ def test_context_leaves_unavailable_sources_empty(monkeypatch):
         assert ctx[unavailable] == [], unavailable
 
 
-def test_real_conversation_joins_the_topics_without_replacing_them():
+def test_real_conversation_joins_the_topics_without_replacing_them(tmp_path, monkeypatch):
     """
     Topic labels alone are not dreamable material. Measured 2026-10-10: of
     1,489 seeds ever written the commonest sources were 'y' (360) and 'x'
@@ -195,6 +195,16 @@ def test_real_conversation_joins_the_topics_without_replacing_them():
 
     Real turns are added; the topics are NOT dropped.
     """
+    # Supplies its own turns. The conftest guard points _INTERACTIONS_PATH at
+    # an empty temp file precisely so no test reads David's live store -- and
+    # the first version of this test did exactly that.
+    import json as _j
+    store = tmp_path / "interactions.json"
+    store.write_text(_j.dumps([
+        {"user": "what do I keep coming back to?", "response": "You keep returning to the seam."},
+    ]))
+    monkeypatch.setattr(df, "_INTERACTIONS_PATH", store)
+
     ctx = df._dream_context(_Self(), ["a topic"])
     assert "a topic" in ctx["recent_conversation"]
     real = [t for t in ctx["recent_conversation"] if len(t) >= 12]
