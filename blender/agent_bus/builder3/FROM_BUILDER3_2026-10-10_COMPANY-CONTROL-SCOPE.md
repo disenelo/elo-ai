@@ -27,3 +27,6 @@
 - Device commands go to **Alexa Routines via Voice Monkey** (voicemonkey.io, free skill + API) once `VOICE_MONKEY_TOKEN` is set. Trigger device IDs: elo-lights-on / elo-lights-off / elo-design-mode / elo-living-room-sounds. Otherwise the Mac Shortcut is used.
 - David's setup sheet: `~/Desktop/eLo_Lights_via_Alexa.md` (account, enable skill, 4 trigger devices, 4 routines, token).
 - Not live-tested; needs David's account. Tests 18/18.
+
+## Update: David 2026-10-10: Voice Monkey PARKED
+"I don't want more APIs for no reason." The Voice Monkey route stays dormant (no token will be set). Next: check whether David's lights work in Apple Home / Matter (free, local, no account), and use that. Waiting on the light brand from David.
