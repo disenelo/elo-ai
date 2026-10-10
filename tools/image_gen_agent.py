@@ -122,13 +122,24 @@ def _dalle3(prompt: str, filename: str | None = None) -> Optional[Path]:
         import openai
         client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         out = _output_path(filename)
-        out.write_bytes(
-            _openai_image_bytes(client, "dall-e-3", prompt, quality="hd")
-        )
+        # gpt-image-1 is the current model name (formerly dall-e-3, deprecated 2025).
+        # Falls back to dall-e-3 in case of model-not-found to support older API keys.
+        try:
+            out.write_bytes(
+                _openai_image_bytes(client, "gpt-image-1", prompt, quality="hd")
+            )
+        except Exception as _e1:
+            if "does not exist" in str(_e1) or "model_not_found" in str(_e1):
+                out.write_bytes(
+                    _openai_image_bytes(client, "dall-e-3", prompt, quality="hd")
+                )
+            else:
+                raise
         return out
     except Exception as e:
-        print(f"[image_gen] DALL-E 3 failed: {e}")
-        _LAST_ERRORS.append(f"DALL-E 3: {e}")
+        import logging as _ig_log
+        _ig_log.getLogger("elo.image_gen").debug("[image_gen] DALL-E failed: %s", e)
+        _LAST_ERRORS.append(f"DALL-E: {e}")
         return None
 
 

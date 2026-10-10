@@ -777,11 +777,22 @@ def _maybe_emit_dream_intent(battery_snapshot: dict, blender_state: dict) -> dic
         now = time.time()
         if now - _dream_trigger_ts < _DREAM_TRIGGER_COOLDOWN_S:
             return {}
+        # Gate: do not enter dream while David is actively in conversation.
+        # If a message arrived in the last 5 minutes, daemon state is AWAKE —
+        # triggering dream while David is typing is the sit→dream bug (2026-10-09).
+        try:
+            from runtime.elo_daemon import get_daemon as _get_daemon
+            _d_status = _get_daemon().status()
+            _idle_s = now - float(_d_status.get("last_request_ts", 0) or 0)
+            if _idle_s < 300:
+                return {}
+        except Exception:
+            pass
         _dream_trigger_ts = now
         import logging as _dt_log
         _dt_log.getLogger("elo.health").info(
-            "CHAIN-3: elo_battery=%.3f <= %.3f in calm — emitting intent=dream",
-            elo_battery, _ENERGY_LOW,
+            "CHAIN-3: elo_battery=%.3f <= %.3f in calm, idle %.0fs — emitting intent=dream",
+            elo_battery, _ENERGY_LOW, _idle_s if "_idle_s" in dir() else 0,
         )
         return {"intent": "dream"}
     except Exception:
