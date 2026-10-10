@@ -22,6 +22,8 @@ def ran(monkeypatch, tmp_path):
         calls.append(args); return _R()
     monkeypatch.setattr(subprocess, "run", fake)
     monkeypatch.setattr(dc, "_ALLOW_FILE", str(tmp_path / "none.json"))
+    monkeypatch.setattr(dc, "_ALEXA_FILE", str(tmp_path / "none2.json"))
+    monkeypatch.delenv("VOICE_MONKEY_TOKEN", raising=False)
     dc._cache.update(ts=0.0, names=[])
     return calls
 
@@ -61,3 +63,38 @@ def test_router_runs_it_directly(ran):
     import tools.tool_router as tr
     out = tr._direct_intercepts("turn off the lights")
     assert out == ("Ran your “Lights Out” shortcut.", "devices")
+
+
+def test_alexa_route_when_voice_monkey_is_set_up(ran, monkeypatch):
+    import urllib.request, io
+    monkeypatch.setenv("VOICE_MONKEY_TOKEN", "tok")
+    hits = []
+    class _Resp(io.BytesIO):
+        status = 200
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+    monkeypatch.setattr(urllib.request, "urlopen", lambda url, timeout=10: hits.append(url) or _Resp(b'{"success":true}'))
+    r = dc.run("Lights Out")
+    assert r["success"] and r["result"]["via"] == "alexa" and r["result"]["line"] == "Asked Alexa: lights out."
+    assert "device=elo-lights-off" in hits[0] and "token=tok" in hits[0]
+    assert ran == []                                      # the Mac Shortcut was NOT used
+
+
+def test_alexa_refusal_is_reported(ran, monkeypatch):
+    import urllib.request, io
+    monkeypatch.setenv("VOICE_MONKEY_TOKEN", "tok")
+    class _Resp(io.BytesIO):
+        status = 200
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+    monkeypatch.setattr(urllib.request, "urlopen", lambda url, timeout=10: _Resp(b'{"success": false, "error": "bad device"}'))
+    r = dc.run("Lights On")
+    assert not r["success"] and "didn't take" in r["result"]["line"]
+
+
+def test_alexa_commands_controllable_even_without_mac_shortcut(monkeypatch, tmp_path):
+    monkeypatch.setattr(subprocess, "run", lambda args, **k: _R(out=""))   # no shortcuts on the Mac
+    monkeypatch.setattr(dc, "_ALEXA_FILE", str(tmp_path / "none.json"))
+    dc._cache.update(ts=0.0, names=[])
+    monkeypatch.setenv("VOICE_MONKEY_TOKEN", "tok")
+    assert dc.match("turn off the lights") == "Lights Out"
