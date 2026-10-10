@@ -167,6 +167,13 @@ _COMMUNICATION: list[Capability] = [
         ack_source=ACK_SYNC_RETURN,
     ),
     Capability(
+        id="create_document", display_name="Documents", category=CAT_CREATIVE,
+        description="Write a text or markdown document into ~/Documents/eLo (WO-B3-0009)",
+        verbs=["write that up", "make me a list", "create a doc", "write me a summary", "save that as a document"],
+        execution_priority=3, agent_module="tools.document_writer",
+        ack_source=ACK_SYNC_RETURN,
+    ),
+    Capability(
         id="notes", display_name="Apple Notes", category=CAT_COMMUNICATION,
         description="Create Apple Notes entries",
         verbs=["make a note", "new note", "apple notes", "add note"],

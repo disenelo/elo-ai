@@ -2370,6 +2370,18 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     except Exception as _me:
         _logger.debug("messages intercept failed: %s", _me)
 
+    # WO-B3-0009 — documents: "make me a list of…", "write that up", "create a doc…"
+    # → a real file in ~/Documents/eLo, and eLo says where. (Apple Notes and
+    # reminders keep their own tools; is_document_request excludes them.)
+    try:
+        from tools.document_writer import is_document_request as _is_doc, write_document as _write_doc
+        if _cap_on("create_document") and _is_doc(user_input):
+            _dr = _write_doc(user_input)
+            _last_direct_result = _dr["result"]["line"]
+            return _last_direct_result, "create_document"
+    except Exception as _dw_err:
+        _logger.warning("document_writer failed: %s", _dw_err)
+
     # ── Apple Notes: create — B3 2026-10-06: "make a note: X" reached the Obsidian
     # agent and the mock backend answered (capability demo). Registry: notes =
     # Apple Notes ("make a note, new note, apple notes, add note"); "my notes" stays
