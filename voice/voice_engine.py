@@ -208,6 +208,22 @@ def _fetch_openai_audio(text: str) -> bytes | None:
         return None
 
 
+def _play_proc(path: str) -> "subprocess.Popen":
+    """eLo's main voice → the Echo Dot-Studio when David's setting is the Echo and
+    it's connected (tools/echo_speaker), else afplay on the Mac as before. Only
+    eLo's voice moves; the Mac's output device is never changed (B3, David
+    2026-10-10, applied under file lock). Inner voice is not routed."""
+    try:
+        from tools import echo_speaker as _es
+        if _es.speaking():
+            p = _es.popen_play(path)
+            if p is not None:
+                return p
+    except Exception:
+        pass
+    return subprocess.Popen(["afplay", path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
 def _play_openai(text: str, stop: threading.Event) -> bool:
     """Fetch from OpenAI, write to tmp file, play with afplay + lipsync. Returns True on success."""
     if stop.is_set():
@@ -224,11 +240,7 @@ def _play_openai(text: str, stop: threading.Event) -> bool:
 
     try:
         # Start playback and lipsync simultaneously
-        proc = subprocess.Popen(
-            ["afplay", tmp_path],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        proc = _play_proc(tmp_path)
         _pulse_lipsync(phonemes, stop, text=text)
 
         if stop.is_set():
@@ -342,11 +354,7 @@ def _play_elevenlabs(text: str, stop: threading.Event) -> bool:
         tmp_path = f.name
 
     try:
-        proc = subprocess.Popen(
-            ["afplay", tmp_path],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        proc = _play_proc(tmp_path)
         _pulse_lipsync(phonemes, stop, text=text)
 
         if stop.is_set():
