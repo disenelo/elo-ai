@@ -33,3 +33,7 @@
 
 ## Update: v3 = DEFAULT (9a5eb3b): eLo asks Alexa out loud
 David: "I need eLo to talk to Alexa, then Alexa turns the lights off." eLo says "Alexa … turn off the lights" on the Mac speakers (never the Echo, which ignores its own wake word), in his voice. No account, no API, no cost. Phrases: data/alexa_phrases.json. Not live-tested yet (David away; it would switch his lights). Depends on the Echo hearing the Mac (volume/distance).
+
+## David 2026-10-10 on v3 (spoken-to-Alexa): "pointless … but if I'm 80 that would work"
+- Kept as-is (only fires on an explicit lights command). Logged as a future **accessibility** use: eLo speaking to Alexa for someone who can't easily reach a switch or remember Alexa phrasing.
+- Real target: **direct** control (eLo → lights, no Alexa): Apple Home/Matter or the brand's local Wi-Fi API. Waiting on the light brand from David.
