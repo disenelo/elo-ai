@@ -4404,15 +4404,22 @@ def _process_turn(raw: str) -> dict:
         # ── WO-INNER-THOUGHT-SHAPES-RESPONSE: collect inner thought before spine ──
         # The early flight was started at the top of the turn (line ~2643) from
         # what David ASKED — never the reply, so it cannot be rationalisation.
-        # Collect it here with a bounded wait and inject into the spine's
-        # memory_pack so the Executive sees the pre-thought as context.
-        # This is Beat 2 → Beat 3 ordering: inner thought shapes the response.
+        # Collect here with a bounded wait. Three beats:
+        #   Beat 2: speak the inner thought via lower-register TTS (visible to David)
+        #   Beat 3: inject into spine memory_pack so Executive is shaped by it
         _it_pre_context = ""
         try:
             if _it_early_flight is not None:
                 from faculties.inner_thought import early_runner as _it_er
                 _it_pre_text = _it_er.collect(_it_early_flight, timeout_s=0.35)
                 if _it_pre_text and _it_pre_text.strip():
+                    # Beat 2 — speak before response (lower/slower register, David L3 2026-10-05)
+                    if not _is_user_away():
+                        try:
+                            _voice_speak_inner(_it_pre_text.strip())
+                        except Exception:
+                            pass
+                    # Beat 3 — inject into Executive context
                     _it_pre_context = f"\n\n[INNER THOUGHT — before responding]\n{_it_pre_text.strip()}"
         except Exception:
             pass
