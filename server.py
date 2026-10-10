@@ -6641,6 +6641,23 @@ def _process_turn(raw: str) -> dict:
                     if _gk_wants_conversation and not _exec_wants_tools:
                         _enriched, _agent = raw, "direct"
                     else:
+                        # WO-EXEC-ACK-001: acknowledge before tool fires — no silent gaps.
+                        # Fires when a capability is selected (tool is about to run) and David
+                        # is present. Keeps eLo's voice continuous across the tool latency gap.
+                        if _plan_caps and not _is_user_away():
+                            try:
+                                import random as _ack_rand
+                                _ACK_LINES = [
+                                    "Give me a second.",
+                                    "I'm just checking.",
+                                    "One moment.",
+                                    "Let me look at that.",
+                                    "I don't know off the top of my head — checking now.",
+                                ]
+                                _voice_speak(_ack_rand.choice(_ACK_LINES))
+                            except Exception:
+                                pass
+
                         # WO-118 Row 14 ROUTE: use Executive's capability choice when available.
                         # plan.capabilities = [(agent_name, query)] chosen by spine's capability
                         # faculty. Trust that over re-running keyword matching on the same raw input.
