@@ -57,7 +57,9 @@ def test_rel5_new_fact_appears_immediately():
     from runtime.wkg_faculty import create_entity, record_claim, get_relationship_profile, deprecate_entity
     import time
 
-    unique = f"test_label_{int(time.time())}"
+    # WKG-FACT-QUALITY-001: test_label_* is now filtered from get_relationship_profile().
+    # Use a label that passes the quality gates: ≥3 words, no brackets, not test_label_*.
+    unique = f"integration test entity {int(time.time())}"
     ent = create_entity(
         "CONCEPT",
         unique,

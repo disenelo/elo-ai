@@ -4401,6 +4401,22 @@ def _process_turn(raw: str) -> dict:
         except Exception:
             pass  # fall through to spine if interception fails for any reason
 
+        # ── WO-INNER-THOUGHT-SHAPES-RESPONSE: collect inner thought before spine ──
+        # The early flight was started at the top of the turn (line ~2643) from
+        # what David ASKED — never the reply, so it cannot be rationalisation.
+        # Collect it here with a bounded wait and inject into the spine's
+        # memory_pack so the Executive sees the pre-thought as context.
+        # This is Beat 2 → Beat 3 ordering: inner thought shapes the response.
+        _it_pre_context = ""
+        try:
+            if _it_early_flight is not None:
+                from faculties.inner_thought import early_runner as _it_er
+                _it_pre_text = _it_er.collect(_it_early_flight, timeout_s=0.35)
+                if _it_pre_text and _it_pre_text.strip():
+                    _it_pre_context = f"\n\n[INNER THOUGHT — before responding]\n{_it_pre_text.strip()}"
+        except Exception:
+            pass
+
         # ── Ruling C (WO-CANON-VII): assemble THEN decide ────────────────────
         # spine.run() assembles the cognitive state, THEN exec_decide runs inside
         # _executive_faculty() — after assembly, not before. server.py no longer
@@ -4414,7 +4430,7 @@ def _process_turn(raw: str) -> dict:
             # formatted tool context. build_prompt still receives the enriched raw.
             _spine_raw = _original_raw if "_original_raw" in dir() else raw
             _plan = _spine_run(_spine_raw, state=_state, attention=attention_model,
-                               memory_pack=_vault_ctx)
+                               memory_pack=_vault_ctx + _it_pre_context)
         except Exception as _spine_err:
             import sys as _sys; print(f"[spine] FAILED: {_spine_err}", file=_sys.stderr)
 
