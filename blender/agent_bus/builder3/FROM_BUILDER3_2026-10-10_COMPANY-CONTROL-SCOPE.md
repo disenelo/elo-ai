@@ -22,3 +22,8 @@
 - **Incident (disclosed):** a legacy test (test_lights_wiring AT-1) ran David's real "Lights Out" shortcut once. It failed immediately ("a required app is missing"), so no device changed. Fixed: that test can no longer reach devices.
 - **Finding:** "Lights Out" **cannot run on this Mac**: it needs an app that isn't installed (likely the light maker's iPhone app). The other three are untested (running them would switch real devices).
 - **Next for David:** (1) which app the lights use (Govee / Hue / Home…), (2) OK to test "Lights On" once live, (3) whether the shortcuts should be rebuilt in the Mac's Home app so they run here.
+
+## Update: David: the lights are "controlled via Alexa". v2 built (deda4d0)
+- Device commands go to **Alexa Routines via Voice Monkey** (voicemonkey.io, free skill + API) once `VOICE_MONKEY_TOKEN` is set. Trigger device IDs: elo-lights-on / elo-lights-off / elo-design-mode / elo-living-room-sounds. Otherwise the Mac Shortcut is used.
+- David's setup sheet: `~/Desktop/eLo_Lights_via_Alexa.md` (account, enable skill, 4 trigger devices, 4 routines, token).
+- Not live-tested; needs David's account. Tests 18/18.
