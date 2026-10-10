@@ -6761,6 +6761,18 @@ def _process_turn(raw: str) -> dict:
                 except Exception:
                     pass
 
+                # WO-INNER-THOUGHT-PREPROCESS: inject pre_thought context before generation.
+                # Builder 2 contract: pre_thought(raw) reads state eLo already holds —
+                # no model call, < 0.3 ms. Returns "" on most turns (no-op). On complex /
+                # anaphoric turns injects what eLo holds so the answer is shaped before tokens.
+                try:
+                    from faculties.inner_thought import pre_thought as _pre_thought_fn
+                    _pre = _pre_thought_fn(raw)
+                    if _pre.get("inject"):
+                        system = system + "\n\n" + _pre["inject"]
+                except Exception:
+                    pass
+
 
                 # B3-SPOTIFY-001: Spotify came up but wasn't a command — tell the LLM
                 # what eLo can do and what's playing. Live 2026-10-06 it denied
