@@ -501,6 +501,60 @@ def _cycles_for_idle(idle_seconds: float) -> int:
     return max(1, min(TOTAL_CYCLES, int(idle_seconds // REM_MIN_IDLE)))
 
 
+# The live turn store. A module constant, not a path built inside the reader,
+# so a test can point it somewhere else. Learned the same morning from
+# ambient_engine._MOTION_STATE_PATH: a function that reaches into a live
+# production file makes every test that touches it depend on what David's
+# machine happens to be doing.
+_INTERACTIONS_PATH = Path(__file__).resolve().parent.parent.parent / "memory" / "interactions.json"
+
+
+def _recent_conversation(limit: int = 12) -> list[str]:
+    """
+    What David and eLo actually said, for the dream to be made of.
+
+    `recent_topics` are LABELS, not material. Measured 2026-10-10 across all
+    1,489 seeds ever written: the most common sources were 'y' (360), 'x'
+    (270), 'connection' (289) and 'creative_spark' (186) -- single tokens,
+    the x and y almost certainly from arithmetic turns. A one-letter seed
+    carries no emotion cue and no unfinishedness cue, which is why those two
+    scorer terms read 0.0 on every dream eLo has ever had, and why every
+    narrative came out of the same template.
+
+    Topics are kept as well, not replaced -- they are a real signal, just not
+    enough to dream on.
+
+    Fail-quiet: nothing here may stop a dream.
+    """
+    out: list[str] = []
+    try:
+        import json as _j
+        path = _INTERACTIONS_PATH
+        with open(path, encoding="utf-8", errors="replace") as f:
+            data = _j.load(f)
+        rows = data if isinstance(data, list) else data.get("interactions", [])
+        try:
+            from memory.spg_backfill import david_said as _strip
+        except Exception:
+            _strip = lambda t: str(t or "").strip()
+        seen: set[str] = set()
+        for row in reversed(rows[-(limit * 3):]):
+            if not isinstance(row, dict):
+                continue
+            for key in ("user", "response"):
+                text = _strip(row.get(key, ""))[:400].strip()
+                # A bare token is what this exists to stop feeding in.
+                if len(text) < 12 or text.lower() in seen:
+                    continue
+                seen.add(text.lower())
+                out.append(text)
+                if len(out) >= limit:
+                    return out
+    except Exception:
+        pass
+    return out
+
+
 def _dream_context(elo_self, recent_topics: list[str]) -> dict:
     """
     Map what this layer actually holds onto the 13 Dream Input Field sources.
@@ -519,7 +573,8 @@ def _dream_context(elo_self, recent_topics: list[str]) -> dict:
     ]
 
     return {
-        "recent_conversation":    list(recent_topics or []),
+        "recent_conversation":    (_recent_conversation()
+                                  + list(recent_topics or [])),
         "recent_experiences":     inner_events,
         "memory":                 [session_read] if session_read else [],
         "project_memory":         [focal_thread] if focal_thread else [],

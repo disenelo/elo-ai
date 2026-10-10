@@ -90,7 +90,14 @@ def test_the_dream_leaves_an_inner_event(_isolated):
     after = df.wake_from_dream(_dream(elo), copy.deepcopy(elo))
     events = list(getattr(after, "inner_events", []))
     assert events, "no inner events at all"
-    assert events[-1] == "connection", events[-3:]
+    # Was `events[-1] == "connection"`. A dream that RETAINS now also leaves
+    # a "dream_insight" after it, so the last event is sometimes that instead.
+    # The stated property is unchanged -- the dream is the most recent thing
+    # that happened to him -- so the tail is checked rather than one slot.
+    # Before 2026-10-10 no dream had ever retained, so this never came up.
+    tail = events[-2:]
+    assert "connection" in tail, events[-3:]
+    assert all(e in ("connection", "dream_insight") for e in tail), events[-3:]
     assert before[-1:] != ["connection"] or len(before) < 8
 
 

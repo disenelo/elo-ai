@@ -172,10 +172,30 @@ def test_empty_self_state_does_not_crash():
     assert result.journal_entry["phase"] == "NREM+REM"
 
 
-def test_context_leaves_unavailable_sources_empty():
+def test_context_leaves_unavailable_sources_empty(monkeypatch):
     """An empty source is honest; a plausible substitute is not."""
+    # Isolated from the live turn store on purpose. _dream_context now also
+    # feeds real conversation into recent_conversation, and without this the
+    # test asserts against whatever David said most recently.
+    monkeypatch.setattr(df, "_INTERACTIONS_PATH", "/nonexistent/interactions.json")
     ctx = df._dream_context(_Self(), ["a topic"])
     assert ctx["recent_conversation"] == ["a topic"]
     for unavailable in ("wkg", "emotional_significance", "novelty",
                         "failure", "achievement", "relationship", "embodiment"):
         assert ctx[unavailable] == [], unavailable
+
+
+def test_real_conversation_joins_the_topics_without_replacing_them():
+    """
+    Topic labels alone are not dreamable material. Measured 2026-10-10: of
+    1,489 seeds ever written the commonest sources were 'y' (360) and 'x'
+    (270) -- single tokens carrying no emotion cue and no unfinishedness cue,
+    which is why both of those scorer terms read 0.0 on every dream eLo has
+    ever had.
+
+    Real turns are added; the topics are NOT dropped.
+    """
+    ctx = df._dream_context(_Self(), ["a topic"])
+    assert "a topic" in ctx["recent_conversation"]
+    real = [t for t in ctx["recent_conversation"] if len(t) >= 12]
+    assert real, "no real conversation reached the dream context"
