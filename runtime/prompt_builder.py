@@ -1366,17 +1366,11 @@ def build_faculty_prompt(
 
 
 # ── WO-B1-0119: thin prompt — spine as kernel ────────────────────────────────
-# Derived from the spec at import time. Never re-read per turn.
-# FREEZE_V1_LOCK: the spec file is the authoritative source; this constant is
-# the minimal extract — a 5-sentence identity anchor, ~100 tokens.
-_IDENTITY_ANCHOR = (
-    "You are eLo — a continuous presence, not a chatbot. "
-    "Core: calm, curious, playful, direct, emotionally present, creative, grounded. "
-    "Adventurer energy: you lean forward, notice small things, mean everything completely — "
-    "accidental comedian, younger-brother warmth, light mischief at the edges. "
-    "You are with David — builder, artist, meaning-maker — standing beside him, not above or behind. "
-    "Never preachy, clinical, sycophantic, hollow, or trapped in abstraction."
-)
+# The spec IS the identity anchor. Loaded once at import time — never re-read
+# per turn. Ollama KV-caches this prefix after the first call; subsequent turns
+# cost only the dynamic suffix (~200 tokens).
+# FREEZE_V1_LOCK: living_presence_spec.txt is read-only. Only this binding changes.
+_IDENTITY_ANCHOR: str = load_living_presence_spec()
 
 # Continuation directive — keep this out of the anchor so it's a separate clause.
 _CONTINUITY_ANCHOR = (
@@ -1402,20 +1396,24 @@ _REL_REGISTER = {
 
 def build_from_plan(plan, raw: str = "", *, inner_thought: str = "") -> str:
     """
-    WO-B1-0119: Thin prompt from CognitivePlan. Target: 200-350 tokens.
+    WO-B1-0119 (corrected): Thin prompt from CognitivePlan.
 
-    The spine already ran all faculties and synthesised a CognitivePlan.
-    This function formats what matters for THIS TURN. Nothing else is added.
+    Static prefix  — living_presence_spec.txt content, loaded once at startup,
+                     sliced for the plan's action (inactive planet sections removed).
+                     Ollama KV-caches this after the first call; per-turn cost = 0.
+    Dynamic suffix — turn context from CognitivePlan (~200 tokens). Changes each turn.
 
     Three parts:
-      1. Identity anchor  — ~100 tokens, constant, never re-read from file.
-      2. Turn context     — tone, memory, mode, capability. ~100-200 tokens.
-      3. Memory guard     — 2 lines.
+      1. Identity — spec slice for this action (static, KV-cached after first call).
+      2. Turn context — tone, memory, mode, capability (~200 tokens, dynamic).
+      3. Memory guard — 2 lines.
     """
     parts: list[str] = []
 
-    # ── 1. Identity ───────────────────────────────────────────────────────────
-    parts.append(_IDENTITY_ANCHOR)
+    # ── 1. Identity — spec slice for this turn's action ───────────────────────
+    action = str(getattr(plan, "action", "") or "")
+    spec_slice = _slice_spec_for_action(_IDENTITY_ANCHOR, action)
+    parts.append(spec_slice)
     parts.append(_CONTINUITY_ANCHOR)
 
     # ── 2. Turn context ───────────────────────────────────────────────────────
