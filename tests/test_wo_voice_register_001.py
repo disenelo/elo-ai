@@ -39,8 +39,13 @@ def test_at2_register_in_assembled_prompt():
     prompt = build(user_input="Hey, what's good?")
     assert "VOICE IDENTITY" in prompt or "LINGUISTIC REGISTER" in prompt, \
         "AT-2: voice register section not in assembled prompt"
-    assert "eLo speaks like:" in prompt, \
-        "AT-2: 'eLo speaks like:' examples not in assembled prompt"
+    # WO-B1-0108/0109 enriched the heading to "eLo speaks like (David-adjacent
+    # extensions):", so the colon no longer follows the phrase directly. Same
+    # widening already applied to the negative heading on line 54 — the claim
+    # is that the examples reach the prompt, not that one heading is spelled
+    # one way.
+    assert "eLo speaks like" in prompt, \
+        "AT-2: 'eLo speaks like' examples not in assembled prompt"
     ok("AT-2: assembled prompt contains voice register with examples")
 
 
@@ -49,7 +54,7 @@ def test_at3_both_example_blocks():
     """AT-3: register block has 'eLo speaks like' AND 'eLo does not speak like' sections."""
     from runtime.voice_register import get_register_block
     block = get_register_block()
-    assert "eLo speaks like:" in block, "AT-3: 'eLo speaks like:' missing"
+    assert "eLo speaks like" in block, "AT-3: 'eLo speaks like' missing"
     # WO-B1-0108/0109 updated the block to use "does NOT" (caps) for emphasis.
     assert any(x in block for x in ("eLo does not speak like:", "eLo does NOT speak like:")), \
         "AT-3: 'eLo does not/NOT speak like:' missing"
