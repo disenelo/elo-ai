@@ -90,3 +90,5 @@ David: "Alexa, open elo" → eLo responds in his voice through the Echo. Works a
 - Verified from the public route (Google DNS → Tailscale relay 176.58.90.x): `/alexa` → 400 (listener reached, unsigned refused); `/chat` → 404 (main server not exposed).
 - `--bg` persists across restarts while the Tailscale app runs (it starts at login).
 - Remaining for David: (1) paste the endpoint into Alexa console → Endpoint → Save (one time); (2) Tailscale admin → Machines → davids-mac-studio → Disable key expiry (currently "in 5 months"); (3) then the old cloudflared Terminal can be closed.
+
+## LIVE VERIFIED 2026-10-11 ~23:01: Amazon reached eLo through the Tailscale endpoint (LaunchRequest accepted). Alexa console certificate option = "trusted certificate authority". The old cloudflared quick tunnel can be closed.
