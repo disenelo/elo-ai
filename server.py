@@ -2707,6 +2707,30 @@ def _init_session():
                         except Exception as _wr_err:
                             _poller_log.warning("PRESENCE weather_request error: %s", _wr_err)
 
+                    # DEMO-SPRINT: voice_output — Presence UI routes eLo's voice.
+                    # Designer writes {type:"voice_output", subject:"mac"|"alexa"|"auto"}.
+                    # echo_speaker._CHOICES = ("mac","echo") — map accordingly:
+                    #   "mac"   → "mac"   (force Mac speakers)
+                    #   "alexa" → "echo"  (force Alexa Echo Dot)
+                    #   "auto"  → "mac"   (system default; existing contextual Echo logic handles routing)
+                    elif _ev_type == "voice_output":
+                        try:
+                            _vo_subject = str(_ev.get("subject") or "").strip().lower()
+                            _vo_map = {"mac": "mac", "alexa": "echo", "echo": "echo", "auto": "mac"}
+                            _vo_choice = _vo_map.get(_vo_subject)
+                            if _vo_choice:
+                                from tools.echo_speaker import set_voice_output as _svo
+                                _result = _svo(_vo_choice, ts=_ev_ts or None)
+                                _poller_log.info(
+                                    "voice_output event: %r → %r (%s)", _vo_subject, _vo_choice, _result
+                                )
+                            else:
+                                _poller_log.warning(
+                                    "voice_output event: unknown subject %r — ignored", _vo_subject
+                                )
+                        except Exception as _vo_err:
+                            _poller_log.warning("DEMO-SPRINT voice_output handler error: %s", _vo_err)
+
                 if _new_seq > _ack_consumed_seq:
                     _ack_consumed_seq = _new_seq
                     _wc(_ack_consumed_seq)
