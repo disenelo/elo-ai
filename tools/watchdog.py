@@ -1,215 +1,221 @@
-#!/usr/bin/env python3
-"""
-tools/watchdog.py — WO-B1-0112
-FSEvents-based file watcher for eLo-AI seat automation.
+"""tools/watchdog.py — WO-B1-0112: Autonomous Watchdog + Event-Driven Seat Relay.
 
-Three trigger paths (all non-polling, FSEvents on macOS):
+FSEvents-backed (macOS) watcher that drives seat activity automatically.
+Three trigger paths:
 
-  Path 1 — David drops a file in docs/architecture/_intake/
-            → Board intake triggered immediately.
+  Path 1: David drops .md in docs/architecture/_intake/
+           → writes FROM_INTAKE_* file to builder inbox (board intake session picks it up)
 
-  Path 2 — Board drops FROM_BOARD_*.md in a seat inbox
-            → Seat session alerted (notification + log entry).
+  Path 2: Board writes FROM_BOARD_* to blender/agent_bus/<seat>/
+           → calls tools/start_seat.sh <seat> to trigger a one-card session
 
-  Path 3 — Seat drops FROM_BOARD_REQUEST_*.md in blender/agent_bus/
-            → Board review session alerted.
+  Path 3: Seat writes FROM_BOARD_REQUEST_* to blender/agent_bus/
+           → writes TRIGGER_board_review_* to blender/agent_bus/board_review/
 
-Token efficiency: each trigger is ONE CARD. The dispatcher (start_seat.sh)
-picks the oldest card, surfaces it, moves it to processed/. This script's
-job is only to detect new files and write trigger markers — the sessions
-do the actual work.
+Token efficiency rule: each triggered session does ONE CARD ONLY then exits.
 
 Usage:
-    python3 tools/watchdog.py          # runs until Ctrl+C
-    python3 tools/watchdog.py --log    # verbose event logging
+    python3 tools/watchdog.py             # run in foreground
+    python3 tools/watchdog.py &           # background daemon
+    python3 tools/watchdog.py --dry-run   # log events without writing trigger files
 """
 from __future__ import annotations
 
-import sys
 import argparse
+import logging
 import os
-import subprocess
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
 
-# Remove this file's own directory from sys.path so `import watchdog` resolves
-# to the installed watchdog package and not this file (name collision).
-_self_dir = str(Path(__file__).resolve().parent)
-sys.path = [p for p in sys.path if p not in (_self_dir, "")]
+# Remove this script's own directory from sys.path to prevent it from shadowing
+# the pip-installed `watchdog` package when imported as `from watchdog.events import …`
+_SELF_DIR = str(Path(__file__).parent.resolve())
+if sys.path and sys.path[0] == _SELF_DIR:
+    sys.path.pop(0)
 
-from watchdog.events import FileSystemEventHandler, FileCreatedEvent  # noqa: E402
-from watchdog.observers import Observer  # noqa: E402
+from watchdog.events import FileSystemEventHandler, FileCreatedEvent
+from watchdog.observers import Observer
 
-# ── Paths ─────────────────────────────────────────────────────────────────────
-REPO_ROOT = Path(__file__).resolve().parent.parent
-INTAKE_DIR   = REPO_ROOT / "docs" / "architecture" / "_intake"
-AGENT_BUS    = REPO_ROOT / "blender" / "agent_bus"
-LOG_FILE     = REPO_ROOT / "data" / "watchdog.log"
-TRIGGER_DIR  = REPO_ROOT / "data" / "triggers"
+# ── paths ─────────────────────────────────────────────────────────────────────
+_ROOT = Path(__file__).resolve().parent.parent          # ~/elo-ai
+_INTAKE_DIR   = _ROOT / "docs" / "architecture" / "_intake"
+_AGENT_BUS    = _ROOT / "blender" / "agent_bus"
+_BUILDER_DIR  = _AGENT_BUS / "builder"
+_BOARD_DIR    = _AGENT_BUS / "board_review"
+_LOG_FILE     = _ROOT / "tools" / "watchdog.log"
+_START_SEAT   = _ROOT / "tools" / "start_seat.sh"
 
-SEAT_INBOXES = {
-    "builder":  AGENT_BUS / "builder",
-    "builder2": AGENT_BUS / "builder2",
-    "builder3": AGENT_BUS / "builder3",
-}
+# ── logging ───────────────────────────────────────────────────────────────────
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [watchdog] %(levelname)s %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler(_LOG_FILE, mode="a"),
+    ],
+)
+_log = logging.getLogger("elo.watchdog")
+
+# Known seats — extend if more seats are added
+_SEATS = ("builder",)
 
 
 def _ts() -> str:
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
-def _log(msg: str, verbose: bool = False) -> None:
-    line = f"[watchdog] {_ts()} {msg}"
-    if verbose:
-        print(line)
-    LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with LOG_FILE.open("a") as f:
-        f.write(line + "\n")
+def _write_trigger(directory: Path, prefix: str, body: str, dry_run: bool) -> Path:
+    """Write a trigger .md file to `directory`. Returns the path."""
+    path = directory / f"{prefix}_{_ts()}_watchdog.md"
+    if dry_run:
+        _log.info("[DRY-RUN] would write → %s", path)
+        return path
+    directory.mkdir(parents=True, exist_ok=True)
+    path.write_text(body, encoding="utf-8")
+    _log.info("wrote → %s", path)
+    return path
 
 
-def _write_trigger(path: Path, kind: str, src: str) -> None:
-    """Write a trigger marker file so sessions can poll data/triggers/ if needed."""
-    TRIGGER_DIR.mkdir(parents=True, exist_ok=True)
-    slug = f"{kind}_{_ts().replace(' ', '_').replace(':', '')}.trigger"
-    marker = TRIGGER_DIR / slug
-    marker.write_text(f"kind={kind}\nsrc={src}\nts={_ts()}\n")
-
-
-def _notify(title: str, body: str) -> None:
-    """macOS notification — best-effort; fails silently if blocked."""
-    try:
-        subprocess.run(
-            [
-                "osascript", "-e",
-                f'display notification "{body}" with title "{title}"',
-            ],
-            timeout=5,
-            check=False,
-            capture_output=True,
-        )
-    except Exception:
-        pass
-
-
-def _trigger_seat(seat: str, card_name: str, verbose: bool) -> None:
-    """Alert a seat that new work is waiting. Non-blocking."""
-    _log(f"TRIGGER seat={seat} card={card_name}", verbose)
-    _write_trigger(TRIGGER_DIR, f"seat_{seat}", card_name)
-    _notify(
-        f"eLo-AI — {seat} inbox",
-        f"New card: {card_name}\nRun: bash tools/start_seat.sh {seat}",
-    )
-
-
-def _trigger_board_intake(intake_file: str, verbose: bool) -> None:
-    """Alert Board that David dropped a new file."""
-    _log(f"TRIGGER intake={intake_file}", verbose)
-    _write_trigger(TRIGGER_DIR, "board_intake", intake_file)
-    _notify(
-        "eLo-AI — Board intake",
-        f"New drop: {Path(intake_file).name}\nBoard: review and write WO.",
-    )
-
-
-def _trigger_board_review(request_file: str, verbose: bool) -> None:
-    """Alert Board that a seat filed a review request."""
-    _log(f"TRIGGER board_review={request_file}", verbose)
-    _write_trigger(TRIGGER_DIR, "board_review", request_file)
-    _notify(
-        "eLo-AI — Board review",
-        f"Seat filed: {Path(request_file).name}",
-    )
-
-
-# ── Handlers ──────────────────────────────────────────────────────────────────
+# ── Path 1: intake drop ───────────────────────────────────────────────────────
 
 class IntakeHandler(FileSystemEventHandler):
-    """Path 1 — David drops files in _intake/."""
+    """David drops a file in _intake/ → queue board-intake session."""
 
-    def __init__(self, verbose: bool = False) -> None:
-        self._verbose = verbose
+    def __init__(self, dry_run: bool = False) -> None:
+        super().__init__()
+        self.dry_run = dry_run
 
     def on_created(self, event: FileCreatedEvent) -> None:
         if event.is_directory:
             return
-        p = Path(event.src_path)
-        if p.suffix in (".md", ".txt", ".markdown", ""):
-            _log(f"INTAKE {p.name}", self._verbose)
-            _trigger_board_intake(str(p), self._verbose)
+        src = Path(event.src_path)
+        if src.suffix not in {".md", ".txt"}:
+            return
+        _log.info("INTAKE drop detected: %s", src.name)
+        body = (
+            f"# FROM_INTAKE — {src.name}\n"
+            f"**Source:** `_intake/{src.name}`\n"
+            f"**Detected:** {datetime.now().isoformat()}\n\n"
+            f"David dropped a file in `_intake/`. Read it, write a WO card, "
+            f"and file to the correct seat inbox.\n\n"
+            f"Source path: `{src}`\n"
+        )
+        _write_trigger(
+            _BUILDER_DIR,
+            f"FROM_INTAKE_{src.stem[:40].upper().replace(' ', '_')}",
+            body,
+            self.dry_run,
+        )
 
+
+# ── Path 2: board → seat ──────────────────────────────────────────────────────
 
 class SeatInboxHandler(FileSystemEventHandler):
-    """Path 2 — Board drops FROM_BOARD_*.md in a seat inbox."""
+    """Board writes FROM_BOARD_* to a seat directory → trigger seat session."""
 
-    def __init__(self, seat: str, verbose: bool = False) -> None:
-        self._seat = seat
-        self._verbose = verbose
-
-    def on_created(self, event: FileCreatedEvent) -> None:
-        if event.is_directory:
-            return
-        p = Path(event.src_path)
-        if p.name.startswith("FROM_BOARD_") and p.suffix == ".md":
-            _log(f"SEAT_INBOX seat={self._seat} file={p.name}", self._verbose)
-            _trigger_seat(self._seat, p.name, self._verbose)
-
-
-class BoardReviewHandler(FileSystemEventHandler):
-    """Path 3 — Seat drops FROM_BOARD_REQUEST_*.md in blender/agent_bus/."""
-
-    def __init__(self, verbose: bool = False) -> None:
-        self._verbose = verbose
+    def __init__(self, seat: str, dry_run: bool = False) -> None:
+        super().__init__()
+        self.seat = seat
+        self.dry_run = dry_run
 
     def on_created(self, event: FileCreatedEvent) -> None:
         if event.is_directory:
             return
-        p = Path(event.src_path)
-        if p.name.startswith("FROM_BOARD_REQUEST_") and p.suffix == ".md":
-            _log(f"BOARD_REVIEW {p.name}", self._verbose)
-            _trigger_board_review(str(p), self._verbose)
+        src = Path(event.src_path)
+        if not src.name.startswith("FROM_BOARD") or src.suffix != ".md":
+            return
+        _log.info("SEAT INBOX event: %s → seat=%s", src.name, self.seat)
+        if not self.dry_run and _START_SEAT.exists():
+            import subprocess
+            try:
+                subprocess.Popen(
+                    ["bash", str(_START_SEAT), self.seat, str(src)],
+                    close_fds=True,
+                )
+                _log.info("launched start_seat.sh for seat=%s", self.seat)
+            except Exception as _e:
+                # WO-105: safe to swallow in the observer callback — a launch failure
+                # must not crash the watcher loop. Log at WARNING so it is visible.
+                _log.warning(
+                    "start_seat.sh launch FAILED for seat=%s: %s — "
+                    "trigger file is still present for manual pickup", self.seat, _e
+                )
+        elif self.dry_run:
+            _log.info("[DRY-RUN] would launch start_seat.sh %s %s", self.seat, src)
+
+
+# ── Path 3: seat → board review ───────────────────────────────────────────────
+
+class BoardRequestHandler(FileSystemEventHandler):
+    """Seat writes FROM_BOARD_REQUEST_* to agent_bus root → trigger board review."""
+
+    def __init__(self, dry_run: bool = False) -> None:
+        super().__init__()
+        self.dry_run = dry_run
+
+    def on_created(self, event: FileCreatedEvent) -> None:
+        if event.is_directory:
+            return
+        src = Path(event.src_path)
+        if not src.name.startswith("FROM_BOARD_REQUEST") or src.suffix != ".md":
+            return
+        _log.info("BOARD REQUEST detected: %s", src.name)
+        body = (
+            f"# TRIGGER board review — {src.name}\n"
+            f"**Source:** `{src.name}`\n"
+            f"**Detected:** {datetime.now().isoformat()}\n\n"
+            f"A seat filed a board request. Read `{src}`, review it, "
+            f"sign off or reject, then exit.\n"
+        )
+        _write_trigger(
+            _BOARD_DIR,
+            "TRIGGER_board_review",
+            body,
+            self.dry_run,
+        )
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="eLo-AI FSEvents watchdog")
-    parser.add_argument("--log", action="store_true", help="Verbose output")
-    args = parser.parse_args()
-    v = args.log
-
-    # Ensure watched directories exist
-    INTAKE_DIR.mkdir(parents=True, exist_ok=True)
-    for inbox in SEAT_INBOXES.values():
-        inbox.mkdir(parents=True, exist_ok=True)
+def run(dry_run: bool = False) -> None:
+    _log.info("eLo watchdog starting (dry_run=%s)", dry_run)
+    _log.info("intake:    %s", _INTAKE_DIR)
+    _log.info("agent_bus: %s", _AGENT_BUS)
 
     observer = Observer()
 
     # Path 1 — intake
-    observer.schedule(IntakeHandler(v), str(INTAKE_DIR), recursive=False)
+    _INTAKE_DIR.mkdir(parents=True, exist_ok=True)
+    observer.schedule(IntakeHandler(dry_run), str(_INTAKE_DIR), recursive=False)
 
-    # Path 2 — seat inboxes (non-recursive; don't watch QUEUE/ or processed/)
-    for seat, inbox in SEAT_INBOXES.items():
-        observer.schedule(SeatInboxHandler(seat, v), str(inbox), recursive=False)
+    # Path 2 — seat inboxes
+    for seat in _SEATS:
+        seat_dir = _AGENT_BUS / seat
+        seat_dir.mkdir(parents=True, exist_ok=True)
+        observer.schedule(SeatInboxHandler(seat, dry_run), str(seat_dir), recursive=False)
 
-    # Path 3 — board review requests
-    observer.schedule(BoardReviewHandler(v), str(AGENT_BUS), recursive=False)
+    # Path 3 — board request root
+    observer.schedule(BoardRequestHandler(dry_run), str(_AGENT_BUS), recursive=False)
 
     observer.start()
-    _log(f"started pid={os.getpid()} repo={REPO_ROOT}", verbose=True)
-    print(f"[watchdog] watching — Ctrl+C to stop. Log: {LOG_FILE}")
-    print(f"  intake:       {INTAKE_DIR}")
-    for seat, inbox in SEAT_INBOXES.items():
-        print(f"  {seat:<10s}:  {inbox}")
-    print(f"  board_review: {AGENT_BUS}")
-
+    _log.info("watchdog running — Ctrl+C to stop")
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
+        _log.info("watchdog stopping")
         observer.stop()
-        _log("stopped (KeyboardInterrupt)", verbose=True)
     observer.join()
+    _log.info("watchdog stopped")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="eLo autonomous watchdog")
+    parser.add_argument("--dry-run", action="store_true", help="log events without writing trigger files")
+    args = parser.parse_args()
+    run(dry_run=args.dry_run)
 
 
 if __name__ == "__main__":
