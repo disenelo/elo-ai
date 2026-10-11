@@ -49,7 +49,14 @@ def test_seed_emotion_counts_at_all():
         "a seed carrying emotion must raise significance; it was read from a "
         "key nothing writes, so it never could"
     )
-    assert abs(with_seed - 0.30) < 0.001, "emotional carries weight 0.30"
+    # The emotional term carries weight 0.30, and that is what this measures:
+    # the DIFFERENCE the emotion makes, not the absolute score. Adding a seed
+    # also adds a distinct source, which the breadth term legitimately
+    # responds to (2026-10-11: the first term stopped being the constant
+    # sleep-schedule intensity and became dream breadth). Asserting the
+    # absolute equalled 0.30 silently assumed every other term was zero.
+    assert abs((with_seed - without) - 0.30) < 0.02, \
+        f"emotional should carry ~0.30; carried {with_seed - without:.3f}"
 
 
 def test_the_stronger_of_seed_and_cycle_emotion_wins():

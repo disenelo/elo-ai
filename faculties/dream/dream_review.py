@@ -118,7 +118,31 @@ def assess_significance(entry: dict) -> float:
     """
     cycles = entry.get("cycles") or []
 
-    intensity = float(entry.get("dream_intensity", 0.0) or 0.0)
+    # BREADTH, not sleep duration. `dream_intensity` is the sleep SCHEDULE --
+    # intensity_for() returns cycle_number/5 x a phase factor -- so any dream
+    # that reaches the fifth REM scores exactly 1.0. Measured across every
+    # retained dream: distinct=1, always 1.000. It owned 40% of the weight and
+    # contributed no variance at all, which is why the scores stayed flat even
+    # after the other two terms were made proportional (2026-10-11).
+    #
+    # How long eLo slept is not how much the dream was made of. These are, and
+    # they move: distinct symbols 1-3, distinct seed sources 11-15 across the
+    # same dreams. A dream that wove several symbols out of many memories is
+    # broader than one that circled a single image.
+    _sym_names = {str(sy.get("name") or sy.get("symbol") or "")
+                  for sy in (entry.get("symbols") or []) if isinstance(sy, dict)}
+    _sym_names.discard("")
+    _sources: set[str] = set()
+    for _c in cycles:
+        for _sd in (_c.get("seeds") or []):
+            _src = str(_sd.get("source") or "").strip()
+            if _src:
+                _sources.add(_src[:120])
+    # One symbol is no variety; four or more is as varied as it gets before
+    # the dream stops being about anything.
+    _variety = min(1.0, max(0, len(_sym_names) - 1) / 3.0)
+    _breadth = min(1.0, len(_sources) / 16.0)
+    intensity = round(0.5 * _variety + 0.5 * _breadth, 4)
 
     # PROPORTIONAL, not saturating. Both of these used to take the strongest
     # single reading anywhere in the dream: `emotional` was a max across every
