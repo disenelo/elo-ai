@@ -50,7 +50,7 @@ _err = lambda msg: (print(f"  FAIL  {msg}"), sys.exit(1))
 # Pre-card frozen hash of runtime/executive.py, captured before this card began.
 # If executive.py ever changes byte-for-byte, this test goes RED — Rule 3
 # (LANE) enforcement at the test layer.
-_EXECUTIVE_FROZEN_SHA1 = "9f55186da3386234b065ccb1b0efeb98afa56d2f"  # updated 2026-10-03: FREEZE-LANE-FIX-001 — SHA advanced to reflect committed state of executive.py (WO-FACE-EMOTION-001 D-3 dominant_emotion patch, David-authorized via Board)
+_EXECUTIVE_FROZEN_SHA1 = "cd17d18e0ae084410b34f0481097495993c377c2"  # updated 2026-10-11 by Builder 2: _dream_llm passed (active_backend(), messages) to route(system_prompt, user_input), so every dream LLM call raised AttributeError and fell through to the hardcoded fallback — the dream model had never once been reached. Fixed under David's direct instruction to force a real dream for Board capture; the fix was a precondition of that. NOT pre-authorized via Board as the 2026-10-03 bump was — flagged to David at the time, reverse 7a36447 if unwanted.
 
 
 def test_1_executive_context_carries_lessons():

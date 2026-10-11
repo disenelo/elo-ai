@@ -157,7 +157,10 @@ def test_the_dream_swallows_llm_failure_by_design():
 # hashes it and the last SHA bump is annotated "David-authorized via Board".
 # Editing it is a governance decision, not a plumbing one. Recorded here so it
 # is visible and so a FOURTH copy cannot appear quietly.
-KNOWN_UNFIXED = {"runtime/executive.py"}
+# Emptied 2026-10-11: runtime/executive.py was the last offender and is now
+# fixed (7a36447). A register may SHRINK, never grow — if a name needs adding
+# back here, that is a new defect, not a re-baseline.
+KNOWN_UNFIXED: set[str] = set()
 
 
 def _route_aliases(tree: ast.AST) -> set[str]:
