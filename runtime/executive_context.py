@@ -177,6 +177,11 @@ class ExecutiveContext:
             "wm_mode":           self.attention.get("wm_mode", "reactive"),
             "wm_budget":         self.attention.get("wm_budget", 0.5),
             "world_state":       self.world,
+            # WO-106: executive.decide() line 563 reads significance_score at TOP LEVEL
+            # of attention_model. Before this fix it was only inside world_state, so
+            # _sig_overall was always 0.0 and SP29 gates (memory_worthy,
+            # self_init_eligible) were never set. Forward it explicitly here.
+            "significance_score": self.world.get("significance_score", {}),
             "cognitive_state_focal": self.attention.get("focal_thread", ""),
             "surface_affordances":   self.attention.get("surface_affordances", []),
             # canonical additions — readable when executive.py unfreezes
@@ -193,7 +198,7 @@ class ExecutiveContext:
             "lessons":         self.lessons,
             # NEW ASSUMPTION placeholders — not yet populated
             "ec_agency":            None,
-            "ec_significance":      None,
+            "ec_significance":      self.world.get("significance_score", {}),
             "ec_epistemic_state":   None,
             # WO-SPINE-002: structured objects from spine assembly
             "ec_cognitive_state":   self.cognitive_state,

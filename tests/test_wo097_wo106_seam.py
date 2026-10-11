@@ -8,6 +8,7 @@ AT-106-2: plan.world absent → WARNING emitted (disconnection test — not sile
 AT-106-3: plan.world present → world_state key in enriched attention dict
 AT-106-4: working_memory present → wm_winner/wm_mode/wm_budget in enriched attention dict
 AT-106-5: _executive_faculty signature accepts new params (no TypeError)
+AT-106-6: significance_score forwarded at TOP LEVEL of as_dict() — SP29 gate fix
 """
 import ast
 import logging
@@ -147,6 +148,43 @@ def test_executive_faculty_accepts_new_params():
         )
 
 
+# ── AT-106-6: significance_score forwarded at top level of as_dict() ─────────
+
+def test_significance_score_at_top_level():
+    """
+    executive.decide() line 563 reads significance_score at the TOP LEVEL of
+    attention_model. Before WO-106 fix it was buried inside world_state, so
+    _sig_overall was always 0.0 and SP29 gates (memory_worthy, self_init_eligible)
+    were never set. Verify as_dict() now exposes it at the top level.
+    """
+    from runtime.executive_context import ExecutiveContext
+
+    sig_data = {"overall": 0.75, "topical": 0.6, "self_relevant": 0.8}
+    world = {"significance_score": sig_data, "available": True}
+    ctx = ExecutiveContext(
+        intent="test",
+        emotion={},
+        attention={},
+        world=world,
+        capabilities=[],
+        memory={},
+        identity={},
+        lessons=[],
+        self_state={},
+    )
+    d = ctx.as_dict()
+    assert "significance_score" in d, (
+        "as_dict() must expose significance_score at TOP LEVEL for executive.decide() SP29 gates. "
+        "WO-106 fix: add significance_score: self.world.get('significance_score', {}) to as_dict()"
+    )
+    assert d["significance_score"] == sig_data, (
+        f"significance_score value mismatch: expected {sig_data!r}, got {d['significance_score']!r}"
+    )
+    # Also check it's NOT just buried inside world_state — world_state is redundant but allowed
+    assert d.get("world_state", {}).get("significance_score") == sig_data, \
+        "significance_score should still be inside world_state (for any code that reads it there)"
+
+
 # ── Self-runner ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -158,6 +196,7 @@ if __name__ == "__main__":
         ("AT-106-3", test_world_state_reaches_enriched_attention),
         ("AT-106-4", test_wm_winner_reaches_enriched_attention),
         ("AT-106-5", test_executive_faculty_accepts_new_params),
+        ("AT-106-6", test_significance_score_at_top_level),
     ]
     _passed = 0
     _failed = 0
