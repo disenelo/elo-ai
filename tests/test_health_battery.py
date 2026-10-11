@@ -469,3 +469,34 @@ def test_untracked_is_distinct_from_rested():
     assert hb.PHYSICAL_UNTRACKED not in {s for _f, s in hb.PHYSICAL_STATES}
     hb.tick({"physical": "standing"})
     assert hb.snapshot()["physical_state"] == "rested"
+
+
+# ── WO-0083 — unity movement battery drain ────────────────────────────────────
+
+def test_unity_movement_battery_drain_teleport(tmp_path, monkeypatch):
+    """
+    WO-0083: inject a movement_cost teleport event into a mock unity_events.json
+    → _consume_movement_costs() drains physical battery.
+    """
+    import runtime.unity_events_cursor as _cursor
+    import ambient.ambient_engine as _ae
+
+    # Build a minimal unity_events.json with one teleport movement_cost event.
+    # iter_events_from reads NDJSON (one JSON object per line), not a JSON array.
+    event = {"seq": 1, "type": "movement_cost", "subject": "teleport",
+             "payload": {"phase": "exit"}}
+    events_file = tmp_path / "unity_events.json"
+    events_file.write_text(json.dumps(event) + "\n")
+
+    # Redirect the cursor module's path so iter_events_from reads our file.
+    monkeypatch.setattr(_cursor, "EVENTS_PATH", str(events_file))
+
+    # Reset the engine's own bookmark and cost cache so the event isn't skipped.
+    _ae._MOVE_COST_SEQ = -1
+    _ae._LEGS_TO_COST.clear()
+
+    # hb is already reset by the autouse fixture.
+    _ae._consume_movement_costs()
+
+    assert hb.get_physical() < 1.0, "physical battery was not drained by teleport event"
+    assert hb._physical_engaged is True, "_physical_engaged flag not set"
