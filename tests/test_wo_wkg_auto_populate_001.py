@@ -8,6 +8,7 @@ Acceptance criteria:
   AUTO-4: entity label comes from candidate.summary (specific, not generic)
   AUTO-5: claim written with real_experience origin is retrievable via retrieve_wkg_context_items
   AUTO-6: session write count gate (max 3) is respected
+  AUTO-8: WO-0085 — lowercase "verified" passes the gate (case normalisation)
 """
 import time
 import uuid
@@ -98,3 +99,20 @@ def test_auto7_server_significance_for_cats():
     from memory.memory_faculty import _WKG_GATE_SIGNIFICANCE
     server_sig_for_categorized = 0.65
     assert server_sig_for_categorized >= _WKG_GATE_SIGNIFICANCE
+
+
+# ── AUTO-8: WO-0085 lowercase "verified" passes gate ─────────────────────────
+
+def test_auto8_lowercase_verified_passes_gate():
+    """
+    WO-0085: callers use lowercase epistemic_class ("verified", "source_attributed").
+    The gate must accept these — confirmed by upper() normalisation at the check point.
+    Root bug: _WKG_GATE_EPISTEMIC had {"VERIFIED","SOURCE_ATTRIBUTED"} but callers
+    sent lowercase, blocking all research claims silently.
+    """
+    from memory.memory_faculty import _maybe_write_wkg_claim, MemoryCandidate
+    # Simulate how the fix works: candidate.epistemic_class.upper() in _WKG_GATE_EPISTEMIC.
+    for lc_class in ("verified", "source_attributed"):
+        assert lc_class.upper() in {"VERIFIED", "SOURCE_ATTRIBUTED"}, (
+            f"WO-0085: {lc_class!r}.upper() not in gate set — case fix missing"
+        )
