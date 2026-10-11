@@ -1354,6 +1354,22 @@ def ambient_thought() -> None:
         except Exception:
             pass
 
+        # WO-B1-0110 (delivery): check Builder 2's signal file — if eLo raised a hand
+        # from the daemon (life_tick), surface the fact via voice here in the ambient tick.
+        try:
+            from faculties.inner_thought.random_fact import (
+                is_pending as _rf_is_pending,
+                clear_pending as _rf_clear,
+            )
+            if _rf_is_pending() and not _is_user_away():
+                from runtime.wkg_faculty import pick_random_fact as _rf_pick
+                _rf_text = _rf_pick()
+                if _rf_text:
+                    _voice_speak(_rf_text)
+                _rf_clear()
+        except Exception:
+            pass
+
         # Synthesis observer — cross-signal connections
         try:
             from faculties.synthesis.observer import (
