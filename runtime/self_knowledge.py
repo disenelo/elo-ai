@@ -144,8 +144,12 @@ def build_self_knowledge(embodiment: str = _EMBODIMENT_TERMINAL) -> SelfKnowledg
             # Not yet built — eLo cannot do this regardless of embodiment
             cannot_do.append(snap)
         elif registry_embodiment in cap.embodiment_scope or not cap.embodiment_scope:
-            # Built and available on this embodiment
-            can_do.append(snap)
+            # Built and supported on this embodiment — but only if health gate passes.
+            # CT0032: health_producer.refresh() sets OFFLINE for caps with no executor
+            # or a downed faculty. Don't advertise what eLo can't actually do.
+            if cap.is_available():
+                can_do.append(snap)
+            # OFFLINE / AUTH_REQUIRED caps are silently omitted — eLo won't claim them.
         else:
             # Built but not available on this body
             not_on_body.append(snap)
