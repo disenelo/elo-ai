@@ -41,3 +41,6 @@ David talks to an Echo → the Alexa skill → a tunnel → eLo's `/alexa` liste
 
 ## Permanent endpoint (2026-10-11, card 0008)
 **https://davids-mac-studio.tail3da1cb.ts.net/alexa** via Tailscale Funnel (`tailscale funnel --bg 5051`, persists while the Tailscale app runs). Only port 5051 (the Alexa listener) is exposed. To turn it off: `tailscale funnel --bg 5051 off`. Keep key expiry disabled for this machine in the Tailscale admin, or the address stops working when the key expires.
+
+## Invocation name changed to "e low" (2026-10-11)
+David: eLo is pronounced "ee-low". With the written invocation "elo", the Echo didn't open the skill by voice (typing worked). The invocation is now **"e low"**, spelled as it's said: "Alexa, open e low" / "Alexa, tell e low …" (spoken, you just say "ee-low").
