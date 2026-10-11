@@ -241,6 +241,19 @@ class EloDaemon:
     def registry(self) -> FacultyRegistry:
         return self._registry
 
+    def status(self) -> dict[str, Any]:
+        # Snapshot for callers that need to gate behaviour on idle time —
+        # notably ambient_engine's dream-intent trigger, which must not fire
+        # while David is actively in conversation.
+        with self._lock:
+            return {
+                "state":            self._state.value,
+                "last_request_ts":  self._last_request_ts,
+                "resting_since_ts": self._resting_since_ts,
+                "tick_count":       self._tick_count,
+                "running":          self._running,
+            }
+
     def _mark_awake(self) -> None:
         with self._lock:
             prev_state = self._state
