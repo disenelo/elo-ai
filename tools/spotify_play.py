@@ -429,10 +429,38 @@ def capability_answer(text: str) -> str | None:
     return f"{_ABILITY_LINES[_ability_i]} Right now Spotify's {_status()}."
 
 
+# Card 0013 (Board live test "put on jazz"): a GENRE is a music request even
+# without "Spotify" in the sentence. Known genres only, so "I put on a jacket"
+# and "play mode" never start music. play() finds a catalogue playlist for it.
+_GENRES = (r"jazz|reggae|dub|dancehall|soul|funk|blues|rock|indie|pop|k-?pop|hip[\s-]?hop|rap|grime|drill|"
+           r"garage|uk\s+garage|house|deep\s+house|techno|trance|drum\s+(?:and|&|n)\s+bass|dnb|jungle|"
+           r"dubstep|electronic|edm|dance|disco|afrobeats?|amapiano|latin|salsa|bossa\s+nova|r\s*&\s*b|rnb|"
+           r"classical|piano|ambient|lo-?fi|chill(?:out|hop)?|acoustic|folk|country|metal|punk|gospel|"
+           r"soundtracks?|film\s+scores?|motown|neo[\s-]?soul|trip[\s-]?hop|breakbeat")
+_GENRE_RE = re.compile(r"^(?:(?:can|could|would)\s+you\s+)?(?:(?:just|please)\s+)*(?:play|put\s+on|stick\s+on|throw\s+on)\s+"
+                       r"(?:me\s+)?(?:some\s+|a\s+(?:bit|little)\s+(?:of\s+)?|a\s+few\s+|the\s+)?"
+                       rf"(?:(?:something|anything)\s+)?(?P<genre>(?:{_GENRES}))(?:\s+(?:music|tunes|vibes|playlist|songs|tracks))?"
+                       r"(?:\s+(?:please|for\s+me|on\s+spotify))?\s*[.!?]*$", re.I)
+
+
+def genre_request(text: str) -> str | None:
+    """'put on jazz' / 'play some reggae' / 'play something chill' → 'jazz' / 'reggae' / 'chill'."""
+    m = _GENRE_RE.match((text or "").strip())
+    return " ".join(m.group("genre").lower().split()) if m else None
+
+
 def _handle_line(text: str) -> tuple[str, str, str] | None:
     """(kind, detail, eLo's line) for a Spotify request, after doing it.
     kind: control | open | list | choose | play | ability. None when not one."""
     global _last_spotify_ts
+    # Genre first: "play something chill" is chill, not "resume whatever".
+    genre = genre_request(text)
+    if genre:
+        _last_spotify_ts = time.time()
+        try:
+            return ("play", genre, play(genre))
+        except Exception as e:
+            return ("play", genre, "Spotify didn't take that — something went wrong on its side.", str(e))
     if _PLAY_MUSIC_RE.match((text or "").strip()):
         _last_spotify_ts = time.time()
         try:
