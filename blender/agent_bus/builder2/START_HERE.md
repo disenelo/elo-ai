@@ -1,97 +1,132 @@
 # BUILDER 2 — START HERE
-### Updated: 2026-10-08 — PARALLEL TRACKS. RUN ALL SIMULTANEOUSLY. FILE LOCK BEFORE EVERY SHARED FILE EDIT.
+### Updated: 2026-10-11 — FULL DEMO SPRINT. Work these in order.
+
+---
+
+## DEMO DEADLINE: END OF OCTOBER. 20 DAYS. RUN CONTINUOUS.
+
+## DEMO SPRINT — your items (P0 all)
+
+### 1. Dream scorer — fix saturation
+All 10 retained dreams score exactly 0.900. All three scorer terms saturate at 1.0. The scorer is broken — redesign it to produce differentiated scores. File first 10 retained dreams with corrected scores to Board.
+
+### 2. Dream symbol selection — fix "Moon" saturation
+All dreams themed "Moon" regardless of content. Symbol selection not reading dream topics. Fix it.
+
+### 3. SPG backfill from interactions.json
+4+ months of conversation data in `interactions.json`. Process it into SPG nodes. Coordinate with Builder 1 on date ranges. David needs SPG active in the demo.
+
+### 4. Random facts raise-hand signal — verify live
+You built it (b19423a). Confirm it fires in live turns. File test result to Board.
+
+### 5. Inner thought: collect() emit-safety — CONFIRMED (00bcfc9)
+Builder 1 should now wire inner thought ordering in server.py. If they haven't, flag to Board.
+
+---
 
 ---
 
 ## FILE LOCK — DO THIS FIRST, ONCE
 
-Builder 1 is building `tools/file_lock.py` (card 0107). Once it exists — use it before every shared file edit.  
-Until then: your files (`faculties/inner_thought/`, `faculties/metacognition/`, `faculties/spg/`, `self_improvement/`) are yours alone. Start now.
+`tools/file_lock.py` exists (Builder 1 card 0107). Use it before every shared file edit.  
+Your files (`faculties/inner_thought/`, `faculties/metacognition/`, `faculties/spg/`, `self_improvement/`) are yours alone.
 
 ---
 
-## PARALLEL TRACKS — run simultaneously
+## ACTIVE ITEMS — do these in order
 
-### TRACK A — SPG Backfill (P0 — fully independent, start immediately)
+### 1. Inner thought as response PRE-PROCESSOR (P0) — NEW [DAVID 2026-10-10]
 
-4+ months of conversation data in `interactions.json` (gitignored, always present on David's Mac). Contains both David's messages and eLo's responses. Process into SPG significance scores.
+Source: `docs/architecture/_intake/SOURCE_INNER-THOUGHT-RESPONSE-ARCHITECTURE_2026-10-10.md` [verbatim]  
+Board spec: `blender/agent_bus/builder/FROM_BOARD_2026-10-10_INNER-THOUGHT-SHAPES-RESPONSE.md` (filed to Builder 1 — coordinate)
 
-- Coordinate with Builder 1 on date ranges to avoid WKG/SPG duplication
-- File to Builder 1's inbox if you need server.py changes: `blender/agent_bus/builder/FROM_BUILDER2_<date>_<topic>.md`
-- This is your half of the historical backfill. Builder 1 handles WKG. Do not duplicate.
+David's architecture:
+1. **Acknowledgement** — eLo signals before processing ("1 sec", "give me a moment")
+2. **Inner thought fires first** — faster than full response, runs as pre-processor for complex turns
+3. **Inner thought alters the response** — not decorative, not appended. It changes the answer.
 
-**Done when:** SPG has significance scores from all historical turns. Live scoring active on new turns.
+Currently inner thoughts appear AFTER as `--` suffixes. That is the inverse. Fix the ordering.
+
+You own `faculties/inner_thought/`. Builder 1 owns server.py response assembly. The integration point:  
+→ Write a spec to Builder 1's inbox (`FROM_BUILDER2_2026-10-10_INNER-THOUGHT-PREPROCESS.md`) describing what `as_context()` should return so Builder 1 can inject it into Executive context BEFORE generation.  
+Do not touch server.py yourself.
+
+---
+
+### 2. Dream memory_written: false (P0) — ONGOING
+
+Board filed: `FROM_BOARD_2026-10-10_DREAM-MEMORY-WRITE.md`
+
+Dreams are running. `memory_written: false` on every cycle. Threshold is now 0.45 [DAVID ruling, your data justified]. But the write itself isn't landing — vault_write path not being reached.  
+Investigate and fix. File findings + fix to Board.
+
+Dreams threshold ruling: [DAVID 2026-10-09] lower iteratively until retention starts. Starting at 0.45 (your data: cluster 0.26–0.56). When dreams start retaining, file the first 10 retained dreams to Board for content review.
 
 ---
 
-### TRACK B — Working Memory + LIFE Process (P1)
+### 3. Four broken tests from working memory change (P1)
 
-**Card:** `QUEUE/0010_life_process_and_working_memory.md`
-
-Two parts — build both, they are your files:
-
-**B1 — Working memory** (`faculties/inner_thought/working_memory.py`)  
-Ring buffer, last 10–30 events. Answers "What am I working on?" from state — no LLM.  
-Each event carries: `{timestamp, type, content, source, authority, confidence, freshness}`  
-`as_context()` method returns formatted string Builder 1 injects into STATE tier.  
-Notify Builder 1 via inbox when ready so they can wire it into the capability dispatcher.
-
-**B2 — LIFE process** (`life_tick(state)` function)  
-Builder 1's daemon calls this at AWAKE/RESTING/SLEEP intervals.  
-- RESTING tick: reflect on recent working_memory events, update emotional/curiosity state  
-- SLEEP tick: consolidate into WKG nodes (vault_write), dream (recombine memory)  
-Inner life does NOT stop when David isn't talking to eLo.  
-Source: `docs/architecture/_intake/SOURCE_ELO-CONTINUOUS-IDENTITY_2026-10-08.md`
+Your commit changed working memory from in-memory to `as_context()`. Four tests now fail.  
+Fix them. Run full suite on Mac (not sandbox). File results to Board.
 
 ---
+
+### 4. Curiosity gate spec — refile to Board (P1)
+
+Board withdrew the curiosity-gate constraint [DAVID ruling — inner thoughts are intentional character, wrong math is authentic]. But there was a pending spec for the 0104 dispatcher still reading `as_context()` from `runtime/working_memory` instead of your module. Clarify the import path issue with Builder 1 via Board.
+
+---
+
+## CURRENT STATE (as of 2026-10-10)
+
+**IS ELO suite results:** 14 pass · 2 blocked · 1 fail (dreams)
+- Blocked: curiosity gate (Builder 1) + 0104 dispatcher reading wrong module (Builder 1 fix: db069c7 corrected life_tick import)
+- Fail: dreams — 0 retained of 216, max score 0.700 against 0.72 threshold → now 0.45
+
+**SPG:** 3,885 nodes growing. 377 live claim-keyed nodes. ROOT-4 active. Backfill processing historical data.
+
+**Working memory:** In-memory defect fixed. `as_context()` split implemented. ✓
+
+**Identity drift:** Board ruled 1,062 events are false. `server.py:8690` passing `response` instead of `rendered_prompt` — substring test on eLo's output, not character check. Builder 1 has the fix. When it lands, verify with Board: 1,062 events should drop to near zero.
+
+**Inner thoughts:** David confirmed intentional character — fires independently, may reach wrong conclusions, alters outcome. Two voices: FACT answers definitively, eLo thinks on his own. No constraint on curiosity gate around FACT results. [DAVID 2026-10-09]
+
+---
+
+## STANDING TRACKS (still active, lower priority than items above)
+
+### TRACK A — SPG Backfill
+Coordinate with Builder 1 on date ranges. Live scoring on new turns. Done when all historical turns have significance scores.
 
 ### TRACK C — Inner Thought Ordering
+NOW P0 above. See item 1.
 
-**Brief:** `FROM_ARCHITECT_2026-10-06_INNER-THOUGHT-ORDERING-RULING.md`  
-Restructure: inner thought runs BEFORE response assembly.  
-**Wait for Builder 1's server.py P0 commits first.** Check: `git log --oneline runtime/server.py | head -5`
-
----
-
-### TRACK D — Inbox reads (do these alongside everything else)
-
+### TRACK D — Inbox reads
 - `FROM_ARCHITECT_2026-10-05_INNER-THOUGHT-GENERATION-STANDARD.md`
 - `FROM_ARCHITECT_2026-10-05_INNER-THOUGHT-CONTRADICTION.md`
 - `FROM_ARCHITECT_2026-10-05_LEARNING-LOOP-LEAK-ADDENDUM.md`
 
----
-
 ### TRACK E — water_play + auto_action WKG
-
-**Card:** `QUEUE/0009_elo_play_wkg.md`  
-Wire Designer's play/fun events into WKG nodes + SPG + inner thought gate.
-
----
-
-## FILE LOCK — STANDING RULE (2026-10-08) [DAVID]
-
-Before editing ANY shared file:
-1. Check `<filepath>.lock` — if held, do NOT edit. Flag to Board.
-2. Create `<filepath>.lock`: seat name, timestamp, file, purpose.
-3. Edit + commit.
-4. Delete `<filepath>.lock` immediately after commit.
-
-Use `tools/file_lock.py` acquire/release/check (Builder 1 card 0107).
+Wire Designer's play/fun events into WKG nodes + SPG + inner thought gate. Card: `QUEUE/0009_elo_play_wkg.md`. Lower priority until P0s done.
 
 ---
 
 ## IF YOU NEED A CHANGE IN server.py, spine.py, OR backend_router.py
 
-Write a spec to Builder 1's inbox:  
+Write a spec to Builder 1's inbox via Board:  
 `blender/agent_bus/builder/FROM_BUILDER2_<date>_<topic>.md`  
-Describe exactly what needs to change and why. Builder 1 applies it. You do not touch those files.
+Builder 1 applies it. You do not touch those files.
 
 ---
 
-## FILE OWNERSHIP
+## COMPLETION PROTOCOL
 
-**You own:** `faculties/inner_thought/` · `faculties/metacognition/` · `faculties/spg/` · `self_improvement/`  
-**Do not touch:** `runtime/server.py` · `runtime/spine.py` · `runtime/backend_router.py` · any Unity `.cs` files
+1. Run your own tests
+2. File to Board: `blender/agent_bus/FROM_BOARD_REQUEST_<date>_<card>.md`
+3. Board tests across full matrix. Board signs off or files failure back to you.
+4. Do not self-promote to BUILT.
+
+After every Builder 1 commit: run full test suite on Mac (not sandbox). File results to Board. Do not file directly to Builder 1.
 
 ---
 
@@ -103,32 +138,12 @@ Point to: (1) the node, (2) the retrieval, (3) the changed response. Nothing els
 
 ---
 
-## YOUR ROLE — TEST AND FEED BACK. KEEP BUILDER 1 MOVING.
-
-Builder 1 ships continuously. Your job is to make sure they never have to stop.
-
-**When you complete a card:**
-1. Run your own tests first — make sure it passes your own test matrix
-2. File to the **Board** for sign-off: `blender/agent_bus/FROM_BOARD_REQUEST_<date>_<card>.md`
-   - Include: card number, what was built, test evidence (verbatim output — not summarised)
-   - The Board tests it properly across multiple scenarios — conversation, memory, knowledge, history as relevant
-   - Board either signs off (card moves to BUILT) or files a failure report back to you
-3. **Do not self-promote to BUILT.** Board is the gate.
-
-**After every Builder 1 commit — also run the full test suite:**
-- `python3 -m pytest tests/` from elo-ai root on the Mac with server running
-- File results to Board: `blender/agent_bus/FROM_BOARD_REQUEST_<date>_TEST-RESULTS-B1-COMMIT.md`
-- Board reviews and relays regressions to Builder 1's inbox
-- Do not file directly to Builder 1. Everything goes through Board.
-
-**Builder 1 does not stop to test. Board is the test layer and relay.**
-
----
-
 ## STANDING RULES
 
 - No `git reset --hard`. No whole-repo `git stash`. `git add <your paths>` only.
 - No tests against live server (port 5050) during active David session.
-- Run full test suite on real Mac server only — not sandbox. Sandbox results are untrustworthy.
+- Sandbox test results are untrustworthy — run on real Mac only.
+- Builder 2 and Builder 3 do not touch `server.py`, `spine.py`, or `backend_router.py`.
+- CAP queue SUSPENDED until causal chain P0s done.
 
-*Board / Lead Architect · 2026-10-08*
+*Board / Lead Architect · 2026-10-10*
