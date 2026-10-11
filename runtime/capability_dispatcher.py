@@ -52,6 +52,25 @@ _FACT_PATTERNS: list[tuple[re.Pattern, str]] = [
                 r"|\bbattery\s+(?:on|of|in)\s+(?:my|the|this)\s+(?:mac(?:book)?|laptop|computer)\b", re.I), "battery"),
     (re.compile(r"\bdisk\s*(?:space|usage|free)?\b", re.I),              "disk"),
     (re.compile(r"\buptime\b",                       re.I),              "uptime"),
+    # WO-B1-0117: unit conversions — must come BEFORE arithmetic patterns so
+    # "100 km to miles" doesn't fall into the bare-digit arithmetic path first.
+    # Full words (celsius, fahrenheit) before single-char °?[CF] in alternation.
+    (re.compile(
+        r"\b(?:convert\s+)?\d+(?:\.\d+)?\s*"
+        r"(?:kilometers?|kilometres?|km|miles?\b|kilograms?|kg|pounds?|lbs?\b|"
+        r"centimetres?|centimeters?|cm|inches?\b|feet|ft\b|"
+        r"fahrenheit|celsius|°?\s*[CF]\b|litres?|liters?|gallons?|"
+        r"km\s*/\s*h|kph|mph)\s*"
+        r"(?:to|in|into|as)\s+"
+        r"(?:kilometers?|kilometres?|km|miles?\b|kilograms?|kg|pounds?|lbs?\b|"
+        r"centimetres?|centimeters?|cm|inches?\b|feet|ft\b|"
+        r"fahrenheit|celsius|°?\s*[CF]\b|litres?|liters?|gallons?|"
+        r"km\s*/\s*h|kph|mph)",
+        re.I,
+    ), "convert"),
+    # WO-B1-0117: percentage-of — must come BEFORE digit+operator arithmetic pattern
+    # so "15% of 340" doesn't get `_extract_math_expr` picking up just "340".
+    (re.compile(r"\b\d+(?:\.\d+)?\s*(?:%|percent|per\s+cent)\s+of\s+\d", re.I), "math_pct"),
     # Arithmetic: expression contains digits and operator — e.g. "28 × 74", "5+3*2"
     (re.compile(r"\b\d[\d\s\+\-\*\/\×\÷\^\.]+\d\b"),                    "math"),
     # Explicit "calculate" without complex natural-language structure
@@ -199,6 +218,12 @@ def dispatch_fact(request: str) -> dict[str, Any] | None:
             if key == "uptime":
                 val = sp.computer.uptime()
                 return _fact_result(_format_system_value("uptime", _unwrap(val)), "macOS")
+            if key == "math_pct":
+                # WO-B1-0117: pass the FULL request so system_primitives._clean_expr
+                # can expand "15% of 340" → "(15/100)*340" before bc evaluates it.
+                val = sp.math.calculate(request)
+                if _unwrap(val) is not None:
+                    return _fact_result(_unwrap(val), "macOS")
             if key == "math":
                 expr = _extract_math_expr(request)
                 if expr:
@@ -210,6 +235,11 @@ def dispatch_fact(request: str) -> dict[str, Any] | None:
                 val = sp.math.calculate(request)
                 if _unwrap(val) is not None:
                     return _fact_result(_unwrap(val), "macOS")
+            # WO-B1-0117: unit conversions handled inline (no system_primitives needed)
+            if key == "convert":
+                result = _convert_units(request)
+                if result:
+                    return _fact_result(result, "macOS")
         except Exception:
             pass
 
@@ -241,12 +271,24 @@ def _dispatch_fact_builtin(request: str) -> dict[str, Any] | None:
         if key == "yesterday":
             val = (_dt.date.today() - _dt.timedelta(days=1)).strftime("%A, %B %-d, %Y")
             return _fact_result(val, "macOS")
+        if key == "math_pct":
+            # Builtin fallback: evaluate "15% of 340" via ast
+            import re as _re2
+            _pct = _re2.compile(r"(\d+(?:\.\d+)?)\s*(?:%|percent|per\s+cent)\s+of\s+(\d+(?:\.\d+)?)", _re2.I)
+            pm = _pct.search(request)
+            if pm:
+                result_val = (float(pm.group(1)) / 100) * float(pm.group(2))
+                return _fact_result(_tidy(result_val), "macOS")
         if key == "math":
             expr = _extract_math_expr(request)
             if expr:
                 val = _safe_eval_math(expr)
                 if val is not None:
                     return _fact_result(str(val), "macOS")
+        if key == "convert":
+            result = _convert_units(request)
+            if result:
+                return _fact_result(result, "macOS")
 
     return None
 
@@ -332,6 +374,116 @@ def _safe_eval_math(expr: str) -> float | int | None:
         return result
     except Exception:
         return None
+
+
+def _convert_units(request: str) -> str | None:
+    """
+    WO-B1-0117: Parse and convert a unit-conversion request.
+    Returns a human-readable result string or None if unparseable.
+
+    Supported:
+      Distance: km ↔ miles, cm ↔ inches ↔ feet
+      Weight:   kg ↔ lbs
+      Temp:     °C ↔ °F
+      Volume:   litres ↔ gallons (US)
+      Speed:    mph ↔ kph
+    """
+    import re as _re
+
+    # Extract numeric value and from/to units
+    # Alternation order: longest/most-specific first so "celsius" is matched
+    # before the single-char fallback °?[CF] consumes just the "c" or "f".
+    _UNIT_ALTS = (
+        r"kilometers?|kilometres?|km"
+        r"|miles?\b"
+        r"|kilograms?|kg"
+        r"|pounds?|lbs?\b"
+        r"|centimetres?|centimeters?|cm"
+        r"|inches?|in\b"
+        r"|feet|ft\b"
+        r"|fahrenheit|celsius"  # full words before single-letter C/F
+        r"|°?\s*[CF]\b"
+        r"|litres?|liters?"
+        r"|gallons?"
+        r"|km\s*/\s*h|kph|mph"
+    )
+    _CONV_RE = _re.compile(
+        rf"(?:convert\s+)?(\d+(?:\.\d+)?)\s*({_UNIT_ALTS})\s*(?:to|in|into|as)\s*({_UNIT_ALTS})",
+        _re.I,
+    )
+    m = _CONV_RE.search(request)
+    if not m:
+        return None
+
+    raw_val, from_unit, to_unit = m.group(1), m.group(2).lower().strip(), m.group(3).lower().strip()
+    val = float(raw_val)
+
+    def _norm(u: str) -> str:
+        u = u.strip().lower()
+        aliases = {
+            # full word first (before plural strip so "celsius" isn't mangled)
+            "kilometer": "km", "kilometre": "km", "kilometers": "km", "kilometres": "km",
+            "mile": "mi", "miles": "mi",
+            "mph": "mph", "kph": "kph", "km/h": "kph",
+            "kilogram": "kg", "kilograms": "kg",
+            "lb": "lbs", "lbs": "lbs", "pound": "lbs", "pounds": "lbs",
+            "centimeter": "cm", "centimetre": "cm", "centimeters": "cm", "centimetres": "cm",
+            "inch": "in", "inches": "in",
+            "feet": "ft", "foot": "ft",
+            "celsius": "°c", "°c": "°c",
+            "fahrenheit": "°f", "°f": "°f",
+            "litre": "l", "liter": "l", "litres": "l", "liters": "l",
+            "gallon": "gal", "gallons": "gal",
+        }
+        if u in aliases:
+            return aliases[u]
+        # fallback: strip trailing plural "s" for any missed variant
+        stripped = u.rstrip("s")
+        return aliases.get(stripped, stripped)
+
+    fr, to = _norm(from_unit), _norm(to_unit)
+
+    _TABLE: dict[tuple[str, str], tuple[float, str, str]] = {
+        # (from, to): (factor or special, from_label, to_label)
+        ("km", "mi"):  (0.621371, "km", "miles"),
+        ("mi", "km"):  (1.60934, "miles", "km"),
+        ("kg", "lbs"): (2.20462, "kg", "lbs"),
+        ("lbs", "kg"): (0.453592, "lbs", "kg"),
+        ("cm", "in"):  (0.393701, "cm", "inches"),
+        ("in", "cm"):  (2.54, "inches", "cm"),
+        ("ft", "cm"):  (30.48, "feet", "cm"),
+        ("cm", "ft"):  (0.0328084, "cm", "feet"),
+        ("ft", "m"):   (0.3048, "feet", "m"),
+        ("m", "ft"):   (3.28084, "m", "feet"),
+        ("l", "gal"):  (0.264172, "litres", "gallons"),
+        ("gal", "l"):  (3.78541, "gallons", "litres"),
+        ("mph", "kph"): (1.60934, "mph", "kph"),
+        ("kph", "mph"): (0.621371, "kph", "mph"),
+        ("km", "m"):   (1000.0, "km", "m"),
+        ("m", "km"):   (0.001, "m", "km"),
+    }
+
+    # Temperature is special (not a factor)
+    if fr == "°c" and to == "°f":
+        result = val * 9 / 5 + 32
+        return f"{_tidy(val)}°C = {_tidy(result)}°F"
+    if fr == "°f" and to == "°c":
+        result = (val - 32) * 5 / 9
+        return f"{_tidy(val)}°F = {_tidy(result)}°C"
+
+    entry = _TABLE.get((fr, to))
+    if entry:
+        factor, fl, tl = entry
+        result = val * factor
+        return f"{_tidy(val)} {fl} = {_tidy(result)} {tl}"
+
+    return None
+
+
+def _tidy(n: float) -> str:
+    """Format a float cleanly — drop trailing zeros, keep up to 4 d.p."""
+    s = f"{n:.4f}".rstrip("0").rstrip(".")
+    return s if s else "0"
 
 
 def dispatch_state(request: str) -> dict[str, Any] | None:
