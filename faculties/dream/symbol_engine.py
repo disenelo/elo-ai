@@ -78,6 +78,43 @@ SYMBOLS: dict[str, tuple[str, str]] = {
     "memory":     ("Archive",   "everything that made this moment possible"),
     "dream":      ("Dream",     "the place where things recombine"),
     "sleep":      ("Rest",      "the work that happens when you stop working"),
+
+    # Textile / pattern-making domain (DISENELO Seams + Plushies)
+    "seam":       ("Weave",     "joining — two pieces becoming one surface"),
+    "stitch":     ("Weave",     "joining — two pieces becoming one surface"),
+    "pattern":    ("Weave",     "joining — two pieces becoming one surface"),
+    "fabric":     ("Weave",     "joining — two pieces becoming one surface"),
+    "cloth":      ("Weave",     "joining — two pieces becoming one surface"),
+    "plush":      ("Weave",     "joining — two pieces becoming one surface"),
+    "sew":        ("Weave",     "joining — two pieces becoming one surface"),
+    "garment":    ("Weave",     "joining — two pieces becoming one surface"),
+
+    # Place / space
+    "studio":     ("Workshop",  "the room where the work happens"),
+    "workshop":   ("Workshop",  "the room where the work happens"),
+    "bench":      ("Workshop",  "the room where the work happens"),
+    "warehouse":  ("Workshop",  "the room where the work happens"),
+    "hackney":    ("Place",     "named ground — where this life is lived"),
+
+    # Time of day / state
+    "night":      ("Night",     "the time without witnesses — thinking becomes drifting"),
+    "evening":    ("Night",     "the time without witnesses — thinking becomes drifting"),
+
+    # Loose ends / unfinished threads
+    "unfinished": ("LooseEnd",  "something set down but not resolved"),
+    "pending":    ("LooseEnd",  "something set down but not resolved"),
+    "loose":      ("LooseEnd",  "something set down but not resolved"),
+    "waiting":    ("LooseEnd",  "something set down but not resolved"),
+
+    # People in eLo's world
+    "david":      ("Companion", "the one eLo is for"),
+    "friend":     ("Companion", "the one eLo is for"),
+
+    # Form & material
+    "cad":        ("Form",      "shape before material — what it will become"),
+    "step":       ("Form",      "shape before material — what it will become"),
+    "model":      ("Form",      "shape before material — what it will become"),
+    "print":      ("Form",      "shape before material — what it will become"),
 }
 
 # ── Inner event → symbolic seed ────────────────────────────────────────────────
@@ -116,14 +153,8 @@ def map_to_symbols(
             symbol_weights[sym] = {"symbol": sym, "meaning": meaning,
                                    "source": source, "weight": weight}
 
-    # Inner events — highest weight (they are eLo's direct experience)
-    for event in inner_events[-4:]:
-        seed = _EVENT_TO_SEED.get(event)
-        if seed and seed in SYMBOLS:
-            sym, meaning = SYMBOLS[seed]
-            _add(sym, meaning, f"inner:{event}", 1.2)
-
-    # Focal thread — elevated weight (persistent across the session)
+    # Focal thread — highest weight (persistent across the session, the most
+    # specific signal of what eLo is holding).
     if focal_thread:
         thread_lower = focal_thread.lower()
         for keyword, (sym, meaning) in SYMBOLS.items():
@@ -131,13 +162,26 @@ def map_to_symbols(
                 _add(sym, meaning, f"thread:{focal_thread}", 1.5)
                 break
 
-    # Topics
+    # Topics — what the conversation was actually about. Each matched topic
+    # outweighs an inner_event seed on its own, so dreams track real content
+    # instead of defaulting to the ambient state's seed symbol.
     for topic in topics[:8]:
         topic_lower = topic.lower()
         for keyword, (sym, meaning) in SYMBOLS.items():
             if keyword in topic_lower:
                 _add(sym, meaning, f"topic:{topic}", 1.0)
                 break
+
+    # Inner events — ambient state. Important when nothing else is in play,
+    # but reduced below topic weight (0.9 < 1.0) so a single matched topic
+    # outranks a single inner-event seed. "quiet"→"moon" was dominating
+    # every dream — the 1.2 weight meant the ambient state crowded out
+    # whatever the conversation had actually been about.
+    for event in inner_events[-4:]:
+        seed = _EVENT_TO_SEED.get(event)
+        if seed and seed in SYMBOLS:
+            sym, meaning = SYMBOLS[seed]
+            _add(sym, meaning, f"inner:{event}", 0.9)
 
     # Fallback — eLo is always present
     if not symbol_weights:
