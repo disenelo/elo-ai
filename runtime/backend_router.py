@@ -21,7 +21,7 @@ Models:
              Requires GOOGLE_API_KEY from Google AI Studio (free: 1500 req/day)
     Groq:    llama-3.3-70b-versatile (quality, default)
              llama-3.1-8b-instant    (fast — set ELO_GROQ_MODEL=llama-3.1-8b-instant)
-    Ollama:  mistral (default — set ELO_OLLAMA_MODEL to override)
+    Ollama:  ELO_OLLAMA_MODEL env var (required — set in .env; e.g. qwen2.5-coder:14b)
 """
 
 from __future__ import annotations
@@ -32,6 +32,28 @@ import time
 import logging
 import urllib.request as _urllib_req
 import urllib.error as _urllib_err
+
+
+def _load_dotenv_br() -> None:
+    """Load .env from repo root if not already in env. Runs at import so
+    ELO_OLLAMA_MODEL is always available regardless of import order."""
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
+    env_path = os.path.normpath(env_path)
+    if not os.path.exists(env_path):
+        return
+    with open(env_path, encoding="utf-8") as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if not _line or _line.startswith("#") or "=" not in _line:
+                continue
+            _k, _, _v = _line.partition("=")
+            _k = _k.strip()
+            _v = _v.strip().strip('"').strip("'")
+            if _k and _k not in os.environ:
+                os.environ[_k] = _v
+
+
+_load_dotenv_br()
 
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
