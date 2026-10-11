@@ -30,6 +30,11 @@ import sys
 import time
 from pathlib import Path
 
+# Strip our own directory from sys.path so 'import watchdog' finds the library,
+# not this file (which would cause infinite self-import recursion).
+_self_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path[:] = [p for p in sys.path if os.path.abspath(p) != _self_dir]
+
 try:
     from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler, FileCreatedEvent
