@@ -204,3 +204,66 @@ def scrub_unverified_look_claims(response: str) -> str:
         return f"I don't have a record of directly {verb} {target}"
     out = _LOOK_PATTERN.sub(_repl, response)
     return out if changed or out != response else response
+
+
+# ── Emotion claim guard (CT4V-07 §18 / ADR-Exec-001) ─────────────────────────
+# Catches eLo asserting David's emotional state without current-turn evidence.
+# "You feel stressed" → "I think you might feel stressed".
+# Rule 1 alarm: every rewrite logged at WARNING.
+
+_EMOTION_ASSERT_PATTERN = re.compile(
+    r"\b(you(?:'?re| are) feeling|you feel|you(?:'?re| are) (sad|happy|anxious|stressed|upset"
+    r"|frustrated|excited|worried|overwhelmed|tired|exhausted|angry|scared|afraid|nervous"
+    r"|depressed|lonely|confused|bored|calm|relieved|hurt|disappointed|embarrassed|proud))\b",
+    re.IGNORECASE,
+)
+
+_EMOTION_QUALIFY_MAP = [
+    (re.compile(r"\byou(?:'?re| are) feeling\b", re.IGNORECASE), "I think you might be feeling"),
+    (re.compile(r"\byou feel\b", re.IGNORECASE), "I think you might feel"),
+    (re.compile(r"\byou(?:'?re| are) (sad|happy|anxious|stressed|upset|frustrated|excited|worried"
+                r"|overwhelmed|tired|exhausted|angry|scared|afraid|nervous|depressed|lonely"
+                r"|confused|bored|calm|relieved|hurt|disappointed|embarrassed|proud)\b",
+                re.IGNORECASE),
+     None),  # handled inline below
+]
+
+
+def scrub_unverified_emotion_claims(response: str) -> str:
+    """Soften outbound assertions of David's emotional state that lack current-turn evidence.
+
+    Converts "you feel stressed" → "I think you might feel stressed".
+    Never removes the sentence — only qualifies the certainty.
+    Rule 1 alarm: every rewrite logged at WARNING (CT4V-07, Vol VII §3.1.4).
+    """
+    if not response or not response.strip():
+        return response
+    if not _EMOTION_ASSERT_PATTERN.search(response):
+        return response
+
+    out = response
+    changed = False
+
+    for pattern, replacement in _EMOTION_QUALIFY_MAP:
+        if replacement is not None:
+            new = pattern.sub(replacement, out)
+            if new != out:
+                _log.warning(
+                    "memory_claim_guard: softened emotion assertion (CT4V-07): %r",
+                    out[:100],
+                )
+                out = new
+                changed = True
+        else:
+            # Pattern 3: "you're X" where X is an emotion adjective
+            def _qualify_emo(m: re.Match) -> str:
+                nonlocal changed
+                changed = True
+                _log.warning(
+                    "memory_claim_guard: softened emotion assertion (CT4V-07): %r",
+                    m.group(0),
+                )
+                return f"I think you might be {m.group(1)}"
+            out = pattern.sub(_qualify_emo, out)
+
+    return out if changed else response
