@@ -64,3 +64,57 @@ def test_not_built_is_an_honest_no(t, monkeypatch):
 @pytest.mark.parametrize("t", ["I love Blender", "my robot vacuum is broken", "what's the weather like"])
 def test_mentions_are_not_refused(t):
     assert cs.not_built_answer(t) is None
+
+
+# ── devices live probe (WO-B3-0011, 2026-10-11) ────────────────────────────────
+
+def test_devices_live_entry_marks_speak_route_inactive_without_echo(monkeypatch):
+    import tools.device_control as dc
+    import tools.echo_speaker as es
+    monkeypatch.setattr(dc, "_route", lambda: "speak")
+    monkeypatch.setattr(dc, "controllable", lambda: ["Lights On", "Lights Out"])
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: None)
+    cs._cache.update(ts=0.0, data=None)
+    caps = cs.get_active_capabilities(refresh=True)
+    d = caps["devices"]
+    assert d["status"] == "INACTIVE"
+    assert "Bluetooth" in (d["reason"] or "")
+    assert d["live"]["route"] == "speak" and d["live"]["echo_connected"] is False
+
+
+def test_devices_live_entry_marks_speak_route_active_with_echo(monkeypatch):
+    import tools.device_control as dc
+    import tools.echo_speaker as es
+    monkeypatch.setattr(dc, "_route", lambda: "speak")
+    monkeypatch.setattr(dc, "controllable", lambda: ["Lights On", "Lights Out"])
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 7)
+    cs._cache.update(ts=0.0, data=None)
+    caps = cs.get_active_capabilities(refresh=True)
+    d = caps["devices"]
+    assert d["status"] == "ACTIVE" and d["live"]["echo_connected"] is True
+
+
+def test_devices_live_entry_shortcut_route_is_active_when_anything_listed(monkeypatch):
+    import tools.device_control as dc
+    monkeypatch.setattr(dc, "_route", lambda: "shortcut")
+    monkeypatch.setattr(dc, "controllable", lambda: ["Lights On"])
+    cs._cache.update(ts=0.0, data=None)
+    caps = cs.get_active_capabilities(refresh=True)
+    assert caps["devices"]["status"] == "ACTIVE"
+
+
+def test_devices_appear_in_live_first_block(monkeypatch):
+    import tools.device_control as dc
+    import tools.echo_speaker as es
+    monkeypatch.setattr(dc, "_route", lambda: "speak")
+    monkeypatch.setattr(dc, "controllable", lambda: ["Lights On", "Lights Out"])
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 9)
+    cs._cache.update(ts=0.0, data=None)
+    b = cs.capabilities_block()
+    assert "Devices — via Alexa over the Mac speakers" in b or "Devices — via macOS Shortcuts" in b
+
+
+def test_devices_status_shape():
+    r = cs.devices_status()
+    assert set(r) == {"success", "result", "error"}
+    assert set(r["result"]) >= {"route", "controllable", "echo_connected", "can"}

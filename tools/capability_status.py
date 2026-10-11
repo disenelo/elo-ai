@@ -97,6 +97,32 @@ def _presence_running() -> bool:
         return False
 
 
+def devices_status() -> dict:
+    """{success, result: {route, controllable, echo_connected, can}, error} —
+    smart-home control eLo can run right now (WO-B3-0011): the shortcuts /
+    phrases that are allow-listed AND actually reachable on this Mac, plus
+    which route is live (speak-to-Alexa by default; macOS Shortcuts under
+    ELO_DEVICE_ROUTE=shortcut) and whether the Echo is in Bluetooth range
+    for the speak route."""
+    try:
+        from tools import device_control as dc
+        route = dc._route()
+        names = dc.controllable()
+        echo_connected = False
+        if route == "speak":
+            try:
+                from tools import echo_speaker as es
+                echo_connected = es.device_index() is not None
+            except Exception:
+                pass
+        can = [n.lower() for n in names] or []
+        return tool_result(bool(names), {"route": route, "controllable": names,
+                                         "echo_connected": echo_connected, "can": can})
+    except Exception as e:
+        return tool_result(False, {"route": "unknown", "controllable": [], "echo_connected": False,
+                                   "can": []}, f"{type(e).__name__}: {e}")
+
+
 def _b3_live() -> dict:
     out: dict = {}
     sp = spotify_status()
@@ -134,6 +160,21 @@ def _b3_live() -> dict:
         "can": ["open his brain / health view on David's screen"] if pres else [],
         "live": {"presence": "running" if pres else "not running"},
         "reason": None if pres else "DISENELO Presence is not open",
+    }
+    dv = devices_status()
+    dr = dv["result"] or {}
+    route = dr.get("route") or "speak"
+    active = bool(dv["success"]) and (route == "shortcut" or dr.get("echo_connected"))
+    reason = None if active else (
+        "nothing allow-listed to control" if not dr.get("controllable")
+        else "Echo isn't connected over Bluetooth (speak-to-Alexa route)" if route == "speak"
+        else None)
+    out["devices"] = {
+        "name": "Devices",
+        "status": "ACTIVE" if active else "INACTIVE",
+        "can": dr.get("can", []),
+        "live": {"route": route, "echo_connected": dr.get("echo_connected")},
+        "reason": dv["error"] or reason,
     }
     return out
 
@@ -175,7 +216,7 @@ def get_active_capabilities(refresh: bool = False) -> dict:
     return caps
 
 
-_LIVE_FIRST = ("spotify", "search", "research", "show_brain", "alexa_ingress")
+_LIVE_FIRST = ("spotify", "search", "research", "devices", "show_brain", "alexa_ingress")
 
 
 def capabilities_block(max_chars: int = 1600) -> str:
@@ -195,6 +236,8 @@ def capabilities_block(max_chars: int = 1600) -> str:
         now = ""
         if cid == "spotify" and lv.get("state"):
             now = f" — now {lv['state']}" + (f": {lv['track']} by {lv['artist']}" if lv.get("track") else "")
+        elif cid == "devices":
+            now = " — via Alexa over the Mac speakers" if lv.get("route") == "speak" else " — via macOS Shortcuts"
         live.append(f"{c['name']}{now} ({', '.join(c.get('can', [])[:7])})")
     for cid, c in sorted(caps.items()):
         if cid in _LIVE_FIRST:

@@ -142,3 +142,67 @@ def test_phrases_can_be_changed(spoken, tmp_path, monkeypatch):
     (tmp_path / "a.json").write_text('{"shortcuts": ["Lights Out"]}')
     dc.run("Lights Out")
     assert spoken[-1] == "turn off the studio lights"
+
+
+# ── capability_answer / awareness_context (2026-10-11) ─────────────────────────
+# The LLM used to deny controlling lights when asked as a question — match()
+# correctly says None for "can you control the lights?" because it isn't a run
+# instruction. capability_answer / awareness_context give eLo the fact so the
+# LLM never gets to guess.
+
+@pytest.fixture
+def quiet_echo(monkeypatch):
+    """Default: Echo not reachable. Tests opt in to connected via override."""
+    import tools.echo_speaker as es
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: None)
+
+
+@pytest.mark.parametrize("q", [
+    "can you control the lights?",
+    "can you control my lights?",
+    "do you control the lights?",
+    "are you able to turn on the lights?",
+    "what lights can you control?",
+])
+def test_ability_question_gets_a_direct_answer(spoken, quiet_echo, q):
+    line = dc.capability_answer(q)
+    assert line and ("lights on" in line and "lights out" in line)
+    assert "Alexa" in line  # route is named, so Executive knows HOW
+
+
+def test_ability_answer_names_shortcut_route_when_set(ran, quiet_echo, monkeypatch):
+    monkeypatch.setenv("ELO_DEVICE_ROUTE", "shortcut")
+    line = dc.capability_answer("can you control the lights?")
+    assert line and "Shortcuts" in line
+
+
+def test_ability_answer_warns_when_echo_offline_in_speak_route(spoken, quiet_echo):
+    line = dc.capability_answer("can you control the lights?")
+    assert line and "Echo isn't on Bluetooth" in line
+
+
+def test_ability_answer_omits_echo_warning_when_connected(spoken, monkeypatch):
+    import tools.echo_speaker as es
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 7)
+    line = dc.capability_answer("can you control the lights?")
+    assert line and "Bluetooth" not in line
+
+
+@pytest.mark.parametrize("q", [
+    "turn on the lights",             # direct command (match handles it) — not an ability ask
+    "what's the weather",             # unrelated
+    "I like the colour of your lamp", # device word, no ability-ask shape
+])
+def test_non_ability_questions_return_none(spoken, quiet_echo, q):
+    assert dc.capability_answer(q) is None
+
+
+def test_awareness_context_fires_on_mention_but_not_on_direct_run(spoken, quiet_echo):
+    assert dc.awareness_context("the lights are too bright") is not None
+    assert dc.awareness_context("turn off the lights") is None   # match() will route it
+
+
+def test_awareness_context_carries_allow_list(spoken, quiet_echo):
+    ctx = dc.awareness_context("does Alexa work?")
+    assert ctx and "Lights On" in ctx and "Design Mode" in ctx
+    assert ctx.startswith("[CAPABILITY_RESULT:")
