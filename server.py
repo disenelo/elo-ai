@@ -2915,32 +2915,37 @@ def _process_turn(raw: str) -> dict:
             _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=2697)
             return {"response": _time_resp, "mode": "direct", "backend": "direct"}
 
-        # WO-0104 CAPABILITY-DISPATCHER: FACT tier — math expressions
+        # WO-0104 CAPABILITY-DISPATCHER + WO-B1-0114 TWO-TRUTHS-GATE: FACT tier
         # T11 covers time/date; this covers arithmetic so "28 × 74" never hits LLM.
         # dispatch_fact() uses safe AST eval — no exec() on raw user input.
+        # two_truths_gate() is the canonical "do we need the LLM?" check — a
+        # definitive operational truth short-circuits here, before any prompt is
+        # assembled and before any LLM call is queued.
         try:
             import time as _cap_time
             _t_cap0 = _cap_time.time()
             from runtime.capability_dispatcher import classify as _cap_classify, dispatch_fact as _cap_dispatch
+            from runtime.identity_kernel import two_truths_gate as _ttg
             _cap_tier = _cap_classify(raw)
             if _cap_tier == "FACT":
                 _cap_result = _cap_dispatch(raw)
+                _cap_gate   = _ttg(_cap_result)
                 _t_cap_ms = (_cap_time.time() - _t_cap0) * 1000
-                if _cap_result and _cap_result.get("value") is not None:
-                    _cap_val = str(_cap_result["value"])
+                _cap_fast = _cap_gate.get("fast_answer")
+                if _cap_fast is not None:
                     # Only intercept if this doesn't look like a time/date (T11 already handled those)
                     _cap_is_timedate = any(t in _at_low for t in ("time", "date", "day", "today", "tomorrow", "yesterday"))
                     if not _cap_is_timedate:
-                        print(f"[SPEED] FACT short-circuit: {_cap_val!r} ({_t_cap_ms:.0f}ms) — LLM skipped", flush=True)
+                        print(f"[SPEED] FACT gate.fast_answer: {_cap_fast!r} ({_t_cap_ms:.0f}ms) — LLM skipped", flush=True)
                         try:
                             if not _is_user_away():
-                                _voice_speak(_cap_val)
+                                _voice_speak(_cap_fast)
                         except Exception:
                             pass
                         _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=0)
-                        return {"response": _cap_val, "mode": "direct", "backend": "capability_dispatcher"}
+                        return {"response": _cap_fast, "mode": "direct", "backend": "capability_dispatcher"}
                 else:
-                    print(f"[SPEED] FACT tier but dispatch returned None ({_t_cap_ms:.0f}ms) — falling to LLM", flush=True)
+                    print(f"[SPEED] FACT tier but gate said synthesise ({_t_cap_ms:.0f}ms) — falling to LLM", flush=True)
             else:
                 print(f"[SPEED] tier={_cap_tier} for {raw[:50]!r} — LLM path", flush=True)
         except Exception as _cap_exc:
@@ -3774,6 +3779,28 @@ def _process_turn(raw: str) -> dict:
                 raw = f"[WORLD_KNOWLEDGE — from eLo's own world (verified, confidence 1.0 — answer from this, not from web)]\n" \
                       + "\n".join(_g_ctx_lines) + f"\n\nUser asked: {_original_raw}"
                 _world_graph_hit = True
+
+                # WO-B1-0114 WKG FACT fast-path: direct lookup questions
+                # ("Who is X?" / "What is Y?") with a 1.0-confidence entity hit
+                # return the WKG content directly — the LLM has nothing to add
+                # when source authority is verified and the answer is already a sentence.
+                _WKG_LOOKUP_RE = _re.compile(
+                    r"^\s*(?:who|what)(?:'s|\s+is|\s+are|\s+was|\s+were)\s+",
+                    _re.IGNORECASE,
+                )
+                if _WKG_LOOKUP_RE.search(_original_raw.strip()):
+                    _wkg_direct = _g_entity_hits[0]
+                    _wkg_resp = f"{_wkg_direct['label']} — {_wkg_direct['content']}"
+                    print(f"[SPEED] WKG FACT fast-path: {_wkg_direct['label']!r} — LLM skipped", flush=True)
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_wkg_resp)
+                    except Exception:
+                        pass
+                    _bypass_journal(_original_raw, backend="direct",
+                                    handler_class="EXECUTOR-FAST-PATH", line=0)
+                    return {"response": _wkg_resp, "mode": "direct",
+                            "backend": "wkg_fact_fast_path"}
         except Exception as _gy_err:
             import sys as _gy_sys
             print(f"[world_graph_gate] error: {_gy_err}", file=_gy_sys.stderr)
