@@ -339,6 +339,8 @@ def record_claim(
         except ImportError:
             pass  # memory_origin module unavailable — fail open, log only
 
+    # WO-0085: normalise case at entry — callers may pass lowercase ("verified")
+    epistemic_class = epistemic_class.strip().upper()
     if epistemic_class not in _EPISTEMIC_CLASSES:
         raise ValueError(f"Invalid epistemic_class: {epistemic_class!r}")
     rel_types = _load("relationship_types")
