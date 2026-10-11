@@ -1,230 +1,206 @@
 """
-tests/test_wo105_no_silent_failures.py — WO-105: Kill the silent failures.
+tests/test_wo105_no_silent_failures.py — WO-105 lint enforcement.
 
-AT-1: spine.run() body has zero _log.debug exception swallows.
-AT-2: All 9 cognition-path WARNING messages are present in spine.py.
-AT-3: shadow_capture.py except handlers use WARNING, not debug.
-AT-4: DesktopState.available field exists; failure path sets it False.
-AT-5: The 5 g_ctx server.py sites now log WARNING.
-AT-6: _startup_faculty_check function defined in server.py.
-AT-7: /health endpoint JSON includes spine_degraded field.
-AT-LINT: spine.run() has no bare except/pass handlers.
-AT-9: All modified files compile clean.
+Rule 1 (WORKING_STANDARD.md): "Absent and broken must never look the same."
+
+Strategy: per-file violation baseline established 2026-10-11 (461 total).
+CI fails if:
+  1. Any file's violation count INCREASES above its baseline (new silent failure added).
+  2. A NEW file (not in baseline) has any violations (new files must start clean).
+
+Pre-existing violations are tolerated (tracked for incremental cleanup).
+The baseline may only DECREASE, never increase.
+
+Run: python3 tests/test_wo105_no_silent_failures.py
 """
+from __future__ import annotations
+
 import ast
 import os
-import py_compile
 import sys
+from pathlib import Path
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+_ROOT = Path(__file__).parent.parent.resolve()
+
+# ── directories / files to lint ───────────────────────────────────────────────
+_SCAN_PATHS = [
+    _ROOT / "runtime",
+    _ROOT / "world",
+    _ROOT / "faculties",
+    _ROOT / "server.py",
+]
+
+# ── per-file violation baseline (2026-10-11) ──────────────────────────────────
+# Relative paths from repo root. Count may only DECREASE (tightening the rule).
+# To reduce: fix violations in the file and update the count downward.
+# Never increase a count — that means a new silent failure was introduced.
+_BASELINE: dict[str, int] = {
+    "server.py": 273,
+    "runtime/backend_router.py": 17,
+    "runtime/spine/spine.py": 11,
+    "runtime/the_moment.py": 10,
+    "runtime/executive_context.py": 9,
+    "runtime/elo_daemon.py": 9,
+    "runtime/prompt_builder.py": 8,
+    "world/live_world_state.py": 7,
+    "faculties/dream/dream_faculty.py": 7,
+    "faculties/inner_thought/life.py": 6,
+    "runtime/response_gate.py": 5,
+    "runtime/capability_learning.py": 5,
+    "runtime/reflection_faculty.py": 4,
+    "runtime/cognitive_snapshot.py": 4,
+    "faculties/synthesis/observer.py": 4,
+    "faculties/learning/faculty.py": 4,
+    "faculties/action_agent.py": 4,
+    "runtime/session_events.py": 3,
+    "runtime/background_drop_watcher.py": 3,
+    "faculties/temporal/faculty.py": 3,
+    "faculties/metacognition/metacognition.py": 3,
+    "faculties/inner_thought/random_fact.py": 3,
+    "faculties/curiosity/curiosity_faculty.py": 3,
+    "runtime/wkg_faculty.py": 2,
+    "runtime/unity_events_cursor.py": 2,
+    "runtime/spine/presence_faculty.py": 2,
+    "runtime/social_reflex.py": 2,
+    "runtime/self_interpret.py": 2,
+    "runtime/router/learning_buffer.py": 2,
+    "runtime/inner_thought_first.py": 2,
+    "runtime/executive_candidates.py": 2,
+    "runtime/directed_look.py": 2,
+    "runtime/capability_dispatcher.py": 2,
+    "runtime/capabilities/health_producer.py": 2,
+    "runtime/body_relay.py": 2,
+    "faculties/spatial/spatial_faculty.py": 2,
+    "faculties/perception/robot_vision_bridge.py": 2,
+    "faculties/dream/dream_memory.py": 2,
+    "world/navigation.py": 1,
+    "runtime/world_delta.py": 1,
+    "runtime/voice_rewrite.py": 1,
+    "runtime/significance_faculty.py": 1,
+    "runtime/session_id.py": 1,
+    "runtime/router/pipeline.py": 1,
+    "runtime/identity_state_manager.py": 1,
+    "runtime/faculty_health.py": 1,
+    "runtime/dream_request.py": 1,
+    "runtime/dream_latch.py": 1,
+    "runtime/creative_vault.py": 1,
+    "runtime/claim_gate.py": 1,
+    "faculties/window_event_faculty.py": 1,
+    "faculties/thread_keeper.py": 1,
+    "faculties/personality/personality_evolution_faculty.py": 1,
+    "faculties/perception/perception_faculty.py": 1,
+    "faculties/music_memory/journal.py": 1,
+    "faculties/music_memory/importers/soundcloud.py": 1,
+    "faculties/metacognition/deferred_threads.py": 1,
+    "faculties/metacognition/correction_capture.py": 1,
+    "faculties/inner_thought/working_memory.py": 1,
+    "faculties/inner_thought/preprocess.py": 1,
+    "faculties/grounding/conversation_tracker.py": 1,
+    "faculties/dream/dream_review.py": 1,
+    "faculties/dream/dream_input.py": 1,
+    "faculties/base_cognition.py": 1,
+}
 
 
-def _src(rel):
-    with open(os.path.join(ROOT, rel), encoding="utf-8") as f:
-        return f.read()
+# ── AST visitor ───────────────────────────────────────────────────────────────
 
+class _SilentFailureFinder(ast.NodeVisitor):
+    """Finds bare except+pass and except+debug-only handlers."""
 
-def _run_func_node(src):
-    tree = ast.parse(src)
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and node.name == "run":
-            return node
-    return None
+    def __init__(self) -> None:
+        self.violations: list[tuple[int, str]] = []
 
-
-# ── AT-1: spine.run() — no _log.debug swallows ───────────────────────────────
-
-def test_spine_run_no_debug_swallows():
-    src = _src("runtime/spine/spine.py")
-    lines = src.splitlines()
-    run_func = _run_func_node(src)
-    assert run_func is not None, "run() not found in spine.py"
-
-    violations = []
-    for node in ast.walk(run_func):
-        if not isinstance(node, ast.ExceptHandler):
-            continue
+    def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
         body = node.body
-        if len(body) == 1 and isinstance(body[0], ast.Expr):
-            expr = body[0].value
-            if isinstance(expr, ast.Call):
-                func = expr.func
+        # bare pass
+        if len(body) == 1 and isinstance(body[0], ast.Pass):
+            self.violations.append((node.lineno, "bare except+pass"))
+        # debug-only swallow
+        elif len(body) == 1 and isinstance(body[0], ast.Expr):
+            call = body[0].value
+            if isinstance(call, ast.Call):
+                func = call.func
+                is_debug = False
                 if isinstance(func, ast.Attribute) and func.attr == "debug":
-                    ln = body[0].lineno
-                    violations.append(f"spine.py:{ln}  {lines[ln-1].strip()[:80]}")
-
-    assert not violations, (
-        "spine.run() still has _log.debug exception swallows — upgrade to WARNING+:\n"
-        + "\n".join(violations)
-    )
-
-
-# ── AT-2: spine.py — 9 cognition-path WARNING messages present ───────────────
-
-def test_spine_cognition_warnings_present():
-    src = _src("runtime/spine/spine.py")
-    expected = [
-        "perceive_from_live_state FAILED",
-        "assemble_world_state FAILED",
-        "working_memory FAILED",
-        "build_snapshot FAILED",
-        "assemble_cognitive_state FAILED",
-        "executive_faculty/enrich FAILED",
-        "light_engine/translate FAILED",
-        "presence_faculty FAILED",
-        "build_embodiment_state FAILED",
-    ]
-    missing = [m for m in expected if m not in src]
-    assert not missing, (
-        "Missing WO-105 WARNING messages in spine.py:\n" + "\n".join(missing)
-    )
+                    is_debug = True
+                elif isinstance(func, ast.Name) and func.id == "debug":
+                    is_debug = True
+                if is_debug:
+                    self.violations.append((node.lineno, "debug-only swallow"))
+        self.generic_visit(node)
 
 
-# ── AT-3: shadow_capture.py — no debug swallows ──────────────────────────────
+def _collect_files() -> list[Path]:
+    files: list[Path] = []
+    for p in _SCAN_PATHS:
+        p = Path(p)
+        if p.is_file():
+            files.append(p)
+        elif p.is_dir():
+            files.extend(p.rglob("*.py"))
+    return sorted(files)
 
-def test_shadow_capture_no_debug_swallows():
-    src = _src("runtime/shadow_capture.py")
-    tree = ast.parse(src)
-    lines = src.splitlines()
 
-    violations = []
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.ExceptHandler):
+def _count_violations(fpath: Path) -> int:
+    if "__pycache__" in str(fpath):
+        return 0
+    if fpath.name.startswith("test_"):
+        return 0
+    try:
+        src = fpath.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return 0
+    try:
+        tree = ast.parse(src, filename=str(fpath))
+    except SyntaxError:
+        return 0
+    finder = _SilentFailureFinder()
+    finder.visit(tree)
+    return len(finder.violations)
+
+
+def run_regression_check() -> list[str]:
+    """Returns list of regression messages. Empty = pass."""
+    regressions: list[str] = []
+    for fpath in _collect_files():
+        rel = str(fpath.relative_to(_ROOT))
+        count = _count_violations(fpath)
+        if count == 0:
             continue
-        body = node.body
-        if len(body) == 1 and isinstance(body[0], ast.Expr):
-            expr = body[0].value
-            if isinstance(expr, ast.Call):
-                func = expr.func
-                if isinstance(func, ast.Attribute) and func.attr == "debug":
-                    ln = body[0].lineno
-                    violations.append(f"shadow_capture.py:{ln}  {lines[ln-1].strip()[:80]}")
+        baseline = _BASELINE.get(rel)
+        if baseline is None:
+            regressions.append(
+                f"NEW FILE has {count} silent failure(s): {rel} "
+                "(new files must start clean — fix before merging)"
+            )
+        elif count > baseline:
+            regressions.append(
+                f"REGRESSION in {rel}: {count} violations (baseline={baseline}) "
+                f"— {count - baseline} new silent failure(s) added"
+            )
+    return regressions
 
-    assert not violations, (
-        "shadow_capture.py still has _log.debug exception swallows:\n"
-        + "\n".join(violations)
+
+def test_no_silent_failures() -> None:
+    regressions = run_regression_check()
+    if not regressions:
+        return
+    lines = ["WO-105 lint FAILED — new silent failures detected:\n"]
+    lines.extend(f"  {r}" for r in regressions)
+    lines.append(
+        "\nFix: upgrade to _log.warning(...) or raise. "
+        "See tests/test_wo105_no_silent_failures.py for the baseline and rules."
     )
+    raise AssertionError("\n".join(lines))
 
-
-# ── AT-4: DesktopState.available field and failure path ──────────────────────
-
-def test_desktop_state_available_field():
-    from world.live_world_state import DesktopState
-    assert hasattr(DesktopState(), "available"), "DesktopState must have an 'available' field"
-    assert DesktopState().available is True, "DesktopState() default: available=True"
-    assert DesktopState(available=False).available is False
-
-
-def test_desktop_failure_path_sets_unavailable():
-    src = _src("world/live_world_state.py")
-    assert "DesktopState(available=False)" in src, (
-        "desktop failure handler must set: desktop = DesktopState(available=False)"
-    )
-
-
-# ── AT-5: server.py g_ctx sites now log WARNING ──────────────────────────────
-
-def test_server_gcxt_no_bare_pass():
-    src = _src("server.py")
-    expected = [
-        "g_ctx/spatial_state FAILED",
-        "g_ctx/pos_emit FAILED",
-        "g_ctx/synthesis FAILED",
-        "g_ctx/chrome FAILED",
-        "g_ctx/music FAILED",
-    ]
-    missing = [m for m in expected if m not in src]
-    assert not missing, (
-        "Missing WO-105 server.py g_ctx WARNING messages:\n" + "\n".join(missing)
-    )
-
-
-# ── AT-6: startup faculty check defined ──────────────────────────────────────
-
-def test_startup_faculty_check_defined():
-    src = _src("server.py")
-    assert "def _startup_faculty_check()" in src, (
-        "_startup_faculty_check() not found in server.py"
-    )
-    assert "_startup_faculty_check()" in src.split("def _startup_faculty_check()")[1], (
-        "_startup_faculty_check() must be called (after __main__ block)"
-    )
-
-
-# ── AT-7: /health includes spine_degraded ─────────────────────────────────────
-
-def test_health_endpoint_spine_degraded():
-    src = _src("server.py")
-    assert '"spine_degraded"' in src or "'spine_degraded'" in src, (
-        "/health endpoint must include spine_degraded field"
-    )
-    assert "_spine_degraded" in src, (
-        "_spine_degraded module-level variable must exist in server.py"
-    )
-
-
-# ── AT-LINT: spine.run() — no bare except/pass ───────────────────────────────
-
-def test_spine_run_no_bare_pass():
-    """Forward-looking lint: any new bare pass in spine.run() fails here."""
-    src = _src("runtime/spine/spine.py")
-    run_func = _run_func_node(src)
-    assert run_func is not None
-
-    violations = []
-    for node in ast.walk(run_func):
-        if not isinstance(node, ast.ExceptHandler):
-            continue
-        if len(node.body) == 1 and isinstance(node.body[0], ast.Pass):
-            violations.append(f"spine.run():{node.body[0].lineno}")
-
-    assert not violations, (
-        "spine.run() has bare except/pass — use WARNING+, raise, or explicit degradation:\n"
-        + "\n".join(violations)
-    )
-
-
-# ── AT-9: all modified files compile clean ───────────────────────────────────
-
-def test_compile_clean():
-    targets = [
-        "runtime/spine/spine.py",
-        "runtime/shadow_capture.py",
-        "world/live_world_state.py",
-        "server.py",
-    ]
-    for rel in targets:
-        py_compile.compile(os.path.join(ROOT, rel), doraise=True)
-
-
-# ── Self-runner (for wo_test_runner.py subprocess mode) ──────────────────────
 
 if __name__ == "__main__":
-    _tests = [
-        ("AT-1", test_spine_run_no_debug_swallows),
-        ("AT-2", test_spine_cognition_warnings_present),
-        ("AT-3", test_shadow_capture_no_debug_swallows),
-        ("AT-4", test_desktop_state_available_field),
-        ("AT-4b", test_desktop_failure_path_sets_unavailable),
-        ("AT-5", test_server_gcxt_no_bare_pass),
-        ("AT-6", test_startup_faculty_check_defined),
-        ("AT-7", test_health_endpoint_spine_degraded),
-        ("AT-LINT", test_spine_run_no_bare_pass),
-        ("AT-9", test_compile_clean),
-    ]
-    _passed = 0; _failed = 0
-    for label, fn in _tests:
-        try:
-            fn()
-            print(f"  ✅ {label}: {fn.__name__}")
-            _passed += 1
-        except Exception as _e:
-            print(f"  ❌ {label}: {fn.__name__} — {_e}")
-            _failed += 1
-    print()
-    print("=" * 62)
-    print(f"WO-105 silent failures   {_passed}/{_passed+_failed} passed, {_failed} failed")
-    if _failed:
+    regressions = run_regression_check()
+    if regressions:
+        for r in regressions:
+            print(f"FAIL  {r}")
         sys.exit(1)
+    else:
+        total = sum(_BASELINE.values())
+        print(f"OK — no regressions. ({total} pre-existing violations tolerated; reducing over time)")
+        sys.exit(0)

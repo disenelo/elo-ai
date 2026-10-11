@@ -58,7 +58,7 @@ def _language_faculty(raw: str) -> dict:
         result["social"]  = norm["social"]
         result["confidence"] = min(result["confidence"], norm["confidence"])
     except Exception as e:
-        _log.debug("language_faculty/normalise: %s", e)
+        _log.warning("WO-105: language_faculty/normalise failed: %s", e)
 
     try:
         from runtime.router.typo_engine import repair
@@ -67,7 +67,7 @@ def _language_faculty(raw: str) -> dict:
             result["meaning"] = repaired["interpretation"]
         result["confidence"] = min(result["confidence"], repaired["confidence"])
     except Exception as e:
-        _log.debug("language_faculty/typo: %s", e)
+        _log.warning("WO-105: language_faculty/typo failed: %s", e)
 
     try:
         from runtime.router.intent_engine import detect as detect_intent
@@ -81,7 +81,7 @@ def _language_faculty(raw: str) -> dict:
         result["confidence"]      = min(result["confidence"],
                                         intent_result.get("confidence", 0.8))
     except Exception as e:
-        _log.debug("language_faculty/intent: %s", e)
+        _log.warning("WO-105: language_faculty/intent failed: %s", e)
 
     return result
 
@@ -148,7 +148,7 @@ def _capability_faculty(meaning: str, intent: str, current_embodiment: str = "de
             _pre_routed = _pre_agent_route(intent, meaning, chain=None)
             _pre_routed_ids = {a[0] for a in _pre_routed}
         except Exception as _pra_err:
-            _log.debug("capability_faculty/pre_route: %s", _pra_err)
+            _log.warning("WO-105: capability_faculty/pre_route failed: %s", _pra_err)
 
         _cap_by_id: dict = {}
         for cap in ALL_CAPABILITIES:
@@ -173,7 +173,7 @@ def _capability_faculty(meaning: str, intent: str, current_embodiment: str = "de
                 _cap_by_id[cap.id] = _entry
         candidates.sort(key=lambda x: x["score"], reverse=True)
     except Exception as e:
-        _log.debug("capability_faculty: %s", e)
+        _log.warning("WO-105: capability_faculty failed: %s", e)
 
     # Also query the agent_router for its selection
     try:
@@ -187,7 +187,7 @@ def _capability_faculty(meaning: str, intent: str, current_embodiment: str = "de
                 cap["score"] += 5  # boost router-confirmed caps
         candidates.sort(key=lambda x: x["score"], reverse=True)
     except Exception as e:
-        _log.debug("capability_faculty/agent_route: %s", e)
+        _log.warning("WO-105: capability_faculty/agent_route failed: %s", e)
 
     # WO-055: penalise capabilities that have failed repeatedly this session.
     # A cap with an active failure streak should sink in the ranking so the
@@ -201,7 +201,7 @@ def _capability_faculty(meaning: str, intent: str, current_embodiment: str = "de
                 cap["failure_streak"] = _streak
         candidates.sort(key=lambda x: x["score"], reverse=True)
     except Exception as e:
-        _log.debug("capability_faculty/failure_streak: %s", e)
+        _log.warning("WO-105: capability_faculty/failure_streak failed: %s", e)
 
     return candidates[:4]  # top 4 max
 
@@ -216,7 +216,7 @@ def _system_faculty(meaning: str) -> tuple[str, str] | None:
         from tools.system_agent import detect
         return detect(meaning)
     except Exception as e:
-        _log.debug("system_faculty: %s", e)
+        _log.warning("WO-105: system_faculty failed: %s", e)
         return None
 
 
@@ -290,7 +290,7 @@ def _executive_faculty(
             k=3,
         ) or []
     except Exception as _lr_err:
-        _log.debug("lesson recall failed (non-critical): %s", _lr_err)
+        _log.warning("WO-105: lesson recall failed (cognition path): %s", _lr_err)
 
     # ── LOOP-7 / ADR-Exec-005 D6: the Executive ASKS the Learning Faculty ──────
     # David 2026-08-21: "why is this still there?" — because nobody had built it.
@@ -310,7 +310,7 @@ def _executive_faculty(
         if _learning_advice and _learning_advice.preferences:
             _log.info("LOOP-7 learning advice: %s", _learning_advice.rationale)
     except Exception as _lf_err:
-        _log.debug("learning faculty consult failed (non-critical): %s", _lf_err)
+        _log.warning("WO-105: learning faculty consult failed (cognition path): %s", _lf_err)
 
     # LOOP-7: hand the advice to the Executive on the channel it already reads.
     # It ASKS — this is the answer waiting for it. ADR-Exec-005 D6.
@@ -336,7 +336,7 @@ def _executive_faculty(
                 for c in _ci_raw
             ] if _ci_raw else []
     except Exception as _ci_err:
-        _log.debug("creative_imagination failed (non-critical): %s", _ci_err)
+        _log.warning("WO-105: creative_imagination failed (cognition path): %s", _ci_err)
 
     if _creative_candidates:
         _attention_in["creative_candidates"] = _creative_candidates
@@ -355,7 +355,7 @@ def _executive_faculty(
         if _self_interpretation and not _self_interpretation.is_empty():
             _log.info("WO-117 self-interpret: %s", _self_interpretation.text[:120])
     except Exception as _si_err:
-        _log.debug("self_interpret failed (non-critical): %s", _si_err)
+        _log.warning("WO-105: self_interpret failed (cognition path): %s", _si_err)
 
     if world is None:
         _log.warning("executive_faculty: plan.world absent — deciding without world context")
@@ -450,7 +450,7 @@ def _executive_faculty(
             if plan.principle_violations:
                 _log.debug("principle_violations: %s", plan.principle_violations)
         except Exception as _cp_err:
-            _log.debug("cognitive_principles check failed (non-fatal): %s", _cp_err)
+            _log.warning("WO-105: cognitive_principles check failed: %s", _cp_err)
 
         # ── WO-INNER-CHILD-001: inner child mode (curiosity threshold) ────────
         # WO-AFFECTIVE-STATE-001: prefer AffectiveState.curiosity over SP-29 proxy
@@ -606,7 +606,7 @@ def _executive_faculty(
         if _speech_licence.violations:
             _log.debug("tier-gate violations: %s", _speech_licence.violations)
     except Exception as _tfr_err:
-        _log.debug("tiered_faculty_reader failed (non-critical): %s", _tfr_err)
+        _log.warning("WO-105: tiered_faculty_reader failed (cognition path): %s", _tfr_err)
 
     return plan
 
@@ -749,7 +749,7 @@ def _conversation_faculty(plan: CognitivePlan) -> CognitivePlan:
                 plan.direct_backend  = "direct+identity_hold"
                 return plan
         except Exception as _ig_err:
-            _log.debug("identity_guard check: %s", _ig_err)
+            _log.warning("WO-105: identity_guard check failed: %s", _ig_err)
 
         # ── 0021 P0-X: David's name resolves from who_i_am_with, not from an LLM guess
         if any(p in raw_lower for p in _srv._DAVID_NAME_TRIGGERS):
@@ -778,7 +778,7 @@ def _conversation_faculty(plan: CognitivePlan) -> CognitivePlan:
             return plan
 
     except Exception as e:
-        _log.debug("conversation_faculty: %s", e)
+        _log.warning("WO-105: conversation_faculty failed (cognition path): %s", e)
 
     return plan
 
@@ -2060,7 +2060,7 @@ def build_embodiment_state(plan, sequence_id: int = 0):
             if _mode:
                 resp = _sfm(resp, _mode)
         except Exception as _lre:
-            _log.debug("language_register shaping FAILED (non-critical): %s", _lre)
+            _log.warning("WO-105: language_register shaping failed: %s", _lre)
 
     return EmbodimentState(
         response_text=resp,

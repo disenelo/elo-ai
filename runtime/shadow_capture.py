@@ -203,5 +203,5 @@ def flush_sync(timeout: float = 2.0) -> None:
     """
     try:
         _q.join()
-    except Exception:
-        pass
+    except Exception as _fq_err:
+        _log.warning("WO-105: flush_sync queue.join failed: %s", _fq_err)

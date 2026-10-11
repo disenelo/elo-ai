@@ -2535,8 +2535,8 @@ def _init_session():
                                     "Vol XI §B envelope breach (accepted anyway, "
                                     "Unity cannot send it yet): %s", _mc_why
                                 )
-                        except Exception:
-                            pass
+                        except Exception as _mc_import_err:
+                            _poller_log.warning("WO-105: motor_contract import failed: %s", _mc_import_err)
                         with _ACK_QUEUE_LOCK:
                             _ACK_QUEUE.append(dict(_ev))
                         _ack_last_ts = _ev_ts
@@ -2548,8 +2548,8 @@ def _init_session():
                             _bwp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "blender", "behind_window.json")
                             with open(_bwp, "w", encoding="utf-8") as _bwf:
                                 _pj.dump({"behind_window_id": _behind_window_id}, _bwf)
-                        except Exception:
-                            pass
+                        except Exception as _bw_err:
+                            _poller_log.warning("WO-105: behind_window.json write failed: %s", _bw_err)
 
                     # WO-UNITY-GAZE: world_state feedback from Unity tick
                     elif _ev_type == "world_state":
@@ -2563,8 +2563,8 @@ def _init_session():
                                 _wsp_write.setdefault("timestamp", _wsd.datetime.utcnow().isoformat())
                                 with open(_wsp, "w", encoding="utf-8") as _wsf:
                                     _wsj.dump(_wsp_write, _wsf)
-                            except Exception:
-                                pass
+                            except Exception as _ws_err:
+                                _poller_log.warning("WO-105: world_state.json write failed: %s", _ws_err)
 
                     # game_mode_toggle: M key in Unity toggles game_mode on/off in blender_state.json
                     elif _ev_type == "game_mode_toggle":
@@ -2630,8 +2630,8 @@ def _init_session():
                                     f"eLo chose to {_subject} on his own (timer-driven, not from David)",
                                     {"source": "auto_action", "subject": _subject},
                                 )
-                            except Exception:
-                                pass
+                            except Exception as _aa_wkg_err:
+                                _poller_log.warning("WO-105: auto_action wkg write failed: %s", _aa_wkg_err)
                         except Exception as _aa_err:
                             _poller_log.warning("PRESENCE auto_action error: %s", _aa_err)
 
@@ -2655,8 +2655,8 @@ def _init_session():
                                         f"eLo's body could not {_subject}: {_why}",
                                         {"source": "brain_action", "subject": _subject},
                                     )
-                                except Exception:
-                                    pass
+                                except Exception as _ba_wkg_err:
+                                    _poller_log.warning("WO-105: brain_action wkg write failed: %s", _ba_wkg_err)
                         except Exception as _ba_err:
                             _poller_log.warning("PRESENCE brain_action error: %s", _ba_err)
 
@@ -2674,8 +2674,8 @@ def _init_session():
                                     f"eLo was playing in the water ({_subject}) — fun moment",
                                     {"source": "water_play", "subject": _subject, "fun": True},
                                 )
-                            except Exception:
-                                pass
+                            except Exception as _wp_wkg_err:
+                                _poller_log.warning("WO-105: water_play wkg write failed: %s", _wp_wkg_err)
                         except Exception as _wp_err:
                             _poller_log.warning("PRESENCE water_play error: %s", _wp_err)
 

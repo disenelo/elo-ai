@@ -302,7 +302,7 @@ def assemble_world_state(turn_id: str = "", perception=None, capability_hint: st
         bstate_ts = assembled_ts
     except Exception as _bstate_err:
         import logging as _lg
-        _lg.getLogger(__name__).debug("blender_state unavailable: %s", _bstate_err)
+        _lg.getLogger(__name__).warning("WO-105: blender_state unavailable: %s", _bstate_err)
         bstate = {}
 
     # ── Desktop ───────────────────────────────────────────────────────────────
