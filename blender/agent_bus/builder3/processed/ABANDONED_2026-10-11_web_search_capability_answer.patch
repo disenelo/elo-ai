@@ -1,0 +1,77 @@
+# Archived by Builder 3 (interactive), 2026-10-11 23:3x.
+# Uncommitted work left by the builder3 seat run at 04:00 (lock tools/web_search.py.lock, seat not running).
+# NOT applied: hard-codes eLo-voiced lines ("Yeah, I can — I run Google…"), against David's rule that only the brain speaks as eLo; and nothing calls these functions.
+# To reapply: git apply blender/agent_bus/builder3/processed/ABANDONED_2026-10-11_web_search_capability_answer.patch
+diff --git a/tools/web_search.py b/tools/web_search.py
+index 57115b6..b7a7e95 100644
+--- a/tools/web_search.py
++++ b/tools/web_search.py
+@@ -693,3 +693,68 @@ def lookup(topic: str) -> dict:
+             "name": topic, "line": f"Searched {topic} — the search itself failed.", "sources": [],
+             "provider": last_source, "results": [],
+         }, f"{type(e).__name__}: {e}"))
++
++
++# ── capability awareness ──────────────────────────────────────────────────────
++# Parity with tools/spotify_play.{capability_answer,awareness_context} and
++# tools/device_control.{capability_answer,awareness_context}: when David asks
++# whether eLo can search / look things up, answer directly so the LLM can't
++# deny a capability eLo has (same anti-pattern IS-ELO verdicts flagged for
++# Spotify). When search is only mentioned (not commanded), inject a
++# [CAPABILITY_RESULT: Search — …] fact so Builder 1's missing-fact exception
++# carries it through to Executive without the LLM re-paraphrasing.
++
++_SEARCH_MENTION_RE = re.compile(
++    r"\b(?:web\s*search(?:ed|ing)?|google(?:\s+search)?|duckduckgo|serp(?:api)?|"
++    r"wikipedia|look(?:ing)?\s+(?:it|that|this|them|him|her|something|things)\s+up|"
++    r"look(?:ing)?\s+up|search\s+the\s+(?:web|internet)|internet\s+search|"
++    r"online\s+search)\b",
++    re.I,
++)
++_SEARCH_ABILITY_RE = re.compile(
++    r"\b(?:can\s+you|could\s+you|you\s+can|you\s+could|are\s+you\s+able|"
++    r"you(?:'re|\s+are)\s+able|do\s+you(?:\s+know\s+how\s+to)?|able\s+to)\b"
++    r".{0,40}\b(?:search|google|look\s+(?:it|that|this|them|something|things|stuff)\s+up|"
++    r"look\s+up|find\s+out|read\s+up|check\s+online|check\s+the\s+web)\b",
++    re.I,
++)
++
++# Rotated: elo_response_gate blanks a reply identical to the previous one.
++_SEARCH_ABILITY_LINES = (
++    "Yeah, I can — I run Google (SerpAPI) and fall back to DuckDuckGo if it's down, "
++    "and I'll read Wikipedia for the one-line answer. Just name what you want looked up.",
++    "I can, yeah — Google first, DuckDuckGo as backup, and Wikipedia for the lead sentence. "
++    "Tell me what to look up.",
++    "Yep, that's mine to run — Google through SerpAPI, DuckDuckGo if that's dark, "
++    "and Wikipedia for the clean summary. Say the topic and I'll go.",
++)
++_search_ability_i = -1
++
++
++def capability_answer(text: str) -> str | None:
++    """eLo's own answer when David asks whether he can search / look things up.
++    None when the text isn't an ability question about search."""
++    global _search_ability_i
++    t = text or ""
++    if not (_SEARCH_MENTION_RE.search(t) and _SEARCH_ABILITY_RE.search(t)):
++        return None
++    _search_ability_i = (_search_ability_i + 1) % len(_SEARCH_ABILITY_LINES)
++    return _SEARCH_ABILITY_LINES[_search_ability_i]
++
++
++def awareness_context(text: str) -> str | None:
++    """[CAPABILITY_RESULT: Search — …] fact for the prompt when search is mentioned
++    but isn't a direct search command (is_search_command handles those; the
++    search path above handles is_search_intent). Keeps parity with
++    spotify_play.awareness_context so Builder 1's missing-fact exception can
++    carry it through to Executive without LLM paraphrase."""
++    t = text or ""
++    if not _SEARCH_MENTION_RE.search(t):
++        return None
++    if is_search_command(t) or is_search_intent(t):
++        return None
++    provider = "Google (SerpAPI) with DuckDuckGo as a backup" if os.environ.get("SERPAPI_KEY") \
++        else "DuckDuckGo (SerpAPI key not set)"
++    return ("[CAPABILITY_RESULT: Search — eLo looks things up on the web himself: "
++            f"{provider}, and Wikipedia for the lead sentence. "
++            "Never say you can't search — if David says you can, he is right.]")
