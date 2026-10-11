@@ -5872,7 +5872,10 @@ def _process_turn(raw: str) -> dict:
                 if _cfac_q:
                     _cfac_topic_tokens = set(_cfac_q.get("topic", "").lower().split())
                     _cfac_input_tokens = set((raw or "").lower().split())
-                    if _cfac_topic_tokens & _cfac_input_tokens:
+                    _cfac_open_invite = bool(_re.search(
+                        r"\b(anything|what'?s)\b.*\b(on your mind|up|new|happening)\b"
+                        r"|\bhow are you\b|\bwhat are you thinking\b", (raw or ""), _re.I))
+                    if (_cfac_topic_tokens & _cfac_input_tokens) or _cfac_open_invite:
                         _cfac_block = _cfac_pb()
                         if _cfac_block:
                             system = system + "\n\n" + _cfac_block
