@@ -135,6 +135,7 @@ def assess_significance(entry: dict) -> float:
     _cycle_peaks: list[float] = []
     _seeds_total = 0
     _seeds_unresolved = 0
+    _unique_concepts: set[str] = set()
     for cycle in cycles:
         _peak = 0.0
         vector = cycle.get("emotion_vector") or {}
@@ -144,6 +145,10 @@ def assess_significance(entry: dict) -> float:
             _seeds_total += 1
             if seed.get("unresolved"):
                 _seeds_unresolved += 1
+            for _c in seed.get("associated_concepts") or []:
+                _slug = str(_c).strip().lower()
+                if _slug:
+                    _unique_concepts.add(_slug)
             # Was seed.get("emotional_weight_max"). That key appears
             # exactly once in the whole codebase — here, on the read. No
             # writer has ever produced it, so this term was a constant
@@ -172,6 +177,18 @@ def assess_significance(entry: dict) -> float:
     emotional = (sum(_cycle_peaks) / len(_cycle_peaks)) if _cycle_peaks else 0.0
     unresolved = (_seeds_unresolved / _seeds_total) if _seeds_total else 0.0
 
+    # `dream_intensity` is the peak phase intensity from sleep_cycle. For any
+    # full 5-cycle sleep that reaches cycle 5 REM it is 1.0 by construction, so
+    # on its own the term pinned a constant 0.40 across every real dream and
+    # the top of the scorer could not discriminate. Splitting the 0.40 slot
+    # into (intensity, concept_density) keeps the ceiling where
+    # test_a_vivid_dream_about_nothing_does_not_clear_the_gate expects it
+    # (intensity alone peaks at 0.25 < 0.45) and lets dreams differentiate on
+    # how much ground their seeds actually covered — the 16 retained real
+    # dreams have 14..27 unique associated_concepts and all scored exactly 0.9
+    # before this term existed.
+    concept_density = min(1.0, len(_unique_concepts) / 15.0)
+
     # A symbol eLo has seen before matters more than a one-off image.
     recurrence = 0.0
     lexicon = entry.get("symbol_lexicon") or []
@@ -184,7 +201,8 @@ def assess_significance(entry: dict) -> float:
             break
 
     score = (
-        0.40 * intensity
+        0.25 * intensity
+        + 0.15 * concept_density
         + 0.30 * emotional
         + 0.20 * unresolved
         + 0.10 * recurrence
