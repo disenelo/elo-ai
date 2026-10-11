@@ -180,6 +180,11 @@ def _run_nrem_phase(symbols: list[dict], recent_topics: list[str]) -> dict:
     }
 
 
+# A dream has to be worth keeping before it is worth paying to draw.
+# Card 0009, David via Board 2026-10-11.
+IMAGE_SIGNIFICANCE_MIN: float = 0.5
+
+
 def _generate_dream_image(symbols: list[dict]) -> str | None:
     """
     DeepDream image pipeline (Vol IX Ch.2 §2.3).
@@ -863,10 +868,32 @@ def run_dream(
                     )
                     insight = "The pattern was there the whole time. Just needed distance."
 
-        # 5. DeepDream image (best-effort, only when REM narrative ran)
+        # 5. DeepDream image — only for a dream worth keeping.
+        #
+        # Card 0009: "Dreams with significance > 0.5 should produce an image."
+        # It fired on every REM dream with symbols, which is every dream. With
+        # 248 of them that is 248 paid calls for images nobody kept, and the
+        # account is currently out of credits.
+        #
+        # Significance is assessed properly after the dream, but every input
+        # it needs — cycles, dream_intensity, symbols — already exists here,
+        # so the same scorer can be asked early. Cheap: no model call, pure
+        # arithmetic over data in hand.
         image_ref = None
+        _img_sig = 0.0
         if reach_rem and symbols:
-            image_ref = _generate_dream_image(symbols)
+            try:
+                from faculties.dream.dream_review import assess_significance as _assess
+                _img_sig = _assess({
+                    "dream_intensity": dream_intensity,
+                    "cycles": cycle_records,
+                    "symbols": [{"name": sy["symbol"]} for sy in symbols],
+                    "recurring_symbols": [],
+                })
+            except Exception:
+                _img_sig = 0.0
+            if _img_sig > IMAGE_SIGNIFICANCE_MIN:
+                image_ref = _generate_dream_image(symbols)
 
         # 6. Personality delta proposal (never self-apply — routes to Ch.7)
         personality_delta_proposed = _extract_personality_proposal(insight)
