@@ -9856,6 +9856,22 @@ def _condition_outbound(result):
                                      for b in result["bubbles"]]
     except Exception:
         pass
+
+    # S1-DEGRADED: empty response must never leave as ok:true.
+    # D-6 guards the main path; this catches fast-paths and any degraded turn
+    # where mock returned an empty string.
+    try:
+        if isinstance(result, dict) and not (result.get("response") or "").strip():
+            if result.get("mode") not in ("error", "reset", "silent"):
+                import logging as _eo_log
+                _eo_log.getLogger("elo.empty_outbound").warning(
+                    "S1-DEGRADED: empty response at outbound gate; mode=%r backend=%r",
+                    result.get("mode"), result.get("backend"),
+                )
+                result["response"] = "Something came back empty — ask me again?"
+    except Exception:
+        pass
+
     return result
 
 
