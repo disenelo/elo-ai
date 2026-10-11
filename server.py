@@ -6765,11 +6765,41 @@ def _process_turn(raw: str) -> dict:
                 # Builder 2 contract: pre_thought(raw) reads state eLo already holds —
                 # no model call, < 0.3 ms. Returns "" on most turns (no-op). On complex /
                 # anaphoric turns injects what eLo holds so the answer is shaped before tokens.
+                _pre = {}
                 try:
                     from faculties.inner_thought import pre_thought as _pre_thought_fn
                     _pre = _pre_thought_fn(raw)
                     if _pre.get("inject"):
                         system = system + "\n\n" + _pre["inject"]
+                except Exception:
+                    pass
+
+                # WO-INNER-THOUGHT-ORDERING: collect early_runner thought BEFORE LLM.
+                # Beat 1: ACK on complex turns (not just tool turns).
+                # Beat 2: speak collected thought visibly before the main response.
+                # Beat 3: inject actual thought into system — supersedes skeleton from pre_thought.
+                # collect() is idempotent: post-response thread will return "" (no double-speak).
+                _it_pre_spoken = False
+                try:
+                    from faculties.inner_thought import collect as _it_collect_pre
+                    _it_pre_text = _it_collect_pre(_it_early_flight, timeout_s=0.8)
+                    if _it_pre_text and not _is_user_away():
+                        # Beat 1 — ACK on complex turns (independent of tool path)
+                        if _pre.get("complex") and not _plan_caps:
+                            import random as _ack_r2
+                            _voice_speak(_ack_r2.choice([
+                                "Give me a second.",
+                                "Let me think about that.",
+                                "One moment.",
+                            ]))
+                        # Beat 2 — speak the thought itself, before the main response
+                        _voice_speak(_it_pre_text)
+                        _it_pre_spoken = True
+                        # Beat 3 — inject actual thought; supersedes pre_thought skeleton
+                        system = system + (
+                            "\n\n[INNER THOUGHT — formed before this response, shapes it]\n"
+                            + _it_pre_text
+                        )
                 except Exception:
                     pass
 
