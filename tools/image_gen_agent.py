@@ -124,12 +124,22 @@ def _dalle3(prompt: str, filename: str | None = None) -> Optional[Path]:
         out = _output_path(filename)
         # gpt-image-1 is the current model name (formerly dall-e-3, deprecated 2025).
         # Falls back to dall-e-3 in case of model-not-found to support older API keys.
+        # QUALITY IS PER-MODEL. gpt-image-1 takes low/medium/high/auto;
+        # "hd" is dall-e-3's vocabulary and gpt-image-1 rejects it with a 400:
+        #   Invalid value: 'hd'. Supported values are: 'low', 'medium',
+        #   'high', and 'auto'.
+        # The fallback below only caught "does not exist", so a quality error
+        # re-raised and every dream image failed. 248 dreams, image_ref null
+        # on all of them. Found 2026-10-11 by running it with the key loaded —
+        # the key was never the problem.
         try:
             out.write_bytes(
-                _openai_image_bytes(client, "gpt-image-1", prompt, quality="hd")
+                _openai_image_bytes(client, "gpt-image-1", prompt, quality="high")
             )
         except Exception as _e1:
-            if "does not exist" in str(_e1) or "model_not_found" in str(_e1):
+            _msg1 = str(_e1)
+            if "does not exist" in _msg1 or "model_not_found" in _msg1:
+                # Older keys may still have dall-e-3, which wants "hd".
                 out.write_bytes(
                     _openai_image_bytes(client, "dall-e-3", prompt, quality="hd")
                 )
@@ -150,11 +160,19 @@ def _dalle2(prompt: str, filename: str | None = None) -> Optional[Path]:
         import openai
         client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         out = _output_path(filename)
-        out.write_bytes(_openai_image_bytes(client, "dall-e-2", prompt))
+        # dall-e-2 was retired: the API answers "The model 'dall-e-2' does not
+        # exist." every single time, so this fallback could never succeed and
+        # only added a confusing line to every failure report. Kept as a
+        # fallback, but pointed at a model that exists — gpt-image-1 at a
+        # cheaper quality than _dalle3 asks for, which is what a second
+        # attempt is for. Confirmed 2026-10-11.
+        out.write_bytes(
+            _openai_image_bytes(client, "gpt-image-1", prompt, quality="medium")
+        )
         return out
     except Exception as e:
-        print(f"[image_gen] DALL-E 2 failed: {e}")
-        _LAST_ERRORS.append(f"DALL-E 2: {e}")
+        print(f"[image_gen] DALL-E fallback failed: {e}")
+        _LAST_ERRORS.append(f"DALL-E fallback: {e}")
         return None
 
 
