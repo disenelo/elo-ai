@@ -449,6 +449,15 @@ def genre_request(text: str) -> str | None:
     return " ".join(m.group("genre").lower().split()) if m else None
 
 
+def _ack(text: str) -> None:
+    """B1 pre_ack (3332caf): a short 'one second' while Spotify searches/starts. Never blocks."""
+    try:
+        from runtime import pre_ack as _pa
+        _pa.emit("spotify_play", text)
+    except Exception:
+        pass
+
+
 def _handle_line(text: str) -> tuple[str, str, str] | None:
     """(kind, detail, eLo's line) for a Spotify request, after doing it.
     kind: control | open | list | choose | play | ability. None when not one."""
@@ -457,12 +466,14 @@ def _handle_line(text: str) -> tuple[str, str, str] | None:
     genre = genre_request(text)
     if genre:
         _last_spotify_ts = time.time()
+        _ack(text)
         try:
             return ("play", genre, play(genre))
         except Exception as e:
             return ("play", genre, "Spotify didn't take that — something went wrong on its side.", str(e))
     if _PLAY_MUSIC_RE.match((text or "").strip()):
         _last_spotify_ts = time.time()
+        _ack(text)
         try:
             kind, line = play_music()
             return (kind, "resume" if kind == "control" else "music", line)
@@ -489,6 +500,7 @@ def _handle_line(text: str) -> tuple[str, str, str] | None:
             return ("open", "", open_app())
         if kind == "list":
             return ("choose" if target == "choose" else "list", "", list_playlists(choose=(target == "choose")))
+        _ack(text)
         return ("play", target, play(target))
     except Exception as e:
         return (kind, target, "Spotify didn't take that — something went wrong on its side.",

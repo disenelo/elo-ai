@@ -2403,6 +2403,11 @@ def _direct_intercepts(user_input: str) -> Optional[Tuple[str, Optional[str]]]:
     try:
         from tools.document_writer import is_document_request as _is_doc, write_document as _write_doc
         if _cap_on("create_document") and _is_doc(user_input):
+            try:  # B1 pre_ack (3332caf): eLo says he's on it during the ~25 s write
+                from runtime import pre_ack as _pa
+                _pa.emit("document_write", user_input)
+            except Exception:
+                pass
             _dr = _write_doc(user_input)
             _last_direct_result = _dr["result"]["line"]
             return _last_direct_result, "create_document"
