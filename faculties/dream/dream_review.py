@@ -120,15 +120,30 @@ def assess_significance(entry: dict) -> float:
 
     intensity = float(entry.get("dream_intensity", 0.0) or 0.0)
 
-    emotional = 0.0
-    unresolved = 0.0
+    # PROPORTIONAL, not saturating. Both of these used to take the strongest
+    # single reading anywhere in the dream: `emotional` was a max across every
+    # cycle AND every seed, and `unresolved` was set to 1.0 by any one seed.
+    # Once real conversation reached the dream (2026-10-10) that meant one
+    # emotive word and one unfinished thread pinned both to 1.0, and every one
+    # of the first ten real dreams scored an identical 0.900 — the same
+    # no-op sort the old constant 0.400 was, at the other end.
+    #
+    # A dream that is emotional THROUGHOUT should outscore one with a single
+    # spike, and a dream where most seeds are unfinished should outscore one
+    # with a single loose end. So: mean of per-cycle peaks, and the fraction
+    # of seeds that are unresolved.
+    _cycle_peaks: list[float] = []
+    _seeds_total = 0
+    _seeds_unresolved = 0
     for cycle in cycles:
+        _peak = 0.0
         vector = cycle.get("emotion_vector") or {}
         if vector:
-            emotional = max(emotional, max((float(v) for v in vector.values()), default=0.0))
+            _peak = max((float(v) for v in vector.values()), default=0.0)
         for seed in cycle.get("seeds") or []:
+            _seeds_total += 1
             if seed.get("unresolved"):
-                unresolved = 1.0
+                _seeds_unresolved += 1
             # Was seed.get("emotional_weight_max"). That key appears
             # exactly once in the whole codebase — here, on the read. No
             # writer has ever produced it, so this term was a constant
@@ -149,9 +164,13 @@ def assess_significance(entry: dict) -> float:
             if isinstance(_seed_emotion, dict):
                 for _v in _seed_emotion.values():
                     try:
-                        emotional = max(emotional, float(_v))
+                        _peak = max(_peak, float(_v))
                     except (TypeError, ValueError):
                         continue
+        _cycle_peaks.append(_peak)
+
+    emotional = (sum(_cycle_peaks) / len(_cycle_peaks)) if _cycle_peaks else 0.0
+    unresolved = (_seeds_unresolved / _seeds_total) if _seeds_total else 0.0
 
     # A symbol eLo has seen before matters more than a one-off image.
     recurrence = 0.0
