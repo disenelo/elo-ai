@@ -238,6 +238,10 @@ _SEARCH_TRIGGERS = (
     "what's the latest",
     "latest on ",
     "news on ",
+    # WO-B3-0012: sprint-acceptance phrases David uses for current-events searches.
+    "what's happening",
+    "whats happening",
+    "happening with ",
     "find out about",
     "find that video",
     "search youtube",
