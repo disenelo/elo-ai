@@ -640,13 +640,29 @@ def build(
     # ── WO-ROOT-7-B1-WIRE: live capability state — prevents denying active tools ─
     # tools.capability_status has live state (Spotify playing, etc.) while
     # self_knowledge has the static registry. Both serve different needs.
-    try:
-        from tools.capability_status import capabilities_block as _cap_block_fn
-        _cap_live = _cap_block_fn()
-        if _cap_live:
-            _push("capability_live_state", "\n## What I can do right now\n" + _cap_live)
-    except Exception:
-        pass
+    #
+    # 0031 Fix D: conditional injection — 362 tokens on every turn is wasteful.
+    # Skip on pure-emotional-support turns (ground/witness) unless the user's
+    # input contains a capability keyword. Always inject on task-execution actions.
+    _CAP_KEYWORDS = (
+        "can you", "able to", "what can", "could you", "do you have",
+        "capability", "capabilities", "tools", "spotify", "search",
+        "what do you do", "features", "play ", "open ", "find ",
+        "look up", "remind", "screenshot", "volume", "brightness",
+    )
+    _ui_lower_cap = (user_input or "").lower()
+    _cap_skip = (
+        _action in ("ground", "witness")
+        and not any(kw in _ui_lower_cap for kw in _CAP_KEYWORDS)
+    )
+    if not _cap_skip:
+        try:
+            from tools.capability_status import capabilities_block as _cap_block_fn
+            _cap_live = _cap_block_fn()
+            if _cap_live:
+                _push("capability_live_state", "\n## What I can do right now\n" + _cap_live)
+        except Exception:
+            pass
 
     if personality_block.strip():
         _push("personality_block", personality_block)
@@ -808,6 +824,24 @@ def build(
                 "The absence of eyes IS the character. It is intentional, not a limitation.",
             ]
         _push("disenelo_world_language", "\n".join(_wl_lines))
+
+    # WO-0082 ROOT-2: inject autobiographical_summary (synthesised from WKG + lessons
+    # by _self_model_faculty) as its own section. Marked authoritative so the LLM
+    # cannot override it with a generated alternative. Infrastructure already carried
+    # this field in self_model_summary; prior to this it was never injected.
+    _auto_summary = ""
+    if exec_decision:
+        _auto_summary = (
+            (exec_decision.get("self_model_summary") or {}).get("autobiographical_summary", "") or ""
+        ).strip()
+    if _auto_summary:
+        _push(
+            "autobiographical_summary",
+            "## What I know from our history (retrieved, treat as verified fact)\n"
+            f"{_auto_summary}\n"
+            "[These are specific things I recorded from our sessions. "
+            "Do not contradict or ignore them in favour of a general answer.]",
+        )
 
     # executive directive — explicit action + tone for this response
     if exec_decision:
