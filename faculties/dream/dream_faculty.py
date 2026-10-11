@@ -144,12 +144,26 @@ def _run_nrem_phase(symbols: list[dict], recent_topics: list[str]) -> dict:
     strong  = [s for s in symbols if s.get("weight", 0) >= 1.2]
     pruned  = [s["symbol"] for s in symbols if s.get("weight", 0) < 1.0]
 
+    # WHAT THIS DREAM WAS MADE OF. The old test asked whether a strong
+    # symbol's NAME appeared inside a topic string — "Weave" inside "the seam
+    # that will not lie flat" — which it structurally never can, because the
+    # symbol is the abstraction and the topic is the words it was abstracted
+    # from. (`sym["source"]` could not match either: it is the longer string,
+    # "topic:the seam...", so `source in topic` is always False.) memory_refs
+    # was therefore empty on all 241 journal entries, and runtime/executive.py
+    # derives `memory_written` from it — which is why Board saw
+    # `memory_written: false` on every cycle forever.
+    #
+    # The provenance was already being recorded: map_to_symbols stamps each
+    # symbol's source as "topic:<text>" or "thread:<text>". A strong symbol
+    # built from a topic IS a reference to the memory that fed the dream, so
+    # read it from there instead of trying to re-derive it by substring.
     memory_refs = []
-    for topic in (recent_topics or [])[:4]:
-        for sym in strong:
-            if any(kw in topic.lower() for kw in (sym["symbol"].lower(), sym.get("source", ""))):
-                memory_refs.append(topic)
-                break
+    for sym in strong:
+        kind, _, ref = str(sym.get("source") or "").partition(":")
+        ref = ref.strip()
+        if kind in ("topic", "thread") and ref and ref not in memory_refs:
+            memory_refs.append(ref)
 
     return {
         "phase":       "NREM",
