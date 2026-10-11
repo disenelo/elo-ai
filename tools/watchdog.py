@@ -34,10 +34,11 @@ try:
     from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler, FileCreatedEvent
 except ModuleNotFoundError:
-    sys.exit(
-        "watchdog library not found. Run: "
-        "pip install watchdog   (or .venv/bin/pip install watchdog)"
-    )
+    import subprocess as _pip_sub
+    print("[watchdog] library missing — installing now...", flush=True)
+    _pip_sub.check_call([sys.executable, "-m", "pip", "install", "watchdog", "-q"])
+    from watchdog.observers import Observer
+    from watchdog.events import FileSystemEventHandler, FileCreatedEvent
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 
