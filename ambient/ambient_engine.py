@@ -560,6 +560,22 @@ def _battery_tick() -> None:
                 observe_focus()
             except Exception:
                 pass
+            # WO-B2-0008 — SPG keeps up with the conversation. Two paths
+            # could write a live node and neither covered a turn: the WKG
+            # claim side effect fires only on category-tagged turns (2,536 of
+            # 3,335 — 799 turns wrote nothing), and significance_faculty's
+            # spike tap asserts its own unreachability at import (threshold
+            # 0.6, max achievable 0.0929, never once logged).
+            #
+            # Driven from here rather than the turn path so server.py, which
+            # is Builder 1's, needs no change — a turn lands in the store
+            # within a tick of being spoken either way. Guarded on the store's
+            # mtime, so the common case is one stat() and 0.02 ms.
+            try:
+                from memory.spg_live import sync_new_turns
+                sync_new_turns()
+            except Exception:
+                pass
             # A correction has to leave a mark, or "Got it" is the whole
             # response. self/corrections_ledger.jsonl holds 47,238 rows and
             # none of them is a MEMORY — the ledger is append-only and
