@@ -177,10 +177,22 @@ def map_to_symbols(
     # outranks a single inner-event seed. "quiet"→"moon" was dominating
     # every dream — the 1.2 weight meant the ambient state crowded out
     # whatever the conversation had actually been about.
+    # DEDUPED BY SYMBOL. _add accumulates, so four ambient events that all map
+    # to the same seed used to contribute 0.9 x 4 = 3.6 and beat any topic's
+    # 1.0 — which is the exact domination the 1.2 -> 0.9 reduction above was
+    # meant to end. Lowering the weight cannot help while the weight stacks.
+    # Measured 2026-10-11: ten forced dreams on ten different topics (a seam,
+    # a studio, barkcloth, Hackney Wick) all came back with theme "Moon",
+    # because inner_events carried "quiet" repeatedly and "quiet" -> moon.
+    # Each distinct ambient symbol now contributes once.
+    _seen_inner: set[str] = set()
     for event in inner_events[-4:]:
         seed = _EVENT_TO_SEED.get(event)
         if seed and seed in SYMBOLS:
             sym, meaning = SYMBOLS[seed]
+            if sym in _seen_inner:
+                continue
+            _seen_inner.add(sym)
             _add(sym, meaning, f"inner:{event}", 0.9)
 
     # Fallback — eLo is always present
