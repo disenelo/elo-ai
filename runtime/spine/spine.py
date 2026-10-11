@@ -519,24 +519,17 @@ def _executive_faculty(
     # This is the honest, useful result the card asked for.
     plan.lesson_id = ""
 
-    # W6: lesson attribution — closes LOOP-7.
-    # lesson_id is always set to the top recalled lesson's key when any lesson
-    # was recalled this turn. cal_reason is only amended when the Executive
-    # returned the default branch ("default — no stronger signal") — in that
-    # case the lesson is the authoritative reason for the outcome.
-    # ADR-Exec-005 D6: Executive ASKS — spine acts on what it asked for.
-    if _recalled_lessons:
-        _top = _recalled_lessons[0]
-        plan.lesson_id = _top.get("lesson_key", "")
-        # WO-W63-CAL-REASON-001: Executive returns several default-branch strings
-        # depending on intent ("default — no stronger signal", "conversation — default
-        # to answer (per _RESPONSE_GOAL)", etc.). Any cal_reason that contains
-        # "default" and doesn't carry an explicit capability or system signal means
-        # the recalled lesson is the authoritative reason — amend it.
-        # Also covers "learned preference" — Executive routed via learning_advice;
-        # the lesson statement is more informative than the generic rationale string.
-        if "default" in plan.cal_reason.lower() or "learned preference" in plan.cal_reason.lower():
-            plan.cal_reason = f"lesson: {_top.get('statement', '')}"
+    # W6 causation gate (card 0051 D1+D2):
+    # lesson_id is set ONLY when the Executive's own cal_reason proves the
+    # lesson changed the action. The frozen executive reads learning_advice
+    # (executive.py:455) and returns "learned preference" in cal_reason when
+    # it does — that string is the causal signal (executive.py:464).
+    # Post-hoc cal_reason rewriting is prohibited (D1): renaming a default as
+    # "lesson:" manufactures evidence — a relabelled default is not causation.
+    # Unconditional lesson_id assignment is prohibited (D2): it records "a
+    # lesson existed", not "a lesson was used". Both are rejected by card 0051.
+    if _recalled_lessons and "learned preference" in plan.cal_reason.lower():
+        plan.lesson_id = _recalled_lessons[0].get("lesson_key", "")
 
     # ── System action decision ────────────────────────────────────────────────
     if system_det:

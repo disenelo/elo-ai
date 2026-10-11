@@ -158,28 +158,37 @@ def test_loop_7_lesson_trigger(rows, confirmed_lessons):
         )
         return False
 
-    # If D3 lands in a future turn, check for rows where lesson_id is non-empty
-    # AND cal_reason is NOT a relabelled default (i.e., it was a real routing signal
-    # the lesson contributed to — not a default renamed after the fact).
+    # card 0051 D1+D2: check for CAUSAL rows only.
+    # Causation signal: the frozen executive.py reads learning_advice (line 455)
+    # and returns "learned preference" in cal_reason when it changes the action
+    # (executive.py:464). That string is the only honest causal evidence.
+    # The journal stores cal_reason in the "trigger" field, not "cal_reason" or
+    # a nested "exec_decision" dict.
+    # A relabelled default ("lesson: <stmt>") is NOT causal — it was written by
+    # post-hoc spine rewriting that card 0051 required to be reverted.
     lesson_keys = {l.get("lesson_key") for l in confirmed_lessons if l.get("lesson_key")}
     causal_rows = []
     for r in rows:
         lid = r.get("learning", "")
-        cal = r.get("exec_decision", {}).get("cal_reason", "") or r.get("cal_reason", "")
-        # causal: has a lesson_id AND cal_reason is NOT "default — no stronger signal"
-        # (a relabelled default is not causal evidence)
-        if lid and lid in lesson_keys and "default" not in cal.lower():
+        # "trigger" is where decision_journal.record() writes cal_reason
+        trigger = r.get("trigger", "")
+        # causal: lesson_id is set AND the Executive's own cal_reason says
+        # "learned preference" — meaning it was the Executive that decided
+        # the lesson changed the action, not a post-hoc relabelling.
+        if lid and lid in lesson_keys and "learned preference" in trigger.lower():
             causal_rows.append(r)
 
     if not causal_rows:
         warn(
             "LOOP-7: UNKNOWN — no journal row shows a lesson-attributable decision. "
-            "Requirements: lesson in Executive context + action diff with/without lesson."
+            "Requirements: lesson in Executive context + Executive returns "
+            "'learned preference' in cal_reason (trigger field) + lesson_id set. "
+            "Post-hoc cal_reason relabelling ('lesson: ...') is not causal evidence."
         )
         return False
 
     ok(f"LOOP-7: 🎯 CLOSED — {len(causal_rows)} row(s) show a lesson-attributable "
-       f"Executive decision (lesson in context + non-default cal_reason + lesson_id).")
+       f"Executive decision (Executive-owned 'learned preference' in trigger + lesson_id).")
     return True
 
 
