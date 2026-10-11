@@ -3,6 +3,8 @@ tests/test_0018_ct0031_ollama_instrumentation.py — Card 0031: P0 Latency.
 
 Step 1: Ollama timing instrumentation.
 Fix  A: keep_alive "30m" added to Ollama payload.
+Fix  B: _ollama_stream wired into route_streaming for local mode.
+Fix  C: num_ctx raised from 4096 to 8192 to prevent silent truncation.
 
 Tests:
     OI-1  _ollama_call payload contains keep_alive: "30m"
@@ -11,6 +13,8 @@ Tests:
     OI-4  _ollama_call logs CT0031 line at INFO level
     OI-5  server.py backend_health write merges _bh_ollama when backend_used contains "ollama"
     OI-6  server.py backend_health write does NOT include ollama keys when backend is not ollama
+    OI-7  Fix B: _ollama_stream is called by route_streaming when mode=="local"
+    OI-8  Fix C: _ollama_call payload has num_ctx >= 8192
 
 Run: python3 tests/test_0018_ct0031_ollama_instrumentation.py
 """
@@ -187,13 +191,85 @@ def test_oi6_no_ollama_keys_for_other_backends():
     ok("OI-6: guard uses 'in' — covers both 'ollama' and future 'ollama(stream)' backend names")
 
 
+# ── OI-7: Fix B — _ollama_stream wired into route_streaming for local mode ────
+def test_oi7_ollama_stream_wired_for_local():
+    import inspect
+    import runtime.backend_router as br
+
+    src = inspect.getsource(br.route_streaming)
+    # The CT0031 Fix B block must call _ollama_stream when mode=="local"
+    if "_ollama_stream" not in src:
+        err("OI-7: _ollama_stream not referenced in route_streaming source")
+    if 'mode == "local"' not in src and "mode==\"local\"" not in src:
+        err("OI-7: route_streaming does not gate on mode==\"local\"")
+    # The CT0031 Fix B label is in the source
+    if "CT0031 Fix B" not in src:
+        err("OI-7: CT0031 Fix B label missing from route_streaming — block may not be from card")
+    ok("OI-7: Fix B — _ollama_stream wired into route_streaming for mode==\"local\"")
+
+
+# ── OI-8: Fix C — _ollama_call payload has num_ctx >= 8192 ───────────────────
+def test_oi8_num_ctx_8192():
+    import json as _json
+    import runtime.backend_router as br
+
+    captured = {}
+
+    fake_response_bytes = _json.dumps({
+        "message": {"role": "assistant", "content": "ok"},
+        "done": True, "load_duration": 0, "prompt_eval_count": 1,
+        "prompt_eval_duration": 0, "eval_count": 1, "eval_duration": 0,
+    }).encode()
+
+    class _FakeCtx:
+        def read(self): return fake_response_bytes
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+
+    def _capture_urlopen(req, timeout=60):
+        captured["payload"] = _json.loads(req.data.decode())
+        return _FakeCtx()
+
+    with mock.patch("runtime.backend_router._ureq.urlopen" if hasattr(br, "_ureq") else
+                    "urllib.request.urlopen", _capture_urlopen):
+        try:
+            br._ollama_call("sys", "user")
+        except Exception:
+            pass
+
+    if not captured:
+        # Fallback: source check
+        import inspect
+        src = inspect.getsource(br._ollama_call)
+        if "num_ctx" not in src:
+            err("OI-8: num_ctx missing from _ollama_call source")
+        # Find the value — look for num_ctx: <number>
+        import re
+        m = re.search(r'"num_ctx"\s*:\s*(\d+)', src)
+        if not m:
+            err("OI-8: could not parse num_ctx value from source")
+        val = int(m.group(1))
+        if val < 8192:
+            err(f"OI-8: FAIL — num_ctx={val} (< 8192); truncation risk remains")
+        ok(f"OI-8: Fix C — num_ctx={val} >= 8192 (source check, mock unavailable)")
+        return
+
+    opts = captured["payload"].get("options", {})
+    num_ctx = opts.get("num_ctx", 0)
+    if num_ctx < 8192:
+        err(f"OI-8: FALSIFIED — num_ctx={num_ctx} (< 8192) in actual Ollama payload")
+    ok(f"OI-8: Fix C — num_ctx={num_ctx} >= 8192 confirmed in actual dict sent to urlopen")
+
+
 # ── runner ────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    print("CT0031 — Ollama instrumentation + Fix A")
+    print("CT0031 — Ollama instrumentation + Fixes A/B/C")
     test_oi1_keep_alive_in_payload()
     test_oi2_timing_fields_parsed()
     test_oi3_metrics_exported()
     test_oi4_logs_ct0031()
     test_oi5_server_merges_ollama_keys()
     test_oi6_no_ollama_keys_for_other_backends()
-    print("\n6/6 PASS — CT0031 Step1+FixA instrumentation verified")
+    test_oi7_ollama_stream_wired_for_local()
+    test_oi8_num_ctx_8192()
+    print("\n8/8 PASS — CT0031 Step1+Fixes A/B/C verified")

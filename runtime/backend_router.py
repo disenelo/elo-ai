@@ -812,7 +812,7 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
         ],
         "stream":     False,
         "keep_alive": "30m",   # CT0031 Fix A: keep model loaded between turns (card 0047 F-B: must be 30m)
-        "options":    {"temperature": 0.7, "num_predict": 256, "num_ctx": 4096},
+        "options":    {"temperature": 0.7, "num_predict": 256, "num_ctx": 8192},  # CT0031 Fix C: 4096 truncated the full prompt; 8192 matches the trimmed+prepended payload budget
     }).encode()
     req = _ureq.Request(
         f"{host}/api/chat",
