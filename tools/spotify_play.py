@@ -531,8 +531,13 @@ def execute(text: str) -> dict | None:
                                                      "state": state}, error))
 
 
-_PLAY_MUSIC_RE = re.compile(r"^(?:(?:can|could|would)\s+you\s+)?(?:please\s+)?(?:play|put\s+on)\s+"
-                            r"(?:some\s+)?(?:music|something|anything|a\s+tune|tunes)\b", re.I)
+# WO-B3-0013: filler fix so David's natural wording still fires generic play.
+# Before this, "play me some music", "just play something", "can you just play
+# music" all missed the regex, fell past the handler, and the LLM silent-acked
+# ("Got it") with no playback — the P0 bug in START_HERE Track C.
+_PLAY_MUSIC_RE = re.compile(r"^(?:(?:can|could|would)\s+you\s+)?(?:(?:just|please)\s+)*"
+                            r"(?:play|put\s+on)\s+(?:me\s+)?(?:some\s+|a\s+|the\s+)?"
+                            r"(?:music|something|anything|tune|tunes)\b", re.I)
 
 
 def play_music() -> tuple[str, str]:
