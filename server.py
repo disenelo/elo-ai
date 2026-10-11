@@ -6459,7 +6459,10 @@ def _process_turn(raw: str) -> dict:
                     # and does not belong on every turn. This is just what was said.
                     if _cw:
                         _arc_lines = []
-                        for _t in _cw[-8:]:
+                        # WO-B1-0116: 20 turns so David can reference things said earlier
+                        # in the session without re-stating them. Each turn is ≤300 chars;
+                        # 20 turns ≈ 6000 chars — within prompt budget.
+                        for _t in _cw[-20:]:
                             if _t.get("user"):
                                 _arc_lines.append(f"David: {_t['user'][:150]}")
                             if _t.get("elo"):

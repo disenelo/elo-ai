@@ -11,7 +11,7 @@ import re
 
 # ── Session window — last N turns in memory ───────────────────────────────────
 _SESSION_WINDOW: list[dict] = []
-_MAX_WINDOW = 12
+_MAX_WINDOW = 25  # WO-B1-0116: expanded from 12 so 20-turn session recall works
 
 # ── Active project/entity tracking ───────────────────────────────────────────
 _active_project: str = ""
