@@ -158,8 +158,15 @@ def _run_nrem_phase(symbols: list[dict], recent_topics: list[str]) -> dict:
     # symbol's source as "topic:<text>" or "thread:<text>". A strong symbol
     # built from a topic IS a reference to the memory that fed the dream, so
     # read it from there instead of trying to re-derive it by substring.
+    # Over ALL symbols, not just `strong`. The 1.2 bar measures how heavily a
+    # symbol consolidated, which is a different question from what the dream
+    # was made of. It was also calibrated when repeated ambient events stacked
+    # (0.9 x 4 = 3.6); with that fixed, a topic symbol sits at 1.0 and nothing
+    # topic-derived clears 1.2, so gating refs on `strong` left memory_refs
+    # empty exactly as before. A symbol sourced from a topic or thread is a
+    # memory this dream used, at whatever weight.
     memory_refs = []
-    for sym in strong:
+    for sym in symbols:
         kind, _, ref = str(sym.get("source") or "").partition(":")
         ref = ref.strip()
         if kind in ("topic", "thread") and ref and ref not in memory_refs:
