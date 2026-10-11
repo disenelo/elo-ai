@@ -762,7 +762,7 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
     host  = os.environ.get("ELO_OLLAMA_HOST",  "http://localhost:11434").rstrip("/")
     # ALEXA-MODEL-OVERRIDE: thread-local set by Alexa handler wins over env var,
     # so Alexa replies reuse mistral-nemo:12b already warm from inner thought.
-    model = getattr(_per_turn, "ollama_model", None) or os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
+    model = getattr(_per_turn, "ollama_model", None) or os.environ.get("ELO_OLLAMA_MODEL", "qwen2.5-coder:14b")
     # WO-OLLAMA-SPEED-001: trim system prompt for local inference speed.
     # llama3.2:3b evaluates ~150 tok/sec; 12000 chars ≈ 3000 tok → ~20s prompt eval.
     _SP_MAX = int(os.environ.get("ELO_OLLAMA_SP_MAX", "12000"))
@@ -1226,7 +1226,7 @@ def _ollama_stream(
     import urllib.request as _ureq, json as _json, time as _t
     host  = os.environ.get("ELO_OLLAMA_HOST",  "http://localhost:11434").rstrip("/")
     # ALEXA-MODEL-OVERRIDE: the live reply path is this stream — same override as _ollama_call.
-    model = getattr(_per_turn, "ollama_model", None) or os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
+    model = getattr(_per_turn, "ollama_model", None) or os.environ.get("ELO_OLLAMA_MODEL", "qwen2.5-coder:14b")
     # WO-002: llama3.1:8b treats long system prompts as documents to analyze.
     # Fix: use only identity anchor + 3-sentence behavior rules + grounding block (FIRST) + respond.
     # Grounding goes BEFORE behavior rules so subject/pronoun resolution is highest-signal.
@@ -2324,7 +2324,7 @@ def _ollama_available() -> bool:
     try:
         import urllib.request as _ureq, json as _json
         host  = os.environ.get("ELO_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
-        model = os.environ.get("ELO_OLLAMA_MODEL", "llama3.1:8b")
+        model = os.environ.get("ELO_OLLAMA_MODEL", "qwen2.5-coder:14b")
         with _ureq.urlopen(f"{host}/api/tags", timeout=2) as _r:
             if _r.status != 200:
                 _ollama_probe_cache.update({"result": False, "ts": _now})

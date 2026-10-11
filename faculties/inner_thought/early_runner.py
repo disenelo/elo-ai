@@ -86,9 +86,15 @@ class ThoughtInFlight:
         """
         The thought, if it formed in time. "" otherwise.
 
-        Idempotent: assembly may ask more than once and a late thought is
-        never attached to a second turn, because the first collect consumes
-        it.
+        Idempotent: once the thread has completed and the result is consumed,
+        subsequent calls return "". A call where the thread is STILL RUNNING
+        (timeout hit) returns "" WITHOUT consuming the ticket — a later caller
+        with more time may still get the result.
+
+        This non-destructive timeout behaviour is intentional: the pre-spine
+        collect (0.35 s) runs long before Ollama finishes; consuming the ticket
+        there permanently prevented the post-response daemon from ever seeing
+        the thought.
         """
         if self._collected:
             return ""
@@ -96,13 +102,16 @@ class ThoughtInFlight:
         if self._thread is not None:
             self._thread.join(timeout=wait)
             if self._thread.is_alive():
-                self._collected = True
+                # Thread not done yet — don't consume the ticket.
+                # A later caller (the post-response daemon, which has had the
+                # full reply-generation window to wait) will collect it there.
                 _log.info(
-                    "inner thought still forming after %.0fms — turn ships "
-                    "without one (asked: %r)",
+                    "inner thought still forming after %.0fms — caller skips, "
+                    "ticket preserved (asked: %r)",
                     (time.time() - self._started) * 1000, self._asked[:60],
                 )
                 return ""
+        # Thread is done (or was never started). Consume the ticket now.
         self._collected = True
         if self._result:
             _log.info("inner thought formed in %.0fms",

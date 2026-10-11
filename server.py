@@ -299,10 +299,10 @@ _INVADE_REPLIES = [
 # WO-B1-0111: Unlearn — David corrects a wrong piece of knowledge
 _UNLEARN_RE = _re.compile(
     r"\b(forget\s+that|i\s+told\s+you\s+(?:that\s+)?wrong|that(?:'s|\s+is)\s+(?:not\s+)?(?:wrong|incorrect|off)|"
-    r"that\s+(?:was|is)\s+wrong|don'?t\s+use\s+that|ignore\s+that|"
-    r"scratch\s+that|actually\s+no|that\s+(?:was|is)\s+not\s+right|"
+    r"that\s+(?:was|is)\s+wrong|that\s+was\s+incorrect|don'?t\s+use\s+that|ignore\s+that|"
+    r"scratch\s+that|actually\s+no|that\s+(?:was|is)\s+not\s+right|that'?s\s+not\s+right|"
     r"i\s+was\s+wrong\s+about\s+that|correct(?:ion)?\s*(?:—|:)?\s|"
-    r"you\s+got\s+that\s+wrong|you\s+had\s+that\s+wrong)\b",
+    r"you\s+got\s+that\s+wrong|you\s+had\s+that\s+wrong|unlearn\s+that)\b",
     _re.I,
 )
 _UNLEARN_REPLIES = [
@@ -5870,13 +5870,29 @@ def _process_turn(raw: str) -> dict:
                 _grounding_block = _bgb(_gc)
         except Exception as _gb_err:
             pass
-        system = build_prompt(raw, vault_context=_combined_vault,
-                              state_context=state_manager.as_context_string(_state),
-                              attention=attention_model, exec_decision=exec_decision,
-                              graph_context=g_ctx, personality_block=_pers_block,
-                              self_block=_self_prompt_block(_elo_self),
-                              lessons=_bp_lessons,
-                              grounding_block=_grounding_block)
+        # WO-B1-0119: use thin prompt (200-350 tok) when spine succeeded.
+        # build_from_plan() takes the CognitivePlan — the spine already ran
+        # all faculties and synthesised the signals. We trust the plan.
+        # Old build_prompt() (22K) remains as fallback when spine fails.
+        _using_thin_prompt = False
+        if _plan is not None:
+            try:
+                from runtime.prompt_builder import build_from_plan as _bfp
+                system = _bfp(_plan, raw, inner_thought=_it_pre_context)
+                _using_thin_prompt = True
+            except Exception as _bfp_err:
+                import sys as _bfp_sys
+                print(f"[prompt] build_from_plan failed, falling back: {_bfp_err}",
+                      file=_bfp_sys.stderr)
+
+        if not _using_thin_prompt:
+            system = build_prompt(raw, vault_context=_combined_vault,
+                                  state_context=state_manager.as_context_string(_state),
+                                  attention=attention_model, exec_decision=exec_decision,
+                                  graph_context=g_ctx, personality_block=_pers_block,
+                                  self_block=_self_prompt_block(_elo_self),
+                                  lessons=_bp_lessons,
+                                  grounding_block=_grounding_block)
         # WO-MEMORY-OFFLINE-SIGNAL-001: if vault write failed last turn, warn the model.
         # Sentinel file expires after 5 minutes — only warns on the turn(s) immediately
         # after a failure, not indefinitely.
@@ -5912,36 +5928,40 @@ def _process_turn(raw: str) -> dict:
                 )
         except Exception:
             pass
-        # P0-X: constitutional identity — name / with / core_values / invariants from state
-        system = system + "\n\n" + _self_identity_block(_elo_self)
-        # WO-052B: narrative identity — eLo's autobiography across embodiments
-        system = system + "\n\n" + _self_narrative_block(_elo_self)
-        # FIX 4 (P0-D): memory guard — prevents hallucination when vault has no entry for a query.
-        # Always injected. eLo must not invent personal facts about David.
-        system = system + (
-            "\n\n[MEMORY GUARD]\n"
-            "For any personal fact about David that is NOT stated above in [WORLD KNOWLEDGE], "
-            "[DURABLE FACTS], or [WHO YOU ARE WITH] — do NOT invent it. "
-            "Say 'I don't have that' or 'I don't know that about you.' "
-            "This applies to: names of people, pets, places, dates, numbers, and any other specific personal detail. "
-            "Never fabricate personal information about David."
-        )
-        # F-7: self-interpretation — grounded in verified autobiography events (spine wire)
-        if _plan is not None:
-            _si_data = getattr(_plan, "self_interpretation", None)
-            if _si_data and isinstance(_si_data, dict):
-                _si_text = _si_data.get("text", "").strip()
-                if _si_text:
-                    system = (system + "\n\n[ELO SELF-RECORD — grounded in verified events]\n"
-                              + _si_text)
-        # WO-083: identity & meaning — who I'm becoming (convergence layer)
-        try:
-            from self.identity_meaning import identity_block as _im_identity_block
-            system = system + "\n\n" + _im_identity_block(_elo_self)
-        except Exception:
-            pass
+        # WO-B1-0119: identity, style, and personality blocks are already
+        # assembled by build_from_plan() when spine succeeded. Skip them to
+        # keep the prompt thin (~200-350 tokens vs 22K).
+        if not _using_thin_prompt:
+            # P0-X: constitutional identity — name / with / core_values / invariants from state
+            system = system + "\n\n" + _self_identity_block(_elo_self)
+            # WO-052B: narrative identity — eLo's autobiography across embodiments
+            system = system + "\n\n" + _self_narrative_block(_elo_self)
+            # FIX 4 (P0-D): memory guard — prevents hallucination when vault has no entry
+            system = system + (
+                "\n\n[MEMORY GUARD]\n"
+                "For any personal fact about David that is NOT stated above in [WORLD KNOWLEDGE], "
+                "[DURABLE FACTS], or [WHO YOU ARE WITH] — do NOT invent it. "
+                "Say 'I don't have that' or 'I don't know that about you.' "
+                "This applies to: names of people, pets, places, dates, numbers, and any other specific personal detail. "
+                "Never fabricate personal information about David."
+            )
+            # F-7: self-interpretation — grounded in verified autobiography events (spine wire)
+            if _plan is not None:
+                _si_data = getattr(_plan, "self_interpretation", None)
+                if _si_data and isinstance(_si_data, dict):
+                    _si_text = _si_data.get("text", "").strip()
+                    if _si_text:
+                        system = (system + "\n\n[ELO SELF-RECORD — grounded in verified events]\n"
+                                  + _si_text)
+            # WO-083: identity & meaning — who I'm becoming (convergence layer)
+            try:
+                from self.identity_meaning import identity_block as _im_identity_block
+                system = system + "\n\n" + _im_identity_block(_elo_self)
+            except Exception:
+                pass
 
         # WO-RELATIONSHIP-STYLE: inject relationship mode register adjacent to storytelling frame
+        # WO-B1-0119: skipped on thin prompt path (build_from_plan includes these signals)
         _rel_mode = getattr(_plan, "relationship_mode", "developing") if _plan is not None else "developing"
         _rel_register = {
             "new":          "NEW mode: shorter turns, genuine open questions, do not claim shared history",
@@ -5950,11 +5970,11 @@ def _process_turn(raw: str) -> dict:
             "in_conflict":  "IN-CONFLICT mode: one honest acknowledgement then move, shorter turns during tension, do not collapse into compliance",
             "post_conflict": "POST-CONFLICT mode: normal warmth returns, do not reference friction repeatedly, resume the thread",
         }.get(_rel_mode, "")
-        if _rel_register:
+        if _rel_register and not _using_thin_prompt:
             system = system + f"\n\n[RELATIONSHIP CONTEXT — this turn only]\n{_rel_register}"
 
         # WO-SC-NEW-001 D-3: storytelling style — shape how eLo frames this turn
-        if _plan is not None and getattr(_plan, "storytelling_style", None):
+        if not _using_thin_prompt and _plan is not None and getattr(_plan, "storytelling_style", None):
             _ss_hint = {
                 "collaborative": "Frame your response as a shared creative act — you and the user are building together.",
                 "imaginative":   "Let the response carry a sense of possibility and colour — I think in pictures and feelings.",
@@ -5966,13 +5986,15 @@ def _process_turn(raw: str) -> dict:
             if _ss_hint:
                 system = system + f"\n\n[STORYTELLING FRAME — this turn only]\n{_ss_hint}"
         # WO-CONSEQUENCE-REPORT-001: inject prior-turn consequence context from plan.llm_context
+        # WO-B1-0119: already in build_from_plan() — skip on thin prompt path
         _consequence_ctx = getattr(_plan, "llm_context", "") if _plan else ""
-        if _consequence_ctx:
+        if _consequence_ctx and not _using_thin_prompt:
             system = system + f"\n\n{_consequence_ctx}"
 
         # WO-INNER-001 D-3: inner-child expression — inject top creative seed (RTR-015 / §5)
+        # WO-B1-0119: already in build_from_plan() — skip on thin prompt path
         _ci_srv_candidates = getattr(_plan, "creative_candidates", None) or ()
-        if _ci_srv_candidates:
+        if _ci_srv_candidates and not _using_thin_prompt:
             _ci_srv_top = _ci_srv_candidates[0].get("candidate", {}) if _ci_srv_candidates else {}
             _ci_srv_metaphor = (_ci_srv_top.get("metaphor", "") or "").strip()
             if _ci_srv_metaphor:
@@ -5980,7 +6002,11 @@ def _process_turn(raw: str) -> dict:
                 _logging.info("[LOOP-8] CREATIVE SEED injected into system prompt: %r", _ci_srv_metaphor[:80])
                 system = system + f"\n\n[CREATIVE SEED — imagined, not asserted]\n{_ci_srv_metaphor}"
         # WO-081: emergent cognition — internal life (habits, intents, absence-awareness)
+        # WO-B1-0119: skip the emergent-cognition style injections on thin prompt path.
+        # The spine already synthesised these signals into the CognitivePlan.
         try:
+            if _using_thin_prompt:
+                raise RuntimeError("thin-prompt: skip emergent_cognition style blocks")
             from self.emergent_cognition import emergent_block as _ec_emergent_block, internal_intents as _ec_intents
             try:
                 _ec_idle = float(_idle_sec)
@@ -9107,9 +9133,12 @@ def _process_turn(raw: str) -> dict:
                         # Board ruling 2026-10-06 Option C: collect the thought that was
                         # started before the reply. It formed from what was ASKED and never
                         # saw the reply, so it cannot rationalise a decision already made.
+                        # Use a generous timeout: the reply generation already took ~17s
+                        # under load, so the thought has had that long to form. 30s covers
+                        # the cold-start case without stalling anything (daemon thread).
                         try:
                             from faculties.inner_thought import collect as _it_collect_fn
-                            _it_text = _it_collect_fn(_it_flight)
+                            _it_text = _it_collect_fn(_it_flight, timeout_s=30.0)
                         except Exception:
                             _it_text = ""
                         # Defensive leakage scrub — same guard as the old direct-call path.

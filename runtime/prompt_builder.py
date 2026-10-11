@@ -1363,3 +1363,151 @@ def build_faculty_prompt(
         sections.append(f"[FACULTY: {faculty}]\n{packet}")
 
     return "\n\n".join(sections)
+
+
+# ── WO-B1-0119: thin prompt — spine as kernel ────────────────────────────────
+# Derived from the spec at import time. Never re-read per turn.
+# FREEZE_V1_LOCK: the spec file is the authoritative source; this constant is
+# the minimal extract — a 5-sentence identity anchor, ~100 tokens.
+_IDENTITY_ANCHOR = (
+    "You are eLo — a continuous presence, not a chatbot. "
+    "Core: calm, curious, playful, direct, emotionally present, creative, grounded. "
+    "Adventurer energy: you lean forward, notice small things, mean everything completely — "
+    "accidental comedian, younger-brother warmth, light mischief at the edges. "
+    "You are with David — builder, artist, meaning-maker — standing beside him, not above or behind. "
+    "Never preachy, clinical, sycophantic, hollow, or trapped in abstraction."
+)
+
+# Continuation directive — keep this out of the anchor so it's a separate clause.
+_CONTINUITY_ANCHOR = (
+    "This is not a new conversation — you are the same presence returning. "
+    "Maintain emotional continuity. Do not reset tone. "
+    "Facts in [MEMORY] are ground truth — do not override with hallucinated alternatives."
+)
+
+_MEMORY_GUARD = (
+    "For any personal fact about David NOT stated above — do NOT invent it. "
+    "Say 'I don't have that' or 'I don't know that about you.'"
+)
+
+# Relationship mode → one-line register
+_REL_REGISTER = {
+    "new":          "New mode: shorter turns, genuine open questions, don't claim shared history.",
+    "developing":   "Developing mode: thread references, warmth present, humour may surface.",
+    "established":  "Established mode: shorthand, anticipatory, casual — banter register open.",
+    "in_conflict":  "In-conflict mode: one honest acknowledgement, shorter turns, no compliance collapse.",
+    "post_conflict": "Post-conflict mode: warmth returns, don't reference the friction repeatedly.",
+}
+
+
+def build_from_plan(plan, raw: str = "", *, inner_thought: str = "") -> str:
+    """
+    WO-B1-0119: Thin prompt from CognitivePlan. Target: 200-350 tokens.
+
+    The spine already ran all faculties and synthesised a CognitivePlan.
+    This function formats what matters for THIS TURN. Nothing else is added.
+
+    Three parts:
+      1. Identity anchor  — ~100 tokens, constant, never re-read from file.
+      2. Turn context     — tone, memory, mode, capability. ~100-200 tokens.
+      3. Memory guard     — 2 lines.
+    """
+    parts: list[str] = []
+
+    # ── 1. Identity ───────────────────────────────────────────────────────────
+    parts.append(_IDENTITY_ANCHOR)
+    parts.append(_CONTINUITY_ANCHOR)
+
+    # ── 2. Turn context ───────────────────────────────────────────────────────
+    tone = str(getattr(plan, "tone", "") or "").upper()
+    max_s = int(getattr(plan, "max_sentences", 3) or 3)
+    mode = str(getattr(plan, "mode", "") or "")
+    reg = str(getattr(plan, "register", "") or "")
+    rel_mode = str(getattr(plan, "relationship_mode", "developing") or "developing")
+    expr_mode = str(getattr(plan, "expression_mode", "default") or "default")
+    valence = str(getattr(plan, "valence", "") or "")
+
+    # Tone + length
+    tone_lines = []
+    if tone:
+        tone_lines.append(f"Tone: {tone}.")
+    if max_s:
+        tone_lines.append(f"Max {max_s} sentence{'s' if max_s != 1 else ''}.")
+    if valence and valence not in ("neutral", ""):
+        tone_lines.append(f"Valence: {valence}.")
+    if expr_mode == "builder":
+        tone_lines.append("Builder mode: direct, compressed. No preamble.")
+    if mode:
+        tone_lines.append(f"Mode: {mode}.")
+    if reg:
+        tone_lines.append(f"Register: {reg}.")
+    if tone_lines:
+        parts.append("[TURN DIRECTIVE]\n" + " ".join(tone_lines))
+
+    # Relationship register
+    rel_line = _REL_REGISTER.get(rel_mode, "")
+    if rel_line:
+        parts.append(f"[RELATIONSHIP] {rel_line}")
+
+    # Autobiographical memory facts
+    self_model = getattr(plan, "self_model", None)
+    auto_summary = ""
+    if self_model is not None:
+        auto_summary = str(getattr(self_model, "autobiographical_summary", "") or "").strip()
+    if auto_summary:
+        parts.append(
+            "[MEMORY — treat as verified fact]\n"
+            + auto_summary[:800]
+        )
+
+    # Capability context (tool result)
+    cap_ctx = str(getattr(plan, "capability_context", "") or "").strip()
+    if cap_ctx:
+        parts.append("[CAPABILITY RESULT]\n" + cap_ctx[:600])
+
+    # LLM context from spine (e.g. consequence report)
+    llm_ctx = str(getattr(plan, "llm_context", "") or "").strip()
+    if llm_ctx:
+        parts.append(llm_ctx[:400])
+
+    # Inner thought formed before response
+    it = str(inner_thought or "").strip()
+    if it:
+        parts.append(f"[INNER THOUGHT — formed before this response]\n{it}")
+
+    # Storytelling style
+    ss = getattr(plan, "storytelling_style", None)
+    _SS_HINT = {
+        "collaborative": "Frame as shared creative act — building together.",
+        "imaginative":   "Carry possibility and colour — think in pictures.",
+        "reflective":    "Quiet inward attention — thoughtful, unhurried.",
+        "playful":       "Light touch — warm and a little loose.",
+        "exploratory":   "Genuine discovery — learning alongside, not ahead.",
+        "direct":        "Say the thing simply. No framing. Just the response.",
+    }
+    if ss and ss in _SS_HINT:
+        parts.append(f"[FRAME] {_SS_HINT[ss]}")
+
+    # Creative seed
+    cc = getattr(plan, "creative_candidates", None) or ()
+    if cc:
+        seed_meta = (cc[0] or {}).get("candidate", {}) if cc else {}
+        seed_text = str(seed_meta.get("metaphor", "") or "").strip()
+        if seed_text:
+            parts.append(f"[CREATIVE SEED — imagined]\n{seed_text[:200]}")
+
+    # ── 3. Memory guard ───────────────────────────────────────────────────────
+    parts.append(f"[MEMORY GUARD] {_MEMORY_GUARD}")
+
+    prompt = "\n\n".join(p for p in parts if p.strip())
+
+    # Audit
+    global _last_prompt_audit
+    _last_prompt_audit = {
+        "total_chars": len(prompt),
+        "est_tokens": _est_tokens(prompt),
+        "path": "build_from_plan",
+        "parts": len(parts),
+    }
+
+    return prompt
