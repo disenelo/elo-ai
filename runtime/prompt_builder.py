@@ -541,14 +541,17 @@ def build(
     # be framed as non-negotiable: this is how eLo speaks." Moving to position 1
     # so it is the first instruction the model reads — survives context pressure,
     # not an optional style suggestion appended after core identity.
+    # WO-B1-0108: pass action + reason so FACT-tier turns get the plain register
+    # block (no slang on top of a time, number, or tool result).
+    _action = (exec_decision or {}).get("action", "reflect")
+    _reason = (exec_decision or {}).get("reason", "")
     try:
         from runtime.voice_register import get_register_block as _grb
-        _push("voice_register", _grb())
+        _push("voice_register", _grb(action=_action, reason=_reason))
     except Exception:
         pass
 
     # WO-PROMPT-SIZE-001: inject only universal + active planet section (not all 11 modes)
-    _action = (exec_decision or {}).get("action", "reflect")
     _spec_full = load_living_presence_spec()
     _spec_sliced = _slice_spec_for_action(_spec_full, _action)
     _push("living_presence_spec", _spec_sliced)
