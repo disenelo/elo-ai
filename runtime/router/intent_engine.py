@@ -25,7 +25,7 @@ _INTENT_PATTERNS: list[tuple[str, list[str]]] = [
     ("memory", [
         r"\b(?:what|what's)\s+(?:did\s+i|i)\s+(?:say|tell|write|mention|talk)\b",
         r"\bwhat\s+(?:were\s+)?(?:we|i)\s+(?:working\s+on|talking\s+about|building)\b",
-        r"\bremember\s+(?:when|what|that)\b",
+        r"\bremember\s+(?:when|what)\b",
         r"\bwhat\s+(?:was|were)\s+(?:i|we|the)\b.*\b(?:earlier|before|last\s+time|yesterday)\b",
         r"\bwhat\s+did\s+(?:i|we)\s+(?:say|write|build|make|work\s+on)\b",
         r"\bmy\s+(?:notes?|journal|vault|obsidian)\b",
