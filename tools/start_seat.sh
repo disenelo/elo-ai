@@ -1,68 +1,57 @@
 #!/usr/bin/env bash
-# start_seat.sh — loop until queue empty, seat-locked.
-# Usage: bash tools/start_seat.sh [seat]
-# Seats: builder | builder2 | builder3 | board
-set -uo pipefail
+# tools/start_seat.sh — WO-B1-0112: Seat session trigger script
+#
+# Usage: bash tools/start_seat.sh <seat> [source_file]
+#
+# Writes a START signal file to the seat's inbox so the seat picks it up
+# at next session open. Logs the event to tools/watchdog.log.
+#
+# To auto-launch Claude Code sessions, add your preferred invocation below
+# the "MANUAL LAUNCH POINT" comment. The watchdog calls this script but does
+# not prescribe the exact claude CLI flags — those depend on your setup.
+#
+# Author: Builder 1 · 2026-10-11
 
-SEAT="${1:-builder}"
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-LOG_DIR="${REPO_ROOT}/data"
-LOCK_DIR="${REPO_ROOT}/locks"
-mkdir -p "${LOG_DIR}" "${LOCK_DIR}"
-LOG_FILE="${LOG_DIR}/watchdog_seat_runs.log"
-SEAT_LOCK="${LOCK_DIR}/seat_${SEAT}.lock"
+set -euo pipefail
 
-# ── Seat lock: one session per seat at a time ─────────────────────────────────
-if [[ -f "${SEAT_LOCK}" ]]; then
-    echo "[start_seat] $(date '+%Y-%m-%d %H:%M:%S') SKIP ${SEAT} — already running ($(cat "${SEAT_LOCK}"))" >> "${LOG_FILE}"
-    echo "[start_seat] ${SEAT} already running. Exiting." >&2; exit 0
+SEAT="${1:-}"
+SOURCE_FILE="${2:-}"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+AGENT_BUS="$ROOT/blender/agent_bus"
+LOG="$ROOT/tools/watchdog.log"
+
+if [[ -z "$SEAT" ]]; then
+    echo "Usage: $0 <seat> [source_file]" >&2
+    exit 1
 fi
-printf "seat=%s pid=%s started=%s" "${SEAT}" "$$" "$(date '+%Y-%m-%d %H:%M:%S')" > "${SEAT_LOCK}"
-trap 'rm -f "${SEAT_LOCK}"; echo "[start_seat] $(date +%Y-%m-%d\ %H:%M:%S) EXIT ${SEAT} pid=$$" >> "${LOG_FILE}"' EXIT
 
-# ── Per-seat inbox + prompt ───────────────────────────────────────────────────
-case "${SEAT}" in
-  builder)  INBOX_DIR="${REPO_ROOT}/blender/agent_bus/builder" ;;
-  builder2) INBOX_DIR="${REPO_ROOT}/blender/agent_bus/builder2" ;;
-  builder3) INBOX_DIR="${REPO_ROOT}/blender/agent_bus/builder3" ;;
-  board)    INBOX_DIR="${REPO_ROOT}/blender/agent_bus/builder" ;;
-  *)
-    echo "[start_seat] Unknown seat '${SEAT}'. Valid: builder builder2 builder3 board" >&2; exit 1
-    ;;
-esac
+INBOX="$AGENT_BUS/$SEAT"
+mkdir -p "$INBOX"
 
-echo "[start_seat] $(date '+%Y-%m-%d %H:%M:%S') ${SEAT} — running until queue empty"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+TRIGGER_FILE="$INBOX/TRIGGER_$(date '+%Y%m%d_%H%M%S')_watchdog.md"
 
-# ── Main loop ─────────────────────────────────────────────────────────────────
-# No subprocess. No claude --print. The script surfaces the next FROM_BOARD
-# card to the seat's existing terminal session — the seat reads it and acts.
-# A card is consumed (moved to processed/) after being surfaced, so it cannot
-# retrigger. Ctrl+C stops the loop. [DAVID 2026-10-10]
-PROCESSED_DIR="${INBOX_DIR}/processed"
-mkdir -p "${PROCESSED_DIR}"
+cat > "$TRIGGER_FILE" <<EOF
+# Auto-trigger from watchdog
+**Seat:** $SEAT
+**Triggered:** $TIMESTAMP
+**Source file:** ${SOURCE_FILE:-<intake drop>}
 
-while true; do
-    # Oldest-first: tail -1 of ls -t (newest first) gives oldest
-    JOB=$(ls -t "${INBOX_DIR}"/FROM_BOARD_*.md 2>/dev/null | tail -1)
+Watchdog detected a new file. Read your inbox and pick the highest-priority
+unstarted card. One card. Commit. File to Board. Exit.
+EOF
 
-    if [[ -z "${JOB}" ]]; then
-        echo "[start_seat] $(date '+%Y-%m-%d %H:%M:%S') ${SEAT} — inbox empty. Waiting..."
-        sleep 10
-        continue
-    fi
+echo "[$TIMESTAMP] TRIGGER written → $TRIGGER_FILE" >> "$LOG"
 
-    CARD_NAME="${JOB##*/}"
-    echo "[start_seat] $(date '+%Y-%m-%d %H:%M:%S') ${SEAT} — found: ${CARD_NAME}"
-    echo "[start_seat] $(date '+%Y-%m-%d %H:%M:%S') DISPATCH ${SEAT} ${CARD_NAME}" >> "${LOG_FILE}"
+# ── MANUAL LAUNCH POINT ────────────────────────────────────────────────────
+# To auto-launch a Claude Code session, add your invocation here.
+# Example (uncomment and adjust flags to your setup):
+#
+#   PROMPT="Check inbox at $INBOX/ for TRIGGER_* files. Pick highest-priority card. Do it. Commit. File to board_review/. Stop."
+#   claude --print "$PROMPT" >> "$LOG" 2>&1 &
+#   echo "[$TIMESTAMP] claude session launched for $SEAT (PID $!)" >> "$LOG"
+#
+# Leave commented out to rely on trigger files only (manual session pickup).
+# ──────────────────────────────────────────────────────────────────────────
 
-    # Surface the job file to this terminal — seat reads and acts inline.
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    cat "${JOB}"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-    mv "${JOB}" "${PROCESSED_DIR}/${CARD_NAME}"
-    echo "[start_seat] $(date '+%Y-%m-%d %H:%M:%S') ${SEAT} — ${CARD_NAME} moved to processed/"
-    echo "[start_seat] $(date '+%Y-%m-%d %H:%M:%S') DONE ${SEAT} ${CARD_NAME}" >> "${LOG_FILE}"
-
-    sleep 5
-done
+echo "Trigger written to $TRIGGER_FILE"
