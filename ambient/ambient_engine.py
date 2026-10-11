@@ -780,19 +780,47 @@ def _maybe_emit_dream_intent(battery_snapshot: dict, blender_state: dict) -> dic
         # Gate: do not enter dream while David is actively in conversation.
         # If a message arrived in the last 5 minutes, daemon state is AWAKE —
         # triggering dream while David is typing is the sit→dream bug (2026-10-09).
+        # The question is whether DAVID spoke recently, not whether the daemon
+        # started recently. A fresh EloDaemon reports last_request_ts = its own
+        # construction time and state AWAKE, so asking it alone means no dream
+        # can fire for five minutes after every daemon start -- and the gate
+        # only began evaluating at all when Builder 1 added status() in
+        # 3a08e47, before which the AttributeError was swallowed and the gate
+        # was a silent no-op.
+        #
+        # `last_user_ts` is the real signal: server.py publishes it when David
+        # actually speaks. Prefer it, and fall back to the daemon only when it
+        # is absent.
+        _idle_s = None
         try:
-            from runtime.elo_daemon import get_daemon as _get_daemon
-            _d_status = _get_daemon().status()
-            _idle_s = now - float(_d_status.get("last_request_ts", 0) or 0)
-            if _idle_s < 300:
-                return {}
+            _last_user = (blender_state or {}).get("last_user_ts")
+            if _last_user is not None:
+                _idle_s = now - float(_last_user)
         except Exception:
-            pass
+            _idle_s = None
+        if _idle_s is None:
+            try:
+                from runtime.elo_daemon import get_daemon as _get_daemon
+                _d_status = _get_daemon().status()
+                _raw_ts = float(_d_status.get("last_request_ts", 0) or 0)
+                # A daemon that has NEVER served a request stamps
+                # last_request_ts at construction, so asking it reads as
+                # "David just spoke" when nobody has. tick_count == 1 is that
+                # daemon. Absent means a caller supplied a partial status, in
+                # which case the timestamp it did supply is taken at face
+                # value -- the default is 2, not 0, so a partial status still
+                # suppresses.
+                if _raw_ts and int(_d_status.get("tick_count", 2) or 2) > 1:
+                    _idle_s = now - _raw_ts
+            except Exception:
+                _idle_s = None
+        if _idle_s is not None and _idle_s < 300:
+            return {}
         _dream_trigger_ts = now
         import logging as _dt_log
         _dt_log.getLogger("elo.health").info(
             "CHAIN-3: elo_battery=%.3f <= %.3f in calm, idle %.0fs — emitting intent=dream",
-            elo_battery, _ENERGY_LOW, _idle_s if "_idle_s" in dir() else 0,
+            elo_battery, _ENERGY_LOW, (_idle_s if _idle_s is not None else -1),
         )
         return {"intent": "dream"}
     except Exception:
