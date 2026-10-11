@@ -296,6 +296,23 @@ _INVADE_REPLIES = [
     "Wave sent.",
 ]
 
+# WO-B1-0111: Unlearn — David corrects a wrong piece of knowledge
+_UNLEARN_RE = _re.compile(
+    r"\b(forget\s+that|i\s+told\s+you\s+(?:that\s+)?wrong|that(?:'s|\s+is)\s+(?:not\s+)?(?:wrong|incorrect|off)|"
+    r"that\s+(?:was|is)\s+wrong|don'?t\s+use\s+that|ignore\s+that|"
+    r"scratch\s+that|actually\s+no|that\s+(?:was|is)\s+not\s+right|"
+    r"i\s+was\s+wrong\s+about\s+that|correct(?:ion)?\s*(?:—|:)?\s|"
+    r"you\s+got\s+that\s+wrong|you\s+had\s+that\s+wrong)\b",
+    _re.I,
+)
+_UNLEARN_REPLIES = [
+    "Got it — I had that wrong. Won't use it again.",
+    "Aight, I'll forget that. Cheers for the correction.",
+    "Noted — updated. I had that off.",
+    "Safe, I'll drop that one.",
+    "My bad on that one. Sorted now.",
+]
+
 _SCALE_UP_RE   = _re.compile(r'\b(get bigger|get larger|make yourself bigger|size up|bigger please|larger please|scale up|a\s+(?:little\s+)?bit\s+bigger|become bigger|grow\s+a\s+bit|a\s+tiny\s+bit\s+bigger)\b', _re.I)
 _SCALE_DOWN_RE = _re.compile(r'\b(get smaller|shrink|make yourself smaller|size down|smaller please|scale down|get tiny|get tinier|a\s+(?:little\s+)?bit\s+smaller|become smaller|shrink\s+a\s+(?:bit|little)|a\s+tiny\s+bit\s+smaller)\b', _re.I)
 _SCALE_REPLIES_UP   = ["There you go.", "Done.", "How's that?", "Growing.", "Better?"]
@@ -3461,6 +3478,34 @@ def _process_turn(raw: str) -> dict:
                 pass
             _bypass_journal(_original_raw, backend="scale_cmd", handler_class="EXECUTOR-FAST-PATH", line=1705)
             return {"response": _scale_reply, "mode": "direct", "backend": "scale_cmd"}
+
+        # ── WO-B1-0111: Unlearn — David corrects a wrong WKG claim ────────────
+        if _UNLEARN_RE.search(raw or ""):
+            _unlearn_count = 0
+            try:
+                from runtime.wkg_faculty import deprecate_recent_claims as _dep_claims
+                _unlearn_count = _dep_claims(reason="user_correction")
+            except Exception:
+                pass
+            _unlearn_reply = random.choice(_UNLEARN_REPLIES)
+            try:
+                import json as _ul_json, os as _ul_os, time as _ul_time
+                _dt_path = _ul_os.path.join(_ul_os.path.dirname(_ul_os.path.abspath(__file__)), "data", "decision_trace.jsonl")
+                with open(_dt_path, "a", encoding="utf-8") as _dtf:
+                    _dtf.write(_ul_json.dumps({
+                        "ts": _ul_time.time(), "event": "unlearn",
+                        "claims_deprecated": _unlearn_count, "raw": raw,
+                    }) + "\n")
+            except Exception:
+                pass
+            try:
+                if not _is_user_away():
+                    _voice_speak(_unlearn_reply)
+            except Exception:
+                pass
+            _bypass_journal(_original_raw, backend="unlearn_cmd", handler_class="EXECUTOR-FAST-PATH", line=0)
+            return {"response": _unlearn_reply, "mode": "direct", "backend": "unlearn_cmd",
+                    "claims_deprecated": _unlearn_count}
 
         # ── Invade / SpawnWave command — instant, no LLM needed ──────────────
         if _INVADE_RE.search(raw):
