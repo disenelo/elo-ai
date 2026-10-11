@@ -69,4 +69,7 @@ def emit(capability: str = "default", user_text: str = "") -> None:
         from voice.voice_engine import speak as _speak
         _speak(phrase)
     except Exception as _e:
-        _log.debug("pre_ack.emit failed (non-fatal): %s", _e)
+        # WO-105: safe to swallow — pre-ack is fire-and-forget; a missing phrase
+        # never blocks or degrades the main turn. Log at WARNING so failures are
+        # visible (not silent) without raising.
+        _log.warning("pre_ack.emit: TTS pre-ack failed — continuing without ack: %s", _e)
