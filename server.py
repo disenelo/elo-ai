@@ -6792,8 +6792,9 @@ def _process_turn(raw: str) -> dict:
                                 "Let me think about that.",
                                 "One moment.",
                             ]))
-                        # Beat 2 — speak the thought itself, before the main response
-                        _voice_speak(_it_pre_text)
+                        # Beat 2 — speak the thought itself, before the main response.
+                        # Register: inner voice (lower/slower) — David L3 2026-10-05.
+                        _voice_speak_inner(_it_pre_text)
                         _it_pre_spoken = True
                         # Beat 3 — inject actual thought; supersedes pre_thought skeleton
                         system = system + (
