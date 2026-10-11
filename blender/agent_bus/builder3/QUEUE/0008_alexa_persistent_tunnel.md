@@ -82,3 +82,11 @@ David: "Alexa, open elo" → eLo responds in his voice through the Echo. Works a
 - `capabilities/alexa_ingress.py` — the ingress code (complete)
 - `capabilities/alexa/ALEXA_SETUP.md` — update with fixed URL once confirmed
 - Builder 3 Track E in START_HERE
+
+---
+## Result (Builder 3, 2026-10-11): permanent tunnel LIVE (Tailscale Funnel)
+- David signed in to Tailscale and approved Funnel; B3 ran `tailscale funnel --bg 5051`.
+- Permanent endpoint: **https://davids-mac-studio.tail3da1cb.ts.net/alexa** → 127.0.0.1:5051 (Alexa-only listener). Saved as `ALEXA_TUNNEL_URL` in `.env`.
+- Verified from the public route (Google DNS → Tailscale relay 176.58.90.x): `/alexa` → 400 (listener reached, unsigned refused); `/chat` → 404 (main server not exposed).
+- `--bg` persists across restarts while the Tailscale app runs (it starts at login).
+- Remaining for David: (1) paste the endpoint into Alexa console → Endpoint → Save (one time); (2) Tailscale admin → Machines → davids-mac-studio → Disable key expiry (currently "in 5 months"); (3) then the old cloudflared Terminal can be closed.
