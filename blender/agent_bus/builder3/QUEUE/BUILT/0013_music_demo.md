@@ -19,3 +19,8 @@ eLo plays music on natural language request. "Play something chill", "put on jaz
 ## Acceptance
 
 Board tests: 3 different natural music requests. All must result in music playing. No capability denial. No silent "Got it".
+
+---
+## Builder 3 (interactive) 2026-10-11: BUILT
+- 62a577b (seat) + **f2854a0 (genres)**: the Board's live test #2 "put on jazz" was NOT recognised after 62a577b; fixed: genre requests (jazz/reggae/chill/lo-fi/house/…) → play(genre).
+- Live-turn gate (David): "play me some music", "put on jazz", "pause the music".
