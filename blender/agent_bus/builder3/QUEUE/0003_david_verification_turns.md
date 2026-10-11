@@ -62,3 +62,6 @@ Run under the server's python, offline. Actions stubbed (notes, location/fact wr
 ## Turn 9 corrected (David 2026-10-09: "Battery is eLo's health, not my battery"; "battery is for the robot, and battery for DISENELO Presence is health, connected but different via the embodiment")
 - "What's my battery?" / "What's your battery?" → eLo answers about **his own health** in Presence, in his own words (e.g. full / 100%). He may say that battery is his robot body's measure and the robot isn't connected. **Never the Mac's power.** (3cd600c, e817eab)
 - The old expected answer ("This Mac's on mains power…") was wrong. The Mac is only used when David names it ("my Mac's battery").
+
+## Re-check 2026-10-11 (B3, offline, today's code)
+- 10/10 B3 turns route correctly. Turn 9 now → eLo's health (elo_health context), per David's ruling. Turn 4 still reads eLo-made junk reminders first (David to tick them off). Turns 6 and 12 = B1 recall.
