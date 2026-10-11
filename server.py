@@ -352,6 +352,74 @@ def _bypass_journal(raw: str, backend: str, handler_class: str, line: int) -> No
         pass
 
 
+# WO-B1-0114: FACT bypass timing journal + WKG fallback.
+# Writes a JSONL line per FACT-tier turn so Board can read measured latency
+# (gate_ms, end_to_end_ms) across real questions — not estimated numbers.
+_B1114_FACT_JOURNAL = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "blender", "fact_timing.jsonl",
+)
+
+
+def _b1114_journal_fact(
+    raw: str,
+    path: str,
+    gate_ms: float,
+    end_to_end_ms: float | None,
+    answer: str | None,
+) -> None:
+    """Append a FACT-tier timing record. Non-fatal — latency is observed, not written-into."""
+    try:
+        import json as _j, time as _t
+        rec = {
+            "ts":            _t.time(),
+            "raw":           raw[:200],
+            "path":          path,          # system_primitive | wkg_fallback | fallthrough_to_llm
+            "gate_ms":       round(gate_ms, 1),
+            "end_to_end_ms": round(end_to_end_ms, 1) if end_to_end_ms is not None else None,
+            "answer":        (answer[:200] if answer else None),
+        }
+        with open(_B1114_FACT_JOURNAL, "a", encoding="utf-8") as _f:
+            _f.write(_j.dumps(rec, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
+def _b1114_wkg_fact_fallback(raw: str) -> str | None:
+    """
+    WO-B1-0114: WKG-backed FACT answer when system primitives can't resolve.
+
+    Only returns when a single high-confidence claim matches — otherwise None,
+    and the caller falls through to the LLM path. Gate still fires before any
+    LLM call is queued.
+
+    Guards:
+      - score >= 2 (prevents stopword-only matches)
+      - confidence >= 0.80 (SOURCE_ATTRIBUTED / VERIFIED tier)
+      - top result dominates (score at least +1 above runner-up)
+    """
+    try:
+        from knowledge.graph_loader import retrieve_wkg as _rw
+        results = _rw(raw, top_k=2)
+    except Exception:
+        return None
+    if not results:
+        return None
+    top = results[0]
+    score = top.get("score", 0)
+    conf  = top.get("confidence", 0) or 0
+    if score < 2 or conf < 0.80:
+        return None
+    if len(results) > 1 and results[1].get("score", 0) >= score:
+        return None
+    content = (top.get("content") or "").strip()
+    if not content:
+        return None
+    # First sentence of the WKG content is the direct fact — strip noise.
+    first = content.split("\n", 1)[0].strip()
+    return first or None
+
+
 def _is_user_away() -> bool:
     """Return True if presence.json reports the user is away."""
     try:
@@ -2655,6 +2723,9 @@ def _process_turn(raw: str) -> dict:
     """Run one cognitive cycle. Thread-safe via _lock. Returns response dict."""
     global _state, _runtime_state, _last_inputs, _last_avatar_cmd, _elo_self
     _original_raw = raw  # WO-020: capture before enrichment for routing trace
+    # WO-B1-0114: wall-clock marker for FACT bypass timing journal
+    import time as _b1114_time
+    _turn_start_ts = _b1114_time.time()
 
     # WO-0106 DAEMON WIRE: notify daemon a request arrived.
     # If SLEEP: triggers STIRRING beat (SLEEP→RESTING tick→AWAKE) before reply.
@@ -2954,6 +3025,8 @@ def _process_turn(raw: str) -> dict:
         # two_truths_gate() is the canonical "do we need the LLM?" check — a
         # definitive operational truth short-circuits here, before any prompt is
         # assembled and before any LLM call is queued.
+        # WO-B1-0114 extension: if dispatch_fact returns no system truth, try
+        # graph_loader.retrieve_wkg as a non-LLM FACT fallback before the LLM path.
         try:
             import time as _cap_time
             _t_cap0 = _cap_time.time()
@@ -2969,7 +3042,19 @@ def _process_turn(raw: str) -> dict:
                     # Only intercept if this doesn't look like a time/date (T11 already handled those)
                     _cap_is_timedate = any(t in _at_low for t in ("time", "date", "day", "today", "tomorrow", "yesterday"))
                     if not _cap_is_timedate:
-                        print(f"[SPEED] FACT gate.fast_answer: {_cap_fast!r} ({_t_cap_ms:.0f}ms) — LLM skipped", flush=True)
+                        _end_to_end_ms = (_cap_time.time() - _turn_start_ts) * 1000
+                        print(
+                            f"[SPEED] FACT gate.fast_answer: {_cap_fast!r} "
+                            f"gate={_t_cap_ms:.0f}ms e2e={_end_to_end_ms:.0f}ms — LLM skipped",
+                            flush=True,
+                        )
+                        _b1114_journal_fact(
+                            raw=_original_raw,
+                            path="system_primitive",
+                            gate_ms=_t_cap_ms,
+                            end_to_end_ms=_end_to_end_ms,
+                            answer=str(_cap_fast),
+                        )
                         try:
                             if not _is_user_away():
                                 _voice_speak(_cap_fast)
@@ -2977,8 +3062,38 @@ def _process_turn(raw: str) -> dict:
                             pass
                         _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=0)
                         return {"response": _cap_fast, "mode": "direct", "backend": "capability_dispatcher"}
-                else:
-                    print(f"[SPEED] FACT tier but gate said synthesise ({_t_cap_ms:.0f}ms) — falling to LLM", flush=True)
+                # No system truth — try WKG fallback before LLM. Gate still fires
+                # before any LLM call is queued; WKG hits return directly.
+                _wkg_fast = _b1114_wkg_fact_fallback(raw)
+                if _wkg_fast is not None:
+                    _end_to_end_ms = (_cap_time.time() - _turn_start_ts) * 1000
+                    print(
+                        f"[SPEED] FACT WKG fallback: {_wkg_fast!r} "
+                        f"gate={_t_cap_ms:.0f}ms e2e={_end_to_end_ms:.0f}ms — LLM skipped",
+                        flush=True,
+                    )
+                    _b1114_journal_fact(
+                        raw=_original_raw,
+                        path="wkg_fallback",
+                        gate_ms=_t_cap_ms,
+                        end_to_end_ms=_end_to_end_ms,
+                        answer=str(_wkg_fast),
+                    )
+                    try:
+                        if not _is_user_away():
+                            _voice_speak(_wkg_fast)
+                    except Exception:
+                        pass
+                    _bypass_journal(_original_raw, backend="direct", handler_class="EXECUTOR-FAST-PATH", line=0)
+                    return {"response": _wkg_fast, "mode": "direct", "backend": "wkg_fact"}
+                print(f"[SPEED] FACT tier but no truth to serve ({_t_cap_ms:.0f}ms) — falling to LLM", flush=True)
+                _b1114_journal_fact(
+                    raw=_original_raw,
+                    path="fallthrough_to_llm",
+                    gate_ms=_t_cap_ms,
+                    end_to_end_ms=None,
+                    answer=None,
+                )
             else:
                 print(f"[SPEED] tier={_cap_tier} for {raw[:50]!r} — LLM path", flush=True)
         except Exception as _cap_exc:
