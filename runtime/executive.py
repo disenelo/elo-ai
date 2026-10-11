@@ -662,9 +662,31 @@ def run_dream_window(recent_topics: list | None = None) -> dict:
         # Use the real backend router so the dream produces genuine narrative
         # and insight, not an empty stub that degrades to the minimal fallback.
         try:
-            from runtime.backend_router import route as _rt_b, active_backend as _ab_b
+            from runtime.backend_router import route as _rt_b
+
             def _dream_llm(messages):
-                return _rt_b(_ab_b(), messages)
+                """
+                route(system_prompt, user_input) -> (text, backend).
+
+                This passed `(active_backend(), messages)` — the backend NAME
+                as the system prompt and a messages LIST as user_input — so
+                every call raised `AttributeError: 'list' object has no
+                attribute 'lower'` at backend_router.py:2369. dream_faculty
+                caught it and fell through to its hardcoded fallback, which is
+                why 8 of 9 of eLo's best dreams carry the identical sentence
+                "The pattern was there the whole time. Just needed distance."
+                The dream model has never once been reached. Found 2026-10-11.
+                """
+                _sys = "\n".join(
+                    str(m.get("content") or "") for m in messages
+                    if isinstance(m, dict) and m.get("role") == "system")
+                _usr = "\n".join(
+                    str(m.get("content") or "") for m in messages
+                    if isinstance(m, dict) and m.get("role") != "system")
+                # A dream is JSON of a 2-3 sentence narrative plus an insight;
+                # the default max_sentences=4 would cut it mid-object.
+                _out = _rt_b(_sys, _usr, max_sentences=12)
+                return _out[0] if isinstance(_out, tuple) else _out
         except Exception:
             def _dream_llm(messages):  # type: ignore[misc]
                 return ""
