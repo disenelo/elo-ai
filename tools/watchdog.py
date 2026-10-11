@@ -1,257 +1,216 @@
+#!/usr/bin/env python3
 """
-tools/watchdog.py — WO-B1-0112: Autonomous File-System Event Watcher
+tools/watchdog.py — WO-B1-0112
+FSEvents-based file watcher for eLo-AI seat automation.
 
-macOS FSEvents (via watchdog library) drives seat activity without polling
-or cron. David drops a file; things move on their own.
+Three trigger paths (all non-polling, FSEvents on macOS):
 
-Three trigger paths:
-  PATH 1 — David drops a file in docs/architecture/_intake/
-            → Board intake session starts, reads it, writes WO, files to seat
-  PATH 2 — Board files a FROM_BOARD_* to a seat inbox
-            → Seat session triggered via shell notification
-  PATH 3 — Seat files to blender/agent_bus/ (new FROM_BOARD_REQUEST_*)
-            → Board review session triggered
+  Path 1 — David drops a file in docs/architecture/_intake/
+            → Board intake triggered immediately.
+
+  Path 2 — Board drops FROM_BOARD_*.md in a seat inbox
+            → Seat session alerted (notification + log entry).
+
+  Path 3 — Seat drops FROM_BOARD_REQUEST_*.md in blender/agent_bus/
+            → Board review session alerted.
+
+Token efficiency: each trigger is ONE CARD. The dispatcher (start_seat.sh)
+picks the oldest card, surfaces it, moves it to processed/. This script's
+job is only to detect new files and write trigger markers — the sessions
+do the actual work.
 
 Usage:
-    python3 tools/watchdog.py          # run in foreground
-    python3 tools/watchdog.py &        # background
-
-Or install as a launch agent (see tools/install_watchdog_launchagent.sh).
-
-Token efficiency: each triggered session is ONE CARD. Read inbox →
-pick highest priority → do card → commit → file to Board → EXIT.
+    python3 tools/watchdog.py          # runs until Ctrl+C
+    python3 tools/watchdog.py --log    # verbose event logging
 """
 from __future__ import annotations
 
-import logging
+import sys
+import argparse
 import os
 import subprocess
-import sys
 import time
+from datetime import datetime
 from pathlib import Path
 
-# Strip our own directory from sys.path so 'import watchdog' finds the library,
-# not this file (which would cause infinite self-import recursion).
-_self_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path[:] = [p for p in sys.path if os.path.abspath(p) != _self_dir]
+# Remove this file's own directory from sys.path so `import watchdog` resolves
+# to the installed watchdog package and not this file (name collision).
+_self_dir = str(Path(__file__).resolve().parent)
+sys.path = [p for p in sys.path if p not in (_self_dir, "")]
 
-try:
-    from watchdog.observers import Observer
-    from watchdog.events import FileSystemEventHandler, FileCreatedEvent
-except ModuleNotFoundError:
-    import subprocess as _pip_sub
-    print("[watchdog] library missing — installing now...", flush=True)
-    _pip_sub.check_call([sys.executable, "-m", "pip", "install", "watchdog", "-q"])
-    from watchdog.observers import Observer
-    from watchdog.events import FileSystemEventHandler, FileCreatedEvent
+from watchdog.events import FileSystemEventHandler, FileCreatedEvent  # noqa: E402
+from watchdog.observers import Observer  # noqa: E402
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
+REPO_ROOT = Path(__file__).resolve().parent.parent
+INTAKE_DIR   = REPO_ROOT / "docs" / "architecture" / "_intake"
+AGENT_BUS    = REPO_ROOT / "blender" / "agent_bus"
+LOG_FILE     = REPO_ROOT / "data" / "watchdog.log"
+TRIGGER_DIR  = REPO_ROOT / "data" / "triggers"
 
-_REPO = Path(__file__).parent.parent.resolve()
-_INTAKE     = _REPO / "docs" / "architecture" / "_intake"
-_AGENT_BUS  = _REPO / "blender" / "agent_bus"
-_BUILDER    = _AGENT_BUS / "builder"
-_TRIGGER_LOG = _REPO / "data" / "watchdog_events.log"
-
-# ── Logging ───────────────────────────────────────────────────────────────────
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="[watchdog] %(asctime)s %(message)s",
-    datefmt="%H:%M:%S",
-)
-_log = logging.getLogger("elo.watchdog")
-
-# ── Cooldown — prevent double-trigger on FSEvents bursts ─────────────────────
-
-_COOLDOWN_S = 5.0
-_last_trigger: dict[str, float] = {}
+SEAT_INBOXES = {
+    "builder":  AGENT_BUS / "builder",
+    "builder2": AGENT_BUS / "builder2",
+    "builder3": AGENT_BUS / "builder3",
+}
 
 
-def _cooldown_ok(key: str) -> bool:
-    now = time.time()
-    if now - _last_trigger.get(key, 0) < _COOLDOWN_S:
-        return False
-    _last_trigger[key] = now
-    return True
+def _ts() -> str:
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-# ── Trigger logging ───────────────────────────────────────────────────────────
+def _log(msg: str, verbose: bool = False) -> None:
+    line = f"[watchdog] {_ts()} {msg}"
+    if verbose:
+        print(line)
+    LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with LOG_FILE.open("a") as f:
+        f.write(line + "\n")
 
-def _log_trigger(path: str, reason: str) -> None:
-    _TRIGGER_LOG.parent.mkdir(parents=True, exist_ok=True)
-    with open(_TRIGGER_LOG, "a", encoding="utf-8") as f:
-        f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} | {reason} | {path}\n")
+
+def _write_trigger(path: Path, kind: str, src: str) -> None:
+    """Write a trigger marker file so sessions can poll data/triggers/ if needed."""
+    TRIGGER_DIR.mkdir(parents=True, exist_ok=True)
+    slug = f"{kind}_{_ts().replace(' ', '_').replace(':', '')}.trigger"
+    marker = TRIGGER_DIR / slug
+    marker.write_text(f"kind={kind}\nsrc={src}\nts={_ts()}\n")
 
 
-# ── Session launch ────────────────────────────────────────────────────────────
+def _notify(title: str, body: str) -> None:
+    """macOS notification — best-effort; fails silently if blocked."""
+    try:
+        subprocess.run(
+            [
+                "osascript", "-e",
+                f'display notification "{body}" with title "{title}"',
+            ],
+            timeout=5,
+            check=False,
+            capture_output=True,
+        )
+    except Exception:
+        pass
 
-def _launch_seat_session(seat: str, prompt: str) -> None:
-    """
-    Trigger a one-card Claude Code session for a seat.
 
-    Writes a .trigger file that the seat's next START_HERE read picks up,
-    AND attempts a direct `claude` CLI launch if the binary is available.
-
-    The .trigger mechanism is the fallback — it survives when VS Code is
-    not open and lets David manually kick a session at any time.
-    """
-    trigger_path = _AGENT_BUS / seat / f"WATCHDOG_TRIGGER_{int(time.time())}.md"
-    trigger_path.parent.mkdir(parents=True, exist_ok=True)
-    trigger_path.write_text(
-        f"# WATCHDOG TRIGGER\n"
-        f"**Date:** {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
-        f"**Seat:** {seat}\n\n"
-        f"## Task\n\n{prompt}\n\n"
-        f"*Auto-generated by tools/watchdog.py — one card, then EXIT.*\n",
-        encoding="utf-8",
+def _trigger_seat(seat: str, card_name: str, verbose: bool) -> None:
+    """Alert a seat that new work is waiting. Non-blocking."""
+    _log(f"TRIGGER seat={seat} card={card_name}", verbose)
+    _write_trigger(TRIGGER_DIR, f"seat_{seat}", card_name)
+    _notify(
+        f"eLo-AI — {seat} inbox",
+        f"New card: {card_name}\nRun: bash tools/start_seat.sh {seat}",
     )
-    _log.info("trigger filed → %s", trigger_path)
-
-    # Try direct claude CLI launch (non-blocking)
-    start_script = _REPO / "tools" / "start_seat.sh"
-    if start_script.exists():
-        try:
-            subprocess.Popen(
-                ["bash", str(start_script), seat, prompt],
-                cwd=str(_REPO),
-                start_new_session=True,
-            )
-            _log.info("start_seat.sh launched for seat=%s", seat)
-        except Exception as e:
-            _log.warning("start_seat.sh launch failed (trigger file still written): %s", e)
 
 
-# ── PATH 1 — David drops a file in _intake/ ──────────────────────────────────
+def _trigger_board_intake(intake_file: str, verbose: bool) -> None:
+    """Alert Board that David dropped a new file."""
+    _log(f"TRIGGER intake={intake_file}", verbose)
+    _write_trigger(TRIGGER_DIR, "board_intake", intake_file)
+    _notify(
+        "eLo-AI — Board intake",
+        f"New drop: {Path(intake_file).name}\nBoard: review and write WO.",
+    )
+
+
+def _trigger_board_review(request_file: str, verbose: bool) -> None:
+    """Alert Board that a seat filed a review request."""
+    _log(f"TRIGGER board_review={request_file}", verbose)
+    _write_trigger(TRIGGER_DIR, "board_review", request_file)
+    _notify(
+        "eLo-AI — Board review",
+        f"Seat filed: {Path(request_file).name}",
+    )
+
+
+# ── Handlers ──────────────────────────────────────────────────────────────────
 
 class IntakeHandler(FileSystemEventHandler):
-    """New .md or .txt in _intake/ → Board intake session."""
+    """Path 1 — David drops files in _intake/."""
+
+    def __init__(self, verbose: bool = False) -> None:
+        self._verbose = verbose
 
     def on_created(self, event: FileCreatedEvent) -> None:
         if event.is_directory:
             return
-        path = Path(event.src_path)
-        if path.suffix.lower() not in {".md", ".txt"}:
-            return
-        if not _cooldown_ok(f"intake:{path.name}"):
-            return
+        p = Path(event.src_path)
+        if p.suffix in (".md", ".txt", ".markdown", ""):
+            _log(f"INTAKE {p.name}", self._verbose)
+            _trigger_board_intake(str(p), self._verbose)
 
-        _log.info("PATH 1 — intake file dropped: %s", path.name)
-        _log_trigger(str(path), "intake_drop")
-
-        prompt = (
-            f"New intake file: {path.name}\n\n"
-            f"Read {path} — convert it to a WO card and file it to the correct "
-            f"seat inbox under blender/agent_bus/. One card only. Commit. EXIT."
-        )
-        _launch_seat_session("board", prompt)
-
-
-# ── PATH 2 — Board files to a seat inbox ─────────────────────────────────────
 
 class SeatInboxHandler(FileSystemEventHandler):
-    """New FROM_BOARD_* .md in a seat inbox → seat session."""
+    """Path 2 — Board drops FROM_BOARD_*.md in a seat inbox."""
 
-    def __init__(self, seat: str) -> None:
-        super().__init__()
+    def __init__(self, seat: str, verbose: bool = False) -> None:
         self._seat = seat
+        self._verbose = verbose
 
     def on_created(self, event: FileCreatedEvent) -> None:
         if event.is_directory:
             return
-        path = Path(event.src_path)
-        if not path.name.startswith("FROM_BOARD") or path.suffix != ".md":
-            return
-        if not _cooldown_ok(f"seat:{self._seat}:{path.name}"):
-            return
+        p = Path(event.src_path)
+        if p.name.startswith("FROM_BOARD_") and p.suffix == ".md":
+            _log(f"SEAT_INBOX seat={self._seat} file={p.name}", self._verbose)
+            _trigger_seat(self._seat, p.name, self._verbose)
 
-        _log.info("PATH 2 — Board → seat=%s: %s", self._seat, path.name)
-        _log_trigger(str(path), f"board_to_seat:{self._seat}")
-
-        prompt = (
-            f"New Board directive in your inbox: {path.name}\n\n"
-            f"Read blender/agent_bus/{self._seat}/START_HERE.md. "
-            f"Check inbox for new FROM_BOARD files. Do ONE card. "
-            f"Commit. File completion to Board. EXIT."
-        )
-        _launch_seat_session(self._seat, prompt)
-
-
-# ── PATH 3 — Seat files to Board ─────────────────────────────────────────────
 
 class BoardReviewHandler(FileSystemEventHandler):
-    """New FROM_BOARD_REQUEST_* .md → Board review session."""
+    """Path 3 — Seat drops FROM_BOARD_REQUEST_*.md in blender/agent_bus/."""
+
+    def __init__(self, verbose: bool = False) -> None:
+        self._verbose = verbose
 
     def on_created(self, event: FileCreatedEvent) -> None:
         if event.is_directory:
             return
-        path = Path(event.src_path)
-        if not path.name.startswith("FROM_BOARD_REQUEST") or path.suffix != ".md":
-            return
-        # Skip files already inside seat subdirs — those are outbox filings
-        # only the root FROM_BOARD_REQUEST files under agent_bus/ are Board intake
-        if path.parent != _AGENT_BUS:
-            return
-        if not _cooldown_ok(f"board_review:{path.name}"):
-            return
-
-        _log.info("PATH 3 — Seat → Board review: %s", path.name)
-        _log_trigger(str(path), "seat_to_board")
-
-        prompt = (
-            f"New seat filing for Board review: {path.name}\n\n"
-            f"Read it, run any associated tests, sign off or reject. "
-            f"File your verdict. ONE review. EXIT."
-        )
-        _launch_seat_session("board", prompt)
+        p = Path(event.src_path)
+        if p.name.startswith("FROM_BOARD_REQUEST_") and p.suffix == ".md":
+            _log(f"BOARD_REVIEW {p.name}", self._verbose)
+            _trigger_board_review(str(p), self._verbose)
 
 
-# ── Observer setup ─────────────────────────────────────────────────────────────
+# ── Main ──────────────────────────────────────────────────────────────────────
 
-def _known_seats() -> list[str]:
-    """Seats with inboxes — any subdir of agent_bus/ that has a START_HERE.md."""
-    seats = []
-    for d in _AGENT_BUS.iterdir():
-        if d.is_dir() and (d / "START_HERE.md").exists():
-            seats.append(d.name)
-    return seats
+def main() -> None:
+    parser = argparse.ArgumentParser(description="eLo-AI FSEvents watchdog")
+    parser.add_argument("--log", action="store_true", help="Verbose output")
+    args = parser.parse_args()
+    v = args.log
 
+    # Ensure watched directories exist
+    INTAKE_DIR.mkdir(parents=True, exist_ok=True)
+    for inbox in SEAT_INBOXES.values():
+        inbox.mkdir(parents=True, exist_ok=True)
 
-def run() -> None:
     observer = Observer()
 
-    # PATH 1 — intake
-    if _INTAKE.exists():
-        observer.schedule(IntakeHandler(), str(_INTAKE), recursive=False)
-        _log.info("watching intake: %s", _INTAKE)
-    else:
-        _log.warning("intake dir not found — PATH 1 disabled: %s", _INTAKE)
+    # Path 1 — intake
+    observer.schedule(IntakeHandler(v), str(INTAKE_DIR), recursive=False)
 
-    # PATH 2 — each seat inbox
-    seats = _known_seats()
-    for seat in seats:
-        seat_dir = _AGENT_BUS / seat
-        observer.schedule(SeatInboxHandler(seat), str(seat_dir), recursive=False)
-        _log.info("watching seat inbox: %s", seat_dir)
+    # Path 2 — seat inboxes (non-recursive; don't watch QUEUE/ or processed/)
+    for seat, inbox in SEAT_INBOXES.items():
+        observer.schedule(SeatInboxHandler(seat, v), str(inbox), recursive=False)
 
-    # PATH 3 — Board review (root agent_bus/ only)
-    observer.schedule(BoardReviewHandler(), str(_AGENT_BUS), recursive=False)
-    _log.info("watching Board review drop: %s", _AGENT_BUS)
-
-    _log.info(
-        "watchdog started — %d seat(s): %s",
-        len(seats), ", ".join(seats) if seats else "none",
-    )
+    # Path 3 — board review requests
+    observer.schedule(BoardReviewHandler(v), str(AGENT_BUS), recursive=False)
 
     observer.start()
+    _log(f"started pid={os.getpid()} repo={REPO_ROOT}", verbose=True)
+    print(f"[watchdog] watching — Ctrl+C to stop. Log: {LOG_FILE}")
+    print(f"  intake:       {INTAKE_DIR}")
+    for seat, inbox in SEAT_INBOXES.items():
+        print(f"  {seat:<10s}:  {inbox}")
+    print(f"  board_review: {AGENT_BUS}")
+
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        _log.info("stopping watchdog")
         observer.stop()
+        _log("stopped (KeyboardInterrupt)", verbose=True)
     observer.join()
 
 
 if __name__ == "__main__":
-    run()
+    main()
