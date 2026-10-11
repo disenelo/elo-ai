@@ -212,3 +212,33 @@ def test_ears_mode_runs_turn_in_background_and_alexa_says_nothing(monkeypatch, w
 def test_ears_is_the_default(monkeypatch):
     monkeypatch.delenv("ALEXA_REPLY", raising=False)
     assert ai._reply_mode() == "ears"
+
+
+# ── WO-B3-0011 · contextual output choice ─────────────────────────────────────
+
+def test_alexa_input_pins_reply_to_echo_overriding_manual_mac_setting(monkeypatch):
+    """Input channel wins over David's manual Presence setting (David L3 2026-10-10)."""
+    monkeypatch.setenv("ALEXA_REPLY", "ears")
+    import tools.echo_speaker as es
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 1)   # Echo connected
+    monkeypatch.setattr(es, "voice_output", lambda: "mac")           # David's setting = Mac
+    es.stop_wanting()
+    assert es.speaking() is False
+    gate = threading.Event()
+    ai.handle(_req(utterance="what's on today"), lambda t: gate.set() or {"response": "the usual"})
+    assert gate.wait(2)
+    assert es.speaking() is True, "Alexa-arriving turn must route eLo's voice to the Echo"
+    es.stop_wanting()
+
+
+def test_alexa_input_without_echo_connected_does_not_pin(monkeypatch):
+    """Echo disconnected → no pin; voice_engine already falls back to the Mac."""
+    monkeypatch.setenv("ALEXA_REPLY", "ears")
+    import tools.echo_speaker as es
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: None)
+    monkeypatch.setattr(es, "voice_output", lambda: "mac")
+    es.stop_wanting()
+    gate = threading.Event()
+    ai.handle(_req(utterance="still there"), lambda t: gate.set() or {"response": "yep"})
+    assert gate.wait(2)
+    assert es._want["until"] == 0.0, "no want_for pin when the Echo isn't connected"

@@ -309,12 +309,24 @@ def _brain(utterance: str, turn_fn, base, t0) -> dict:
         # reply plays from the chosen speaker whenever the brain finishes: no 8 s
         # limit, never a copy in Alexa's voice. The session ends so the Echo's mic
         # doesn't hear eLo back.
-        _run(turn_fn, utterance)
+        #
+        # Contextual output choice (WO-B3-0011, David 2026-10-10: "eLo chooses which
+        # output device to use based on context, not a user-configurable setting").
+        # The strongest signal is the input channel: David spoke to Alexa → he isn't
+        # at the Mac → reply through the Echo for the next minute. Overrides the
+        # manual Presence setting; auto-expires so Mac-chat turns return to default.
+        # If the Echo isn't connected, voice_engine still falls back to the Mac.
+        where = "mac"
         try:
-            from tools.echo_speaker import voice_output
-            where = voice_output()
+            from tools import echo_speaker as _es
+            if _es.device_index() is not None:
+                _es.want_for(60)
+                where = "echo (Alexa input)"
+            else:
+                where = "mac (Echo not connected)"
         except Exception:
-            where = "mac"
+            pass
+        _run(turn_fn, utterance)
         print(f"[alexa] → eLo (ears only; voice on {where}): {utterance!r}", flush=True)
         return {"version": "1.0", "response": {"shouldEndSession": True}}
     reply, from_brain = talk(utterance, turn_fn)
