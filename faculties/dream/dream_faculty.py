@@ -762,6 +762,38 @@ def run_dream(
             except Exception:
                 cycle_records, dream_intensity = [], 0.0
 
+        # 3c. Re-rank symbols from cycle seed content.
+        #
+        # The first pass at line 735 only sees recent_topics + inner_events +
+        # focal_thread. In live runs recent_topics has often been empty and
+        # focal_thread blank, which leaves inner_events as the only signal —
+        # and the ambient "quiet" state maps to "moon". The 241-entry
+        # dream_journal shows every retained REM dream themed "Moon", even
+        # when the cycle seeds were about physical / stuck / building / system.
+        #
+        # Cycles do carry the real content (associated_concepts + the seed
+        # source line itself). Fold both back into the topic list and re-run
+        # map_to_symbols so the theme reflects what the dream was actually
+        # about, not just the ambient state that triggered it. Only replaces
+        # `symbols` when the enriched pass produces something — a no-op when
+        # cycles were skipped.
+        if cycle_records:
+            enriched_topics = list(recent_topics or [])
+            for _cyc in cycle_records:
+                for _seed in _cyc.get("seeds") or []:
+                    for _c in _seed.get("associated_concepts") or []:
+                        if _c:
+                            enriched_topics.append(str(_c))
+                    _src = str(_seed.get("source") or "")
+                    if _src:
+                        enriched_topics.append(_src)
+            try:
+                _enriched = map_to_symbols(enriched_topics, inner_events, focal_thread)
+                if _enriched:
+                    symbols = _enriched
+            except Exception:
+                pass
+
         # 4. REM narrative (recombination) — only when idle long enough
         narrative = ""
         insight   = ""
