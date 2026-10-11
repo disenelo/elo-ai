@@ -118,3 +118,61 @@ def test_the_verdict_is_inspectable():
     """`why` exists so a later reader can audit the decision."""
     assert pp.pre_thought("5 x 52?")["why"]
     assert pp.pre_thought("What were you just doing?")["why"]
+
+
+# ── the thought must be readable, not only audible ───────────────────────────
+
+def test_a_collected_thought_is_published_to_the_ui(monkeypatch):
+    """
+    David, 2026-10-11: "I hear it" but "the -- thoughts don't show anymore".
+
+    Unity surfaces `inner_thought_text` from blender_state.json. server.py
+    wrote that key from its POST-response block, gated on the thought it
+    collected there. WO-INNER-THOUGHT-ORDERING moved speaking to Beat 2,
+    before the response, so the later collect() correctly returned ""
+    (idempotent — eLo must not say it twice) and the UI write was gated on the
+    same empty string. Spoken, never written.
+    """
+    from faculties.inner_thought import early_runner as er
+
+    written: list[dict] = []
+    monkeypatch.setattr("blender_bridge.state_writer.patch", written.append)
+
+    class _Handle:
+        def collect(self, timeout_s=None):
+            return "  i keep circling the same seam  "
+
+    assert er.collect(_Handle()).strip() == "i keep circling the same seam"
+    assert written == [{"inner_thought_text": "i keep circling the same seam"}]
+
+
+def test_no_thought_writes_nothing(monkeypatch):
+    """An empty collect must not blank the UI — the last thought stands."""
+    from faculties.inner_thought import early_runner as er
+
+    written: list[dict] = []
+    monkeypatch.setattr("blender_bridge.state_writer.patch", written.append)
+
+    class _Empty:
+        def collect(self, timeout_s=None):
+            return ""
+
+    assert er.collect(_Empty()) == ""
+    assert er.collect(None) == ""
+    assert written == []
+
+
+def test_publishing_failure_never_costs_the_thought(monkeypatch):
+    """A thought that cannot be published is still a thought."""
+    from faculties.inner_thought import early_runner as er
+
+    def _boom(_payload):
+        raise RuntimeError("bridge down")
+
+    monkeypatch.setattr("blender_bridge.state_writer.patch", _boom)
+
+    class _Handle:
+        def collect(self, timeout_s=None):
+            return "still a thought"
+
+    assert er.collect(_Handle()) == "still a thought"

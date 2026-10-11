@@ -171,9 +171,37 @@ def start(asked: str, *, history: str = "", generator: Callable | None = None
     return handle
 
 
+def _publish_text(text: str) -> None:
+    """
+    Make the thought READABLE, not only audible.
+
+    Unity's EloOSAvatarReceiver surfaces `inner_thought_text` from
+    blender_state.json — the "--" line in the UI. server.py wrote that key
+    from its POST-response block, which is gated on the thought it collects
+    there. Once WO-INNER-THOUGHT-ORDERING moved speaking to Beat 1/2/3 before
+    the response, that later collect() correctly returned "" (idempotent, so
+    eLo does not say it twice) — and the UI write was gated on the same empty
+    string. David, 2026-10-11: "I hear it" but "the -- thoughts don't show
+    anymore". Spoken, never written.
+
+    Published from here instead, because here is where a thought is actually
+    produced: whichever call site consumes it, the UI sees it exactly once.
+
+    Fail-quiet: a thought that cannot be published is still a thought.
+    """
+    try:
+        from blender_bridge.state_writer import patch as _patch
+        _patch({"inner_thought_text": text})
+    except Exception as e:
+        _log.debug("inner thought not published to UI (non-fatal): %s", e)
+
+
 def collect(handle: "ThoughtInFlight | None",
             timeout_s: float | None = None) -> str:
     """Collect from a handle that may be None. Convenience for the call site."""
     if handle is None:
         return ""
-    return handle.collect(timeout_s)
+    text = handle.collect(timeout_s)
+    if text and text.strip():
+        _publish_text(text.strip())
+    return text
