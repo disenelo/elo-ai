@@ -2854,7 +2854,13 @@ def _process_turn(raw: str) -> dict:
         # playlists" — done here via the Web API; eLo reports what happened, no LLM.
         _spot_direct = None
         try:
-            from tools.spotify_play import handle as _spot_handle
+            from tools.spotify_play import parse as _spot_parse, handle as _spot_handle
+            if _spot_parse(raw) is not None:
+                try:
+                    from runtime import pre_ack as _pa_spot
+                    _pa_spot.emit("spotify_play", raw)
+                except Exception:
+                    pass
             _spot_direct = _spot_handle(raw)
             if _spot_direct:
                 print(f"[spotify_play] {_spot_direct}", flush=True)
@@ -3473,6 +3479,11 @@ def _process_turn(raw: str) -> dict:
             )
             if _fp_has():
                 if _is_file_confirm(raw):
+                    try:
+                        from runtime import pre_ack as _pa_fp
+                        _pa_fp.emit("document_write", raw)
+                    except Exception:
+                        pass
                     _fp_result = _sanitise(_fp_exec())
                     try:
                         if not _is_user_away():
@@ -3506,6 +3517,11 @@ def _process_turn(raw: str) -> dict:
                 if _is_file_confirm(raw):
                     _cc_action = _cc_get()
                     _cc_clear()
+                    try:
+                        from runtime import pre_ack as _pa_cc
+                        _pa_cc.emit("device_control", raw)
+                    except Exception:
+                        pass
                     _cc_result = _cc_exec(_cc_action) if _cc_action else "Nothing pending."
                     try:
                         if not _is_user_away():
@@ -3836,6 +3852,11 @@ def _process_turn(raw: str) -> dict:
             try:
                 from tools.image_gen_agent import generate as _img_generate
                 _ig_prompt = _ig_m.group(1).strip().rstrip("?.!")
+                try:
+                    from runtime import pre_ack as _pa_ig
+                    _pa_ig.emit("image_gen", raw)
+                except Exception:
+                    pass
                 _ig_result = _img_generate(_ig_prompt)
                 if _ig_result["ok"]:
                     _ig_src = {"dalle3": "DALL-E 3", "dalle2": "DALL-E 2", "sd_local": "Stable Diffusion"}.get(_ig_result["source"], "")
@@ -3860,6 +3881,11 @@ def _process_turn(raw: str) -> dict:
             try:
                 from tools.model_gen_agent import generate as _model_generate
                 _mg_prompt = _mg_m.group(1).strip().rstrip("?.!")
+                try:
+                    from runtime import pre_ack as _pa_mg
+                    _pa_mg.emit("model_gen", raw)
+                except Exception:
+                    pass
                 import threading as _mg_thread
                 def _mg_run():
                     _mg_result = _model_generate(_mg_prompt)
@@ -4123,6 +4149,11 @@ def _process_turn(raw: str) -> dict:
             if not _ws_command and not _world_graph_hit:
                 try:
                     from tools.research import answer_gap as _rs_gap
+                    try:
+                        from runtime import pre_ack as _pa_rs
+                        _pa_rs.emit("web_search", raw)
+                    except Exception:
+                        pass
                     _rs_answer = _rs_gap(_original_raw)
                     if _rs_answer:
                         print(f"[research] {_rs_answer[:120]}", flush=True)
@@ -4143,6 +4174,11 @@ def _process_turn(raw: str) -> dict:
                     _ws_direct = "What do you want me to look up?"
                 else:
                     from tools.web_search import lookup as _ws_lookup
+                    try:
+                        from runtime import pre_ack as _pa_wsc
+                        _pa_wsc.emit("web_search", raw)
+                    except Exception:
+                        pass
                     _ws_r = _ws_lookup(_sq_text)
                     _ws_name, _ws_results = _ws_r["result"]["name"], _ws_r["result"]["results"]
                     import sys as _ws_sys
@@ -4180,6 +4216,11 @@ def _process_turn(raw: str) -> dict:
                 _sq_words = set(_sq_lower.replace("'", " ").split())
                 if "david" in _sq_words and _sq_words & _DAVID_PERSONAL_TERMS:
                     raise ValueError("id-035-guard: personal David query blocked from web search")
+                try:
+                    from runtime import pre_ack as _pa_wsi
+                    _pa_wsi.emit("web_search", raw)
+                except Exception:
+                    pass
                 _ws_results = _wsearch(_sq_text, max_results=4)
                 import sys as _ws_sys
                 print(f"[web_search] fired q={_sq_text!r} source={getattr(_ws_mod, 'last_source', '')} "
@@ -4206,6 +4247,11 @@ def _process_turn(raw: str) -> dict:
         try:
             from tools.reminder_agent import is_reminder_intent, set_reminder as _set_reminder
             if is_reminder_intent(raw):
+                try:
+                    from runtime import pre_ack as _pa_rem
+                    _pa_rem.emit("reminder", raw)
+                except Exception:
+                    pass
                 _rem_result = _set_reminder(raw, context=raw)
                 _bypass_journal(_original_raw, backend="reminder", handler_class="COGNITIVE", line=2050)
                 raw = f"[REMINDER_SET]\n{_rem_result}\n\nUser asked: {_original_raw}"

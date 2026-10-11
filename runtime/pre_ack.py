@@ -46,6 +46,28 @@ _PHRASES: dict[str, list[str]] = {
         "On it.",
         "Give me a moment.",
     ],
+    "web_search": [
+        "Looking that up.",
+        "Give me a second.",
+        "Let me check.",
+        "On it.",
+    ],
+    "image_gen": [
+        "Generating that now.",
+        "On it — give me a moment.",
+        "Let me make that.",
+        "Give me a second.",
+    ],
+    "model_gen": [
+        "Generating the model — this takes a moment.",
+        "On it. I'll let you know when it's ready.",
+        "Building that now.",
+    ],
+    "reminder": [
+        "Setting that.",
+        "On it.",
+        "Got it, setting that.",
+    ],
     "default": [
         "Give me a second.",
         "On it.",
