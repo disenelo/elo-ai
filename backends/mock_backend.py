@@ -1043,6 +1043,107 @@ class MockBackend(BaseBackend):
             self._recent.pop(0)
         return pick
 
+    # ── WKG + facts lookup (0120) ──────────────────────────────────────────────
+
+    # Keywords that signal a personal/factual query about David or the projects.
+    # Only these bypass to WKG/facts so generic turns still hit the pools first.
+    _PERSONAL_SIGNALS = re.compile(
+        r"\b(born|birth|birthday|location|studio|hackney|brixton|fulham|"
+        r"raised|grew\s+up|email|address|name|surname|founder|ceo|role|title|"
+        r"projects?|working\s+on|building|game|robot|plushie|elo\s+relationship|"
+        r"inner\s+child|who\s+is\s+elo|elo\s+character|what\s+are\s+you\s+working|"
+        r"where\s+(?:are\s+you|do\s+you\s+work|did\s+you\s+grow)|"
+        r"what\s+city|where\s+from|where\s+you\s+from)\b",
+        re.I,
+    )
+
+    def _wkg_lookup(self, text: str) -> str | None:
+        """Check WKG for a relevant runtime claim about David or eLo.
+
+        Only considers runtime-wkg claims (interaction-derived) to avoid
+        world-knowledge noise (geography, philosophy, etc.) polluting personal
+        fact responses. Returns eLo-voiced response or None.
+        """
+        try:
+            from knowledge.graph_loader import retrieve_wkg as _rw
+            hits = _rw(text, top_k=5)
+            if not hits:
+                return None
+            # Filter to runtime-derived claims about David/eLo only
+            personal = [
+                h for h in hits
+                if h.get("source") == "runtime-wkg"
+                and ("david" in (h.get("content") or "").lower()
+                     or "elo" in (h.get("content") or "").lower())
+            ]
+            if not personal:
+                return None
+            best = max(personal, key=lambda h: h.get("score", 0))
+            if best.get("score", 0) < 2:
+                return None
+            content = (best.get("content") or "").strip()
+            if not content:
+                return None
+            # Strip "SUBJECT PREDICATE OBJECT" header line
+            lines = content.split("\n")
+            body = " ".join(lines[1:]).strip() if len(lines) > 1 else lines[0].strip()
+            if not body:
+                body = lines[0].strip()
+            # Extract the sentence most relevant to the query
+            import re as _re2
+            sentences = _re2.split(r'(?<=[.!?])\s+', body)
+            _stop = {"what", "where", "when", "who", "how", "tell", "your",
+                     "have", "that", "this", "with", "from", "just", "know",
+                     "is", "are", "was", "the", "and", "for", "did", "do", "me",
+                     "you", "a", "an", "in", "at", "on", "of", "to", "be", "by",
+                     "it", "or", "so", "up", "as", "we", "he", "she", "his", "her",
+                     "now", "right", "just", "can", "will", "would", "could", "very"}
+            q_words = {w for w in _re2.sub(r'[^a-z0-9 ]', '', text.lower()).split()
+                       if w not in _stop and len(w) >= 4}
+            if q_words:
+                best_sent = max(sentences, key=lambda s: sum(1 for w in q_words if w in s.lower()))
+            else:
+                best_sent = sentences[0] if sentences else body
+            best_sent = best_sent.strip().rstrip(".,;")
+            if not best_sent or len(best_sent) < 8:
+                return None
+            import random as _rnd
+            prefix = _rnd.choice(["Yeah — ", "Right — ", ""])
+            return f"{prefix}{best_sent}."
+        except Exception:
+            return None
+
+    def _facts_lookup(self, text: str) -> str | None:
+        """Match query against memory/facts.json. Returns eLo-voiced fact or None."""
+        import random as _rf
+        import json as _rj
+        import os as _ro
+        _FACT_KEYS = {
+            "location":     re.compile(r"\b(location|studio|hackney|where\s+(?:you\s+)?(?:work|based|live))\b", re.I),
+            "born":         re.compile(r"\b(born|birth(?!day)|fulham|originally|where.*from|come\s+from)\b", re.I),
+            "raised":       re.compile(r"\b(raised|grew\s+up|brixton|childhood|south\s+london)\b", re.I),
+            "birthday":     re.compile(r"\b(birthday|date\s+of\s+birth|birth\s+date|when.*born|january|1986|your\s+age|how\s+old)\b", re.I),
+            "email":        re.compile(r"\b(email|e-mail|@|address)\b", re.I),
+            "role":         re.compile(r"\b(role|title|ceo|founder|position|job|what.*you\s+do)\b", re.I),
+            "full_name":    re.compile(r"\b(full\s+name|surname|your\s+name|called)\b", re.I),
+            "projects":     re.compile(r"\b(projects?|working\s+on|building|game|robot|plushie|addon)\b", re.I),
+            "elo_relationship": re.compile(r"\b(elo.*character|inner\s+child|who\s+is\s+elo|elo\s+relationship)\b", re.I),
+        }
+        try:
+            _facts_path = _ro.path.join(_ro.path.dirname(_ro.path.dirname(_ro.path.abspath(__file__))),
+                                        "memory", "facts.json")
+            with open(_facts_path, encoding="utf-8") as _ff:
+                _facts = {f["key"]: f["fact"] for f in _rj.load(_ff)}
+        except Exception:
+            return None
+        for key, pattern in _FACT_KEYS.items():
+            if pattern.search(text) and key in _facts:
+                fact = _facts[key]
+                # Strip long source citations
+                fact = re.sub(r'\s*\(.*?\)', '', fact).strip().rstrip(".")
+                return _rf.choice(["Yeah — ", "Right — ", ""]) + fact + "."
+        return None
+
     def is_available(self) -> bool:
         return True
 
@@ -1135,6 +1236,19 @@ class MockBackend(BaseBackend):
             if wants_day:
                 return f"{weekday}."
             return f"It's {time_str}."
+
+        # ── WKG + facts lookup (0120) — real memory, no LLM ─────────────────
+        # Personal/factual queries about David or the projects: check facts.json
+        # first (precise keyword match for known facts), then WKG runtime claims
+        # as a fallback for anything learned in conversation. Both produce
+        # eLo-voiced responses from structured data — not canned lines, no LLM.
+        if self._PERSONAL_SIGNALS.search(text):
+            _facts_resp = self._facts_lookup(text)
+            if _facts_resp:
+                return _facts_resp
+            _wkg_resp = self._wkg_lookup(text)
+            if _wkg_resp:
+                return _wkg_resp
 
         # ── Meta-conversation — user commenting on eLo's own behavior ────────
         if _matches(text, _META_SIGNALS):
