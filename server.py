@@ -6473,6 +6473,9 @@ def _process_turn(raw: str) -> dict:
                                 + "\n".join(_arc_lines) +
                                 "\nThis is what has actually been said in this session. "
                                 "Use it to understand what David is referring to. "
+                                "When something David said earlier is relevant to his current "
+                                "message, name it — 'Earlier you mentioned X' — rather than "
+                                "treating it as new. Do not make him re-explain what is already here. "
                                 "If something asked about is not here, say so honestly "
                                 "— do not invent content."
                             )
