@@ -204,10 +204,21 @@ def _ddg_search(query: str, max_results: int) -> list[SearchResult]:
 
 
 def format_for_context(results: list[SearchResult], max_chars: int = 800) -> str:
-    """Format results as a compact context block for injection into system prompt."""
+    """Format results as a compact context block for injection into system prompt.
+
+    WO-B3-0012 follow-up (demo milestone, sprint item 4): the acceptance phrase
+    is "eLo returns a summary in natural language — not a raw list of links."
+    The bullet list below is for the LLM to read, not for David to hear. The
+    `_SUMMARY_HINT` line steers the LLM into a short conversational synthesis
+    so the demo-killer path ("Got it, here are the results: • … • …") is
+    closed from inside this file — no prompt_builder change needed.
+    """
     if not results:
         return ""
-    lines = ["[WEB_SEARCH_RESULTS]"]
+    lines = [
+        "[WEB_SEARCH_RESULTS]",
+        _SUMMARY_HINT,
+    ]
     total = 0
     for r in results:
         entry = f"• {r.title}: {r.snippet}"
@@ -216,6 +227,15 @@ def format_for_context(results: list[SearchResult], max_chars: int = 800) -> str
         lines.append(entry)
         total += len(entry)
     return "\n".join(lines)
+
+
+# Short, deterministic instruction. Stays on one line so leading-block scrubbers
+# (memory/spg_backfill.py:_LEADING_BLOCK_RE strips bracket lines; _ASKED_RE then
+# cuts to "User asked:") see the same shape and still recover David's utterance.
+_SUMMARY_HINT = (
+    "Instruction: use these as sourced facts and reply in 1–2 conversational "
+    "sentences in eLo's voice. Do not list, bullet, or paste the entries verbatim."
+)
 
 
 # ── Intent detection ──────────────────────────────────────────────────────────

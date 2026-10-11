@@ -244,3 +244,58 @@ def test_at6_lookup_returns_b3_standard_shape():
     assert r["result"]["provider"] in ("serpapi", "ddg")
     assert isinstance(r["result"]["sources"], list)
     assert isinstance(r["result"]["line"], str) and r["result"]["line"].strip()
+
+
+# ── AT-7 ──────────────────────────────────────────────────────────────────────
+
+def test_at7_context_block_steers_llm_to_a_conversational_summary():
+    """Sprint item 4 acceptance: 'summary in natural language — not a raw list.'
+    The context block the LLM reads must carry an explicit instruction to
+    synthesise, otherwise a weak-model turn may dump the bullets verbatim."""
+    sample = [
+        SearchResult(
+            title="NBA 2026 Season Opens",
+            url="https://nba.example/news/opening",
+            snippet="The 2026 NBA season tipped off on Tuesday with the Celtics defeating the Knicks 112-104.",
+        ),
+    ]
+    ctx = format_for_context(sample)
+    # Instruction must sit between the header and the bullets so the LLM reads
+    # it before scanning the facts.
+    lines = ctx.splitlines()
+    assert lines[0] == "[WEB_SEARCH_RESULTS]", (
+        f"AT-7 FAIL: header shape changed — SPG scrubber relies on this. Got {lines[0]!r}"
+    )
+    assert "conversational" in lines[1].lower() and "sentences" in lines[1].lower(), (
+        f"AT-7 FAIL: no summary instruction on line 2 — {lines[1]!r}"
+    )
+    assert "verbatim" in lines[1].lower() or "do not list" in lines[1].lower(), (
+        f"AT-7 FAIL: no anti-bulleting instruction on line 2 — {lines[1]!r}"
+    )
+    # Bullets still present so the LLM has facts to synthesise from.
+    assert any("NBA season tipped off" in ln for ln in lines[2:]), (
+        f"AT-7 FAIL: fact bullets dropped — {ctx!r}"
+    )
+
+
+def test_at7_spg_scrubber_still_recovers_davids_utterance():
+    """memory/spg_backfill.david_said must still strip the whole scaffolding and
+    return only what David typed, even with the new instruction line."""
+    import importlib
+    try:
+        bf = importlib.import_module("memory.spg_backfill")
+    except ImportError:
+        pytest.skip("spg_backfill not importable in this environment")
+    sample = [
+        SearchResult(
+            title="Pinky and the Brain",
+            url="https://en.wikipedia.org/wiki/Pinky_and_the_Brain",
+            snippet="Pinky and the Brain is an American animated television series.",
+        ),
+    ]
+    ctx = format_for_context(sample)
+    raw = f"[WEB_SEARCH: Pinky and the Brain]\n{ctx}\n\nUser asked: tell me about Pinky and the Brain"
+    assert bf.david_said(raw) == "tell me about Pinky and the Brain", (
+        f"AT-7 FAIL: SPG scrubber recovered the wrong utterance — "
+        f"got {bf.david_said(raw)!r}"
+    )
