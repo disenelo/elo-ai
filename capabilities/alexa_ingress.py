@@ -302,6 +302,43 @@ def _reply_mode() -> str:
     return "skill" if os.environ.get("ALEXA_REPLY", "ears").lower() == "skill" else "ears"
 
 
+# "Heard you" cue (gap 7, WO-0017): a soft two-note chime, no words and not eLo's
+# voice, played by Alexa the moment David's words reach eLo, so the ~20 s while
+# his reply forms isn't dead silence. Generated locally once (ffmpeg), served by
+# this listener like the voice clips. ALEXA_HEARD_CUE=off disables it.
+_chime_cache: dict = {}
+
+
+def _chime_mp3() -> bytes | None:
+    if "mp3" in _chime_cache:
+        return _chime_cache["mp3"]
+    mp3 = None
+    try:
+        out = _subprocess.run(
+            ["ffmpeg", "-hide_banner", "-loglevel", "error",
+             "-f", "lavfi", "-i", "sine=frequency=784:duration=0.14",
+             "-f", "lavfi", "-i", "sine=frequency=1175:duration=0.22",
+             "-filter_complex", "[0][1]concat=n=2:v=0:a=1,afade=t=in:d=0.02,"
+                                "afade=t=out:st=0.24:d=0.12,volume=0.35",
+             "-ac", "1", "-codec:a", "libmp3lame", "-b:a", "48k", "-ar", "24000", "-f", "mp3", "pipe:1"],
+            capture_output=True, timeout=5)
+        mp3 = out.stdout if out.returncode == 0 and out.stdout else None
+    except Exception:
+        mp3 = None
+    _chime_cache["mp3"] = mp3
+    return mp3
+
+
+def _heard_cue(base: str | None) -> dict | None:
+    """SSML outputSpeech playing the chime, or None (no base / disabled / ffmpeg failed)."""
+    if not base or os.environ.get("ALEXA_HEARD_CUE", "on").lower() == "off":
+        return None
+    mp3 = _chime_mp3()
+    if not mp3:
+        return None
+    return {"type": "SSML", "ssml": f'<speak><audio src="{base}/alexa/audio/{_store(mp3)}.mp3"/></speak>'}
+
+
 def _brain(utterance: str, turn_fn, base, t0) -> dict:
     if _reply_mode() == "ears":
         # David 2026-10-10: Alexa is eLo's ears; his mouth is the Mac or the Echo,
@@ -328,7 +365,11 @@ def _brain(utterance: str, turn_fn, base, t0) -> dict:
             pass
         _run(turn_fn, utterance)
         print(f"[alexa] → eLo (ears only; voice on {where}): {utterance!r}", flush=True)
-        return {"version": "1.0", "response": {"shouldEndSession": True}}
+        resp: dict = {"shouldEndSession": True}
+        cue = _heard_cue(base)
+        if cue:
+            resp["outputSpeech"] = cue
+        return {"version": "1.0", "response": resp}
     reply, from_brain = talk(utterance, turn_fn)
     return _speech(reply, elo=from_brain, base=base, t0=t0)
 

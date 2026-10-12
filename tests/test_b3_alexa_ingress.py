@@ -242,3 +242,24 @@ def test_alexa_input_without_echo_connected_does_not_pin(monkeypatch):
     ai.handle(_req(utterance="still there"), lambda t: gate.set() or {"response": "yep"})
     assert gate.wait(2)
     assert es._want["until"] == 0.0, "no want_for pin when the Echo isn't connected"
+
+
+# ── "heard you" chime (WO-0017 gap 7) ───────────────────────────────────────────
+
+def test_ears_mode_plays_heard_cue_not_words(monkeypatch):
+    monkeypatch.setenv("ALEXA_REPLY", "ears")
+    monkeypatch.delenv("ALEXA_HEARD_CUE", raising=False)
+    monkeypatch.setattr(ai, "_chime_mp3", lambda: b"CHIME")
+    r = ai.handle(_req(utterance="how's it going"), lambda t: {"response": "x"},
+                  base="https://example.ts.net")["response"]
+    assert r["shouldEndSession"] is True
+    ssml = r["outputSpeech"]["ssml"]
+    assert ssml.startswith('<speak><audio src="https://example.ts.net/alexa/audio/') and "how's" not in ssml
+    assert ai.audio_clip(ssml.split("example.ts.net", 1)[1].split('"')[0]) == b"CHIME"
+
+
+def test_heard_cue_can_be_turned_off(monkeypatch):
+    monkeypatch.setenv("ALEXA_REPLY", "ears")
+    monkeypatch.setenv("ALEXA_HEARD_CUE", "off")
+    r = ai.handle(_req(utterance="hi"), lambda t: {"response": "x"}, base="https://example.ts.net")["response"]
+    assert r == {"shouldEndSession": True}
