@@ -128,3 +128,64 @@ def test_threads_are_capped_so_the_phrase_keeps_meaning_something(monkeypatch):
         lambda: [{"text": f"question {i}", "topic": "t", "surfaced": False,
                   "weight": 5} for i in range(20)])
     assert len(dt.current()) <= dt.MAX_THREADS
+
+
+# ── WO-B2-0014: the record shape, without a third store ──────────────────────
+
+def _questions(monkeypatch, rows):
+    monkeypatch.setattr(
+        "faculties.curiosity.curiosity_faculty._load_questions", lambda: rows)
+
+
+def test_records_return_the_card_shape(monkeypatch):
+    from faculties.metacognition import deferred_threads as dt
+    _questions(monkeypatch, [
+        {"question_id": "q-1", "text": "does the seam hold?", "topic": "seam",
+         "reason": "inner_thought", "ts": 1791000000.0, "surfaced": False},
+    ])
+    rec = dt.records()[0]
+    assert set(rec) == {"thread_id", "summary", "reason",
+                        "created_at", "session_id", "status"}
+    assert rec["thread_id"] == "q-1"
+    assert rec["status"] == "active"
+    assert rec["reason"] == "inner_thought"
+
+
+def test_a_resolved_thread_is_excluded_by_default(monkeypatch):
+    """Otherwise every answered question keeps asking to be picked up."""
+    from faculties.metacognition import deferred_threads as dt
+    _questions(monkeypatch, [
+        {"question_id": "q-1", "text": "answered already", "surfaced": True,
+         "ts": 1.0, "reason": "x"},
+    ])
+    assert dt.records() == []
+    assert dt.records(include_resolved=True)[0]["status"] == "resolved"
+
+
+def test_session_id_is_empty_not_invented(monkeypatch):
+    """
+    It is written in faculties/curiosity/, which is not Builder 2's seat.
+    "" is honest; a fabricated session id would not be.
+    """
+    from faculties.metacognition import deferred_threads as dt
+    _questions(monkeypatch, [
+        {"question_id": "q-1", "text": "t", "surfaced": False, "ts": 1.0},
+    ])
+    assert dt.records()[0]["session_id"] == ""
+
+
+def test_a_thread_surfaces_only_when_the_turn_reaches_for_it(monkeypatch):
+    """
+    Relevance, not availability. Surfacing every open thread on every turn is
+    how eLo started narrating his own state.
+    """
+    from faculties.metacognition import deferred_threads as dt
+    _questions(monkeypatch, [
+        {"question_id": "q-1", "text": "does the seam hold?", "topic": "seam",
+         "surfaced": False, "ts": 1.0, "reason": "inner_thought"},
+        {"question_id": "q-2", "text": "will it rain again?", "topic": "rain",
+         "surfaced": False, "ts": 2.0, "reason": "inner_thought"},
+    ])
+    hits = dt.relevant_to("I fixed the seam on the shell")
+    assert [h["thread_id"] for h in hits] == ["q-1"]
+    assert dt.relevant_to("5 x 52?") == []

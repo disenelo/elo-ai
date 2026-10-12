@@ -71,6 +71,82 @@ def current() -> list[str]:
     return [l for l in (_label(q) for q in _unsurfaced()) if l][:MAX_THREADS]
 
 
+def records(include_resolved: bool = False) -> list[dict]:
+    """
+    Full thread records, in the shape WO-B2-0014 asks for.
+
+    NO THIRD STORE. The card asks for `faculties/deferred_threads.json` with
+    thread_id / summary / reason / created_at / session_id / status. Five of
+    those six already exist on the curiosity question that IS the deferred
+    thread:
+
+        thread_id  <- question_id        created_at <- ts
+        summary    <- text               status     <- surfaced
+        reason     <- reason             session_id <- (absent)
+
+    This module's whole argument is that the gap was never storage — it was
+    that nothing ever DECIDED a thread was unfinished. Two empty stores were
+    the problem; a third would be the same mistake with better intentions, and
+    a question could then be open in one place and closed in the other.
+
+    So this reads the one store that holds them and returns the card's shape.
+
+    `session_id` is "" and will stay "" until it is captured at the write
+    site, which is `faculties/curiosity/` — not Builder 2's seat. Specced to
+    Board rather than reached into. An empty string is honest; an invented
+    session id would not be.
+    """
+    out: list[dict] = []
+    try:
+        from faculties.curiosity.curiosity_faculty import _load_questions
+        for q in _load_questions():
+            if not isinstance(q, dict):
+                continue
+            resolved = str(q.get("surfaced", "")).lower() == "true" or q.get("surfaced") is True
+            if resolved and not include_resolved:
+                continue
+            label = _label(q)
+            if not label:
+                continue
+            out.append({
+                "thread_id":  str(q.get("question_id") or ""),
+                "summary":    label,
+                "reason":     str(q.get("reason") or ""),
+                "created_at": float(q.get("ts") or 0.0),
+                "session_id": "",          # see docstring — not written yet
+                "status":     "resolved" if resolved else "active",
+            })
+    except Exception as e:
+        _log.debug("deferred records unreadable (non-fatal): %s", e)
+    return out
+
+
+def relevant_to(text: str, limit: int = 2) -> list[dict]:
+    """
+    The threads this turn actually reaches for.
+
+    Card 0014's "eLo naturally picks up a deferred thread when relevant
+    context appears". Relevance, not availability: surfacing every open thread
+    on every turn is how eLo started narrating his own state. Matched on
+    shared content words, the same test `pre_thought` uses, so the two cannot
+    disagree about what counts as relevant.
+    """
+    try:
+        from faculties.inner_thought.preprocess import _words
+    except Exception:
+        return []
+    asked = _words(text)
+    if not asked:
+        return []
+    hits = []
+    for rec in records():
+        if asked & (_words(rec["summary"]) | _words(rec.get("reason", ""))):
+            hits.append(rec)
+        if len(hits) >= limit:
+            break
+    return hits
+
+
 def sync_to_self_state() -> list[str]:
     """
     Put them where spine.py already looks.
