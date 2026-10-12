@@ -15,19 +15,27 @@ Thread safety: single-threaded server; no locking needed.
 
 from __future__ import annotations
 
+import time as _time
+
 # ── Session state ─────────────────────────────────────────────────────────────
 
-_last_elo_response: str = ""        # last thing eLo said (up to 500 chars)
-_active_topic:      str = ""        # current conversation topic
-_prev_topic:        str = ""        # topic from the turn before, for TOPIC_CHANGE detection
-_referents:         dict = {}       # {pronoun/ref_word: entity_name} from recent turns
-_thread_history:    list = []       # [{topic, turns}] ring buffer, max 5 entries
+_last_elo_response: str   = ""      # last thing eLo said (up to 500 chars)
+_active_topic:      str   = ""      # current conversation topic
+_prev_topic:        str   = ""      # topic from the turn before, for TOPIC_CHANGE detection
+_referents:         dict  = {}      # {pronoun/ref_word: entity_name} from recent turns
+_thread_history:    list  = []      # [{topic, turns}] ring buffer, max 5 entries
+_last_response_at:  float = 0.0    # WO-B1-0140: epoch seconds of last successful response
 
 
 # ── API ───────────────────────────────────────────────────────────────────────
 
 def get_last_elo_response() -> str:
     return _last_elo_response
+
+
+def get_last_response_time() -> float:
+    """WO-B1-0140: epoch seconds when the last eLo response was recorded (0.0 = never)."""
+    return _last_response_at
 
 
 def get_active_topic() -> str:
@@ -61,9 +69,10 @@ def update_after_response(
     Called by server.py after each successful LLM response.
     Updates all session state for the next turn.
     """
-    global _last_elo_response, _active_topic, _prev_topic, _referents, _thread_history
+    global _last_elo_response, _active_topic, _prev_topic, _referents, _thread_history, _last_response_at
 
     _last_elo_response = (elo_response or "")[:500]
+    _last_response_at  = _time.time()  # WO-B1-0140: record when eLo last spoke
 
     new_topic = (active_topic or "").strip()
     if new_topic and new_topic != _active_topic:
@@ -83,9 +92,10 @@ def update_after_response(
 
 def reset() -> None:
     """Called at session start to clear cross-session bleed."""
-    global _last_elo_response, _active_topic, _prev_topic, _referents, _thread_history
+    global _last_elo_response, _active_topic, _prev_topic, _referents, _thread_history, _last_response_at
     _last_elo_response = ""
     _active_topic      = ""
     _prev_topic        = ""
     _referents         = {}
     _thread_history    = []
+    _last_response_at  = 0.0

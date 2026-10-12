@@ -1889,6 +1889,14 @@ def assemble_cognitive_state(
     except Exception as _perc_err:
         _log.warning("perception_faculty failed (non-fatal): %s", _perc_err)
 
+    # WO-B1-0140: david_context — David's active app, creative flow state
+    _david_ctx: dict = {}
+    try:
+        from runtime.david_context_faculty import compute as _dctx_compute
+        _david_ctx = _dctx_compute()
+    except Exception as _dctx_err:
+        _log.warning("david_context_faculty failed (non-fatal): %s", _dctx_err)
+
     # WO-QBODY-CONSEQUENCES-001 + WO-QMOVEMENT-001: read proprioception + movement lifecycle
     _body = {}
     try:
@@ -2026,6 +2034,8 @@ def assemble_cognitive_state(
         environment_delta=_perception_result.get("environment_delta", {}),
         perception_changed=_perception_result.get("perception_changed", False),
         perception_novel=_perception_result.get("novel", False),
+        # WO-B1-0140: David's active context + flow state
+        david_context=_david_ctx,
         # WO-SIMULATION-001: pending vs executed actions from simulation_tracker
         **_sim_fields,
         # WO-DEGRADATION-001: faculty result validation flags

@@ -416,6 +416,12 @@ class CognitiveState:
     perception_changed:   bool  = False   # True if any environment field changed this turn
     perception_novel:     bool  = False   # WO-B1-0139: True if a field appeared for first time
 
+    # ── David Context Faculty (WO-B1-0140) ────────────────────────────────────
+    # What David is doing right now at his Mac.
+    # Keys: active_app (str), app_category (str), conversation_gap_s (float), in_flow (bool).
+    # in_flow=True → eLo has already emitted MODE_DESKTOP to blender_state.json.
+    david_context:        dict  = field(default_factory=dict)
+
     # ── Simulation Tracker (WO-SIMULATION-001) ────────────────────────────────
     # What eLo planned vs what it actually completed, across turns.
     pending_actions:      tuple = field(default_factory=tuple)   # intended but not yet run

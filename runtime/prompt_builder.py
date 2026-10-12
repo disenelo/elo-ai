@@ -1614,6 +1614,29 @@ def build_from_plan(plan, raw: str = "", *, inner_thought: str = "") -> str:
     except Exception:
         pass
 
+    # ── WO-B1-0140: inject david_context when David is in creative/coding flow ─
+    # When in_flow=True, eLo has already patched blender_state.json with
+    # state.mode=desktop. The prompt block tells eLo to stay quiet and not
+    # interrupt David's work.
+    try:
+        _david_ctx = dict(getattr(plan, "david_context", None) or {})
+        if not _david_ctx:
+            from runtime.david_context_faculty import get_last_result as _dctx_last
+            _david_ctx = _dctx_last()
+        if _david_ctx.get("in_flow"):
+            _dctx_app = _david_ctx.get("active_app", "unknown app")
+            _dctx_gap = int(_david_ctx.get("conversation_gap_s", 0))
+            parts.append(
+                "[DAVID IN FLOW]\n"
+                f"David is in {_dctx_app} and has been quiet for {_dctx_gap}s. "
+                "You have already moved yourself to desktop mode. "
+                "Stay quiet unless spoken to. "
+                "Do NOT comment on his silence. Do NOT check in. "
+                "If he speaks, respond to exactly what he says — no preamble."
+            )
+    except Exception:
+        pass
+
     # ── WO-B1-0138: inject open intentions + active goals into thin-path ────
     # Mirrors the thick-path injection at server.py:6122. Without this,
     # build_from_plan() is blind to unfinished threads.
