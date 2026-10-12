@@ -329,6 +329,13 @@ def run(name: str) -> dict:
     if name not in controllable():
         return record_result("devices", tool_result(False, {"line": f"“{name}” isn't one I'm allowed to run."},
                                                     "not allow-listed"))
+    # WO-B3-0016: direct LAN control first, when David's lights are configured.
+    try:
+        from tools import tuya_agent as _tuya
+        if _tuya.configured() and name.lower() in ("lights on", "lights out"):
+            return _tuya.lights_on() if name.lower() == "lights on" else _tuya.lights_off()
+    except Exception:
+        pass
     alexa = {k.lower(): v for k, v in alexa_devices().items()}
     if name.lower() in alexa:
         return _run_alexa(name, alexa[name.lower()])
