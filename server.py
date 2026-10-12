@@ -2747,6 +2747,9 @@ def _process_turn(raw: str) -> dict:
     """Run one cognitive cycle. Thread-safe via _lock. Returns response dict."""
     global _state, _runtime_state, _last_inputs, _last_avatar_cmd, _elo_self
     _original_raw = raw  # WO-020: capture before enrichment for routing trace
+    # 0119: context blocks go to system, not raw — LLM sees clean user turn
+    _system_context_addenda: list[str] = []
+    _raw_augmented: bool = False  # True after any web-search context is injected
     # WO-B1-0114: wall-clock marker for FACT bypass timing journal
     import time as _b1114_time
     _turn_start_ts = _b1114_time.time()
@@ -3491,7 +3494,8 @@ def _process_turn(raw: str) -> dict:
                     except Exception:
                         pass
                     _bypass_journal(_original_raw, backend="file_agent", handler_class="COGNITIVE", line=1601)
-                    raw = f"[FILE_AGENT_RESULT]\n{_fp_result}\n\nUser asked: {_original_raw}"
+                    # 0119: file agent result to system, raw stays clean
+                    _system_context_addenda.append(f"[FILE_AGENT_RESULT]\n{_fp_result}")
                     # Falls through to spine — file execution must reach autobiography
                 elif _is_file_cancel(raw):
                     _fp_cancel()
@@ -3864,7 +3868,8 @@ def _process_turn(raw: str) -> dict:
                 else:
                     _ig_ctx = f"Image generation failed for prompt: {_ig_prompt} — all backends failed."
                 _bypass_journal(_original_raw, backend="image_gen", handler_class="COGNITIVE", line=1877)
-                raw = f"[IMAGE_GEN]\n{_ig_ctx}\n\nUser asked: {_original_raw}"
+                # 0119: image gen context to system, raw stays clean
+                _system_context_addenda.append(f"[IMAGE_GEN]\n{_ig_ctx}")
                 # Falls through to spine — artefact must reach memory/autobiography
             except Exception as _ig_err:
                 import sys as _ig_sys
@@ -3893,9 +3898,10 @@ def _process_turn(raw: str) -> dict:
                         print(f"[model_gen] all backends failed for: {_mg_prompt}")
                 _mg_thread.Thread(target=_mg_run, daemon=True).start()
                 _bypass_journal(_original_raw, backend="model_gen", handler_class="COGNITIVE", line=1905)
-                raw = (
+                # 0119: model gen context to system, raw stays clean
+                _system_context_addenda.append(
                     f"[MODEL_GEN]\nGenerating a 3D model of {_mg_prompt} in the background — "
-                    f"will open it when ready.\n\nUser asked: {_original_raw}"
+                    f"will open it when ready."
                 )
                 # Falls through to spine — artefact must reach memory/autobiography
             except Exception as _mg_err:
@@ -3970,7 +3976,8 @@ def _process_turn(raw: str) -> dict:
                 _action_result = _act(_topic)
                 if _action_result:
                     _bypass_journal(_original_raw, backend="action_agent", handler_class="COGNITIVE", line=1981)
-                    raw = f"[ACTION_AGENT]\n{_action_result.spoken}\n\nUser asked: {_original_raw}"
+                    # 0119: action agent result to system, raw stays clean
+                    _system_context_addenda.append(f"[ACTION_AGENT]\n{_action_result.spoken}")
                     # Falls through to spine
         except Exception as _ae:
             import sys as _ae_sys
@@ -4002,8 +4009,11 @@ def _process_turn(raw: str) -> dict:
                 _g_ctx_lines = []
                 for _gh in _g_entity_hits[:2]:
                     _g_ctx_lines.append(f"{_gh['label']}: {_gh['content']}")
-                raw = f"[WORLD_KNOWLEDGE — from eLo's own world (verified, confidence 1.0 — answer from this, not from web)]\n" \
-                      + "\n".join(_g_ctx_lines) + f"\n\nUser asked: {_original_raw}"
+                # 0119: world-graph context goes to system, not raw
+                _system_context_addenda.append(
+                    "[WORLD_KNOWLEDGE — from eLo's own world (verified, confidence 1.0 — answer from this, not from web)]\n"
+                    + "\n".join(_g_ctx_lines)
+                )
                 _world_graph_hit = True
 
                 # WO-B1-0114 WKG FACT fast-path: direct lookup questions
@@ -4090,7 +4100,9 @@ def _process_turn(raw: str) -> dict:
                         _ref_results = _ref_search(_ref_entity, max_results=4)
                         if _ref_results:
                             _ref_ctx = _ref_fmt(_ref_results)
-                            raw = f"[WEB_SEARCH: {_ref_entity}]\n{_ref_ctx}\n\nUser asked: {_original_raw}"
+                            # 0119: context to system, raw stays clean
+                            _system_context_addenda.append(f"[WEB_SEARCH: {_ref_entity}]\n{_ref_ctx}")
+                            _raw_augmented = True
                             # Falls through to LLM with search context; LLM will acknowledge
                             # the reference now that it has web results to synthesise.
                         else:
@@ -4113,13 +4125,14 @@ def _process_turn(raw: str) -> dict:
             # unchanged from _original_raw or was enriched by P0-REF — either way,
             # only inject once). Prepends a lightweight context block so the LLM knows
             # the reference without requiring David to label it.
-            if raw == _original_raw:  # P0-REFERENCE already augments raw if it fires
+            if not _raw_augmented:  # 0119: P0-REFERENCE already injected context if it fired
                 try:
                     from faculties.cultural_facts.pop_culture import match_pop_culture as _pc_match, context_block as _pc_ctx
                     _pc_hit = _pc_match(_original_raw)
                     if _pc_hit:
                         _logging.info("POP-CULTURE-PROBE: matched %r — injecting context", _pc_hit["name"])
-                        raw = f"{_pc_ctx(_pc_hit)}\n\n{_original_raw}"
+                        # 0119: pop-culture context to system, raw stays clean
+                        _system_context_addenda.append(_pc_ctx(_pc_hit))
                 except Exception as _pc_err:
                     _logging.debug("POP-CULTURE-PROBE: import/match error — %s", _pc_err)
 
@@ -4189,11 +4202,13 @@ def _process_turn(raw: str) -> dict:
                     if _ws_results and _ws_results[0].url:
                         _LAST_FOUND["url"]   = _ws_results[0].url
                         _LAST_FOUND["title"] = _ws_results[0].title
-                    raw = f"[WEB_SEARCH: {_ws_name}]\n{_wfmt(_ws_results)}\n\nUser asked: {_original_raw}"
+                    # 0119: web search context to system, raw stays clean
+                    _system_context_addenda.append(f"[WEB_SEARCH: {_ws_name}]\n{_wfmt(_ws_results)}")
+                    _raw_augmented = True
             elif _rs_answer:
                 _ws_direct = _rs_answer
                 _ws_backend = "direct:research"
-            elif not _world_graph_hit and is_search_intent(raw):
+            elif not _world_graph_hit and not _raw_augmented and is_search_intent(raw):
                 _sq_text = _sq(raw)
                 # P0-WEBSEARCH: vague query enrichment — "read up about it" / "get a summary from
                 # somewhere" produce extracted queries that are pronoun-only. Pull topic from the
@@ -4235,9 +4250,8 @@ def _process_turn(raw: str) -> dict:
                     # WO-051: honest fallback — tell eLo when DDG served instead of Google.
                     _ws_src    = getattr(_ws_mod, "last_source", "")
                     _ws_backup = "\n[SEARCH_NOTE: Google search unavailable — results are from backup search (DuckDuckGo). Mention this briefly if David asks about search quality.]" if _ws_src == "ddg" else ""
-                    # Inject as context and let the LLM respond naturally rather than
-                    # short-circuiting — web results need synthesis, not raw dump
-                    raw = f"[WEB_SEARCH: {_sq_text}]\n{_ws_ctx}{_ws_backup}\n\nUser asked: {_original_raw}"
+                    # 0119: web search context to system, raw stays clean
+                    _system_context_addenda.append(f"[WEB_SEARCH: {_sq_text}]\n{_ws_ctx}{_ws_backup}")
                 # Falls through to LLM with enriched context
         except Exception as _ws_err:
             import sys as _ws_sys
@@ -4254,7 +4268,8 @@ def _process_turn(raw: str) -> dict:
                     pass
                 _rem_result = _set_reminder(raw, context=raw)
                 _bypass_journal(_original_raw, backend="reminder", handler_class="COGNITIVE", line=2050)
-                raw = f"[REMINDER_SET]\n{_rem_result}\n\nUser asked: {_original_raw}"
+                # 0119: reminder context to system, raw stays clean
+                _system_context_addenda.append(f"[REMINDER_SET]\n{_rem_result}")
                 # Falls through to spine
         except Exception as _rem_err:
             import sys as _rem_sys
@@ -4290,7 +4305,8 @@ def _process_turn(raw: str) -> dict:
                 _visible = [f for f in _dfiles if not f.startswith(".")][:20]
                 _d_ctx = "Desktop: " + ", ".join(_visible) if _visible else "Desktop is empty."
                 _bypass_journal(_original_raw, backend="desktop_list", handler_class="COGNITIVE", line=2089)
-                raw = f"[DESKTOP_LIST]\n{_d_ctx}\n\nUser asked: {_original_raw}"
+                # 0119: desktop list context to system, raw stays clean
+                _system_context_addenda.append(f"[DESKTOP_LIST]\n{_d_ctx}")
                 # Falls through to spine
             except Exception as _dl_err:
                 import sys as _dl_sys
@@ -4314,7 +4330,8 @@ def _process_turn(raw: str) -> dict:
                 else:
                     _p_ctx = "No DISENELO project folders found."
                 _bypass_journal(_original_raw, backend="project_list", handler_class="COGNITIVE", line=2116)
-                raw = f"[PROJECT_LIST]\n{_p_ctx}\n\nUser asked: {_original_raw}"
+                # 0119: project list context to system, raw stays clean
+                _system_context_addenda.append(f"[PROJECT_LIST]\n{_p_ctx}")
                 # Falls through to spine
             except Exception as _pl_err:
                 import sys as _pl_sys
@@ -4336,8 +4353,8 @@ def _process_turn(raw: str) -> dict:
                     _todo_reply = "\n".join(_todo_lines) if _todo_lines else "Nothing found in vault for to-do."
                 else:
                     _todo_reply = "I don't have a to-do list in memory right now."
-                # Falls through to LLM enriched so it can speak naturally
-                raw = f"[TODO_VAULT]\n{_todo_reply}\n\nUser asked: {_original_raw}"
+                # 0119: todo context to system, raw stays clean
+                _system_context_addenda.append(f"[TODO_VAULT]\n{_todo_reply}")
             except Exception as _td_err:
                 import sys as _td_sys
                 print(f"[todo] error: {_td_err}", file=_td_sys.stderr)
@@ -4366,10 +4383,10 @@ def _process_turn(raw: str) -> dict:
                 from desktop.screen_reader import read as _sr_read
                 _sc = _sr_read(force=True)
                 if _sc:
-                    # Fall through to LLM with screen content injected so it can speak naturally
-                    raw = f"[SCREEN_CONTENT]\nApp: {_sc.app}\nSummary: {_sc.summary}\nText: {_sc.raw_text[:600]}\n\nUser asked: {_original_raw}"
+                    # 0119: screen content to system, raw stays clean
+                    _system_context_addenda.append(f"[SCREEN_CONTENT]\nApp: {_sc.app}\nSummary: {_sc.summary}\nText: {_sc.raw_text[:600]}")
                 else:
-                    raw = f"[SCREEN_READ: I took a screenshot but couldn't read it — vision backend may be unavailable.]\n\nUser asked: {_original_raw}"
+                    _system_context_addenda.append("[SCREEN_READ: I took a screenshot but couldn't read it — vision backend may be unavailable.]")
             except Exception as _sr_err:
                 import sys as _sr_sys
                 print(f"[screen_reader] error: {_sr_err}", file=_sr_sys.stderr)
@@ -4402,7 +4419,8 @@ def _process_turn(raw: str) -> dict:
                 }
                 _app_list_str = ", ".join(_APP_NAMES_LOCAL.keys())
                 _bypass_journal(_original_raw, backend="app_list", handler_class="COGNITIVE", line=2208)
-                raw = f"[APP_LIST]\nApps I can switch to: {_app_list_str}.\n\nUser asked: {_original_raw}"
+                # 0119: app list context to system, raw stays clean
+                _system_context_addenda.append(f"[APP_LIST]\nApps I can switch to: {_app_list_str}.")
                 # Falls through to spine
             except Exception as _al_err:
                 import sys as _al_sys
@@ -4449,7 +4467,8 @@ def _process_turn(raw: str) -> dict:
                     _xl_reply = "Project links:\n" + "\n".join(_xref_lines)
                 else:
                     _xl_reply = "No bookmark or vault links found for DISENELO projects."
-                raw = f"[PROJECT_LINKS]\n{_xl_reply}\n\nUser asked: {_original_raw}"
+                # 0119: project links context to system, raw stays clean
+                _system_context_addenda.append(f"[PROJECT_LINKS]\n{_xl_reply}")
             except Exception as _xl_err:
                 import sys as _xl_sys
                 print(f"[proj_links] error: {_xl_err}", file=_xl_sys.stderr)
@@ -4479,7 +4498,8 @@ def _process_turn(raw: str) -> dict:
                 else:
                     _tab_ctx = "Chrome isn't open or no tabs found."
                 _bypass_journal(_original_raw, backend="chrome_tabs", handler_class="COGNITIVE", line=2289)
-                raw = f"[CHROME_TABS]\n{_tab_ctx}\n\nUser asked: {_original_raw}"
+                # 0119: chrome tabs context to system, raw stays clean
+                _system_context_addenda.append(f"[CHROME_TABS]\n{_tab_ctx}")
                 # Falls through to spine
             except Exception as _ct_err:
                 import sys as _ct_sys
@@ -4546,7 +4566,8 @@ def _process_turn(raw: str) -> dict:
                     pass
                 _tracker_result = _tracker_agent(raw, _sess_ctx)
                 _bypass_journal(_original_raw, backend="tracker_agent", handler_class="COGNITIVE", line=2358)
-                raw = f"[TRACKER_AGENT]\n{_tracker_result}\n\nUser asked: {_original_raw}"
+                # 0119: tracker result to system, raw stays clean
+                _system_context_addenda.append(f"[TRACKER_AGENT]\n{_tracker_result}")
                 # Falls through to spine
         except Exception as _te:
             import sys as _te_sys
@@ -4562,7 +4583,8 @@ def _process_turn(raw: str) -> dict:
             if _company_intent_key:
                 _company_result = _handle_company_voice(raw)
                 _bypass_journal(_original_raw, backend="company_state", handler_class="COGNITIVE", line=2377)
-                raw = f"[COMPANY_STATE]\n{_company_result}\n\nUser asked: {_original_raw}"
+                # 0119: company state context to system, raw stays clean
+                _system_context_addenda.append(f"[COMPANY_STATE]\n{_company_result}")
                 # Falls through to spine
         except Exception as _csi_err:
             import sys as _csi_sys
@@ -4576,10 +4598,10 @@ def _process_turn(raw: str) -> dict:
                 _fact_delivery = _fact.delivery if _fact else ""
                 _bypass_journal(_original_raw, backend="cultural_facts", handler_class="COGNITIVE", line=2393)
                 if _fact_delivery:
-                    raw = (
+                    # 0119: cultural fact context to system, raw stays clean
+                    _system_context_addenda.append(
                         f"[CULTURAL_FACT — drawn from world knowledge; "
-                        f"speak with appropriate epistemic tier per CT4V-07]\n{_fact_delivery}\n\n"
-                        f"User asked: {_original_raw}"
+                        f"speak with appropriate epistemic tier per CT4V-07]\n{_fact_delivery}"
                     )
                 # Falls through to spine — CT4V-07 runs inside spine._conversation_faculty()
         except Exception as _cf_err:
@@ -4600,10 +4622,10 @@ def _process_turn(raw: str) -> dict:
                 from faculties.music_memory.faculty import MusicMemoryFaculty as _MMF
                 _mm_obs = _MMF().observe(trigger=raw)
                 if _mm_obs.has_signal and _mm_obs.observation_text:
-                    raw = (
+                    # 0119: music memory context to system, raw stays clean
+                    _system_context_addenda.append(
                         f"[MUSIC_MEMORY — from David's personal music library; "
-                        f"speak naturally, not as a data report]\n{_mm_obs.observation_text}\n\n"
-                        f"User said: {_original_raw}"
+                        f"speak naturally, not as a data report]\n{_mm_obs.observation_text}"
                     )
         except Exception:
             pass  # music memory failure must never block a turn
@@ -4615,7 +4637,8 @@ def _process_turn(raw: str) -> dict:
                 from self.decision_journal import explain_last as _dj_explain
                 _why_ctx = _dj_explain()
                 _bypass_journal(_original_raw, backend="decision_journal", handler_class="COGNITIVE", line=2404)
-                raw = f"[DECISION_JOURNAL — eLo's last decision trace]\n{_why_ctx}\n\nUser asked: {_original_raw}"
+                # 0119: decision journal context to system, raw stays clean
+                _system_context_addenda.append(f"[DECISION_JOURNAL — eLo's last decision trace]\n{_why_ctx}")
             except Exception:
                 pass
             # Falls through to spine — Executive sees the journal context and responds naturally.
@@ -5945,6 +5968,9 @@ def _process_turn(raw: str) -> dict:
                                   self_block=_self_prompt_block(_elo_self),
                                   lessons=_bp_lessons,
                                   grounding_block=_grounding_block)
+        # 0119: inject context blocks that were collected instead of rewriting raw
+        if _system_context_addenda:
+            system = system + "\n\n" + "\n\n".join(_system_context_addenda)
         # WO-MEMORY-OFFLINE-SIGNAL-001: if vault write failed last turn, warn the model.
         # Sentinel file expires after 5 minutes — only warns on the turn(s) immediately
         # after a failure, not indefinitely.
