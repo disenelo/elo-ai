@@ -166,6 +166,8 @@ _CHOICES = ("auto", "mac", "echo")
 # Mac's keyboard/mouse for ELO_AWAY_IDLE_S (default 5 min) — he's in the room,
 # not at the desk. Otherwise the Mac. Only ever the Echo when it's connected.
 _AWAY_IDLE_S = float(os.environ.get("ELO_AWAY_IDLE_S", "300"))
+# Presence's setting says "alexa" (Designer 66900b2); the brain calls it "echo".
+_ALIASES = {"alexa": "echo", "echo": "echo", "mac": "mac", "auto": "auto"}
 _idle_cache = {"ts": 0.0, "secs": 0.0}
 
 
@@ -209,7 +211,7 @@ def _latest_choice_event() -> tuple[float, str] | None:
             idx = len(content) if nl < 0 else nl + 1
             continue
         if isinstance(obj, dict) and obj.get("type") == "voice_output":
-            v = str(obj.get("subject", "")).strip().lower()
+            v = _ALIASES.get(str(obj.get("subject", "")).strip().lower(), "")
             if v in _CHOICES:
                 best = (float(obj.get("_ts") or 0.0), v)
     return best
@@ -226,7 +228,7 @@ def _saved() -> dict:
 
 def set_voice_output(choice: str, ts: float | None = None) -> str:
     """Remember David's choice; choosing the Echo connects it (Mac output restored)."""
-    choice = (choice or "").strip().lower()
+    choice = _ALIASES.get((choice or "").strip().lower(), "")
     if choice not in _CHOICES:
         raise ValueError(f"voice output must be one of {_CHOICES}")
     prev = _saved().get("output", "mac")
@@ -268,6 +270,71 @@ def stop_wanting() -> None:
     _want["until"] = 0.0
 
 
+# ── Presence "connect to Alexa" button (Designer ALEXA-CONNECT-BUTTON 2026-10-12) ──
+# David: "press button, silent fire, that connects eLo to Alexa embodiment … where
+# he can hear and speak via the Echo, and still move around the computer as
+# Presence." unity_events.json {"type": "alexa_connect", "subject": "start"|"stop"}.
+# start → eLo's voice is on the Echo (and he knows David is at the speaker) until
+# stop. Nothing plays at the desk; David opens the conversation at the Echo
+# ("Alexa, open elo"). The newest start/stop wins and is remembered
+# (data/alexa_connect.json) because the events file is trimmed.
+_CONNECT = os.path.join(_ROOT, "data", "alexa_connect.json")
+_ac_cache = {"ts": 0.0, "value": None}
+
+
+def _latest_connect_event() -> tuple[float, str] | None:
+    try:
+        with open(_EVENTS, encoding="utf-8") as f:
+            content = f.read()
+    except Exception:
+        return None
+    dec, idx, best = _json.JSONDecoder(), 0, None
+    while idx < len(content):
+        while idx < len(content) and content[idx] in " \t\r\n":
+            idx += 1
+        if idx >= len(content):
+            break
+        try:
+            obj, idx = dec.raw_decode(content, idx)
+        except ValueError:
+            nl = content.find("\n", idx)
+            idx = len(content) if nl < 0 else nl + 1
+            continue
+        if isinstance(obj, dict) and obj.get("type") == "alexa_connect":
+            v = str(obj.get("subject", "")).strip().lower()
+            if v in ("start", "stop"):
+                best = (float(obj.get("_ts") or 0.0), v)
+    return best
+
+
+def alexa_connected() -> bool:
+    """True between Presence's alexa_connect start and stop. Cached 2 s."""
+    if time.time() - _ac_cache["ts"] < 2.0 and _ac_cache["value"] is not None:
+        return _ac_cache["value"]
+    saved = {}
+    try:
+        with open(_CONNECT, encoding="utf-8") as f:
+            saved = _json.load(f)
+    except Exception:
+        pass
+    ev = _latest_connect_event()
+    if ev and ev[0] > float(saved.get("_ts") or 0.0):
+        saved = {"state": ev[1], "_ts": ev[0]}
+        try:
+            os.makedirs(os.path.dirname(_CONNECT), exist_ok=True)
+            with open(_CONNECT + ".tmp", "w", encoding="utf-8") as f:
+                _json.dump(saved, f)
+            os.replace(_CONNECT + ".tmp", _CONNECT)
+        except Exception:
+            pass
+        if ev[1] == "start" and device_index(fresh=True) is None:   # silent: Bluetooth only, no sound
+            import threading as _th
+            _th.Thread(target=connect, name="echo-connect", daemon=True).start()
+    value = saved.get("state") == "start"
+    _ac_cache.update(ts=time.time(), value=value)
+    return value
+
+
 def speaking() -> bool:
     """True when eLo's next line should play on the Echo (output_decision).
     Not connected → False, so eLo speaks on the Mac rather than not at all."""
@@ -280,6 +347,8 @@ def output_decision() -> tuple[str, str]:
     """(device, why): eLo's choice for his next spoken line — 'echo' or 'mac'."""
     if device_index() is None:
         return "mac", "Echo not connected"
+    if alexa_connected():
+        return "echo", "David pressed connect: he's at the Echo"
     if time.time() < _want["until"]:
         return "echo", "David just spoke through Alexa"
     setting = voice_output()

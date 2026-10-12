@@ -7,6 +7,8 @@ from tools import echo_speaker as es
 def _clean(tmp_path, monkeypatch):
     monkeypatch.setattr(es, "_SETTING", str(tmp_path / "voice_output.json"))
     monkeypatch.setattr(es, "_EVENTS", str(tmp_path / "unity_events.json"))
+    monkeypatch.setattr(es, "_CONNECT", str(tmp_path / "alexa_connect.json"))
+    es._ac_cache.update(ts=0.0, value=None)
     es._vo_cache.update(ts=0.0, value=None)
     es._idx_cache.update(ts=0.0, idx=None); es.stop_wanting()
     yield
@@ -128,3 +130,39 @@ def test_echo_chosen_but_not_connected_falls_back_to_mac(monkeypatch):
     monkeypatch.setattr(es, "connect", lambda *a, **k: False)
     es.set_voice_output("echo")
     assert es.speaking() is False      # eLo still speaks, on the Mac
+
+
+
+# ── Designer ALEXA-CONNECT-BUTTON (2026-10-12) ─────────────────────────────────
+
+def _events(tmp_path, *lines):
+    (tmp_path / "unity_events.json").write_text("\n".join(lines) + "\n")
+    es._ac_cache.update(ts=0.0, value=None); es._vo_cache.update(ts=0.0, value=None)
+
+
+def test_presence_alexa_name_means_echo(monkeypatch, tmp_path):
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 1)
+    monkeypatch.setattr(es, "mac_idle_seconds", lambda: 1.0)
+    _events(tmp_path, '{"type":"voice_output","subject":"alexa","_ts":10}')
+    assert es.voice_output() == "echo" and es.output_decision() == ("echo", "setting: Alexa speaker")
+
+
+def test_connect_button_start_then_stop(monkeypatch, tmp_path):
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 1)
+    monkeypatch.setattr(es, "mac_idle_seconds", lambda: 1.0)          # still "at the desk" when pressed
+    _events(tmp_path, '{"type":"alexa_connect","subject":"start","_ts":10}')
+    assert es.output_decision() == ("echo", "David pressed connect: he's at the Echo")
+    _events(tmp_path, '{"type":"gaze_target_changed","_ts":11}')       # start trimmed away
+    assert es.alexa_connected() is True                                 # remembered
+    _events(tmp_path, '{"type":"alexa_connect","subject":"stop","_ts":20}')
+    assert es.alexa_connected() is False and es.output_decision()[0] == "mac"
+
+
+def test_connect_start_connects_bluetooth_silently(monkeypatch, tmp_path):
+    called = []
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: None)
+    monkeypatch.setattr(es, "connect", lambda *a, **k: called.append(1) or True)
+    _events(tmp_path, '{"type":"alexa_connect","subject":"start","_ts":10}')
+    assert es.alexa_connected() is True
+    import time as _t; _t.sleep(0.2)
+    assert called == [1]
