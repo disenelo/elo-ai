@@ -10,7 +10,7 @@ def _clean(tmp_path, monkeypatch):
     monkeypatch.setattr(es, "_CONNECT", str(tmp_path / "alexa_connect.json"))
     es._ac_cache.update(ts=0.0, value=None)
     es._vo_cache.update(ts=0.0, value=None)
-    es._idx_cache.update(ts=0.0, idx=None); es.stop_wanting()
+    es._idx_cache.update(ts=0.0, idx=None); es.stop_wanting(); es.release_voice()
     yield
     es._idx_cache.update(ts=0.0, idx=None); es.stop_wanting(); es._vo_cache.update(ts=0.0, value=None)
 

@@ -335,9 +335,60 @@ def alexa_connected() -> bool:
     return value
 
 
+# ── Hold eLo's normal voice while Alexa speaks the reply itself ────────────────
+# Adaptive Alexa conversation (B3 2026-10-12): when eLo's reply is ready inside
+# Alexa's window, Alexa says it (in his voice) and keeps listening, so his normal
+# voice output must NOT also play it. voice_engine plays from a background thread,
+# so the duplicate can arrive just before or just after the reply returns:
+#   hold_voice()        — while an Alexa turn is in its window: swallow main-voice playback
+#   consume_next_voice()— Alexa spoke it: swallow the next one (if it hasn't happened yet)
+#   release_voice()     — Alexa gave up (slow reply): let it play normally (Bluetooth/Mac)
+import threading as _threading
+_hold = {"mode": None, "until": 0.0, "swallowed": 0}
+_hold_lock = _threading.Lock()
+
+
+def hold_voice(seconds: float = 15.0) -> None:
+    with _hold_lock:
+        _hold.update(mode="hold", until=time.time() + seconds, swallowed=0)
+
+
+def release_voice() -> None:
+    with _hold_lock:
+        _hold.update(mode=None, until=0.0)
+
+
+def consume_next_voice(seconds: float = 20.0) -> None:
+    """Alexa spoke the reply. If its normal playback was already swallowed, done;
+    otherwise swallow the next one within `seconds`."""
+    with _hold_lock:
+        if _hold["swallowed"]:
+            _hold.update(mode=None, until=0.0)
+        else:
+            _hold.update(mode="consume", until=time.time() + seconds)
+
+
+def _holding() -> bool:
+    with _hold_lock:
+        return _hold["mode"] is not None and time.time() < _hold["until"]
+
+
+def _swallow() -> bool:
+    """True when this playback must not be heard (and records it)."""
+    with _hold_lock:
+        if _hold["mode"] is None or time.time() >= _hold["until"]:
+            return False
+        _hold["swallowed"] += 1
+        if _hold["mode"] == "consume":
+            _hold.update(mode=None, until=0.0)
+        return True
+
+
 def speaking() -> bool:
     """True when eLo's next line should play on the Echo (output_decision).
     Not connected → False, so eLo speaks on the Mac rather than not at all."""
+    if _holding():
+        return True                       # routes through popen_play, which swallows it
     if os.environ.get("ECHO_SPEAKER", "on").lower() == "off":
         return False
     return output_decision()[0] == "echo"
@@ -376,6 +427,8 @@ def play(path: str, timeout: float = 120) -> bool:
 
 def popen_play(path: str) -> subprocess.Popen | None:
     """Same as play() but returns the process (so voice_engine can stop it like afplay)."""
+    if _swallow():                        # Alexa is saying this reply itself
+        return subprocess.Popen(["true"])
     idx = device_index()
     if idx is None:
         return None

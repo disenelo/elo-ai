@@ -34,6 +34,7 @@ from urllib.parse import urlparse
 from posixpath import normpath
 
 _BUDGET_S = 6.5            # leave margin under Alexa's 8 s
+_ADAPT_BUDGET_S = float(os.environ.get("ALEXA_ADAPT_BUDGET_S", "5.0"))  # ears mode: room for eLo's voice clip within 8 s
 _MAX_SKEW_S = 150          # Amazon: reject requests older/newer than 150 s
 _CERT_SAN = "echo-api.amazon.com"
 _cert_cache: dict[str, tuple[float, list]] = {}
@@ -363,7 +364,28 @@ def _brain(utterance: str, turn_fn, base, t0) -> dict:
                 where = "mac (Echo not connected)"
         except Exception:
             pass
-        _run(turn_fn, utterance)
+        # Adaptive conversation (David 2026-10-12: "we want it ready … not wait for
+        # it"): if eLo's reply is ready inside Alexa's window, Alexa speaks it in
+        # his voice and KEEPS LISTENING (no "Alexa" before the next line); his
+        # normal voice output is held so he isn't heard twice. If not, Alexa
+        # gives up quietly (chime) and the reply plays from the Echo/Mac when
+        # ready, as before. No switch: fast replies become a conversation.
+        try:
+            from tools import echo_speaker as _es2
+            _es2.hold_voice(_ADAPT_BUDGET_S + 10)
+        except Exception:
+            _es2 = None
+        slot = _run(turn_fn, utterance)
+        if slot["done"].wait(_ADAPT_BUDGET_S):
+            reply, from_brain = _text(slot["result"])
+            if _es2 is not None:
+                _es2.consume_next_voice()
+            out = _speech(reply, elo=from_brain, base=base, t0=t0)
+            out["response"]["shouldEndSession"] = False
+            print(f"[alexa] → eLo answered in {time.monotonic() - t0:.1f} s: Alexa speaks it, keeps listening", flush=True)
+            return out
+        if _es2 is not None:
+            _es2.release_voice()
         print(f"[alexa] → eLo (ears only; voice on {where}): {utterance!r}", flush=True)
         resp: dict = {"shouldEndSession": True}
         cue = _heard_cue(base)

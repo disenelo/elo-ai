@@ -18,6 +18,8 @@ from capabilities import alexa_ingress as ai
 @pytest.fixture(autouse=True)
 def _echo_not_connected(monkeypatch):
     monkeypatch.setattr(ai, "_echo_is_mouth", lambda: False)
+    import tools.echo_speaker as _es_reset
+    _es_reset.release_voice()
     monkeypatch.setenv("ALEXA_REPLY", "skill")     # these tests cover the Alexa-speaks mode
 
 
@@ -201,9 +203,10 @@ def test_ears_mode_runs_turn_in_background_and_alexa_says_nothing(monkeypatch, w
     monkeypatch.setenv("ALEXA_REPLY", "ears")
     import tools.echo_speaker as es
     monkeypatch.setattr(es, "voice_output", lambda: where)
+    monkeypatch.setattr(ai, "_ADAPT_BUDGET_S", 0.1)
     seen, gate = [], threading.Event()
     def turn(t):
-        seen.append(t); gate.set(); return {"response": "his reply plays on the chosen speaker"}
+        seen.append(t); time.sleep(0.3); gate.set(); return {"response": "his reply plays on the chosen speaker"}
     r = ai.handle(_req(utterance="how's it going"), turn)
     assert r["response"] == {"shouldEndSession": True}
     assert gate.wait(2) and seen == ["how's it going"]
@@ -224,9 +227,11 @@ def test_alexa_input_pins_reply_to_echo_overriding_manual_mac_setting(monkeypatc
     monkeypatch.setattr(es, "voice_output", lambda: "mac")           # David's setting = Mac
     es.stop_wanting()
     assert es.speaking() is False
+    monkeypatch.setattr(ai, "_ADAPT_BUDGET_S", 0.1)
     gate = threading.Event()
-    ai.handle(_req(utterance="what's on today"), lambda t: gate.set() or {"response": "the usual"})
+    ai.handle(_req(utterance="what's on today"), lambda t: time.sleep(0.3) or gate.set() or {"response": "the usual"})
     assert gate.wait(2)
+    es.release_voice()
     assert es.speaking() is True, "Alexa-arriving turn must route eLo's voice to the Echo"
     es.stop_wanting()
 
@@ -244,14 +249,21 @@ def test_alexa_input_without_echo_connected_does_not_pin(monkeypatch):
     assert es._want["until"] == 0.0, "no want_for pin when the Echo isn't connected"
 
 
+def _slow(reply="later", secs=0.4):
+    """A turn slower than the (shortened) Alexa window: today's ~20 s case."""
+    def turn(t):
+        time.sleep(secs); return {"response": reply}
+    return turn
+
+
 # ── "heard you" chime (WO-0017 gap 7) ───────────────────────────────────────────
 
 def test_ears_mode_plays_heard_cue_not_words(monkeypatch):
     monkeypatch.setenv("ALEXA_REPLY", "ears")
     monkeypatch.delenv("ALEXA_HEARD_CUE", raising=False)
     monkeypatch.setattr(ai, "_chime_mp3", lambda: b"CHIME")
-    r = ai.handle(_req(utterance="how's it going"), lambda t: {"response": "x"},
-                  base="https://example.ts.net")["response"]
+    monkeypatch.setattr(ai, "_ADAPT_BUDGET_S", 0.1)
+    r = ai.handle(_req(utterance="how's it going"), _slow(), base="https://example.ts.net")["response"]
     assert r["shouldEndSession"] is True
     ssml = r["outputSpeech"]["ssml"]
     assert ssml.startswith('<speak><audio src="https://example.ts.net/alexa/audio/') and "how's" not in ssml
@@ -261,5 +273,35 @@ def test_ears_mode_plays_heard_cue_not_words(monkeypatch):
 def test_heard_cue_can_be_turned_off(monkeypatch):
     monkeypatch.setenv("ALEXA_REPLY", "ears")
     monkeypatch.setenv("ALEXA_HEARD_CUE", "off")
-    r = ai.handle(_req(utterance="hi"), lambda t: {"response": "x"}, base="https://example.ts.net")["response"]
+    monkeypatch.setattr(ai, "_ADAPT_BUDGET_S", 0.1)
+    r = ai.handle(_req(utterance="hi"), _slow(), base="https://example.ts.net")["response"]
     assert r == {"shouldEndSession": True}
+
+
+
+# ── adaptive conversation (B3 2026-10-12): fast reply → Alexa speaks + keeps listening ──
+
+def test_fast_reply_becomes_open_conversation(monkeypatch):
+    monkeypatch.setenv("ALEXA_REPLY", "ears")
+    r = ai.handle(_req(utterance="what's the weather"), lambda t: {"response": "Grey and drizzly, 12 degrees."})
+    assert r["response"]["shouldEndSession"] is False                       # Alexa keeps listening
+    assert r["response"]["outputSpeech"]["text"] == "Grey and drizzly, 12 degrees."
+
+
+def test_fast_reply_is_not_heard_twice(monkeypatch):
+    import tools.echo_speaker as es
+    monkeypatch.setenv("ALEXA_REPLY", "ears")
+    ai.handle(_req(utterance="hi"), lambda t: {"response": "Hey."})
+    assert es.speaking() is True                                            # routed to popen_play …
+    p = es.popen_play("/tmp/none.mp3")                                       # … which swallows it
+    assert p is not None and p.args == ["true"]
+    assert es._holding() is False                                           # only once
+
+
+def test_slow_reply_releases_the_hold(monkeypatch):
+    import tools.echo_speaker as es
+    monkeypatch.setenv("ALEXA_REPLY", "ears")
+    monkeypatch.setattr(ai, "_ADAPT_BUDGET_S", 0.1)
+    r = ai.handle(_req(utterance="hi"), _slow())
+    assert r["response"]["shouldEndSession"] is True
+    assert es._holding() is False                                           # reply will play normally
