@@ -1577,6 +1577,43 @@ def build_from_plan(plan, raw: str = "", *, inner_thought: str = "") -> str:
     except Exception:
         pass
 
+    # ── WO-B1-0139: inject perception snapshot when environment changed ──────
+    # plan.perception is populated from CognitiveState; read it from the plan if
+    # available, otherwise fall back to perception_faculty.get_last_result().
+    try:
+        _perception_snap = dict(getattr(plan, "perception", None) or {})
+        _env_delta = dict(getattr(plan, "environment_delta", None) or {})
+        _perception_novel = bool(getattr(plan, "perception_novel", False))
+        _perception_changed = bool(getattr(plan, "perception_changed", False))
+        if not _perception_snap:
+            from runtime.perception_faculty import get_last_result as _plr
+            _lr = _plr()
+            _perception_snap = _lr.get("snapshot", {})
+            _env_delta = _lr.get("environment_delta", {})
+            _perception_novel = _lr.get("novel", False)
+            _perception_changed = _lr.get("perception_changed", False)
+        if _perception_changed and _perception_snap:
+            _snap_lines = [
+                f"  {k}: {v['value'] if isinstance(v, dict) else v} [OBSERVED]"
+                for k, v in _perception_snap.items()
+                if v is not None and (not isinstance(v, dict) or v.get("value") is not None)
+            ]
+            if _snap_lines:
+                _novel_note = " — contains NOVEL fields (never seen before)" if _perception_novel else ""
+                parts.append(
+                    f"[ENVIRONMENT PERCEPTION{_novel_note}]\n"
+                    "Current state of eLo's environment (source=OBSERVED from blender_state):\n"
+                    + "\n".join(_snap_lines)
+                )
+            if _env_delta:
+                _delta_lines = [f"  {k}: {old!r} → {new!r}" for k, (old, new) in _env_delta.items()]
+                parts.append(
+                    "[ENVIRONMENT CHANGES THIS TURN]\n"
+                    + "\n".join(_delta_lines)
+                )
+    except Exception:
+        pass
+
     # ── WO-B1-0138: inject open intentions + active goals into thin-path ────
     # Mirrors the thick-path injection at server.py:6122. Without this,
     # build_from_plan() is blind to unfinished threads.

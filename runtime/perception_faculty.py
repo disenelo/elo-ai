@@ -105,12 +105,29 @@ def perceive(blender_state_path: str) -> dict:
     # ── Advance snapshot ──────────────────────────────────────────────────────
     _prev_snapshot = dict(snapshot)
 
+    # WO-B1-0139: novelty signal — any field with a None→value transition is NOVEL
+    novelty_fields = [
+        label for label, (old, new) in delta.items()
+        if old is None and new is not None
+    ]
+    novel = bool(novelty_fields)
+
+    # WO-B1-0139: epistemic tagging — direct reads are OBSERVED; no inference path yet
+    snapshot_tagged = {
+        label: {"value": val, "source": "OBSERVED"}
+        for label, val in snapshot.items()
+    }
+
     result = {
         "snapshot": snapshot,
+        "snapshot_tagged": snapshot_tagged,      # WO-B1-0139: epistemic-tagged version
         "delta": delta,
+        "environment_delta": delta,              # WO-B1-0139: alias for spine.py compat
         "changed_fields": changed_fields,
         "perception_changed": perception_changed,
         "high_sig_change": high_sig,
+        "novel": novel,                          # WO-B1-0139: new field never seen before
+        "novelty_fields": novelty_fields,
         "error": None,
     }
     _last_result = result

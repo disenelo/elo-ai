@@ -406,11 +406,15 @@ class CognitiveState:
     # ── Conversation Continuity (WO-CONVERSATION-001) ─────────────────────────
     last_elo_response:    str   = ""  # what eLo said last turn (≤500 chars); empty on first turn
 
-    # ── Perception Faculty (WO-PERCEPTION-001) ────────────────────────────────
+    # ── Perception Faculty (WO-PERCEPTION-001 + WO-B1-0139) ──────────────────────
+    # Environment snapshot: current values of all observed blender_state.json fields.
+    # Keys = field label; values = current value (source=OBSERVED).
+    perception:           dict  = field(default_factory=dict)   # WO-B1-0139: full snapshot
     # Environment delta: which blender_state.json fields changed since last turn.
     # Keys = field label; values = (old_value, new_value).
     environment_delta:    dict  = field(default_factory=dict)
     perception_changed:   bool  = False   # True if any environment field changed this turn
+    perception_novel:     bool  = False   # WO-B1-0139: True if a field appeared for first time
 
     # ── Simulation Tracker (WO-SIMULATION-001) ────────────────────────────────
     # What eLo planned vs what it actually completed, across turns.

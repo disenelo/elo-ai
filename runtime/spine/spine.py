@@ -2021,9 +2021,11 @@ def assemble_cognitive_state(
             __import__("runtime.conversation_state", fromlist=["get_last_elo_response"])
             .get_last_elo_response()
         ),
-        # WO-PERCEPTION-001: environment delta from blender_state.json
+        # WO-PERCEPTION-001 + WO-B1-0139: environment snapshot + delta
+        perception=_perception_result.get("snapshot", {}),
         environment_delta=_perception_result.get("environment_delta", {}),
         perception_changed=_perception_result.get("perception_changed", False),
+        perception_novel=_perception_result.get("novel", False),
         # WO-SIMULATION-001: pending vs executed actions from simulation_tracker
         **_sim_fields,
         # WO-DEGRADATION-001: faculty result validation flags
