@@ -1491,6 +1491,24 @@ def build_from_plan(plan, raw: str = "", *, inner_thought: str = "") -> str:
             + plan_graph_ctx[:600]
         )
 
+    # WO-B1-0137: David PERSON relationship profile — always injected so eLo never
+    # greets David like a stranger. Mirrors the WO-RELATIONSHIPS-001 thick-path call.
+    try:
+        from runtime.wkg_faculty import get_relationship_profile as _get_rel_profile
+        _DAVID_WKG_ID = "6de402af-8b5a-4238-950f-79bb1a00ab58"
+        _david_profile = _get_rel_profile(_DAVID_WKG_ID, max_facts=8)
+        if _david_profile:
+            parts.append(
+                "[RETRIEVED FACTS — AUTHORITATIVE]\n"
+                "The following was retrieved from stored knowledge about David (the person you are speaking with).\n"
+                "These are ground truth about David. Use them exactly as stated.\n"
+                "Do NOT treat David as a stranger — this is your creator and partner.\n"
+                "---\n"
+                + _david_profile[:600]
+            )
+    except Exception:
+        pass
+
     # Capability context (tool result)
     cap_ctx = str(getattr(plan, "capability_context", "") or "").strip()
     if cap_ctx:

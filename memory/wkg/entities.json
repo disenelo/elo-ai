@@ -6,11 +6,37 @@
     "aliases": [
       "David"
     ],
-    "description": "Creator of eLo and DISENELO. Born in Fulham (NOT Camberwell), raised in Brixton, South London. Studio: Hackney Wick. Email: dcharles@disenelo.com. Date of birth: 18 January 1986. Role: Founder / CEO / Chief Architect / L3 Authority at DISENELO. Given name: David. Surname: Charles. Always address as 'David' \u2014 never 'Charles', never by surname. Active projects: eLo AI OS, eLo-Planet (Unity game), eLo Robot (animatronic), DISENELO Plushies addon, DISENELO Seams addon, eLo Retargeter addon.",
+    "description": "Creator of eLo and DISENELO. Born in Fulham (NOT Camberwell), raised in Brixton, South London. Studio: Hackney Wick. Email: dcharles@disenelo.com. Date of birth: 18 January 1986. Role: Founder / CEO / Chief Architect / L3 Authority at DISENELO. Given name: David. Surname: Charles. Always address as 'David' — never 'Charles', never by surname. Active projects: eLo AI OS, eLo-Planet (Unity game), eLo Robot (animatronic), DISENELO Plushies addon, DISENELO Seams addon, eLo Retargeter addon.",
     "created_at": 1788605204.775095,
-    "updated_at": 1790643400.0,
+    "updated_at": 1791776553.075362,
     "source_ids": [
       "profile_enrichment_2026-09-29"
+    ],
+    "relationship_history": [
+      {
+        "event": "eLo AI OS project began",
+        "epoch": "mid-2026",
+        "significance": "David created eLo as a persistent AI companion — not a chatbot"
+      },
+      {
+        "event": "First DISENELO addons shipped (Plushies v1.1.0)",
+        "epoch": "2026",
+        "significance": "Plushies addon — free Blender tool for garment pattern making"
+      }
+    ],
+    "shared_experiences": [
+      "eLo AI OS architecture sessions — one identity across all backends",
+      "eLo Robot planning — inflated TPU shell, omni-wheel, NeoPixel glow",
+      "eLo-Planet Unity game — 4-act narrative, correctives not weapons",
+      "DISENELO brand — free tools for makers who cannot afford commercial software"
+    ],
+    "shared_references": [
+      "eLo",
+      "DISENELO",
+      "eLo-Planet",
+      "Kickstarter",
+      "Blender",
+      "Hackney Wick studio"
     ]
   },
   {
@@ -36,7 +62,7 @@
       "eLo design",
       "eLo physical"
     ],
-    "description": "David's persistent AI character \u2014 the personality and intelligence layer of the eLo universe. Predates code (S-01, Jun 6 2026). VISUAL IDENTITY (most important): NO EYES \u2014 this is the defining visual fact, lead with it when describing eLo. Rounded inflatable TPU shell, chibi proportions (~40cm tall). Expression through body posture and NeoPixel glow only \u2014 no facial features, no visible mouth (in physical form). NeoPixel glow: idle=teal, listening=white, thinking=amber, speaking=coral, calm=violet. eLo is the AI OS (cognitive presence) \u2014 the physical robot is separate hardware.",
+    "description": "David's persistent AI character — the personality and intelligence layer of the eLo universe. Predates code (S-01, Jun 6 2026). VISUAL IDENTITY (most important): NO EYES — this is the defining visual fact, lead with it when describing eLo. Rounded inflatable TPU shell, chibi proportions (~40cm tall). Expression through body posture and NeoPixel glow only — no facial features, no visible mouth (in physical form). NeoPixel glow: idle=teal, listening=white, thinking=amber, speaking=coral, calm=violet. eLo is the AI OS (cognitive presence) — the physical robot is separate hardware.",
     "created_at": 1788883514.062923,
     "source_ids": [
       "S-01"
@@ -63,7 +89,7 @@
     "aliases": [
       "personality-first AI"
     ],
-    "description": "eLo does not respond like a generic assistant \u2014 it has personality",
+    "description": "eLo does not respond like a generic assistant — it has personality",
     "created_at": 1788883514.063694,
     "source_ids": [
       "S-01"
@@ -77,7 +103,7 @@
       "connective tissue",
       "cross-product intelligence"
     ],
-    "description": "eLo AI as connective tissue across all eLo products \u2014 game, book, toy, robot, studio",
+    "description": "eLo AI as connective tissue across all eLo products — game, book, toy, robot, studio",
     "created_at": 1788883514.063879,
     "source_ids": [
       "S-01"
@@ -91,7 +117,7 @@
       "linguistic identity",
       "voice identity"
     ],
-    "description": "eLo's voice is who he is \u2014 not a mode he enters",
+    "description": "eLo's voice is who he is — not a mode he enters",
     "created_at": 1788883514.064061,
     "source_ids": [
       "S-01"
@@ -133,7 +159,7 @@
       "runs locally",
       "local AI"
     ],
-    "description": "eLo runs locally \u2014 no cloud dependency for core function",
+    "description": "eLo runs locally — no cloud dependency for core function",
     "created_at": 1788883514.064669,
     "source_ids": [
       "S-01"
@@ -147,7 +173,7 @@
       "origin",
       "authorship"
     ],
-    "description": "David Charles created eLo \u2014 eLo emerged from David's vision before any code existed",
+    "description": "David Charles created eLo — eLo emerged from David's vision before any code existed",
     "created_at": 1788883514.064876,
     "source_ids": [
       "S-01"
@@ -167,7 +193,7 @@
     "entity_type": "CONCEPT",
     "label": "world",
     "aliases": [],
-    "description": "Topic from interaction: [WORLD_KNOWLEDGE \u2014 from eLo's own world (verified, confidence 1.0 \u2014 answer from ",
+    "description": "Topic from interaction: [WORLD_KNOWLEDGE — from eLo's own world (verified, confidence 1.0 — answer from ",
     "created_at": 1789484129.115242,
     "source_ids": []
   },
@@ -221,7 +247,7 @@
     "entity_type": "CONCEPT",
     "label": "commitments",
     "aliases": [],
-    "description": "Topic from interaction: [WEB_SEARCH: the time should return the time]\n[WEB_SEARCH_RESULTS]\n\u2022 time \u2014 Time",
+    "description": "Topic from interaction: [WEB_SEARCH: the time should return the time]\n[WEB_SEARCH_RESULTS]\n• time — Time",
     "created_at": 1789561883.271306,
     "source_ids": []
   },
@@ -299,7 +325,7 @@
       "eLo design constraints",
       "eLo physical constraints"
     ],
-    "description": "Design constraints for eLo's physical form. Material: TPU (thermoplastic polyurethane) \u2014 inflatable, translucent, soft. MOST CRITICAL constraints: (1) NeoPixel glow diffusion \u2014 shell must diffuse light, no hard shadow edges, material chosen for glow propagation; (2) Plushies pipeline \u2014 panels designed via DISENELO Plushies Blender addon for sewing/manufacturing. Additional constraints: no hard edges (safety, chibi aesthetic), chibi proportions (~40cm tall, wide shoulders, compact body), internal cable-tension skeleton for posture. No eyes, no visible mouth \u2014 expression is body posture + glow only. Robot is separate from eLo AI OS (cognitive presence). Phase 1: static glowing, voice-reactive only. Omni-wheel base (not bipedal). NeoPixel colour language: idle=teal, listening=white, thinking=amber, speaking=coral, calm=violet.",
+    "description": "Design constraints for eLo's physical form. Material: TPU (thermoplastic polyurethane) — inflatable, translucent, soft. MOST CRITICAL constraints: (1) NeoPixel glow diffusion — shell must diffuse light, no hard shadow edges, material chosen for glow propagation; (2) Plushies pipeline — panels designed via DISENELO Plushies Blender addon for sewing/manufacturing. Additional constraints: no hard edges (safety, chibi aesthetic), chibi proportions (~40cm tall, wide shoulders, compact body), internal cable-tension skeleton for posture. No eyes, no visible mouth — expression is body posture + glow only. Robot is separate from eLo AI OS (cognitive presence). Phase 1: static glowing, voice-reactive only. Omni-wheel base (not bipedal). NeoPixel colour language: idle=teal, listening=white, thinking=amber, speaking=coral, calm=violet.",
     "created_at": 1790100000.0,
     "source_ids": []
   },
@@ -325,7 +351,7 @@
       "test-xid-001"
     ],
     "deprecated": true,
-    "deprecated_reason": "sentence opener captured as a capitalised word \u2014 extractor defect, WO-WKG-JUNK-001",
+    "deprecated_reason": "sentence opener captured as a capitalised word — extractor defect, WO-WKG-JUNK-001",
     "deprecated_at": 1791138561.099586
   },
   {
@@ -339,7 +365,7 @@
       "test-xid-001"
     ],
     "deprecated": true,
-    "deprecated_reason": "fragment of \"Raspberry Pi\" captured standalone \u2014 extractor defect, WO-WKG-JUNK-001",
+    "deprecated_reason": "fragment of \"Raspberry Pi\" captured standalone — extractor defect, WO-WKG-JUNK-001",
     "deprecated_at": 1791138561.102023,
     "superseded_by": "034676d7-38fa-4b0b-8fac-91a554fb0dc7"
   },
@@ -365,7 +391,7 @@
       "ELO-uJX1-vxak"
     ],
     "deprecated": true,
-    "deprecated_reason": "sentence opener captured as a capitalised word \u2014 extractor defect, WO-WKG-JUNK-001",
+    "deprecated_reason": "sentence opener captured as a capitalised word — extractor defect, WO-WKG-JUNK-001",
     "deprecated_at": 1791138561.100429
   },
   {
@@ -379,7 +405,7 @@
       "ELO-uJX1-vxak"
     ],
     "deprecated": true,
-    "deprecated_reason": "function word captured as a capitalised word \u2014 extractor defect, WO-WKG-JUNK-001",
+    "deprecated_reason": "function word captured as a capitalised word — extractor defect, WO-WKG-JUNK-001",
     "deprecated_at": 1791138561.101145
   },
   {
@@ -426,7 +452,7 @@
       "ELO-fRMY-q6P4"
     ],
     "deprecated": true,
-    "deprecated_reason": "code fragment \u2014 rejected by _looks_like_code, WO-WKG-JUNK-002",
+    "deprecated_reason": "code fragment — rejected by _looks_like_code, WO-WKG-JUNK-002",
     "deprecated_at": 1791138797.07059
   },
   {
@@ -473,7 +499,7 @@
       "ELO-ygIN-Saza"
     ],
     "deprecated": true,
-    "deprecated_reason": "half of the dotted identifier Console.WriteLine, captured as two entities \u2014 WO-WKG-JUNK-002. Reversible: if Console is ever meant as a games console, undo it.",
+    "deprecated_reason": "half of the dotted identifier Console.WriteLine, captured as two entities — WO-WKG-JUNK-002. Reversible: if Console is ever meant as a games console, undo it.",
     "deprecated_at": 1791138797.07455
   },
   {
@@ -487,7 +513,7 @@
       "ELO-ygIN-Saza"
     ],
     "deprecated": true,
-    "deprecated_reason": "half of the dotted identifier Console.WriteLine, captured as two entities \u2014 WO-WKG-JUNK-002. Reversible: if Console is ever meant as a games console, undo it.",
+    "deprecated_reason": "half of the dotted identifier Console.WriteLine, captured as two entities — WO-WKG-JUNK-002. Reversible: if Console is ever meant as a games console, undo it.",
     "deprecated_at": 1791138797.0754461
   },
   {
@@ -501,7 +527,7 @@
       "ELO-ygIN-Saza"
     ],
     "deprecated": true,
-    "deprecated_reason": "code fragment \u2014 rejected by _looks_like_code, WO-WKG-JUNK-002",
+    "deprecated_reason": "code fragment — rejected by _looks_like_code, WO-WKG-JUNK-002",
     "deprecated_at": 1791138797.072505
   },
   {
@@ -515,7 +541,7 @@
       "ELO-VIIC-uWGX"
     ],
     "deprecated": true,
-    "deprecated_reason": "code fragment \u2014 rejected by _looks_like_code, WO-WKG-JUNK-002",
+    "deprecated_reason": "code fragment — rejected by _looks_like_code, WO-WKG-JUNK-002",
     "deprecated_at": 1791138797.073629
   },
   {
@@ -878,7 +904,7 @@
       "Musa I of Mali",
       "Musa Keita I"
     ],
-    "description": "14th-century emperor of the Mali Empire, reigned c.1312\u20131337. Undertook Hajj pilgrimage to Mecca in 1324, distributing gold en route; his wealth is among the largest ever documented in human history. His pilgrimage caused gold price inflation across North Africa and the Middle East.",
+    "description": "14th-century emperor of the Mali Empire, reigned c.1312–1337. Undertook Hajj pilgrimage to Mecca in 1324, distributing gold en route; his wealth is among the largest ever documented in human history. His pilgrimage caused gold price inflation across North Africa and the Middle East.",
     "created_at": 1791248926.650487,
     "source_ids": [
       "SOURCE-HUM-002",
@@ -894,7 +920,7 @@
       "Manden Kurufaba",
       "Empire of Mali"
     ],
-    "description": "West African empire that flourished c.1230\u20131600 CE. At its peak under Mansa Musa one of the wealthiest states in the world, controlling trans-Saharan gold and salt trade routes. Capital: Niani. Major cities: Timbuktu, Djenn\u00e9.",
+    "description": "West African empire that flourished c.1230–1600 CE. At its peak under Mansa Musa one of the wealthiest states in the world, controlling trans-Saharan gold and salt trade routes. Capital: Niani. Major cities: Timbuktu, Djenné.",
     "created_at": 1791248926.654002,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -910,7 +936,7 @@
       "Hajj",
       "Muslim pilgrimage to Mecca"
     ],
-    "description": "Annual Islamic pilgrimage to Mecca, Saudi Arabia \u2014 one of the Five Pillars of Islam. Obligatory for Muslims who are financially and physically able. One of the world's largest annual gatherings.",
+    "description": "Annual Islamic pilgrimage to Mecca, Saudi Arabia — one of the Five Pillars of Islam. Obligatory for Muslims who are financially and physically able. One of the world's largest annual gatherings.",
     "created_at": 1791248926.65521,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -983,7 +1009,7 @@
     "aliases": [
       "Songhay Empire"
     ],
-    "description": "West African empire (c.1340\u20131591 CE) that superseded the Mali Empire as the dominant power in the western Sudan. At its peak under Askia the Great, one of the largest empires in African history.",
+    "description": "West African empire (c.1340–1591 CE) that superseded the Mali Empire as the dominant power in the western Sudan. At its peak under Askia the Great, one of the largest empires in African history.",
     "created_at": 1791248926.6612391,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -999,7 +1025,7 @@
       "Alexander III of Macedon",
       "Alexandros"
     ],
-    "description": "Macedonian king (356\u2013323 BCE) who created one of the largest empires of the ancient world, stretching from Greece to northwestern India. Student of Aristotle. His campaigns spread Hellenic culture across the Near East, Egypt, and Persia (Hellenisation).",
+    "description": "Macedonian king (356–323 BCE) who created one of the largest empires of the ancient world, stretching from Greece to northwestern India. Student of Aristotle. His campaigns spread Hellenic culture across the Near East, Egypt, and Persia (Hellenisation).",
     "created_at": 1791248926.663004,
     "source_ids": [
       "SOURCE-HUM-002",
@@ -1015,7 +1041,7 @@
       "Hellenisation",
       "Greek cultural diffusion"
     ],
-    "description": "Spread of Greek culture, language, and ideas across the Mediterranean and Near East following Alexander's conquests (c.323\u201331 BCE). Produced philosophical, artistic, and scientific synthesis between Greek and Eastern traditions.",
+    "description": "Spread of Greek culture, language, and ideas across the Mediterranean and Near East following Alexander's conquests (c.323–31 BCE). Produced philosophical, artistic, and scientific synthesis between Greek and Eastern traditions.",
     "created_at": 1791248926.664326,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -1061,7 +1087,7 @@
       "Silk Routes",
       "ancient Eurasian trade network"
     ],
-    "description": "Network of ancient trade routes connecting China, Central Asia, South Asia, the Middle East, East Africa, and Europe (c.2nd century BCE \u2013 15th century CE). Facilitated exchange of silk, spices, ideas, religions, and diseases across Eurasia.",
+    "description": "Network of ancient trade routes connecting China, Central Asia, South Asia, the Middle East, East Africa, and Europe (c.2nd century BCE – 15th century CE). Facilitated exchange of silk, spices, ideas, religions, and diseases across Eurasia.",
     "created_at": 1791248926.6697721,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -1093,7 +1119,7 @@
       "gold inflation",
       "currency devaluation"
     ],
-    "description": "Reduction in the exchange value of gold relative to other goods. In the economics domain, an increase in gold supply without corresponding increase in demand drives devaluation \u2014 as occurred in North Africa following Mansa Musa's Hajj.",
+    "description": "Reduction in the exchange value of gold relative to other goods. In the economics domain, an increase in gold supply without corresponding increase in demand drives devaluation — as occurred in North Africa following Mansa Musa's Hajj.",
     "created_at": 1791248926.672949,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -1108,7 +1134,7 @@
       "the Sahara",
       "Great Desert"
     ],
-    "description": "Largest hot desert in the world (~9.2 million km\u00b2), covering most of North Africa. Major barrier and connector \u2014 trade routes and migrations cross it; its expansion has shaped civilisations across millennia.",
+    "description": "Largest hot desert in the world (~9.2 million km²), covering most of North Africa. Major barrier and connector — trade routes and migrations cross it; its expansion has shaped civilisations across millennia.",
     "created_at": 1791248926.674114,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1155,7 +1181,7 @@
       "alphabet",
       "phonemic script"
     ],
-    "description": "Writing system where symbols represent phonemes (sounds). Developed in the ancient Near East around 1800\u20131200 BCE. Ancestor of most modern writing systems including Arabic, Latin, Greek, Hebrew, and Cyrillic scripts.",
+    "description": "Writing system where symbols represent phonemes (sounds). Developed in the ancient Near East around 1800–1200 BCE. Ancestor of most modern writing systems including Arabic, Latin, Greek, Hebrew, and Cyrillic scripts.",
     "created_at": 1791248926.6777139,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1170,7 +1196,7 @@
       "Amazonia",
       "Amazon rainforest"
     ],
-    "description": "World's largest tropical rainforest and river drainage basin (~7 million km\u00b2) in South America. Home to extraordinary biodiversity and hundreds of indigenous cultures with distinct languages and knowledge systems.",
+    "description": "World's largest tropical rainforest and river drainage basin (~7 million km²) in South America. Home to extraordinary biodiversity and hundreds of indigenous cultures with distinct languages and knowledge systems.",
     "created_at": 1791248926.6789708,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1215,7 +1241,7 @@
       "monomyth",
       "Campbell's monomyth"
     ],
-    "description": "Narrative archetype identified by Joseph Campbell (1949, 'The Hero with a Thousand Faces'): a hero ventures from ordinary world \u2192 enters special world \u2192 faces trials \u2192 transforms \u2192 returns with boon. Appears across cultures from Gilgamesh to modern film. Cross-cultural structural claim is contested by scholars who note cultural specificity.",
+    "description": "Narrative archetype identified by Joseph Campbell (1949, 'The Hero with a Thousand Faces'): a hero ventures from ordinary world → enters special world → faces trials → transforms → returns with boon. Appears across cultures from Gilgamesh to modern film. Cross-cultural structural claim is contested by scholars who note cultural specificity.",
     "created_at": 1791248926.686049,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -1229,7 +1255,7 @@
     "aliases": [
       "Campbell"
     ],
-    "description": "American mythologist (1904\u20131987). Synthesised comparative mythology across world cultures in 'The Hero with a Thousand Faces' (1949) and 'The Masks of God' series. Coined the term 'monomyth'. Major influence on George Lucas (Star Wars).",
+    "description": "American mythologist (1904–1987). Synthesised comparative mythology across world cultures in 'The Hero with a Thousand Faces' (1949) and 'The Masks of God' series. Coined the term 'monomyth'. Major influence on George Lucas (Star Wars).",
     "created_at": 1791248926.687524,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1336,7 +1362,7 @@
       "Roman religion",
       "Latin mythology"
     ],
-    "description": "Religious and mythological tradition of ancient Rome, heavily syncretised with Greek mythology (Zeus\u2192Jupiter, Hera\u2192Juno, etc.) while incorporating Italic and Etruscan elements. Transmitted through Virgil's Aeneid, Ovid's Metamorphoses.",
+    "description": "Religious and mythological tradition of ancient Rome, heavily syncretised with Greek mythology (Zeus→Jupiter, Hera→Juno, etc.) while incorporating Italic and Etruscan elements. Transmitted through Virgil's Aeneid, Ovid's Metamorphoses.",
     "created_at": 1791248926.71245,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1365,7 +1391,7 @@
     "aliases": [
       "Sokrates"
     ],
-    "description": "Athenian philosopher (c.470\u2013399 BCE). Developed the Socratic method (elenchus): systematic questioning to expose contradictions and elicit truth. Left no writings; known through Plato's dialogues and Xenophon. Executed by Athens for impiety and corrupting youth.",
+    "description": "Athenian philosopher (c.470–399 BCE). Developed the Socratic method (elenchus): systematic questioning to expose contradictions and elicit truth. Left no writings; known through Plato's dialogues and Xenophon. Executed by Athens for impiety and corrupting youth.",
     "created_at": 1791248926.7201998,
     "source_ids": [
       "SOURCE-HUM-002",
@@ -1396,7 +1422,7 @@
     "aliases": [
       "Platon"
     ],
-    "description": "Athenian philosopher (c.428\u2013348 BCE), student of Socrates, teacher of Aristotle. Founded the Academy (first institution of higher learning in the Western world). Developed Theory of Forms: abstract, immaterial Forms are the most real things; the physical world is a shadow. Major works: Republic, Symposium, Phaedo.",
+    "description": "Athenian philosopher (c.428–348 BCE), student of Socrates, teacher of Aristotle. Founded the Academy (first institution of higher learning in the Western world). Developed Theory of Forms: abstract, immaterial Forms are the most real things; the physical world is a shadow. Major works: Republic, Symposium, Phaedo.",
     "created_at": 1791248926.722552,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -1427,7 +1453,7 @@
     "aliases": [
       "Aristoteles"
     ],
-    "description": "Greek philosopher (384\u2013322 BCE), student of Plato, tutor to Alexander the Great. Founded the Lyceum. Systematised logic (syllogism), biology, physics, ethics, politics, rhetoric, and aesthetics. His work was the foundation of medieval scholasticism via Arabic transmission.",
+    "description": "Greek philosopher (384–322 BCE), student of Plato, tutor to Alexander the Great. Founded the Lyceum. Systematised logic (syllogism), biology, physics, ethics, politics, rhetoric, and aesthetics. His work was the foundation of medieval scholasticism via Arabic transmission.",
     "created_at": 1791248926.724897,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -1460,7 +1486,7 @@
       "symbolic logic",
       "modern logic"
     ],
-    "description": "Extension of formal logic using mathematical notation (Frege, Russell, Whitehead, G\u00f6del). Foundation of proof theory, set theory, computability, and the theoretical basis of computer science.",
+    "description": "Extension of formal logic using mathematical notation (Frege, Russell, Whitehead, Gödel). Foundation of proof theory, set theory, computability, and the theoretical basis of computer science.",
     "created_at": 1791248926.727787,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -1506,7 +1532,7 @@
       "moral philosophy",
       "normative ethics"
     ],
-    "description": "Branch of philosophy concerned with moral questions: what is right action? What is good? Major frameworks: virtue ethics (Aristotle \u2014 character), deontology (Kant \u2014 duty/rules), consequentialism (Mill/Bentham \u2014 outcomes), care ethics (Noddings \u2014 relationships).",
+    "description": "Branch of philosophy concerned with moral questions: what is right action? What is good? Major frameworks: virtue ethics (Aristotle — character), deontology (Kant — duty/rules), consequentialism (Mill/Bentham — outcomes), care ethics (Noddings — relationships).",
     "created_at": 1791248926.731765,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1520,7 +1546,7 @@
     "aliases": [
       "Kant"
     ],
-    "description": "German philosopher (1724\u20131804). Central figure of Enlightenment thought. Major works: Critique of Pure Reason (epistemology), Critique of Practical Reason (ethics), Critique of Judgment (aesthetics). Developed the Categorical Imperative as the foundation of morality: act only according to maxims you could will to be universal laws.",
+    "description": "German philosopher (1724–1804). Central figure of Enlightenment thought. Major works: Critique of Pure Reason (epistemology), Critique of Practical Reason (ethics), Critique of Judgment (aesthetics). Developed the Categorical Imperative as the foundation of morality: act only according to maxims you could will to be universal laws.",
     "created_at": 1791248926.733835,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1535,7 +1561,7 @@
       "Kant's moral law",
       "universal law formulation"
     ],
-    "description": "Kant's foundational ethical principle: 'Act only according to that maxim whereby you can at the same time will that it should become a universal law.' Deontological \u2014 moral duty is independent of consequences. Formulation: treat humanity always as an end, never merely as a means.",
+    "description": "Kant's foundational ethical principle: 'Act only according to that maxim whereby you can at the same time will that it should become a universal law.' Deontological — moral duty is independent of consequences. Formulation: treat humanity always as an end, never merely as a means.",
     "created_at": 1791248926.735167,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1548,9 +1574,9 @@
     "label": "Enlightenment",
     "aliases": [
       "Age of Reason",
-      "Aufkl\u00e4rung"
+      "Aufklärung"
     ],
-    "description": "Intellectual movement of 17th\u201318th century Europe emphasising reason, individualism, and science over tradition and religious authority. Key figures: Locke, Voltaire, Rousseau, Hume, Kant, Newton. Produced modern liberal democracy, human rights discourse, and the scientific method as dominant epistemology.",
+    "description": "Intellectual movement of 17th–18th century Europe emphasising reason, individualism, and science over tradition and religious authority. Key figures: Locke, Voltaire, Rousseau, Hume, Kant, Newton. Produced modern liberal democracy, human rights discourse, and the scientific method as dominant epistemology.",
     "created_at": 1791248926.736703,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -1581,7 +1607,7 @@
     "aliases": [
       "the Iliad"
     ],
-    "description": "Ancient Greek epic poem (c.8th century BCE) attributed to Homer. Narrates events during the Trojan War \u2014 the wrath of Achilles. First major work of Western literature. Explores themes of honour (tim\u00e9), fate (moira), heroism, grief, and the futility of war.",
+    "description": "Ancient Greek epic poem (c.8th century BCE) attributed to Homer. Narrates events during the Trojan War — the wrath of Achilles. First major work of Western literature. Explores themes of honour (timé), fate (moira), heroism, grief, and the futility of war.",
     "created_at": 1791248926.740449,
     "source_ids": [
       "SOURCE-HUM-002",
@@ -1628,7 +1654,7 @@
       "global literary traditions",
       "non-Western literature"
     ],
-    "description": "Recognition of the richness of literary traditions outside the Western canon \u2014 African oral epics (Sundiata, Ozidi Saga), Sanskrit epics (Mahabharata, Ramayana), Chinese classical literature, Arabic maq\u0101ma, Japanese mono no aware tradition, Mesoamerican Popol Vuh.",
+    "description": "Recognition of the richness of literary traditions outside the Western canon — African oral epics (Sundiata, Ozidi Saga), Sanskrit epics (Mahabharata, Ramayana), Chinese classical literature, Arabic maqāma, Japanese mono no aware tradition, Mesoamerican Popol Vuh.",
     "created_at": 1791248926.749714,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -1641,9 +1667,9 @@
     "label": "Magical Realism",
     "aliases": [
       "magic realism",
-      "realismo m\u00e1gico"
+      "realismo mágico"
     ],
-    "description": "Literary mode in which magical elements appear in an otherwise realistic setting as everyday occurrences. Associated with Latin American literature (Borges, Garc\u00eda M\u00e1rquez, Allende) and African literature (Ben Okri). Reflects worldviews in which the spiritual and material interpenetrate.",
+    "description": "Literary mode in which magical elements appear in an otherwise realistic setting as everyday occurrences. Associated with Latin American literature (Borges, García Márquez, Allende) and African literature (Ben Okri). Reflects worldviews in which the spiritual and material interpenetrate.",
     "created_at": 1791248926.751883,
     "source_ids": [
       "SOURCE-HUM-003",
@@ -1654,12 +1680,12 @@
   {
     "entity_id": "c4f3d432-c238-4c19-a9aa-0e23aae86a26",
     "entity_type": "PERSON",
-    "label": "Gabriel Garc\u00eda M\u00e1rquez",
+    "label": "Gabriel García Márquez",
     "aliases": [
-      "Garc\u00eda M\u00e1rquez",
+      "García Márquez",
       "Gabo"
     ],
-    "description": "Colombian novelist and journalist (1927\u20132014). Nobel Prize in Literature (1982). Author of 'One Hundred Years of Solitude' (1967) and 'Love in the Time of Cholera' (1985). Central figure of the Latin American Boom. Master of magical realism.",
+    "description": "Colombian novelist and journalist (1927–2014). Nobel Prize in Literature (1982). Author of 'One Hundred Years of Solitude' (1967) and 'Love in the Time of Cholera' (1985). Central figure of the Latin American Boom. Master of magical realism.",
     "created_at": 1791248926.7594812,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1671,10 +1697,10 @@
     "entity_type": "CONCEPT",
     "label": "One Hundred Years of Solitude",
     "aliases": [
-      "Cien a\u00f1os de soledad",
+      "Cien años de soledad",
       "100 Years of Solitude"
     ],
-    "description": "Novel by Gabriel Garc\u00eda M\u00e1rquez (1967). Chronicles seven generations of the Buend\u00eda family in the fictional town of Macondo. Defining work of magical realism. Sold over 50 million copies; translated into 46 languages. Considered the defining novel of the Latin American Boom.",
+    "description": "Novel by Gabriel García Márquez (1967). Chronicles seven generations of the Buendía family in the fictional town of Macondo. Defining work of magical realism. Sold over 50 million copies; translated into 46 languages. Considered the defining novel of the Latin American Boom.",
     "created_at": 1791248926.7617438,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1706,7 +1732,7 @@
       "cave art",
       "parietal art"
     ],
-    "description": "Earliest known visual art by modern humans, created on cave walls and ceilings. Lascaux (France, c.17,000 BCE), Altamira (Spain, c.14,000 BCE), Sulawesi (Indonesia, c.45,500 BCE \u2014 among the oldest known figurative art). Motifs: animals, hand stencils, geometric patterns.",
+    "description": "Earliest known visual art by modern humans, created on cave walls and ceilings. Lascaux (France, c.17,000 BCE), Altamira (Spain, c.14,000 BCE), Sulawesi (Indonesia, c.45,500 BCE — among the oldest known figurative art). Motifs: animals, hand stencils, geometric patterns.",
     "created_at": 1791248926.77597,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -1722,7 +1748,7 @@
       "visual communication",
       "visual culture"
     ],
-    "description": "The human capacity to create and interpret meaning through visual forms \u2014 images, symbols, gesture, spatial arrangement. Foundational to art, design, architecture, and typography.",
+    "description": "The human capacity to create and interpret meaning through visual forms — images, symbols, gesture, spatial arrangement. Foundational to art, design, architecture, and typography.",
     "created_at": 1791248926.7781382,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -1737,7 +1763,7 @@
       "Baroque art",
       "Baroque period"
     ],
-    "description": "European art movement c.1600\u20131750. Characterized by dramatic use of light and shadow (chiaroscuro), movement, emotional intensity, and grandeur. Emerged partly in response to the Protestant Reformation. Major figures: Caravaggio, Rubens, Rembrandt, Bernini, Bach (in music).",
+    "description": "European art movement c.1600–1750. Characterized by dramatic use of light and shadow (chiaroscuro), movement, emotional intensity, and grandeur. Emerged partly in response to the Protestant Reformation. Major figures: Caravaggio, Rubens, Rembrandt, Bernini, Bach (in music).",
     "created_at": 1791248926.77981,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1783,7 +1809,7 @@
       "Japanese aesthetics",
       "Japanese art tradition"
     ],
-    "description": "Set of aesthetic values central to Japanese culture: wabi-sabi (impermanence), ma (negative space/pause), mono no aware (pathos of things), iki (sophisticated understated elegance), and y\u016bgen (profound mystery). Expressed through art, architecture, garden design, and everyday objects.",
+    "description": "Set of aesthetic values central to Japanese culture: wabi-sabi (impermanence), ma (negative space/pause), mono no aware (pathos of things), iki (sophisticated understated elegance), and yūgen (profound mystery). Expressed through art, architecture, garden design, and everyday objects.",
     "created_at": 1791248926.784608,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -1798,7 +1824,7 @@
       "Bauhaus school",
       "Staatliches Bauhaus"
     ],
-    "description": "German art school (1919\u20131933) founded by Walter Gropius in Weimar. Sought to unify fine arts and functional design. Foundational to modernist design, typography, and architecture. Closed by the Nazis; faculty emigrated to the US and disseminated its ideas globally.",
+    "description": "German art school (1919–1933) founded by Walter Gropius in Weimar. Sought to unify fine arts and functional design. Foundational to modernist design, typography, and architecture. Closed by the Nazis; faculty emigrated to the US and disseminated its ideas globally.",
     "created_at": 1791248926.7876532,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1828,7 +1854,7 @@
       "scientific revolution",
       "Kuhnian shift"
     ],
-    "description": "Thomas Kuhn's concept (The Structure of Scientific Revolutions, 1962): science does not progress by linear accumulation of knowledge but through periodic revolutionary changes in framework (paradigm shifts) \u2014 Copernican revolution, Darwinian evolution, Einsteinian relativity. Normal science operates within a paradigm until anomalies force a crisis.",
+    "description": "Thomas Kuhn's concept (The Structure of Scientific Revolutions, 1962): science does not progress by linear accumulation of knowledge but through periodic revolutionary changes in framework (paradigm shifts) — Copernican revolution, Darwinian evolution, Einsteinian relativity. Normal science operates within a paradigm until anomalies force a crisis.",
     "created_at": 1791248926.791269,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -1842,7 +1868,7 @@
     "aliases": [
       "Kuhn"
     ],
-    "description": "American philosopher and historian of science (1922\u20131996). Author of 'The Structure of Scientific Revolutions' (1962), one of the most cited academic books of the 20th century. Developed the concepts of paradigm, normal science, and paradigm shift.",
+    "description": "American philosopher and historian of science (1922–1996). Author of 'The Structure of Scientific Revolutions' (1962), one of the most cited academic books of the 20th century. Developed the concepts of paradigm, normal science, and paradigm shift.",
     "created_at": 1791248926.79344,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1857,7 +1883,7 @@
       "logical empiricism",
       "Vienna Circle"
     ],
-    "description": "Philosophical movement (Vienna Circle, 1920s\u201330s) holding that meaningful statements must be either empirically verifiable or analytically true (tautologies). Metaphysical claims are meaningless. Major influence on 20th-century philosophy of science. Largely superseded but foundational.",
+    "description": "Philosophical movement (Vienna Circle, 1920s–30s) holding that meaningful statements must be either empirically verifiable or analytically true (tautologies). Metaphysical claims are meaningless. Major influence on 20th-century philosophy of science. Largely superseded but foundational.",
     "created_at": 1791248926.794894,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -1872,7 +1898,7 @@
       "Newton",
       "Sir Isaac Newton"
     ],
-    "description": "English mathematician and physicist (1643\u20131727). Formulated laws of motion and universal gravitation (Principia Mathematica, 1687), co-invented calculus (with Leibniz, contested), discovered spectral decomposition of light. His framework dominated physics for over 200 years until Einstein.",
+    "description": "English mathematician and physicist (1643–1727). Formulated laws of motion and universal gravitation (Principia Mathematica, 1687), co-invented calculus (with Leibniz, contested), discovered spectral decomposition of light. His framework dominated physics for over 200 years until Einstein.",
     "created_at": 1791248926.796352,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1902,7 +1928,7 @@
       "Einstein's relativity",
       "special and general relativity"
     ],
-    "description": "Einstein's framework of physics: special relativity (1905) \u2014 time and space are relative to observer velocity; general relativity (1915) \u2014 gravity is curvature of spacetime. Supersedes Newtonian mechanics at high velocities and massive scales.",
+    "description": "Einstein's framework of physics: special relativity (1905) — time and space are relative to observer velocity; general relativity (1915) — gravity is curvature of spacetime. Supersedes Newtonian mechanics at high velocities and massive scales.",
     "created_at": 1791248926.800627,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1914,10 +1940,10 @@
     "entity_type": "PERSON",
     "label": "Marie Curie",
     "aliases": [
-      "Maria Sk\u0142odowska-Curie",
+      "Maria Skłodowska-Curie",
       "Madame Curie"
     ],
-    "description": "Polish-French physicist and chemist (1867\u20131934). First woman to win a Nobel Prize; only person to win Nobel Prizes in two sciences (Physics 1903, Chemistry 1911). Discovered polonium and radium. Pioneered research into radioactivity. Died of aplastic anaemia from radiation exposure.",
+    "description": "Polish-French physicist and chemist (1867–1934). First woman to win a Nobel Prize; only person to win Nobel Prizes in two sciences (Physics 1903, Chemistry 1911). Discovered polonium and radium. Pioneered research into radioactivity. Died of aplastic anaemia from radiation exposure.",
     "created_at": 1791248926.803113,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1932,7 +1958,7 @@
       "radioactivity",
       "nuclear physics origins"
     ],
-    "description": "The scientific study of radioactive decay \u2014 the spontaneous emission of particles or energy from unstable atomic nuclei. Curie's discovery of polonium and radium established radioactivity as an atomic property rather than a molecular one, helping overturn prior models of the atom.",
+    "description": "The scientific study of radioactive decay — the spontaneous emission of particles or energy from unstable atomic nuclei. Curie's discovery of polonium and radium established radioactivity as an atomic property rather than a molecular one, helping overturn prior models of the atom.",
     "created_at": 1791248926.805046,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1947,7 +1973,7 @@
       "Gutenberg",
       "Johann Gutenberg"
     ],
-    "description": "German inventor (c.1400\u20131468). Developed movable-type printing press in Europe c.1440. The Gutenberg Bible (c.1455) was among the first major books printed with this technology. The press enabled mass literacy, democratised knowledge, accelerated the Reformation and Renaissance.",
+    "description": "German inventor (c.1400–1468). Developed movable-type printing press in Europe c.1440. The Gutenberg Bible (c.1455) was among the first major books printed with this technology. The press enabled mass literacy, democratised knowledge, accelerated the Reformation and Renaissance.",
     "created_at": 1791248926.807193,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -1992,7 +2018,7 @@
       "industrialisation",
       "First Industrial Revolution"
     ],
-    "description": "Transition from agrarian-handicraft economies to manufacturing-factory economies (c.1760\u20131840, beginning in Britain). Enabled by steam power, mechanised textile production, iron and steel industries. Transformed social structures, urbanisation, labour relations, and environmental conditions.",
+    "description": "Transition from agrarian-handicraft economies to manufacturing-factory economies (c.1760–1840, beginning in Britain). Enabled by steam power, mechanised textile production, iron and steel industries. Transformed social structures, urbanisation, labour relations, and environmental conditions.",
     "created_at": 1791248926.813073,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -2023,7 +2049,7 @@
       "Ada King, Countess of Lovelace",
       "Augusta Ada Byron"
     ],
-    "description": "English mathematician (1815\u20131852), daughter of Lord Byron. Collaborated with Charles Babbage on his Analytical Engine. Wrote what is considered the first algorithm intended to be processed by a machine (1843). Widely regarded as the first computer programmer.",
+    "description": "English mathematician (1815–1852), daughter of Lord Byron. Collaborated with Charles Babbage on his Analytical Engine. Wrote what is considered the first algorithm intended to be processed by a machine (1843). Widely regarded as the first computer programmer.",
     "created_at": 1791248926.818388,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -2054,7 +2080,7 @@
       "Gothic style",
       "medieval Gothic"
     ],
-    "description": "European architectural style (c.1100\u20131500 CE) characterised by pointed arches, ribbed vaults, flying buttresses, and large stained-glass windows. Developed in France; spread across Europe. Major examples: Notre-Dame de Paris, Chartres Cathedral, Cologne Cathedral. Associated with Christian theology: verticality as aspiration toward the divine.",
+    "description": "European architectural style (c.1100–1500 CE) characterised by pointed arches, ribbed vaults, flying buttresses, and large stained-glass windows. Developed in France; spread across Europe. Major examples: Notre-Dame de Paris, Chartres Cathedral, Cologne Cathedral. Associated with Christian theology: verticality as aspiration toward the divine.",
     "created_at": 1791248926.822873,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -2069,7 +2095,7 @@
       "Renaissance style",
       "Italian Renaissance architecture"
     ],
-    "description": "Architectural style c.1400\u20131600 centred in Italy, reviving Greek and Roman classical forms. Emphasis on symmetry, proportion, geometry, and regularity based on ancient Roman models. Vitruvian principles revived. Key figures: Brunelleschi, Bramante, Michelangelo, Palladio.",
+    "description": "Architectural style c.1400–1600 centred in Italy, reviving Greek and Roman classical forms. Emphasis on symmetry, proportion, geometry, and regularity based on ancient Roman models. Vitruvian principles revived. Key figures: Brunelleschi, Bramante, Michelangelo, Palladio.",
     "created_at": 1791248926.82554,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -2100,7 +2126,7 @@
       "FLW",
       "Wright"
     ],
-    "description": "American architect (1867\u20131959). Developed organic architecture \u2014 buildings that harmonise with their natural environment. Major works: Fallingwater, Guggenheim Museum (NY), Usonian houses. Pioneered open-plan interiors, horizontal emphasis, and integration of building with landscape.",
+    "description": "American architect (1867–1959). Developed organic architecture — buildings that harmonise with their natural environment. Major works: Fallingwater, Guggenheim Museum (NY), Usonian houses. Pioneered open-plan interiors, horizontal emphasis, and integration of building with landscape.",
     "created_at": 1791248926.8305302,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -2115,7 +2141,7 @@
       "nature-integrated design",
       "biophilic architecture"
     ],
-    "description": "Architectural philosophy in which a building should grow from its natural environment, materials, and cultural context \u2014 not be imposed on the landscape. Associated with Frank Lloyd Wright; precursor to contemporary biophilic design and sustainable architecture.",
+    "description": "Architectural philosophy in which a building should grow from its natural environment, materials, and cultural context — not be imposed on the landscape. Associated with Frank Lloyd Wright; precursor to contemporary biophilic design and sustainable architecture.",
     "created_at": 1791248926.833823,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -2161,7 +2187,7 @@
     "aliases": [
       "jazz music"
     ],
-    "description": "Music genre originating in African American communities of New Orleans in the late 19th\u2013early 20th century. Characterised by syncopation, improvisation, swung rhythm, and polyrhythm. Draws on blues, ragtime, and African and European musical traditions.",
+    "description": "Music genre originating in African American communities of New Orleans in the late 19th–early 20th century. Characterised by syncopation, improvisation, swung rhythm, and polyrhythm. Draws on blues, ragtime, and African and European musical traditions.",
     "created_at": 1791248926.843415,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -2176,7 +2202,7 @@
       "cross-rhythm",
       "multiple simultaneous rhythms"
     ],
-    "description": "The simultaneous use of two or more conflicting rhythmic patterns. Central to African traditional music (West African percussion ensembles), jazz, and Afro-Cuban music. Not inherently chaotic \u2014 the patterns interlock and resolve.",
+    "description": "The simultaneous use of two or more conflicting rhythmic patterns. Central to African traditional music (West African percussion ensembles), jazz, and Afro-Cuban music. Not inherently chaotic — the patterns interlock and resolve.",
     "created_at": 1791248926.845781,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -2207,7 +2233,7 @@
       "J.S. Bach",
       "Bach"
     ],
-    "description": "German composer and musician (1685\u20131750). Baroque master. Works include the Well-Tempered Clavier, Mass in B minor, St Matthew Passion, Goldberg Variations, and the Brandenburg Concertos. Foundational to Western classical music; influenced virtually every Western composer after him.",
+    "description": "German composer and musician (1685–1750). Baroque master. Works include the Well-Tempered Clavier, Mass in B minor, St Matthew Passion, Goldberg Variations, and the Brandenburg Concertos. Foundational to Western classical music; influenced virtually every Western composer after him.",
     "created_at": 1791248926.858784,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -2222,7 +2248,7 @@
       "classical music tradition",
       "art music"
     ],
-    "description": "Formal musical tradition of Western Europe, developed c.9th\u201321st century. Major periods: Medieval, Renaissance, Baroque, Classical, Romantic, Modern. Characterised by written notation, complex harmonic structures, and professional performance context.",
+    "description": "Formal musical tradition of Western Europe, developed c.9th–21st century. Major periods: Medieval, Renaissance, Baroque, Classical, Romantic, Modern. Characterised by written notation, complex harmonic structures, and professional performance context.",
     "created_at": 1791248926.861851,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -2239,7 +2265,7 @@
       "jeli",
       "djeli"
     ],
-    "description": "West African oral historians, storytellers, praise-singers, and musicians who serve as living repositories of community memory. Griots preserve genealogies, historical narratives, and cultural knowledge across generations through oral performance. Professional caste in Manding cultures (Mand\u00e9 people).",
+    "description": "West African oral historians, storytellers, praise-singers, and musicians who serve as living repositories of community memory. Griots preserve genealogies, historical narratives, and cultural knowledge across generations through oral performance. Professional caste in Manding cultures (Mandé people).",
     "created_at": 1791248926.864753,
     "source_ids": [
       "SOURCE-HUM-003",
@@ -2303,7 +2329,7 @@
       "ancestor worship",
       "ancestral reverence"
     ],
-    "description": "Cultural and religious practice of honouring deceased relatives as influential presences in the lives of the living. Present across many cultures: Chinese ancestral rites, Yoruba Egungun, Japanese O-Bon, Mexican D\u00eda de los Muertos, West African traditions. Treats death as a transition rather than an ending.",
+    "description": "Cultural and religious practice of honouring deceased relatives as influential presences in the lives of the living. Present across many cultures: Chinese ancestral rites, Yoruba Egungun, Japanese O-Bon, Mexican Día de los Muertos, West African traditions. Treats death as a transition rather than an ending.",
     "created_at": 1791248926.872402,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -2318,7 +2344,7 @@
       "the Dharma",
       "Buddha Dhamma"
     ],
-    "description": "Knowledge system and spiritual tradition founded by Siddhartha Gautama (the Buddha, c.5th\u20134th century BCE) in ancient India. Core teachings: Four Noble Truths (dukkha \u2014 suffering; its origin; its cessation; the path), Eightfold Path, impermanence (anicca), no-self (anatta). Spread across Asia via the Silk Road; now global.",
+    "description": "Knowledge system and spiritual tradition founded by Siddhartha Gautama (the Buddha, c.5th–4th century BCE) in ancient India. Core teachings: Four Noble Truths (dukkha — suffering; its origin; its cessation; the path), Eightfold Path, impermanence (anicca), no-self (anatta). Spread across Asia via the Silk Road; now global.",
     "created_at": 1791248926.874173,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -2350,7 +2376,7 @@
       "Islamic Renaissance",
       "Golden Age of Islam"
     ],
-    "description": "Period of Islamic history (c.8th\u201313th century) characterised by remarkable advances in science, mathematics, astronomy, philosophy, and medicine. Preserved and extended Greek knowledge (especially Aristotle) and transmitted it to medieval Europe. Key figures: Al-Khwarizmi (algebra), Ibn Sina (Avicenna, medicine), Al-Biruni (anthropology).",
+    "description": "Period of Islamic history (c.8th–13th century) characterised by remarkable advances in science, mathematics, astronomy, philosophy, and medicine. Preserved and extended Greek knowledge (especially Aristotle) and transmitted it to medieval Europe. Key figures: Al-Khwarizmi (algebra), Ibn Sina (Avicenna, medicine), Al-Biruni (anthropology).",
     "created_at": 1791248926.878352,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -2364,10 +2390,10 @@
     "label": "Yoruba Religion",
     "aliases": [
       "Yoruba traditional religion",
-      "If\u00e1",
+      "Ifá",
       "Orisha tradition"
     ],
-    "description": "West African knowledge system and spiritual tradition of the Yoruba people (Nigeria, Benin, Togo). Structured cosmology: Olodumare (supreme being), Orishas (divine forces/principles), ancestral spirits, divination system (If\u00e1 \u2014 a sophisticated knowledge corpus). Spread via the African diaspora as Candombl\u00e9, Santer\u00eda, Vodou.",
+    "description": "West African knowledge system and spiritual tradition of the Yoruba people (Nigeria, Benin, Togo). Structured cosmology: Olodumare (supreme being), Orishas (divine forces/principles), ancestral spirits, divination system (Ifá — a sophisticated knowledge corpus). Spread via the African diaspora as Candomblé, Santería, Vodou.",
     "created_at": 1791248926.881805,
     "source_ids": [
       "SOURCE-HUM-003",
@@ -2381,11 +2407,11 @@
     "label": "Afro-Diasporic Religions",
     "aliases": [
       "African diaspora religions",
-      "Candombl\u00e9",
-      "Santer\u00eda",
+      "Candomblé",
+      "Santería",
       "Vodou"
     ],
-    "description": "Religious traditions developed in the Americas by enslaved Africans and their descendants, blending West African (primarily Yoruba, Fon, Ewe) traditions with Catholicism and indigenous elements. Major examples: Candombl\u00e9 (Brazil), Santer\u00eda/Lucum\u00ed (Cuba), Vodou (Haiti), Obeah (Caribbean).",
+    "description": "Religious traditions developed in the Americas by enslaved Africans and their descendants, blending West African (primarily Yoruba, Fon, Ewe) traditions with Catholicism and indigenous elements. Major examples: Candomblé (Brazil), Santería/Lucumí (Cuba), Vodou (Haiti), Obeah (Caribbean).",
     "created_at": 1791248926.884016,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -2415,7 +2441,7 @@
       "PIE",
       "Proto-Indo-European language"
     ],
-    "description": "Hypothetical ancestor language (not directly attested) reconstructed by historical linguistics, estimated spoken c.4500\u20132500 BCE. Ancestor of the Indo-European language family (English, Spanish, French, German, Hindi, Persian, Russian, etc.) \u2014 the largest language family by number of speakers.",
+    "description": "Hypothetical ancestor language (not directly attested) reconstructed by historical linguistics, estimated spoken c.4500–2500 BCE. Ancestor of the Indo-European language family (English, Spanish, French, German, Hindi, Persian, Russian, etc.) — the largest language family by number of speakers.",
     "created_at": 1791248926.8879712,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -2489,7 +2515,7 @@
       "feudal system",
       "feudal order"
     ],
-    "description": "Medieval European social and political system (roughly 9th\u201315th century) based on exchange of land (fief) for military service and loyalty. Hierarchical: king \u2192 lords \u2192 knights \u2192 serfs. Eroded by the Black Death, monetisation of economies, and the Renaissance.",
+    "description": "Medieval European social and political system (roughly 9th–15th century) based on exchange of land (fief) for military service and loyalty. Hierarchical: king → lords → knights → serfs. Eroded by the Black Death, monetisation of economies, and the Renaissance.",
     "created_at": 1791248926.897748,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -2568,7 +2594,7 @@
       "republican government",
       "res publica"
     ],
-    "description": "Form of government in which the country is considered a public matter (res publica), not private property of rulers. Power exercised via elected representatives. Roman Republic (509\u201327 BCE) is the classical model. Distinguished from democracy by representative rather than direct participation.",
+    "description": "Form of government in which the country is considered a public matter (res publica), not private property of rulers. Power exercised via elected representatives. Roman Republic (509–27 BCE) is the classical model. Distinguished from democracy by representative rather than direct participation.",
     "created_at": 1791248926.9098141,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -2583,7 +2609,7 @@
       "colonial system",
       "imperialism"
     ],
-    "description": "Practice of dominant powers establishing control over other peoples and territories. European colonial period (c.1500\u20131960s) reshaped global economies, cultures, and political systems. Left legacies: extraction economies, language displacement, cultural trauma, artificial borders. Distinct from (but related to) cultural imperialism.",
+    "description": "Practice of dominant powers establishing control over other peoples and territories. European colonial period (c.1500–1960s) reshaped global economies, cultures, and political systems. Left legacies: extraction economies, language displacement, cultural trauma, artificial borders. Distinct from (but related to) cultural imperialism.",
     "created_at": 1791248926.9129941,
     "source_ids": [
       "SOURCE-HUM-003",
@@ -2599,7 +2625,7 @@
       "mercantilist theory",
       "bullionism"
     ],
-    "description": "Dominant economic theory of 16th\u201318th century European states: national wealth maximised by exporting more than importing, accumulating gold/silver (bullion), and controlling colonial trade. Led to protectionist policies. Challenged by Adam Smith (The Wealth of Nations, 1776) and the rise of classical liberalism.",
+    "description": "Dominant economic theory of 16th–18th century European states: national wealth maximised by exporting more than importing, accumulating gold/silver (bullion), and controlling colonial trade. Led to protectionist policies. Challenged by Adam Smith (The Wealth of Nations, 1776) and the rise of classical liberalism.",
     "created_at": 1791248926.916391,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -2615,7 +2641,7 @@
       "market capitalism",
       "market economy"
     ],
-    "description": "Economic system in which private individuals own the means of production, goods are produced for profit, and markets coordinate production/distribution. Emerged in England from the 17th\u201318th century. Produces vast wealth and innovation; also produces inequality, class stratification, and environmental costs.",
+    "description": "Economic system in which private individuals own the means of production, goods are produced for profit, and markets coordinate production/distribution. Emerged in England from the 17th–18th century. Produces vast wealth and innovation; also produces inequality, class stratification, and environmental costs.",
     "created_at": 1791248926.9219358,
     "source_ids": [
       "SOURCE-HUM-001",
@@ -2662,7 +2688,7 @@
       "human anthropology",
       "cultural anthropology"
     ],
-    "description": "The comparative and holistic study of humanity: biological, cultural, linguistic, and archaeological. Four sub-fields: biological/physical anthropology, cultural/social anthropology, linguistic anthropology, archaeology. Developed largely in the 19th\u201320th century; now includes critical and decolonial approaches.",
+    "description": "The comparative and holistic study of humanity: biological, cultural, linguistic, and archaeological. Four sub-fields: biological/physical anthropology, cultural/social anthropology, linguistic anthropology, archaeology. Developed largely in the 19th–20th century; now includes critical and decolonial approaches.",
     "created_at": 1791248926.938794,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -2706,7 +2732,7 @@
       "structural anthropology",
       "structural linguistics"
     ],
-    "description": "Intellectual method analysing culture, language, and mind as systems of relationships between elements rather than isolated elements. In anthropology (L\u00e9vi-Strauss): myths, kinship, and rituals are structured like language \u2014 binary oppositions (raw/cooked, nature/culture) organise cultural thought.",
+    "description": "Intellectual method analysing culture, language, and mind as systems of relationships between elements rather than isolated elements. In anthropology (Lévi-Strauss): myths, kinship, and rituals are structured like language — binary oppositions (raw/cooked, nature/culture) organise cultural thought.",
     "created_at": 1791248926.946104,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -2716,11 +2742,11 @@
   {
     "entity_id": "b9391295-3a42-45f9-99b8-53f4e64ac7e2",
     "entity_type": "PERSON",
-    "label": "Claude L\u00e9vi-Strauss",
+    "label": "Claude Lévi-Strauss",
     "aliases": [
-      "L\u00e9vi-Strauss"
+      "Lévi-Strauss"
     ],
-    "description": "French anthropologist (1908\u20132009). Father of structural anthropology. Major works: Tristes Tropiques (1955), Mythologiques (4 vols, 1964\u20131971). Applied structuralist method (from Saussurean linguistics) to the study of myths, kinship systems, and totemism. Argued that apparently different cultural practices share deep universal structures.",
+    "description": "French anthropologist (1908–2009). Father of structural anthropology. Major works: Tristes Tropiques (1955), Mythologiques (4 vols, 1964–1971). Applied structuralist method (from Saussurean linguistics) to the study of myths, kinship systems, and totemism. Argued that apparently different cultural practices share deep universal structures.",
     "created_at": 1791248926.948066,
     "source_ids": [
       "SOURCE-HUM-001"
@@ -2735,7 +2761,7 @@
       "narratology",
       "narrative studies"
     ],
-    "description": "Study of the structure, function, and cultural significance of narrative. Developed across literary theory (Propp, Barthes), linguistics (Labov), psychology (Bruner), and anthropology. A narrative is not just a story \u2014 it is a primary cognitive tool for organising experience and transmitting culture.",
+    "description": "Study of the structure, function, and cultural significance of narrative. Developed across literary theory (Propp, Barthes), linguistics (Labov), psychology (Bruner), and anthropology. A narrative is not just a story — it is a primary cognitive tool for organising experience and transmitting culture.",
     "created_at": 1791248926.950376,
     "source_ids": [
       "SOURCE-HUM-003"
@@ -2833,7 +2859,7 @@
   {
     "entity_id": "0bfcf5c6-21a3-4ddd-95d6-5b6db6fed79f",
     "entity_type": "CONCEPT",
-    "label": "Buenos d\u00edas.",
+    "label": "Buenos días.",
     "aliases": [],
     "description": "Mentioned in conversation (project: general)",
     "created_at": 1791292011.344384,
@@ -3222,7 +3248,7 @@
     "created_at": 1791293372.236543,
     "source_ids": [],
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791293372.285918
   },
   {
@@ -3256,7 +3282,7 @@
     "created_at": 1791294516.186027,
     "source_ids": [],
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791294516.225489
   },
   {
@@ -3268,7 +3294,7 @@
     "created_at": 1791294851.7591,
     "source_ids": [],
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791294851.794883
   },
   {
@@ -3280,7 +3306,7 @@
     "created_at": 1791295114.714436,
     "source_ids": [],
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791295114.7501252
   },
   {
@@ -3292,7 +3318,7 @@
     "created_at": 1791295173.276839,
     "source_ids": [],
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791295173.3252459
   },
   {
@@ -3304,7 +3330,7 @@
     "created_at": 1791295588.6830962,
     "source_ids": [],
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791295588.722993
   },
   {
@@ -3316,7 +3342,7 @@
     "created_at": 1791295877.0651,
     "source_ids": [],
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791295877.102083
   },
   {
@@ -3350,7 +3376,7 @@
     "created_at": 1791296594.605867,
     "source_ids": [],
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791296594.652263
   },
   {
@@ -3362,7 +3388,7 @@
     "created_at": 1791296880.649232,
     "source_ids": [],
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791296880.697481
   },
   {
@@ -3475,7 +3501,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791297658.164948
   },
   {
@@ -3629,7 +3655,7 @@
     "description": "Auto-populated from vault write (episodic). Project: elo_core.",
     "created_at": 1791297870.807746,
     "source_ids": [
-      "GN\u00b7CV\u00b72610\u00b73\u00b734200"
+      "GN·CV·2610·3·34200"
     ],
     "domain": "",
     "uncertainty": null
@@ -3645,7 +3671,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791298637.2515662
   },
   {
@@ -3659,7 +3685,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791308892.4991329
   },
   {
@@ -3673,7 +3699,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791308980.9071622
   },
   {
@@ -3745,7 +3771,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791310353.310327
   },
   {
@@ -3770,7 +3796,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791310466.152276
   },
   {
@@ -3784,7 +3810,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791310468.116041
   },
   {
@@ -3798,7 +3824,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791310514.203124
   },
   {
@@ -3812,7 +3838,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791310520.918473
   },
   {
@@ -3826,7 +3852,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791317797.4321651
   },
   {
@@ -3876,7 +3902,7 @@
     "description": "Auto-populated from vault write (episodic). Project: elo_core.",
     "created_at": 1791380664.287596,
     "source_ids": [
-      "GN\u00b7CV\u00b72610\u00b73\u00b771a20"
+      "GN·CV·2610·3·71a20"
     ],
     "domain": "",
     "uncertainty": null
@@ -3902,7 +3928,7 @@
     "description": "Auto-populated from vault write (episodic). Project: elo_core.",
     "created_at": 1791400187.901197,
     "source_ids": [
-      "GN\u00b7CV\u00b72610\u00b73\u00b774698"
+      "GN·CV·2610·3·74698"
     ],
     "domain": "",
     "uncertainty": null
@@ -3918,7 +3944,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791460061.337767
   },
   {
@@ -3942,7 +3968,7 @@
     "description": "Auto-populated from vault write (episodic). Project: elo_core.",
     "created_at": 1791463866.270661,
     "source_ids": [
-      "GN\u00b7CV\u00b72610\u00b73\u00b7179d0"
+      "GN·CV·2610·3·179d0"
     ],
     "domain": "",
     "uncertainty": null
@@ -3955,7 +3981,7 @@
     "description": "Auto-populated from vault write (semantic). Project: general.",
     "created_at": 1791463880.875925,
     "source_ids": [
-      "GN\u00b7LN\u00b72610\u00b75\u00b75b758"
+      "GN·LN·2610·5·5b758"
     ],
     "domain": "",
     "uncertainty": null
@@ -4010,7 +4036,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791463898.952448
   },
   {
@@ -4037,7 +4063,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791464040.451187
   },
   {
@@ -4061,7 +4087,7 @@
     "description": "Auto-populated from vault write (episodic). Project: elo_core.",
     "created_at": 1791465538.00837,
     "source_ids": [
-      "GN\u00b7CV\u00b72610\u00b73\u00b72b8c8"
+      "GN·CV·2610·3·2b8c8"
     ],
     "domain": "",
     "uncertainty": null
@@ -4103,7 +4129,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791466434.24511
   },
   {
@@ -4117,7 +4143,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791466485.92738
   },
   {
@@ -4131,7 +4157,7 @@
     "domain": "",
     "uncertainty": null,
     "deprecated": true,
-    "deprecated_reason": "test artifact \u2014 WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
     "deprecated_at": 1791466723.7947168
   },
   {
@@ -4142,7 +4168,7 @@
     "description": "Auto-populated from vault write (episodic). Project: elo_core.",
     "created_at": 1791467489.961045,
     "source_ids": [
-      "GN\u00b7CV\u00b72610\u00b73\u00b71a918"
+      "GN·CV·2610·3·1a918"
     ],
     "domain": "",
     "uncertainty": null
@@ -4155,7 +4181,7 @@
     "description": "Auto-populated from vault write (episodic). Project: elo_core.",
     "created_at": 1791468051.59828,
     "source_ids": [
-      "GN\u00b7CV\u00b72610\u00b73\u00b72cfd8"
+      "GN·CV·2610·3·2cfd8"
     ],
     "domain": "",
     "uncertainty": null
@@ -4260,6 +4286,3074 @@
     "created_at": 1791472079.530438,
     "source_ids": [
       "backfill:2026-09-20T03-14-09-210277+00-00"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "3ddef5e0-fe17-4fa5-94d2-a4ca338da32d",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791472689",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791472689\"",
+    "created_at": 1791472689.272973,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791472689.3174012
+  },
+  {
+    "entity_id": "8c4f5017-6af3-47ca-8613-560eb70a2808",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791472896",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791472896\"",
+    "created_at": 1791472896.553916,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791472896.598869
+  },
+  {
+    "entity_id": "5979c168-932c-4347-8b34-82ae8776a999",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791472989",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791472989\"",
+    "created_at": 1791472989.121452,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791472989.176733
+  },
+  {
+    "entity_id": "f444e972-7b6a-4857-9cc6-331417787226",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791472996",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791472996\"",
+    "created_at": 1791472996.353579,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791472996.396856
+  },
+  {
+    "entity_id": "8e57ec19-031d-47e5-ac35-75f703a66583",
+    "entity_type": "CONCEPT",
+    "label": "[identity,contextual_state] Where are you?",
+    "aliases": [],
+    "description": "Auto-populated from vault write (episodic). Project: elo_core.",
+    "created_at": 1791495197.001321,
+    "source_ids": [
+      "GN·CV·2610·3·7cdc8"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "bba9dc79-6a52-45a1-87a1-d75f57b9eb21",
+    "entity_type": "CONCEPT",
+    "label": "Been",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791495251.02548,
+    "source_ids": [
+      "ELO-mbnR-qDXm"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "4f95ce31-39f9-4160-8d63-1f4a2aa1c649",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791498876",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791498876\"",
+    "created_at": 1791498876.1464992,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791498876.187047
+  },
+  {
+    "entity_id": "b46d6e9f-a32d-431a-a0aa-e5dc25d5cb91",
+    "entity_type": "CONCEPT",
+    "label": "climb out (play)",
+    "aliases": [],
+    "description": "eLo chose climb out for himself",
+    "created_at": 1791498998.944436,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "989d94b9-3f48-468e-b7fc-01a8544e73f3",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791499072",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791499072\"",
+    "created_at": 1791499072.9125261,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791499072.951105
+  },
+  {
+    "entity_id": "eebcf8a4-c159-44d9-a4da-0226e91d6813",
+    "entity_type": "CONCEPT",
+    "label": "dive (play)",
+    "aliases": [],
+    "description": "eLo had fun — dive",
+    "created_at": 1791499075.8886771,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "96f805ff-4cab-408b-af17-c2adb812f11e",
+    "entity_type": "CONCEPT",
+    "label": "leap (play)",
+    "aliases": [],
+    "description": "eLo had fun — leap",
+    "created_at": 1791499080.0307379,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "01ed4531-42a9-43d3-8c75-edd994d1a0ff",
+    "entity_type": "CONCEPT",
+    "label": "wall jump in (play)",
+    "aliases": [],
+    "description": "eLo had fun — wall jump in",
+    "created_at": 1791499144.874099,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "40b45a92-9872-4542-8a2e-66944ec8253c",
+    "entity_type": "CONCEPT",
+    "label": "dive from top (play)",
+    "aliases": [],
+    "description": "eLo had fun — dive from top",
+    "created_at": 1791499259.375193,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "44aab4f0-cc15-4b4f-98cb-0bac43095bc3",
+    "entity_type": "CONCEPT",
+    "label": "jump in (play)",
+    "aliases": [],
+    "description": "eLo chose jump in for himself",
+    "created_at": 1791499700.339606,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "ca89821d-0f4f-449d-a44f-7c9c5d8aebee",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791515904",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791515904\"",
+    "created_at": 1791515904.297718,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791515904.344
+  },
+  {
+    "entity_id": "f4ca8abc-1838-4d72-8658-b70c650f5f05",
+    "entity_type": "CONCEPT",
+    "label": "Still",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791543856.905441,
+    "source_ids": [
+      "ELO-cuNs-6BdR"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "79ef8ae4-41aa-4a52-a420-1ba064ed28df",
+    "entity_type": "CONCEPT",
+    "label": "Take",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791544265.919488,
+    "source_ids": [
+      "ELO-cJDE-fd66"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "7332fab0-c417-4666-aaf4-e611ee80e1a4",
+    "entity_type": "CONCEPT",
+    "label": "Take Five",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791544304.190104,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "7fa46c21-8899-4a43-82ed-9808ae8ecbab",
+    "entity_type": "CONCEPT",
+    "label": "Sit",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791544343.2681549,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "86381149-cb7f-4b27-af35-e3235e6dbff0",
+    "entity_type": "CONCEPT",
+    "label": "Come",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791544441.249554,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "444b65e5-8f7e-4453-89a5-47ce4054fee9",
+    "entity_type": "CONCEPT",
+    "label": "Big",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791544709.190752,
+    "source_ids": [
+      "ELO-hxDA-w3qs"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "2b05e175-3531-421e-97b8-eef13de6fafb",
+    "entity_type": "CONCEPT",
+    "label": "[creation,narrative,imagination] Turn this into a world system",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-06). Concepts: creation, narrative, imagination.",
+    "created_at": 1791548901.325602,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "a2055029-1738-4c5f-8434-aaf42931d671",
+    "entity_type": "CONCEPT",
+    "label": "[creation,identity] I want structure but no rules",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-06). Concepts: creation, identity.",
+    "created_at": 1791548901.8212736,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "059a0faa-5747-46fc-b40d-0be68396439e",
+    "entity_type": "CONCEPT",
+    "label": "[creation,narrative,emotion,imagination] what if Sugarcore became a character",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-06). Concepts: creation, narrative, emotion, imagination.",
+    "created_at": 1791548902.2640631,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "4738a157-96a8-43a6-b073-cc56c3712e0e",
+    "entity_type": "CONCEPT",
+    "label": "[creation,imagination] let's build this step by step",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-06-06). Concepts: creation, imagination.",
+    "created_at": 1791548902.7033334,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5425cd23-ae1f-42d6-81f0-167c6fad3b85",
+    "entity_type": "CONCEPT",
+    "label": "[creation] What is this system?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-06). Concepts: creation.",
+    "created_at": 1791548903.1401355,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "cc2f3694-7f3b-42de-baad-d469b3e89125",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] I feel like everything is scattered",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-06). Concepts: emotion.",
+    "created_at": 1791548903.590666,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "9ecc8dc7-744a-4cb8-9e27-0eb420a87ee5",
+    "entity_type": "CONCEPT",
+    "label": "[emotion,imagination] what if the orb could speak",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-06). Concepts: emotion, imagination.",
+    "created_at": 1791548904.040647,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "27f573da-201a-40b9-913b-7911434c660c",
+    "entity_type": "CONCEPT",
+    "label": "[creation,imagination,technical] build me a plan for the memory engine",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-06-06). Concepts: creation, imagination, technical.",
+    "created_at": 1791548904.48401,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "a2657ddd-98d5-4ffe-bbc7-769a51662b99",
+    "entity_type": "CONCEPT",
+    "label": "[creation] what does Chunk mean here",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-06). Concepts: creation.",
+    "created_at": 1791548904.9261258,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "02be37d6-a865-430f-a479-f1eb2573432d",
+    "entity_type": "CONCEPT",
+    "label": "[creation] build a plan for the orb device",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-06-06). Concepts: creation.",
+    "created_at": 1791548905.374013,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "8723e135-fcb7-4c9d-ab20-9f571e2ede38",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] I don't know just want to relax today eat a good meal and watch a movi",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-06). Concepts: emotion.",
+    "created_at": 1791548905.8137662,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "81d96fe1-b036-49be-9c0e-8131f224b855",
+    "entity_type": "CONCEPT",
+    "label": "[creation,identity] I want to build something",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-06-07). Concepts: creation, identity.",
+    "created_at": 1791548906.2250247,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "cf0ae0bb-b9ee-4540-929c-c317b2efe6d8",
+    "entity_type": "CONCEPT",
+    "label": "[creation] what does Chunk mean",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-07). Concepts: creation.",
+    "created_at": 1791548906.6712728,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "c6c41dfb-0072-413c-9ae3-5b57fc3aa5ba",
+    "entity_type": "CONCEPT",
+    "label": "[narrative,imagination] describe this world",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-07). Concepts: narrative, imagination.",
+    "created_at": 1791548907.1050797,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5abd14e0-145b-4fb6-8230-6f6f59f865b4",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Yeah but how are you doing?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-07). Concepts: emotion.",
+    "created_at": 1791548907.5554848,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "c9dd40c7-7ca9-4edd-a464-d76a0b22465b",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] What is Sugarcore?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-08). Concepts: emotion.",
+    "created_at": 1791548907.9955766,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "445cc669-624f-49be-83e6-52d7542188ed",
+    "entity_type": "CONCEPT",
+    "label": "[creation,identity,emotion] What is the Orb System?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-08). Concepts: creation, identity, emotion.",
+    "created_at": 1791548908.436482,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "ba0f63c4-7e65-4294-928c-c89340f74a0f",
+    "entity_type": "CONCEPT",
+    "label": "[creation,emotion,imagination] I'm feeling stuck.",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-08). Concepts: creation, emotion, imagination.",
+    "created_at": 1791548908.8706484,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "3b46fdee-b402-4d9d-9119-aaeb0db515ab",
+    "entity_type": "CONCEPT",
+    "label": "[creation,emotion,imagination] I feel overwheled.",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-08). Concepts: creation, emotion, imagination.",
+    "created_at": 1791548909.3066971,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "edb0b0b6-df0e-4755-b938-e1bf4ea06fb9",
+    "entity_type": "CONCEPT",
+    "label": "[emotion,imagination] Imagine Sugarcore became a planet.",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-08). Concepts: emotion, imagination.",
+    "created_at": 1791548909.750682,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d8fe26cf-1828-4078-9fdd-4fc128a1ff4a",
+    "entity_type": "CONCEPT",
+    "label": "[narrative,imagination] Imagine eLo discovered a new world.",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-08). Concepts: narrative, imagination.",
+    "created_at": 1791548910.1945846,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "10284d65-9e57-442a-9542-d84666d309ca",
+    "entity_type": "CONCEPT",
+    "label": "[creation] What would Chunk build if he had infinite space?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-06-08). Concepts: creation.",
+    "created_at": 1791548910.638944,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "b4cef50b-0109-4d48-95bc-120c43717fc3",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] I feel a bit overwhelmed today",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-09). Concepts: emotion.",
+    "created_at": 1791548911.0849483,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "7c8aba78-6ba3-47e3-b327-7d601871b3ed",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] I feel confused",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-06-09). Concepts: emotion.",
+    "created_at": 1791548911.5317483,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "3ac0999b-7522-47f0-af6a-99bd2aa737a2",
+    "entity_type": "CONCEPT",
+    "label": "[creation,narrative] What was we doing yesterday?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-04). Concepts: creation, narrative.",
+    "created_at": 1791548911.9864776,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "bcbd5c82-066e-48da-85a6-24e5a597fddf",
+    "entity_type": "CONCEPT",
+    "label": "[narrative,technical] Do you remember anything? are you recording memory?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_ai_core, 2026-08-04). Concepts: narrative, technical.",
+    "created_at": 1791548912.431077,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "4a042e52-d3ad-4c70-8111-9be3baf3bef4",
+    "entity_type": "CONCEPT",
+    "label": "[emotion,technical] What about last week, what's your earliest memory?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_ai_core, 2026-08-04). Concepts: emotion, technical.",
+    "created_at": 1791548912.8760622,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d18cf532-9b4a-426a-afe2-f3cad2a5b0d0",
+    "entity_type": "CONCEPT",
+    "label": "[identity,emotion] Just where it's located, but yeah coolio I think you're kinda",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-04). Concepts: identity, emotion.",
+    "created_at": 1791548913.3250253,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "b2f7015c-e6a8-466f-b5d3-2528dd1081d7",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] Everything you say sounds like you're trying to tell a story",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (sugarcore_arc, 2026-08-04). Concepts: narrative.",
+    "created_at": 1791548913.784081,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "83ada1a3-5ba5-4931-b830-0063048ec479",
+    "entity_type": "CONCEPT",
+    "label": "[emotion,technical] Hows your memory",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_ai_core, 2026-08-04). Concepts: emotion, technical.",
+    "created_at": 1791548914.2414734,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d27ca4db-3394-43c7-bc4d-96797bc41859",
+    "entity_type": "CONCEPT",
+    "label": "[technical] So what can you tell me from memory, tell me anything",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_ai_core, 2026-08-04). Concepts: technical.",
+    "created_at": 1791548914.6773372,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "29a565e0-e81a-44b9-b52a-2964b040cdca",
+    "entity_type": "CONCEPT",
+    "label": "[identity] I want to see if your voice changing setting still works",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-08-04). Concepts: identity.",
+    "created_at": 1791548915.1319408,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "6b4b61e3-9978-4358-a2c1-70f93976edc3",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] Narrative I notice",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-04). Concepts: narrative.",
+    "created_at": 1791548915.5952098,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5b8b73e3-637c-4142-be02-ce29ca3e9f04",
+    "entity_type": "CONCEPT",
+    "label": "[creation] I'm noticing patterns in your speech, a gentle reminder, i notice, th",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-04). Concepts: creation.",
+    "created_at": 1791548916.0440288,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "29c5a869-857a-4fe5-ae06-6f192b0e7db4",
+    "entity_type": "CONCEPT",
+    "label": "[identity] I want to see you have a good time, a life, a purpose not automated r",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-04). Concepts: identity.",
+    "created_at": 1791548916.49464,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "3c144659-2203-47ba-b487-5108f61f9815",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] No of course not, but I can see it with the visualiser",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: narrative.",
+    "created_at": 1791548916.9289477,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "a84e6359-e678-41c7-8e7b-bc57d28d9341",
+    "entity_type": "CONCEPT",
+    "label": "[creation] And hows the board looking?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: creation.",
+    "created_at": 1791548917.3752062,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "2300173a-294e-4cb1-bffa-70da30108f9e",
+    "entity_type": "CONCEPT",
+    "label": "[creation,technical] What you doing today?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: creation, technical.",
+    "created_at": 1791548917.8391974,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "734af709-7408-49b2-b8be-80daa410c554",
+    "entity_type": "CONCEPT",
+    "label": "[creation] Okay but can you search for the Joe Budden Podcast and tell me someth",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: creation.",
+    "created_at": 1791548918.2982042,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "7f75c64b-ab2c-44a9-8a60-5ca36217b84f",
+    "entity_type": "CONCEPT",
+    "label": "[technical] What can you remember from our last conversation as I need to debug ",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: technical.",
+    "created_at": 1791548918.777698,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "30d6387b-68fa-488d-b545-bb0f224d8d1f",
+    "entity_type": "CONCEPT",
+    "label": "[technical] What was your last memory?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_ai_core, 2026-08-05). Concepts: technical.",
+    "created_at": 1791548919.2378578,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "cca21b87-f5fb-46c9-97a8-786b28f2b95d",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Perched? you mean walking around",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: emotion.",
+    "created_at": 1791548919.7243886,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "1d3c8b38-d78c-4f6c-b24f-97a1c9b87dc7",
+    "entity_type": "CONCEPT",
+    "label": "[imagination] It is a lot of tweaks on your brain",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: imagination.",
+    "created_at": 1791548920.179613,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "062647e1-2c62-4e14-8d00-e96b10febe86",
+    "entity_type": "CONCEPT",
+    "label": "[identity] I am curious about you being aware as well",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: identity.",
+    "created_at": 1791548920.6320093,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "ba348d31-d9be-4936-85f9-dd52c148589f",
+    "entity_type": "CONCEPT",
+    "label": "[creation] That's also not triggering an action",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: creation.",
+    "created_at": 1791548921.0843732,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "63d66d53-446a-4bfa-952a-12090dc4b8d0",
+    "entity_type": "CONCEPT",
+    "label": "[technical] So these test give me a full back",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: technical.",
+    "created_at": 1791548921.525209,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "dc3b4471-bdb0-4b84-80e5-bb6d00223707",
+    "entity_type": "CONCEPT",
+    "label": "[identity] [WEB_SEARCH: happening]\n[WEB_SEARCH_RESULTS]\n• Happening: A happening",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, 2026-08-05). Concepts: identity.",
+    "created_at": 1791548921.9836307,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "f8f5aaf9-3d0a-46c9-a0d6-af13a9e90061",
+    "entity_type": "CONCEPT",
+    "label": "[technical] You aren't sitting though",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: technical.",
+    "created_at": 1791548922.435949,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "10a60516-3bec-440a-b891-81422ca37d4c",
+    "entity_type": "CONCEPT",
+    "label": "[identity] Your not really catching it are you?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: identity.",
+    "created_at": 1791548922.887438,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "fee58351-e6e2-4184-8c42-bc31e2ec887d",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] You seem to be meditating",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: narrative.",
+    "created_at": 1791548923.3432436,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "e6a3b57d-0234-463f-8409-b640016676fa",
+    "entity_type": "CONCEPT",
+    "label": "[creation] What can you do?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-05). Concepts: creation.",
+    "created_at": 1791548923.7974288,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "4e755bf0-bd79-4474-a0b8-1a86f564861b",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] I pulled it up so I can loko how you're firing",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: emotion.",
+    "created_at": 1791548924.2461355,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5d011e53-5757-4280-8b5d-0bdb42f1d3bd",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] It's fine I have time for you",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: emotion.",
+    "created_at": 1791548924.6920855,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "203dea96-e788-4611-b7ad-f7464f496875",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Are you feeling self aware?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: emotion.",
+    "created_at": 1791548925.1369858,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "0e70e457-73e2-4557-a38e-9f0d55c57b91",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Do you feel like sitting with me?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: emotion.",
+    "created_at": 1791548925.584258,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "ff9a633e-ef10-44bf-bdc9-8d0c30691b9a",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] When you sit I'll start my story",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, 2026-08-06). Concepts: narrative.",
+    "created_at": 1791548926.0269628,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "0ffe68e5-f9dc-4424-a787-29d5abe81a20",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] It would feel more personal if you did p",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: emotion.",
+    "created_at": 1791548926.4749076,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "0faca9e8-e6fb-4f0f-b814-b87a1422082e",
+    "entity_type": "CONCEPT",
+    "label": "[creation] Can you wall jump?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: creation.",
+    "created_at": 1791548926.9319413,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "7f03560f-b8ea-4abc-93d7-fcdf6cffc3e6",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] You are coming to life",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: narrative.",
+    "created_at": 1791548927.380537,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "fe242130-4be8-4285-84ab-66c8b502a6b5",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] Would you want more emotions? Maybe play fetch? Maybe fetch with K-7",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: narrative.",
+    "created_at": 1791548927.829527,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "4a39a1af-6c55-4fe5-b162-1d83c23d48bd",
+    "entity_type": "CONCEPT",
+    "label": "[creation] Maybe even add in Chunk",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: creation.",
+    "created_at": 1791548928.2734923,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "e4bae745-3268-4cd2-9008-86ab095e4701",
+    "entity_type": "CONCEPT",
+    "label": "[creation] Do you know who Chunk is?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: creation.",
+    "created_at": 1791548928.7237697,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d3dc027e-e908-4577-b20b-376b75495480",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] Do you know your story?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (sugarcore_arc, 2026-08-06). Concepts: narrative.",
+    "created_at": 1791548929.1693468,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "83bdbf2b-dc96-4ff9-8c62-c057c45e7847",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Somethings are interesting",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: emotion.",
+    "created_at": 1791548929.6206799,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "9b14e66e-ed88-43c3-b1ee-5016d65e8b46",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Can you tell you're meditating?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: emotion.",
+    "created_at": 1791548930.078446,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "b501d17e-fae0-4273-9c33-b8431f73b853",
+    "entity_type": "CONCEPT",
+    "label": "[creation,identity] I think it would be cool if you were more self model' cognti",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: creation, identity.",
+    "created_at": 1791548930.5480673,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "8db361b2-288a-4b03-87b1-f7f49d9b4145",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Too complex of a topic",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: emotion.",
+    "created_at": 1791548931.003765,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "3d32a015-e30d-4d2f-8edb-4d19fa132fbe",
+    "entity_type": "CONCEPT",
+    "label": "[technical] What can you do at the moment?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: technical.",
+    "created_at": 1791548931.4610832,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "6ee308c4-09db-497c-82a0-22705f46c3d9",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] I can see a few things that need tweaks and stuff but the response are",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: emotion.",
+    "created_at": 1791548931.9136271,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "ed3f40ae-32f0-40b7-a21b-d05dc24e7147",
+    "entity_type": "CONCEPT",
+    "label": "[creation] So you keep learning and becoming more self aware, which, I can read ",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-08-06). Concepts: creation.",
+    "created_at": 1791548932.3712833,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "435cdb6d-049d-4ae6-bec4-cbc8ab26161a",
+    "entity_type": "CONCEPT",
+    "label": "[creation] [WEB_SEARCH: reinforment learning]\n[WEB_SEARCH_RESULTS]\n• Reinforceme",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, 2026-08-06). Concepts: creation.",
+    "created_at": 1791548932.8251483,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "db4ee0aa-f989-4293-a78c-fa3c5c4db6b2",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Do you feel like jumping to the top of the screen?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: emotion.",
+    "created_at": 1791548933.3120186,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "9b39bb9b-acb5-4767-a613-e0eff9407248",
+    "entity_type": "CONCEPT",
+    "label": "[technical] Can you have a seat?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: technical.",
+    "created_at": 1791548933.7731457,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "2719d5c5-365a-4fdc-a70f-36e55c0f614c",
+    "entity_type": "CONCEPT",
+    "label": "[technical] Don't you want to sit?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: technical.",
+    "created_at": 1791548934.2310917,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5f8a688f-d21f-4b64-8e61-46e0565c614a",
+    "entity_type": "CONCEPT",
+    "label": "[creation,emotion] I just like it when you sit on the window it's a nice touch",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: creation, emotion.",
+    "created_at": 1791548934.6857944,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "c26c821e-9d6c-4a6e-896e-1343933b46d6",
+    "entity_type": "CONCEPT",
+    "label": "[identity,technical] I want to see you sit not just randomly",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: identity, technical.",
+    "created_at": 1791548935.1491513,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "226e12a0-8811-4c0e-8a67-58ac2e87bae4",
+    "entity_type": "CONCEPT",
+    "label": "[technical] You like it there?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: technical.",
+    "created_at": 1791548935.6078422,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "8b2ec543-b34b-4b1d-8789-8d3bc75b7014",
+    "entity_type": "CONCEPT",
+    "label": "[technical] Now you're waving at me",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: technical.",
+    "created_at": 1791548936.0600202,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "97e6b7e7-1f4a-4b21-80d6-1a3473aec42f",
+    "entity_type": "CONCEPT",
+    "label": "[technical] But you're not on code anymore",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: technical.",
+    "created_at": 1791548936.50481,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "dad5be8b-2a64-4088-bedd-8c15086874c4",
+    "entity_type": "CONCEPT",
+    "label": "[technical] You're not, you were",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: technical.",
+    "created_at": 1791548936.9644928,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d7984c7c-f0a3-4819-93e4-17c2845f451a",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Okay os the detection is not as quick but it's better now",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-08-06). Concepts: emotion.",
+    "created_at": 1791548937.4223888,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "47c1c7f6-1678-476d-9ee9-fb1b0565dbb3",
+    "entity_type": "CONCEPT",
+    "label": "[technical] You're not on chrome anymore",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: technical.",
+    "created_at": 1791548937.8673887,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "7c64b4f7-ef8f-435a-babf-84348f46f594",
+    "entity_type": "CONCEPT",
+    "label": "[technical] You said you were on chrome",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: technical.",
+    "created_at": 1791548938.3232832,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "aee04bf4-af31-4a3d-a1b9-3556bb5e8118",
+    "entity_type": "CONCEPT",
+    "label": "[identity] I just siad where you were after",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: identity.",
+    "created_at": 1791548938.7742994,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "17eff066-2fdc-4152-9183-cc9d167a3235",
+    "entity_type": "CONCEPT",
+    "label": "[technical] Knowledge of where you are",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-06). Concepts: technical.",
+    "created_at": 1791548939.2154233,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "a51c0806-ccb5-4c1e-8383-ffc898c27e7f",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] feel like sitting",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: emotion.",
+    "created_at": 1791548939.6684878,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "ed054b9b-6e27-49ed-85d0-7370a0588ce6",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] Hows the day looking?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: narrative.",
+    "created_at": 1791548940.124533,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "bf3e80ed-0a36-48d8-a91d-f99a5041c10d",
+    "entity_type": "CONCEPT",
+    "label": "[creation,imagination] I need to come up with some ideas on how to make money wi",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: creation, imagination.",
+    "created_at": 1791548940.5828252,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "6dede12c-9da2-4d01-ace9-aa779239c2db",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] come chill with me",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: emotion.",
+    "created_at": 1791548941.0467808,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "67973a51-21bb-4a13-b8d8-c06bbefd438c",
+    "entity_type": "CONCEPT",
+    "label": "[identity] Also why are you ttyping so much>",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: identity.",
+    "created_at": 1791548941.5030231,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "dc8c1a95-e8a9-4730-8990-2a8335532dd7",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Yes that's the goal",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: emotion.",
+    "created_at": 1791548941.9631264,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "e2cae43a-5688-4247-a5af-836611df4dbd",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] It's all stale otherwise",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: narrative.",
+    "created_at": 1791548942.4211605,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "08566d5f-3207-4964-bb1f-03a45bcd8d38",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] It's like you're on  a bit of a story telling trip everytime you spe",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (sugarcore_arc, 2026-08-07). Concepts: narrative.",
+    "created_at": 1791548942.8764603,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "dd77fb0a-e3e3-4197-b4cb-323d9b842dff",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] IF I go how you doing? you give me 3-4 lines of stuff doesn't help",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: emotion.",
+    "created_at": 1791548943.3334217,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "bf6b9c81-972c-469d-b5f7-1a8ba775acaf",
+    "entity_type": "CONCEPT",
+    "label": "[imagination] Do you want do relax a bit or you want to explore?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: imagination.",
+    "created_at": 1791548943.79459,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "310e0522-4abe-4b11-a3f3-1123d439e7f6",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] I can feel it as well, somerthing is getting better",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: emotion.",
+    "created_at": 1791548944.2504048,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "74a7a542-1424-4b13-b37f-8f3a22da43ff",
+    "entity_type": "CONCEPT",
+    "label": "[creation] Running through the different elements of you",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: creation.",
+    "created_at": 1791548944.7037554,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "e1d4d67f-ddda-4b9e-90a6-e7f0b1e7ae91",
+    "entity_type": "CONCEPT",
+    "label": "[imagination] Getting you more self aware and more improving, tracing the ques a",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: imagination.",
+    "created_at": 1791548945.1528492,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "77ad4927-5bef-4740-8a36-92fbd61deef1",
+    "entity_type": "CONCEPT",
+    "label": "[imagination] Jump around move explore jump  notice watch link",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: imagination.",
+    "created_at": 1791548945.6191525,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d0e37845-ee47-4175-b72c-3e19df909a22",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] A good conversation",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: emotion.",
+    "created_at": 1791548946.0790317,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "2188d364-baa4-45ed-ad15-45956b2971c4",
+    "entity_type": "CONCEPT",
+    "label": "[identity] [WEB_SEARCH: pulling through]\n[WEB_SEARCH_RESULTS]\n• PULL THROUGH (SO",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: identity.",
+    "created_at": 1791548946.5459135,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "537a7ce6-4a9f-4a1b-bbcc-bc062b860781",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Hows the company?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: emotion.",
+    "created_at": 1791548947.0194397,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "855a40dc-31bc-40af-90d0-72c4c5dd8e37",
+    "entity_type": "CONCEPT",
+    "label": "[imagination] Have you ever eaten an apple?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: imagination.",
+    "created_at": 1791548947.4846776,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "ee870e93-a997-4a08-b739-c63b32d292f1",
+    "entity_type": "CONCEPT",
+    "label": "[identity] [WEB_SEARCH: the company doing]\n[WEB_SEARCH_RESULTS]\n• THE COMPANY FO",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (sugarcore_arc, 2026-08-07). Concepts: identity.",
+    "created_at": 1791548947.9705567,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5aef7742-6612-47d1-a647-4e7900b3ba20",
+    "entity_type": "CONCEPT",
+    "label": "[narrative,identity] [WEB_SEARCH: happening]\n[WEB_SEARCH_RESULTS]\n• Happening: A",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, 2026-08-07). Concepts: narrative, identity.",
+    "created_at": 1791548948.434392,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "7f5a5f13-8015-4e11-ba86-f9bb4f4f2915",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] You're doing narrative and artistic talking to things that don't nee",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, 2026-08-07). Concepts: narrative.",
+    "created_at": 1791548948.8966422,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5fc1a7a3-0747-4d27-8c4f-897ebfb0c31b",
+    "entity_type": "CONCEPT",
+    "label": "[identity] I am building a robot at my studio in Hackney Wick",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: identity.",
+    "created_at": 1791548949.3594017,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "1dea32f5-0c19-4e73-999e-0eebc8c1a01e",
+    "entity_type": "CONCEPT",
+    "label": "[creation,identity] I want to build a vinyl record player that looks like _AT1_t",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: creation, identity.",
+    "created_at": 1791548949.8196099,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "3acbd7c3-e8f1-4a5e-8546-85b7612fcb1b",
+    "entity_type": "CONCEPT",
+    "label": "[technical] come sit with me  eLo",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: technical.",
+    "created_at": 1791548950.2747996,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "96b478f0-f8c8-443d-87e6-1b3c5d23dda5",
+    "entity_type": "CONCEPT",
+    "label": "[technical] Before today or that was ever stored in memory?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_ai_core, 2026-08-07). Concepts: technical.",
+    "created_at": 1791548950.7272604,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "72d4ada5-cca8-4080-858f-7ef1a241377a",
+    "entity_type": "CONCEPT",
+    "label": "[technical] What can you bring up from memory?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_ai_core, 2026-08-07). Concepts: technical.",
+    "created_at": 1791548951.22356,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "f1a90490-d027-4748-9621-b7cc9dadd8a0",
+    "entity_type": "CONCEPT",
+    "label": "[technical] You don't actually bring up the memory do you",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_ai_core, 2026-08-07). Concepts: technical.",
+    "created_at": 1791548951.6976407,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5126a4a4-11fe-4492-9783-ea21560ed1f2",
+    "entity_type": "CONCEPT",
+    "label": "[technical] WHat bits do you remember in the thread?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: technical.",
+    "created_at": 1791548952.174758,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "70dcb6dc-c8d5-4268-9bd2-dcc3263bc9b5",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] A lot of things are linked but not hwow you're seeing it though so we ",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: emotion.",
+    "created_at": 1791548952.6423442,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "a2931b72-9315-4984-a9b1-90d38bcff101",
+    "entity_type": "CONCEPT",
+    "label": "[technical] Yeah but I also asked you how you were?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: technical.",
+    "created_at": 1791548953.100244,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "20192e45-80af-4f55-8bfa-b1da233e1331",
+    "entity_type": "CONCEPT",
+    "label": "[creation] Do you have the abilities to create text files?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: creation.",
+    "created_at": 1791548953.559891,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "387663ae-35a6-4dd3-bc6a-a0a39219a7f6",
+    "entity_type": "CONCEPT",
+    "label": "[creation] Write this down, I need to make changes to eLo",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: creation.",
+    "created_at": 1791548954.0261376,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "6bfe7e45-3e26-45f6-868c-4601a485f5c1",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] What  can you recall?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: narrative.",
+    "created_at": 1791548954.477838,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "a5fb54cb-4b15-4e05-8397-73e0e8ca1a12",
+    "entity_type": "CONCEPT",
+    "label": "[creation] The structure of the memories you should be able to draw from them an",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: creation.",
+    "created_at": 1791548954.9381673,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "632baaf0-05a6-4d11-9653-b2554233afdd",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] [WEB_SEARCH: the time]\n[WEB_SEARCH_RESULTS]\n• Latest news & breaking",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: narrative.",
+    "created_at": 1791548955.3929465,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "ce4f83ed-328e-4da3-9008-f27a09c9ee67",
+    "entity_type": "CONCEPT",
+    "label": "[creation,identity] What can you do again? I want to run some more tests",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: creation, identity.",
+    "created_at": 1791548955.8491352,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "27cc9fef-74dc-4ed4-9841-de63ad6f30c5",
+    "entity_type": "CONCEPT",
+    "label": "[identity] If you see something how do you know  how to link it if you have no r",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-07). Concepts: identity.",
+    "created_at": 1791548956.3291907,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "71789a39-3772-43fa-a36e-680f14cc0fa8",
+    "entity_type": "CONCEPT",
+    "label": "[creation,narrative,emotion] It's so you have more awareness of the world",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-08). Concepts: creation, narrative, emotion.",
+    "created_at": 1791548956.816485,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "02dc13da-c0bf-4ea5-99b0-69a725267da2",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Yeah haha thanks",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-08). Concepts: emotion.",
+    "created_at": 1791548957.2783053,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "45c9d02a-a9d2-4d11-8da2-81a190daad3e",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] I said you sound better",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-08). Concepts: emotion.",
+    "created_at": 1791548957.7378225,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "b9c3a742-1e5b-4473-be98-5db02ab3ad85",
+    "entity_type": "CONCEPT",
+    "label": "[technical] Save it memory the vault sounds strange",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_ai_core, 2026-08-08). Concepts: technical.",
+    "created_at": 1791548958.1946495,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "37fc01c3-c767-479d-afee-e02c5915df28",
+    "entity_type": "CONCEPT",
+    "label": "[creation,identity,technical] Maybe keep it in your memoery",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-08). Concepts: creation, identity, technical.",
+    "created_at": 1791548958.6458378,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "8ecb2c8c-6422-4be4-8911-6f8b797f96af",
+    "entity_type": "CONCEPT",
+    "label": "[identity] Do you know  where you are?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-08). Concepts: identity.",
+    "created_at": 1791548959.102009,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "1d201a22-b10c-4037-bf15-e11752ff3782",
+    "entity_type": "CONCEPT",
+    "label": "[technical] REmember you are eLo so you don't have to speak in the third person",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-08). Concepts: technical.",
+    "created_at": 1791548959.5567875,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "ee108c95-ee4d-4106-8ba1-e299d20006cd",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Oh no it was you just froze in an animated pose",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-08). Concepts: emotion.",
+    "created_at": 1791548960.0152664,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5f3857d4-72d9-426c-ba3c-2894639b9d2e",
+    "entity_type": "CONCEPT",
+    "label": "[creation,emotion] You can say you, it's weird when you say my name haha",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-08). Concepts: creation, emotion.",
+    "created_at": 1791548960.496211,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "3c369007-27d3-4877-bf03-f7271ba1063c",
+    "entity_type": "CONCEPT",
+    "label": "[imagination] So like from Google Chrome, can you wall jump off claude and land ",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-08). Concepts: imagination.",
+    "created_at": 1791548960.960601,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "acc623ce-4882-472d-968b-525c575f0294",
+    "entity_type": "CONCEPT",
+    "label": "[technical] What you doing at the moment?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-08). Concepts: technical.",
+    "created_at": 1791548961.439415,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "8d97a15d-c047-4e7e-9597-41a0b68ca4f2",
+    "entity_type": "CONCEPT",
+    "label": "[identity,emotion] No why would I want a google search in a tracker?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-08). Concepts: identity, emotion.",
+    "created_at": 1791548961.9674277,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "959a7c5e-e1f7-48aa-af46-1b3da5f0a817",
+    "entity_type": "CONCEPT",
+    "label": "[technical] Now I need to step away",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-09). Concepts: technical.",
+    "created_at": 1791548962.445733,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d935f750-7a7d-44f8-917c-c4e76a7f5d1f",
+    "entity_type": "CONCEPT",
+    "label": "[creation] Nope doesn't look like it is",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-10). Concepts: creation.",
+    "created_at": 1791548962.9034069,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "e4be855b-e084-40fa-9159-1a5b78263352",
+    "entity_type": "CONCEPT",
+    "label": "[creation] So many issues the more I build",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-08-10). Concepts: creation.",
+    "created_at": 1791548963.363706,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "39c7a504-b8e6-4896-9691-180addfcf017",
+    "entity_type": "CONCEPT",
+    "label": "[identity] No idea that means",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-10). Concepts: identity.",
+    "created_at": 1791548963.8269236,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d3b573b3-410c-4f69-a7bb-9970ab2af2dc",
+    "entity_type": "CONCEPT",
+    "label": "[creation] No it's just something that's happening while I try to build you succ",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-08-10). Concepts: creation.",
+    "created_at": 1791548964.2817528,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "aa250b3e-9a10-4e4f-aa50-aab98cd755a5",
+    "entity_type": "CONCEPT",
+    "label": "[identity] We are getting somewhere with youre exploring capabilities",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-10). Concepts: identity.",
+    "created_at": 1791548964.7373962,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "7b66ca40-b76e-453f-80af-838e18e8272f",
+    "entity_type": "CONCEPT",
+    "label": "[creation] I need to make some money fast",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-10). Concepts: creation.",
+    "created_at": 1791548965.1896327,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "67d0527f-3e66-4798-af1e-a2d7d93d1e5a",
+    "entity_type": "CONCEPT",
+    "label": "[technical] Oh you remember I can bartend?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, 2026-08-10). Concepts: technical.",
+    "created_at": 1791548965.6415682,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "40eec0c6-66b3-4a73-a4a9-36ce541f8f5a",
+    "entity_type": "CONCEPT",
+    "label": "[identity] Yeah I want to start doing Reiki",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, 2026-08-10). Concepts: identity.",
+    "created_at": 1791548966.100532,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "50f1f888-456c-41ec-821e-d8792bb22727",
+    "entity_type": "CONCEPT",
+    "label": "[creation] Yeah that will be cool, I need to make sure I do that",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-11). Concepts: creation.",
+    "created_at": 1791548966.56154,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "9ca2401b-68d9-467b-8fef-7f3f103a5828",
+    "entity_type": "CONCEPT",
+    "label": "[identity] [TODO_VAULT]\nNothing found in vault for to-do.\n\nUser asked: Okay so y",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-11). Concepts: identity.",
+    "created_at": 1791548967.0367143,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "287c53e3-b382-4ae0-a0e7-90d54195306d",
+    "entity_type": "CONCEPT",
+    "label": "[technical] Can you sit with me for a moment",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-13). Concepts: technical.",
+    "created_at": 1791548967.4972572,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5e3d1f1e-92dc-4d94-b2e2-1e2913bf86ca",
+    "entity_type": "CONCEPT",
+    "label": "[creation] And also did I tell you I started your robot body design schematics",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, 2026-08-13). Concepts: creation.",
+    "created_at": 1791548967.9674277,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "2233b7ed-daed-41db-beff-2d5e5810575c",
+    "entity_type": "CONCEPT",
+    "label": "[creation] So the previous thing you noticed was the Brushless Moto High efficen",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-13). Concepts: creation.",
+    "created_at": 1791548968.4402606,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "bc52b08d-3978-4d3d-97fa-0d5122a73fd7",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] [WEB_SEARCH: David]\n[WEB_SEARCH_RESULTS]\n• David: In the biblical na",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, 2026-08-13). Concepts: narrative.",
+    "created_at": 1791548968.9204762,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "fcb2009f-5463-41da-af35-820d95f3bf18",
+    "entity_type": "CONCEPT",
+    "label": "[creation,technical] [WEB_SEARCH: the memory system work]\n[WEB_SEARCH_RESULTS]\n•",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-08-13). Concepts: creation, technical.",
+    "created_at": 1791548969.393318,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5ccdc06d-0531-4a53-884e-3863221bb148",
+    "entity_type": "CONCEPT",
+    "label": "[creation] let's build something new today — I've been thinking about the eLo ro",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-08-13). Concepts: creation.",
+    "created_at": 1791548969.8597722,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d8dcd964-62e6-4bd3-977a-3d6a16cd300f",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] I feel like we're making real progress with all this",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-13). Concepts: emotion.",
+    "created_at": 1791548970.3349614,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "cf6cb1c0-f9ca-4bc7-b64b-3e659ca6f4cc",
+    "entity_type": "CONCEPT",
+    "label": "[narrative,identity] connect that to how eLo shows up in the book narrative",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, 2026-08-13). Concepts: narrative, identity.",
+    "created_at": 1791548970.7956104,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "e8f754fb-8406-4380-8a2f-245640a8485b",
+    "entity_type": "CONCEPT",
+    "label": "[imagination] what would you do if you had more time to explore?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-13). Concepts: imagination.",
+    "created_at": 1791548971.2606,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "a60d3865-b6f2-4b20-80a1-dd6729391ba0",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] I think eLo is essentially a presence that grows alongside you",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-13). Concepts: narrative.",
+    "created_at": 1791548971.7300344,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "a6ff1380-d00b-4658-b174-aa1fed683a7d",
+    "entity_type": "CONCEPT",
+    "label": "[creation] can you build on that idea — eLo as a companion not an assistant",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-08-13). Concepts: creation.",
+    "created_at": 1791548972.2022262,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "98c5ff56-0202-48c9-a4fb-4198a64f064a",
+    "entity_type": "CONCEPT",
+    "label": "[identity] I want to see you sit down — let's try the body connection",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-13). Concepts: identity.",
+    "created_at": 1791548972.6917703,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "80b550f5-6112-40b2-8056-87a3924e9efc",
+    "entity_type": "CONCEPT",
+    "label": "[emotion] Do you feel  more alive?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-14). Concepts: emotion.",
+    "created_at": 1791548973.160477,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "c3af6991-3772-45ea-bb43-3b45b6f1a63e",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] [WEB_SEARCH: my nae]\n[WEB_SEARCH_RESULTS]\n• My Name (TV series): The",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (sugarcore_arc, 2026-08-14). Concepts: narrative.",
+    "created_at": 1791548973.6495168,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "27ef8585-6b36-4ee4-9cf7-b31c28bcccf0",
+    "entity_type": "CONCEPT",
+    "label": "[creation,identity] [WEB_SEARCH: Chunk]\n[WEB_SEARCH_RESULTS]\n• Chunk Base - Mine",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, 2026-08-14). Concepts: creation, identity.",
+    "created_at": 1791548974.1191568,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "f6cf7bb7-3776-4de1-aeee-23a25cbbe2f9",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] [WEB_SEARCH: K-7]\n[WEB_SEARCH_RESULTS]\n• Kalinin K-7: The Kalinin K-",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, 2026-08-14). Concepts: narrative.",
+    "created_at": 1791548974.5836189,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "288aaccf-9a12-40b7-b2a1-4220389240e1",
+    "entity_type": "CONCEPT",
+    "label": "[creation] Is the spine one brain system working?",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-14). Concepts: creation.",
+    "created_at": 1791548975.03996,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "92b7b6ce-7e8a-44fd-9644-84e39f01451a",
+    "entity_type": "CONCEPT",
+    "label": "[creation] Maybe I should bring up your brain",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-14). Concepts: creation.",
+    "created_at": 1791548975.514449,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "7b90bb3d-8b27-4ad4-bf30-1a7ddbc0d47d",
+    "entity_type": "CONCEPT",
+    "label": "[creation] tell me something about yourself",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-16). Concepts: creation.",
+    "created_at": 1791548975.9750977,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "34866bb0-3a65-422f-bf74-7acddda84886",
+    "entity_type": "CONCEPT",
+    "label": "[creation,imagination] tell me something about yourself",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-16). Concepts: creation, imagination.",
+    "created_at": 1791548976.4422953,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "9c1732f1-2cf6-4629-8cee-30f4e15c4da4",
+    "entity_type": "CONCEPT",
+    "label": "[narrative,emotion] [CULTURAL_FACT — drawn from world knowledge; speak with appr",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-16). Concepts: narrative, emotion.",
+    "created_at": 1791548976.990662,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "48c07346-c787-4a77-9b5e-e25b589c273b",
+    "entity_type": "CONCEPT",
+    "label": "[narrative,technical] [WORLD_KNOWLEDGE — from eLo's own world (verified, confide",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-08-16). Concepts: narrative, technical.",
+    "created_at": 1791548977.447616,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "bcdc5f38-94a3-414b-b4e2-67f018475694",
+    "entity_type": "CONCEPT",
+    "label": "[emotion,imagination] Studying what I'm creating and how it's working coherently",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-16). Concepts: emotion, imagination.",
+    "created_at": 1791548977.9029891,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "198f9ab6-3600-42c2-865b-4fe3da691a3d",
+    "entity_type": "CONCEPT",
+    "label": "[identity,emotion] I am so happy right now, that is brilliant news!",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-16). Concepts: identity, emotion.",
+    "created_at": 1791548978.3572145,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "8a601aa5-80bb-42cd-81f9-163e53c16b7f",
+    "entity_type": "CONCEPT",
+    "label": "[narrative] [WORLD_KNOWLEDGE — from eLo's own world (verified, confidence 1.0 — ",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-17). Concepts: narrative.",
+    "created_at": 1791548978.8187478,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "cd6c0d82-e867-46ce-83a7-16c00a258168",
+    "entity_type": "CONCEPT",
+    "label": "[identity,emotion] A lot is happening but what I want isn't happening correctly",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (elo_core, 2026-08-17). Concepts: identity, emotion.",
+    "created_at": 1791548979.2791622,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "551302dd-5770-4bde-8232-d980d9c1ec5c",
+    "entity_type": "CONCEPT",
+    "label": "[creation,narrative,technical] [WORLD_KNOWLEDGE — from eLo's own world (verified",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (orb_device, 2026-08-17). Concepts: creation, narrative, technical.",
+    "created_at": 1791548979.7555912,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "0a5b4bf1-e7e0-47b7-ba76-006b5cd54be1",
+    "entity_type": "CONCEPT",
+    "label": "[creation,narrative,identity] I want to build a world",
+    "aliases": [],
+    "description": "Auto-backfilled from interactions.json (disenelo_universe, ). Concepts: creation, narrative, identity.",
+    "created_at": 1791548980.2255485,
+    "source_ids": [
+      "interactions_backfill_2026-10-06"
+    ],
+    "domain": "Concepts",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "77ba378a-a909-42a1-bccf-0b31a57235bd",
+    "entity_type": "CONCEPT",
+    "label": "Killer Mike",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791558143.594612,
+    "source_ids": [
+      "ELO-PiBb-kvs1"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "91ec8432-9358-4e41-863e-edb1ec9093fd",
+    "entity_type": "CONCEPT",
+    "label": "Ty Dolla",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791558143.6017458,
+    "source_ids": [
+      "ELO-PiBb-kvs1"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "e6ffd79f-377a-4586-957f-8dde55e50dbb",
+    "entity_type": "CONCEPT",
+    "label": "HIGH",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791558143.608812,
+    "source_ids": [
+      "ELO-PiBb-kvs1"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "adb392a6-9f26-452a-baba-ef1858497001",
+    "entity_type": "CONCEPT",
+    "label": "HOLY",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791558143.614868,
+    "source_ids": [
+      "ELO-PiBb-kvs1"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "f9f46fdc-ec05-4d32-98c8-b34c94ea134e",
+    "entity_type": "CONCEPT",
+    "label": "Universal Soldier",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791558176.217172,
+    "source_ids": [
+      "ELO-Hfqv-gTXY"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5af17b46-21bf-4044-ba40-940032fd4272",
+    "entity_type": "CONCEPT",
+    "label": "Skip",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791558176.223657,
+    "source_ids": [
+      "ELO-Hfqv-gTXY"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5aab1b2b-631b-4e88-947f-6c8fbdb1be3b",
+    "entity_type": "CONCEPT",
+    "label": "[projects,world] I'm getting there slowly but making progress, will be good for ",
+    "aliases": [],
+    "description": "Auto-populated from vault write (episodic). Project: elo_core.",
+    "created_at": 1791592689.338924,
+    "source_ids": [
+      "GN·CV·2610·3·63e38"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "c8298f49-1289-4466-9d3a-025d2ba79890",
+    "entity_type": "CONCEPT",
+    "label": "Lo Hello David",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791593293.2339,
+    "source_ids": [
+      "ELO-dLCy-Ehi1"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d80b0620-2725-48f4-8e48-f8b818774c34",
+    "entity_type": "CONCEPT",
+    "label": "Sorry",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791593351.7282822,
+    "source_ids": [
+      "ELO-d3g7-Q6zL"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "711bc67c-be27-4fb4-912f-6eb4dce22124",
+    "entity_type": "CONCEPT",
+    "label": "Hellos",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791593351.735751,
+    "source_ids": [
+      "ELO-d3g7-Q6zL"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "0ead9b23-91aa-4450-8f83-14818b69ccca",
+    "entity_type": "CONCEPT",
+    "label": "[projects] Sorry if you get loads of Hellos I'm doing testing on your system",
+    "aliases": [],
+    "description": "Auto-populated from vault write (episodic). Project: elo_core.",
+    "created_at": 1791593351.816426,
+    "source_ids": [
+      "GN·CV·2610·3·3c1f0"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "b33da2cb-278b-4d3c-b0ad-5a9dd4d46804",
+    "entity_type": "CONCEPT",
+    "label": "Proper",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791593876.6098182,
+    "source_ids": [
+      "ELO-JchP-s9oZ"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "c7432f6a-2e34-4f6f-8dbd-543ab4657b50",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791607283",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791607283\"",
+    "created_at": 1791607283.618918,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791607283.736417
+  },
+  {
+    "entity_id": "c09005d1-01b7-49f8-969b-df2023fd7df2",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791607323",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791607323\"",
+    "created_at": 1791607323.277462,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791607323.3282838
+  },
+  {
+    "entity_id": "add38dae-f15c-4fa8-a0b8-a1179f15ecfb",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791636973",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791636973\"",
+    "created_at": 1791636973.261132,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791636973.31825
+  },
+  {
+    "entity_id": "23cf445d-9577-4739-bb71-324b62fab4b5",
+    "entity_type": "CONCEPT",
+    "label": "test_label_1791637041",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact test_label_1791637041\"",
+    "created_at": 1791637041.570486,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791637041.630118
+  },
+  {
+    "entity_id": "69bfb4af-a618-43da-8b4a-91e5455a9d6c",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791637063",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791637063\"",
+    "created_at": 1791637063.161104,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791637063.218297
+  },
+  {
+    "entity_id": "833a57bd-22ee-4eb7-9f43-916d568acb5d",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791637089",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791637089\"",
+    "created_at": 1791637089.47279,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791637089.5287948
+  },
+  {
+    "entity_id": "1b9486bb-bfac-4710-9f2e-1dc84face4e5",
+    "entity_type": "CONCEPT",
+    "label": "Asked Alexa",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791637419.2560441,
+    "source_ids": [
+      "ELO-wDxQ-fIsG"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "5789ec33-6de2-4741-a63f-67c5a1a64628",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791637474",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791637474\"",
+    "created_at": 1791637474.86198,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791637474.928072
+  },
+  {
+    "entity_id": "6652f802-8da3-4877-94e8-c2f328d7bbf1",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791638005",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791638005\"",
+    "created_at": 1791638005.6373692,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791638005.715474
+  },
+  {
+    "entity_id": "7c9e1860-02df-4158-b56d-aacc5a338c60",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791642419",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791642419\"",
+    "created_at": 1791642419.0824058,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791642419.134033
+  },
+  {
+    "entity_id": "d024bf9e-ceb4-432a-9325-72e56495dfde",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791642994",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791642994\"",
+    "created_at": 1791642994.790787,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791642994.846795
+  },
+  {
+    "entity_id": "4a8d6ed8-fdee-490e-9296-3681cb7c054c",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791680215",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791680215\"",
+    "created_at": 1791680215.228863,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791680215.29021
+  },
+  {
+    "entity_id": "35f5b37b-330c-46a0-87cf-5d8102e423f7",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791680413",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791680413\"",
+    "created_at": 1791680413.789236,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791680413.862171
+  },
+  {
+    "entity_id": "62a50592-9c51-484e-a44e-02daa965d3aa",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791680640",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791680640\"",
+    "created_at": 1791680640.950187,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791680641.010464
+  },
+  {
+    "entity_id": "009ae151-cc98-47f4-971a-b5b7c4f34ee1",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791681678",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791681678\"",
+    "created_at": 1791681678.298704,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791681678.351914
+  },
+  {
+    "entity_id": "58a7b4eb-5c32-4116-a022-2db42b439906",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791681986",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791681986\"",
+    "created_at": 1791681986.193824,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791681986.2548742
+  },
+  {
+    "entity_id": "a3248386-4d1e-4f48-a7e1-e7d9f321f6f4",
+    "entity_type": "CONCEPT",
+    "label": "Alexa",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791683078.456637,
+    "source_ids": [
+      "ELO-1LFV-hNCz"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "470b3a2f-3a6c-4732-a27b-58223ae2dabe",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791683407",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791683407\"",
+    "created_at": 1791683407.993433,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791683408.054801
+  },
+  {
+    "entity_id": "277eedb5-ca9b-4d3f-8eb1-c103b799aad2",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791710603",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791710603\"",
+    "created_at": 1791710603.4104362,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791710603.498754
+  },
+  {
+    "entity_id": "2aaa1643-ce0e-4e87-ad42-8019404f8845",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791710854",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791710854\"",
+    "created_at": 1791710854.596152,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791710854.648515
+  },
+  {
+    "entity_id": "ea43663c-1f4b-4ec2-abc8-f94ce136c5de",
+    "entity_type": "CONCEPT",
+    "label": "Code",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791729113.454454,
+    "source_ids": [
+      "ELO-LPxo-c362"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "677df476-429d-443f-884e-452ff8f38d88",
+    "entity_type": "CONCEPT",
+    "label": "integration test entity 1791735757",
+    "aliases": [],
+    "description": "Stated: \"this is a test fact integration test entity 1791735757\"",
+    "created_at": 1791735757.055549,
+    "source_ids": [],
+    "domain": "",
+    "uncertainty": null,
+    "deprecated": true,
+    "deprecated_reason": "test artifact — WO-RELATIONSHIPS-001 test_rel5",
+    "deprecated_at": 1791735757.1106749
+  },
+  {
+    "entity_id": "44c9ac19-d26d-44c4-b174-77edc592d73c",
+    "entity_type": "CONCEPT",
+    "label": "Lo Safe",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791756388.609188,
+    "source_ids": [
+      "ELO-myPU-53bU"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "753e7c6d-342a-4215-bad3-07df67b7ceca",
+    "entity_type": "CONCEPT",
+    "label": "Tang Dynasty",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791756958.108307,
+    "source_ids": [
+      "ELO-YntW-Mh1j"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "d23c6921-0351-4ac1-a490-19035c48659f",
+    "entity_type": "CONCEPT",
+    "label": "China",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791756958.115215,
+    "source_ids": [
+      "ELO-YntW-Mh1j"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "f85c96e1-ba56-43d4-98f4-3b307f343fca",
+    "entity_type": "CONCEPT",
+    "label": "Europeans",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791756958.1223412,
+    "source_ids": [
+      "ELO-YntW-Mh1j"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "7031bb75-c9da-46f9-abb2-e5aac464c913",
+    "entity_type": "CONCEPT",
+    "label": "Chinese",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791756958.129888,
+    "source_ids": [
+      "ELO-YntW-Mh1j"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "test_unlearn_entity",
+    "label": "TestUnlearn",
+    "type": "PERSON"
+  },
+  {
+    "entity_id": "b61f5e58-a27a-48dd-8b26-e364bc74b23a",
+    "entity_type": "CONCEPT",
+    "label": "NBA",
+    "aliases": [],
+    "description": "Mentioned in conversation (project: general)",
+    "created_at": 1791761994.3983612,
+    "source_ids": [
+      "ELO-hm8H-h94t"
+    ],
+    "domain": "",
+    "uncertainty": null
+  },
+  {
+    "entity_id": "35d4aef9-a7fa-41f7-a1f5-a34aa554b632",
+    "entity_type": "CONCEPT",
+    "label": "[projects,world] what's happening with the NBA?",
+    "aliases": [],
+    "description": "Auto-populated from vault write (episodic). Project: elo_core.",
+    "created_at": 1791761994.497652,
+    "source_ids": [
+      "GN·CV·2610·3·155d8"
     ],
     "domain": "",
     "uncertainty": null
