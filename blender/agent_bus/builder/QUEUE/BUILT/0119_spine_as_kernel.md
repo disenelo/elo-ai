@@ -56,9 +56,12 @@ The spine already ran those faculties and produced a plan. That IS the synthesis
 `prompt_builder.py` is replaced by a thin function: takes `CognitivePlan`, returns a 200-350 token string.  
 The plan already contains the synthesised signals. The function extracts what matters for this turn and formats it. Nothing else goes in.
 
-### Step 3 — Static identity is a constant in code
-Character, voice, values — a 5-sentence constant in the response layer. Not read from a file. Not built by a function. Not injected from obsidian_vault. Written in code. Referenced directly. Never sent to an LLM as a block of text pulled from a 22K SP.  
-The obsidian vault remains the canonical source for humans to read and edit — but the program derives its constant from it at startup, once, not every turn.
+### Step 3 — Static layer loads ONCE, never re-evaluated
+`living_presence_spec.txt` stays intact. Every word. 8 months of voice work is not removed.  
+It loads at server startup into memory as a constant. Never rebuilt. Never re-read per turn.  
+Ollama caches the KV state of this prefix after the first turn — subsequent turns cost nothing to evaluate it again.  
+The dynamic part (spine's turn-specific context, ~400 tokens) is appended on top each turn.  
+Result: 22K evaluated once on cold start, then only 400 tokens per turn after that.
 
 ## What goes away
 - The 20+ `system = system + "\n\n" + _block` lines in `server.py`
