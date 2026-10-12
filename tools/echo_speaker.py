@@ -158,7 +158,35 @@ import json as _json
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _EVENTS = os.path.join(_ROOT, "blender", "unity_events.json")
 _SETTING = os.path.join(_ROOT, "data", "voice_output.json")
-_CHOICES = ("mac", "echo")
+_CHOICES = ("auto", "mac", "echo")
+
+# WO-B3-0018 (David 2026-10-10, via Board): eLo chooses the device himself by
+# default ("auto"); "mac" / "echo" from the Presence setting are overrides.
+# auto → Echo when David just spoke through Alexa, or when he hasn't touched the
+# Mac's keyboard/mouse for ELO_AWAY_IDLE_S (default 5 min) — he's in the room,
+# not at the desk. Otherwise the Mac. Only ever the Echo when it's connected.
+_AWAY_IDLE_S = float(os.environ.get("ELO_AWAY_IDLE_S", "300"))
+_idle_cache = {"ts": 0.0, "secs": 0.0}
+
+
+def mac_idle_seconds() -> float:
+    """Seconds since David last used the Mac's keyboard/mouse (IOHIDSystem HIDIdleTime). 0 if unknown."""
+    if time.time() - _idle_cache["ts"] < 5:
+        return _idle_cache["secs"]
+    secs = 0.0
+    try:
+        out = subprocess.run(["ioreg", "-c", "IOHIDSystem"], capture_output=True, text=True, timeout=3).stdout
+        m = re.search(r'"HIDIdleTime"\s*=\s*(\d+)', out)
+        if m:
+            secs = int(m.group(1)) / 1e9
+    except Exception:
+        pass
+    _idle_cache.update(ts=time.time(), secs=secs)
+    return secs
+
+
+def david_at_desk() -> bool:
+    return mac_idle_seconds() < _AWAY_IDLE_S
 _vo_cache = {"ts": 0.0, "value": None}
 
 
@@ -215,7 +243,7 @@ def set_voice_output(choice: str, ts: float | None = None) -> str:
 
 
 def voice_output() -> str:
-    """'mac' or 'echo': where eLo's voice goes. Newest Presence setting wins. Cached 2 s."""
+    """'auto' (default) | 'mac' | 'echo'. Newest Presence setting wins. Cached 2 s."""
     if time.time() - _vo_cache["ts"] < 2.0 and _vo_cache["value"]:
         return _vo_cache["value"]
     saved = _saved()
@@ -226,7 +254,7 @@ def voice_output() -> str:
             saved = {"output": ev[1]}
         except Exception:
             pass
-    value = saved.get("output", "mac")
+    value = saved.get("output", "auto")
     _vo_cache.update(ts=time.time(), value=value)
     return value
 
@@ -241,13 +269,27 @@ def stop_wanting() -> None:
 
 
 def speaking() -> bool:
-    """True when eLo's voice should go to the Echo now: David chose the Echo
-    (voice_output) or a turn asked for it (want_for), AND the Echo is connected.
+    """True when eLo's next line should play on the Echo (output_decision).
     Not connected → False, so eLo speaks on the Mac rather than not at all."""
     if os.environ.get("ECHO_SPEAKER", "on").lower() == "off":
         return False
-    wanted = voice_output() == "echo" or time.time() < _want["until"]
-    return wanted and device_index() is not None
+    return output_decision()[0] == "echo"
+
+
+def output_decision() -> tuple[str, str]:
+    """(device, why): eLo's choice for his next spoken line — 'echo' or 'mac'."""
+    if device_index() is None:
+        return "mac", "Echo not connected"
+    if time.time() < _want["until"]:
+        return "echo", "David just spoke through Alexa"
+    setting = voice_output()
+    if setting == "echo":
+        return "echo", "setting: Alexa speaker"
+    if setting == "mac":
+        return "mac", "setting: Mac"
+    if not david_at_desk():
+        return "echo", f"auto: Mac idle {int(mac_idle_seconds())} s — David's in the room, not at the desk"
+    return "mac", "auto: David at the desk"
 
 
 def play(path: str, timeout: float = 120) -> bool:

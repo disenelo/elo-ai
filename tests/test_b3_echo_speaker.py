@@ -66,13 +66,51 @@ def test_connect_puts_mac_output_back(monkeypatch):
     assert es.connect() is True and out["now"] == "Mac Studio Speakers"
 
 
-def test_voice_output_defaults_to_mac_and_mac_never_routes(monkeypatch):
+def test_default_is_auto_and_at_desk_means_mac(monkeypatch):
     monkeypatch.setattr(es, "device_index", lambda fresh=False: 1)     # Echo connected
-    assert es.voice_output() == "mac" and es.speaking() is False
+    monkeypatch.setattr(es, "mac_idle_seconds", lambda: 3.0)            # typing at the desk
+    assert es.voice_output() == "auto" and es.speaking() is False
+    assert es.output_decision() == ("mac", "auto: David at the desk")
+
+
+# ── WO-B3-0018: the two Board scenarios + idle + overrides ─────────────────────
+
+def test_scenario_1_desk_mac(monkeypatch):
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 1)
+    monkeypatch.setattr(es, "mac_idle_seconds", lambda: 10.0)
+    assert es.output_decision()[0] == "mac"
+
+
+def test_scenario_2_spoke_through_alexa_echo(monkeypatch):
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 1)
+    monkeypatch.setattr(es, "mac_idle_seconds", lambda: 1.0)           # even if at the desk
+    es.want_for(60)
+    assert es.output_decision() == ("echo", "David just spoke through Alexa")
+
+
+def test_away_from_desk_auto_echo(monkeypatch):
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 1)
+    monkeypatch.setattr(es, "mac_idle_seconds", lambda: 900.0)
+    assert es.output_decision()[0] == "echo"
+
+
+def test_mac_override_wins_over_idle(monkeypatch):
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 1)
+    monkeypatch.setattr(es, "mac_idle_seconds", lambda: 900.0)
+    es.set_voice_output("mac")
+    assert es.output_decision() == ("mac", "setting: Mac")
+
+
+def test_never_echo_when_not_connected(monkeypatch):
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: None)
+    monkeypatch.setattr(es, "mac_idle_seconds", lambda: 900.0)
+    es.want_for(60)
+    assert es.output_decision() == ("mac", "Echo not connected")
 
 
 def test_presence_setting_event_wins_and_is_remembered(monkeypatch, tmp_path):
     monkeypatch.setattr(es, "device_index", lambda fresh=False: 1)
+    monkeypatch.setattr(es, "mac_idle_seconds", lambda: 1.0)
     ev = tmp_path / "unity_events.json"
     ev.write_text('{"seq":1,"type":"gaze_target_changed","subject":"1","_ts":1}\n'
                   '{"seq":2,"type":"voice_output","subject":"echo","_ts":100}\n')
