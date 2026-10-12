@@ -21,3 +21,6 @@ Re: designer/FROM_DESIGNER_2026-10-12_ALEXA-CONNECT-BUTTON.md
 
 ## Done-when check (David)
 Relaunch Presence → Settings "Speaks on: Alexa" → press the speaker button (silent) → at the Echo: "Alexa, open elo" → chime → eLo talks from the Echo → "Alexa, tell elo what's the weather" → … → back at the desk press again → eLo on the Mac.
+
+## Update (B3, 2026-10-12, David: "we want it ready, not wait for it"): 55ad4c1
+Point 3 is now **built, adaptive, no switch**. Each Alexa turn waits up to 5 s. If eLo answers in time, Alexa speaks it in his voice and **keeps listening** (free conversation, no "Alexa" before each line), and his normal voice output is held so he isn't heard twice. If not (today's ~20 s), it falls back to chime + reply from the Echo when ready. When B1's WO-0118 lands, the coffee chat becomes a conversation by itself.
