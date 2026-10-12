@@ -1,7 +1,7 @@
-"""tools/watchdog.py — WO-B1-0112: Autonomous Watchdog + Event-Driven Seat Relay.
+"""tools/watchdog.py — WO-B1-0112 + WO-B1-0121: Autonomous Watchdog + Event-Driven Seat Relay.
 
 FSEvents-backed (macOS) watcher that drives seat activity automatically.
-Three trigger paths:
+Four trigger paths:
 
   Path 1: David drops .md in docs/architecture/_intake/
            → writes FROM_INTAKE_* file to builder inbox (board intake session picks it up)
@@ -11,6 +11,10 @@ Three trigger paths:
 
   Path 3: Seat writes FROM_BOARD_REQUEST_* to blender/agent_bus/
            → writes TRIGGER_board_review_* to blender/agent_bus/board_review/
+
+  Path 4: Seat files a BUILT_* review to board_review/ or <seat>/board_review/  (WO-B1-0121)
+           → writes BOARD_TRIGGER_* to blender/agent_bus/board/
+           → calls tools/start_board.sh so the Board session gates it automatically
 
 Token efficiency rule: each triggered session does ONE CARD ONLY then exits.
 
@@ -46,6 +50,8 @@ _BUILDER_DIR  = _AGENT_BUS / "builder"
 _BOARD_DIR    = _AGENT_BUS / "board_review"
 _LOG_FILE     = _ROOT / "tools" / "watchdog.log"
 _START_SEAT   = _ROOT / "tools" / "start_seat.sh"
+_START_BOARD  = _ROOT / "tools" / "start_board.sh"
+_BOARD_INBOX  = _AGENT_BUS / "board"    # where Board session reads BOARD_TRIGGER_* files
 
 # ── logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -177,6 +183,63 @@ class BoardRequestHandler(FileSystemEventHandler):
         )
 
 
+# ── Path 4: seat board_review filing → board gate (WO-B1-0121) ───────────────
+
+class BoardReviewGateHandler(FileSystemEventHandler):
+    """Seat writes BUILT_* to board_review/ → trigger a Board gate session.
+
+    Watches the shared board_review directory and each seat's board_review/
+    subdirectory. When a BUILT_* file is created, writes a BOARD_TRIGGER_*
+    file to blender/agent_bus/board/ and calls start_board.sh so the Board
+    session reads and gates the card automatically — no David relay needed.
+    """
+
+    def __init__(self, dry_run: bool = False) -> None:
+        super().__init__()
+        self.dry_run = dry_run
+        import threading
+        self._lock = threading.Lock()
+        self._seen: set[str] = set()    # dedup FSEvents double-fires (protected by _lock)
+
+    def on_created(self, event: FileCreatedEvent) -> None:
+        if event.is_directory:
+            return
+        src = Path(event.src_path)
+        if not src.name.startswith("BUILT_") or src.suffix != ".md":
+            return
+        with self._lock:
+            if src.name in self._seen:
+                return
+            self._seen.add(src.name)
+        _log.info("BOARD REVIEW filed: %s — triggering Board gate", src.name)
+        body = (
+            f"# BOARD_TRIGGER — {src.name}\n"
+            f"**Filed:** {datetime.now().isoformat()}\n"
+            f"**Review path:** `{src}`\n\n"
+            f"A seat filed a board review card. Read `{src}`, gate it "
+            f"(sign off or send back with reasons), file the gate decision "
+            f"to the seat's inbox, then exit. One card only.\n\n"
+            f"Board rules apply: LANE, VERIFY-BEFORE-CLAIM, no code edits.\n"
+        )
+        _write_trigger(_BOARD_INBOX, f"BOARD_TRIGGER_{src.stem[:40]}", body, self.dry_run)
+        # Launch board session via start_board.sh if present
+        if not self.dry_run and _START_BOARD.exists():
+            import subprocess
+            try:
+                subprocess.Popen(
+                    ["bash", str(_START_BOARD), str(src)],
+                    close_fds=True,
+                )
+                _log.info("launched start_board.sh for review: %s", src.name)
+            except Exception as _e:
+                _log.warning(
+                    "start_board.sh launch FAILED for %s: %s — "
+                    "BOARD_TRIGGER file is present for manual pickup", src.name, _e
+                )
+        elif self.dry_run:
+            _log.info("[DRY-RUN] would launch start_board.sh %s", src)
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def run(dry_run: bool = False) -> None:
@@ -198,6 +261,18 @@ def run(dry_run: bool = False) -> None:
 
     # Path 3 — board request root
     observer.schedule(BoardRequestHandler(dry_run), str(_AGENT_BUS), recursive=False)
+
+    # Path 4 — seat board_review filings → Board gate session (WO-B1-0121)
+    # Watch shared board_review dir and each seat's local board_review dir.
+    _gate_handler = BoardReviewGateHandler(dry_run)
+    _BOARD_DIR.mkdir(parents=True, exist_ok=True)
+    _BOARD_INBOX.mkdir(parents=True, exist_ok=True)
+    observer.schedule(_gate_handler, str(_BOARD_DIR), recursive=False)
+    for seat in _SEATS:
+        _seat_review_dir = _AGENT_BUS / seat / "board_review"
+        if _seat_review_dir.exists():
+            observer.schedule(_gate_handler, str(_seat_review_dir), recursive=False)
+            _log.info("board_review gate: watching %s", _seat_review_dir)
 
     observer.start()
     _log.info("watchdog running — Ctrl+C to stop")
