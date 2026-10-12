@@ -1559,6 +1559,38 @@ def build_from_plan(plan, raw: str = "", *, inner_thought: str = "") -> str:
     except Exception:
         pass
 
+    # ── WO-B1-0136: conversation continuity — last response + prior threads ──
+    try:
+        from runtime.conversation_state import (
+            get_last_elo_response as _cs_last_elo,
+            get_thread_history as _cs_threads,
+        )
+        _last_resp = (_cs_last_elo() or "").strip()
+        _thread_hist = _cs_threads()
+        if _last_resp:
+            parts.append(
+                "[LAST ELO STATEMENT]\n"
+                "This is exactly what you said in your previous response. "
+                "When the user says 'what did you mean?' or 'explain that', ground in this.\n"
+                "Do NOT contradict or revise it — acknowledge it as what you said.\n"
+                + _last_resp[:300]
+            )
+        if _thread_hist:
+            _th_lines = [
+                f"- {t.get('topic', '').strip()}"
+                for t in _thread_hist
+                if t.get("topic", "").strip()
+            ]
+            if _th_lines:
+                parts.append(
+                    "[PRIOR THREADS — topics from this session you already discussed]\n"
+                    "When the user says 'go back to what we were talking about' or "
+                    "'the other thing', retrieve from here.\n"
+                    + "\n".join(_th_lines[-5:])
+                )
+    except Exception:
+        pass
+
     # ── 3. Memory guard ───────────────────────────────────────────────────────
     parts.append(f"[MEMORY GUARD] {_MEMORY_GUARD}")
 
