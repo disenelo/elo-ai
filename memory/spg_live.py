@@ -79,6 +79,14 @@ def sync_new_turns(*, force: bool = False) -> int:
                 return 0
             graph.save()
             after = len(getattr(graph, "nodes", []) or [])
+            # WO-B2-0011 — a node that says THAT something mattered without
+            # saying WHAT it was cannot be read by anything downstream. The
+            # index is keyed by the same node id the graph stores.
+            try:
+                from faculties.spg.content_index import sync_from_interactions
+                sync_from_interactions()
+            except Exception:
+                pass
             _last_count = after
             _log.info("SPG live: +%d node(s) from %d new turn(s) (%d -> %d)",
                       after - before, len(added), before, after)
