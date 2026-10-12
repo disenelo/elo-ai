@@ -24,3 +24,7 @@ The card asks for a gap report before building. What's wired vs missing:
 - Gap 7 (sound cue) on a yes.
 - Gap 5 as soon as latency drops.
 Everything else above belongs to B1/B2 and is listed for routing.
+
+## Update (B3, 2026-10-12): gap 7 BUILT (d7df7d3)
+- "Heard you" chime: 0.4 s two-note sound on the Echo the instant David's words reach eLo (no words, not eLo's voice). ALEXA_HEARD_CUE=off disables. Needs a Presence relaunch to load.
+- Gap 5 (open conversation): no build needed. ALEXA_REPLY=skill already keeps Alexa listening after each reply; it becomes usable once B1's WO-0118 gets replies under ~7 s.
