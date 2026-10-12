@@ -5,6 +5,17 @@ import tools.tuya_agent as ta
 import tools.device_control as dc
 
 
+
+@pytest.fixture(autouse=True)
+def _never_speak(monkeypatch):
+    """Tests must never make eLo talk on David's Mac (pre_ack / voice_engine)."""
+    import runtime.pre_ack as _pa, voice.voice_engine as _ve
+    if not getattr(_pa.emit, "_b3_test_stub", False):
+        monkeypatch.setattr(_pa, "emit", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "speak", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "speak_inner", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "is_speaking", lambda: False)
+
 class _Dev:
     calls = []
     def __init__(self, *a): pass

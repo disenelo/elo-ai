@@ -3,10 +3,23 @@ import pytest
 import runtime.pre_ack as pa
 
 
+
+@pytest.fixture(autouse=True)
+def _never_speak(monkeypatch):
+    """Tests must never make eLo talk on David's Mac (pre_ack / voice_engine)."""
+    import runtime.pre_ack as _pa, voice.voice_engine as _ve
+    if not getattr(_pa.emit, "_b3_test_stub", False):
+        monkeypatch.setattr(_pa, "emit", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "speak", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "speak_inner", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "is_speaking", lambda: False)
+
 @pytest.fixture
 def acks(monkeypatch):
     seen = []
-    monkeypatch.setattr(pa, "emit", lambda cap, text="", *a, **k: seen.append(cap))
+    stub = lambda cap, text="", *a, **k: seen.append(cap)
+    stub._b3_test_stub = True
+    monkeypatch.setattr(pa, "emit", stub)
     return seen
 
 
@@ -43,3 +56,11 @@ def test_device_spoken_route_never_acks(acks, monkeypatch, tmp_path):
     monkeypatch.setattr(dc, "_ALLOW_FILE", str(tmp_path / "x.json"))
     dc.run("Lights Out")
     assert acks == []          # an ack would talk over "Alexa … turn off the lights"
+
+
+def test_no_ack_while_elo_is_speaking(acks, monkeypatch):
+    import tools.spotify_play as sp, voice.voice_engine as ve
+    monkeypatch.setattr(ve, "is_speaking", lambda: True)
+    monkeypatch.setattr(sp, "play", lambda t: "Playing.")
+    sp._handle_line("put on jazz")
+    assert acks == []                    # would have cut his sentence

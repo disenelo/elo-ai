@@ -7,6 +7,17 @@ import pytest
 import tools.document_writer as dw
 
 
+
+@pytest.fixture(autouse=True)
+def _never_speak(monkeypatch):
+    """Tests must never make eLo talk on David's Mac (pre_ack / voice_engine)."""
+    import runtime.pre_ack as _pa, voice.voice_engine as _ve
+    if not getattr(_pa.emit, "_b3_test_stub", False):
+        monkeypatch.setattr(_pa, "emit", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "speak", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "speak_inner", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "is_speaking", lambda: False)
+
 @pytest.mark.parametrize("q", ["Make me a list of things to pack for the studio", "make a checklist for the kickstarter",
                                "Write that up", "can you write this up for me", "create a doc with the M-65 measurements",
                                "write me a summary of what we decided", "save that as a document",

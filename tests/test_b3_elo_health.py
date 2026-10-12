@@ -7,6 +7,17 @@ import tools.tool_router as tr
 import tools.system_agent as sa
 
 
+
+@pytest.fixture(autouse=True)
+def _never_speak(monkeypatch):
+    """Tests must never make eLo talk on David's Mac (pre_ack / voice_engine)."""
+    import runtime.pre_ack as _pa, voice.voice_engine as _ve
+    if not getattr(_pa.emit, "_b3_test_stub", False):
+        monkeypatch.setattr(_pa, "emit", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "speak", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "speak_inner", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "is_speaking", lambda: False)
+
 @pytest.mark.parametrize("q", ["What's my battery?", "what's your battery", "how's your health", "health?",
                                "are you tired?", "eLo, how much charge have you got", "how's eLo's battery"])
 def test_elo_battery_questions_get_his_health(q):

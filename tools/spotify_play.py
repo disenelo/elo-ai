@@ -452,6 +452,9 @@ def genre_request(text: str) -> str | None:
 def _ack(text: str) -> None:
     """B1 pre_ack (3332caf): a short 'one second' while Spotify searches/starts. Never blocks."""
     try:
+        from voice.voice_engine import is_speaking
+        if is_speaking():                 # never cut eLo off mid-sentence (David 2026-10-12)
+            return
         from runtime import pre_ack as _pa
         _pa.emit("spotify_play", text)
     except Exception:

@@ -3,6 +3,17 @@ import pytest
 import tools.spotify_play as sp
 
 
+
+@pytest.fixture(autouse=True)
+def _never_speak(monkeypatch):
+    """Tests must never make eLo talk on David's Mac (pre_ack / voice_engine)."""
+    import runtime.pre_ack as _pa, voice.voice_engine as _ve
+    if not getattr(_pa.emit, "_b3_test_stub", False):
+        monkeypatch.setattr(_pa, "emit", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "speak", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "speak_inner", lambda *a, **k: None)
+    monkeypatch.setattr(_ve, "is_speaking", lambda: False)
+
 @pytest.mark.parametrize("q,g", [("put on jazz", "jazz"), ("play some reggae", "reggae"), ("play something chill", "chill"),
                                  ("can you put on some lo-fi please", "lo-fi"), ("play me a bit of house", "house"),
                                  ("stick on drum and bass", "drum and bass"), ("play jazz on spotify", "jazz")])
