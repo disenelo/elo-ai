@@ -1463,15 +1463,32 @@ def build_from_plan(plan, raw: str = "", *, inner_thought: str = "") -> str:
     if rel_line:
         parts.append(f"[RELATIONSHIP] {rel_line}")
 
-    # Autobiographical memory facts
+    # Autobiographical memory facts — ROOT-2 fix (0123): match thick-path AUTHORITATIVE framing
     self_model = getattr(plan, "self_model", None)
     auto_summary = ""
     if self_model is not None:
         auto_summary = str(getattr(self_model, "autobiographical_summary", "") or "").strip()
     if auto_summary:
         parts.append(
-            "[MEMORY — treat as verified fact]\n"
+            "[RETRIEVED FACTS — AUTHORITATIVE]\n"
+            "The following was retrieved from stored knowledge and session history.\n"
+            "These are ground truth. Use them exactly as stated.\n"
+            "Do NOT override, contradict, or second-guess them with a generated alternative.\n"
+            "If you are uncertain, cite what is here rather than guessing.\n"
+            "---\n"
             + auto_summary[:800]
+        )
+
+    # Injected WKG graph context (when caller passes it via plan.graph_context)
+    plan_graph_ctx = str(getattr(plan, "graph_context", "") or "").strip()
+    if plan_graph_ctx:
+        parts.append(
+            "[RETRIEVED FACTS — AUTHORITATIVE]\n"
+            "The following was retrieved from the relationship graph.\n"
+            "These are ground truth. Use them exactly as stated.\n"
+            "Do NOT override, contradict, or second-guess them with a generated alternative.\n"
+            "---\n"
+            + plan_graph_ctx[:600]
         )
 
     # Capability context (tool result)
@@ -1516,7 +1533,29 @@ def build_from_plan(plan, raw: str = "", *, inner_thought: str = "") -> str:
         from memory.fact_store import facts_summary as _fs_sum_bfp
         _bfp_facts = _fs_sum_bfp()
         if _bfp_facts:
-            parts.append(f"[DURABLE FACTS — always true, survive restart]\n{_bfp_facts}")
+            parts.append(
+                "[DURABLE FACTS — always true, survive restart]\n"
+                "Do NOT contradict these. If the user says something that conflicts, note the conflict rather than overriding the fact.\n"
+                + _bfp_facts
+            )
+    except Exception:
+        pass
+
+    # ── ROOT-7 (0126): inject live capability set so eLo never denies active tools ──
+    try:
+        from runtime.capability_registry import CAPABILITY_REGISTRY as _CAP_REG
+        _cap_lines = []
+        for _cap_name, _cap_spec in _CAP_REG.items():
+            _desc = _cap_spec.get("description", "")
+            if _desc:
+                _cap_lines.append(f"- {_cap_name}: {_desc}")
+        if _cap_lines:
+            parts.append(
+                "[LIVE CAPABILITIES — these are real and active right now]\n"
+                "You have these capabilities wired and working. Never say you cannot do these.\n"
+                "Speak confidently: 'Yes, I can' — not 'I think I can' or 'I'm not sure'.\n"
+                + "\n".join(_cap_lines)
+            )
     except Exception:
         pass
 
