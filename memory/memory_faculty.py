@@ -11,7 +11,10 @@ Decision Log: D-F (Memory Faculty sole LTM writer, RATIFIED)
 
 from __future__ import annotations
 
+import logging as _logging
 from dataclasses import dataclass, field
+
+_log = _logging.getLogger("elo.memory_faculty")
 
 
 # ── MemoryCandidate ───────────────────────────────────────────────────────────
@@ -91,9 +94,19 @@ class MemoryFaculty:
         """
         # ── DROP gate ─────────────────────────────────────────────────────────
         if not candidate.content.strip():
+            _log.debug(
+                "memory_faculty DROP: empty content (faculty=%s)",
+                candidate.source_faculty,
+            )
             return {"action": "drop", "spot": None, "reason": "empty content"}
 
         if candidate.significance < _DROP_THRESHOLD:
+            _log.debug(
+                "memory_faculty DROP: significance=%.2f < threshold=%.2f "
+                "(faculty=%s, summary=%r)",
+                candidate.significance, _DROP_THRESHOLD,
+                candidate.source_faculty, (candidate.summary or candidate.content)[:80],
+            )
             return {
                 "action": "drop",
                 "spot":   None,
@@ -156,6 +169,10 @@ class MemoryFaculty:
             _maybe_write_wkg_claim(candidate, source_ref=spot)
             return {"action": "write", "spot": spot, "reason": "new record written"}
         except Exception as exc:
+            _log.warning(
+                "memory_faculty DROP: vault error (faculty=%s, summary=%r): %s",
+                candidate.source_faculty, (candidate.summary or candidate.content)[:80], exc,
+            )
             _mark_vault_offline(str(exc))
             return {"action": "drop", "spot": None, "reason": f"vault error: {exc}"}
 
