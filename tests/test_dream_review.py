@@ -90,10 +90,10 @@ def test_the_gate_threshold_is_the_canonical_one():
     """Not a second threshold invented here."""
     # The pin is the POINT of this test: the two modules must agree, and the
     # gate must use that one number rather than inventing its own. The literal
-    # tracks David's ruling (0.72 -> 0.45, 2026-10-09) and is expected to be
+    # tracks David's ruling (0.72 -> 0.45 -> 0.35, 2026-10-12) and is expected to be
     # tuned again — so the boundary cases below derive from the constant
     # instead of hard-coding it twice more and breaking on every tune.
-    assert dr.DREAM_RETENTION_THRESHOLD == DREAM_RETENTION_THRESHOLD == 0.45
+    assert dr.DREAM_RETENTION_THRESHOLD == DREAM_RETENTION_THRESHOLD == 0.35
 
     _t = DREAM_RETENTION_THRESHOLD
     just_under = dr.review(_entry(), assessor=lambda e: _t - 0.001)

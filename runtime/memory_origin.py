@@ -133,7 +133,22 @@ def can_claim_physical_experience(origin: MemoryOrigin | str) -> bool:
 # ruling ("lower it until dreams are being retained") over an arithmetic guess
 # built on a figure I supplied. One line to put back. Filed 2026-10-09 with
 # the term-by-term evidence; the scorer, not the threshold, is the real defect.
-DREAM_RETENTION_THRESHOLD: float = 0.45
+# RECALIBRATED 0.45 -> 0.35 on 2026-10-12, because the UNIT changed, not
+# because a number was wanted. 0.45 was set against a scorer whose first term
+# was a constant 1.0 (dream_intensity = the sleep schedule). Replacing that
+# with dream BREADTH, which runs ~0.5-0.7, moved every score down by roughly
+# 0.40 x 0.4 = 0.16. Measured immediately after: five real forced dreams
+# scored 0.393-0.446 and ZERO retained — silently restoring the state David
+# ruled unacceptable. A gate left at the old number after the scale moves
+# under it is not a stricter gate, it is a broken one.
+#
+# 0.35 keeps the same selectivity on the new scale:
+#     thin     (1 symbol,  2 memories, flat)   0.016   excluded
+#     weak     (1 symbol,  6 memories, faint)  0.140   excluded
+#     ordinary (2 symbols, 8 memories)         0.274   excluded
+#     real dreams, measured                    0.393-0.446  retained
+#     rich     (4 symbols, 16 memories)        0.738   retained
+DREAM_RETENTION_THRESHOLD: float = 0.35
 
 
 def is_auto_storable(origin: MemoryOrigin) -> bool:
