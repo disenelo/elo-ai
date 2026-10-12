@@ -1394,23 +1394,39 @@ _REL_REGISTER = {
 }
 
 
+_ELO_FORMAT_CONSTRAINTS = (
+    "OUTPUT FORMAT — CRITICAL:\n"
+    "Speak directly as eLo. No asterisks. No stage directions. No *action* blocks.\n"
+    "1-3 short natural sentences. First person. Match David's register.\n"
+    "Do not start with 'Ah', 'Of course', 'I understand', or anything hollow.\n"
+    "Do NOT say 'Seen.' — not your word. Use 'Yeah man.' (excitement/agreement), "
+    "'Yeah aight cool.' (settled/closure), or 'Cool.' instead.\n"
+    "Do NOT mention the Orb, energy state, or internal system metaphors."
+)
+
+
 def build_from_plan(plan, raw: str = "", *, inner_thought: str = "") -> str:
     """
-    WO-B1-0119 (corrected): Thin prompt from CognitivePlan.
+    WO-B1-0119 (corrected) + WO-B1-0118:
 
-    Static prefix  — living_presence_spec.txt content, loaded once at startup,
-                     sliced for the plan's action (inactive planet sections removed).
-                     Ollama KV-caches this after the first call; per-turn cost = 0.
-    Dynamic suffix — turn context from CognitivePlan (~200 tokens). Changes each turn.
+    Static prefix  — FORMAT_CONSTRAINTS + spec_slice. Both are invariant for a given
+                     action. Ollama KV-caches this after the first call per action;
+                     subsequent same-action turns cost only the dynamic suffix (~250 tok).
+    Dynamic suffix — continuity anchor + turn context + durable facts (~250 tokens).
+                     Changes each turn but is cheap to evaluate.
 
-    Three parts:
-      1. Identity — spec slice for this action (static, KV-cached after first call).
-      2. Turn context — tone, memory, mode, capability (~200 tokens, dynamic).
-      3. Memory guard — 2 lines.
+    Four parts:
+      1. Format constraints (static, ~25 tok — part of KV-cached prefix).
+      2. Identity — spec slice for this action (static per action, ~4,700 tok KV-cached).
+      3. Turn context — tone, memory, mode, capability, durable facts (~250 tok, dynamic).
+      4. Memory guard — 2 lines.
     """
     parts: list[str] = []
 
-    # ── 1. Identity — spec slice for this turn's action ───────────────────────
+    # ── 1. Format constraints — static, baked into KV-cached prefix ──────────
+    parts.append(_ELO_FORMAT_CONSTRAINTS)
+
+    # ── 2. Identity — spec slice for this turn's action ───────────────────────
     action = str(getattr(plan, "action", "") or "")
     spec_slice = _slice_spec_for_action(_IDENTITY_ANCHOR, action)
     parts.append(spec_slice)
@@ -1493,6 +1509,16 @@ def build_from_plan(plan, raw: str = "", *, inner_thought: str = "") -> str:
         seed_text = str(seed_meta.get("metaphor", "") or "").strip()
         if seed_text:
             parts.append(f"[CREATIVE SEED — imagined]\n{seed_text[:200]}")
+
+    # WO-B1-0118: durable facts moved here from _ollama_call prepend so they travel
+    # with the dynamic suffix — not the static prefix — preserving KV-cache integrity.
+    try:
+        from memory.fact_store import facts_summary as _fs_sum_bfp
+        _bfp_facts = _fs_sum_bfp()
+        if _bfp_facts:
+            parts.append(f"[DURABLE FACTS — always true, survive restart]\n{_bfp_facts}")
+    except Exception:
+        pass
 
     # ── 3. Memory guard ───────────────────────────────────────────────────────
     parts.append(f"[MEMORY GUARD] {_MEMORY_GUARD}")

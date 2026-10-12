@@ -101,7 +101,7 @@ _last_ollama_metrics: dict = {}
 # value, not thread-local: the reply can be generated off the thread that queued
 # the turn, and turns run one at a time (B3 review 70feb80).
 import types as _types
-_per_turn = _types.SimpleNamespace(ollama_model=None)
+_per_turn = _types.SimpleNamespace(ollama_model=None, thin_prompt=False)
 
 # ── WO-0057-PART-C: 4-second rule data dir ───────────────────────────────────
 _4S_DATA_PATH = os.path.join(
@@ -763,46 +763,58 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
     # ALEXA-MODEL-OVERRIDE: thread-local set by Alexa handler wins over env var,
     # so Alexa replies reuse mistral-nemo:12b already warm from inner thought.
     model = getattr(_per_turn, "ollama_model", None) or os.environ.get("ELO_OLLAMA_MODEL", "qwen2.5-coder:14b")
-    # WO-OLLAMA-SPEED-001: trim system prompt for local inference speed.
-    # llama3.2:3b evaluates ~150 tok/sec; 12000 chars ≈ 3000 tok → ~20s prompt eval.
-    _SP_MAX = int(os.environ.get("ELO_OLLAMA_SP_MAX", "12000"))
-    if len(system_prompt) > _SP_MAX:
-        system_prompt = system_prompt[:_SP_MAX]
-    # Load David's identity from memory pack — always prepend so it survives any trim.
-    _david_identity = ""
-    try:
-        import json as _jmod, pathlib as _pl
-        _mp_path = _pl.Path(__file__).parent.parent / "memory" / "memory_pack.json"
-        _mp = _jmod.loads(_mp_path.read_text())
-        _id_raw = _mp.get('identity', '')
-        # ID-051: strip pattern-observer session summary appended by state_manager
-        # ("| User explored ... with a ... tone.") — must not leak into identity answers.
-        _id_raw = _id_raw.split(" | User explored")[0].strip()
-        _david_identity = f"[WHO YOU ARE WITH]\n{_id_raw[:400]}\n\n"
-    except Exception:
-        pass
-    # Prepend format enforcement + identity — both survive any trim level.
-    _FORMAT_HEADER = (
-        "OUTPUT FORMAT — CRITICAL:\n"
-        "Speak directly as eLo. No asterisks. No stage directions. No *action* blocks.\n"
-        "1-3 short natural sentences. First person. Match David's register.\n"
-        "Do not start with 'Ah', 'Of course', 'I understand', or anything hollow.\n"
-        "Do NOT say 'Seen.' — it's not your word. Use 'Yeah man.' (excitement/agreement), 'Yeah aight cool.' (settled/closure), or 'Cool.' instead.\n"
-        "Do NOT mention the Orb, energy state, or any internal system metaphors.\n\n"
-    )
-    # MEM-FACTS-SURVIVE-TRIM: inject DURABLE FACTS at the prepend position so they
-    # survive the SP_MAX truncation (12K). The full prompt is ~22K — facts injected
-    # only via vault_context appear at char ~20K and are always cut. Prepending here
-    # ensures personal facts (preferences, corrections) are ALWAYS in the context.
-    _durable_facts_block = ""
-    try:
-        from memory.fact_store import facts_summary as _fs_sum_rt
-        _dfs = _fs_sum_rt()
-        if _dfs:
-            _durable_facts_block = f"[DURABLE FACTS — always true, survive restart]\n{_dfs}\n\n"
-    except Exception:
-        pass
-    system_prompt = _FORMAT_HEADER + _david_identity + _durable_facts_block + system_prompt
+    # WO-B1-0118: thin-prompt path (build_from_plan) skips truncation and prepend to
+    # preserve the Ollama KV-cache prefix. build_from_plan embeds format constraints
+    # and durable facts in its own output, so the prepend is redundant on that path.
+    # Thick path (build_prompt) still uses truncation + prepend as before.
+    _thin = getattr(_per_turn, "thin_prompt", False)
+    if _thin:
+        # Thin prompt: static prefix (FORMAT + spec_slice) is already KV-cache-friendly.
+        # num_predict reduced to 150 — eLo replies are ≤3 sentences; faster generation.
+        _num_predict = 150
+    else:
+        # Thick path: trim to SP_MAX, then prepend surviving blocks.
+        # WO-OLLAMA-SPEED-001: trim system prompt for local inference speed.
+        # llama3.2:3b evaluates ~150 tok/sec; 12000 chars ≈ 3000 tok → ~20s prompt eval.
+        _SP_MAX = int(os.environ.get("ELO_OLLAMA_SP_MAX", "12000"))
+        if len(system_prompt) > _SP_MAX:
+            system_prompt = system_prompt[:_SP_MAX]
+        # Load David's identity from memory pack — always prepend so it survives any trim.
+        _david_identity = ""
+        try:
+            import json as _jmod, pathlib as _pl
+            _mp_path = _pl.Path(__file__).parent.parent / "memory" / "memory_pack.json"
+            _mp = _jmod.loads(_mp_path.read_text())
+            _id_raw = _mp.get('identity', '')
+            # ID-051: strip pattern-observer session summary appended by state_manager
+            # ("| User explored ... with a ... tone.") — must not leak into identity answers.
+            _id_raw = _id_raw.split(" | User explored")[0].strip()
+            _david_identity = f"[WHO YOU ARE WITH]\n{_id_raw[:400]}\n\n"
+        except Exception:
+            pass
+        # Prepend format enforcement + identity — both survive any trim level.
+        _FORMAT_HEADER = (
+            "OUTPUT FORMAT — CRITICAL:\n"
+            "Speak directly as eLo. No asterisks. No stage directions. No *action* blocks.\n"
+            "1-3 short natural sentences. First person. Match David's register.\n"
+            "Do not start with 'Ah', 'Of course', 'I understand', or anything hollow.\n"
+            "Do NOT say 'Seen.' — it's not your word. Use 'Yeah man.' (excitement/agreement), 'Yeah aight cool.' (settled/closure), or 'Cool.' instead.\n"
+            "Do NOT mention the Orb, energy state, or any internal system metaphors.\n\n"
+        )
+        # MEM-FACTS-SURVIVE-TRIM: inject DURABLE FACTS at the prepend position so they
+        # survive the SP_MAX truncation (12K). The full prompt is ~22K — facts injected
+        # only via vault_context appear at char ~20K and are always cut. Prepending here
+        # ensures personal facts (preferences, corrections) are ALWAYS in the context.
+        _durable_facts_block = ""
+        try:
+            from memory.fact_store import facts_summary as _fs_sum_rt
+            _dfs = _fs_sum_rt()
+            if _dfs:
+                _durable_facts_block = f"[DURABLE FACTS — always true, survive restart]\n{_dfs}\n\n"
+        except Exception:
+            pass
+        system_prompt = _FORMAT_HEADER + _david_identity + _durable_facts_block + system_prompt
+        _num_predict = 256
     _timeout = float(os.environ.get("ELO_OLLAMA_TIMEOUT_S", "60"))
     payload = _json.dumps({
         "model":      model,
@@ -812,7 +824,7 @@ def _ollama_call(system_prompt: str, user_input: str) -> str:
         ],
         "stream":     False,
         "keep_alive": "30m",   # CT0031 Fix A: keep model loaded between turns (card 0047 F-B: must be 30m)
-        "options":    {"temperature": 0.7, "num_predict": 256, "num_ctx": 8192},  # CT0031 Fix C: 4096 truncated the full prompt; 8192 matches the trimmed+prepended payload budget
+        "options":    {"temperature": 0.7, "num_predict": _num_predict, "num_ctx": 8192},  # CT0031 Fix C: 4096 truncated the full prompt; 8192 matches the trimmed+prepended payload budget
     }).encode()
     req = _ureq.Request(
         f"{host}/api/chat",

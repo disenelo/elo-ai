@@ -5926,6 +5926,12 @@ def _process_turn(raw: str) -> dict:
                 from runtime.prompt_builder import build_from_plan as _bfp
                 system = _bfp(_plan, raw, inner_thought=_it_pre_context)
                 _using_thin_prompt = True
+                # WO-B1-0118: signal _ollama_call to skip prepend+truncate (KV-cache path)
+                try:
+                    from runtime import backend_router as _br_thin
+                    _br_thin._per_turn.thin_prompt = True
+                except Exception:
+                    pass
             except Exception as _bfp_err:
                 import sys as _bfp_sys
                 print(f"[prompt] build_from_plan failed, falling back: {_bfp_err}",
@@ -9495,6 +9501,7 @@ def _turn_worker() -> None:
             try:
                 from runtime import backend_router as _br_pt
                 _br_pt._per_turn.ollama_model = None
+                _br_pt._per_turn.thin_prompt = False
             except Exception:
                 pass
             done_event.set()
