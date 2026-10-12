@@ -1577,6 +1577,24 @@ def build_from_plan(plan, raw: str = "", *, inner_thought: str = "") -> str:
     except Exception:
         pass
 
+    # ── WO-B1-0138: inject open intentions + active goals into thin-path ────
+    # Mirrors the thick-path injection at server.py:6122. Without this,
+    # build_from_plan() is blind to unfinished threads.
+    try:
+        from memory.intentions import intentions_prompt_block as _int_pb
+        _int_block = _int_pb(turn_text=raw, max_open=3)
+        if _int_block:
+            parts.append(_int_block)
+    except Exception:
+        pass
+    try:
+        from memory.goals import goals_prompt_block as _goals_pb
+        _goals_block = _goals_pb(max_goals=3)
+        if _goals_block:
+            parts.append(_goals_block)
+    except Exception:
+        pass
+
     # ── WO-B1-0136: conversation continuity — last response + prior threads ──
     try:
         from runtime.conversation_state import (

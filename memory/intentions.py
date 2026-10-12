@@ -52,6 +52,7 @@ class Intention:
     priority:           float = 0.5
     relevance_keywords: list  = field(default_factory=list)
     resumed_count:      int   = 0
+    project_id:         str   = ""   # WO-B1-0138: links intention to active DISENELO project
 
     def as_dict(self) -> dict:
         return asdict(self)
