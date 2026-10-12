@@ -25,11 +25,9 @@ def acquire(filepath: str, seat: str, purpose: str) -> bool:
     """
     Acquire a lock on filepath.
     Returns True if lock acquired; False if already held by another seat.
-    Writes <filepath>.lock on success.
+    Writes <filepath>.lock on success. Uses O_EXCL for atomic creation.
     """
     lock_path = _lock_path(filepath)
-    if os.path.exists(lock_path):
-        return False
     payload = {
         "seat": seat,
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -37,9 +35,12 @@ def acquire(filepath: str, seat: str, purpose: str) -> bool:
         "purpose": purpose,
     }
     try:
-        with open(lock_path, "w", encoding="utf-8") as f:
+        fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(payload, f, indent=2)
         return True
+    except FileExistsError:
+        return False
     except OSError:
         return False
 
