@@ -162,7 +162,21 @@ def test_connect_start_connects_bluetooth_silently(monkeypatch, tmp_path):
     called = []
     monkeypatch.setattr(es, "device_index", lambda fresh=False: None)
     monkeypatch.setattr(es, "connect", lambda *a, **k: called.append(1) or True)
+    monkeypatch.setattr(es, "play", lambda path: True)
     _events(tmp_path, '{"type":"alexa_connect","subject":"start","_ts":10}')
     assert es.alexa_connected() is True
     import time as _t; _t.sleep(0.2)
     assert called == [1]
+
+
+
+def test_connect_start_chimes_on_the_echo_only(monkeypatch, tmp_path):
+    played = []
+    monkeypatch.setattr(es, "device_index", lambda fresh=False: 1)
+    monkeypatch.setattr(es, "play", lambda path: played.append(path) or True)
+    import capabilities.alexa_ingress as ai
+    monkeypatch.setattr(ai, "_chime_mp3", lambda: b"CHIME")
+    _events(tmp_path, '{"type":"alexa_connect","subject":"start","_ts":30}')
+    assert es.alexa_connected() is True
+    import time as _t; _t.sleep(0.3)
+    assert len(played) == 1                     # once, on the Echo (play() targets the Echo device)

@@ -20,6 +20,13 @@ def _echo_not_connected(monkeypatch):
     monkeypatch.setattr(ai, "_echo_is_mouth", lambda: False)
     import tools.echo_speaker as _es_reset
     _es_reset.release_voice()
+    # never read David's real voice/connect state (data/*.json, unity_events.json)
+    import tempfile, os as _os
+    _d = tempfile.mkdtemp()
+    monkeypatch.setattr(_es_reset, "_SETTING", _os.path.join(_d, "voice_output.json"))
+    monkeypatch.setattr(_es_reset, "_CONNECT", _os.path.join(_d, "alexa_connect.json"))
+    monkeypatch.setattr(_es_reset, "_EVENTS", _os.path.join(_d, "unity_events.json"))
+    _es_reset._vo_cache.update(ts=0.0, value=None); _es_reset._ac_cache.update(ts=0.0, value=None)
     monkeypatch.setenv("ALEXA_REPLY", "skill")     # these tests cover the Alexa-speaks mode
 
 

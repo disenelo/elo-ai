@@ -307,6 +307,23 @@ def _latest_connect_event() -> tuple[float, str] | None:
     return best
 
 
+def _arrive_on_echo() -> None:
+    try:
+        if device_index(fresh=True) is None and not connect():
+            return
+        import tempfile
+        from capabilities.alexa_ingress import _chime_mp3
+        mp3 = _chime_mp3()
+        if not mp3:
+            return
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
+            f.write(mp3)
+        play(f.name)                      # Echo only; never the Mac
+        os.unlink(f.name)
+    except Exception:
+        pass
+
+
 def alexa_connected() -> bool:
     """True between Presence's alexa_connect start and stop. Cached 2 s."""
     if time.time() - _ac_cache["ts"] < 2.0 and _ac_cache["value"] is not None:
@@ -327,9 +344,13 @@ def alexa_connected() -> bool:
             os.replace(_CONNECT + ".tmp", _CONNECT)
         except Exception:
             pass
-        if ev[1] == "start" and device_index(fresh=True) is None:   # silent: Bluetooth only, no sound
+        if ev[1] == "start":
+            # Connect over Bluetooth if needed (no sound at the desk), then play the
+            # soft "eLo's here" chime ON THE ECHO so David hears from the speaker that
+            # eLo has moved. The Echo's blue ring can't be lit over Bluetooth, only
+            # by Alexa itself. A sound, not a scripted line: only the brain speaks as eLo.
             import threading as _th
-            _th.Thread(target=connect, name="echo-connect", daemon=True).start()
+            _th.Thread(target=_arrive_on_echo, name="echo-arrive", daemon=True).start()
     value = saved.get("state") == "start"
     _ac_cache.update(ts=time.time(), value=value)
     return value
